@@ -27,7 +27,7 @@ export default function SignupSuccess() {
   };
 
   return (
-    <SignupShell>
+    <SignupShell title="Confirm Email">
       <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
         <div className="flex justify-center">
           <div className="relative">

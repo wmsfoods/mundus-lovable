@@ -61,7 +61,7 @@ export default function PartnerSignup() {
   };
 
   return (
-    <SignupShell>
+    <SignupShell title="Partner Sign Up">
       <div className="bg-white rounded-2xl shadow-sm p-10">
         <h2 className="text-2xl font-bold text-center text-[#111]">
           Sign Up via{" "}
