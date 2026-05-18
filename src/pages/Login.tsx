@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
-import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import mundusLogo from "@/assets/mundus-logo.png";
 import slide1 from "@/assets/login-carousel-1.png";
 import slide2 from "@/assets/login-carousel-2.png";
 import slide3 from "@/assets/login-carousel-3.png";
@@ -88,7 +88,7 @@ export default function Login() {
       <div className="flex w-full md:w-[30%] items-center justify-center px-6 py-12">
         <div className="w-full max-w-[420px]">
           <div className="mb-8 flex justify-center">
-            <Logo />
+            <img src={mundusLogo} alt="Mundus Trade" className="h-14 w-auto" />
           </div>
           <h1 className="text-[28px] font-bold text-[#111]">Log in</h1>
 
