@@ -54,19 +54,19 @@ export default function Login() {
       <div className="flex flex-1 items-center justify-center px-6 py-10">
         <div className="flex w-full max-w-6xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-center md:gap-20">
           {/* LEFT - carousel card */}
-          <div className="relative aspect-square w-full max-w-[600px] overflow-hidden rounded-[2.5rem] shadow-sm">
+          <div className="relative aspect-square w-full max-w-[600px] overflow-hidden rounded-[2.5rem] bg-[#0c0c0c] shadow-sm">
             {slides.map((src, i) => (
               <div
                 key={i}
                 className={cn(
-                  "absolute inset-0 transition-opacity duration-1000",
-                  i === slide ? "opacity-100" : "opacity-0",
+                  "absolute inset-0 transition-all duration-[1400ms] ease-[cubic-bezier(0.22,1,0.36,1)]",
+                  i === slide ? "opacity-100 scale-100" : "opacity-0 scale-[1.02]",
                 )}
               >
                 <img
                   src={src}
                   alt=""
-                  className="absolute inset-0 h-full w-full rounded-[2.5rem] object-cover"
+                  className="absolute inset-0 h-full w-full object-contain"
                 />
               </div>
             ))}
