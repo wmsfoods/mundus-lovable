@@ -51,25 +51,24 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
-      <div className="flex flex-1 items-center justify-center px-6 py-10">
-        <div className="flex w-full max-w-6xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-center md:gap-20">
-          {/* LEFT - carousel card */}
-          <div className="relative aspect-square w-full max-w-[600px] overflow-hidden rounded-[2.5rem] shadow-sm">
-            {slides.map((src, i) => (
-              <div
-                key={i}
-                className={cn(
-                  "absolute inset-0 transition-opacity duration-1000",
-                  i === slide ? "opacity-100" : "opacity-0",
-                )}
-              >
-                <img
-                  src={src}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-contain"
-                />
-              </div>
-            ))}
+      <div className="flex flex-1 flex-col items-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
+        {/* LEFT - carousel card (mobile: full-width header, no rounding) */}
+        <div className="relative aspect-square w-full max-w-full md:max-w-[600px] overflow-hidden rounded-none md:rounded-[2.5rem] shadow-sm">
+          {slides.map((src, i) => (
+            <div
+              key={i}
+              className={cn(
+                "absolute inset-0 overflow-hidden rounded-none md:rounded-[2.5rem] transition-opacity duration-1000",
+                i === slide ? "opacity-100" : "opacity-0",
+              )}
+            >
+              <img
+                src={src}
+                alt=""
+                className="absolute inset-0 h-full w-full object-contain"
+              />
+            </div>
+          ))}
             <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
               {slides.map((_, i) => (
                 <button
@@ -87,7 +86,7 @@ export default function Login() {
           </div>
 
           {/* RIGHT - form */}
-          <div className="w-full max-w-[380px]">
+          <div className="w-full max-w-[380px] px-6 py-10 md:p-0">
             <h1 className="text-[28px] font-bold text-[#111]">Log in</h1>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -157,7 +156,6 @@ export default function Login() {
             <a href="#" className="underline">Privacy Policy</a>
           </div>
           </div>
-        </div>
       </div>
 
       {/* Footer */}
