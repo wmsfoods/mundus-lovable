@@ -54,7 +54,7 @@ export default function Login() {
       <div className="flex flex-1 items-center justify-center px-6 py-10">
         <div className="flex w-full max-w-6xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-center md:gap-20">
           {/* LEFT - carousel card */}
-          <div className="relative aspect-square w-full max-w-[600px] overflow-hidden rounded-2xl shadow-sm">
+          <div className="relative aspect-square w-full max-w-[600px] overflow-hidden rounded-[2.5rem] shadow-sm">
             {slides.map((src, i) => (
               <div
                 key={i}
