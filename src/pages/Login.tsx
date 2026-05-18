@@ -63,9 +63,10 @@ export default function Login() {
                   i === slide ? "opacity-100" : "opacity-0",
                 )}
               >
-                <div
-                  className="absolute inset-0 bg-cover bg-center"
-                  style={{ backgroundImage: `url(${src})` }}
+                <img
+                  src={src}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-contain"
                 />
               </div>
             ))}
