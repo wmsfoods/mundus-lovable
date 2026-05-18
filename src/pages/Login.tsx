@@ -50,47 +50,44 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen bg-white">
-      {/* LEFT - carousel */}
-      <div className="relative hidden md:block md:w-[70%] overflow-hidden">
-        {slides.map((src, i) => (
-          <div
-            key={i}
-            className={cn(
-              "absolute inset-0 transition-opacity duration-1000",
-              i === slide ? "opacity-100" : "opacity-0",
-            )}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${src})` }}
-            />
+    <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex flex-1 items-center justify-center px-6 py-10">
+        <div className="flex w-full max-w-6xl flex-col items-center gap-10 md:flex-row md:items-center md:justify-center md:gap-20">
+          {/* LEFT - carousel card */}
+          <div className="relative aspect-square w-full max-w-[600px] overflow-hidden rounded-2xl shadow-sm">
+            {slides.map((src, i) => (
+              <div
+                key={i}
+                className={cn(
+                  "absolute inset-0 transition-opacity duration-1000",
+                  i === slide ? "opacity-100" : "opacity-0",
+                )}
+              >
+                <div
+                  className="absolute inset-0 bg-cover bg-center"
+                  style={{ backgroundImage: `url(${src})` }}
+                />
+              </div>
+            ))}
+            <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-2 z-10">
+              {slides.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSlide(i)}
+                  className={cn(
+                    "h-1.5 rounded-full transition-all",
+                    i === slide ? "w-8" : "w-6 bg-white/50",
+                  )}
+                  style={i === slide ? { background: "#9B2251" } : undefined}
+                  aria-label={`Slide ${i + 1}`}
+                />
+              ))}
+            </div>
           </div>
-        ))}
-        {/* dots */}
-        <div className="absolute bottom-8 left-0 right-0 flex justify-center gap-2 z-10">
-          {slides.map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setSlide(i)}
-              className={cn(
-                "h-1.5 rounded-full transition-all",
-                i === slide ? "w-8" : "w-1.5 bg-white/40",
-              )}
-              style={i === slide ? { background: "#9B2251" } : undefined}
-              aria-label={`Slide ${i + 1}`}
-            />
-          ))}
-        </div>
-      </div>
 
-      {/* RIGHT - form */}
-      <div className="flex w-full md:w-[30%] items-center justify-center px-6 py-12">
-        <div className="w-full max-w-[420px]">
-          <div className="mb-8 flex justify-center">
-            <img src={mundusLogo} alt="Mundus Trade" className="h-14 w-auto" />
-          </div>
-          <h1 className="text-[28px] font-bold text-[#111]">Log in</h1>
+          {/* RIGHT - form */}
+          <div className="w-full max-w-[380px]">
+            <h1 className="text-[28px] font-bold text-[#111]">Log in</h1>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
@@ -154,12 +151,21 @@ export default function Login() {
             </Link>
           </p>
 
-          <div className="mt-12 flex justify-center gap-6 text-xs text-gray-400">
+          <div className="mt-8 flex justify-center gap-6 text-xs text-gray-400">
             <a href="#" className="underline">Terms and Condition</a>
             <a href="#" className="underline">Privacy Policy</a>
           </div>
+          </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-100 py-5">
+        <div className="flex items-center justify-center gap-3 text-xs text-gray-500">
+          <img src={mundusLogo} alt="Mundus Trade" className="h-5 w-auto opacity-80" />
+          <span>© Copyright 2025 – All rights reserved.</span>
+        </div>
+      </footer>
     </div>
   );
 }
