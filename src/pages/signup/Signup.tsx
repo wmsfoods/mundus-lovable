@@ -107,8 +107,13 @@ export default function Signup() {
     navigate(`/signup/success?email=${encodeURIComponent(data.email)}`);
   };
 
+  const handleMobileBack = () => {
+    if (step === 1) navigate("/login");
+    else setStep((s) => s - 1);
+  };
+
   return (
-    <SignupShell>
+    <SignupShell onBack={handleMobileBack}>
       <div className="bg-white rounded-2xl shadow-sm p-10">
         <h2 className="text-2xl font-bold text-center text-[#111]">Sign Up</h2>
         <p className="text-xs text-gray-500 text-center mt-1">Step {step} of 3</p>
