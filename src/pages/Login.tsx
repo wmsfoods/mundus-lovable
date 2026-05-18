@@ -1,130 +1,20 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Eye, EyeOff, Globe, Snowflake, ShieldCheck, Truck } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { Logo } from "@/components/Logo";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import slide1 from "@/assets/login-carousel-1.png";
+import slide2 from "@/assets/login-carousel-2.png";
+import slide3 from "@/assets/login-carousel-3.png";
+import slide4 from "@/assets/login-carousel-4.png";
+import slide5 from "@/assets/login-carousel-5.png";
+import slide6 from "@/assets/login-carousel-6.png";
+import slide7 from "@/assets/login-carousel-7.png";
 
-type Slide = {
-  image: string;
-  render: () => JSX.Element;
-};
-
-const slides: Slide[] = [
-  {
-    image: "https://images.unsplash.com/photo-1578575437130-527eed3abbec?w=1600&auto=format&fit=crop",
-    render: () => (
-      <div className="text-white">
-        <h2 className="text-[28px] font-bold leading-tight whitespace-pre-line">
-          {"Global Reach.\nReliable Supply.\nPremium Protein."}
-        </h2>
-        <div className="mt-10 grid grid-cols-4 gap-4 max-w-md">
-          {[
-            { icon: <Globe className="h-6 w-6" />, label: "Global Sourcing" },
-            { icon: <Snowflake className="h-6 w-6" />, label: "Cold Chain" },
-            { icon: <ShieldCheck className="h-6 w-6" />, label: "Food Safety" },
-            { icon: <Truck className="h-6 w-6" />, label: "Reliable Delivery" },
-          ].map((it) => (
-            <div key={it.label} className="flex flex-col items-center text-center gap-2">
-              {it.icon}
-              <span className="text-xs">{it.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  },
-  {
-    image: "https://images.unsplash.com/photo-1529692236671-f1f6cf9683ba?w=1600&auto=format&fit=crop",
-    render: () => (
-      <div className="text-white">
-        <div className="text-sm font-medium" style={{ color: "#9B2251" }}>
-          Global Protein Trading
-        </div>
-        <div className="mt-1 h-[2px] w-10" style={{ background: "#9B2251" }} />
-        <p className="mt-4 text-base whitespace-pre-line">
-          {"Connecting markets.\nDelivering quality."}
-        </p>
-      </div>
-    ),
-  },
-  {
-    image: "https://images.unsplash.com/photo-1611791484670-ce19b801d192?w=1600&auto=format&fit=crop",
-    render: () => (
-      <div className="text-white">
-        <h2 className="text-2xl font-bold whitespace-pre-line">
-          {"From Trusted Sources\nto Global Markets"}
-        </h2>
-        <ul className="mt-6 space-y-2 text-base">
-          {["Trusted Partnerships", "Quality Assurance", "Global Standards"].map((t) => (
-            <li key={t} className="flex items-center gap-2">
-              <span className="inline-block h-2 w-2 rounded-full border border-white" />
-              {t}
-            </li>
-          ))}
-        </ul>
-      </div>
-    ),
-  },
-  {
-    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1600&auto=format&fit=crop",
-    render: () => (
-      <div className="text-white">
-        <h2 className="text-2xl font-bold whitespace-pre-line">
-          {"Quality products.\nRigorous standards.\nGlobal solutions."}
-        </h2>
-        <div className="mt-3 h-[2px] w-8" style={{ background: "#9B2251" }} />
-      </div>
-    ),
-  },
-  {
-    image: "https://images.unsplash.com/photo-1607623814075-e51df1bdc82f?w=1600&auto=format&fit=crop",
-    render: () => (
-      <div className="text-white">
-        <h2 className="text-2xl font-bold whitespace-pre-line">
-          {"Premium proteins.\nGlobal markets.\nEndless possibilities."}
-        </h2>
-        <div className="mt-3 h-[2px] w-8" style={{ background: "#9B2251" }} />
-      </div>
-    ),
-  },
-  {
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1600&auto=format&fit=crop",
-    render: () => (
-      <div className="text-white">
-        <h2 className="text-[28px] font-bold whitespace-pre-line">
-          {"Local Presence.\nGlobal Connections."}
-        </h2>
-        <p className="mt-3 text-sm opacity-90">Building strong relationships across the world.</p>
-        <div className="mt-6 flex gap-8">
-          {[
-            ["5", "Continents"],
-            ["50+", "Countries"],
-            ["100+", "Partners"],
-          ].map(([n, l]) => (
-            <div key={l}>
-              <div className="text-2xl font-bold">{n}</div>
-              <div className="text-xs opacity-80">{l}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    ),
-  },
-  {
-    image: "https://images.unsplash.com/photo-1494412574643-ff11b0a5c1c3?w=1600&auto=format&fit=crop",
-    render: () => (
-      <div className="text-white">
-        <h2 className="text-2xl font-bold whitespace-pre-line">
-          {"Global reach.\nReliable supply.\nTrusted partner."}
-        </h2>
-        <div className="mt-3 h-[2px] w-8" style={{ background: "#9B2251" }} />
-      </div>
-    ),
-  },
-];
+const slides: string[] = [slide1, slide2, slide3, slide4, slide5, slide6, slide7];
 
 export default function Login() {
   const navigate = useNavigate();
@@ -163,7 +53,7 @@ export default function Login() {
     <div className="flex min-h-screen bg-white">
       {/* LEFT - carousel */}
       <div className="relative hidden md:block md:w-1/2 overflow-hidden">
-        {slides.map((s, i) => (
+        {slides.map((src, i) => (
           <div
             key={i}
             className={cn(
@@ -173,19 +63,8 @@ export default function Login() {
           >
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${s.image})` }}
+              style={{ backgroundImage: `url(${src})` }}
             />
-            <div
-              className="absolute inset-0"
-              style={{
-                background:
-                  "linear-gradient(to top, rgba(100,0,30,0.85) 0%, rgba(0,0,0,0.45) 60%, rgba(0,0,0,0.3) 100%)",
-              }}
-            />
-            <div className="absolute top-8 left-8">
-              <Logo variant="white" />
-            </div>
-            <div className="absolute bottom-20 left-8 right-8">{s.render()}</div>
           </div>
         ))}
         {/* dots */}
@@ -208,7 +87,7 @@ export default function Login() {
       {/* RIGHT - form */}
       <div className="flex w-full md:w-1/2 items-center justify-center px-6 py-12">
         <div className="w-full max-w-[420px]">
-          <div className="md:hidden mb-8 flex justify-center">
+          <div className="mb-8 flex justify-center">
             <Logo />
           </div>
           <h1 className="text-[28px] font-bold text-[#111]">Log in</h1>
