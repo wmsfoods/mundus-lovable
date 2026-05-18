@@ -1,36 +1,30 @@
-## Ajustes na tela de Login
+## Reformatar a tela de Login para layout "card"
 
-### 1. Carrossel — usar imagens enviadas como estão
+Mudar de painéis full-height (70/30) para um layout centralizado com:
 
-Copiar as 7 imagens enviadas para `src/assets/` e importá-las em `src/pages/Login.tsx`.
+- Fundo branco em toda a tela, com bastante respiro nas laterais e topo/base.
+- **Esquerda**: carrossel como um **card quadrado com cantos arredondados** (~600x600px, `rounded-2xl overflow-hidden`), não mais cobrindo a tela inteira. Mantém fade entre slides + dots na base, dentro do card.
+- **Direita**: formulário de login alinhado verticalmente ao centro do card, mais compacto. Logo Mundus **removida do topo do form** (já aparece no card do carrossel e no footer). Título "Log in" fica no topo do form.
+- **Footer**: barra no rodapé com logo pequena Mundus + texto "© Copyright 2025 – All rights reserved." centralizado.
+- Remover links "Terms and Condition / Privacy Policy" do bloco abaixo do form (vão pro footer? — manter como estão por enquanto, só ajustar espaçamento).
 
-Mapeamento slide → imagem:
+### Estrutura
 
-| Slide | Tema | Imagem |
-|---|---|---|
-| 1 | Global Reach / Premium Protein | `Screenshot_2026-05-17_at_23.58.51.png` |
-| 2 | Global Protein Trading | `Screenshot_2026-05-17_at_23.58.19.png` |
-| 3 | From Trusted Sources to Global Markets | `Screenshot_2026-05-17_at_23.58.59.png` |
-| 4 | Quality products / Rigorous standards | `Screenshot_2026-05-17_at_23.58.43.png` |
-| 5 | Premium proteins | `Screenshot_2026-05-17_at_23.58.38.png` |
-| 6 | Local Presence / Global Connections | `Screenshot_2026-05-17_at_23.59.03.png` |
-| 7 | Global reach / Trusted partner | `Screenshot_2026-05-17_at_23.58.29.png` |
-
-Como cada imagem já traz logo, gradiente e texto embutidos, vou **remover** do código:
-- O gradiente sobreposto
-- O `<Logo variant="white">` no canto superior esquerdo
-- O bloco de texto (`s.render()`) no canto inferior esquerdo
-
-Mantém: fade 5s, auto-advance, dots de progresso embaixo, imagem em `bg-cover bg-center`.
-
-Também simplifica o array `slides` — vira só uma lista de imagens, sem `render()`.
-
-### 2. Logo Mundus Trade acima do "Log in"
-
-No painel direito do `Login.tsx`, o `<Logo />` hoje só aparece em mobile. Vou:
-- Tornar o logo (versão colorida) visível em **todos os tamanhos**, posicionado acima do título "Log in".
-- Centralizar horizontalmente sobre o formulário (max-width 420px) com `mb-8`.
+```text
+┌──────────────────────────────────────────────┐
+│                                              │
+│    ┌───────────┐      Log in                 │
+│    │           │      E-mail   [______]      │
+│    │  carousel │      Password [______]      │
+│    │   (card)  │      [ ] Remember  [Sign in]│
+│    │           │      Don't have? Sign up    │
+│    │   • • •   │      Terms | Privacy        │
+│    └───────────┘                             │
+│                                              │
+├──────────────────────────────────────────────┤
+│        [M] Mundu  © Copyright 2025 …         │
+└──────────────────────────────────────────────┘
+```
 
 ### Arquivos afetados
-- `src/assets/login-carousel-{1..7}.png` (novos)
-- `src/pages/Login.tsx` (slides simplificados, overlays removidos, logo sempre visível)
+- `src/pages/Login.tsx` — refazer wrapper para `flex items-center justify-center` com gap, carrossel vira card quadrado fixo (~560–620px), form fica ao lado com largura ~380px, adicionar footer fixo na base.
