@@ -52,7 +52,7 @@ export default function Login() {
   return (
     <div className="flex min-h-screen bg-white">
       {/* LEFT - carousel */}
-      <div className="relative hidden md:block md:w-1/2 overflow-hidden">
+      <div className="relative hidden md:block md:w-[70%] overflow-hidden">
         {slides.map((src, i) => (
           <div
             key={i}
@@ -85,7 +85,7 @@ export default function Login() {
       </div>
 
       {/* RIGHT - form */}
-      <div className="flex w-full md:w-1/2 items-center justify-center px-6 py-12">
+      <div className="flex w-full md:w-[30%] items-center justify-center px-6 py-12">
         <div className="w-full max-w-[420px]">
           <div className="mb-8 flex justify-center">
             <Logo />
