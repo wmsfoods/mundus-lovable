@@ -65,7 +65,7 @@ export default function Login() {
               <img
                 src={src}
                 alt=""
-                className="absolute inset-0 h-full w-full object-contain"
+                className="absolute inset-0 h-full w-full object-cover md:object-contain"
               />
             </div>
           ))}
