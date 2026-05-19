@@ -112,7 +112,8 @@ const BUYER_STATUS_TONE: Record<BuyerOrderStatus, DealStatus["tone"]> = {
   rejected: "danger",
 };
 
-const BUYER_STAGE: Record<BuyerOrderStatus, ReturnType<typeof statusToJourney>> = {
+type StageKey = "early" | "production" | "shipped" | "delivered" | "rejected";
+const BUYER_STAGE: Record<BuyerOrderStatus, StageKey> = {
   awaiting_supplier_acceptance: "early",
   awaiting_pre_payment: "early",
   pre_payment_confirmed: "production",
@@ -122,7 +123,7 @@ const BUYER_STAGE: Record<BuyerOrderStatus, ReturnType<typeof statusToJourney>> 
   delivered: "delivered",
   completed: "delivered",
   rejected: "rejected",
-} as unknown as Record<BuyerOrderStatus, ReturnType<typeof statusToJourney>>;
+};
 
 function buyerTimeline(order: BuyerOrder, t: (k: string, fallback: string) => string): DealTimelineStage[] {
   const s = order.status;
