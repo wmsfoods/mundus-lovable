@@ -16,6 +16,7 @@ import BuyerShell from "./layouts/BuyerShell.tsx";
 import SupplierShell from "./layouts/SupplierShell.tsx";
 import BuyerHome from "./pages/buyer/Home.tsx";
 import BuyerOffers from "./pages/buyer/Offers.tsx";
+import BuyerOfferDetail from "./pages/buyer/OfferDetail.tsx";
 import SupplierHome from "./pages/supplier/Home.tsx";
 
 const queryClient = new QueryClient();
