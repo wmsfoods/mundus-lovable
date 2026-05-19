@@ -1,0 +1,215 @@
+/* ============================================================
+   Mundus · Negotiations (supplier)
+   ============================================================ */
+
+.nego-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0 12px;
+  flex-wrap: wrap;
+}
+.nego-toolbar .search-input { flex: 1; min-width: 260px; }
+.nego-toolbar .nego-counts {
+  margin-left: auto;
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
+.nego-chips {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+.nego-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  color: var(--fg);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.nego-chip:hover { background: var(--g050); }
+.nego-chip.is-active {
+  background: #1f2937;
+  color: #fff;
+  border-color: #1f2937;
+}
+.nego-chip .count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 9px;
+  background: var(--g100);
+  color: var(--fg-muted);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+}
+.nego-chip.is-active .count {
+  background: rgba(255,255,255,.18);
+  color: #fff;
+}
+
+.nego-table { width: 100%; border-collapse: collapse; }
+.nego-table thead th {
+  text-align: left;
+  font-size: var(--fs-xs);
+  font-weight: var(--weight-semibold);
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 10px 12px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: var(--g050);
+}
+.nego-table tbody td {
+  padding: 12px;
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid #f1f1f4;
+  vertical-align: middle;
+}
+
+.nego-row-parent {
+  background: #fff5f7;
+  cursor: pointer;
+}
+.nego-row-parent:hover { background: #ffe9ee; }
+.nego-row-parent td { font-weight: var(--weight-semibold); }
+.nego-row-parent .chev {
+  display: inline-flex;
+  width: 16px;
+  height: 16px;
+  transition: transform .15s;
+  color: var(--fg-muted);
+}
+.nego-row-parent.is-open .chev { transform: rotate(90deg); }
+.nego-row-parent .group-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.nego-row-parent .bids-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: var(--radius-pill);
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin-left: 4px;
+}
+.nego-row-parent .opp-ref {
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  font-weight: var(--weight-medium);
+  margin-left: 6px;
+}
+.nego-row-parent .bid-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 4px;
+}
+.nego-row-parent .bid-dots .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--brand, #be123c);
+}
+.nego-row-parent .bid-dots .dot.muted { background: var(--g200, #e5e7eb); }
+
+.nego-row-child td { padding-left: 24px; }
+.nego-row-child.hidden { display: none; }
+
+.nego-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--brand, #be123c);
+  color: #fff;
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.nego-buyer-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nego-buyer-cell .info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.nego-buyer-cell .name { font-weight: var(--weight-semibold); color: var(--fg); }
+.nego-buyer-cell .sub { font-size: var(--fs-xs); color: var(--fg-muted); }
+
+.nego-round {
+  display: inline-block;
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+}
+
+.nego-bid-amount     { color: #2563eb; font-weight: var(--weight-semibold); }
+.nego-counter-amount { color: var(--brand, #be123c); font-weight: var(--weight-semibold); }
+
+.nego-dest {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-sm);
+  color: var(--fg);
+}
+.nego-flag {
+  display: inline-block;
+  min-width: 22px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  background: var(--g100);
+  color: var(--fg-muted);
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  text-align: center;
+  letter-spacing: 0.04em;
+}
+
+.pill-action-required { background: #fef3c7; color: #92400e; }
+.pill-awaiting-buyer  { background: #dbeafe; color: #1e3a8a; }
+.pill-final-round     { background: #fce7f3; color: #9d174d; }
+.pill-deal-closed     { background: #d1fae5; color: #065f46; }
+.pill-expired         { background: #f3f4f6; color: #6b7280; }
+.pill-rejected-nego   { background: #f3f4f6; color: #6b7280; }
+
+.nego-status-cell { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.nego-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--fs-xs);
+  color: #b45309;
+}
+
+/* --- Mobile --------------------------------------------------- */
+@media (max-width: 768px) {
+  .nego-table thead { display: none; }
+  .nego-table tbody td { display: block; padding: 6px 12px; border-bottom: none; }
+  .nego-table tbody tr { display: block; border-bottom: 1px solid #f1f1f4; padding: 8px 0; }
+  .nego-row-parent td { padding: 12px; }
+  .nego-row-child td::before {
+    content: attr(data-label);
+    display: inline-block;
+    min-width: 110px;
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 8px;
+  }
+}
