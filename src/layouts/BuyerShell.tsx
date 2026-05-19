@@ -34,6 +34,7 @@ export default function BuyerShell() {
     { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },
     { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
     { to: "/buyer/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
+    { to: "/buyer/chat", label: t("shell.nav.messages"), icon: MessageIcon },
     { to: "/buyer/users", label: t("shell.nav.users"), icon: UsersIcon },
   ];
 
