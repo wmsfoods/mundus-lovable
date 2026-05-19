@@ -1,248 +1,327 @@
-import { Fragment, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { Fragment } from "react";
+import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeftIcon, CheckIcon, XIcon, MessageIcon } from "@/components/icons";
-import { useNegotiationDetail } from "@/hooks/useNegotiations";
+import { toast } from "sonner";
+import {
+  ArrowLeftIcon,
+  ArrowsLeftRightIcon,
+  CheckIcon,
+  XIcon,
+} from "@/components/icons";
+import {
+  useNegotiation,
+  type NegotiationDetail,
+  type NegotiationProduct,
+} from "@/hooks/useNegotiations";
 
-function fmtUsd(v: number, fractionDigits = 2) {
-  return `$${new Intl.NumberFormat("en-US", { minimumFractionDigits: fractionDigits, maximumFractionDigits: fractionDigits }).format(v)}`;
+function fmtUsd(v: number, fractionDigits = 0) {
+  return `$${new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: fractionDigits,
+  }).format(v)}`;
+}
+function fmtSignedUsd(v: number) {
+  const sign = v > 0 ? "+" : v < 0 ? "-" : "";
+  return `${sign}$${new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Math.abs(v))}`;
+}
+function fmtDate(iso: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "2-digit" })
+    .format(new Date(iso));
+}
+function fmtDateShort(iso: string, locale: string) {
+  return new Intl.DateTimeFormat(locale, { month: "short", day: "2-digit" }).format(new Date(iso));
+}
+function fmtKg(v: number) {
+  return new Intl.NumberFormat("de-DE").format(v);
 }
 function fmtLb(v: number) {
-  return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(v);
+  return new Intl.NumberFormat("en-US").format(v);
+}
+
+function getPerRoundKg(p: NegotiationProduct, type: "bid" | "counter", round: number): number | undefined {
+  const key = `${type}R${round}UsdKg` as keyof NegotiationProduct;
+  return p[key] as number | undefined;
 }
 
 export default function SupplierNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { data } = useNegotiationDetail(id);
-  const [actionLog, setActionLog] = useState<string | null>(null);
+  const { t, i18n } = useTranslation();
+  const { data } = useNegotiation(id);
+  const locale = i18n.language || "en";
 
   if (!data) {
     return (
-      <div className="detail-empty">
-        <h1>{t("supplier.negotiationDetail.notFound")}</h1>
-        <button
-          type="button"
-          className="btn-tb is-primary"
-          onClick={() => navigate("/supplier/negotiations")}
-        >
-          {t("supplier.negotiationDetail.backToList")}
-        </button>
-      </div>
+      <>
+        <Link to="/supplier/negotiations" className="nd-back">
+          <ArrowLeftIcon size={16} />
+          {t("supplier.negotiations.detail.back")}
+        </Link>
+        <div className="detail-empty">
+          <p>{t("supplier.negotiations.empty")}</p>
+        </div>
+      </>
     );
   }
 
-  const gapAbs = data.yourCounter - data.buyerBid;
-  const gapPct = (gapAbs / data.buyerBid) * 100;
-  const markerPos = gapAbs > 0 ? 100 : 0;
+  const d: NegotiationDetail = data;
+  const gapAbs = d.yourCounterUsd - d.latestBidUsd;
+  const gapPct = (gapAbs / d.latestBidUsd) * 100;
+
+  const handleCounter = () => {
+    console.log("counter", id);
+    toast(t("supplier.negotiations.detail.toast.counterSent"));
+  };
+  const handleAccept = () => {
+    console.log("accept", id);
+    toast.success(t("supplier.negotiations.detail.toast.bidAccepted"));
+  };
+  const handleReject = () => {
+    console.log("reject", id);
+    toast(t("supplier.negotiations.detail.toast.bidRejected"));
+  };
+
+  const showActions = d.status === "action_required" || d.status === "final_round";
+
+  // Compute max round index present in products for the price table columns
+  const maxRoundShown = Math.min(3, Math.max(...d.rounds.map((r) => r.round), 1));
 
   return (
     <>
-      <button
-        type="button"
-        className="nego-back-link"
-        onClick={() => navigate("/supplier/negotiations")}
-      >
+      <Link to="/supplier/negotiations" className="nd-back">
         <ArrowLeftIcon size={16} />
-        {t("supplier.negotiationDetail.backToList")}
-      </button>
+        {t("supplier.negotiations.detail.back")}
+      </Link>
 
-      <div className="nego-detail-header">
-        <span className="product-icon" aria-hidden="true">
-          <MessageIcon size={22} />
-        </span>
-        <div className="head-info">
-          <h1>{data.parentTitle}</h1>
-          <span className="head-sub">
-            ID {data.id.replace("b-", "000")} · {data.oppWmsRef} · {data.buyerName}
-          </span>
+      {/* Header */}
+      <div className="nd-header">
+        <span className="nd-avatar">{d.buyerInitials}</span>
+        <div className="nd-h-text">
+          <h1>{d.parentTitle}</h1>
+          <div className="nd-sub">
+            ID {d.buyerInternalId} · {d.oppWmsRef} · {d.buyerName}
+          </div>
         </div>
-        <div className="head-actions">
-          {data.expiresIn && (
-            <span className="nego-timer" style={{ fontSize: "var(--fs-sm)" }}>
-              ⏱ {data.expiresIn}
-            </span>
-          )}
-          {data.status === "action_required" && (
+        <div className="nd-h-right">
+          {d.expiresIn && <span className="nd-timer">⏱ {d.expiresIn}</span>}
+          {d.status === "action_required" && (
             <span className="pill pill-action-required">
-              {t("supplier.negotiations.status.action_required")}
+              {t("supplier.negotiations.detail.banner.actionRequired")}
             </span>
           )}
         </div>
       </div>
 
-      <div className="nego-meta-chips">
-        <span className="nego-meta-chip">
-          <span className="lbl">{t("supplier.negotiationDetail.meta.incoterm")}</span>
-          <span className="val">{data.incoterm}</span>
+      {/* Meta chips */}
+      <div className="nd-meta-chips">
+        <span className="chip">
+          <span className="chip-label">{t("supplier.negotiations.detail.meta.incoterm")}:</span>
+          <span className="chip-value">{d.incoterm}</span>
         </span>
-        <span className="nego-meta-chip">
-          <span className="lbl">{t("supplier.negotiationDetail.meta.destination")}</span>
-          <span className="val">{data.destinationCountry}</span>
+        <span className="chip">
+          <span className="chip-label">{t("supplier.negotiations.detail.meta.destination")}:</span>
+          <span className="chip-value">{d.destinationCountry}</span>
         </span>
-        <span className="nego-meta-chip">
-          <span className="lbl">{t("supplier.negotiationDetail.meta.port")}</span>
-          <span className="val">{data.destinationPort}</span>
+        <span className="chip">
+          <span className="chip-label">{t("supplier.negotiations.detail.meta.port")}:</span>
+          <span className="chip-value">{d.destinationPort}</span>
         </span>
-        <span className="nego-meta-chip">
-          <span className="lbl">{t("supplier.negotiationDetail.meta.payment")}</span>
-          <span className="val">{data.paymentTerm}</span>
+        <span className="chip">
+          <span className="chip-label">{t("supplier.negotiations.detail.meta.payment")}:</span>
+          <span className="chip-value">{d.paymentTerms}</span>
         </span>
-        <span className="nego-meta-chip">
-          <span className="lbl">{t("supplier.negotiationDetail.meta.fcls")}</span>
-          <span className="val">{data.fcls}</span>
+        <span className="chip">
+          <span className="chip-label">{t("supplier.negotiations.detail.meta.fcls")}:</span>
+          <span className="chip-value">{d.fclCount}</span>
         </span>
-        <span className="nego-meta-chip">
-          <span className="lbl">{t("supplier.negotiationDetail.meta.weight")}</span>
-          <span className="val">{new Intl.NumberFormat("de-DE").format(data.weightKg)} kg</span>
+        <span className="chip">
+          <span className="chip-label">{t("supplier.negotiations.detail.meta.weight")}:</span>
+          <span className="chip-value">{fmtKg(d.totalWeightKg)} kg</span>
         </span>
       </div>
 
-      <div className="nego-detail-grid">
+      <div className="nd-grid">
+        {/* LEFT */}
         <div>
-          <div className="nego-card">
-            <div className="nego-round-head">
-              <span className="nego-round-pill">
-                {t("supplier.negotiationDetail.roundOf", { current: data.round, total: data.maxRounds })}
+          {/* Round / bid card */}
+          <div className="nd-card">
+            <div className="nd-card-head">
+              <span className="nd-round-badge">
+                {t("supplier.negotiations.detail.roundOf", { round: d.round, max: d.maxRounds })}
               </span>
-              <div style={{ textAlign: "right" }}>
-                <div className="updated">{t("supplier.negotiationDetail.updated", { date: data.updatedAt })}</div>
-                <div className="updated">{t("supplier.negotiationDetail.roundsCount", { current: data.round, total: data.maxRounds })}</div>
+              <span className="nd-updated">
+                {t("supplier.negotiations.detail.updated", { date: fmtDate(d.updatedAt, locale) })}
+              </span>
+            </div>
+
+            {d.status === "final_round" && (
+              <div className="nd-banner final-round">
+                {t("supplier.negotiations.detail.banner.finalRound")}
+              </div>
+            )}
+            {d.status === "accepted" && (
+              <div className="nd-banner success">
+                {t("supplier.negotiations.detail.banner.accepted", { price: fmtUsd(d.yourCounterUsd) })}
+              </div>
+            )}
+            {d.status === "rejected" && (
+              <div className="nd-banner danger">
+                {t("supplier.negotiations.detail.banner.rejected")}
+              </div>
+            )}
+            {d.status === "expired" && (
+              <div className="nd-banner muted">
+                {t("supplier.negotiations.detail.banner.expired")}
+              </div>
+            )}
+
+            <p className="nd-summary">
+              {t("supplier.negotiations.detail.summary", { buyer: d.buyerName, round: d.round })}
+            </p>
+
+            <div className="nd-stats">
+              <div className="nd-stat">
+                <span className="nd-stat-label">{t("supplier.negotiations.detail.stats.asking")}</span>
+                <span className="nd-stat-value">{fmtUsd(d.askingPriceUsd)}</span>
+              </div>
+              <div className="nd-stat">
+                <span className="nd-stat-label">{t("supplier.negotiations.detail.stats.buyerBid")}</span>
+                <span className="nd-stat-value">{fmtUsd(d.latestBidUsd)}</span>
+              </div>
+              <div className="nd-stat highlight">
+                <span className="nd-stat-label">{t("supplier.negotiations.detail.stats.yourCounter")}</span>
+                <span className="nd-stat-value">{fmtUsd(d.yourCounterUsd)}</span>
               </div>
             </div>
-            <div className="nego-round-body">
-              <p>{t("supplier.negotiationDetail.bidMessage", { buyer: data.buyerName, round: data.round })}</p>
 
-              <div className="nego-big-numbers">
-                <div className="nego-big-number">
-                  <span className="lbl">{t("supplier.negotiationDetail.asking")}</span>
-                  <span className="val">{fmtUsd(data.askingPrice)}</span>
+            {(d.status === "action_required" || d.status === "final_round" || d.status === "awaiting_buyer") && (
+              <>
+                <div className="nd-gap-row">
+                  <span>{t("supplier.negotiations.detail.gap")}</span>
+                  <span className={`nd-gap-value ${gapAbs < 0 ? "negative" : ""}`}>
+                    {fmtSignedUsd(gapAbs)} ({gapPct >= 0 ? "+" : ""}{gapPct.toFixed(1)}%)
+                  </span>
                 </div>
-                <div className="nego-big-number">
-                  <span className="lbl">{t("supplier.negotiationDetail.buyerBid")}</span>
-                  <span className="val">{fmtUsd(data.buyerBid)}</span>
+                <div className="nd-gap-bar" />
+                <div className="nd-gap-labels">
+                  <span>{t("supplier.negotiations.detail.gapLabel.bid")}</span>
+                  <span>{t("supplier.negotiations.detail.gapLabel.counter")}</span>
                 </div>
-                <div className="nego-big-number highlight">
-                  <span className="lbl">{t("supplier.negotiationDetail.yourCounter")}</span>
-                  <span className="val">{fmtUsd(data.yourCounter)}</span>
-                </div>
-              </div>
+              </>
+            )}
 
-              <div className="nego-gap">
-                <span>{t("supplier.negotiationDetail.gap")}</span>
-                <span className="val">
-                  {gapAbs >= 0 ? "+" : ""}{fmtUsd(gapAbs)} ({gapPct >= 0 ? "+" : ""}{gapPct.toFixed(1)}%)
-                </span>
-              </div>
-              <div className="nego-gap-bar">
-                <span className="lbl-l">{t("supplier.negotiationDetail.bid").toUpperCase()}</span>
-                <span className="lbl-r">{t("supplier.negotiationDetail.counter").toUpperCase()}</span>
-                <span className="marker" style={{ left: `${markerPos}%` }} />
-              </div>
-
-              <div className="nego-actions">
-                <button type="button" className="btn-counter" onClick={() => setActionLog("send-counter")}>
-                  ↔ {t("supplier.negotiationDetail.actions.sendCounter")}
+            {showActions ? (
+              <div className="nd-actions">
+                <button type="button" className="btn-counter" onClick={handleCounter}>
+                  <ArrowsLeftRightIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
+                  {t("supplier.negotiations.detail.actions.sendCounter")}
                 </button>
-                <button type="button" className="btn-accept" onClick={() => setActionLog("accept")}>
-                  <CheckIcon size={14} /> {t("supplier.negotiationDetail.actions.acceptBid")}
+                <button type="button" className="btn-accept" onClick={handleAccept}>
+                  <CheckIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
+                  {t("supplier.negotiations.detail.actions.acceptBid")}
                 </button>
-                <button type="button" className="btn-reject" onClick={() => setActionLog("reject")}>
-                  <XIcon size={14} /> {t("supplier.negotiationDetail.actions.reject")}
+                <button type="button" className="btn-reject" onClick={handleReject}>
+                  <XIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
+                  {t("supplier.negotiations.detail.actions.reject")}
                 </button>
               </div>
-
-              {actionLog && (
-                <p style={{ marginTop: 12, fontSize: "var(--fs-xs)", color: "var(--fg-muted)" }}>
-                  (Mock action: {actionLog})
-                </p>
-              )}
-            </div>
+            ) : d.status === "awaiting_buyer" ? (
+              <div className="nd-banner muted" style={{ marginTop: 16, marginBottom: 0 }}>
+                {t("supplier.negotiations.detail.banner.awaitingBuyer", { round: d.round })}
+              </div>
+            ) : null}
           </div>
 
-          <div className="nego-card nego-buyer-info">
-            <h3>{t("supplier.negotiationDetail.buyerInfo")}</h3>
-            <div className="row">
-              <span className="k">{t("supplier.negotiationDetail.buyer")}</span>
-              <span className="v">{data.buyerName}</span>
+          {/* Buyer info card */}
+          <div className="nd-card nd-buyer-info">
+            <div className="nd-card-head">
+              <strong>{t("supplier.negotiations.detail.buyer.title")}</strong>
             </div>
-            <div className="row">
-              <span className="k">{t("supplier.negotiationDetail.avgReply")}</span>
-              <span className="v">{data.avgReplyTime}</span>
-            </div>
-            <div className="row">
-              <span className="k">{t("supplier.negotiationDetail.fclsWeight")}</span>
-              <span className="v">{data.fcls} · {new Intl.NumberFormat("de-DE").format(data.weightKg)} kg</span>
-            </div>
-            <div className="row">
-              <span className="k">{t("supplier.negotiationDetail.valuePerFcl")}</span>
-              <span className="v">{fmtUsd(data.valuePerFcl)}</span>
-            </div>
-            <div className="row movement">
-              <span className="k">{t("supplier.negotiationDetail.movement")}</span>
-              <span className={`v ${data.movement < 0 ? "negative" : ""}`}>
-                {data.movement >= 0 ? "+" : ""}{fmtUsd(data.movement)}
-              </span>
-            </div>
+            <dl>
+              <dt>{t("supplier.negotiations.detail.buyer.title")}</dt>
+              <dd>{d.buyerName}</dd>
+              <dt>{t("supplier.negotiations.detail.buyer.avgReplyTime")}</dt>
+              <dd>{t("supplier.negotiations.detail.buyer.avgReplyDays", { days: d.avgReplyDays })}</dd>
+              <dt>{t("supplier.negotiations.detail.buyer.fclsWeight")}</dt>
+              <dd>{d.fclCount} · {fmtKg(d.totalWeightKg)} kg</dd>
+              <dt>{t("supplier.negotiations.detail.buyer.valuePerFcl")}</dt>
+              <dd>${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(d.valuePerFclUsd)}</dd>
+              <dt>{t("supplier.negotiations.detail.buyer.movement")}</dt>
+              <dd className={d.movementVsAskingUsd < 0 ? "negative" : ""}>
+                {fmtSignedUsd(d.movementVsAskingUsd)}
+              </dd>
+            </dl>
           </div>
         </div>
 
+        {/* RIGHT */}
         <div>
-          <div className="nego-card">
-            <h3>{t("supplier.negotiationDetail.timeline")}</h3>
-            <div className="nego-timeline">
-              {data.timeline.map((e, i) => (
-                <Fragment key={`${e.round}-${e.type}-${i}`}>
-                  <div className={`nego-timeline-card ${e.type} ${e.isCurrent ? "is-current" : ""}`.trim()}>
-                    <span className="lbl">
-                      {e.type === "bid" ? t("supplier.negotiationDetail.bid") : t("supplier.negotiationDetail.counter")} {e.round}
-                    </span>
-                    <span className="val">{fmtUsd(e.amount)}</span>
-                    {e.isCurrent && (
-                      <span className="badge-current">{t("supplier.negotiationDetail.current")}</span>
-                    )}
+          {/* Timeline */}
+          <div className="nd-card">
+            <div className="nd-card-head">
+              <strong>{t("supplier.negotiations.detail.timeline")}</strong>
+            </div>
+            <div className="nd-timeline">
+              {d.rounds.map((r, i) => {
+                const labelKey =
+                  r.type === "bid"
+                    ? "supplier.negotiations.detail.timelineLabel.bid"
+                    : r.isCurrent
+                      ? "supplier.negotiations.detail.timelineLabel.counterCurrent"
+                      : "supplier.negotiations.detail.timelineLabel.counter";
+                return (
+                  <div
+                    key={`${r.type}-${r.round}-${i}`}
+                    className={`nd-timeline-card ${r.isCurrent ? "current" : ""}`.trim()}
+                  >
+                    <span className="tl-label">{t(labelKey, { n: r.round })}</span>
+                    <span className="tl-value">{fmtUsd(r.totalUsd)}</span>
+                    <span className="tl-date">{fmtDateShort(r.date, locale)}</span>
                   </div>
-                  {i < data.timeline.length - 1 && <span className="arrow" aria-hidden="true">→</span>}
-                </Fragment>
-              ))}
+                );
+              })}
             </div>
           </div>
 
-          <div className="nego-card">
-            <h3>{t("supplier.negotiationDetail.priceDetails")}</h3>
+          {/* Price details */}
+          <div className="nd-card">
+            <div className="nd-card-head">
+              <strong>{t("supplier.negotiations.detail.priceDetails")}</strong>
+            </div>
             <div style={{ overflowX: "auto" }}>
-              <table className="nego-price-table">
+              <table className="nd-price-table">
                 <thead>
                   <tr>
-                    <th>{t("supplier.negotiationDetail.col.product")}</th>
-                    <th>{t("supplier.negotiationDetail.col.qtyLb")}</th>
-                    <th>{t("supplier.negotiationDetail.col.asking")}</th>
-                    {Array.from({ length: data.round }, (_, r) => (
-                      <Fragment key={`h-${r}`}>
-                        <th>{t("supplier.negotiationDetail.col.bidR", { n: r + 1 })}</th>
-                        <th>{t("supplier.negotiationDetail.col.counterR", { n: r + 1 })}</th>
+                    <th>{t("supplier.negotiations.detail.col.product")}</th>
+                    <th>{t("supplier.negotiations.detail.col.qtyLb")}</th>
+                    <th>{t("supplier.negotiations.detail.col.asking")}</th>
+                    {Array.from({ length: maxRoundShown }, (_, i) => (
+                      <Fragment key={`h-${i}`}>
+                        <th>{t("supplier.negotiations.detail.col.bidR", { n: i + 1 })}</th>
+                        <th>{t("supplier.negotiations.detail.col.counterR", { n: i + 1 })}</th>
                       </Fragment>
                     ))}
                   </tr>
                 </thead>
                 <tbody>
-                  {data.cuts.map((c) => (
-                    <tr key={c.product}>
+                  {d.products.map((p) => (
+                    <tr key={p.name}>
                       <td>
-                        <div className="product-cell">
-                          <span className="name">{c.product}</span>
-                          <span className="pack">{c.pack}</span>
-                        </div>
+                        <span className="product-name">{p.name}</span>
+                        <span className="product-pack">{p.pack}</span>
                       </td>
-                      <td className="num">{fmtLb(c.quantityLb)}</td>
-                      <td className="num">{fmtUsd(c.asking, 2)}</td>
-                      {Array.from({ length: data.round }, (_, r) => {
-                        const rd = c.perRound.find((p) => p.round === r + 1);
+                      <td>{fmtLb(p.qtyLb)}</td>
+                      <td>${p.askingUsdKg.toFixed(2)}</td>
+                      {Array.from({ length: maxRoundShown }, (_, i) => {
+                        const round = i + 1;
+                        const bidV = getPerRoundKg(p, "bid", round);
+                        const cntV = getPerRoundKg(p, "counter", round);
                         return (
-                          <Fragment key={`bc-${r}`}>
-                            <td className="num bid">{rd?.bid != null ? fmtUsd(rd.bid, 2) : "—"}</td>
-                            <td className="num counter">{rd?.counter != null ? fmtUsd(rd.counter, 2) : "—"}</td>
+                          <Fragment key={`v-${i}`}>
+                            <td>{bidV != null ? `$${bidV.toFixed(2)}` : "—"}</td>
+                            <td>{cntV != null ? `$${cntV.toFixed(2)}` : "—"}</td>
                           </Fragment>
                         );
                       })}
