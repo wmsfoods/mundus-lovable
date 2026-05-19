@@ -10,6 +10,7 @@
 @import "./styles/mundus-negotiations.css";
 @import "./styles/mundus-create-offer.css";
 @import "./styles/mundus-company.css";
+@import "./styles/mundus-requests.css";
 
 @tailwind base;
 @tailwind components;
