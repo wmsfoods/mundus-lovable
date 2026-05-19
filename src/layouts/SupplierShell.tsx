@@ -19,14 +19,36 @@ import {
   MoreVerticalIcon,
 } from "@/components/icons";
 import { BarChart3, LineChart } from "lucide-react";
+import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
+import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
 
 export default function SupplierShell() {
+  return (
+    <InsightsUpsellProvider>
+      <SupplierShellInner />
+    </InsightsUpsellProvider>
+  );
+}
+
+function SupplierShellInner() {
   const { user } = useAuth();
   const { company } = useCurrentCompany();
   const { t } = useTranslation();
   const isMobile = useIsMobileShell();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userName = user?.email?.split("@")[0] ?? "User";
+  const { openUpsell } = useInsightsUpsell();
+
+  const featureForPath = (to: string): UpsellFeature | null => {
+    if (to === "/supplier/insights/price-benchmark") return "price-benchmark";
+    if (to === "/supplier/insights/analytics") return "analytics";
+    return null;
+  };
+
+  const onProBadgeClick = (item: SidebarItem) => {
+    const f = featureForPath(item.to);
+    if (f) openUpsell(f);
+  };
 
   const SUPPLIER_NAV: SidebarItem[] = [
     { to: "/supplier", label: t("shell.nav.home"), icon: HomeIcon, end: true },
@@ -67,6 +89,7 @@ export default function SupplierShell() {
         rolePill={t("shell.supplier")}
         userName={userName}
         userSubtitle={company?.name}
+        onProBadgeClick={onProBadgeClick}
       />
       <Topbar />
       <main className="app-main">
@@ -81,6 +104,7 @@ export default function SupplierShell() {
           rolePill={t("shell.supplier")}
           userName={userName}
           userSubtitle={company?.name}
+          onProBadgeClick={onProBadgeClick}
         />
       )}
     </div>
