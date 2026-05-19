@@ -1,123 +1,107 @@
-# C8c — Mobile-first shell
+# Redesign de `/supplier/offers` (My Offers)
 
-Objetivo: transformar a app em "pocket version" no celular, mantendo o desktop exatamente como está hoje.
+Refazer a página para bater com o mockup anexado, mantendo dados mock atuais e adicionando alguns campos derivados.
 
-Breakpoint único: **1024px**.
-- `≥ 1024px` (desktop): layout atual (sidebar lateral + topbar + main).
-- `< 1024px` (mobile/tablet pequeno): topbar enxuta + conteúdo + bottom nav fixo + drawer lateral.
-
-## 1. Estrutura nova
+## 1. Estrutura visual (de cima pra baixo)
 
 ```text
-src/
-  layouts/
-    BuyerShell.tsx        (refatorado)
-    SupplierShell.tsx     (refatorado)
-  components/mundus/
-    Sidebar.tsx           (esconde abaixo de 1024px)
-    Topbar.tsx            (2 layouts: desktop completo / mobile enxuto)
-    BottomNav.tsx         (novo — só mobile)
-    MobileDrawer.tsx      (novo — só mobile, deslizante da esquerda)
-  styles/
-    mundus-shell.css      (novas regras responsivas)
-  hooks/
-    useIsMobile.ts        (reutiliza ou cria — matchMedia 1024px)
+[Tag] My Offers                                        [+ New offer]   ← header
+
+┌──────┬──────┬──────┬──────┬──────┬──────┐
+│  7   │  6   │  0   │  2   │ 805  │  26  │   ← KPI strip (6 cards)
+│Total │Avail.│In neg│Exp≤7d│Views │Props │
+└──────┴──────┴──────┴──────┴──────┴──────┘
+
+[All] Beef  Pork  Poultry  Ovine       Status ▾  Sort ▾  [▦|≣]   ← filtros
+Showing 7 of 7 offers
+
+┌─card─┐ ┌─card─┐ ┌─card─┐ ┌─card─┐ ┌─card─┐ ┌─card─┐   ← grid 6 col (xl)
+└──────┘ └──────┘ └──────┘ └──────┘ └──────┘ └──────┘
 ```
 
-## 2. Topbar mobile (~56px de altura)
+Header substitui o atual hero (`<section class="hero">`) + breadcrumbs + PageTitle por um header compacto: ícone Tag em pílula rosa + "My Offers" à esquerda, botão **+ New offer** brand rosa à direita. Sem breadcrumb (a referência não mostra).
 
-Conteúdo mínimo, da esquerda para a direita:
-- Logo Mundus (compacto, altura ~28px)
-- Espaço flexível
-- Seletor de idioma (compacto, só "EN/PT/ES" + ícone globo)
-- Sino de notificações
-- Avatar (abre menu com email + Sair)
+## 2. KPI strip — 6 cards
 
-Sem o seletor de unidade (`kg`) no mobile — vai para o drawer.
+Cada card: ícone redondo rosa-claro à esquerda, número grande + label cinza. Valores calculados em tempo real do array mock:
 
-## 3. Bottom Nav (5 ícones fixos)
+- **Total offers** = `MOCK_SUPPLIER_OFFERS.length`
+- **Available** = status `active`
+- **In negotiation** = status `negotiating`
+- **Expiring ≤ 7d** = cards com `daysLeft <= 7` (campo derivado novo)
+- **Total views** = soma de `views` derivado
+- **Total proposals** = soma de `proposals` derivado
 
-Fixo no rodapé, respeitando `env(safe-area-inset-bottom)` (iPhone com barra de gestos).
-Altura ~64px + safe area. Ícone (24px) + label curta (11px).
+## 3. Filtros e toolbar
 
-**Buyer:**
-| Ícone | Label | Rota |
-|---|---|---|
-| Home | Início | `/buyer` |
-| Tag | Ofertas | `/buyer/offers` |
-| **Plus** (destacado, círculo accent #B64769) | Criar | `/buyer/requests/new` |
-| Message | Negoc. | `/buyer/negotiations` |
-| Menu (3 linhas) | Mais | abre drawer |
+- Pílulas de categoria: **All / Beef / Pork / Poultry / Ovine**, segmented, ativo em preto (como mock). `Lamb` no mock vira `Ovine` na UI (label apenas).
+- Direita: dropdown **Status: All statuses** + **Sort by: Newest first** (reaproveita lógica atual) + toggle **grid/list** (visual apenas — grid já é o default; list fica como stub que só troca o ícone ativo, sem mudar layout neste commit).
+- Linha `Showing X of Y offers` fica abaixo das pílulas, à esquerda.
 
-**Supplier:**
-| Ícone | Label | Rota |
-|---|---|---|
-| Home | Início | `/supplier` |
-| Tag | Ofertas | `/supplier/offers` |
-| **Plus** (destacado) | Criar | `/supplier/offers/new` |
-| Message | Negoc. | `/supplier/negotiations` |
-| Menu | Mais | abre drawer |
+## 4. Card novo (compacto)
 
-Item ativo: ícone + label em accent (#B64769). Touch target ≥ 44px.
+Layout vertical, sem CTA inline rosa antigo. Conteúdo:
 
-## 4. Mobile Drawer (acionado pelo "Mais")
+```text
+[icon] Beef · Frozen   [4 CUTS]            • Available
+Beef Premium Cuts — Mixed Container
+[Ribeye][Striploin][Tenderloin][+1 more]
 
-Painel deslizante da esquerda (largura ~280px), com overlay escuro.
-- Cabeçalho: logo + nome do usuário + email + role pill.
-- Lista completa dos itens secundários da role (os que não cabem no bottom nav: Customers, Requests, Orders, Users, Sales, Offer Requests).
-- Rodapé: seletor de idioma (linha), seletor de unidade (linha), botão "Sair".
-- Fecha ao tocar overlay, ao trocar de rota, ou via X no topo.
-- Animação 200ms ease-out.
+DESTINATION         INCOTERM
+🇧🇲 Bermuda          CFR
+SHIPMENT            VOLUME
+End June 2026       25 MT
 
-## 5. Conteúdo (`main`) no mobile
+👁 184 views   💬 4 props   ⏱ 22d left
+─────────────────────────────────
+QTY 25 MT              [ Open offer → ]
+```
 
-- Padding lateral 16px (hoje é maior).
-- `padding-bottom` extra = altura do bottom nav + safe-area, para o último item não ficar coberto.
-- `padding-top` extra = altura da topbar fixa.
+Diferenças do card atual:
+- Pílula `4 CUTS` rosa mais forte no topo.
+- Bloco `DESTINATION/INCOTERM/SHIPMENT/VOLUME` em grid 2x2 com labels uppercase cinza.
+- **Volume em MT** (kg/1000), não em USD.
+- Nova linha de estatísticas (views / proposals / days-left).
+- Footer: `QTY X MT` à esquerda + botão **Open offer →** rosa à direita.
+- Sem preço em USD na lista (referência não mostra).
 
-## 6. Ajustes nas páginas internas (responsivos)
+## 5. Dados — campos derivados
 
-Verificar que continuam fluidas no mobile (não vou reescrever, só garantir):
-- **Buyer Home**: stats já em grid — passa para 2 colunas no mobile, hero stack vertical, action-row 1 coluna.
-- **Buyer Offers**: cards em 1 coluna no mobile (já parece estar próximo via `.card-row`).
-- **Buyer Offer Detail**: galeria empilha em cima, conteúdo em baixo (1 coluna). Botões "Negotiate" / "Place Order" sticky no rodapé acima do bottom nav.
-- **Login** e **Signup**: já tinham tratamento mobile — não mexo.
-- **Dashboard**: já é simples — só checar paddings.
+Não vou alterar o mock file. Vou computar no componente, a partir do `id`, valores estáveis pseudo-aleatórios:
 
-## 7. CSS — princípios
+- `views` = hash(id) mod 200 + 30
+- `proposals` = hash(id) mod 7
+- `daysLeft` = hash(id) mod 45 + 1
+- `volumeMt` = `totalKg / 1000`
 
-- Touch targets ≥ 44px de altura.
-- Espaçamentos consistentes via tokens (`--space-3`, `--space-4` etc., reaproveitar o que existir).
-- `position: fixed` na topbar e bottom nav com z-index ordenado: drawer overlay > drawer panel > topbar > bottom nav > conteúdo.
-- Usar `100dvh` ao invés de `100vh` onde aplicável (evita salto com a barra de URL do mobile).
-- `env(safe-area-inset-top)` na topbar, `env(safe-area-inset-bottom)` no bottom nav.
+Assim os números ficam consistentes entre renders e batem visualmente com o mockup.
 
-## 8. Acessibilidade e UX
+## 6. Arquivos
 
-- Sem overlay de scroll horizontal — `overflow-x: hidden` no `<body>` em mobile.
-- Bottom nav e drawer com `aria-label`s claros.
-- Foco visível em navegação por teclado (mesmo sendo mobile-first).
-- Active route do bottom nav e drawer alinhada com `NavLink` (mesma lógica da sidebar).
+- **Editar** `src/pages/supplier/Offers.tsx` — reescrever JSX + adicionar state `category`, `statusFilter`, `viewMode` e helpers de derivados.
+- **Editar** `src/styles/mundus-supplier-offers.css` — adicionar classes novas (`.so-header`, `.so-kpis`, `.so-kpi`, `.so-cat-pills`, `.so-toolbar-r`, `.so-view-toggle`, `.oc-stats`, `.oc-volume`, `.oc-open-btn`, `.cuts-badge-strong`) e ajustar `.oc`, `.oc-head`, `.oc-meta-grid`, `.oc-footer` para o layout compacto. Manter classes antigas que não conflitam.
+- **Editar** `src/i18n/locales/en.json`, `pt.json`, `es.json` — novas chaves: `supplier.offers.kpi.total / available / negotiating / expiring / views / proposals`, `supplier.offers.cat.all/beef/pork/poultry/ovine`, `supplier.offers.statusFilter`, `supplier.offers.openOffer`, `supplier.offers.card.volume`, `supplier.offers.card.qty`, `supplier.offers.card.views`, `supplier.offers.card.proposals`, `supplier.offers.card.daysLeft`.
 
-## 9. Validação
+## 7. Responsivo (mobile)
 
-Vou abrir no preview e checar:
-- Desktop ≥ 1024px: idêntico ao que está hoje (sidebar visível, sem bottom nav).
-- Tablet 768px: bottom nav ativo, drawer funciona.
-- iPhone 12 (390×844): topbar, conteúdo, bottom nav, todas safe-areas respeitadas.
-- Galaxy S20 (360×800): cabe tudo sem cortes.
-- Rotacionar Home → Offers → Offer Detail → "Mais" → drawer → item → fecha drawer e navega.
-- Trocar idioma do drawer reflete em todo o app.
+Mobile (≤640px):
+- KPI strip: scroll horizontal (snap por card) — mantém densidade sem quebrar.
+- Pílulas de categoria: scroll horizontal.
+- Cards: 1 coluna full-width.
+- Toolbar direita empilha abaixo da contagem.
 
-## 10. O que NÃO entra neste commit
+Breakpoints intermediários: 2 col (sm), 3 col (md), 4 col (lg), 6 col (xl ≥1280).
 
-- Notificações reais (sino continua decorativo).
-- Telas internas novas (Customers, Negotiations, Orders) — continuam apontando para rotas que mostram 404/ComingSoon como hoje; só ficam navegáveis pelo drawer.
-- Mudanças na sidebar do desktop.
+## 8. Fora do escopo
 
-## 11. Detalhes técnicos (curtos)
+- Funcionalidade real de filtros status/grid-list (apenas UI; grid mantém o comportamento atual, list é stub visual).
+- Mudanças em `mockSupplierOffers.ts`, detail page, ou qualquer outro arquivo fora dos 5 listados.
+- Auth, hooks, supabase.
 
-- `useIsMobile()`: hook com `window.matchMedia('(max-width: 1023px)')` + listener; SSR-safe default `false`.
-- `MobileDrawer`: portal em `document.body`, lock de scroll do body enquanto aberto, ESC fecha.
-- `BottomNav` e `Topbar` mobile renderizam condicionalmente via `useIsMobile()` para evitar render desnecessário no desktop.
-- Logo no mobile usa o mesmo `Logo` PNG mas com `size="sm"`.
+## Verificação
+
+1. `/supplier/offers` renderiza header novo + KPI strip + 7 cards (e 8º Chicken Wings).
+2. Trocar idioma PT/ES traduz tudo.
+3. Pílula de categoria filtra os cards visíveis e atualiza "Showing X of Y".
+4. Click no card abre detail (mantido).
+5. Mobile 375px: KPIs scrollam horizontal, cards 1 col.
