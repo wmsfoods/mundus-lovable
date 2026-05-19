@@ -666,6 +666,26 @@
       "createOffer": "Create Offer +",
       "loadMore": "Load more items",
       "empty": "You don't have any offers yet.",
+      "showingShort": "Showing {{shown}} of {{total}} offers",
+      "newOffer": "New offer",
+      "openOffer": "Open offer",
+      "statusFilter": "Status",
+      "allStatuses": "All statuses",
+      "kpi": {
+        "total": "Total offers",
+        "available": "Available",
+        "negotiating": "In negotiation",
+        "expiring": "Expiring ≤ 7d",
+        "views": "Total views",
+        "proposals": "Total proposals"
+      },
+      "cat": {
+        "all": "All",
+        "beef": "Beef",
+        "pork": "Pork",
+        "poultry": "Poultry",
+        "ovine": "Ovine"
+      },
       "sort": {
         "newest": "Newest first",
         "oldest": "Oldest first",
@@ -686,6 +706,10 @@
         "destination": "Destination",
         "incoterm": "Incoterm",
         "shipment": "Shipment",
+        "volume": "Volume",
+        "views": "views",
+        "proposals": "proposals",
+        "daysLeft": "{{n}}d left",
         "priceStartingFrom": "Price starting from",
         "perFcl": "per FCL",
         "viewDetails": "View details"

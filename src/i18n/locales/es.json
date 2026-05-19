@@ -666,6 +666,26 @@
       "createOffer": "Crear Oferta +",
       "loadMore": "Cargar más ítems",
       "empty": "Aún no tiene ofertas.",
+      "showingShort": "Mostrando {{shown}} de {{total}} ofertas",
+      "newOffer": "Nueva oferta",
+      "openOffer": "Abrir oferta",
+      "statusFilter": "Estado",
+      "allStatuses": "Todos los estados",
+      "kpi": {
+        "total": "Ofertas totales",
+        "available": "Disponibles",
+        "negotiating": "En negociación",
+        "expiring": "Vencen en ≤ 7d",
+        "views": "Vistas totales",
+        "proposals": "Propuestas totales"
+      },
+      "cat": {
+        "all": "Todas",
+        "beef": "Bovino",
+        "pork": "Cerdo",
+        "poultry": "Aves",
+        "ovine": "Ovino"
+      },
       "sort": {
         "newest": "Más recientes",
         "oldest": "Más antiguas",
@@ -686,6 +706,10 @@
         "destination": "Destino",
         "incoterm": "Incoterm",
         "shipment": "Embarque",
+        "volume": "Volumen",
+        "views": "vistas",
+        "proposals": "propuestas",
+        "daysLeft": "{{n}}d restantes",
         "priceStartingFrom": "Precio desde",
         "perFcl": "por FCL",
         "viewDetails": "Ver detalles"
