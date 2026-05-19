@@ -1758,9 +1758,22 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_negotiation: {
+        Args: { p_negotiation_id: string; p_user_id: string }
+        Returns: Json
+      }
+      current_user_company_id: { Args: never; Returns: string }
+      reject_negotiation: {
+        Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
+        Returns: Json
+      }
       submit_negotiation_round: {
         Args: { p_items: Json; p_negotiation_id: string; p_user_id: string }
         Returns: Json
+      }
+      user_can_access_negotiation: {
+        Args: { p_negotiation_id: string }
+        Returns: boolean
       }
     }
     Enums: {
