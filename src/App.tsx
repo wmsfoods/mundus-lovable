@@ -19,7 +19,6 @@ import BuyerOffers from "./pages/buyer/Offers.tsx";
 import BuyerOfferDetail from "./pages/buyer/OfferDetail.tsx";
 import BuyerCustomers from "./pages/buyer/Customers.tsx";
 import SupplierHome from "./pages/supplier/Home.tsx";
-import SupplierHome from "./pages/supplier/Home.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 
 const queryClient = new QueryClient();
