@@ -1,6 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { XIcon } from "@/components/icons";
+import { ProBadge } from "@/components/mundus/ProBadge";
 
 export type SidebarItem = {
   to: string;
@@ -9,6 +10,8 @@ export type SidebarItem = {
   accent?: boolean;
   badge?: number;
   end?: boolean;
+  groupLabel?: string;
+  proBadge?: boolean;
 };
 
 type SidebarProps = {
@@ -61,8 +64,11 @@ export function Sidebar({
           {items.map((item) => {
             const I = item.icon;
             return (
-              <NavLink
-                key={item.to}
+              <div key={item.to} className="sb-item-wrap">
+                {item.groupLabel && (
+                  <div className="sb-group-label">{item.groupLabel}</div>
+                )}
+                <NavLink
                 to={item.to}
                 end={item.end}
                 onClick={onClose}
@@ -72,8 +78,10 @@ export function Sidebar({
               >
                 <I size={18} />
                 <span className="sb-item-label">{item.label}</span>
+                {item.proBadge && <ProBadge />}
                 {item.badge ? <span className="sb-item-badge">{item.badge}</span> : null}
-              </NavLink>
+                </NavLink>
+              </div>
             );
           })}
         </nav>

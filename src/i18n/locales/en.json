@@ -1286,6 +1286,36 @@
       "team": {
         "title": "Team contacts"
       }
+    },
+    "insights": {
+      "groupLabel": "Insights",
+      "nav": {
+        "priceBenchmark": "Price benchmark",
+        "analytics": "Analytics"
+      },
+      "previewBanner": {
+        "title": "Preview · Premium add-on coming soon",
+        "body": "Numbers shown are illustrative. The live version will use your real offer data benchmarked against the marketplace."
+      },
+      "priceBenchmark": {
+        "eyebrow": "PREMIUM · MARKET INTELLIGENCE",
+        "title": "Price benchmark · {{cut}}",
+        "subtitle": "See how your offer compares against all {{count}} anonymized offers of the same cut + origin. Competitors are never named.",
+        "yourPrice": "Your price",
+        "hero": {
+          "before": "Your offer is priced",
+          "after": "market median",
+          "body": "Your ${{price}}/kg sits at percentile {{percentile}} of the {{total}} competing Brazilian beef tenderloin offers shipping to Middle East. Dropping to ${{suggested}}/kg would put you at median — where 73% of buyer views happen."
+        },
+        "distribution": {
+          "title": "Price distribution",
+          "subtitle": "{{count}} anonymized Brazilian beef tenderloin offers · last 7 days"
+        }
+      },
+      "analytics": {
+        "title": "Supplier analytics",
+        "subtitle": "Performance of your operation — last 30 days vs. previous period"
+      }
     }
   },
   "dealDetail": {

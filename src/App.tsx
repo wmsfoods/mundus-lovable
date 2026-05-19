@@ -45,6 +45,8 @@ import SupplierUsers from "./pages/supplier/SupplierUsers.tsx";
 import SupplierNegotiations from "./pages/supplier/SupplierNegotiations.tsx";
 import SupplierNegotiationDetail from "./pages/supplier/SupplierNegotiationDetail.tsx";
 import SupplierCompany from "./pages/supplier/SupplierCompany.tsx";
+import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
+import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 
 const queryClient = new QueryClient();
@@ -113,6 +115,8 @@ const App = () => (
               <Route path="company" element={<SupplierCompany />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
+              <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
+              <Route path="insights/analytics" element={<SupplierAnalytics />} />
             </Route>
             <Route path="/admin" element={<AdminShell />}>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
