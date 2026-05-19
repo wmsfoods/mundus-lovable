@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "./styles/mundus-forms.css";
+
 /* =========================================================================
    Mundus Trade — Design System Foundation
    Layer A: shadcn-compat HSL tokens (drives existing shadcn components)
