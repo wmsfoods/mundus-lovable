@@ -7,6 +7,7 @@ import {
   BellIcon,
 } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { Logo } from "@/components/Logo";
