@@ -344,6 +344,49 @@
         "q1": "How does price negotiation work?",
         "q2": "Is there a minimum amount for trading?"
       }
+    },
+    "users": {
+      "title": "Users",
+      "searchPlaceholder": "Search by name, email or job title...",
+      "profileFilter": "Profile",
+      "statusFilter": "Status",
+      "all": "All",
+      "allProfiles": "All profiles",
+      "inviteUser": "Invite User",
+      "userCount": "{{count}} of {{total}} users",
+      "empty": "No users match your filters.",
+      "col": {
+        "user": "User",
+        "email": "Email",
+        "profileType": "Profile type",
+        "created": "Created",
+        "lastLogin": "Last login",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "profile": {
+        "admin": "Admin",
+        "buyer": "Buyer",
+        "viewer": "Viewer"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "actions": {
+        "editMock": "Edit coming soon (mock)",
+        "deactivateMock": "User deactivated (mock)"
+      },
+      "invite": {
+        "title": "Invite to your buying team",
+        "subtitle": "Send an invitation email — they'll set their password on first login.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "user@example.com",
+        "profileLabel": "Profile type",
+        "send": "Send invitation",
+        "cancel": "Cancel",
+        "success": "Invitation sent (mock)"
+      }
     }
   },
   "supplier": {
@@ -396,7 +439,10 @@
           "yourCounter": "Your Counter"
         },
         "gap": "Bid vs Counter gap",
-        "gapLabel": { "bid": "BID", "counter": "COUNTER" },
+        "gapLabel": {
+          "bid": "BID",
+          "counter": "COUNTER"
+        },
         "actions": {
           "sendCounter": "Send counter-response",
           "acceptBid": "Accept bid",
@@ -563,7 +609,10 @@
       "createOffer": "Create Offer +",
       "createOfferComingSoon": "Create Offer flow — coming soon",
       "empty": "No sales yet.",
-      "sort": { "newest": "Newest first", "oldest": "Oldest first" },
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first"
+      },
       "col": {
         "dealId": "Deal ID",
         "status": "Status",
@@ -760,7 +809,13 @@
         "subtitle": "Drop a price list, paste a message, or dictate — we'll fill the form in seconds.",
         "minimize": "Minimize",
         "tryIt": "Try AI Quick-fill",
-        "tab": { "pdf": "PDF", "excel": "Excel", "image": "Image", "voice": "Voice", "text": "Text" },
+        "tab": {
+          "pdf": "PDF",
+          "excel": "Excel",
+          "image": "Image",
+          "voice": "Voice",
+          "text": "Text"
+        },
         "pasteLabel": "Paste from WhatsApp / email",
         "placeholder": "Paste an email, WhatsApp message, or just describe the offer:\n\n\"Hi, I have 2 FCLs of premium ribeye 7-9lb at $7.20/kg, asking floor $6.95. Also 1 FCL striploin 8-10lb at $6.80. Going to Hong Kong, CFR, payment 50% advance balance TT, June shipment.\"",
         "dropzone": {
@@ -784,8 +839,7 @@
       "missingCutsRoutes": "still missing: cuts, routes & freight",
       "confirmCancel": "Discard this offer? Any unsaved changes will be lost.",
       "draftSaved": "Draft saved (mock)",
-      "notReadyToPublish": "Complete the form before publishing"
-      ,
+      "notReadyToPublish": "Complete the form before publishing",
       "form": {
         "basicInfo": {
           "title": "Basic info",
@@ -890,8 +944,13 @@
         "afternoon": "Good afternoon, {{name}}",
         "evening": "Good evening, {{name}}"
       },
-      "cta": { "newOffer": "New offer", "viewMyOffers": "View my offers" },
-      "attention": { "heading": "Needs your attention" },
+      "cta": {
+        "newOffer": "New offer",
+        "viewMyOffers": "View my offers"
+      },
+      "attention": {
+        "heading": "Needs your attention"
+      },
       "attention.proposalsWaiting.title": "3 buyer proposals waiting for your reply",
       "attention.proposalsWaiting.subtitle": "Round 2 · Boneless Beef 90VL · Beef Mixed (9 cuts) · +1",
       "attention.proposalsWaiting.cta": "Review proposals",
