@@ -146,7 +146,8 @@
       "createOffer": "Criar Oferta",
       "sales": "Vendas",
       "offerRequests": "Solicitações de Oferta",
-      "myCompany": "Minha Empresa"
+      "myCompany": "Minha Empresa",
+      "messages": "Mensagens"
     },
     "bottom": {
       "create": "Criar",
@@ -581,6 +582,35 @@
           "accepted": "Contraproposta aceita (mock)",
           "rejected": "Negociação rejeitada (mock)"
         }
+      }
+    },
+    "chat": {
+      "title": "Mensagens",
+      "searchPlaceholder": "Buscar conversas…",
+      "inputPlaceholder": "Digite uma mensagem…",
+      "empty": "Sem conversas",
+      "sendBtn": "Enviar",
+      "attachBtn": "Anexar arquivo",
+      "viewOffer": "Ver oferta",
+      "viewNegotiation": "Ver negociação",
+      "viewRequest": "Ver solicitação",
+      "generalLabel": "Geral",
+      "linkedTo": {
+        "offer": "Oferta",
+        "negotiation": "Negociação",
+        "request": "Solicitação",
+        "general": "Geral"
+      },
+      "toast": {
+        "messageSent": "Mensagem enviada (mock)",
+        "attachFile": "Anexar arquivo (mock)"
+      },
+      "time": {
+        "justNow": "agora",
+        "minutesAgo": "{{n}}min",
+        "hoursAgo": "{{n}}h",
+        "daysAgo": "{{n}}d",
+        "weeksAgo": "{{n}}sem"
       }
     }
   },
