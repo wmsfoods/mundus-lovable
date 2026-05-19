@@ -19,6 +19,8 @@ import BuyerOffers from "./pages/buyer/Offers.tsx";
 import BuyerOfferDetail from "./pages/buyer/OfferDetail.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
+import SupplierRequests from "./pages/supplier/Requests.tsx";
+import SupplierRequestDetail from "./pages/supplier/RequestDetail.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 
 const queryClient = new QueryClient();
@@ -66,6 +68,8 @@ const App = () => (
               }
             >
               <Route index element={<SupplierHome />} />
+              <Route path="requests" element={<SupplierRequests />} />
+              <Route path="requests/:id" element={<SupplierRequestDetail />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>
