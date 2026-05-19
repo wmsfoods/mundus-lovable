@@ -255,6 +255,95 @@
         "4": "Premium",
         "default": "Não Classificado"
       }
+    },
+    "orders": {
+      "title": "Pedidos",
+      "heroTitle": "Acompanhe seus pedidos com facilidade e rapidez.",
+      "sortBy": "Ordenar por",
+      "sort": {
+        "recent": "Mais recentes",
+        "oldest": "Mais antigos",
+        "status": "Status"
+      },
+      "showing": "Exibindo {{from}} - {{to}} de {{total}} resultados",
+      "empty": "Você ainda não tem pedidos.",
+      "col": {
+        "orderId": "ID do pedido",
+        "status": "Status",
+        "supplier": "Fornecedor",
+        "orderDate": "Data do pedido",
+        "origin": "Origem"
+      },
+      "status": {
+        "awaiting_supplier_acceptance": "Aguardando aceitação do fornecedor",
+        "awaiting_pre_payment": "Aguardando pré-pagamento",
+        "pre_payment_confirmed": "Pré-pagamento confirmado",
+        "in_production": "Em produção",
+        "awaiting_balance_payment": "Aguardando pagamento do saldo",
+        "shipped": "Enviado",
+        "delivered": "Entregue",
+        "completed": "Concluído",
+        "rejected": "Rejeitado"
+      }
+    },
+    "orderDetail": {
+      "title": "Detalhes do Pedido",
+      "orderNumber": "Número do Pedido #{{n}}",
+      "specifications": "Especificações",
+      "tabs": {
+        "overview": "Visão Geral",
+        "documents": "Documentos",
+        "shipment": "Informações de Embarque"
+      },
+      "orderData": "Dados do pedido",
+      "fields": {
+        "paymentTerms": "Termos de Pagamento",
+        "advancePayment": "Pagamento adiantado",
+        "balancePayment": "Pagamento do saldo",
+        "incoterm": "Incoterm",
+        "originCountry": "País de origem",
+        "originPort": "Porto de origem",
+        "quantity": "Quantidade",
+        "oceanFreight": "Frete marítimo",
+        "fcls": "FCL(s)",
+        "destination": "Destino",
+        "origin": "Origem",
+        "shipment": "Embarque",
+        "supplier": "Fornecedor",
+        "buyer": "Comprador",
+        "valuePerFcl": "Valor por FCL",
+        "totalValue": "Valor total"
+      },
+      "cuts": {
+        "header": "Cortes",
+        "weight": "Peso",
+        "pricePerKg": "Preço por kg",
+        "totalPrice": "Preço total"
+      },
+      "ctas": {
+        "makePayment": "Realizar pagamento",
+        "cancelOrder": "Cancelar pedido",
+        "trackShipment": "Rastrear embarque",
+        "viewInvoice": "Ver fatura"
+      },
+      "messages": {
+        "awaiting_supplier_acceptance": "Estamos aguardando o fornecedor aceitar seu pedido.",
+        "awaiting_pre_payment": "Seu pedido foi aceito. Por favor, realize o pré-pagamento para prosseguir.",
+        "pre_payment_confirmed": "Pré-pagamento confirmado. O fornecedor está preparando seu pedido.",
+        "in_production": "Seu pedido está em produção.",
+        "awaiting_balance_payment": "Produção concluída. Por favor, realize o pagamento do saldo para envio.",
+        "shipped": "Seu pedido foi enviado.",
+        "delivered": "Seu pedido foi entregue.",
+        "completed": "Pedido concluído com sucesso.",
+        "rejected": "Este pedido foi rejeitado."
+      },
+      "documentsEmpty": "Os documentos aparecerão aqui conforme o pedido avança.",
+      "shipmentWarning": "As informações de entrega são atualizadas conforme o pedido avança. Você será notificado sobre quaisquer alterações.",
+      "notFound": "Pedido não encontrado.",
+      "faq": {
+        "q1": "Como funciona a negociação de preço?",
+        "q2": "Existe uma quantidade mínima para negociação?"
+      }
     }
   },
   "supplier": {
