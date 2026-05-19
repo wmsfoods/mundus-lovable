@@ -19,6 +19,7 @@ import BuyerOffers from "./pages/buyer/Offers.tsx";
 import BuyerOfferDetail from "./pages/buyer/OfferDetail.tsx";
 import BuyerOrders from "./pages/buyer/Orders.tsx";
 import BuyerOrderDetail from "./pages/buyer/OrderDetail.tsx";
+import BuyerUsers from "./pages/buyer/BuyerUsers.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
 import SupplierOffers from "./pages/supplier/Offers.tsx";
@@ -70,6 +71,7 @@ const App = () => (
               <Route path="offers/:id" element={<BuyerOfferDetail />} />
               <Route path="orders" element={<BuyerOrders />} />
               <Route path="orders/:id" element={<BuyerOrderDetail />} />
+              <Route path="users" element={<BuyerUsers />} />
             </Route>
             <Route
               path="/supplier"
