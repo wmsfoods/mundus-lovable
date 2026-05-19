@@ -1,9 +1,12 @@
 import { useState } from "react";
-import { Sparkles, X } from "lucide-react";
+import { Sparkles, X, ArrowUpRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
+import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
 
-export function PreviewBanner() {
+export function PreviewBanner({ feature }: { feature?: UpsellFeature }) {
   const { t } = useTranslation();
+  const { openUpsell } = useInsightsUpsell();
   const [open, setOpen] = useState(true);
   if (!open) return null;
   return (
@@ -15,6 +18,16 @@ export function PreviewBanner() {
       <span className="ins-preview-banner__body">
         {t("supplier.insights.previewBanner.body")}
       </span>
+      {feature && (
+        <button
+          type="button"
+          className="ins-preview-banner__cta"
+          onClick={() => openUpsell(feature)}
+        >
+          {t("supplier.insights.upsell.learnMore")}
+          <ArrowUpRight size={13} />
+        </button>
+      )}
       <button
         type="button"
         className="ins-preview-banner__close"
