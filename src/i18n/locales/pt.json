@@ -1513,7 +1513,7 @@
   },
   "admin": {
     "shell": {
-      "brand": "Mundus Admin",
+      "brand": "\n",
       "search": "Buscar empresas, negócios, usuários…",
       "user": {
         "name": "Fernando N.",
