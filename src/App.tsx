@@ -28,6 +28,7 @@ import SupplierRequestDetail from "./pages/supplier/RequestDetail.tsx";
 import SupplierSales from "./pages/supplier/Sales.tsx";
 import SupplierSaleDetail from "./pages/supplier/SaleDetail.tsx";
 import SupplierUsers from "./pages/supplier/SupplierUsers.tsx";
+import SupplierNegotiations from "./pages/supplier/SupplierNegotiations.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 
 const queryClient = new QueryClient();
@@ -84,6 +85,7 @@ const App = () => (
               <Route path="sales" element={<SupplierSales />} />
               <Route path="sales/:id" element={<SupplierSaleDetail />} />
               <Route path="users" element={<SupplierUsers />} />
+              <Route path="negotiations" element={<SupplierNegotiations />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -347,6 +347,45 @@
     }
   },
   "supplier": {
+    "negotiations": {
+      "title": "Negotiations",
+      "searchPlaceholder": "Search ID / buyer / product / destination...",
+      "sort": {
+        "recent": "Sort: Recently updated",
+        "oldest": "Sort: Oldest first",
+        "priority": "Sort: Status priority"
+      },
+      "counts": "{{offers}} offers · {{bids}} bids",
+      "chips": {
+        "all": "All",
+        "action_required": "Action required",
+        "awaiting_buyer": "Awaiting buyer",
+        "final_round": "Final round",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "expired": "Expired"
+      },
+      "col": {
+        "offerBuyer": "Offer / Buyer",
+        "round": "Round",
+        "latestBid": "Latest bid",
+        "yourCounter": "Your counter",
+        "destination": "Destination",
+        "status": "Status",
+        "updated": "Updated"
+      },
+      "status": {
+        "action_required": "ACTION REQUIRED",
+        "awaiting_buyer": "AWAITING BUYER",
+        "final_round": "FINAL ROUND",
+        "accepted": "DEAL CLOSED",
+        "rejected": "REJECTED",
+        "expired": "EXPIRED"
+      },
+      "bidsCount": "{{n}} BIDS",
+      "needAction": "{{n}} need action",
+      "empty": "No negotiations match the current filters."
+    },
     "users": {
       "title": "Users",
       "searchPlaceholder": "Search by name, email or job title...",

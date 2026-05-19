@@ -347,6 +347,45 @@
     }
   },
   "supplier": {
+    "negotiations": {
+      "title": "Negociaciones",
+      "searchPlaceholder": "Buscar ID / comprador / producto / destino...",
+      "sort": {
+        "recent": "Ordenar: Más recientes",
+        "oldest": "Ordenar: Más antiguos",
+        "priority": "Ordenar: Prioridad de estado"
+      },
+      "counts": "{{offers}} ofertas · {{bids}} pujas",
+      "chips": {
+        "all": "Todas",
+        "action_required": "Acción requerida",
+        "awaiting_buyer": "Esperando comprador",
+        "final_round": "Ronda final",
+        "accepted": "Aceptadas",
+        "rejected": "Rechazadas",
+        "expired": "Expiradas"
+      },
+      "col": {
+        "offerBuyer": "Oferta / Comprador",
+        "round": "Ronda",
+        "latestBid": "Última puja",
+        "yourCounter": "Tu contraoferta",
+        "destination": "Destino",
+        "status": "Estado",
+        "updated": "Actualizado"
+      },
+      "status": {
+        "action_required": "ACCIÓN REQUERIDA",
+        "awaiting_buyer": "ESPERANDO COMPRADOR",
+        "final_round": "RONDA FINAL",
+        "accepted": "TRATO CERRADO",
+        "rejected": "RECHAZADA",
+        "expired": "EXPIRADA"
+      },
+      "bidsCount": "{{n}} PUJAS",
+      "needAction": "{{n}} requieren acción",
+      "empty": "Ninguna negociación coincide con los filtros actuales."
+    },
     "users": {
       "title": "Usuarios",
       "searchPlaceholder": "Buscar por nombre, email o cargo...",
