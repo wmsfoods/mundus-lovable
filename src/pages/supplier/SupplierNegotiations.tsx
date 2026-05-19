@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MessageIcon, SearchIcon, ChevronRightIcon } from "@/components/icons";
@@ -198,9 +198,8 @@ export default function SupplierNegotiations() {
                   .reduce((a, b) => Math.max(a, b), 0);
 
                 return (
-                  <>
+                  <Fragment key={g.id}>
                     <tr
-                      key={`p-${g.id}`}
                       className={`nego-row-parent ${isOpen ? "is-open" : ""}`.trim()}
                       onClick={() => toggle(g.id)}
                     >
@@ -301,7 +300,7 @@ export default function SupplierNegotiations() {
                         </td>
                       </tr>
                     ))}
-                  </>
+                  </Fragment>
                 );
               })}
             </tbody>
