@@ -1535,6 +1535,107 @@
         "issueDocs": "Docs incompletos",
         "issueOnboarding": "Onboarding ✓"
       }
+    },
+    "crm": {
+      "title": "Prospects",
+      "subtitle": "{{active}} activos · {{total}} en total",
+      "addProspect": "Agregar prospect",
+      "importCsv": "Importar CSV",
+      "viewTable": "Tabla",
+      "viewKanban": "Kanban",
+      "filters": {
+        "search": "Buscar por empresa, contacto, país…",
+        "allStages": "Todas las etapas",
+        "allRoles": "Todos",
+        "buyers": "Compradores",
+        "suppliers": "Proveedores",
+        "allOwners": "Todos los responsables"
+      },
+      "stages": {
+        "new": "Nuevo",
+        "researching": "Investigando",
+        "contacted": "Contactado",
+        "qualified": "Calificado",
+        "onboarding": "Onboarding",
+        "onboarded": "Onboardeado",
+        "lost": "Perdido"
+      },
+      "roles": {
+        "potential_buyer": "Comprador",
+        "potential_supplier": "Proveedor"
+      },
+      "sources": {
+        "linkedin": "LinkedIn",
+        "trade_show": "Feria",
+        "referral": "Referido",
+        "web_scrape": "Web scrape",
+        "apollo": "Apollo",
+        "manual": "Manual",
+        "inbound": "Inbound"
+      },
+      "table": {
+        "company": "Empresa",
+        "role": "Rol",
+        "stage": "Etapa",
+        "source": "Origen",
+        "country": "País",
+        "estGmv": "GMV est.",
+        "owner": "Responsable",
+        "lastActivity": "Última actividad"
+      },
+      "empty": "Ningún prospect coincide con estos filtros.",
+      "kanban": {
+        "funnelConversion": "Conversión del embudo",
+        "ownerLeaderboard": "Ranking de responsables",
+        "sources": "Orígenes",
+        "qualifiedCount": "{{n}} calificados",
+        "onboardedCount": "{{n}} onboardeados"
+      },
+      "detail": {
+        "back": "Prospects",
+        "invite": "Invitar a la plataforma",
+        "inviteDisabled": "Mueve a Calificado para habilitar la invitación",
+        "addNote": "Agregar nota",
+        "edit": "Editar",
+        "created": "Creado",
+        "lastContact": "Último contacto",
+        "activity": "Actividad",
+        "noActivity": "Sin actividad aún",
+        "contact": "Contacto",
+        "linkedinSearch": "Buscar en LinkedIn →",
+        "companyInfo": "Información de la empresa",
+        "owner": "Responsable",
+        "reassign": "Reasignar"
+      },
+      "add": {
+        "title": "Agregar prospect",
+        "companyName": "Nombre de la empresa",
+        "country": "País",
+        "role": "Rol",
+        "source": "Origen",
+        "contactName": "Nombre del contacto",
+        "contactEmail": "Email del contacto",
+        "contactPhone": "Teléfono del contacto",
+        "estGmv": "GMV anual estimado (USD)",
+        "owner": "Responsable",
+        "notes": "Notas iniciales",
+        "submit": "Agregar prospect",
+        "cancel": "Cancelar"
+      },
+      "import": {
+        "title": "Importar CSV",
+        "dropzone": "Arrastra el CSV aquí o haz clic para subir",
+        "template": "Descargar plantilla",
+        "preview": "Vista previa · primeras {{n}} de {{total}} filas",
+        "submit": "Importar {{n}} prospects",
+        "invalidFormat": "Formato CSV inválido"
+      },
+      "toast": {
+        "added": "{{company}} agregado a prospects",
+        "imported": "{{n}} prospects importados",
+        "stageChanged": "{{company}} movido a {{stage}}",
+        "invited": "Invitación enviada a {{email}} — prospect movido a Onboarding"
+      }
     }
   }
 }
