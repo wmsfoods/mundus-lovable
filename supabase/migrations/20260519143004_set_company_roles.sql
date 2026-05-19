@@ -1,0 +1,1 @@
+UPDATE public.companies SET is_buyer = true, is_supplier = true WHERE id = '00000000-0000-beef-0000-000000000001';
