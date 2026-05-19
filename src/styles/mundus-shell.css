@@ -240,6 +240,35 @@
   justify-content: center;
 }
 
+/* --- Posting-as indicator (left side of topbar) ----------------- */
+.tb-posting-as {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--fs-sm);
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+}
+.tb-posting-as .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #22c55e;
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
+  flex-shrink: 0;
+}
+.tb-posting-label {
+  color: var(--fg-muted);
+  font-weight: var(--weight-medium);
+}
+.tb-posting-name {
+  color: var(--fg);
+  font-weight: var(--weight-semibold);
+}
+.tb-spacer { flex: 1; }
+
+
 /* --- Main content area ---------------------------------------------- */
 .app-main {
   grid-row: 2;
