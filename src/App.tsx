@@ -52,6 +52,7 @@ const App = () => (
             >
               <Route index element={<BuyerHome />} />
               <Route path="offers" element={<BuyerOffers />} />
+              <Route path="offers/:id" element={<BuyerOfferDetail />} />
             </Route>
             <Route
               path="/supplier"
