@@ -310,3 +310,191 @@
   .mini-select { height: 36px; font-size: var(--fs-xs); }
   .btn-tb { height: 36px; }
 }
+
+/* =========================================================================
+   C18 — Supplier Offer Requests additions
+   ========================================================================= */
+
+.pill-sent {
+  background: #fff;
+  color: #15803d;
+  border: 1px solid #15803d;
+}
+
+.row-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+.row-actions .btn-tb { height: 32px; padding: 0 12px; font-size: var(--fs-xs); }
+
+.row-kebab-wrap { position: relative; }
+.row-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 19;
+  background: transparent;
+}
+.row-menu {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 4px);
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px -8px rgba(0,0,0,0.15);
+  z-index: 20;
+  min-width: 180px;
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+}
+.row-menu button {
+  background: transparent;
+  border: none;
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  color: var(--fg);
+  cursor: pointer;
+  font-family: inherit;
+}
+.row-menu button:hover { background: var(--g100); color: var(--p800); }
+
+.table-footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 16px;
+}
+.pager {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.pager-btn {
+  min-width: 32px;
+  height: 32px;
+  padding: 0 8px;
+  border: 1px solid hsl(var(--border));
+  background: #fff;
+  color: var(--fg);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: inherit;
+}
+.pager-btn:hover:not(:disabled):not(.is-active) { background: var(--g100); }
+.pager-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.pager-btn.is-active {
+  background: var(--p800);
+  border-color: var(--p800);
+  color: #fff;
+}
+.pager-arrow { color: var(--fg-muted); }
+.pager-gap {
+  padding: 0 4px;
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+}
+
+.rd-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+.rd-title {
+  font-size: 22px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin: 0 0 4px;
+}
+.rd-subtitle {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+  margin: 0;
+}
+.rd-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 24px;
+}
+.rd-meta-label {
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.rd-section { margin-bottom: 32px; }
+.rd-section-title {
+  font-size: var(--fs-base);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin: 0 0 12px;
+}
+.rd-card {
+  background: var(--g050);
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 1px solid hsl(var(--border));
+}
+.rd-card-title {
+  font-size: var(--fs-base);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  margin: 0 0 16px;
+}
+.rd-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+.rd-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.rd-field-label {
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  margin-bottom: 4px;
+}
+.rd-field-value {
+  font-size: var(--fs-sm);
+  color: var(--fg);
+  font-weight: var(--weight-medium);
+}
+.rd-additional {
+  background: var(--g050);
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 16px;
+  font-size: var(--fs-sm);
+  color: var(--fg);
+}
+.rd-cta-row {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+.rd-cta-row .btn-tb { height: 40px; padding: 0 18px; }
+.detail-empty { text-align: center; padding: 64px 24px; }
+.detail-empty h1 { font-size: 22px; font-weight: var(--weight-semibold); margin: 0 0 8px; }
+.detail-empty p { font-size: var(--fs-sm); color: var(--fg-muted); margin: 0 0 16px; }
+
+@media (max-width: 900px) {
+  .rd-grid, .rd-grid-3 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 480px) {
+  .rd-grid, .rd-grid-3 { grid-template-columns: 1fr; }
+  .rd-cta-row .btn-tb { flex: 1; }
+  .rd-title { font-size: 20px; }
+}
