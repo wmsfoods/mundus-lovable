@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import {
   Send, MessageSquarePlus, Pencil, Mail, Phone,
   StickyNote, ArrowRight, Settings as SettingsIcon, PhoneCall,
+  type LucideIcon,
 } from "lucide-react";
 import {
   useProspect, updateProspectStage, addProspectActivity,
@@ -13,7 +14,7 @@ import {
 const fmtGmv = (v?: number) =>
   v == null ? "—" : v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}k`;
 
-const ICONS: Record<ProspectActivity["type"], React.ComponentType<{ size?: number }>> = {
+const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
   note: StickyNote,
   email: Mail,
   call: PhoneCall,
