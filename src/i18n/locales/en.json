@@ -145,6 +145,10 @@
       "createOffer": "Create Offer",
       "sales": "Sales",
       "offerRequests": "Offer Requests"
+    },
+    "bottom": {
+      "create": "Create",
+      "negotiations": "Chat"
     }
   },
   "dashboard": {
