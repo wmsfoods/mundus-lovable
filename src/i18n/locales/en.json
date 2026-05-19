@@ -388,6 +388,109 @@
         "cancel": "Cancel",
         "success": "Invitation sent (mock)"
       }
+    },
+    "negotiations": {
+      "title": "Negotiations",
+      "searchPlaceholder": "Search ID / supplier / product / origin...",
+      "sort": {
+        "recent": "Sort: Recently updated",
+        "oldest": "Sort: Oldest first",
+        "priority": "Sort: Status priority"
+      },
+      "counts": "{{offers}} offers · {{bids}} bids",
+      "chips": {
+        "all": "All",
+        "action_required": "Action required",
+        "awaiting_supplier": "Awaiting supplier",
+        "final_round": "Final round",
+        "accepted": "Accepted",
+        "rejected": "Rejected",
+        "expired": "Expired"
+      },
+      "col": {
+        "offerSupplier": "Offer / Supplier",
+        "round": "Round",
+        "yourBid": "Your bid",
+        "supplierCounter": "Supplier counter",
+        "origin": "Origin",
+        "status": "Status",
+        "updated": "Updated"
+      },
+      "status": {
+        "action_required": "ACTION REQUIRED",
+        "awaiting_supplier": "AWAITING SUPPLIER",
+        "final_round": "FINAL ROUND",
+        "accepted": "DEAL CLOSED",
+        "rejected": "REJECTED",
+        "expired": "EXPIRED"
+      },
+      "bidsCount": "{{n}} BIDS",
+      "needAction": "{{n}} need action",
+      "empty": "No negotiations match the current filters.",
+      "detail": {
+        "back": "Back to negotiations",
+        "roundOf": "Round {{round}} of {{max}}",
+        "updated": "Updated {{date}}",
+        "summary": "{{supplier}} responded in round {{round}}. Accept, counter back, or reject.",
+        "stats": {
+          "asking": "Asking price",
+          "yourBid": "Your bid",
+          "supplierCounter": "Supplier counter"
+        },
+        "gap": "Bid vs Counter gap",
+        "gapLabel": {
+          "bid": "BID",
+          "counter": "COUNTER"
+        },
+        "actions": {
+          "acceptCounter": "Accept supplier counter",
+          "counterBack": "Counter back",
+          "reject": "Reject"
+        },
+        "supplier": {
+          "title": "Supplier",
+          "avgReplyTime": "Avg reply time",
+          "avgReplyDays": "{{days}}d",
+          "fclsWeight": "FCLs · Weight",
+          "valuePerFcl": "Value per FCL",
+          "movement": "Movement (asking → bid)"
+        },
+        "timeline": "Round timeline",
+        "timelineLabel": {
+          "bid": "Your bid {{n}}",
+          "counter": "Supplier counter {{n}}",
+          "counterCurrent": "Supplier counter {{n}} · current"
+        },
+        "priceDetails": "Price details",
+        "col": {
+          "product": "Product",
+          "qtyLb": "Qty (lb)",
+          "asking": "Asking",
+          "bidR": "Bid R{{n}}",
+          "counterR": "Counter R{{n}}"
+        },
+        "meta": {
+          "incoterm": "Incoterm",
+          "origin": "Origin",
+          "port": "Port",
+          "payment": "Payment",
+          "fcls": "FCLs",
+          "weight": "Weight"
+        },
+        "banner": {
+          "awaitingSupplier": "Waiting for supplier's response in round {{round}}",
+          "finalRound": "FINAL ROUND — this is the last round.",
+          "accepted": "Deal closed at {{price}}",
+          "rejected": "Negotiation rejected.",
+          "expired": "Negotiation expired without agreement.",
+          "actionRequired": "Action required"
+        },
+        "toast": {
+          "counter": "Counter sent (mock)",
+          "accepted": "Supplier counter accepted (mock)",
+          "rejected": "Negotiation rejected (mock)"
+        }
+      }
     }
   },
   "supplier": {

@@ -388,6 +388,109 @@
         "cancel": "Cancelar",
         "success": "Convite enviado (mock)"
       }
+    },
+    "negotiations": {
+      "title": "Negociações",
+      "searchPlaceholder": "Buscar ID / fornecedor / produto / origem...",
+      "sort": {
+        "recent": "Ordenar: Atualizados recentemente",
+        "oldest": "Ordenar: Mais antigos primeiro",
+        "priority": "Ordenar: Prioridade de status"
+      },
+      "counts": "{{offers}} ofertas · {{bids}} propostas",
+      "chips": {
+        "all": "Todos",
+        "action_required": "Ação necessária",
+        "awaiting_supplier": "Aguardando fornecedor",
+        "final_round": "Rodada final",
+        "accepted": "Aceitos",
+        "rejected": "Rejeitados",
+        "expired": "Expirados"
+      },
+      "col": {
+        "offerSupplier": "Oferta / Fornecedor",
+        "round": "Rodada",
+        "yourBid": "Sua oferta",
+        "supplierCounter": "Contraproposta do fornecedor",
+        "origin": "Origem",
+        "status": "Status",
+        "updated": "Atualizado"
+      },
+      "status": {
+        "action_required": "AÇÃO NECESSÁRIA",
+        "awaiting_supplier": "AGUARDANDO FORNECEDOR",
+        "final_round": "RODADA FINAL",
+        "accepted": "NEGÓCIO FECHADO",
+        "rejected": "REJEITADO",
+        "expired": "EXPIRADO"
+      },
+      "bidsCount": "{{n}} PROPOSTAS",
+      "needAction": "{{n}} precisam de ação",
+      "empty": "Nenhuma negociação corresponde aos filtros.",
+      "detail": {
+        "back": "Voltar para negociações",
+        "roundOf": "Rodada {{round}} de {{max}}",
+        "updated": "Atualizado {{date}}",
+        "summary": "{{supplier}} respondeu na rodada {{round}}. Aceite, contraproponha ou rejeite.",
+        "stats": {
+          "asking": "Preço pedido",
+          "yourBid": "Sua oferta",
+          "supplierCounter": "Contraproposta"
+        },
+        "gap": "Diferença oferta vs contraproposta",
+        "gapLabel": {
+          "bid": "OFERTA",
+          "counter": "CONTRA"
+        },
+        "actions": {
+          "acceptCounter": "Aceitar contraproposta",
+          "counterBack": "Contrapropor",
+          "reject": "Rejeitar"
+        },
+        "supplier": {
+          "title": "Fornecedor",
+          "avgReplyTime": "Tempo médio de resposta",
+          "avgReplyDays": "{{days}}d",
+          "fclsWeight": "FCLs · Peso",
+          "valuePerFcl": "Valor por FCL",
+          "movement": "Movimento (pedido → oferta)"
+        },
+        "timeline": "Linha do tempo",
+        "timelineLabel": {
+          "bid": "Sua oferta {{n}}",
+          "counter": "Contraproposta {{n}}",
+          "counterCurrent": "Contraproposta {{n}} · atual"
+        },
+        "priceDetails": "Detalhes de preço",
+        "col": {
+          "product": "Produto",
+          "qtyLb": "Qtd (lb)",
+          "asking": "Pedido",
+          "bidR": "Oferta R{{n}}",
+          "counterR": "Contra R{{n}}"
+        },
+        "meta": {
+          "incoterm": "Incoterm",
+          "origin": "Origem",
+          "port": "Porto",
+          "payment": "Pagamento",
+          "fcls": "FCLs",
+          "weight": "Peso"
+        },
+        "banner": {
+          "awaitingSupplier": "Aguardando resposta do fornecedor na rodada {{round}}",
+          "finalRound": "RODADA FINAL — esta é a última rodada.",
+          "accepted": "Negócio fechado em {{price}}",
+          "rejected": "Negociação rejeitada.",
+          "expired": "Negociação expirou sem acordo.",
+          "actionRequired": "Ação necessária"
+        },
+        "toast": {
+          "counter": "Contraproposta enviada (mock)",
+          "accepted": "Contraproposta aceita (mock)",
+          "rejected": "Negociação rejeitada (mock)"
+        }
+      }
     }
   },
   "supplier": {
