@@ -386,6 +386,49 @@
       "needAction": "{{n}} need action",
       "empty": "No negotiations match the current filters."
     },
+    "negotiationDetail": {
+      "backToList": "Back to negotiations",
+      "notFound": "Negotiation not found.",
+      "roundOf": "Round {{current}} of {{total}}",
+      "roundsCount": "{{current}} of {{total}} rounds",
+      "updated": "Updated {{date}}",
+      "bidMessage": "{{buyer}} placed a bid in round {{round}}. Reply with a counter, accept, or reject.",
+      "asking": "Asking",
+      "buyerBid": "Buyer bid",
+      "yourCounter": "Your counter",
+      "gap": "Bid vs Counter gap",
+      "bid": "Bid",
+      "counter": "Counter",
+      "current": "Current",
+      "actions": {
+        "sendCounter": "Send counter-response",
+        "acceptBid": "Accept bid",
+        "reject": "Reject"
+      },
+      "buyerInfo": "Buyer info",
+      "buyer": "Buyer",
+      "avgReply": "Avg reply time",
+      "fclsWeight": "FCLs · Weight",
+      "valuePerFcl": "Value per FCL",
+      "movement": "Movement (asking → bid)",
+      "timeline": "Round timeline",
+      "priceDetails": "Price details",
+      "meta": {
+        "incoterm": "Incoterm",
+        "destination": "Destination",
+        "port": "Port",
+        "payment": "Payment",
+        "fcls": "FCLs",
+        "weight": "Weight"
+      },
+      "col": {
+        "product": "Product",
+        "qtyLb": "Qty (lb)",
+        "asking": "Asking",
+        "bidR": "Bid R{{n}}",
+        "counterR": "Counter R{{n}}"
+      }
+    },
     "users": {
       "title": "Users",
       "searchPlaceholder": "Search by name, email or job title...",
