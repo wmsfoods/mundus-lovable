@@ -17,6 +17,7 @@ type Props = {
   rolePill?: string;
   userName?: string;
   userSubtitle?: string;
+  onProBadgeClick?: (item: SidebarItem) => void;
 };
 
 export function MobileDrawer({
@@ -26,6 +27,7 @@ export function MobileDrawer({
   rolePill,
   userName,
   userSubtitle,
+  onProBadgeClick,
 }: Props) {
   const { user, signOut } = useAuth();
   const { t, i18n } = useTranslation();
@@ -124,7 +126,18 @@ export function MobileDrawer({
                 >
                   <I size={20} />
                   <span>{item.label}</span>
-                  {item.proBadge && <ProBadge />}
+                  {item.proBadge && (
+                    <ProBadge
+                      onClick={
+                        onProBadgeClick
+                          ? () => {
+                              onClose();
+                              onProBadgeClick(item);
+                            }
+                          : undefined
+                      }
+                    />
+                  )}
                 </NavLink>
               </div>
             );
