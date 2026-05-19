@@ -146,7 +146,8 @@
       "createOffer": "Create Offer",
       "sales": "Sales",
       "offerRequests": "Offer Requests",
-      "myCompany": "My Company"
+      "myCompany": "My Company",
+      "messages": "Messages"
     },
     "bottom": {
       "create": "Create",
@@ -581,6 +582,35 @@
           "accepted": "Supplier counter accepted (mock)",
           "rejected": "Negotiation rejected (mock)"
         }
+      }
+    },
+    "chat": {
+      "title": "Messages",
+      "searchPlaceholder": "Search conversations…",
+      "inputPlaceholder": "Type a message…",
+      "empty": "No conversations",
+      "sendBtn": "Send",
+      "attachBtn": "Attach file",
+      "viewOffer": "View offer",
+      "viewNegotiation": "View negotiation",
+      "viewRequest": "View request",
+      "generalLabel": "General",
+      "linkedTo": {
+        "offer": "Offer",
+        "negotiation": "Negotiation",
+        "request": "Request",
+        "general": "General"
+      },
+      "toast": {
+        "messageSent": "Message sent (mock)",
+        "attachFile": "Attach file (mock)"
+      },
+      "time": {
+        "justNow": "just now",
+        "minutesAgo": "{{n}}m",
+        "hoursAgo": "{{n}}h",
+        "daysAgo": "{{n}}d",
+        "weeksAgo": "{{n}}w"
       }
     }
   },
