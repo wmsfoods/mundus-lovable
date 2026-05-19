@@ -253,7 +253,62 @@
         "3": "Alto",
         "4": "Premium",
         "default": "Não Classificado"
+    },
+    "customers": {
+      "title": "Meus Clientes",
+      "crumbHome": "Início",
+      "showing": "Mostrando 1 - {{shown}} itens de {{total}} resultados",
+      "searchPlaceholder": "Pesquisar clientes",
+      "filterLabel": "Filtrar status",
+      "filter": {
+        "all": "Todos",
+        "active": "Ativos",
+        "inactive": "Inativos"
+      },
+      "selectAll": "Selecionar todos",
+      "clearSelection": "Limpar seleção",
+      "export": "Exportar",
+      "importCsv": "Importar CSV",
+      "inviteCustomer": "Convidar Cliente",
+      "edit": "Editar",
+      "empty": "Nenhum cliente corresponde aos filtros.",
+      "col": {
+        "company": "Empresa",
+        "contact": "Contato",
+        "phone": "Telefone",
+        "country": "País",
+        "email": "E-mail",
+        "status": "Status",
+        "invitedAt": "Convidado em",
+        "active": "Ativo",
+        "actions": "Ações"
+      },
+      "status": {
+        "active": "Ativo",
+        "inactive": "Inativo"
+      },
+      "invite": {
+        "title": "Convidar Novo Cliente",
+        "company": "Empresa",
+        "companyPlaceholder": "Ex: Acme Corp",
+        "contact": "Nome do Contato",
+        "contactPlaceholder": "Ex: João da Silva",
+        "email": "E-mail",
+        "emailPlaceholder": "joao@exemplo.com",
+        "phone": "Telefone",
+        "phonePlaceholder": "+55 11 91234-5678",
+        "country": "País",
+        "selectPlaceholder": "Selecione",
+        "send": "Enviar Convite"
+      },
+      "import": {
+        "title": "Importar CSV",
+        "body": "Envie um arquivo CSV com as seguintes colunas: CompanyName, ContactName, Email, Phone, Country.",
+        "template": "Baixar Modelo",
+        "clickToUpload": "Clique para enviar o CSV",
+        "import": "Importar"
       }
     }
   }
+}
 }

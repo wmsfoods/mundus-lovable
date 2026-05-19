@@ -17,6 +17,7 @@ import SupplierShell from "./layouts/SupplierShell.tsx";
 import BuyerHome from "./pages/buyer/Home.tsx";
 import BuyerOffers from "./pages/buyer/Offers.tsx";
 import BuyerOfferDetail from "./pages/buyer/OfferDetail.tsx";
+import BuyerCustomers from "./pages/buyer/Customers.tsx";
 import SupplierHome from "./pages/supplier/Home.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 
@@ -53,6 +54,7 @@ const App = () => (
               }
             >
               <Route index element={<BuyerHome />} />
+              <Route path="customers" element={<BuyerCustomers />} />
               <Route path="offers" element={<BuyerOffers />} />
               <Route path="offers/:id" element={<BuyerOfferDetail />} />
             </Route>
