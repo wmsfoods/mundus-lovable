@@ -1,65 +1,28 @@
-import { useMemo, useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { useState, useMemo, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import { Crumbs } from "@/components/mundus/Crumbs";
+import { PageTitle } from "@/components/mundus/PageTitle";
+import { Modal } from "@/components/mundus/Modal";
+import { TextField } from "@/components/mundus/TextField";
+import { SelectField } from "@/components/mundus/SelectField";
+import { Toggle } from "@/components/mundus/Toggle";
 import {
   UsersIcon,
   SearchIcon,
   ChevronDownIcon,
+  FilterIcon,
   DownloadIcon,
   UploadIcon,
   PlusIcon,
   EditIcon,
-  FilterIcon,
 } from "@/components/icons";
-import { TextField } from "@/components/mundus/TextField";
-import { SelectField } from "@/components/mundus/SelectField";
-import { Toggle } from "@/components/mundus/Toggle";
-import { Modal } from "@/components/mundus/Modal";
+import {
+  useBuyerCustomers,
+  type BuyerCustomerInput,
+} from "@/hooks/useBuyerCustomers";
 
-/* =========================================================================
-   My Customers — buyer-side customer list.
-   Backend not yet wired: starts with seed mock and persists in-memory only
-   for the session (gradual plug-in per project plan D4).
-   ========================================================================= */
-
-type Customer = {
-  id: string;
-  company: string;
-  contact: string;
-  phone: string;
-  country: string;
-  email: string;
-  active: boolean;
-  invitedAt: string;
-};
-
-type FilterValue = "all" | "active" | "inactive";
-
-const INITIAL_CUSTOMERS: Customer[] = [
-  {
-    id: "seed-1",
-    company: "Mundus 2",
-    contact: "Fernando X",
-    phone: "+17864431584",
-    country: "United States",
-    email: "fn@mundustrade.com",
-    active: false,
-    invitedAt: "2/19/2026",
-  },
-  {
-    id: "seed-2",
-    company: "XXXX",
-    contact: "XXXX da Silva",
-    phone: "+5517917014444",
-    country: "Brazil",
-    email: "xx@123.com",
-    active: false,
-    invitedAt: "2/19/2026",
-  },
-];
-
-const COUNTRY_OPTIONS: { value: string; label: string }[] = [
-  { value: "", label: "Select" },
+const COUNTRY_OPTIONS = [
+  { value: "", label: "—" },
   { value: "United States", label: "United States" },
   { value: "Brazil", label: "Brazil" },
   { value: "Argentina", label: "Argentina" },
@@ -68,15 +31,30 @@ const COUNTRY_OPTIONS: { value: string; label: string }[] = [
   { value: "Australia", label: "Australia" },
   { value: "China", label: "China" },
   { value: "Hong Kong", label: "Hong Kong" },
+  { value: "Japan", label: "Japan" },
+  { value: "South Korea", label: "South Korea" },
+  { value: "Singapore", label: "Singapore" },
+  { value: "Vietnam", label: "Vietnam" },
+  { value: "United Arab Emirates", label: "United Arab Emirates" },
   { value: "Saudi Arabia", label: "Saudi Arabia" },
+  { value: "United Kingdom", label: "United Kingdom" },
 ];
 
+function formatDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString();
+  } catch {
+    return iso;
+  }
+}
+
 export default function Customers() {
-  const { t, i18n } = useTranslation();
-  const [customers, setCustomers] = useState<Customer[]>(INITIAL_CUSTOMERS);
+  const { t } = useTranslation();
+  const { customers, add, toggleActive } = useBuyerCustomers();
+
   const [search, setSearch] = useState("");
-  const [filter, setFilter] = useState<FilterValue>("all");
-  const [selected, setSelected] = useState<string[]>([]);
+  const [filter, setFilter] = useState<"all" | "active" | "inactive">("all");
+  const [selected, setSelected] = useState<Set<string>>(new Set());
   const [inviteOpen, setInviteOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
 
@@ -93,68 +71,39 @@ export default function Customers() {
     });
   }, [customers, search, filter]);
 
-  const allSelected =
-    filtered.length > 0 && filtered.every((c) => selected.includes(c.id));
+  const allSelected = filtered.length > 0 && filtered.every((c) => selected.has(c.id));
+  const toggleAll = () => {
+    if (allSelected) setSelected(new Set());
+    else setSelected(new Set(filtered.map((c) => c.id)));
+  };
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
-  const toggleAll = () =>
-    setSelected(allSelected ? [] : filtered.map((c) => c.id));
-  const toggleOne = (id: string) =>
-    setSelected((s) =>
-      s.includes(id) ? s.filter((x) => x !== id) : [...s, id]
-    );
-  const toggleActive = (id: string) =>
-    setCustomers((cs) =>
-      cs.map((c) => (c.id === id ? { ...c, active: !c.active } : c))
-    );
-
-  const handleInvite = (data: {
-    company: string;
-    contact: string;
-    email: string;
-    phone: string;
-    country: string;
-  }) => {
-    const locale = i18n.resolvedLanguage === "pt" ? "pt-BR"
-      : i18n.resolvedLanguage === "es" ? "es-ES"
-      : "en-US";
-    setCustomers((cs) => [
-      ...cs,
-      {
-        id: `c-${Date.now()}`,
-        company: data.company,
-        contact: data.contact,
-        email: data.email,
-        phone: data.phone,
-        country: data.country,
-        active: false,
-        invitedAt: new Date().toLocaleDateString(locale),
-      },
-    ]);
+  const handleSendInvite = (data: BuyerCustomerInput) => {
+    add(data);
     setInviteOpen(false);
   };
 
   return (
     <>
-      <div className="crumbs">
-        <Link to="/buyer">{t("buyer.customers.crumbHome")}</Link>
-        <span className="sep">/</span>
-        <b>{t("buyer.customers.title")}</b>
-      </div>
-
-      <div className="page-title">
-        <span className="chip">
-          <UsersIcon size={20} />
-        </span>
-        <h1>{t("buyer.customers.title")}</h1>
-      </div>
+      <Crumbs
+        items={[
+          { label: t("buyer.customers.crumbHome"), to: "/buyer" },
+          { label: t("buyer.customers.title") },
+        ]}
+      />
+      <PageTitle icon={UsersIcon} title={t("buyer.customers.title")} />
 
       <div className="table-toolbar">
         <div className="left">
           <span className="result-count">
-            {t("buyer.customers.showing", {
-              shown: filtered.length,
-              total: customers.length,
-            })}
+            {t("buyer.customers.showing", { shown: filtered.length, total: customers.length })}
           </span>
         </div>
         <div className="right">
@@ -172,8 +121,7 @@ export default function Customers() {
             <select
               className="mini-select"
               value={filter}
-              onChange={(e) => setFilter(e.target.value as FilterValue)}
-              aria-label={t("buyer.customers.filterLabel")}
+              onChange={(e) => setFilter(e.target.value as "all" | "active" | "inactive")}
             >
               <option value="all">{t("buyer.customers.filter.all")}</option>
               <option value="active">{t("buyer.customers.filter.active")}</option>
@@ -181,277 +129,213 @@ export default function Customers() {
             </select>
             <ChevronDownIcon size={14} />
           </div>
-          <button className="link-action" type="button" onClick={toggleAll}>
+          <button className="link-action" onClick={toggleAll} type="button">
             {t("buyer.customers.selectAll")}
           </button>
           <button
             className="link-action"
+            disabled={selected.size === 0}
+            onClick={() => setSelected(new Set())}
             type="button"
-            disabled={selected.length === 0}
-            onClick={() => setSelected([])}
           >
             {t("buyer.customers.clearSelection")}
           </button>
           <button className="btn-tb" type="button">
-            <DownloadIcon size={16} />
-            {t("buyer.customers.export")}
+            <DownloadIcon size={16} /> {t("buyer.customers.export")}
           </button>
-          <button
-            className="btn-tb"
-            type="button"
-            onClick={() => setImportOpen(true)}
-          >
-            <UploadIcon size={16} />
-            {t("buyer.customers.importCsv")}
+          <button className="btn-tb" type="button" onClick={() => setImportOpen(true)}>
+            <UploadIcon size={16} /> {t("buyer.customers.importCsv")}
           </button>
-          <button
-            className="btn-tb is-primary"
-            type="button"
-            onClick={() => setInviteOpen(true)}
-          >
-            <PlusIcon size={16} />
-            {t("buyer.customers.inviteCustomer")}
+          <button className="btn-tb is-primary" type="button" onClick={() => setInviteOpen(true)}>
+            <PlusIcon size={16} /> {t("buyer.customers.invite")}
           </button>
         </div>
       </div>
 
-      <div className="data-table-wrap">
-        <table className="data-table">
-          <thead>
+      <table className="data-table">
+        <thead>
+          <tr>
+            <th style={{ width: 40 }}>
+              <input
+                type="checkbox"
+                className="checkbox"
+                checked={allSelected}
+                onChange={toggleAll}
+                aria-label={t("buyer.customers.selectAll")}
+              />
+            </th>
+            <th>{t("buyer.customers.columns.company")}<span className="filt"><FilterIcon size={12} /></span></th>
+            <th>{t("buyer.customers.columns.contact")}<span className="filt"><FilterIcon size={12} /></span></th>
+            <th>{t("buyer.customers.columns.phone")}</th>
+            <th>{t("buyer.customers.columns.country")}<span className="filt"><FilterIcon size={12} /></span></th>
+            <th>{t("buyer.customers.columns.email")}</th>
+            <th>{t("buyer.customers.columns.status")}<span className="filt"><FilterIcon size={12} /></span></th>
+            <th>{t("buyer.customers.columns.invitedAt")}</th>
+            <th>{t("buyer.customers.columns.active")}</th>
+            <th>{t("buyer.customers.columns.actions")}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filtered.length === 0 ? (
             <tr>
-              <th style={{ width: 40 }}>
-                <input
-                  type="checkbox"
-                  className="checkbox"
-                  checked={allSelected}
-                  onChange={toggleAll}
-                  aria-label={t("buyer.customers.selectAll")}
-                />
-              </th>
-              <th>
-                {t("buyer.customers.col.company")}{" "}
-                <span className="filt">
-                  <FilterIcon size={12} />
-                </span>
-              </th>
-              <th>
-                {t("buyer.customers.col.contact")}{" "}
-                <span className="filt">
-                  <FilterIcon size={12} />
-                </span>
-              </th>
-              <th>{t("buyer.customers.col.phone")}</th>
-              <th>
-                {t("buyer.customers.col.country")}{" "}
-                <span className="filt">
-                  <FilterIcon size={12} />
-                </span>
-              </th>
-              <th>{t("buyer.customers.col.email")}</th>
-              <th>
-                {t("buyer.customers.col.status")}{" "}
-                <span className="filt">
-                  <FilterIcon size={12} />
-                </span>
-              </th>
-              <th>{t("buyer.customers.col.invitedAt")}</th>
-              <th>{t("buyer.customers.col.active")}</th>
-              <th>{t("buyer.customers.col.actions")}</th>
+              <td colSpan={10} data-label="" style={{ textAlign: "center", padding: 32, color: "var(--fg-muted)" }}>
+                {customers.length === 0
+                  ? t("buyer.customers.emptyAll")
+                  : t("buyer.customers.emptyFiltered")}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {filtered.map((c) => (
+          ) : (
+            filtered.map((c) => (
               <tr key={c.id}>
-                <td>
+                <td data-label="">
                   <input
                     type="checkbox"
                     className="checkbox"
-                    checked={selected.includes(c.id)}
+                    checked={selected.has(c.id)}
                     onChange={() => toggleOne(c.id)}
-                    aria-label={c.company}
+                    aria-label={`Select ${c.company}`}
                   />
                 </td>
-                <td>{c.company}</td>
-                <td>{c.contact}</td>
-                <td>{c.phone}</td>
-                <td>{c.country}</td>
-                <td>{c.email}</td>
-                <td>
-                  <span
-                    className={`pill ${c.active ? "pill-active" : "pill-inactive"}`}
-                  >
-                    {c.active
-                      ? t("buyer.customers.status.active")
-                      : t("buyer.customers.status.inactive")}
+                <td data-label={t("buyer.customers.columns.company")}>{c.company}</td>
+                <td data-label={t("buyer.customers.columns.contact")}>{c.contact}</td>
+                <td data-label={t("buyer.customers.columns.phone")}>{c.phone}</td>
+                <td data-label={t("buyer.customers.columns.country")}>{c.country}</td>
+                <td data-label={t("buyer.customers.columns.email")}>{c.email}</td>
+                <td data-label={t("buyer.customers.columns.status")}>
+                  <span className={`pill ${c.active ? "pill-active" : "pill-inactive"}`}>
+                    {c.active ? t("buyer.customers.status.active") : t("buyer.customers.status.inactive")}
                   </span>
                 </td>
-                <td>{c.invitedAt}</td>
-                <td>
-                  <Toggle
-                    checked={c.active}
-                    onChange={() => toggleActive(c.id)}
-                  />
+                <td data-label={t("buyer.customers.columns.invitedAt")}>{formatDate(c.invitedAt)}</td>
+                <td data-label={t("buyer.customers.columns.active")}>
+                  <Toggle checked={c.active} onChange={() => toggleActive(c.id)} />
                 </td>
-                <td>
-                  <button
-                    className="action-icon-btn"
-                    aria-label={t("buyer.customers.edit")}
-                    type="button"
-                  >
+                <td data-label={t("buyer.customers.columns.actions")}>
+                  <button className="action-icon-btn" aria-label={t("buyer.customers.edit")} type="button">
                     <EditIcon size={16} />
                   </button>
                 </td>
               </tr>
-            ))}
-            {filtered.length === 0 && (
-              <tr className="empty-row">
-                <td colSpan={10}>{t("buyer.customers.empty")}</td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            ))
+          )}
+        </tbody>
+      </table>
 
       <InviteCustomerModal
         open={inviteOpen}
         onClose={() => setInviteOpen(false)}
-        onSend={handleInvite}
+        onSend={handleSendInvite}
       />
-      <ImportCsvModal
-        open={importOpen}
-        onClose={() => setImportOpen(false)}
-      />
+      <ImportCsvModal open={importOpen} onClose={() => setImportOpen(false)} />
     </>
   );
 }
 
-type InviteData = {
-  company: string;
-  contact: string;
-  email: string;
-  phone: string;
-  country: string;
-};
-
-function InviteCustomerModal({
-  open,
-  onClose,
-  onSend,
-}: {
+type InviteProps = {
   open: boolean;
   onClose: () => void;
-  onSend: (data: InviteData) => void;
-}) {
+  onSend: (data: BuyerCustomerInput) => void;
+};
+
+function InviteCustomerModal({ open, onClose, onSend }: InviteProps) {
   const { t } = useTranslation();
-  const [data, setData] = useState<InviteData>({
-    company: "",
-    contact: "",
-    email: "",
-    phone: "",
-    country: "",
-  });
+  const [company, setCompany] = useState("");
+  const [contact, setContact] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [country, setCountry] = useState("");
+  const wasOpen = useRef(false);
 
-  useEffect(() => {
-    if (open) {
-      setData({ company: "", contact: "", email: "", phone: "", country: "" });
-    }
-  }, [open]);
+  if (open && !wasOpen.current) {
+    wasOpen.current = true;
+    setCompany("");
+    setContact("");
+    setEmail("");
+    setPhone("");
+    setCountry("");
+  } else if (!open && wasOpen.current) {
+    wasOpen.current = false;
+  }
 
-  const canSend = data.country.trim().length > 0;
-  const set = <K extends keyof InviteData>(k: K, v: InviteData[K]) =>
-    setData((d) => ({ ...d, [k]: v }));
-
-  const countryOptions = [
-    { value: "", label: t("buyer.customers.invite.selectPlaceholder") },
-    ...COUNTRY_OPTIONS.slice(1),
-  ];
+  const canSend = country.trim().length > 0 && company.trim().length > 0 && email.trim().length > 0;
 
   return (
-    <Modal open={open} onClose={onClose} width={460} ariaLabel={t("buyer.customers.invite.title")}>
-      <h2>{t("buyer.customers.invite.title")}</h2>
+    <Modal open={open} onClose={onClose} width={460}>
+      <h2>{t("buyer.customers.invite_modal.title")}</h2>
       <div className="modal-body">
         <TextField
-          label={t("buyer.customers.invite.company")}
-          placeholder={t("buyer.customers.invite.companyPlaceholder")}
-          value={data.company}
-          onChange={(v) => set("company", v)}
+          label={t("buyer.customers.invite_modal.company")}
+          placeholder={t("buyer.customers.invite_modal.companyPlaceholder")}
+          value={company}
+          onChange={setCompany}
         />
         <TextField
-          label={t("buyer.customers.invite.contact")}
-          placeholder={t("buyer.customers.invite.contactPlaceholder")}
-          value={data.contact}
-          onChange={(v) => set("contact", v)}
+          label={t("buyer.customers.invite_modal.contact")}
+          placeholder={t("buyer.customers.invite_modal.contactPlaceholder")}
+          value={contact}
+          onChange={setContact}
         />
         <TextField
+          label={t("buyer.customers.invite_modal.email")}
           type="email"
-          label={t("buyer.customers.invite.email")}
-          placeholder={t("buyer.customers.invite.emailPlaceholder")}
-          value={data.email}
-          onChange={(v) => set("email", v)}
+          placeholder={t("buyer.customers.invite_modal.emailPlaceholder")}
+          value={email}
+          onChange={setEmail}
         />
         <TextField
-          label={t("buyer.customers.invite.phone")}
-          placeholder={t("buyer.customers.invite.phonePlaceholder")}
-          value={data.phone}
-          onChange={(v) => set("phone", v)}
+          label={t("buyer.customers.invite_modal.phone")}
+          placeholder={t("buyer.customers.invite_modal.phonePlaceholder")}
+          value={phone}
+          onChange={setPhone}
         />
         <SelectField
-          label={t("buyer.customers.invite.country")}
+          label={t("buyer.customers.invite_modal.country")}
           required
-          value={data.country}
-          onChange={(v) => set("country", v)}
-          options={countryOptions}
+          value={country}
+          onChange={setCountry}
+          options={COUNTRY_OPTIONS}
         />
       </div>
       <div className="modal-footer">
-        <button type="button" className="btn btn-ghost" onClick={onClose}>
+        <button className="btn btn-ghost" onClick={onClose} type="button">
           {t("common.cancel")}
         </button>
         <button
-          type="button"
           className="btn btn-primary"
           disabled={!canSend}
-          onClick={() => onSend(data)}
+          onClick={() => onSend({ company, contact, email, phone, country })}
+          type="button"
         >
-          {t("buyer.customers.invite.send")}
+          {t("buyer.customers.invite_modal.send")}
         </button>
       </div>
     </Modal>
   );
 }
 
-function ImportCsvModal({
-  open,
-  onClose,
-}: {
-  open: boolean;
-  onClose: () => void;
-}) {
+function ImportCsvModal({ open, onClose }: { open: boolean; onClose: () => void }) {
   const { t } = useTranslation();
   const [file, setFile] = useState<File | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+  const wasOpen = useRef(false);
 
-  useEffect(() => {
-    if (open) setFile(null);
-  }, [open]);
+  if (open && !wasOpen.current) {
+    wasOpen.current = true;
+    setFile(null);
+  } else if (!open && wasOpen.current) {
+    wasOpen.current = false;
+  }
 
   return (
-    <Modal open={open} onClose={onClose} width={520} ariaLabel={t("buyer.customers.import.title")}>
-      <h2>{t("buyer.customers.import.title")}</h2>
+    <Modal open={open} onClose={onClose} width={520}>
+      <h2>{t("buyer.customers.import_modal.title")}</h2>
       <div className="modal-body">
-        <p
-          style={{
-            margin: 0,
-            fontSize: "var(--fs-sm)",
-            color: "var(--fg)",
-          }}
-        >
-          {t("buyer.customers.import.body")}
+        <p style={{ margin: 0, fontSize: "var(--fs-sm)", color: "var(--fg)" }}>
+          {t("buyer.customers.import_modal.hint")}
         </p>
         <div>
-          <button type="button" className="btn-tb" style={{ height: 36 }}>
-            <DownloadIcon size={14} />
-            {t("buyer.customers.import.template")}
+          <button className="btn-tb" type="button" style={{ height: 36 }}>
+            <DownloadIcon size={14} /> {t("buyer.customers.import_modal.downloadTemplate")}
           </button>
         </div>
         <div
@@ -459,12 +343,15 @@ function ImportCsvModal({
           onClick={() => inputRef.current?.click()}
           role="button"
           tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") inputRef.current?.click();
+          }}
         >
           <div className="ic">
             <UploadIcon size={28} />
           </div>
           <div style={{ fontWeight: "var(--weight-medium)" }}>
-            {file ? file.name : t("buyer.customers.import.clickToUpload")}
+            {file ? file.name : t("buyer.customers.import_modal.clickUpload")}
           </div>
           <input
             ref={inputRef}
@@ -476,16 +363,11 @@ function ImportCsvModal({
         </div>
       </div>
       <div className="modal-footer">
-        <button type="button" className="btn btn-ghost" onClick={onClose}>
+        <button className="btn btn-ghost" onClick={onClose} type="button">
           {t("common.cancel")}
         </button>
-        <button
-          type="button"
-          className="btn btn-primary"
-          disabled={!file}
-          onClick={() => onClose()}
-        >
-          {t("buyer.customers.import.import")}
+        <button className="btn btn-primary" disabled={!file} onClick={onClose} type="button">
+          {t("buyer.customers.import_modal.import")}
         </button>
       </div>
     </Modal>
