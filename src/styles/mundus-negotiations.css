@@ -213,3 +213,335 @@
     margin-right: 8px;
   }
 }
+/* ============================================================
+   Negotiation Detail page
+   ============================================================ */
+
+.nego-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--brand, #be123c);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  margin-bottom: 16px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+.nego-back-link:hover { text-decoration: underline; }
+
+.nego-detail-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg, 12px);
+  margin-bottom: 16px;
+}
+.nego-detail-header .product-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  background: #fce7f3;
+  color: var(--brand, #be123c);
+  flex-shrink: 0;
+}
+.nego-detail-header .head-info { flex: 1; min-width: 0; }
+.nego-detail-header h1 {
+  font-size: 22px;
+  font-weight: var(--weight-semibold);
+  margin: 0 0 4px;
+  color: var(--fg);
+}
+.nego-detail-header .head-sub {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+.nego-detail-header .head-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nego-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+.nego-meta-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--g050);
+  border: 1px solid hsl(var(--border));
+  font-size: var(--fs-sm);
+}
+.nego-meta-chip .lbl { color: var(--fg-muted); font-weight: var(--weight-medium); }
+.nego-meta-chip .val { color: var(--fg); font-weight: var(--weight-semibold); }
+
+.nego-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  gap: 20px;
+}
+@media (max-width: 1024px) {
+  .nego-detail-grid { grid-template-columns: 1fr; }
+}
+
+.nego-card {
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-lg, 12px);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.nego-card h3 {
+  margin: 0 0 12px;
+  font-size: 14px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+}
+
+.nego-round-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.nego-round-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background: #1f2937;
+  color: #fff;
+  font-size: var(--fs-xs);
+  font-weight: var(--weight-semibold);
+}
+.nego-round-head .updated {
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+}
+.nego-round-body p {
+  margin: 0 0 16px;
+  font-size: var(--fs-sm);
+  color: var(--fg);
+}
+
+.nego-big-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.nego-big-number {
+  padding: 14px;
+  border-radius: var(--radius-md, 8px);
+  background: var(--g050);
+  text-align: left;
+}
+.nego-big-number.highlight {
+  background: #d1fae5;
+  border: 1px solid #6ee7b7;
+}
+.nego-big-number .lbl {
+  display: block;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.nego-big-number .val {
+  display: block;
+  font-size: 22px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+}
+
+.nego-gap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+  margin-bottom: 6px;
+}
+.nego-gap .val { color: #065f46; font-weight: var(--weight-semibold); }
+.nego-gap-bar {
+  position: relative;
+  height: 6px;
+  background: linear-gradient(90deg, #93c5fd 0%, #6ee7b7 100%);
+  border-radius: 3px;
+  margin-bottom: 28px;
+}
+.nego-gap-bar .marker {
+  position: absolute;
+  top: -3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #065f46;
+  border: 2px solid #fff;
+  transform: translateX(-50%);
+}
+.nego-gap-bar .lbl-l, .nego-gap-bar .lbl-r {
+  position: absolute;
+  top: 10px;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.nego-gap-bar .lbl-l { left: 0; color: #1e3a8a; }
+.nego-gap-bar .lbl-r { right: 0; color: #065f46; }
+
+.nego-actions {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 10px;
+  margin-top: 24px;
+}
+@media (max-width: 640px) {
+  .nego-actions { grid-template-columns: 1fr; }
+}
+.nego-actions .btn-counter {
+  background: var(--brand, #be123c);
+  color: #fff;
+  border: none;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 8px);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.nego-actions .btn-counter:hover { background: #9d174d; }
+.nego-actions .btn-accept {
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #6ee7b7;
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 8px);
+  font-weight: var(--weight-semibold);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.nego-actions .btn-accept:hover { background: #a7f3d0; }
+.nego-actions .btn-reject {
+  background: #fff;
+  color: var(--fg-muted);
+  border: 1px solid hsl(var(--border));
+  padding: 12px 16px;
+  border-radius: var(--radius-md, 8px);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+}
+.nego-actions .btn-reject:hover { background: var(--g050); }
+
+.nego-buyer-info .row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  border-bottom: 1px solid #f1f1f4;
+  font-size: var(--fs-sm);
+}
+.nego-buyer-info .row:last-child { border-bottom: 0; }
+.nego-buyer-info .row .k { color: var(--fg-muted); }
+.nego-buyer-info .row .v { color: var(--fg); font-weight: var(--weight-semibold); }
+.nego-buyer-info .row.movement .v.negative { color: #dc2626; }
+
+.nego-timeline {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.nego-timeline .arrow {
+  color: var(--fg-muted);
+  flex-shrink: 0;
+}
+.nego-timeline-card {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 12px;
+  border-radius: var(--radius-md, 8px);
+  min-width: 100px;
+  flex: 1;
+}
+.nego-timeline-card.bid {
+  background: #dbeafe;
+  color: #1e3a8a;
+}
+.nego-timeline-card.counter {
+  background: #d1fae5;
+  color: #065f46;
+}
+.nego-timeline-card.is-current {
+  outline: 2px solid #065f46;
+  outline-offset: 1px;
+}
+.nego-timeline-card .lbl {
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+.nego-timeline-card .val {
+  font-size: 14px;
+  font-weight: var(--weight-semibold);
+}
+.nego-timeline-card .badge-current {
+  display: inline-block;
+  margin-top: 2px;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: #065f46;
+  color: #fff;
+  font-size: 9px;
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  width: fit-content;
+}
+
+.nego-price-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--fs-sm);
+}
+.nego-price-table th {
+  text-align: left;
+  font-size: 10px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 6px;
+  border-bottom: 1px solid hsl(var(--border));
+}
+.nego-price-table td {
+  padding: 8px 6px;
+  border-bottom: 1px solid #f1f1f4;
+}
+.nego-price-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+.nego-price-table .bid    { color: #2563eb; font-weight: var(--weight-semibold); }
+.nego-price-table .counter{ color: #065f46; font-weight: var(--weight-semibold); }
+.nego-price-table .product-cell {
+  display: flex; flex-direction: column;
+}
+.nego-price-table .product-cell .name { font-weight: var(--weight-semibold); color: var(--fg); }
+.nego-price-table .product-cell .pack { font-size: var(--fs-xs); color: var(--fg-muted); }
