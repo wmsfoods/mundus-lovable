@@ -161,6 +161,97 @@
     "note": "This screen will be built in the next commits of the port."
   },
   "buyer": {
+    "requests": {
+      "title": "My offer requests",
+      "newRequest": "New offer request",
+      "searchPlaceholder": "Search requests…",
+      "speciesAll": "All species",
+      "statusAll": "All",
+      "offersCount": "{{n}} offers",
+      "empty": "No requests match your filters.",
+      "status": {
+        "draft": "Draft",
+        "active": "Active",
+        "closed_won": "Closed (Won)",
+        "closed_no_winner": "Closed (No winner)",
+        "expired": "Expired"
+      },
+      "species": {
+        "beef": "Beef",
+        "pork": "Pork",
+        "poultry": "Poultry",
+        "lamb": "Lamb"
+      },
+      "col": {
+        "title": "Title",
+        "species": "Species",
+        "destination": "Destination",
+        "target": "Target $/kg",
+        "volume": "Volume",
+        "shipment": "Shipment",
+        "offers": "Offers",
+        "status": "Status",
+        "updated": "Updated"
+      },
+      "detail": {
+        "back": "Back to requests",
+        "edit": "Edit",
+        "publish": "Publish",
+        "close": "Close request",
+        "noOffers": "No offers received yet.",
+        "section": {
+          "requirements": "Requirements",
+          "offersReceived": "Offers received",
+          "requestStatus": "Request status",
+          "quickStats": "Quick stats"
+        },
+        "banner": {
+          "draft": "This request is a draft — publish to receive offers.",
+          "active": "Active — receiving offers until {{deadline}}.",
+          "closedWon": "Closed with winner: {{supplier}}",
+          "closedNoWinner": "Closed without winner.",
+          "expired": "Expired — no longer accepting offers."
+        },
+        "meta": {
+          "target": "Target",
+          "volume": "Volume",
+          "fcl": "FCLs",
+          "shipment": "Shipment",
+          "incoterm": "Incoterm",
+          "payment": "Payment"
+        },
+        "offer": {
+          "viewBtn": "View",
+          "acceptBtn": "Accept",
+          "declineBtn": "Decline",
+          "winnerBadge": "Winner",
+          "leadTime": "Lead time",
+          "perKg": "$/kg",
+          "origin": "Origin",
+          "total": "Total"
+        },
+        "stats": {
+          "offersReceived": "Offers received",
+          "bestPrice": "Best price/kg",
+          "deadline": "Deadline"
+        },
+        "timeline": {
+          "created": "Created",
+          "published": "Published",
+          "firstOffer": "First offer",
+          "closed": "Closed"
+        }
+      },
+      "toast": {
+        "create": "Create new request coming soon",
+        "edit": "Edit request coming soon",
+        "publish": "Request published (mock)",
+        "closeRequest": "Request closed (mock)",
+        "acceptOffer": "Accepted offer from {{name}} (mock)",
+        "declineOffer": "Declined offer from {{name}} (mock)",
+        "viewOffer": "Offer details coming soon"
+      }
+    },
     "home": {
       "hero": "Sell smarter, negotiate faster, stay in control.",
       "stats": {
