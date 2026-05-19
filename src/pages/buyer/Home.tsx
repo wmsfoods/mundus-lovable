@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   SparkleIcon,
   FlagIcon,
@@ -66,56 +67,57 @@ function ActionCard({ icon: I, title, desc, ctaLabel, to, primary }: ActionCardP
 // Page
 // =========================================================================
 export default function BuyerHome() {
+  const { t } = useTranslation();
   return (
     <>
       <section className="hero">
-        <h2>Sell smarter, negotiate faster, stay in control.</h2>
+        <h2>{t("buyer.home.hero")}</h2>
         <div className="hero-photo" aria-hidden="true" />
       </section>
 
       <div className="stats">
-        <StatCard label="Active Offers" value="64" icon={SparkleIcon} />
-        <StatCard label="Total Offers" value="71" icon={FlagIcon} />
-        <StatCard label="Closed Deals" value="0" icon={CheckCircleIcon} />
-        <StatCard label="In Negotiation" value="24" icon={ArrowsLeftRightIcon} />
-        <StatCard label="Average order closing time" value="–" icon={CartIcon} dark />
+        <StatCard label={t("buyer.home.stats.activeOffers")} value="64" icon={SparkleIcon} />
+        <StatCard label={t("buyer.home.stats.totalOffers")} value="71" icon={FlagIcon} />
+        <StatCard label={t("buyer.home.stats.closedDeals")} value="0" icon={CheckCircleIcon} />
+        <StatCard label={t("buyer.home.stats.inNegotiation")} value="24" icon={ArrowsLeftRightIcon} />
+        <StatCard label={t("buyer.home.stats.avgClosing")} value="–" icon={CartIcon} dark />
       </div>
 
       <div className="action-row">
         <ActionCard
           icon={FileTextIcon}
-          title="Orders"
-          desc="View and manage your orders."
-          ctaLabel="See orders"
+          title={t("buyer.home.actions.ordersTitle")}
+          desc={t("buyer.home.actions.ordersDesc")}
+          ctaLabel={t("buyer.home.actions.ordersCta")}
           to="/buyer/orders"
         />
         <ActionCard
           icon={TagIcon}
-          title="Offers"
-          desc="Browse and manage offers."
-          ctaLabel="See products"
+          title={t("buyer.home.actions.offersTitle")}
+          desc={t("buyer.home.actions.offersDesc")}
+          ctaLabel={t("buyer.home.actions.offersCta")}
           to="/buyer/offers"
         />
       </div>
 
       <div className="sec-head">
-        <h3>Recent offers</h3>
+        <h3>{t("buyer.home.recentOffers")}</h3>
         <Link to="/buyer/offers" className="see-all">
-          See all <ArrowRightIcon size={14} />
+          {t("buyer.home.seeAll")} <ArrowRightIcon size={14} />
         </Link>
       </div>
       <div className="card-row-empty">
-        Recent offers will appear here once the marketplace is populated.
+        {t("buyer.home.emptyOffers")}
       </div>
 
       <div className="sec-head">
-        <h3>Recent orders</h3>
+        <h3>{t("buyer.home.recentOrders")}</h3>
         <Link to="/buyer/orders" className="see-all">
-          See all <ArrowRightIcon size={14} />
+          {t("buyer.home.seeAll")} <ArrowRightIcon size={14} />
         </Link>
       </div>
       <div className="card-row-empty">
-        Recent orders will appear here once you have purchased offers.
+        {t("buyer.home.emptyOrders")}
       </div>
     </>
   );

@@ -1,16 +1,18 @@
 import { Check, CircleX } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { PwdRules } from "./passwordRules";
 
 export function PasswordRequirements({ rules }: { rules: PwdRules }) {
+  const { t } = useTranslation();
   const items: { key: keyof PwdRules; label: string }[] = [
-    { key: "length", label: "8 characters or more;" },
-    { key: "lower", label: "One lowercase letter;" },
-    { key: "upper", label: "One uppercase letter;" },
-    { key: "special", label: "One special character." },
+    { key: "length", label: t("signup.passwordRules.length") },
+    { key: "lower", label: t("signup.passwordRules.lower") },
+    { key: "upper", label: t("signup.passwordRules.upper") },
+    { key: "special", label: t("signup.passwordRules.special") },
   ];
   return (
     <div className="text-sm text-gray-600">
-      <p className="mb-2">The password must contain:</p>
+      <p className="mb-2">{t("signup.passwordRules.title")}</p>
       <ul className="space-y-1">
         {items.map((it) => {
           const met = rules[it.key];

@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import mundusLogo from "@/assets/mundus-logo.png";
 
 export function SignupShell({
@@ -35,12 +36,19 @@ export function SignupShell({
             </button>
           )}
           <h1 className="text-base font-semibold text-[#111] truncate">{navTitle}</h1>
+          <div className="absolute right-2">
+            <LanguageSwitcher />
+          </div>
         </div>
       </header>
 
       {/* Desktop logo header */}
-      <div className="hidden md:flex pt-8 justify-center">
+      <div className="hidden md:flex pt-8 px-8 items-center justify-between">
+        <div className="w-24" />
         <img src={mundusLogo} alt="Mundus Trade" className="h-12 w-auto" />
+        <div className="w-24 flex justify-end">
+          <LanguageSwitcher variant="pill" />
+        </div>
       </div>
       <div className="flex-1 flex items-start justify-center px-4 py-8">
         <div className="w-full max-w-[700px]">{children}</div>

@@ -1,0 +1,255 @@
+{
+  "common": {
+    "back": "Back",
+    "cancel": "Cancel",
+    "proceed": "Proceed",
+    "finish": "Finish",
+    "submitting": "Submitting...",
+    "complete": "Complete",
+    "signOut": "Log out",
+    "signedOut": "Signed out",
+    "loading": "Loading...",
+    "search": "Search",
+    "save": "Save",
+    "close": "Close",
+    "more": "More",
+    "of": "of",
+    "yes": "Yes",
+    "no": "No",
+    "optional": "optional",
+    "copyright": "© Copyright 2025 – All rights reserved.",
+    "termsLink": "Terms and Condition",
+    "privacyLink": "Privacy Policy",
+    "language": "Language",
+    "english": "English",
+    "portuguese": "Português",
+    "spanish": "Español"
+  },
+  "auth": {
+    "login": "Log in",
+    "email": "E-mail",
+    "emailPlaceholder": "Enter your email",
+    "password": "Password",
+    "passwordPlaceholder": "Enter your password",
+    "rememberMe": "Remember me",
+    "signIn": "Sign in",
+    "signingIn": "Signing in...",
+    "welcomeBack": "Welcome back",
+    "noAccount": "Don't have an account?",
+    "signUp": "Sign up",
+    "togglePassword": "Toggle password visibility",
+    "slide": "Slide"
+  },
+  "signup": {
+    "title": "Sign Up",
+    "stepOf": "Step {{current}} of {{total}}",
+    "steps": {
+      "basic": "Basic Information",
+      "company": "Company",
+      "review": "Review"
+    },
+    "fields": {
+      "fullName": "Full name",
+      "fullNamePlaceholder": "Enter your full name",
+      "email": "E-mail",
+      "emailPlaceholder": "Enter your email",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "repeatPassword": "Repeat password",
+      "repeatPasswordPlaceholder": "Repeat password",
+      "companyName": "Company Name",
+      "cnpj": "CNPJ or Registration Number",
+      "role": "Role",
+      "buyer": "Buyer",
+      "supplier": "Supplier",
+      "licenses": "Licenses or Certificates",
+      "uploadHint": "Drag or upload file",
+      "uploadFormat": "Format: .PNG or .JPG or .PDF (up to 5MB)",
+      "countryOp": "Country of operation",
+      "countryOpPlaceholder": "Search country",
+      "state": "State / Region",
+      "statePlaceholder": "Search state",
+      "address": "Address",
+      "addressLine2": "Address Line 2 (optional)",
+      "country": "Country",
+      "businessPhone": "Business Phone",
+      "phonePlaceholder": "Phone number"
+    },
+    "passwordsMismatch": "Passwords do not match.",
+    "agreeTerms": "I declare that I have read and agree to the",
+    "termsLink": "Terms and Conditions",
+    "confirmInfo": "I confirm that all information provided is true, accurate, and complete to the best of my knowledge. I understand that providing false or misleading information may result in suspension or termination of the account.",
+    "fileTooLarge": "File must be 5MB or less",
+    "reviewSections": {
+      "basic": "Basic Information",
+      "company": "Company"
+    },
+    "reviewLabels": {
+      "fullName": "Full Name",
+      "email": "E-mail",
+      "companyName": "Company Name",
+      "cnpj": "CNPJ or Registration Number",
+      "role": "Role",
+      "licenses": "Licenses or Certificates",
+      "countryOp": "Country of operation",
+      "state": "State / Region",
+      "address": "Address",
+      "addressLine2": "Address Line 2",
+      "country": "Country",
+      "businessPhone": "Business Phone"
+    },
+    "roles": {
+      "both": "Buyer and Supplier",
+      "buyer": "Buyer",
+      "supplier": "Supplier",
+      "none": "—"
+    },
+    "passwordRules": {
+      "title": "The password must contain:",
+      "length": "8 characters or more;",
+      "lower": "One lowercase letter;",
+      "upper": "One uppercase letter;",
+      "special": "One special character."
+    },
+    "success": {
+      "navTitle": "Confirm Email",
+      "title": "Registration completed successfully!",
+      "body": "To activate your account, a verification code has been sent to the email address {{email}}.",
+      "resend": "Resend code",
+      "enterCode": "Enter code",
+      "resent": "Verification code resent",
+      "missingEmail": "Missing email"
+    },
+    "partner": {
+      "navTitle": "Partner Sign Up",
+      "titlePrefix": "Sign Up via",
+      "titleSuffix": "Partner"
+    }
+  },
+  "shell": {
+    "unit": "kg",
+    "notifications": "Notifications",
+    "buyer": "Buyer",
+    "supplier": "Supplier",
+    "more": "More",
+    "nav": {
+      "home": "Home",
+      "customers": "My Customers",
+      "requests": "My offer requests",
+      "createRequest": "Create Request",
+      "offers": "Offers",
+      "orders": "Orders",
+      "negotiations": "Negotiations",
+      "users": "Users",
+      "myOffers": "My Offers",
+      "createOffer": "Create Offer",
+      "sales": "Sales",
+      "offerRequests": "Offer Requests"
+    }
+  },
+  "dashboard": {
+    "title": "Dashboard — Coming Soon",
+    "signedInAs": "Signed in as {{email}}"
+  },
+  "comingSoon": {
+    "note": "This screen will be built in the next commits of the port."
+  },
+  "buyer": {
+    "home": {
+      "hero": "Sell smarter, negotiate faster, stay in control.",
+      "stats": {
+        "activeOffers": "Active Offers",
+        "totalOffers": "Total Offers",
+        "closedDeals": "Closed Deals",
+        "inNegotiation": "In Negotiation",
+        "avgClosing": "Average order closing time"
+      },
+      "actions": {
+        "ordersTitle": "Orders",
+        "ordersDesc": "View and manage your orders.",
+        "ordersCta": "See orders",
+        "offersTitle": "Offers",
+        "offersDesc": "Browse and manage offers.",
+        "offersCta": "See products"
+      },
+      "recentOffers": "Recent offers",
+      "recentOrders": "Recent orders",
+      "seeAll": "See all",
+      "emptyOffers": "Recent offers will appear here once the marketplace is populated.",
+      "emptyOrders": "Recent orders will appear here once you have purchased offers."
+    },
+    "offers": {
+      "title": "Offers",
+      "crumbHome": "Home",
+      "loading": "Loading offers…",
+      "loadingShort": "Loading…",
+      "showing_one": "Showing <1>{{count}}</1> offer · {{mt}} MT",
+      "showing_other": "Showing <1>{{count}}</1> offers · {{mt}} MT",
+      "loadError": "Couldn't load offers: {{error}}",
+      "empty": "No offers yet. Suppliers haven't published any matching offers.",
+      "card": {
+        "cuts": "{{count}} cuts",
+        "mixedTitle": "Mixed ({{count}} cuts)",
+        "moreCuts": "+{{count}} more",
+        "origin": "Origin",
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Shipment",
+        "qty": "QTY",
+        "viewDetails": "View details",
+        "viewBreakdown": "View breakdown",
+        "defaultCategory": "Meat"
+      },
+      "status": {
+        "active": "Available",
+        "new": "New",
+        "negotiating": "In negotiation",
+        "closed": "Closed"
+      }
+    },
+    "offerDetail": {
+      "loading": "Loading offer…",
+      "loadingTitle": "Loading…",
+      "errorTitle": "Error",
+      "loadError": "Couldn't load this offer: {{error}}",
+      "notFoundTitle": "Offer not found",
+      "notFoundBody": "This offer doesn't exist or is no longer available.",
+      "backToOffers": "Back to offers",
+      "crumbHome": "Home",
+      "crumbOffers": "Offers",
+      "illustrative": "ILLUSTRATIVE IMAGE",
+      "perFcl": "Total Value (Starting price) per FCL",
+      "cutsHead": {
+        "cut": "CUT",
+        "marbling": "MARBLING",
+        "qty": "QTY PER CUT",
+        "price": "PRICE PER KG"
+      },
+      "totalWeight": "Total weight",
+      "fields": {
+        "marbling": "Marbling",
+        "originPortCountry": "Origin (port / country)",
+        "condition": "Condition",
+        "destination": "Destination",
+        "terms": "Terms",
+        "shipment": "Shipment"
+      },
+      "fcl_one": "{{count}} Available FCL",
+      "fcl_other": "{{count}} Available FCLs",
+      "size": "Size: {{size}}",
+      "moreInfo": "More information",
+      "noMoreInfo": "Nothing to display here.",
+      "negotiate": "Negotiate",
+      "placeOrder": "Place Order",
+      "comingSoonFlow": "{{action}} flow — coming soon",
+      "marbling": {
+        "0": "Not Classified",
+        "1": "Low",
+        "2": "Medium",
+        "3": "High",
+        "4": "Premium",
+        "default": "Not Classified"
+      }
+    }
+  }
+}

@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import mundusLogo from "@/assets/mundus-logo.png";
 import slide1 from "@/assets/login-carousel-1.png";
 import slide2 from "@/assets/login-carousel-2.png";
@@ -19,6 +21,7 @@ const slides: string[] = [slide1, slide2, slide3, slide4, slide5, slide6, slide7
 export default function Login() {
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
+  const { t } = useTranslation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
@@ -45,12 +48,15 @@ export default function Login() {
       toast.error(error.message);
       return;
     }
-    toast.success("Welcome back");
+    toast.success(t("auth.welcomeBack"));
     navigate("/", { replace: true });
   };
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex justify-end px-4 pt-3 md:px-6 md:pt-4">
+        <LanguageSwitcher variant="pill" />
+      </div>
       <div className="flex flex-1 flex-col items-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
         {/* LEFT - carousel card (mobile: full-width header, no rounding) */}
         <div className="relative aspect-square w-full max-w-full md:max-w-[600px] overflow-hidden rounded-none md:rounded-[2.5rem] shadow-sm">
@@ -79,7 +85,7 @@ export default function Login() {
                     i === slide ? "w-8" : "w-6 bg-white/50",
                   )}
                   style={i === slide ? { background: "#B64769" } : undefined}
-                  aria-label={`Slide ${i + 1}`}
+                  aria-label={`${t("auth.slide")} ${i + 1}`}
                 />
               ))}
             </div>
@@ -87,37 +93,37 @@ export default function Login() {
 
           {/* RIGHT - form */}
           <div className="w-full max-w-[380px] px-6 py-10 md:p-0">
-            <h1 className="text-[28px] font-bold text-[#111]">Log in</h1>
+            <h1 className="text-[28px] font-bold text-[#111]">{t("auth.login")}</h1>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
-              <label className="block text-sm text-[#333] mb-1.5">E-mail</label>
+              <label className="block text-sm text-[#333] mb-1.5">{t("auth.email")}</label>
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
+                placeholder={t("auth.emailPlaceholder")}
                 className="h-12 w-full rounded-lg border border-[#E0E0E0] px-4 text-sm outline-none focus:border-[#B64769] focus:ring-1 focus:ring-[#B64769]"
               />
             </div>
 
             <div>
-              <label className="block text-sm text-[#333] mb-1.5">Password</label>
+              <label className="block text-sm text-[#333] mb-1.5">{t("auth.password")}</label>
               <div className="relative">
                 <input
                   type={showPwd ? "text" : "password"}
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
+                  placeholder={t("auth.passwordPlaceholder")}
                   className="h-12 w-full rounded-lg border border-[#E0E0E0] px-4 pr-12 text-sm outline-none focus:border-[#B64769] focus:ring-1 focus:ring-[#B64769]"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPwd((v) => !v)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
-                  aria-label="Toggle password visibility"
+                  aria-label={t("auth.togglePassword")}
                 >
                   {showPwd ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                 </button>
@@ -132,28 +138,28 @@ export default function Login() {
                   onChange={(e) => setRemember(e.target.checked)}
                   className="h-4 w-4 rounded border-gray-300 accent-[#B64769]"
                 />
-                Remember me
+                {t("auth.rememberMe")}
               </label>
               <button
                 type="submit"
                 disabled={submitting}
                 className="h-11 w-32 rounded-full bg-[#B64769] text-white text-sm font-medium hover:bg-[#8E3653] transition disabled:opacity-60"
               >
-                {submitting ? "Signing in..." : "Sign in"}
+                {submitting ? t("auth.signingIn") : t("auth.signIn")}
               </button>
             </div>
           </form>
 
           <p className="mt-8 text-center text-sm text-gray-500">
-            Don't have an account?{" "}
+            {t("auth.noAccount")}{" "}
             <Link to="/signup" className="text-[#B64769] font-semibold">
-              Sign up
+              {t("auth.signUp")}
             </Link>
           </p>
 
           <div className="mt-8 flex justify-center gap-6 text-xs text-gray-400">
-            <a href="#" className="underline">Terms and Condition</a>
-            <a href="#" className="underline">Privacy Policy</a>
+            <a href="#" className="underline">{t("common.termsLink")}</a>
+            <a href="#" className="underline">{t("common.privacyLink")}</a>
           </div>
           </div>
       </div>
@@ -162,7 +168,7 @@ export default function Login() {
       <footer className="border-t border-gray-100 py-5">
         <div className="flex items-center justify-center gap-3 text-xs text-gray-500">
           <img src={mundusLogo} alt="Mundus Trade" className="h-5 w-auto opacity-80" />
-          <span>© Copyright 2025 – All rights reserved.</span>
+          <span>{t("common.copyright")}</span>
         </div>
       </footer>
     </div>

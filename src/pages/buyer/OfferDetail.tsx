@@ -1,4 +1,5 @@
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   TagIcon,
   ArrowLeftIcon,
@@ -40,19 +41,11 @@ function formatPrice(n: number): string {
     maximumFractionDigits: 2,
   }).format(n);
 }
-function marblingLabel(code: number | null | undefined): string {
-  if (code == null) return "Not Classified";
-  const labels: Record<number, string> = {
-    0: "Not Classified", 1: "Low", 2: "Medium", 3: "High", 4: "Premium",
-  };
-  return labels[code] ?? "Not Classified";
-}
-
-const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string; label: string }> = {
-  active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a", label: "Available" },
-  new:         { bg: "#fff4e0", fg: "#a85b00", dot: "#f59e0b", label: "New" },
-  negotiating: { bg: "#fef0f0", fg: "#b6354b", dot: "#d65370", label: "In negotiation" },
-  closed:      { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af", label: "Closed" },
+const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string; key: string }> = {
+  active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a", key: "active" },
+  new:         { bg: "#fff4e0", fg: "#a85b00", dot: "#f59e0b", key: "new" },
+  negotiating: { bg: "#fef0f0", fg: "#b6354b", dot: "#d65370", key: "negotiating" },
+  closed:      { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af", key: "closed" },
 };
 function statusFor(s: string | null) {
   if (!s) return STATUS_COLORS.active;
@@ -62,14 +55,15 @@ function statusFor(s: string | null) {
 export default function BuyerOfferDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { offer, loading, error, notFound } = useOffer(id);
   const [moreOpen, setMoreOpen] = useState(false);
 
   if (loading) {
     return (
       <>
-        <CrumbsHeader title="Loading…" navigate={navigate} />
-        <div className="offers-loading">Loading offer…</div>
+        <CrumbsHeader title={t("buyer.offerDetail.loadingTitle")} navigate={navigate} />
+        <div className="offers-loading">{t("buyer.offerDetail.loading")}</div>
       </>
     );
   }
@@ -77,8 +71,8 @@ export default function BuyerOfferDetail() {
   if (error) {
     return (
       <>
-        <CrumbsHeader title="Error" navigate={navigate} />
-        <div className="offers-error">Couldn't load this offer: {error}</div>
+        <CrumbsHeader title={t("buyer.offerDetail.errorTitle")} navigate={navigate} />
+        <div className="offers-error">{t("buyer.offerDetail.loadError", { error })}</div>
       </>
     );
   }
@@ -86,11 +80,11 @@ export default function BuyerOfferDetail() {
   if (notFound || !offer) {
     return (
       <>
-        <CrumbsHeader title="Offer not found" navigate={navigate} />
+        <CrumbsHeader title={t("buyer.offerDetail.notFoundTitle")} navigate={navigate} />
         <div className="empty-state">
-          <p>This offer doesn't exist or is no longer available.</p>
+          <p>{t("buyer.offerDetail.notFoundBody")}</p>
           <button className="btn-back" onClick={() => navigate("/buyer/offers")}>
-            <ArrowLeftIcon size={14} /> Back to offers
+            <ArrowLeftIcon size={14} /> {t("buyer.offerDetail.backToOffers")}
           </button>
         </div>
       </>
@@ -101,11 +95,16 @@ export default function BuyerOfferDetail() {
 }
 
 function CrumbsHeader({ title, navigate }: { title: string; navigate: (path: string) => void }) {
+  const { t } = useTranslation();
   return (
     <div className="crumbs">
-      <a onClick={(e) => { e.preventDefault(); navigate("/buyer"); }} href="/buyer">Home</a>
+      <a onClick={(e) => { e.preventDefault(); navigate("/buyer"); }} href="/buyer">
+        {t("buyer.offerDetail.crumbHome")}
+      </a>
       <span className="sep">›</span>
-      <a onClick={(e) => { e.preventDefault(); navigate("/buyer/offers"); }} href="/buyer/offers">Offers</a>
+      <a onClick={(e) => { e.preventDefault(); navigate("/buyer/offers"); }} href="/buyer/offers">
+        {t("buyer.offerDetail.crumbOffers")}
+      </a>
       <span className="sep">›</span>
       <b>{title}</b>
     </div>
@@ -123,12 +122,19 @@ function OfferDetailContent({
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
 }) {
+  const { t } = useTranslation();
+  const marblingLabel = (code: number | null | undefined): string => {
+    if (code == null) return t("buyer.offerDetail.marbling.default");
+    const key = `buyer.offerDetail.marbling.${code}`;
+    const val = t(key);
+    return val === key ? t("buyer.offerDetail.marbling.default") : val;
+  };
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
 
   const title = mixed
-    ? `Mixed (${items.length} cuts)`
+    ? t("buyer.offers.card.mixedTitle", { count: items.length })
     : firstItem?.customer_product?.name ?? "Offer";
 
   const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
@@ -151,20 +157,25 @@ function OfferDetailContent({
   const marbling =
     firstItem?.customer_product?.beef_marbling != null
       ? marblingLabel(firstItem.customer_product.beef_marbling)
-      : "Not Classified";
+      : t("buyer.offerDetail.marbling.default");
 
   const condition = firstItem?.condition ?? "—";
 
   const incotermLabels = (offer.incoterms ?? []).map((i) => i.incoterm_type);
 
   const status = statusFor(offer.status);
+  const statusLabel = t(`buyer.offers.status.${status.key}`);
 
   return (
     <>
       <div className="crumbs">
-        <a onClick={(e) => { e.preventDefault(); navigate("/buyer"); }} href="/buyer">Home</a>
+        <a onClick={(e) => { e.preventDefault(); navigate("/buyer"); }} href="/buyer">
+          {t("buyer.offerDetail.crumbHome")}
+        </a>
         <span className="sep">›</span>
-        <a onClick={(e) => { e.preventDefault(); navigate("/buyer/offers"); }} href="/buyer/offers">Offers</a>
+        <a onClick={(e) => { e.preventDefault(); navigate("/buyer/offers"); }} href="/buyer/offers">
+          {t("buyer.offerDetail.crumbOffers")}
+        </a>
         <span className="sep">›</span>
         <b>{title}</b>
       </div>
@@ -173,7 +184,7 @@ function OfferDetailContent({
         <div className="od-gallery">
           <div className="od-gallery-main">
             <div className="od-gallery-placeholder">
-              <span className="od-illu-label">ILLUSTRATIVE IMAGE</span>
+              <span className="od-illu-label">{t("buyer.offerDetail.illustrative")}</span>
             </div>
           </div>
           <div className="od-gallery-thumbs">
@@ -202,23 +213,23 @@ function OfferDetailContent({
               style={{ background: status.bg, color: status.fg, marginLeft: "auto" }}
             >
               <span className="status-dot" style={{ background: status.dot }} />
-              {status.label}
+              {statusLabel}
             </span>
           </div>
 
           <div className="od-price-block">
             <div className="od-price-amount">US$ {formatPrice(totalValuePerFcl)}</div>
             <div className="od-price-caption">
-              Total Value (Starting price) per FCL
+              {t("buyer.offerDetail.perFcl")}
             </div>
           </div>
 
           <div className="od-cuts">
             <div className="od-cuts-head">
-              <span>CUT</span>
-              <span>MARBLING</span>
-              <span className="num">QTY PER CUT</span>
-              <span className="num">PRICE PER KG</span>
+              <span>{t("buyer.offerDetail.cutsHead.cut")}</span>
+              <span>{t("buyer.offerDetail.cutsHead.marbling")}</span>
+              <span className="num">{t("buyer.offerDetail.cutsHead.qty")}</span>
+              <span className="num">{t("buyer.offerDetail.cutsHead.price")}</span>
             </div>
             {items.map((it) => (
               <div key={it.id} className="od-cuts-row">
@@ -232,16 +243,16 @@ function OfferDetailContent({
 
           <div className="od-total-weight">
             <span className="amt">{formatNumber(totalKg)} kg</span>
-            <span className="lbl">Total weight</span>
+            <span className="lbl">{t("buyer.offerDetail.totalWeight")}</span>
           </div>
 
           <div className="od-meta-row">
             <div className="od-meta-item">
-              <span className="od-meta-label">Marbling</span>
+              <span className="od-meta-label">{t("buyer.offerDetail.fields.marbling")}</span>
               <span className="od-meta-value">{marbling}</span>
             </div>
             <div className="od-meta-item">
-              <span className="od-meta-label">Origin (port / country)</span>
+              <span className="od-meta-label">{t("buyer.offerDetail.fields.originPortCountry")}</span>
               <span className="od-meta-value">
                 <MapPinIcon size={13} />
                 {offer.origin_port} / {offer.origin_country}
@@ -249,13 +260,13 @@ function OfferDetailContent({
               </span>
             </div>
             <div className="od-meta-item">
-              <span className="od-meta-label">Condition</span>
+              <span className="od-meta-label">{t("buyer.offerDetail.fields.condition")}</span>
               <span className="od-meta-value">{condition}</span>
             </div>
             {firstDest && (
               <div className="od-meta-item">
                 <span className="od-meta-label">
-                  Destination{destinations.length > 1 ? ` (+${destinations.length - 1})` : ""}
+                  {t("buyer.offerDetail.fields.destination")}{destinations.length > 1 ? ` (+${destinations.length - 1})` : ""}
                 </span>
                 <span className="od-meta-value">
                   {destCode && <FlagSVG code={destCode} size={13} />}
@@ -266,15 +277,15 @@ function OfferDetailContent({
           </div>
 
           <div className="od-terms">
-            <div className="od-terms-label">Terms</div>
+            <div className="od-terms-label">{t("buyer.offerDetail.fields.terms")}</div>
             <div className="od-terms-value">{offer.payment_terms}</div>
           </div>
 
           <div className="od-fcl-row">
             <span className="od-fcl-count">
-              {offer.total_fcl ?? 1} Available FCL{(offer.total_fcl ?? 1) === 1 ? "" : "s"}
+              {t((offer.total_fcl ?? 1) === 1 ? "buyer.offerDetail.fcl_one" : "buyer.offerDetail.fcl_other", { count: offer.total_fcl ?? 1 })}
             </span>
-            <span className="od-fcl-size">Size: {offer.container_size}</span>
+            <span className="od-fcl-size">{t("buyer.offerDetail.size", { size: offer.container_size })}</span>
             {incotermLabels.length > 0 && (
               <span className="od-fcl-incoterms">
                 {incotermLabels.map((i) => (
@@ -285,7 +296,7 @@ function OfferDetailContent({
           </div>
 
           <div className="od-shipment-row">
-            <span className="od-meta-label">Shipment</span>
+            <span className="od-meta-label">{t("buyer.offerDetail.fields.shipment")}</span>
             <span className="od-meta-value">
               {formatShipment(offer.shipment_month, offer.shipment_year)}
             </span>
@@ -296,7 +307,7 @@ function OfferDetailContent({
             onClick={() => setMoreOpen(!moreOpen)}
             type="button"
           >
-            <span>More information</span>
+            <span>{t("buyer.offerDetail.moreInfo")}</span>
             <ChevronDownIcon
               size={14}
               style={{ transform: moreOpen ? "rotate(180deg)" : "none", transition: "transform 0.18s" }}
@@ -304,7 +315,7 @@ function OfferDetailContent({
           </button>
           {moreOpen && (
             <div className="od-more-content">
-              {offer.observation ? offer.observation : "Nothing to display here."}
+              {offer.observation ? offer.observation : t("buyer.offerDetail.noMoreInfo")}
             </div>
           )}
 
@@ -312,16 +323,16 @@ function OfferDetailContent({
             <button
               type="button"
               className="btn-od btn-od-outline"
-              onClick={() => alert("Negotiate flow — coming soon")}
+              onClick={() => alert(t("buyer.offerDetail.comingSoonFlow", { action: t("buyer.offerDetail.negotiate") }))}
             >
-              Negotiate
+              {t("buyer.offerDetail.negotiate")}
             </button>
             <button
               type="button"
               className="btn-od btn-od-primary"
-              onClick={() => alert("Place order flow — coming soon")}
+              onClick={() => alert(t("buyer.offerDetail.comingSoonFlow", { action: t("buyer.offerDetail.placeOrder") }))}
             >
-              Place Order
+              {t("buyer.offerDetail.placeOrder")}
             </button>
           </div>
         </div>

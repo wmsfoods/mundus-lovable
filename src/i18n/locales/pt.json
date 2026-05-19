@@ -1,0 +1,255 @@
+{
+  "common": {
+    "back": "Voltar",
+    "cancel": "Cancelar",
+    "proceed": "Continuar",
+    "finish": "Concluir",
+    "submitting": "Enviando...",
+    "complete": "Concluir",
+    "signOut": "Sair",
+    "signedOut": "Sessão encerrada",
+    "loading": "Carregando...",
+    "search": "Buscar",
+    "save": "Salvar",
+    "close": "Fechar",
+    "more": "Mais",
+    "of": "de",
+    "yes": "Sim",
+    "no": "Não",
+    "optional": "opcional",
+    "copyright": "© Copyright 2025 – Todos os direitos reservados.",
+    "termsLink": "Termos e Condições",
+    "privacyLink": "Política de Privacidade",
+    "language": "Idioma",
+    "english": "English",
+    "portuguese": "Português",
+    "spanish": "Español"
+  },
+  "auth": {
+    "login": "Entrar",
+    "email": "E-mail",
+    "emailPlaceholder": "Digite seu e-mail",
+    "password": "Senha",
+    "passwordPlaceholder": "Digite sua senha",
+    "rememberMe": "Lembrar de mim",
+    "signIn": "Entrar",
+    "signingIn": "Entrando...",
+    "welcomeBack": "Bem-vindo de volta",
+    "noAccount": "Não tem uma conta?",
+    "signUp": "Cadastre-se",
+    "togglePassword": "Mostrar/ocultar senha",
+    "slide": "Slide"
+  },
+  "signup": {
+    "title": "Cadastro",
+    "stepOf": "Etapa {{current}} de {{total}}",
+    "steps": {
+      "basic": "Informações Básicas",
+      "company": "Empresa",
+      "review": "Revisão"
+    },
+    "fields": {
+      "fullName": "Nome completo",
+      "fullNamePlaceholder": "Digite seu nome completo",
+      "email": "E-mail",
+      "emailPlaceholder": "Digite seu e-mail",
+      "password": "Senha",
+      "passwordPlaceholder": "Digite sua senha",
+      "repeatPassword": "Repetir senha",
+      "repeatPasswordPlaceholder": "Repita a senha",
+      "companyName": "Nome da Empresa",
+      "cnpj": "CNPJ ou Número de Registro",
+      "role": "Função",
+      "buyer": "Comprador",
+      "supplier": "Fornecedor",
+      "licenses": "Licenças ou Certificados",
+      "uploadHint": "Arraste ou envie um arquivo",
+      "uploadFormat": "Formato: .PNG, .JPG ou .PDF (até 5MB)",
+      "countryOp": "País de operação",
+      "countryOpPlaceholder": "Buscar país",
+      "state": "Estado / Região",
+      "statePlaceholder": "Buscar estado",
+      "address": "Endereço",
+      "addressLine2": "Complemento (opcional)",
+      "country": "País",
+      "businessPhone": "Telefone Comercial",
+      "phonePlaceholder": "Número de telefone"
+    },
+    "passwordsMismatch": "As senhas não coincidem.",
+    "agreeTerms": "Declaro que li e concordo com os",
+    "termsLink": "Termos e Condições",
+    "confirmInfo": "Confirmo que todas as informações fornecidas são verdadeiras, precisas e completas, no melhor do meu conhecimento. Entendo que fornecer informações falsas ou enganosas pode resultar na suspensão ou encerramento da conta.",
+    "fileTooLarge": "O arquivo deve ter até 5MB",
+    "reviewSections": {
+      "basic": "Informações Básicas",
+      "company": "Empresa"
+    },
+    "reviewLabels": {
+      "fullName": "Nome Completo",
+      "email": "E-mail",
+      "companyName": "Nome da Empresa",
+      "cnpj": "CNPJ ou Número de Registro",
+      "role": "Função",
+      "licenses": "Licenças ou Certificados",
+      "countryOp": "País de operação",
+      "state": "Estado / Região",
+      "address": "Endereço",
+      "addressLine2": "Complemento",
+      "country": "País",
+      "businessPhone": "Telefone Comercial"
+    },
+    "roles": {
+      "both": "Comprador e Fornecedor",
+      "buyer": "Comprador",
+      "supplier": "Fornecedor",
+      "none": "—"
+    },
+    "passwordRules": {
+      "title": "A senha deve conter:",
+      "length": "8 caracteres ou mais;",
+      "lower": "Uma letra minúscula;",
+      "upper": "Uma letra maiúscula;",
+      "special": "Um caractere especial."
+    },
+    "success": {
+      "navTitle": "Confirmar E-mail",
+      "title": "Cadastro concluído com sucesso!",
+      "body": "Para ativar sua conta, um código de verificação foi enviado para o e-mail {{email}}.",
+      "resend": "Reenviar código",
+      "enterCode": "Inserir código",
+      "resent": "Código de verificação reenviado",
+      "missingEmail": "E-mail ausente"
+    },
+    "partner": {
+      "navTitle": "Cadastro Parceiro",
+      "titlePrefix": "Cadastro via",
+      "titleSuffix": "Parceiro"
+    }
+  },
+  "shell": {
+    "unit": "kg",
+    "notifications": "Notificações",
+    "buyer": "Comprador",
+    "supplier": "Fornecedor",
+    "more": "Mais",
+    "nav": {
+      "home": "Início",
+      "customers": "Meus Clientes",
+      "requests": "Minhas solicitações",
+      "createRequest": "Criar Solicitação",
+      "offers": "Ofertas",
+      "orders": "Pedidos",
+      "negotiations": "Negociações",
+      "users": "Usuários",
+      "myOffers": "Minhas Ofertas",
+      "createOffer": "Criar Oferta",
+      "sales": "Vendas",
+      "offerRequests": "Solicitações de Oferta"
+    }
+  },
+  "dashboard": {
+    "title": "Painel — Em Breve",
+    "signedInAs": "Conectado como {{email}}"
+  },
+  "comingSoon": {
+    "note": "Esta tela será construída nos próximos commits do port."
+  },
+  "buyer": {
+    "home": {
+      "hero": "Venda com inteligência, negocie mais rápido, mantenha o controle.",
+      "stats": {
+        "activeOffers": "Ofertas Ativas",
+        "totalOffers": "Total de Ofertas",
+        "closedDeals": "Negócios Fechados",
+        "inNegotiation": "Em Negociação",
+        "avgClosing": "Tempo médio de fechamento"
+      },
+      "actions": {
+        "ordersTitle": "Pedidos",
+        "ordersDesc": "Visualize e gerencie seus pedidos.",
+        "ordersCta": "Ver pedidos",
+        "offersTitle": "Ofertas",
+        "offersDesc": "Explore e gerencie ofertas.",
+        "offersCta": "Ver produtos"
+      },
+      "recentOffers": "Ofertas recentes",
+      "recentOrders": "Pedidos recentes",
+      "seeAll": "Ver todas",
+      "emptyOffers": "Ofertas recentes aparecerão aqui quando o marketplace estiver populado.",
+      "emptyOrders": "Pedidos recentes aparecerão aqui após você comprar ofertas."
+    },
+    "offers": {
+      "title": "Ofertas",
+      "crumbHome": "Início",
+      "loading": "Carregando ofertas…",
+      "loadingShort": "Carregando…",
+      "showing_one": "Exibindo <1>{{count}}</1> oferta · {{mt}} MT",
+      "showing_other": "Exibindo <1>{{count}}</1> ofertas · {{mt}} MT",
+      "loadError": "Não foi possível carregar as ofertas: {{error}}",
+      "empty": "Nenhuma oferta ainda. Os fornecedores ainda não publicaram ofertas compatíveis.",
+      "card": {
+        "cuts": "{{count}} cortes",
+        "mixedTitle": "Misto ({{count}} cortes)",
+        "moreCuts": "+{{count}} mais",
+        "origin": "Origem",
+        "destination": "Destino",
+        "incoterm": "Incoterm",
+        "shipment": "Embarque",
+        "qty": "QTD",
+        "viewDetails": "Ver detalhes",
+        "viewBreakdown": "Ver detalhamento",
+        "defaultCategory": "Carne"
+      },
+      "status": {
+        "active": "Disponível",
+        "new": "Novo",
+        "negotiating": "Em negociação",
+        "closed": "Fechado"
+      }
+    },
+    "offerDetail": {
+      "loading": "Carregando oferta…",
+      "loadingTitle": "Carregando…",
+      "errorTitle": "Erro",
+      "loadError": "Não foi possível carregar esta oferta: {{error}}",
+      "notFoundTitle": "Oferta não encontrada",
+      "notFoundBody": "Esta oferta não existe ou não está mais disponível.",
+      "backToOffers": "Voltar para ofertas",
+      "crumbHome": "Início",
+      "crumbOffers": "Ofertas",
+      "illustrative": "IMAGEM ILUSTRATIVA",
+      "perFcl": "Valor total (preço inicial) por FCL",
+      "cutsHead": {
+        "cut": "CORTE",
+        "marbling": "MARMOREIO",
+        "qty": "QTD POR CORTE",
+        "price": "PREÇO POR KG"
+      },
+      "totalWeight": "Peso total",
+      "fields": {
+        "marbling": "Marmoreio",
+        "originPortCountry": "Origem (porto / país)",
+        "condition": "Condição",
+        "destination": "Destino",
+        "terms": "Termos",
+        "shipment": "Embarque"
+      },
+      "fcl_one": "{{count}} FCL disponível",
+      "fcl_other": "{{count}} FCLs disponíveis",
+      "size": "Tamanho: {{size}}",
+      "moreInfo": "Mais informações",
+      "noMoreInfo": "Nada para exibir aqui.",
+      "negotiate": "Negociar",
+      "placeOrder": "Fazer Pedido",
+      "comingSoonFlow": "Fluxo de {{action}} — em breve",
+      "marbling": {
+        "0": "Não Classificado",
+        "1": "Baixo",
+        "2": "Médio",
+        "3": "Alto",
+        "4": "Premium",
+        "default": "Não Classificado"
+      }
+    }
+  }
+}

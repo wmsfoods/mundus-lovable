@@ -1,6 +1,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckCircle, Mail } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation, Trans } from "react-i18next";
 import { SignupShell } from "./SignupShell";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -14,20 +15,21 @@ function maskEmail(email: string) {
 export default function SignupSuccess() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const email = params.get("email") ?? "";
 
   const resend = async () => {
     if (!email) {
-      toast.error("Missing email");
+      toast.error(t("signup.success.missingEmail"));
       return;
     }
     const { error } = await supabase.auth.resend({ type: "signup", email });
     if (error) toast.error(error.message);
-    else toast.success("Verification code resent");
+    else toast.success(t("signup.success.resent"));
   };
 
   return (
-    <SignupShell title="Confirm Email">
+    <SignupShell title={t("signup.success.navTitle")}>
       <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
         <div className="flex justify-center">
           <div className="relative">
@@ -39,23 +41,28 @@ export default function SignupSuccess() {
             />
           </div>
         </div>
-        <h2 className="mt-6 text-xl font-bold text-[#111]">Registration completed successfully!</h2>
+        <h2 className="mt-6 text-xl font-bold text-[#111]">{t("signup.success.title")}</h2>
         <p className="mt-3 text-sm text-gray-500 max-w-md mx-auto">
-          To activate your account, a verification code has been sent to the email address{" "}
-          <span className="font-medium text-gray-700">{maskEmail(email)}</span>.
+          <Trans
+            i18nKey="signup.success.body"
+            values={{ email: maskEmail(email) }}
+            components={{ 1: <span className="font-medium text-gray-700" /> }}
+          >
+            {t("signup.success.body", { email: maskEmail(email) })}
+          </Trans>
         </p>
         <div className="mt-8 flex justify-center gap-3">
           <button
             onClick={resend}
             className="h-11 px-6 rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
           >
-            Resend code
+            {t("signup.success.resend")}
           </button>
           <button
             onClick={() => navigate("/login")}
             className="h-11 px-6 rounded-full bg-[#B64769] text-white hover:bg-[#8E3653] text-sm font-medium"
           >
-            Enter code
+            {t("signup.success.enterCode")}
           </button>
         </div>
       </div>
