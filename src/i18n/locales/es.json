@@ -386,6 +386,49 @@
       "needAction": "{{n}} requieren acción",
       "empty": "Ninguna negociación coincide con los filtros actuales."
     },
+    "negotiationDetail": {
+      "backToList": "Volver a negociaciones",
+      "notFound": "Negociación no encontrada.",
+      "roundOf": "Ronda {{current}} de {{total}}",
+      "roundsCount": "{{current}} de {{total}} rondas",
+      "updated": "Actualizado el {{date}}",
+      "bidMessage": "{{buyer}} hizo una puja en la ronda {{round}}. Responde con una contraoferta, acepta o rechaza.",
+      "asking": "Precio pedido",
+      "buyerBid": "Puja del comprador",
+      "yourCounter": "Tu contraoferta",
+      "gap": "Diferencia Puja vs Contraoferta",
+      "bid": "Puja",
+      "counter": "Contraoferta",
+      "current": "Actual",
+      "actions": {
+        "sendCounter": "Enviar contraoferta",
+        "acceptBid": "Aceptar puja",
+        "reject": "Rechazar"
+      },
+      "buyerInfo": "Info del comprador",
+      "buyer": "Comprador",
+      "avgReply": "Tiempo medio de respuesta",
+      "fclsWeight": "FCLs · Peso",
+      "valuePerFcl": "Valor por FCL",
+      "movement": "Movimiento (pedido → puja)",
+      "timeline": "Cronología de la ronda",
+      "priceDetails": "Detalles de precio",
+      "meta": {
+        "incoterm": "Incoterm",
+        "destination": "Destino",
+        "port": "Puerto",
+        "payment": "Pago",
+        "fcls": "FCLs",
+        "weight": "Peso"
+      },
+      "col": {
+        "product": "Producto",
+        "qtyLb": "Cant (lb)",
+        "asking": "Pedido",
+        "bidR": "Puja R{{n}}",
+        "counterR": "Contraoferta R{{n}}"
+      }
+    },
     "users": {
       "title": "Usuarios",
       "searchPlaceholder": "Buscar por nombre, email o cargo...",
