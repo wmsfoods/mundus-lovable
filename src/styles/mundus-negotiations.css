@@ -398,27 +398,54 @@
   font-weight: var(--weight-semibold);
   cursor: pointer;
 }
-.nd-actions .btn-counter:hover { background: var(--brand-hover, #9d174d); }
-.nd-actions .btn-accept {
-  background: #22c55e;
+.nd-actions .btn-counter,
+.nd-actions .btn-counter:hover,
+.nd-actions .btn-counter:focus,
+.nd-actions .btn-counter:active {
+  background: var(--brand);
   color: #fff;
+}
+.nd-actions .btn-counter:hover {
+  background: #9d174d;
+  color: #fff;
+}
+.nd-actions .btn-accept {
   padding: 10px 16px;
   border-radius: var(--radius-sm);
   border: none;
   font-weight: var(--weight-semibold);
   cursor: pointer;
 }
-.nd-actions .btn-accept:hover { background: #16a34a; }
+.nd-actions .btn-accept,
+.nd-actions .btn-accept:hover,
+.nd-actions .btn-accept:focus,
+.nd-actions .btn-accept:active {
+  background: #22c55e;
+  color: #fff;
+}
+.nd-actions .btn-accept:hover {
+  background: #16a34a;
+  color: #fff;
+}
 .nd-actions .btn-reject {
-  background: #fff;
-  color: var(--fg);
   padding: 10px 16px;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   font-weight: var(--weight-semibold);
   cursor: pointer;
 }
-.nd-actions .btn-reject:hover { background: var(--bg-subtle, #f7f7f8); }
+.nd-actions .btn-reject,
+.nd-actions .btn-reject:hover,
+.nd-actions .btn-reject:focus,
+.nd-actions .btn-reject:active {
+  background: #fff;
+  color: var(--fg, #1f1f1f);
+  border: 1px solid var(--border);
+}
+.nd-actions .btn-reject:hover {
+  background: #f7f7f8;
+  color: var(--fg, #1f1f1f);
+}
 
 .nd-buyer-info { font-size: var(--fs-sm); }
 .nd-buyer-info dl { margin: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
