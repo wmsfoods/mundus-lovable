@@ -9,11 +9,14 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
+import { Logo } from "@/components/Logo";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 
 export function Topbar() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
+  const isMobile = useIsMobileShell();
   const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -48,7 +51,12 @@ export function Topbar() {
     SUPPORTED_LANGUAGES[0];
 
   return (
-    <div className="tb">
+    <div className={`tb ${isMobile ? "tb-mobile" : ""}`.trim()}>
+      {isMobile && (
+        <div className="tb-brand">
+          <Logo size="sm" />
+        </div>
+      )}
       <div ref={langRef} style={{ position: "relative" }}>
         <button
           className="tb-item"
@@ -58,7 +66,7 @@ export function Topbar() {
           aria-expanded={langOpen}
         >
           <GlobeIcon size={16} />
-          {currentLang.label}
+          {isMobile ? currentLang.code.toUpperCase() : currentLang.label}
           <ChevronDownIcon size={14} />
         </button>
         {langOpen && (
@@ -106,11 +114,13 @@ export function Topbar() {
           </div>
         )}
       </div>
-      <div className="tb-divider" />
-      <button className="tb-item" type="button">
-        {t("shell.unit")}
-        <ChevronDownIcon size={14} />
-      </button>
+      {!isMobile && <div className="tb-divider" />}
+      {!isMobile && (
+        <button className="tb-item" type="button">
+          {t("shell.unit")}
+          <ChevronDownIcon size={14} />
+        </button>
+      )}
       <button className="tb-bell" type="button" aria-label={t("shell.notifications")}>
         <BellIcon size={18} />
         <span className="dot" />

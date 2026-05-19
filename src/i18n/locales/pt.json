@@ -145,6 +145,10 @@
       "createOffer": "Criar Oferta",
       "sales": "Vendas",
       "offerRequests": "Solicitações de Oferta"
+    },
+    "bottom": {
+      "create": "Criar",
+      "negotiations": "Chat"
     }
   },
   "dashboard": {
