@@ -6,7 +6,7 @@ type ComingSoonProps = {
 export function ComingSoon({ title, description }: ComingSoonProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-6">
-      <div className="h-12 w-12 rounded-full bg-p050 text-p800 flex items-center justify-center text-xl font-semibold mb-4">
+      <div className="h-12 w-12 rounded-full bg-p-50 text-p-800 flex items-center justify-center text-xl font-semibold mb-4">
         ⏳
       </div>
       <h1 className="text-2xl font-semibold text-foreground">{title}</h1>

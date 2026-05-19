@@ -27,7 +27,7 @@ export default function Login() {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/dashboard", { replace: true });
+    if (!authLoading && user) navigate("/", { replace: true });
   }, [user, authLoading, navigate]);
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export default function Login() {
       return;
     }
     toast.success("Welcome back");
-    navigate("/dashboard", { replace: true });
+    navigate("/", { replace: true });
   };
 
   return (
@@ -78,7 +78,7 @@ export default function Login() {
                     "h-1.5 rounded-full transition-all",
                     i === slide ? "w-8" : "w-6 bg-white/50",
                   )}
-                  style={i === slide ? { background: "#9B2251" } : undefined}
+                  style={i === slide ? { background: "#B64769" } : undefined}
                   aria-label={`Slide ${i + 1}`}
                 />
               ))}
@@ -98,7 +98,7 @@ export default function Login() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="Enter your email"
-                className="h-12 w-full rounded-lg border border-[#E0E0E0] px-4 text-sm outline-none focus:border-[#9B2251] focus:ring-1 focus:ring-[#9B2251]"
+                className="h-12 w-full rounded-lg border border-[#E0E0E0] px-4 text-sm outline-none focus:border-[#B64769] focus:ring-1 focus:ring-[#B64769]"
               />
             </div>
 
@@ -111,7 +111,7 @@ export default function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Enter your password"
-                  className="h-12 w-full rounded-lg border border-[#E0E0E0] px-4 pr-12 text-sm outline-none focus:border-[#9B2251] focus:ring-1 focus:ring-[#9B2251]"
+                  className="h-12 w-full rounded-lg border border-[#E0E0E0] px-4 pr-12 text-sm outline-none focus:border-[#B64769] focus:ring-1 focus:ring-[#B64769]"
                 />
                 <button
                   type="button"
@@ -130,14 +130,14 @@ export default function Login() {
                   type="checkbox"
                   checked={remember}
                   onChange={(e) => setRemember(e.target.checked)}
-                  className="h-4 w-4 rounded border-gray-300 accent-[#9B2251]"
+                  className="h-4 w-4 rounded border-gray-300 accent-[#B64769]"
                 />
                 Remember me
               </label>
               <button
                 type="submit"
                 disabled={submitting}
-                className="h-11 w-32 rounded-full bg-[#9B2251] text-white text-sm font-medium hover:bg-[#7a1a3f] transition disabled:opacity-60"
+                className="h-11 w-32 rounded-full bg-[#B64769] text-white text-sm font-medium hover:bg-[#8E3653] transition disabled:opacity-60"
               >
                 {submitting ? "Signing in..." : "Sign in"}
               </button>
@@ -146,7 +146,7 @@ export default function Login() {
 
           <p className="mt-8 text-center text-sm text-gray-500">
             Don't have an account?{" "}
-            <Link to="/signup" className="text-[#9B2251] font-semibold">
+            <Link to="/signup" className="text-[#B64769] font-semibold">
               Sign up
             </Link>
           </p>
