@@ -253,61 +253,74 @@
         "3": "Alto",
         "4": "Premium",
         "default": "Não Classificado"
+      }
+    }
+  },
+  "supplier": {
+    "requests": {
+      "title": "Meus pedidos de oferta",
+      "subtitle": "Acompanhe os pedidos de oferta enviados ao marketplace ou suppliers.",
+      "crumbHome": "Início",
+      "searchPlaceholder": "Buscar",
+      "showing": "Exibindo {{from}} - {{to}} de {{total}} resultados",
+      "empty": "Nenhum pedido corresponde aos filtros.",
+      "col": {
+        "requestNumber": "Nº do Pedido",
+        "client": "Cliente",
+        "product": "Produto",
+        "destinationCountry": "País de Destino",
+        "incoterms": "Incoterms",
+        "quantity": "Quantidade",
+        "container": "Contêiner",
+        "status": "Status",
+        "createdAt": "Criado em",
+        "actions": "Ações"
       },
-      "customers": {
-        "title": "Meus Clientes",
-        "crumbHome": "Início",
-        "showing": "Mostrando 1 - {{shown}} itens de {{total}} resultados",
-        "searchPlaceholder": "Pesquisar clientes",
-        "filterLabel": "Filtrar status",
-        "filter": {
-          "all": "Todos",
-          "active": "Ativos",
-          "inactive": "Inativos"
+      "status": {
+        "new": "Novo",
+        "with_responses": "Com respostas",
+        "offer_sent": "Oferta enviada",
+        "not_interested": "Sem interesse"
+      },
+      "actions": {
+        "createOffer": "Criar oferta",
+        "view": "Ver",
+        "notInterested": "Sem interesse"
+      },
+      "notInterestedModal": {
+        "title": "Marcar como Sem Interesse?",
+        "body": "O pedido {{requestNumber}} será marcado como sem interesse e removido da sua lista ativa.",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar"
+      },
+      "detail": {
+        "crumb": "Pedido {{requestNumber}}",
+        "title": "Detalhes do pedido de oferta",
+        "subtitle": "Veja as informações do pedido de oferta {{requestNumber}}.",
+        "createdAt": "Criado em",
+        "productsHeading": "Produtos",
+        "logisticsHeading": "Logística e Detalhes",
+        "additionalHeading": "Informações Adicionais",
+        "fields": {
+          "category": "Categoria",
+          "quantity": "Quantidade",
+          "targetPrice": "Preço alvo",
+          "specification": "Especificação",
+          "destinationCountry": "País de destino",
+          "destinationPort": "Porto de destino",
+          "incoterms": "Incoterms",
+          "containerSize": "Tamanho do contêiner",
+          "productTemperature": "Temperatura do produto",
+          "numberOfContainers": "Número de contêineres",
+          "shipmentDate": "Data do embarque"
         },
-        "selectAll": "Selecionar todos",
-        "clearSelection": "Limpar seleção",
-        "export": "Exportar",
-        "importCsv": "Importar CSV",
-        "inviteCustomer": "Convidar Cliente",
-        "edit": "Editar",
-        "empty": "Nenhum cliente corresponde aos filtros.",
-        "col": {
-          "company": "Empresa",
-          "contact": "Contato",
-          "phone": "Telefone",
-          "country": "País",
-          "email": "E-mail",
-          "status": "Status",
-          "invitedAt": "Convidado em",
-          "active": "Ativo",
-          "actions": "Ações"
-        },
-        "status": {
-          "active": "Ativo",
-          "inactive": "Inativo"
-        },
-        "invite": {
-          "title": "Convidar Novo Cliente",
-          "company": "Empresa",
-          "companyPlaceholder": "Ex: Acme Corp",
-          "contact": "Nome do Contato",
-          "contactPlaceholder": "Ex: João da Silva",
-          "email": "E-mail",
-          "emailPlaceholder": "joao@exemplo.com",
-          "phone": "Telefone",
-          "phonePlaceholder": "+55 11 91234-5678",
-          "country": "País",
-          "selectPlaceholder": "Selecione",
-          "send": "Enviar Convite"
-        },
-        "import": {
-          "title": "Importar CSV",
-          "body": "Envie um arquivo CSV com as seguintes colunas: CompanyName, ContactName, Email, Phone, Country.",
-          "template": "Baixar Modelo",
-          "clickToUpload": "Clique para enviar o CSV",
-          "import": "Importar"
-        }
+        "noAdditionalInfo": "Nenhuma informação adicional.",
+        "createOfferCta": "Criar oferta a partir deste pedido",
+        "notInterestedCta": "Sem interesse",
+        "createOfferComingSoon": "Fluxo de Criar Oferta — em breve",
+        "notFoundTitle": "Pedido não encontrado",
+        "notFoundBody": "Este pedido de oferta não existe ou foi removido.",
+        "back": "Voltar aos pedidos"
       }
     }
   }
