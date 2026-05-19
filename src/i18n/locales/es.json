@@ -841,6 +841,45 @@
       "routes": {
         "applyAllError": "Defina el flete de la primera ruta antes de aplicar a todas.",
         "applyAllSuccess": "Flete aplicado a todas las rutas."
+      },
+      "sidebar": {
+        "title": "Logística y Condiciones",
+        "subtitle": "Defina las condiciones de esta oferta.",
+        "containerSize": "Tamaño del contenedor",
+        "temperature": "Temperatura",
+        "frozen": "Congelado",
+        "chilled": "Refrigerado",
+        "certifications": "Certificaciones",
+        "incoterms": "Incoterms aceptados",
+        "paymentTerms": "Condiciones de pago",
+        "paymentTermsPlaceholder": "ej: 30% Anticipado, Saldo TT",
+        "shipment": "Embarque",
+        "distribution": "Distribución",
+        "dist": {
+          "marketplace": "Marketplace",
+          "marketplaceHint": "Visible para todos los compradores calificados",
+          "all_customers": "Todos mis clientes",
+          "all_customersHint": "Solo clientes de su lista",
+          "specific": "Clientes específicos",
+          "specificHint": "Elija compradores uno a uno"
+        },
+        "attachments": "Adjuntos",
+        "attachmentsHint": "Suelte fichas técnicas, certificados, fotos",
+        "attachmentsStub": "(carga de archivos próximamente)"
+      },
+      "preview": {
+        "title": "Vista previa en vivo",
+        "hint": "Cómo los compradores verán su oferta",
+        "cuts": "cortes",
+        "destinations": "Destinos",
+        "incoterm": "Incoterm",
+        "shipment": "Embarque",
+        "volume": "Volumen",
+        "from": "Desde",
+        "placeholderTitle": "El título de su oferta aparecerá aquí"
+      },
+      "prefill": {
+        "toast": "Pre-completado desde la solicitud #{{requestId}} — revise y complete los campos faltantes"
       }
     },
     "home": {

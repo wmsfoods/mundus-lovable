@@ -841,6 +841,45 @@
       "routes": {
         "applyAllError": "Set the first route's freight before applying to all.",
         "applyAllSuccess": "Freight applied to all routes."
+      },
+      "sidebar": {
+        "title": "Logistics & Terms",
+        "subtitle": "Set the conditions for this offer.",
+        "containerSize": "Container size",
+        "temperature": "Temperature",
+        "frozen": "Frozen",
+        "chilled": "Chilled",
+        "certifications": "Certifications",
+        "incoterms": "Incoterms accepted",
+        "paymentTerms": "Payment terms",
+        "paymentTermsPlaceholder": "e.g. 30% Advance, Balance TT",
+        "shipment": "Shipment",
+        "distribution": "Distribution",
+        "dist": {
+          "marketplace": "Marketplace",
+          "marketplaceHint": "Visible to all qualified buyers",
+          "all_customers": "All my customers",
+          "all_customersHint": "Only customers in your trader list",
+          "specific": "Specific customers",
+          "specificHint": "Choose buyers one by one"
+        },
+        "attachments": "Attachments",
+        "attachmentsHint": "Drop spec sheets, certificates, photos",
+        "attachmentsStub": "(file upload coming soon)"
+      },
+      "preview": {
+        "title": "Live preview",
+        "hint": "How buyers will see your offer",
+        "cuts": "cuts",
+        "destinations": "Destinations",
+        "incoterm": "Incoterm",
+        "shipment": "Shipment",
+        "volume": "Volume",
+        "from": "From",
+        "placeholderTitle": "Your offer title will appear here"
+      },
+      "prefill": {
+        "toast": "Pre-filled from request #{{requestId}} — review & complete the missing fields"
       }
     },
     "home": {

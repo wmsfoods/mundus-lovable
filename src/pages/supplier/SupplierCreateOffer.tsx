@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Crumbs } from "@/components/mundus/Crumbs";
@@ -66,6 +66,40 @@ export default function SupplierCreateOffer() {
   const [routes, setRoutes] = useState<Route[]>([
     { id: crypto.randomUUID(), destPortId: "", destPortLabel: "", freightUsdPerFcl: 0 },
   ]);
+
+  // Logistics & Terms sidebar state (C16c)
+  const [containerSize, setContainerSize] = useState<"20ft" | "40ft">("40ft");
+  const [temperature, setTemperature] = useState<"frozen" | "chilled">("frozen");
+  const [certifications, setCertifications] = useState<string[]>([]);
+  const [incoterms, setIncoterms] = useState<string[]>(["CFR"]);
+  const [paymentTerms, setPaymentTerms] = useState("30% Advance, Balance TT");
+  const [shipmentMonth, setShipmentMonth] = useState("");
+  const [distribution, setDistribution] = useState<"marketplace" | "all_customers" | "specific">("marketplace");
+
+  const CERTIFICATION_OPTIONS = ["Halal", "Kosher", "USDA", "HACCP", "BRC", "Organic"];
+  const INCOTERM_OPTIONS = ["CFR", "CIF", "FOB", "EXW", "DAP", "DDP"];
+
+  const toggleCert = (cert: string) => {
+    setCertifications((prev) => (prev.includes(cert) ? prev.filter((c) => c !== cert) : [...prev, cert]));
+  };
+  const toggleIncoterm = (term: string) => {
+    setIncoterms((prev) => (prev.includes(term) ? prev.filter((t) => t !== term) : [...prev, term]));
+  };
+
+  // Pre-fill from request detection
+  const [searchParams] = useSearchParams();
+  const fromRequestId = searchParams.get("from");
+  useEffect(() => {
+    if (fromRequestId) {
+      setOfferName(`Offer for request #${fromRequestId}`);
+      setIncoterms(["CFR"]);
+      toast.success(
+        t("supplier.createOffer.prefill.toast", { requestId: fromRequestId }),
+        { duration: 5000 }
+      );
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fromRequestId]);
 
   const SPECIES_OPTIONS: { value: Species; label: string }[] = [
     { value: "beef", label: t("supplier.createOffer.form.species.beef") },
@@ -259,6 +293,8 @@ export default function SupplierCreateOffer() {
         )}
       </section>
 
+      <div className="co-layout">
+      <div className="co-main-col">
       <div className="co-form">
         {/* SECTION 1: Basic info */}
         <section className="co-section">
@@ -511,6 +547,174 @@ export default function SupplierCreateOffer() {
           </div>
         </section>
       </div>
+      </div>
+
+      <aside className="co-side-col">
+        <div className="co-sidebar">
+          <header className="co-sidebar-head">
+            <h2>{t("supplier.createOffer.sidebar.title")}</h2>
+            <p>{t("supplier.createOffer.sidebar.subtitle")}</p>
+          </header>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label">{t("supplier.createOffer.sidebar.containerSize")}</label>
+            <div className="co-segmented co-segmented-sm">
+              <button type="button" className={`co-seg-btn ${containerSize === "20ft" ? "active" : ""}`} onClick={() => setContainerSize("20ft")}>20' FCL</button>
+              <button type="button" className={`co-seg-btn ${containerSize === "40ft" ? "active" : ""}`} onClick={() => setContainerSize("40ft")}>40' FCL</button>
+            </div>
+          </div>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label">{t("supplier.createOffer.sidebar.temperature")}</label>
+            <div className="co-segmented co-segmented-sm">
+              <button type="button" className={`co-seg-btn ${temperature === "frozen" ? "active" : ""}`} onClick={() => setTemperature("frozen")}>
+                ❄ {t("supplier.createOffer.sidebar.frozen")}
+              </button>
+              <button type="button" className={`co-seg-btn ${temperature === "chilled" ? "active" : ""}`} onClick={() => setTemperature("chilled")}>
+                {t("supplier.createOffer.sidebar.chilled")}
+              </button>
+            </div>
+          </div>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label">{t("supplier.createOffer.sidebar.certifications")}</label>
+            <div className="co-tag-list">
+              {CERTIFICATION_OPTIONS.map((cert) => (
+                <button
+                  key={cert}
+                  type="button"
+                  className={`co-tag ${certifications.includes(cert) ? "active" : ""}`}
+                  onClick={() => toggleCert(cert)}
+                >
+                  {cert}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label">{t("supplier.createOffer.sidebar.incoterms")}</label>
+            <div className="co-tag-list">
+              {INCOTERM_OPTIONS.map((term) => (
+                <button
+                  key={term}
+                  type="button"
+                  className={`co-tag ${incoterms.includes(term) ? "active" : ""}`}
+                  onClick={() => toggleIncoterm(term)}
+                >
+                  {term}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label" htmlFor="payment-terms">{t("supplier.createOffer.sidebar.paymentTerms")}</label>
+            <input
+              id="payment-terms"
+              type="text"
+              className="co-input"
+              value={paymentTerms}
+              onChange={(e) => setPaymentTerms(e.target.value)}
+              placeholder={t("supplier.createOffer.sidebar.paymentTermsPlaceholder")}
+            />
+          </div>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label" htmlFor="shipment-month">{t("supplier.createOffer.sidebar.shipment")}</label>
+            <input
+              id="shipment-month"
+              type="month"
+              className="co-input"
+              value={shipmentMonth}
+              onChange={(e) => setShipmentMonth(e.target.value)}
+            />
+          </div>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label">{t("supplier.createOffer.sidebar.distribution")}</label>
+            <div className="co-radio-list">
+              {(["marketplace", "all_customers", "specific"] as const).map((opt) => (
+                <label key={opt} className={`co-radio ${distribution === opt ? "active" : ""}`}>
+                  <input
+                    type="radio"
+                    name="distribution"
+                    value={opt}
+                    checked={distribution === opt}
+                    onChange={() => setDistribution(opt)}
+                  />
+                  <div>
+                    <strong>{t(`supplier.createOffer.sidebar.dist.${opt}`)}</strong>
+                    <span>{t(`supplier.createOffer.sidebar.dist.${opt}Hint`)}</span>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div className="co-sb-field">
+            <label className="co-sb-label">{t("supplier.createOffer.sidebar.attachments")}</label>
+            <div className="co-dropzone-sm">
+              <p>{t("supplier.createOffer.sidebar.attachmentsHint")}</p>
+              <span className="co-ai-stub">{t("supplier.createOffer.sidebar.attachmentsStub")}</span>
+            </div>
+          </div>
+        </div>
+      </aside>
+      </div>
+
+      <section className="co-preview">
+        <header className="co-preview-head">
+          <h2>
+            <span className="co-preview-icon">👁</span> {t("supplier.createOffer.preview.title")}
+          </h2>
+          <span className="co-preview-hint">{t("supplier.createOffer.preview.hint")}</span>
+        </header>
+        <div className="co-preview-card">
+          <div className="co-preview-card-head">
+            <span className="co-preview-chip">
+              {t(`supplier.createOffer.form.species.${species}`)} · {temperature === "frozen" ? t("supplier.createOffer.sidebar.frozen") : t("supplier.createOffer.sidebar.chilled")}
+            </span>
+            {cuts.filter((c) => c.product.trim()).length > 1 && (
+              <span className="co-preview-badge">
+                {cuts.filter((c) => c.product.trim()).length} {t("supplier.createOffer.preview.cuts")}
+              </span>
+            )}
+          </div>
+          <h3>{offerName.trim() || t("supplier.createOffer.preview.placeholderTitle")}</h3>
+          <div className="co-preview-meta">
+            <div>
+              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.destinations")}</span>
+              <span className="co-preview-meta-v">
+                {routes.filter((r) => r.destPortLabel).length > 0
+                  ? routes.filter((r) => r.destPortLabel).map((r) => r.destPortLabel.split(",")[0]).join(", ")
+                  : "—"}
+              </span>
+            </div>
+            <div>
+              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.incoterm")}</span>
+              <span className="co-preview-meta-v">{incoterms.length > 0 ? incoterms.join(" / ") : "—"}</span>
+            </div>
+            <div>
+              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.shipment")}</span>
+              <span className="co-preview-meta-v">{shipmentMonth || "—"}</span>
+            </div>
+            <div>
+              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.volume")}</span>
+              <span className="co-preview-meta-v">{totalCutsWeightKg > 0 ? `${totalCutsWeightKg.toLocaleString()} kg` : "—"}</span>
+            </div>
+          </div>
+          <div className="co-preview-price">
+            <span className="co-preview-price-l">{t("supplier.createOffer.preview.from")}</span>
+            <span className="co-preview-price-v">
+              ${cuts.length > 0 && cuts.some((c) => c.pricePerKgUsd > 0)
+                ? Math.min(...cuts.filter((c) => c.pricePerKgUsd > 0).map((c) => c.pricePerKgUsd)).toFixed(2)
+                : "0.00"}
+              <small>/kg</small>
+            </span>
+          </div>
+        </div>
+      </section>
 
       <footer className="co-footer">
         <button type="button" className="co-btn co-btn-ghost" onClick={handleCancel}>
