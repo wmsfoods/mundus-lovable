@@ -426,6 +426,75 @@
         }
       }
     },
+    "offers": {
+      "heroTitle": "Track your orders easily and quickly.",
+      "crumbHome": "Home",
+      "title": "Offers",
+      "showing": "Showing {{from}} - {{to}} items of {{total}} results",
+      "sortBy": "Sort by",
+      "createOffer": "Create Offer +",
+      "loadMore": "Load more items",
+      "empty": "You don't have any offers yet.",
+      "sort": {
+        "newest": "Newest first",
+        "oldest": "Oldest first",
+        "priceDesc": "Price: high to low",
+        "priceAsc": "Price: low to high"
+      },
+      "status": {
+        "active": "Available",
+        "new": "New",
+        "negotiating": "Negotiating",
+        "closed": "Closed",
+        "inactive": "Inactive"
+      },
+      "card": {
+        "cuts": "{{count}} CUTS",
+        "moreCuts": "+{{count}} more",
+        "origin": "Origin",
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Shipment",
+        "priceStartingFrom": "Price starting from",
+        "perFcl": "per FCL",
+        "viewDetails": "View details"
+      },
+      "detail": {
+        "notFoundTitle": "Offer not found",
+        "notFoundBody": "This offer doesn't exist or has been removed.",
+        "backToOffers": "Back to offers",
+        "illustrative": "ILLUSTRATIVE IMAGE",
+        "specifications": "Specifications ({{count}})",
+        "totalValuePerFcl": "Total Value (Starting price) per FCL",
+        "totalWeight": "Total weight",
+        "noMoreInfo": "Nothing to display here.",
+        "moreInfo": "More information",
+        "fcl_one": "{{count}} Available FCL(s)",
+        "fcl_other": "{{count}} Available FCL(s)",
+        "size": "Size: {{size}}",
+        "deactivate": "Deactivate offer",
+        "activate": "Activate offer",
+        "inactiveBanner": "This offer is currently inactive and not visible to buyers.",
+        "clone": "Clone Offer",
+        "share": "Share this offer",
+        "cloneComingSoon": "Clone Offer — coming soon",
+        "shareComingSoon": "Share this offer — coming soon",
+        "cutsHead": {
+          "cut": "CUT",
+          "marbling": "MARBLING",
+          "qty": "QTY PER CUT",
+          "price": "PRICE PER KG"
+        },
+        "fields": {
+          "marbling": "Marbling",
+          "originPortCountry": "Origin (port / country)",
+          "condition": "Condition",
+          "destination": "Destination",
+          "terms": "Terms",
+          "shipment": "Shipment"
+        }
+      }
+    },
     "home": {
       "heroTitle": "Sell smarter, negotiate faster, stay in control.",
       "heroSubtitle": "Manage your active offers, review buyer proposals, and ship deals from one place.",

@@ -19,6 +19,8 @@ import BuyerOffers from "./pages/buyer/Offers.tsx";
 import BuyerOfferDetail from "./pages/buyer/OfferDetail.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
+import SupplierOffers from "./pages/supplier/Offers.tsx";
+import SupplierOfferDetail from "./pages/supplier/OfferDetail.tsx";
 import SupplierRequests from "./pages/supplier/Requests.tsx";
 import SupplierRequestDetail from "./pages/supplier/RequestDetail.tsx";
 import SupplierSales from "./pages/supplier/Sales.tsx";
@@ -70,6 +72,8 @@ const App = () => (
               }
             >
               <Route index element={<SupplierHome />} />
+              <Route path="offers" element={<SupplierOffers />} />
+              <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="requests" element={<SupplierRequests />} />
               <Route path="requests/:id" element={<SupplierRequestDetail />} />
               <Route path="sales" element={<SupplierSales />} />

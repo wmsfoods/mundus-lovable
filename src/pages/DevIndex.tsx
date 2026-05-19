@@ -32,7 +32,8 @@ const ROUTES: { group: string; items: Row[] }[] = [
     group: "Supplier",
     items: [
       { path: "/supplier", label: "Supplier Home", status: "ready" },
-      { path: "/supplier/offers", label: "My Offers", status: "stub" },
+      { path: "/supplier/offers", label: "My Offers", status: "ready" },
+      { path: "/supplier/offers/:id", label: "Offer Detail (pick from list)", status: "ready" },
       { path: "/supplier/offers/new", label: "Create Offer", status: "stub" },
       { path: "/supplier/sales", label: "Sales", status: "ready" },
       { path: "/supplier/sales/:id", label: "Sale Detail (pick from list)", status: "ready" },

@@ -426,6 +426,75 @@
         }
       }
     },
+    "offers": {
+      "heroTitle": "Haga seguimiento de sus pedidos fácilmente.",
+      "crumbHome": "Inicio",
+      "title": "Ofertas",
+      "showing": "Mostrando {{from}} - {{to}} ítems de {{total}} resultados",
+      "sortBy": "Ordenar por",
+      "createOffer": "Crear Oferta +",
+      "loadMore": "Cargar más ítems",
+      "empty": "Aún no tiene ofertas.",
+      "sort": {
+        "newest": "Más recientes",
+        "oldest": "Más antiguas",
+        "priceDesc": "Precio: mayor a menor",
+        "priceAsc": "Precio: menor a mayor"
+      },
+      "status": {
+        "active": "Disponible",
+        "new": "Nueva",
+        "negotiating": "Negociando",
+        "closed": "Cerrada",
+        "inactive": "Inactiva"
+      },
+      "card": {
+        "cuts": "{{count}} CORTES",
+        "moreCuts": "+{{count}} más",
+        "origin": "Origen",
+        "destination": "Destino",
+        "incoterm": "Incoterm",
+        "shipment": "Embarque",
+        "priceStartingFrom": "Precio desde",
+        "perFcl": "por FCL",
+        "viewDetails": "Ver detalles"
+      },
+      "detail": {
+        "notFoundTitle": "Oferta no encontrada",
+        "notFoundBody": "Esta oferta no existe o ha sido removida.",
+        "backToOffers": "Volver a las ofertas",
+        "illustrative": "IMAGEN ILUSTRATIVA",
+        "specifications": "Especificaciones ({{count}})",
+        "totalValuePerFcl": "Valor Total (Precio inicial) por FCL",
+        "totalWeight": "Peso total",
+        "noMoreInfo": "Nada para mostrar aquí.",
+        "moreInfo": "Más información",
+        "fcl_one": "{{count}} FCL(s) Disponible",
+        "fcl_other": "{{count}} FCL(s) Disponibles",
+        "size": "Tamaño: {{size}}",
+        "deactivate": "Desactivar oferta",
+        "activate": "Activar oferta",
+        "inactiveBanner": "Esta oferta está inactiva y no es visible para los compradores.",
+        "clone": "Clonar Oferta",
+        "share": "Compartir oferta",
+        "cloneComingSoon": "Clonar Oferta — próximamente",
+        "shareComingSoon": "Compartir oferta — próximamente",
+        "cutsHead": {
+          "cut": "CORTE",
+          "marbling": "MARMOREO",
+          "qty": "CANT POR CORTE",
+          "price": "PRECIO POR KG"
+        },
+        "fields": {
+          "marbling": "Marmoreo",
+          "originPortCountry": "Origen (puerto / país)",
+          "condition": "Condición",
+          "destination": "Destino",
+          "terms": "Términos",
+          "shipment": "Embarque"
+        }
+      }
+    },
     "home": {
       "heroTitle": "Venda con inteligencia, negocie más rápido, mantenga el control.",
       "heroSubtitle": "Gestione sus ofertas activas, revise propuestas de compradores y embarque negocios desde un solo lugar.",
