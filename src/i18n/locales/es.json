@@ -384,49 +384,67 @@
       },
       "bidsCount": "{{n}} PUJAS",
       "needAction": "{{n}} requieren acción",
-      "empty": "Ninguna negociación coincide con los filtros actuales."
-    },
-    "negotiationDetail": {
-      "backToList": "Volver a negociaciones",
-      "notFound": "Negociación no encontrada.",
-      "roundOf": "Ronda {{current}} de {{total}}",
-      "roundsCount": "{{current}} de {{total}} rondas",
-      "updated": "Actualizado el {{date}}",
-      "bidMessage": "{{buyer}} hizo una puja en la ronda {{round}}. Responde con una contraoferta, acepta o rechaza.",
-      "asking": "Precio pedido",
-      "buyerBid": "Puja del comprador",
-      "yourCounter": "Tu contraoferta",
-      "gap": "Diferencia Puja vs Contraoferta",
-      "bid": "Puja",
-      "counter": "Contraoferta",
-      "current": "Actual",
-      "actions": {
-        "sendCounter": "Enviar contraoferta",
-        "acceptBid": "Aceptar puja",
-        "reject": "Rechazar"
-      },
-      "buyerInfo": "Info del comprador",
-      "buyer": "Comprador",
-      "avgReply": "Tiempo medio de respuesta",
-      "fclsWeight": "FCLs · Peso",
-      "valuePerFcl": "Valor por FCL",
-      "movement": "Movimiento (pedido → puja)",
-      "timeline": "Cronología de la ronda",
-      "priceDetails": "Detalles de precio",
-      "meta": {
-        "incoterm": "Incoterm",
-        "destination": "Destino",
-        "port": "Puerto",
-        "payment": "Pago",
-        "fcls": "FCLs",
-        "weight": "Peso"
-      },
-      "col": {
-        "product": "Producto",
-        "qtyLb": "Cant (lb)",
-        "asking": "Pedido",
-        "bidR": "Puja R{{n}}",
-        "counterR": "Contraoferta R{{n}}"
+      "empty": "Ninguna negociación coincide con los filtros actuales.",
+      "detail": {
+        "back": "Volver a negociaciones",
+        "roundOf": "Ronda {{round}} de {{max}}",
+        "updated": "Actualizado {{date}}",
+        "summary": "{{buyer}} hizo una oferta en la ronda {{round}}. Responde con contraoferta, acepta o rechaza.",
+        "stats": {
+          "asking": "Precio inicial",
+          "buyerBid": "Oferta del comprador",
+          "yourCounter": "Tu contraoferta"
+        },
+        "gap": "Diferencia oferta vs contraoferta",
+        "gapLabel": { "bid": "OFERTA", "counter": "CONTRAOFERTA" },
+        "actions": {
+          "sendCounter": "Enviar contraoferta",
+          "acceptBid": "Aceptar oferta",
+          "reject": "Rechazar"
+        },
+        "buyer": {
+          "title": "Comprador",
+          "avgReplyTime": "Tiempo medio de respuesta",
+          "avgReplyDays": "{{days}}d",
+          "fclsWeight": "FCLs · Peso",
+          "valuePerFcl": "Valor por FCL",
+          "movement": "Movimiento (pedido → oferta)"
+        },
+        "timeline": "Línea de tiempo de la negociación",
+        "timelineLabel": {
+          "bid": "Oferta {{n}}",
+          "counter": "Contraoferta {{n}}",
+          "counterCurrent": "Contraoferta {{n}} · actual"
+        },
+        "priceDetails": "Detalle de precios",
+        "col": {
+          "product": "Producto",
+          "qtyLb": "Cant (lb)",
+          "asking": "Pedido",
+          "bidR": "Oferta R{{n}}",
+          "counterR": "Contra R{{n}}"
+        },
+        "meta": {
+          "incoterm": "Incoterm",
+          "destination": "Destino",
+          "port": "Puerto",
+          "payment": "Pago",
+          "fcls": "FCLs",
+          "weight": "Peso"
+        },
+        "banner": {
+          "awaitingBuyer": "Esperando respuesta del comprador en ronda {{round}}",
+          "finalRound": "RONDA FINAL — esta es la última ronda.",
+          "accepted": "Trato cerrado en {{price}}",
+          "rejected": "Negociación rechazada por el comprador.",
+          "expired": "Negociación expiró sin acuerdo.",
+          "actionRequired": "Acción requerida"
+        },
+        "toast": {
+          "counterSent": "Contraoferta enviada (simulado)",
+          "bidAccepted": "Oferta aceptada (simulado)",
+          "bidRejected": "Oferta rechazada (simulado)"
+        }
       }
     },
     "users": {
