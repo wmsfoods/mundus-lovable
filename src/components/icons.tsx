@@ -282,6 +282,12 @@ export const SparkleIcon = (props: IconProps) => (
     <path d="M15.5 8.5L19 5" />
   </Icon>
 );
+export const ClockIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="10" />
+    <polyline points="12 6 12 12 16 14" />
+  </Icon>
+);
 
 // ============================================================================
 // Domain icons (navigation, deal context)

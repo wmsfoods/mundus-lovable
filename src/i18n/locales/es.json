@@ -425,6 +425,76 @@
           "rejectComingSoon": "Rechazar Pedido — próximamente"
         }
       }
+    },
+    "home": {
+      "heroTitle": "Venda con inteligencia, negocie más rápido, mantenga el control.",
+      "heroSubtitle": "Gestione sus ofertas activas, revise propuestas de compradores y embarque negocios desde un solo lugar.",
+      "greeting": {
+        "morning": "Buenos días, {{name}}",
+        "afternoon": "Buenas tardes, {{name}}",
+        "evening": "Buenas noches, {{name}}"
+      },
+      "cta": { "newOffer": "Nueva oferta", "viewMyOffers": "Ver mis ofertas" },
+      "attention": { "heading": "Necesita su atención" },
+      "attention.proposalsWaiting.title": "3 propuestas de comprador esperando respuesta",
+      "attention.proposalsWaiting.subtitle": "Ronda 2 · Boneless Beef 90VL · Beef Mixed (9 cortes) · +1",
+      "attention.proposalsWaiting.cta": "Revisar propuestas",
+      "attention.offerExpiring.title": "1 oferta expira en 3 días",
+      "attention.offerExpiring.subtitle": "Boneless Beef RFQ 90vl · BR → PH · CFR",
+      "attention.offerExpiring.cta": "Renovar o actualizar",
+      "attention.salesAction.title": "2 ventas necesitan acción del supplier",
+      "attention.salesAction.subtitle": "Enviar borrador de factura · Emitir factura del saldo",
+      "attention.salesAction.cta": "Abrir ventas",
+      "stats": {
+        "activeOffers": "Ofertas Activas",
+        "totalOffers": "Total de Ofertas",
+        "closedDeals": "Negocios Cerrados",
+        "inNegotiation": "En Negociación",
+        "avgClosing": "Tiempo medio de cierre",
+        "days": "días"
+      },
+      "vsLastWeek": "vs semana pasada",
+      "actions": {
+        "salesTitle": "Ventas",
+        "salesDesc": "Haga seguimiento a cada pedido — del pre-pago a la entrega.",
+        "salesCta": "Ver ventas",
+        "offersTitle": "Mis Ofertas",
+        "offersDesc": "Gestione sus ofertas activas, precios y visibilidad.",
+        "offersCta": "Ver ofertas",
+        "newOfferTitle": "Nueva oferta",
+        "newOfferDesc": "Publique una nueva oferta — manualmente o extraiga de PDF, Excel, imagen o audio.",
+        "newOfferCta": "Crear ahora"
+      },
+      "recentOffers": "Ofertas recientes",
+      "recentSales": "Ventas recientes",
+      "seeAll": "Ver todo",
+      "cuts": "cortes",
+      "more": "más",
+      "mt": "MT",
+      "statusAvailable": "Disponible",
+      "statusNew": "Nuevo",
+      "saleStatus": {
+        "AwaitingPrePayment": "Esperando Pre-pago",
+        "PrePaidLoading": "Pagado · Cargando",
+        "InTransit": "En Tránsito",
+        "BalanceDue": "Saldo Pendiente"
+      },
+      "card": {
+        "destination": "Destino",
+        "incoterm": "Incoterm",
+        "shipment": "Embarque",
+        "volume": "Volumen",
+        "buyer": "Comprador",
+        "qty": "CANT",
+        "views": "vistas",
+        "proposals": "propuestas",
+        "daysLeft": "d restantes",
+        "openOffer": "Abrir oferta",
+        "order": "Pedido {{id}}",
+        "sendInvoiceDraft": "Enviar borrador",
+        "viewSale": "Ver venta",
+        "issueBalanceInvoice": "Emitir saldo"
+      }
     }
   }
 }
