@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   MOCK_OFFER_REQUESTS,
@@ -27,7 +27,6 @@ function formatPriceUsd(value: number): string {
 export default function SupplierRequestDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  const _navigate = useNavigate();
 
   const request: OfferRequest | undefined = useMemo(
     () => MOCK_OFFER_REQUESTS.find((r) => r.id === id),
