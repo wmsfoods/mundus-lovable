@@ -344,6 +344,49 @@
         "q1": "¿Cómo funciona la negociación de precios?",
         "q2": "¿Hay una cantidad mínima para comerciar?"
       }
+    },
+    "users": {
+      "title": "Usuarios",
+      "searchPlaceholder": "Buscar por nombre, email o cargo...",
+      "profileFilter": "Perfil",
+      "statusFilter": "Estado",
+      "all": "Todos",
+      "allProfiles": "Todos los perfiles",
+      "inviteUser": "Invitar Usuario",
+      "userCount": "{{count}} de {{total}} usuarios",
+      "empty": "Ningún usuario coincide con los filtros.",
+      "col": {
+        "user": "Usuario",
+        "email": "Email",
+        "profileType": "Tipo de perfil",
+        "created": "Creado",
+        "lastLogin": "Último acceso",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "profile": {
+        "admin": "Administrador",
+        "buyer": "Comprador",
+        "viewer": "Visualizador"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "actions": {
+        "editMock": "Edición próximamente (mock)",
+        "deactivateMock": "Usuario desactivado (mock)"
+      },
+      "invite": {
+        "title": "Invitar a su equipo de compras",
+        "subtitle": "Envíe un email de invitación — el usuario definirá su contraseña en el primer acceso.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "usuario@ejemplo.com",
+        "profileLabel": "Tipo de perfil",
+        "send": "Enviar invitación",
+        "cancel": "Cancelar",
+        "success": "Invitación enviada (mock)"
+      }
     }
   },
   "supplier": {
@@ -396,7 +439,10 @@
           "yourCounter": "Tu contraoferta"
         },
         "gap": "Diferencia oferta vs contraoferta",
-        "gapLabel": { "bid": "OFERTA", "counter": "CONTRAOFERTA" },
+        "gapLabel": {
+          "bid": "OFERTA",
+          "counter": "CONTRAOFERTA"
+        },
         "actions": {
           "sendCounter": "Enviar contraoferta",
           "acceptBid": "Aceptar oferta",
@@ -563,7 +609,10 @@
       "createOffer": "Crear Oferta +",
       "createOfferComingSoon": "Flujo de Crear Oferta — próximamente",
       "empty": "Sin ventas todavía.",
-      "sort": { "newest": "Más recientes", "oldest": "Más antiguas" },
+      "sort": {
+        "newest": "Más recientes",
+        "oldest": "Más antiguas"
+      },
       "col": {
         "dealId": "ID del Pedido",
         "status": "Estado",
@@ -760,7 +809,13 @@
         "subtitle": "Suelte una lista de precios, pegue un mensaje, o dicte — llenamos el formulario en segundos.",
         "minimize": "Minimizar",
         "tryIt": "Probar IA",
-        "tab": { "pdf": "PDF", "excel": "Excel", "image": "Imagen", "voice": "Voz", "text": "Texto" },
+        "tab": {
+          "pdf": "PDF",
+          "excel": "Excel",
+          "image": "Imagen",
+          "voice": "Voz",
+          "text": "Texto"
+        },
         "pasteLabel": "Pegue desde WhatsApp / email",
         "placeholder": "Pegue un email, mensaje de WhatsApp, o describa la oferta:\n\n\"Hola, tengo 2 FCLs de ribeye premium 7-9lb a $7,20/kg, piso $6,95. También 1 FCL de striploin 8-10lb a $6,80. Destino Hong Kong, CFR, pago 50% adelanto saldo TT, embarque en junio.\"",
         "dropzone": {
@@ -784,8 +839,7 @@
       "missingCutsRoutes": "aún faltan: cortes, rutas y flete",
       "confirmCancel": "¿Descartar esta oferta? Los cambios no guardados se perderán.",
       "draftSaved": "Borrador guardado (simulado)",
-      "notReadyToPublish": "Complete el formulario antes de publicar"
-      ,
+      "notReadyToPublish": "Complete el formulario antes de publicar",
       "form": {
         "basicInfo": {
           "title": "Información básica",
@@ -890,8 +944,13 @@
         "afternoon": "Buenas tardes, {{name}}",
         "evening": "Buenas noches, {{name}}"
       },
-      "cta": { "newOffer": "Nueva oferta", "viewMyOffers": "Ver mis ofertas" },
-      "attention": { "heading": "Necesita su atención" },
+      "cta": {
+        "newOffer": "Nueva oferta",
+        "viewMyOffers": "Ver mis ofertas"
+      },
+      "attention": {
+        "heading": "Necesita su atención"
+      },
       "attention.proposalsWaiting.title": "3 propuestas de comprador esperando respuesta",
       "attention.proposalsWaiting.subtitle": "Ronda 2 · Boneless Beef 90VL · Beef Mixed (9 cortes) · +1",
       "attention.proposalsWaiting.cta": "Revisar propuestas",
