@@ -1,4 +1,7 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { toast } from "sonner";
 
 type Row = { path: string; label: string; status: "ready" | "stub" | "auth" };
 
@@ -54,6 +57,10 @@ const badgeStyle: Record<Row["status"], React.CSSProperties> = {
 };
 
 export default function DevIndex() {
+  const { user, loading: authLoading, signOut } = useAuth();
+  const { company } = useCurrentCompany();
+  const navigate = useNavigate();
+
   return (
     <div style={{ minHeight: "100vh", background: "#F7F7F8", padding: "40px 24px" }}>
       <div style={{ maxWidth: 920, margin: "0 auto" }}>
@@ -64,6 +71,78 @@ export default function DevIndex() {
           Atalho de navegação pro admin. <strong>ready</strong> = tela construída,{" "}
           <strong>stub</strong> = rota ainda não criada (cai no 404).
         </p>
+
+        <div
+          style={{
+            marginTop: 20,
+            padding: 16,
+            background: user ? "#E6F6EC" : "#FEECEC",
+            border: `1px solid ${user ? "#B7E3C4" : "#F2C1C1"}`,
+            borderRadius: 10,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            gap: 12,
+          }}
+        >
+          <div style={{ fontSize: 14, color: "#222" }}>
+            {authLoading ? (
+              "Carregando sessão..."
+            ) : user ? (
+              <>
+                <strong>Logado</strong> como <code>{user.email}</code>
+                {company ? (
+                  <>
+                    {" "}— empresa <strong>{company.name}</strong>{" "}
+                    {company.is_buyer && <span>· buyer</span>}{" "}
+                    {company.is_supplier && <span>· supplier</span>}
+                  </>
+                ) : null}
+              </>
+            ) : (
+              <>
+                <strong>Você NÃO está logado.</strong> Todas as rotas protegidas vão te
+                redirecionar pro <code>/login</code>. Faça login primeiro.
+              </>
+            )}
+          </div>
+          {user ? (
+            <button
+              onClick={async () => {
+                await signOut();
+                toast.success("Signed out");
+              }}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 999,
+                border: "1px solid #B64769",
+                color: "#B64769",
+                background: "#fff",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Log out
+            </button>
+          ) : (
+            <button
+              onClick={() => navigate("/login")}
+              style={{
+                padding: "8px 14px",
+                borderRadius: 999,
+                border: "none",
+                color: "#fff",
+                background: "#B64769",
+                fontSize: 13,
+                fontWeight: 600,
+                cursor: "pointer",
+              }}
+            >
+              Ir para Login
+            </button>
+          )}
+        </div>
 
         <div style={{ marginTop: 28, display: "grid", gap: 20 }}>
           {ROUTES.map((g) => (
