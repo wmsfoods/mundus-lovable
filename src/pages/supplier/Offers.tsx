@@ -7,8 +7,8 @@ import {
   ArrowRightIcon,
   GridIcon,
   PlusIcon,
+  FlagSVG,
 } from "@/components/icons";
-import { FlagSVG } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { MOCK_SUPPLIER_OFFERS, PAGE_SIZE, type SupplierOffer } from "@/data/mockSupplierOffers";
