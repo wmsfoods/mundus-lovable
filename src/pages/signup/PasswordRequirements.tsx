@@ -19,7 +19,7 @@ export function PasswordRequirements({ rules }: { rules: PwdRules }) {
               {met ? (
                 <Check className="h-4 w-4 text-green-600" />
               ) : (
-                <CircleX className="h-4 w-4" style={{ color: "#9B2251" }} />
+                <CircleX className="h-4 w-4" style={{ color: "#B64769" }} />
               )}
               <span className={met ? "text-gray-700" : "text-gray-500"}>{it.label}</span>
             </li>

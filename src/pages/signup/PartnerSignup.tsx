@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const MUNDUS_TRADE_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
 const inputCls =
-  "h-12 w-full rounded-lg border border-gray-200 px-4 text-sm outline-none focus:border-[#9B2251] focus:ring-1 focus:ring-[#9B2251] bg-white";
+  "h-12 w-full rounded-lg border border-gray-200 px-4 text-sm outline-none focus:border-[#B64769] focus:ring-1 focus:ring-[#B64769] bg-white";
 
 export default function PartnerSignup() {
   const [params] = useSearchParams();
@@ -65,7 +65,7 @@ export default function PartnerSignup() {
       <div className="bg-white rounded-2xl shadow-sm p-10">
         <h2 className="text-2xl font-bold text-center text-[#111]">
           Sign Up via{" "}
-          <span style={{ color: "#9B2251" }} className="font-bold">
+          <span style={{ color: "#B64769" }} className="font-bold">
             {companyName}
           </span>{" "}
           Partner
@@ -134,11 +134,11 @@ export default function PartnerSignup() {
               type="checkbox"
               checked={agree}
               onChange={(e) => setAgree(e.target.checked)}
-              className="mt-0.5 h-4 w-4 accent-[#9B2251]"
+              className="mt-0.5 h-4 w-4 accent-[#B64769]"
             />
             <span>
               I declare that I have read and agree to the{" "}
-              <a href="#" className="underline" style={{ color: "#9B2251" }}>
+              <a href="#" className="underline" style={{ color: "#B64769" }}>
                 Terms and Conditions
               </a>
             </span>
@@ -147,7 +147,7 @@ export default function PartnerSignup() {
           <div className="flex gap-3">
             <Link
               to="/login"
-              className="h-11 px-6 inline-flex items-center justify-center rounded-full border border-[#9B2251] text-[#9B2251] bg-white hover:bg-[#9B2251]/5 text-sm font-medium"
+              className="h-11 px-6 inline-flex items-center justify-center rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
             >
               Cancel
             </Link>
@@ -157,7 +157,7 @@ export default function PartnerSignup() {
               className={cn(
                 "h-11 px-6 rounded-full text-sm font-medium transition",
                 can && !submitting
-                  ? "bg-[#9B2251] text-white hover:bg-[#7a1a3f]"
+                  ? "bg-[#B64769] text-white hover:bg-[#8E3653]"
                   : "bg-gray-300 text-gray-500 cursor-not-allowed",
               )}
             >

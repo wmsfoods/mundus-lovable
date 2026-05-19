@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const MUNDUS_TRADE_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
 const inputCls =
-  "h-12 w-full rounded-lg border border-gray-200 px-4 text-sm outline-none focus:border-[#9B2251] focus:ring-1 focus:ring-[#9B2251] bg-white";
+  "h-12 w-full rounded-lg border border-gray-200 px-4 text-sm outline-none focus:border-[#B64769] focus:ring-1 focus:ring-[#B64769] bg-white";
 
 const countryCodes = [
   { code: "+1", flag: "🇺🇸", country: "US" },
@@ -117,7 +117,7 @@ export default function Signup() {
       <div className="bg-white rounded-2xl shadow-sm p-10">
         <h2 className="text-2xl font-bold text-center text-[#111]">Sign Up</h2>
         <p className="text-xs text-gray-500 text-center mt-1">Step {step} of 3</p>
-        <p className="text-base font-bold text-center mt-1" style={{ color: "#9B2251" }}>
+        <p className="text-base font-bold text-center mt-1" style={{ color: "#B64769" }}>
           {stepNames[step - 1]}
         </p>
 
@@ -125,7 +125,7 @@ export default function Signup() {
         <div className="mt-4 h-1 bg-gray-200 rounded-full overflow-hidden">
           <div
             className="h-full transition-all duration-500"
-            style={{ width: `${(step / 3) * 100}%`, background: "#9B2251" }}
+            style={{ width: `${(step / 3) * 100}%`, background: "#B64769" }}
           />
         </div>
 
@@ -238,11 +238,11 @@ function Step1({
           type="checkbox"
           checked={data.agreeTerms}
           onChange={(e) => set("agreeTerms", e.target.checked)}
-          className="mt-0.5 h-4 w-4 accent-[#9B2251]"
+          className="mt-0.5 h-4 w-4 accent-[#B64769]"
         />
         <span>
           I declare that I have read and agree to the{" "}
-          <a href="#" className="underline" style={{ color: "#9B2251" }}>
+          <a href="#" className="underline" style={{ color: "#B64769" }}>
             Terms and Conditions
           </a>
         </span>
@@ -251,7 +251,7 @@ function Step1({
       <div className="flex gap-3">
         <Link
           to="/login"
-          className="h-11 px-6 inline-flex items-center justify-center rounded-full border border-[#9B2251] text-[#9B2251] bg-white hover:bg-[#9B2251]/5 text-sm font-medium"
+          className="h-11 px-6 inline-flex items-center justify-center rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
         >
           Cancel
         </Link>
@@ -261,7 +261,7 @@ function Step1({
           className={cn(
             "h-11 px-6 rounded-full text-sm font-medium transition",
             canProceed
-              ? "bg-[#9B2251] text-white hover:bg-[#7a1a3f]"
+              ? "bg-[#B64769] text-white hover:bg-[#8E3653]"
               : "bg-gray-300 text-gray-500 cursor-not-allowed",
           )}
         >
@@ -325,7 +325,7 @@ function Step2({
               type="checkbox"
               checked={data.isBuyer}
               onChange={(e) => set("isBuyer", e.target.checked)}
-              className="h-4 w-4 accent-[#9B2251]"
+              className="h-4 w-4 accent-[#B64769]"
             />
             Buyer
           </label>
@@ -334,7 +334,7 @@ function Step2({
               type="checkbox"
               checked={data.isSupplier}
               onChange={(e) => set("isSupplier", e.target.checked)}
-              className="h-4 w-4 accent-[#9B2251]"
+              className="h-4 w-4 accent-[#B64769]"
             />
             Supplier
           </label>
@@ -354,7 +354,7 @@ function Step2({
           </div>
         ) : (
           <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 py-8 cursor-pointer hover:bg-gray-100">
-            <Upload className="h-6 w-6" style={{ color: "#9B2251" }} />
+            <Upload className="h-6 w-6" style={{ color: "#B64769" }} />
             <span className="text-sm text-gray-700">Drag or upload file</span>
             <span className="text-xs text-gray-500">Format: .PNG or .JPG or .PDF (up to 5MB)</span>
             <input
@@ -420,7 +420,7 @@ function Step2({
                 set("phoneCode", e.target.value);
                 if (c) set("phoneFlag", c.flag);
               }}
-              className="h-12 rounded-lg border border-gray-200 bg-white px-2 text-sm outline-none focus:border-[#9B2251]"
+              className="h-12 rounded-lg border border-gray-200 bg-white px-2 text-sm outline-none focus:border-[#B64769]"
             >
               {countryCodes.map((c) => (
                 <option key={c.code} value={c.code}>
@@ -441,7 +441,7 @@ function Step2({
       <div className="flex gap-3">
         <button
           onClick={onBack}
-          className="h-11 px-6 rounded-full border border-[#9B2251] text-[#9B2251] bg-white hover:bg-[#9B2251]/5 text-sm font-medium"
+          className="h-11 px-6 rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
         >
           Back
         </button>
@@ -451,7 +451,7 @@ function Step2({
           className={cn(
             "h-11 px-6 rounded-full text-sm font-medium transition",
             canProceed
-              ? "bg-[#9B2251] text-white hover:bg-[#7a1a3f]"
+              ? "bg-[#B64769] text-white hover:bg-[#8E3653]"
               : "bg-gray-300 text-gray-500 cursor-not-allowed",
           )}
         >
@@ -505,7 +505,7 @@ function Step3({
             <div className="text-xs text-gray-500 mb-1">Licenses or Certificates</div>
             {data.certificate ? (
               <div className="flex items-center gap-2 text-sm text-gray-800">
-                <Download className="h-4 w-4" style={{ color: "#9B2251" }} />
+                <Download className="h-4 w-4" style={{ color: "#B64769" }} />
                 <span className="truncate">{data.certificate.name}</span>
               </div>
             ) : (
@@ -526,7 +526,7 @@ function Step3({
           type="checkbox"
           checked={data.confirm}
           onChange={(e) => set("confirm", e.target.checked)}
-          className="mt-0.5 h-4 w-4 accent-[#9B2251]"
+          className="mt-0.5 h-4 w-4 accent-[#B64769]"
         />
         <span>
           I confirm that all information provided is true, accurate, and complete to the best of my knowledge.
@@ -537,7 +537,7 @@ function Step3({
       <div className="flex gap-3">
         <button
           onClick={onBack}
-          className="h-11 px-6 rounded-full border border-[#9B2251] text-[#9B2251] bg-white hover:bg-[#9B2251]/5 text-sm font-medium"
+          className="h-11 px-6 rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
         >
           Back
         </button>
@@ -547,7 +547,7 @@ function Step3({
           className={cn(
             "h-11 px-6 rounded-full text-sm font-medium transition",
             data.confirm && !submitting
-              ? "bg-[#9B2251] text-white hover:bg-[#7a1a3f]"
+              ? "bg-[#B64769] text-white hover:bg-[#8E3653]"
               : "bg-gray-300 text-gray-500 cursor-not-allowed",
           )}
         >

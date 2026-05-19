@@ -19,7 +19,7 @@ export default function Dashboard() {
         <Logo />
         <button
           onClick={handleLogout}
-          className="h-10 px-5 rounded-full border border-[#9B2251] text-[#9B2251] text-sm font-medium hover:bg-[#9B2251]/5"
+          className="h-10 px-5 rounded-full border border-[#B64769] text-[#B64769] text-sm font-medium hover:bg-[#B64769]/5"
         >
           Log out
         </button>

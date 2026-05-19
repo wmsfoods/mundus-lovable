@@ -31,10 +31,10 @@ export default function SignupSuccess() {
       <div className="bg-white rounded-2xl shadow-sm p-10 text-center">
         <div className="flex justify-center">
           <div className="relative">
-            <Mail className="h-20 w-20" style={{ color: "#9B2251" }} strokeWidth={1.5} />
+            <Mail className="h-20 w-20" style={{ color: "#B64769" }} strokeWidth={1.5} />
             <CheckCircle
               className="absolute -bottom-1 -right-1 h-8 w-8 bg-white rounded-full"
-              style={{ color: "#9B2251" }}
+              style={{ color: "#B64769" }}
               strokeWidth={2}
             />
           </div>
@@ -47,13 +47,13 @@ export default function SignupSuccess() {
         <div className="mt-8 flex justify-center gap-3">
           <button
             onClick={resend}
-            className="h-11 px-6 rounded-full border border-[#9B2251] text-[#9B2251] bg-white hover:bg-[#9B2251]/5 text-sm font-medium"
+            className="h-11 px-6 rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
           >
             Resend code
           </button>
           <button
             onClick={() => navigate("/login")}
-            className="h-11 px-6 rounded-full bg-[#9B2251] text-white hover:bg-[#7a1a3f] text-sm font-medium"
+            className="h-11 px-6 rounded-full bg-[#B64769] text-white hover:bg-[#8E3653] text-sm font-medium"
           >
             Enter code
           </button>
