@@ -507,7 +507,7 @@
 }
 .user-cell .name {
   font-weight: var(--weight-semibold);
-  color: var(--brand);
+  color: var(--p800);
   font-size: var(--fs-sm);
 }
 .user-cell .job {
