@@ -83,119 +83,125 @@ export function useNegotiations() {
   return { data: MOCK, offerCount, bidCount, isLoading: false, error: null as null | Error };
 }
 
-export type RoundEntry = {
-  round: number;
+export type NegotiationProduct = {
+  name: string;
+  pack: string;
+  qtyLb: number;
+  askingUsdKg: number;
+  bidR1UsdKg: number;
+  counterR1UsdKg: number;
+  bidR2UsdKg?: number;
+  counterR2UsdKg?: number;
+  bidR3UsdKg?: number;
+  counterR3UsdKg?: number;
+};
+
+export type NegotiationRound = {
   type: 'bid' | 'counter';
-  amount: number;
+  round: number;
+  totalUsd: number;
   date: string;
   isCurrent?: boolean;
 };
 
-export type CutDetail = {
-  product: string;
-  pack: string;
-  quantityLb: number;
-  asking: number;
-  perRound: { round: number; bid?: number; counter?: number }[];
-};
-
 export type NegotiationDetail = NegotiationBid & {
   parentTitle: string;
+  incoterm: 'CFR' | 'CIF' | 'FOB' | 'EXW' | 'DAP' | 'DDP';
+  paymentTerms: string;
+  fclCount: number;
+  totalWeightKg: number;
   oppWmsRef: string;
-  incoterm: 'CFR' | 'CIF' | 'FOB';
-  paymentTerm: string;
-  fcls: number;
-  weightKg: number;
-  askingPrice: number;
-  buyerBid: number;
-  yourCounter: number;
-  timeline: RoundEntry[];
-  avgReplyTime: string;
-  valuePerFcl: number;
-  movement: number;
-  cuts: CutDetail[];
+  buyerInternalId: string;
+  askingPriceUsd: number;
+  avgReplyDays: number;
+  valuePerFclUsd: number;
+  movementVsAskingUsd: number;
+  rounds: NegotiationRound[];
+  products: NegotiationProduct[];
 };
 
-const RICH_DETAILS: Record<string, Partial<NegotiationDetail>> = {
-  'b-01': {
-    parentTitle: 'Beef Premium Cuts — Mixed Container',
-    oppWmsRef: 'Opp_Wms #01228',
+function makeDefaultDetail(bid: NegotiationBid, parent: ParentOffer): NegotiationDetail {
+  const askingPriceUsd = Math.round(bid.latestBidUsd * 1.05);
+  const rounds: NegotiationRound[] = [];
+  for (let r = 1; r <= bid.round; r++) {
+    const factor = 1 - (bid.round - r) * 0.02;
+    if (r < bid.round) {
+      rounds.push({ type: 'bid',     round: r, totalUsd: Math.round(bid.latestBidUsd * (factor - 0.02)), date: bid.updatedAt });
+      rounds.push({ type: 'counter', round: r, totalUsd: Math.round(bid.yourCounterUsd * factor),         date: bid.updatedAt });
+    } else {
+      rounds.push({ type: 'bid',     round: r, totalUsd: bid.latestBidUsd,    date: bid.updatedAt });
+      rounds.push({ type: 'counter', round: r, totalUsd: bid.yourCounterUsd, date: bid.updatedAt, isCurrent: true });
+    }
+  }
+  const productName = parent.title.split(' — ')[0] || parent.title;
+  const product: NegotiationProduct = {
+    name: productName,
+    pack: 'Vacuum 4×CTN',
+    qtyLb: 27000,
+    askingUsdKg: 5.40,
+    bidR1UsdKg: 5.10,
+    counterR1UsdKg: 5.30,
+  };
+  if (bid.round >= 2) { product.bidR2UsdKg = 5.20; product.counterR2UsdKg = 5.28; }
+  if (bid.round >= 3) { product.bidR3UsdKg = 5.25; product.counterR3UsdKg = 5.27; }
+
+  return {
+    ...bid,
+    parentTitle: parent.title,
     incoterm: 'CFR',
-    paymentTerm: '30% Advance, Balance TT',
-    fcls: 1,
-    weightKg: 25000,
-    askingPrice: 129400,
-    buyerBid: 124510,
-    yourCounter: 126100,
-    timeline: [
-      { round: 1, type: 'bid',     amount: 122550, date: '2026-05-12' },
-      { round: 1, type: 'counter', amount: 126800, date: '2026-05-13' },
-      { round: 2, type: 'bid',     amount: 124510, date: '2026-05-17' },
-      { round: 2, type: 'counter', amount: 126100, date: '2026-05-18', isCurrent: true },
+    paymentTerms: '30% Advance, Balance TT',
+    fclCount: 1,
+    totalWeightKg: 27000,
+    oppWmsRef: parent.oppWmsRef ?? `Opp_Wms #${parent.id.replace('po-', '')}`,
+    buyerInternalId: bid.id.replace('b-', '000'),
+    askingPriceUsd,
+    avgReplyDays: 3,
+    valuePerFclUsd: bid.yourCounterUsd,
+    movementVsAskingUsd: bid.latestBidUsd - askingPriceUsd,
+    rounds,
+    products: [product],
+  };
+}
+
+const RICH_OVERRIDES: Record<string, Partial<NegotiationDetail>> = {
+  'b-01': {
+    incoterm: 'CFR',
+    paymentTerms: '30% Advance, Balance TT',
+    fclCount: 1,
+    totalWeightKg: 25000,
+    oppWmsRef: 'Opp_Wms #01228',
+    buyerInternalId: '00091c',
+    askingPriceUsd: 129400,
+    avgReplyDays: 4,
+    valuePerFclUsd: 189500,
+    movementVsAskingUsd: -4890,
+    rounds: [
+      { type: 'bid',     round: 1, totalUsd: 122550, date: '2026-05-15' },
+      { type: 'counter', round: 1, totalUsd: 126800, date: '2026-05-16' },
+      { type: 'bid',     round: 2, totalUsd: 124510, date: '2026-05-17' },
+      { type: 'counter', round: 2, totalUsd: 126100, date: '2026-05-18', isCurrent: true },
     ],
-    avgReplyTime: '4d',
-    valuePerFcl: 189500,
-    movement: -4890,
-    cuts: [
-      { product: 'Ribeye, 7–9 lb',      pack: 'Vacuum 4×CTN', quantityLb: 13228, asking: 7.20, perRound: [{ round: 1, bid: 6.80, counter: 7.05 }, { round: 2, bid: 6.90, counter: 7.00 }] },
-      { product: 'Striploin, 8–10 lb',  pack: 'Vacuum 2×CTN', quantityLb: 11023, asking: 6.80, perRound: [{ round: 1, bid: 6.45, counter: 6.65 }, { round: 2, bid: 6.55, counter: 6.62 }] },
-      { product: 'Tenderloin, 4–6 lb',  pack: 'Vacuum 6×CTN', quantityLb: 6614,  asking: 8.40, perRound: [{ round: 1, bid: 8.00, counter: 8.25 }, { round: 2, bid: 8.12, counter: 8.20 }] },
-      { product: 'Top Sirloin, 6–8 lb', pack: 'Vacuum 4×CTN', quantityLb: 11023, asking: 5.40, perRound: [{ round: 1, bid: 5.10, counter: 5.30 }, { round: 2, bid: 5.20, counter: 5.28 }] },
+    products: [
+      { name: 'Ribeye, 7-9 lb',      pack: 'Vacuum 4×CTN', qtyLb: 13228, askingUsdKg: 7.20, bidR1UsdKg: 6.80, counterR1UsdKg: 7.05, bidR2UsdKg: 6.90, counterR2UsdKg: 7.00 },
+      { name: 'Striploin, 8-10 lb',  pack: 'Vacuum 2×CTN', qtyLb: 11023, askingUsdKg: 6.80, bidR1UsdKg: 6.45, counterR1UsdKg: 6.65, bidR2UsdKg: 6.55, counterR2UsdKg: 6.62 },
+      { name: 'Tenderloin, 4-6 lb',  pack: 'Vacuum 6×CTN', qtyLb:  6614, askingUsdKg: 8.40, bidR1UsdKg: 8.00, counterR1UsdKg: 8.25, bidR2UsdKg: 8.12, counterR2UsdKg: 8.20 },
+      { name: 'Top Sirloin, 6-8 lb', pack: 'Vacuum 4×CTN', qtyLb: 11023, askingUsdKg: 5.40, bidR1UsdKg: 5.10, counterR1UsdKg: 5.30, bidR2UsdKg: 5.20, counterR2UsdKg: 5.28 },
     ],
   },
 };
 
-function buildDefaultDetail(bid: NegotiationBid, parent: ParentOffer): NegotiationDetail {
-  const buyerBid = bid.latestBidUsd;
-  const yourCounter = bid.yourCounterUsd;
-  const askingPrice = Math.round(buyerBid * 1.05);
-  const tl: RoundEntry[] = [];
-  for (let r = 1; r <= bid.round; r++) {
-    const factor = 1 - (bid.round - r) * 0.02;
-    if (r < bid.round) {
-      tl.push({ round: r, type: 'bid',     amount: Math.round(buyerBid * (factor - 0.02)), date: bid.updatedAt });
-      tl.push({ round: r, type: 'counter', amount: Math.round(yourCounter * factor),       date: bid.updatedAt });
-    } else {
-      tl.push({ round: r, type: 'bid',     amount: buyerBid,    date: bid.updatedAt });
-      tl.push({ round: r, type: 'counter', amount: yourCounter, date: bid.updatedAt, isCurrent: true });
-    }
-  }
-  const lbTotal = 27000 * 2.205;
-  return {
-    ...bid,
-    parentTitle: parent.title,
-    oppWmsRef: parent.oppWmsRef ?? `Opp_Wms #${parent.id.replace('po-', '')}`,
-    incoterm: 'CFR',
-    paymentTerm: '30% Advance, Balance TT',
-    fcls: 1,
-    weightKg: 27000,
-    askingPrice,
-    buyerBid,
-    yourCounter,
-    timeline: tl,
-    avgReplyTime: '3d',
-    valuePerFcl: Math.round(yourCounter * 1.5),
-    movement: buyerBid - askingPrice,
-    cuts: [
-      {
-        product: parent.title.split(' — ')[0] || parent.title,
-        pack: 'Vacuum',
-        quantityLb: Math.round(lbTotal),
-        asking: askingPrice / lbTotal,
-        perRound: [{ round: bid.round, bid: buyerBid / lbTotal, counter: yourCounter / lbTotal }],
-      },
-    ],
-  };
-}
-
-export function useNegotiationDetail(bidId: string) {
+const MOCK_DETAILS: Record<string, NegotiationDetail> = (() => {
+  const out: Record<string, NegotiationDetail> = {};
   for (const parent of MOCK) {
-    const bid = parent.bids.find((b) => b.id === bidId);
-    if (bid) {
-      const base = buildDefaultDetail(bid, parent);
-      const overrides = RICH_DETAILS[bidId] ?? {};
-      return { data: { ...base, ...overrides } as NegotiationDetail, isLoading: false, error: null as null | Error };
+    for (const bid of parent.bids) {
+      const base = makeDefaultDetail(bid, parent);
+      out[bid.id] = { ...base, ...(RICH_OVERRIDES[bid.id] ?? {}) };
     }
   }
-  return { data: null, isLoading: false, error: null as null | Error };
+  return out;
+})();
+
+export function useNegotiation(bidId: string) {
+  const detail = MOCK_DETAILS[bidId] ?? null;
+  return { data: detail, isLoading: false, error: null as null | Error };
 }
