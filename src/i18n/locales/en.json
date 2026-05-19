@@ -1414,5 +1414,127 @@
       "track": "Tracking (mock)",
       "message": "Open chat (mock)"
     }
+  },
+  "admin": {
+    "shell": {
+      "brand": "Mundus Admin",
+      "search": "Search companies, deals, users…",
+      "user": {
+        "name": "Fernando N.",
+        "role": "Admin"
+      },
+      "nav": {
+        "overview": "Overview",
+        "dashboard": "Dashboard",
+        "operations": "Operations",
+        "companies": "Companies",
+        "deals": "Deals",
+        "negotiations": "Negotiations",
+        "verifications": "Verifications",
+        "disputes": "Disputes",
+        "crm": "CRM",
+        "prospects": "Prospects",
+        "pipeline": "Pipeline",
+        "marketplace": "Marketplace",
+        "products": "Products & cuts",
+        "markets": "Markets",
+        "ports": "Ports",
+        "finance": "Finance",
+        "revenue": "Revenue",
+        "commissions": "Commissions",
+        "settings": "Settings",
+        "team": "Team",
+        "audit": "Audit log",
+        "flags": "Feature flags"
+      },
+      "theme": {
+        "light": "Light mode",
+        "dark": "Dark mode"
+      }
+    },
+    "comingSoon": {
+      "title": "Coming soon",
+      "body": "This section is part of the admin panel build — not implemented yet."
+    },
+    "dashboard": {
+      "title": "Operations dashboard",
+      "subtitle": "last 30 days",
+      "rangeLast30": "Last 30 days",
+      "kpi": {
+        "gmv": "GMV",
+        "activeDeals": "Active deals",
+        "verifications": "Verifications",
+        "verificationsQueue": "queue",
+        "winRate": "Win rate",
+        "newSignups": "New signups",
+        "avgCycle": "Avg deal cycle",
+        "avgCycleSuffix": "days",
+        "avgDealSize": "Avg deal size",
+        "liquidity": "Marketplace liquidity",
+        "liquidityHint": "offers per active buyer"
+      },
+      "trend": {
+        "title": "GMV trend",
+        "subtitle": "daily, last 30 days",
+        "thirtyDaysAgo": "30d ago",
+        "today": "today"
+      },
+      "pipeline": {
+        "title": "Deal pipeline",
+        "viewAll": "View all →",
+        "offers": "Offers live",
+        "negotiating": "Negotiating",
+        "ordered": "Ordered",
+        "shipped": "Shipped",
+        "delivered": "Delivered"
+      },
+      "topBuyers": "Top buyers",
+      "topSuppliers": "Top suppliers",
+      "productsMix": {
+        "title": "Products mix",
+        "beef": "Beef",
+        "pork": "Pork",
+        "poultry": "Poultry",
+        "lamb": "Lamb"
+      },
+      "destinations": "Top destinations",
+      "negotiationRounds": {
+        "title": "Negotiation rounds",
+        "subtitle": "where deals close"
+      },
+      "originPorts": {
+        "title": "Origin ports",
+        "subtitle": "volume shipped"
+      },
+      "activity": "Activity",
+      "sla": {
+        "title": "Verifications SLA",
+        "onTime": "On time",
+        "atRisk": "At risk",
+        "overdue": "Overdue",
+        "review": "Review queue →"
+      },
+      "tta": {
+        "title": "Time to acceptance",
+        "subtitle": "offer → first order"
+      },
+      "avgByProduct": "Avg deal size by product",
+      "opsQueue": {
+        "title": "Operations queue · companies needing attention",
+        "viewAll": "12 items →",
+        "company": "Company",
+        "role": "Role",
+        "issue": "Issue",
+        "age": "Age",
+        "owner": "Owner",
+        "roleBuyer": "Buyer",
+        "roleSupplier": "Supplier",
+        "issueKyc": "KYC review",
+        "issueCert": "Cert expired",
+        "issuePayment": "Payment delay",
+        "issueDocs": "Docs incomplete",
+        "issueOnboarding": "Onboarding ✓"
+      }
+    }
   }
 }
