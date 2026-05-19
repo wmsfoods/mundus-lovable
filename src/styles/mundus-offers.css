@@ -1,0 +1,300 @@
+/* =========================================================================
+   Buyer Offers — list page (C7a)
+   ========================================================================= */
+
+/* --- Crumbs (breadcrumb) -------------------------------------------------- */
+.crumbs {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+  margin-bottom: 16px;
+}
+.crumbs a { color: var(--fg-muted); text-decoration: none; }
+.crumbs a:hover { color: var(--fg); }
+.crumbs .sep { margin: 0 6px; }
+.crumbs b { color: var(--fg); font-weight: var(--weight-medium); }
+
+/* --- Page title (with rose icon chip) ------------------------------------ */
+.page-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 24px;
+}
+.page-title .chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--bg-brand-soft);
+  color: var(--p800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.page-title h1 {
+  font-size: 24px;
+  font-weight: var(--weight-semibold);
+  margin: 0;
+  color: var(--fg);
+}
+
+/* --- Result bar ---------------------------------------------------------- */
+.result-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.result-count {
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+}
+.result-count b {
+  color: var(--fg);
+  font-weight: var(--weight-semibold);
+}
+
+/* --- Card row grid ------------------------------------------------------- */
+.card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+/* --- Offer card (v2) ----------------------------------------------------- */
+.oc {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  cursor: pointer;
+  transition: box-shadow 0.18s, transform 0.18s, border-color 0.18s;
+  position: relative;
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  width: 100%;
+}
+.oc:hover {
+  border-color: var(--p400);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 30px rgba(15, 15, 17, 0.08), 0 1px 2px rgba(15, 15, 17, 0.04);
+}
+.oc:focus-visible {
+  outline: 2px solid var(--p600);
+  outline-offset: 2px;
+}
+
+/* card head */
+.oc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.oc-head-l {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.oc-chip {
+  width: 26px;
+  height: 26px;
+  border-radius: 7px;
+  background: var(--bg-brand-soft);
+  color: var(--p800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.oc-cat {
+  font-size: 12.5px;
+  font-weight: var(--weight-medium);
+  color: var(--fg);
+}
+.oc-temp {
+  font-size: 12.5px;
+  color: var(--fg-muted);
+}
+.dot-sep {
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: #d4d4d8;
+}
+.mixed-badge {
+  font-size: 10px;
+  padding: 2px 7px;
+  border-radius: 4px;
+  background: var(--p800);
+  color: #fff;
+  font-weight: var(--weight-semibold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: 4px;
+}
+
+/* status pill */
+.status-pill {
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  font-weight: var(--weight-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.status-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+}
+
+/* card title */
+.oc-title-block { display: flex; flex-direction: column; gap: 8px; }
+.oc-title {
+  font-size: 17px;
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.012em;
+  color: var(--fg);
+  line-height: 1.25;
+}
+.oc-cut-text {
+  font-size: 13px;
+  color: var(--fg-muted);
+}
+
+/* cut chips (for mixed offers) */
+.cut-chips { display: flex; flex-wrap: wrap; gap: 5px; }
+.cut-chip {
+  padding: 3px 8px;
+  border-radius: 5px;
+  background: var(--g100);
+  color: var(--g700);
+  font-weight: var(--weight-medium);
+  font-size: 11.5px;
+}
+.cut-chip.is-more {
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--fg-muted);
+}
+
+/* meta grid (origin/destination/incoterm/shipment) */
+.oc-meta-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px 18px;
+}
+.cm { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.cm-label {
+  font-size: 10.5px;
+  color: var(--g500);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--weight-medium);
+}
+.cm-value {
+  font-size: 12.5px;
+  color: var(--fg);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* card footer */
+.oc-footer {
+  padding-top: 14px;
+  border-top: 1px dashed var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.oc-price, .oc-qty {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+.oc-price .cur,
+.oc-qty .cur {
+  font-size: 11px;
+  color: var(--fg-muted);
+}
+.oc-price .amt,
+.oc-qty .amt {
+  font-size: 22px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  letter-spacing: -0.02em;
+}
+.oc-price .unit,
+.oc-qty .unit {
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.oc-cta {
+  padding: 7px 12px;
+  border-radius: 7px;
+  background: var(--p800);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: var(--weight-semibold);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+.oc:hover .oc-cta { background: var(--p900); }
+
+/* --- Empty state --------------------------------------------------------- */
+.empty-state {
+  background: #fff;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 64px;
+  text-align: center;
+  color: var(--fg-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.empty-state p { margin: 0; font-size: var(--fs-sm); }
+
+/* --- Loading state ------------------------------------------------------- */
+.offers-loading {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 48px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+}
+
+/* --- Error state --------------------------------------------------------- */
+.offers-error {
+  background: #fef0f0;
+  border: 1px solid #f3c8cf;
+  border-radius: var(--radius);
+  padding: 24px;
+  color: #b6354b;
+  font-size: var(--fs-sm);
+}

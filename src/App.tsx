@@ -15,6 +15,7 @@ import NotFound from "./pages/NotFound.tsx";
 import BuyerShell from "./layouts/BuyerShell.tsx";
 import SupplierShell from "./layouts/SupplierShell.tsx";
 import BuyerHome from "./pages/buyer/Home.tsx";
+import BuyerOffers from "./pages/buyer/Offers.tsx";
 import SupplierHome from "./pages/supplier/Home.tsx";
 
 const queryClient = new QueryClient();
@@ -49,6 +50,7 @@ const App = () => (
               }
             >
               <Route index element={<BuyerHome />} />
+              <Route path="offers" element={<BuyerOffers />} />
             </Route>
             <Route
               path="/supplier"
