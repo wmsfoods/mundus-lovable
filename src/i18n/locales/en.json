@@ -384,49 +384,67 @@
       },
       "bidsCount": "{{n}} BIDS",
       "needAction": "{{n}} need action",
-      "empty": "No negotiations match the current filters."
-    },
-    "negotiationDetail": {
-      "backToList": "Back to negotiations",
-      "notFound": "Negotiation not found.",
-      "roundOf": "Round {{current}} of {{total}}",
-      "roundsCount": "{{current}} of {{total}} rounds",
-      "updated": "Updated {{date}}",
-      "bidMessage": "{{buyer}} placed a bid in round {{round}}. Reply with a counter, accept, or reject.",
-      "asking": "Asking",
-      "buyerBid": "Buyer bid",
-      "yourCounter": "Your counter",
-      "gap": "Bid vs Counter gap",
-      "bid": "Bid",
-      "counter": "Counter",
-      "current": "Current",
-      "actions": {
-        "sendCounter": "Send counter-response",
-        "acceptBid": "Accept bid",
-        "reject": "Reject"
-      },
-      "buyerInfo": "Buyer info",
-      "buyer": "Buyer",
-      "avgReply": "Avg reply time",
-      "fclsWeight": "FCLs · Weight",
-      "valuePerFcl": "Value per FCL",
-      "movement": "Movement (asking → bid)",
-      "timeline": "Round timeline",
-      "priceDetails": "Price details",
-      "meta": {
-        "incoterm": "Incoterm",
-        "destination": "Destination",
-        "port": "Port",
-        "payment": "Payment",
-        "fcls": "FCLs",
-        "weight": "Weight"
-      },
-      "col": {
-        "product": "Product",
-        "qtyLb": "Qty (lb)",
-        "asking": "Asking",
-        "bidR": "Bid R{{n}}",
-        "counterR": "Counter R{{n}}"
+      "empty": "No negotiations match the current filters.",
+      "detail": {
+        "back": "Back to negotiations",
+        "roundOf": "Round {{round}} of {{max}}",
+        "updated": "Updated {{date}}",
+        "summary": "{{buyer}} placed a bid in round {{round}}. Reply with a counter, accept, or reject.",
+        "stats": {
+          "asking": "Asking",
+          "buyerBid": "Buyer Bid",
+          "yourCounter": "Your Counter"
+        },
+        "gap": "Bid vs Counter gap",
+        "gapLabel": { "bid": "BID", "counter": "COUNTER" },
+        "actions": {
+          "sendCounter": "Send counter-response",
+          "acceptBid": "Accept bid",
+          "reject": "Reject"
+        },
+        "buyer": {
+          "title": "Buyer",
+          "avgReplyTime": "Avg reply time",
+          "avgReplyDays": "{{days}}d",
+          "fclsWeight": "FCLs · Weight",
+          "valuePerFcl": "Value per FCL",
+          "movement": "Movement (asking → bid)"
+        },
+        "timeline": "Round timeline",
+        "timelineLabel": {
+          "bid": "Bid {{n}}",
+          "counter": "Counter {{n}}",
+          "counterCurrent": "Counter {{n}} · current"
+        },
+        "priceDetails": "Price details",
+        "col": {
+          "product": "Product",
+          "qtyLb": "Qty (lb)",
+          "asking": "Asking",
+          "bidR": "Bid R{{n}}",
+          "counterR": "Counter R{{n}}"
+        },
+        "meta": {
+          "incoterm": "Incoterm",
+          "destination": "Destination",
+          "port": "Port",
+          "payment": "Payment",
+          "fcls": "FCLs",
+          "weight": "Weight"
+        },
+        "banner": {
+          "awaitingBuyer": "Waiting for buyer's response in round {{round}}",
+          "finalRound": "FINAL ROUND — this is the last round.",
+          "accepted": "Deal closed at {{price}}",
+          "rejected": "Negotiation rejected by buyer.",
+          "expired": "Negotiation expired without agreement.",
+          "actionRequired": "Action required"
+        },
+        "toast": {
+          "counterSent": "Counter sent (mock)",
+          "bidAccepted": "Bid accepted (mock)",
+          "bidRejected": "Bid rejected (mock)"
+        }
       }
     },
     "users": {
