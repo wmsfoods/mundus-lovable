@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -7,6 +7,8 @@ import {
   ArrowsLeftRightIcon,
   CheckIcon,
   XIcon,
+  KnifeForkIcon,
+  SparkleIcon,
 } from "@/components/icons";
 import {
   useBuyerNegotiation,
@@ -69,6 +71,7 @@ export default function BuyerNegotiationDetail() {
   const d: BuyerNegotiationDetail = data;
   const gapAbs = d.supplierCounterUsd - d.yourBidUsd;
   const gapPct = (gapAbs / d.yourBidUsd) * 100;
+  const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
 
   const handleCounter = () => {
     console.log("buyer counter", id);
@@ -95,11 +98,13 @@ export default function BuyerNegotiationDetail() {
 
       {/* Header */}
       <div className="nd-header">
-        <span className="nd-avatar">{d.supplierInitials}</span>
+        <span className="nd-avatar" aria-hidden="true">
+          <KnifeForkIcon size={20} />
+        </span>
         <div className="nd-h-text">
           <h1>{d.parentTitle}</h1>
           <div className="nd-sub">
-            ID {d.supplierInternalId} · {d.oppWmsRef} · {d.supplierName}
+            ID <span className="mono">{d.supplierInternalId}</span> · {d.oppWmsRef} · {d.supplierName}
           </div>
         </div>
         <div className="nd-h-right">
@@ -201,10 +206,10 @@ export default function BuyerNegotiationDetail() {
                     {fmtSignedUsd(gapAbs)} ({gapPct >= 0 ? "+" : ""}{gapPct.toFixed(1)}%)
                   </span>
                 </div>
-                <div className="nd-gap-bar" />
+                <div className="nd-gap-bar" style={{ ["--knob" as never]: `${knobPct}%` } as CSSProperties} />
                 <div className="nd-gap-labels">
-                  <span>{t("buyer.negotiations.detail.gapLabel.bid")}</span>
-                  <span>{t("buyer.negotiations.detail.gapLabel.counter")}</span>
+                  <span className="lbl-bid">{t("buyer.negotiations.detail.gapLabel.bid")}</span>
+                  <span className="lbl-counter">{t("buyer.negotiations.detail.gapLabel.counter")}</span>
                 </div>
               </>
             )}
@@ -232,10 +237,7 @@ export default function BuyerNegotiationDetail() {
           </div>
 
           {/* Supplier info card */}
-          <div className="nd-card nd-buyer-info">
-            <div className="nd-card-head">
-              <strong>{t("buyer.negotiations.detail.supplier.title")}</strong>
-            </div>
+          <div className="nd-card nd-buyer-info nd-card--joined">
             <dl>
               <dt>{t("buyer.negotiations.detail.supplier.title")}</dt>
               <dd>{d.supplierName}</dd>
@@ -256,10 +258,16 @@ export default function BuyerNegotiationDetail() {
         {/* RIGHT */}
         <div>
           <div className="nd-card">
-            <div className="nd-card-head">
-              <strong>{t("buyer.negotiations.detail.timeline")}</strong>
+            <div className="nd-timeline-head">
+              <span className="tl-head-title">
+                <SparkleIcon size={14} />
+                {t("buyer.negotiations.detail.timeline")}
+              </span>
+              <span className="tl-head-meta">
+                {t("buyer.negotiations.detail.roundOf", { round: d.round, max: d.maxRounds })}
+              </span>
             </div>
-            <div className="nd-timeline">
+            <div className="nd-timeline-flow">
               {d.rounds.map((r, i) => {
                 const labelKey =
                   r.type === "bid"
@@ -267,15 +275,20 @@ export default function BuyerNegotiationDetail() {
                     : r.isCurrent
                       ? "buyer.negotiations.detail.timelineLabel.counterCurrent"
                       : "buyer.negotiations.detail.timelineLabel.counter";
+                const pillClass =
+                  r.type === "bid"
+                    ? "tl-pill tl-pill--bid"
+                    : r.isCurrent
+                      ? "tl-pill tl-pill--counter tl-pill--current"
+                      : "tl-pill tl-pill--counter";
                 return (
-                  <div
-                    key={`${r.type}-${r.round}-${i}`}
-                    className={`nd-timeline-card ${r.isCurrent ? "current" : ""}`.trim()}
-                  >
-                    <span className="tl-label">{t(labelKey, { n: r.round })}</span>
-                    <span className="tl-value">{fmtUsd(r.totalUsd)}</span>
-                    <span className="tl-date">{fmtDateShort(r.date, locale)}</span>
-                  </div>
+                  <Fragment key={`${r.type}-${r.round}-${i}`}>
+                    {i > 0 && <span className="tl-sep">→</span>}
+                    <span className={pillClass}>
+                      <span className="tl-pill-label">{t(labelKey, { n: r.round })}</span>
+                      <span>{fmtUsd(r.totalUsd, 2)}</span>
+                    </span>
+                  </Fragment>
                 );
               })}
             </div>
@@ -294,8 +307,8 @@ export default function BuyerNegotiationDetail() {
                     <th>{t("buyer.negotiations.detail.col.asking")}</th>
                     {Array.from({ length: maxRoundShown }, (_, i) => (
                       <Fragment key={`h-${i}`}>
-                        <th>{t("buyer.negotiations.detail.col.bidR", { n: i + 1 })}</th>
-                        <th>{t("buyer.negotiations.detail.col.counterR", { n: i + 1 })}</th>
+                      <th className="col-bid">{t("buyer.negotiations.detail.col.bidR", { n: i + 1 })}</th>
+                      <th className="col-counter">{t("buyer.negotiations.detail.col.counterR", { n: i + 1 })}</th>
                       </Fragment>
                     ))}
                   </tr>
@@ -313,10 +326,11 @@ export default function BuyerNegotiationDetail() {
                         const round = i + 1;
                         const bidV = getPerRoundKg(p, "bid", round);
                         const cntV = getPerRoundKg(p, "counter", round);
+                      const isCurrentCounter = round === maxRoundShown;
                         return (
                           <Fragment key={`v-${i}`}>
-                            <td>{bidV != null ? `$${bidV.toFixed(2)}` : "—"}</td>
-                            <td>{cntV != null ? `$${cntV.toFixed(2)}` : "—"}</td>
+                          <td className="col-bid">{bidV != null ? `$${bidV.toFixed(2)}` : "—"}</td>
+                          <td className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}>{cntV != null ? `$${cntV.toFixed(2)}` : "—"}</td>
                           </Fragment>
                         );
                       })}
