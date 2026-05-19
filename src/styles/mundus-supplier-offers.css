@@ -34,14 +34,14 @@
   width: 32px; height: 32px;
   border-radius: 8px;
   background: #fdecf1;
-  color: var(--brand, #be123c);
+  color: var(--p800);
   display: inline-flex; align-items: center; justify-content: center;
 }
 .so-new-btn {
   display: inline-flex; align-items: center; gap: 6px;
   height: 38px; padding: 0 16px;
   border-radius: 8px;
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
   border: none;
   font-weight: var(--weight-semibold);
@@ -50,7 +50,7 @@
   font-family: inherit;
   transition: background 0.15s;
 }
-.so-new-btn:hover { background: #9d174d; color: #fff; }
+.so-new-btn:hover { background: var(--p900); color: #fff; }
 
 /* KPI strip */
 .so-kpis {
@@ -88,7 +88,7 @@
   flex-shrink: 0;
   border-radius: 8px;
   background: #fdecf1;
-  color: var(--brand, #be123c);
+  color: var(--p800);
   display: inline-flex; align-items: center; justify-content: center;
 }
 .so-kpi-ic.warn { background: #fff4e0; color: #a85b00; }
