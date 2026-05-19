@@ -386,6 +386,49 @@
       "needAction": "{{n}} precisam de ação",
       "empty": "Nenhuma negociação corresponde aos filtros atuais."
     },
+    "negotiationDetail": {
+      "backToList": "Voltar para negociações",
+      "notFound": "Negociação não encontrada.",
+      "roundOf": "Rodada {{current}} de {{total}}",
+      "roundsCount": "{{current}} de {{total}} rodadas",
+      "updated": "Atualizado em {{date}}",
+      "bidMessage": "{{buyer}} fez uma proposta na rodada {{round}}. Responda com uma contraproposta, aceite ou rejeite.",
+      "asking": "Preço pedido",
+      "buyerBid": "Proposta do comprador",
+      "yourCounter": "Sua contraproposta",
+      "gap": "Diferença Proposta vs Contraproposta",
+      "bid": "Proposta",
+      "counter": "Contraproposta",
+      "current": "Atual",
+      "actions": {
+        "sendCounter": "Enviar contraproposta",
+        "acceptBid": "Aceitar proposta",
+        "reject": "Rejeitar"
+      },
+      "buyerInfo": "Info do comprador",
+      "buyer": "Comprador",
+      "avgReply": "Tempo médio de resposta",
+      "fclsWeight": "FCLs · Peso",
+      "valuePerFcl": "Valor por FCL",
+      "movement": "Movimento (pedido → proposta)",
+      "timeline": "Linha do tempo da rodada",
+      "priceDetails": "Detalhes de preço",
+      "meta": {
+        "incoterm": "Incoterm",
+        "destination": "Destino",
+        "port": "Porto",
+        "payment": "Pagamento",
+        "fcls": "FCLs",
+        "weight": "Peso"
+      },
+      "col": {
+        "product": "Produto",
+        "qtyLb": "Qtd (lb)",
+        "asking": "Pedido",
+        "bidR": "Proposta R{{n}}",
+        "counterR": "Contraproposta R{{n}}"
+      }
+    },
     "users": {
       "title": "Usuários",
       "searchPlaceholder": "Buscar por nome, email ou cargo...",
