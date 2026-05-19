@@ -1414,5 +1414,127 @@
       "track": "Rastreamento (mock)",
       "message": "Abrir chat (mock)"
     }
+  },
+  "admin": {
+    "shell": {
+      "brand": "Mundus Admin",
+      "search": "Buscar empresas, negócios, usuários…",
+      "user": {
+        "name": "Fernando N.",
+        "role": "Admin"
+      },
+      "nav": {
+        "overview": "Visão geral",
+        "dashboard": "Painel",
+        "operations": "Operações",
+        "companies": "Empresas",
+        "deals": "Negócios",
+        "negotiations": "Negociações",
+        "verifications": "Verificações",
+        "disputes": "Disputas",
+        "crm": "CRM",
+        "prospects": "Prospects",
+        "pipeline": "Pipeline",
+        "marketplace": "Marketplace",
+        "products": "Produtos & cortes",
+        "markets": "Mercados",
+        "ports": "Portos",
+        "finance": "Financeiro",
+        "revenue": "Receita",
+        "commissions": "Comissões",
+        "settings": "Configurações",
+        "team": "Time",
+        "audit": "Log de auditoria",
+        "flags": "Feature flags"
+      },
+      "theme": {
+        "light": "Modo claro",
+        "dark": "Modo escuro"
+      }
+    },
+    "comingSoon": {
+      "title": "Em breve",
+      "body": "Esta seção faz parte do painel administrativo — ainda não implementada."
+    },
+    "dashboard": {
+      "title": "Painel de operações",
+      "subtitle": "últimos 30 dias",
+      "rangeLast30": "Últimos 30 dias",
+      "kpi": {
+        "gmv": "GMV",
+        "activeDeals": "Negócios ativos",
+        "verifications": "Verificações",
+        "verificationsQueue": "na fila",
+        "winRate": "Taxa de fechamento",
+        "newSignups": "Novos cadastros",
+        "avgCycle": "Ciclo médio",
+        "avgCycleSuffix": "dias",
+        "avgDealSize": "Ticket médio",
+        "liquidity": "Liquidez do marketplace",
+        "liquidityHint": "ofertas por comprador ativo"
+      },
+      "trend": {
+        "title": "Tendência de GMV",
+        "subtitle": "diário, últimos 30 dias",
+        "thirtyDaysAgo": "30d atrás",
+        "today": "hoje"
+      },
+      "pipeline": {
+        "title": "Pipeline de negócios",
+        "viewAll": "Ver todos →",
+        "offers": "Ofertas ativas",
+        "negotiating": "Negociando",
+        "ordered": "Pedido feito",
+        "shipped": "Embarcado",
+        "delivered": "Entregue"
+      },
+      "topBuyers": "Top compradores",
+      "topSuppliers": "Top fornecedores",
+      "productsMix": {
+        "title": "Mix de produtos",
+        "beef": "Bovino",
+        "pork": "Suíno",
+        "poultry": "Aves",
+        "lamb": "Cordeiro"
+      },
+      "destinations": "Top destinos",
+      "negotiationRounds": {
+        "title": "Rodadas de negociação",
+        "subtitle": "onde os negócios fecham"
+      },
+      "originPorts": {
+        "title": "Portos de origem",
+        "subtitle": "volume embarcado"
+      },
+      "activity": "Atividade",
+      "sla": {
+        "title": "SLA de verificações",
+        "onTime": "No prazo",
+        "atRisk": "Em risco",
+        "overdue": "Atrasado",
+        "review": "Revisar fila →"
+      },
+      "tta": {
+        "title": "Tempo até aceite",
+        "subtitle": "oferta → primeiro pedido"
+      },
+      "avgByProduct": "Ticket médio por produto",
+      "opsQueue": {
+        "title": "Fila de operações · empresas que precisam de atenção",
+        "viewAll": "12 itens →",
+        "company": "Empresa",
+        "role": "Papel",
+        "issue": "Problema",
+        "age": "Idade",
+        "owner": "Responsável",
+        "roleBuyer": "Comprador",
+        "roleSupplier": "Fornecedor",
+        "issueKyc": "Revisar KYC",
+        "issueCert": "Cert. expirado",
+        "issuePayment": "Atraso de pagamento",
+        "issueDocs": "Docs incompletos",
+        "issueOnboarding": "Onboarding ✓"
+      }
+    }
   }
 }
