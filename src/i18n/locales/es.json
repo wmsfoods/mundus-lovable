@@ -145,7 +145,8 @@
       "myOffers": "Mis Ofertas",
       "createOffer": "Crear Oferta",
       "sales": "Ventas",
-      "offerRequests": "Solicitudes de Oferta"
+      "offerRequests": "Solicitudes de Oferta",
+      "myCompany": "Mi Empresa"
     },
     "bottom": {
       "create": "Crear",
@@ -1009,6 +1010,58 @@
         "sendInvoiceDraft": "Enviar borrador",
         "viewSale": "Ver venta",
         "issueBalanceInvoice": "Emitir saldo"
+      }
+    },
+    "company": {
+      "title": "Mi Empresa",
+      "editProfile": "Editar perfil",
+      "verified": "Verificado",
+      "memberSince": "Miembro desde {{year}}",
+      "toasts": {
+        "editComing": "Edición próximamente",
+        "viewComing": "Visualización de documento próximamente",
+        "uploadComing": "Carga próximamente"
+      },
+      "about": {
+        "title": "Acerca de",
+        "description": "WMS Foods es un exportador brasileño líder de cortes premium de carne vacuna, atendiendo a 28 países en Asia, Medio Oriente, África y las Américas. Operamos tres plantas con capacidad combinada de 4.600 MT/mes, todas aprobadas por USDA, autoridades Halal y principales mercados asiáticos.",
+        "tradeMarkets": "Mercados de comercio",
+        "mainSpecies": "Especies principales",
+        "yearsExporting": "Años exportando",
+        "fclsDelivered": "FCLs entregados",
+        "countriesServed": "Países atendidos"
+      },
+      "plants": {
+        "title": "Plantas y Capacidad de Producción",
+        "addPlant": "Agregar planta",
+        "capacity": "Capacidad",
+        "certifications": "Certificaciones",
+        "vetRegistrations": "Registros veterinarios"
+      },
+      "preferences": {
+        "title": "Preferencias comerciales",
+        "defaultIncoterm": "Incoterm predeterminado",
+        "defaultPaymentTerms": "Condiciones de pago predeterminadas",
+        "currencies": "Monedas aceptadas",
+        "leadTime": "Tiempo de entrega",
+        "fclSize": "Tamaño típico de FCL",
+        "originPorts": "Puertos de origen"
+      },
+      "compliance": {
+        "title": "Cumplimiento y Certificaciones",
+        "validUntil": "Válido hasta",
+        "viewCertificate": "Ver certificado"
+      },
+      "documents": {
+        "title": "Documentos",
+        "uploadDocument": "Cargar documento",
+        "type": "Tipo",
+        "name": "Nombre",
+        "lastUpdated": "Actualizado",
+        "view": "Ver"
+      },
+      "team": {
+        "title": "Contactos del equipo"
       }
     }
   }
