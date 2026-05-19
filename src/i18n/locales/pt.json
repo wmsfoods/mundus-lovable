@@ -384,49 +384,67 @@
       },
       "bidsCount": "{{n}} PROPOSTAS",
       "needAction": "{{n}} precisam de ação",
-      "empty": "Nenhuma negociação corresponde aos filtros atuais."
-    },
-    "negotiationDetail": {
-      "backToList": "Voltar para negociações",
-      "notFound": "Negociação não encontrada.",
-      "roundOf": "Rodada {{current}} de {{total}}",
-      "roundsCount": "{{current}} de {{total}} rodadas",
-      "updated": "Atualizado em {{date}}",
-      "bidMessage": "{{buyer}} fez uma proposta na rodada {{round}}. Responda com uma contraproposta, aceite ou rejeite.",
-      "asking": "Preço pedido",
-      "buyerBid": "Proposta do comprador",
-      "yourCounter": "Sua contraproposta",
-      "gap": "Diferença Proposta vs Contraproposta",
-      "bid": "Proposta",
-      "counter": "Contraproposta",
-      "current": "Atual",
-      "actions": {
-        "sendCounter": "Enviar contraproposta",
-        "acceptBid": "Aceitar proposta",
-        "reject": "Rejeitar"
-      },
-      "buyerInfo": "Info do comprador",
-      "buyer": "Comprador",
-      "avgReply": "Tempo médio de resposta",
-      "fclsWeight": "FCLs · Peso",
-      "valuePerFcl": "Valor por FCL",
-      "movement": "Movimento (pedido → proposta)",
-      "timeline": "Linha do tempo da rodada",
-      "priceDetails": "Detalhes de preço",
-      "meta": {
-        "incoterm": "Incoterm",
-        "destination": "Destino",
-        "port": "Porto",
-        "payment": "Pagamento",
-        "fcls": "FCLs",
-        "weight": "Peso"
-      },
-      "col": {
-        "product": "Produto",
-        "qtyLb": "Qtd (lb)",
-        "asking": "Pedido",
-        "bidR": "Proposta R{{n}}",
-        "counterR": "Contraproposta R{{n}}"
+      "empty": "Nenhuma negociação corresponde aos filtros atuais.",
+      "detail": {
+        "back": "Voltar para negociações",
+        "roundOf": "Rodada {{round}} de {{max}}",
+        "updated": "Atualizado {{date}}",
+        "summary": "{{buyer}} fez uma oferta na rodada {{round}}. Responda com contra-proposta, aceite ou recuse.",
+        "stats": {
+          "asking": "Preço pedido",
+          "buyerBid": "Oferta do comprador",
+          "yourCounter": "Sua contra-proposta"
+        },
+        "gap": "Diferença oferta vs contra-proposta",
+        "gapLabel": { "bid": "OFERTA", "counter": "CONTRA-PROPOSTA" },
+        "actions": {
+          "sendCounter": "Enviar contra-proposta",
+          "acceptBid": "Aceitar oferta",
+          "reject": "Recusar"
+        },
+        "buyer": {
+          "title": "Comprador",
+          "avgReplyTime": "Tempo médio de resposta",
+          "avgReplyDays": "{{days}}d",
+          "fclsWeight": "FCLs · Peso",
+          "valuePerFcl": "Valor por FCL",
+          "movement": "Movimento (pedido → oferta)"
+        },
+        "timeline": "Linha do tempo da negociação",
+        "timelineLabel": {
+          "bid": "Oferta {{n}}",
+          "counter": "Contra-proposta {{n}}",
+          "counterCurrent": "Contra-proposta {{n}} · atual"
+        },
+        "priceDetails": "Detalhamento de preços",
+        "col": {
+          "product": "Produto",
+          "qtyLb": "Qtd (lb)",
+          "asking": "Pedido",
+          "bidR": "Oferta R{{n}}",
+          "counterR": "Contra R{{n}}"
+        },
+        "meta": {
+          "incoterm": "Incoterm",
+          "destination": "Destino",
+          "port": "Porto",
+          "payment": "Pagamento",
+          "fcls": "FCLs",
+          "weight": "Peso"
+        },
+        "banner": {
+          "awaitingBuyer": "Aguardando resposta do comprador na rodada {{round}}",
+          "finalRound": "RODADA FINAL — esta é a última rodada.",
+          "accepted": "Negócio fechado em {{price}}",
+          "rejected": "Negociação recusada pelo comprador.",
+          "expired": "Negociação expirou sem acordo.",
+          "actionRequired": "Ação necessária"
+        },
+        "toast": {
+          "counterSent": "Contra-proposta enviada (simulado)",
+          "bidAccepted": "Oferta aceita (simulado)",
+          "bidRejected": "Oferta recusada (simulado)"
+        }
       }
     },
     "users": {
