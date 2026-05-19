@@ -96,6 +96,39 @@
   font-weight: var(--weight-semibold);
 }
 
+.sb-item-wrap { display: contents; }
+.sb-group-label {
+  padding: 14px 14px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g500);
+}
+.md-item-wrap { display: contents; }
+.md-group-label {
+  padding: 14px 14px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--g500);
+}
+.pro-badge {
+  display: inline-flex;
+  align-items: center;
+  background: var(--p800);
+  color: #fff;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 2px 6px;
+  border-radius: 999px;
+  margin-left: 6px;
+  line-height: 1;
+}
+
 /* Accent variant (Create Request, Create Offer) */
 .sb-item.is-accent {
   background: var(--p800);
