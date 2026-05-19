@@ -1286,6 +1286,36 @@
       "team": {
         "title": "Contatos da equipe"
       }
+    },
+    "insights": {
+      "groupLabel": "Insights",
+      "nav": {
+        "priceBenchmark": "Benchmark de preços",
+        "analytics": "Analytics"
+      },
+      "previewBanner": {
+        "title": "Preview · Add-on Premium em breve",
+        "body": "Os números são ilustrativos. A versão final usará dados reais das suas ofertas comparados ao marketplace."
+      },
+      "priceBenchmark": {
+        "eyebrow": "PREMIUM · INTELIGÊNCIA DE MERCADO",
+        "title": "Benchmark de preços · {{cut}}",
+        "subtitle": "Veja como sua oferta se compara às {{count}} ofertas anonimizadas do mesmo corte + origem. Concorrentes nunca são identificados.",
+        "yourPrice": "Seu preço",
+        "hero": {
+          "before": "Sua oferta está",
+          "after": "da mediana do mercado",
+          "body": "Seus ${{price}}/kg estão no percentil {{percentile}} das {{total}} ofertas concorrentes de filé bovino brasileiro com destino ao Oriente Médio. Cair para ${{suggested}}/kg te colocaria na mediana — onde 73% das visualizações de compradores acontecem."
+        },
+        "distribution": {
+          "title": "Distribuição de preços",
+          "subtitle": "{{count}} ofertas anonimizadas de filé bovino brasileiro · últimos 7 dias"
+        }
+      },
+      "analytics": {
+        "title": "Analytics do supplier",
+        "subtitle": "Performance da sua operação — últimos 30 dias vs. período anterior"
+      }
     }
   },
   "dealDetail": {

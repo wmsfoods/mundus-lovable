@@ -1286,6 +1286,36 @@
       "team": {
         "title": "Contactos del equipo"
       }
+    },
+    "insights": {
+      "groupLabel": "Insights",
+      "nav": {
+        "priceBenchmark": "Benchmark de precios",
+        "analytics": "Analítica"
+      },
+      "previewBanner": {
+        "title": "Vista previa · Add-on Premium próximamente",
+        "body": "Los números mostrados son ilustrativos. La versión final usará datos reales de tus ofertas comparados con el marketplace."
+      },
+      "priceBenchmark": {
+        "eyebrow": "PREMIUM · INTELIGENCIA DE MERCADO",
+        "title": "Benchmark de precios · {{cut}}",
+        "subtitle": "Mira cómo se compara tu oferta con las {{count}} ofertas anónimas del mismo corte + origen. Los competidores nunca se identifican.",
+        "yourPrice": "Tu precio",
+        "hero": {
+          "before": "Tu oferta está",
+          "after": "de la mediana del mercado",
+          "body": "Tus ${{price}}/kg están en el percentil {{percentile}} de las {{total}} ofertas competidoras de lomo bovino brasileño hacia Medio Oriente. Bajar a ${{suggested}}/kg te pondría en la mediana — donde ocurre el 73% de las vistas."
+        },
+        "distribution": {
+          "title": "Distribución de precios",
+          "subtitle": "{{count}} ofertas anónimas de lomo bovino brasileño · últimos 7 días"
+        }
+      },
+      "analytics": {
+        "title": "Analítica del supplier",
+        "subtitle": "Performance de tu operación — últimos 30 días vs. período anterior"
+      }
     }
   },
   "dealDetail": {
