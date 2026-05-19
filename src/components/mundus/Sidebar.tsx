@@ -69,7 +69,6 @@ export function Sidebar({
                   <div className="sb-group-label">{item.groupLabel}</div>
                 )}
                 <NavLink
-                key={item.to}
                 to={item.to}
                 end={item.end}
                 onClick={onClose}
