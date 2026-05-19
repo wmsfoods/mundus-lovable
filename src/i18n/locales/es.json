@@ -750,6 +750,42 @@
         }
       }
     },
+    "createOffer": {
+      "title": "Nueva oferta",
+      "subtitle": "Constrúyala en una pantalla — la IA llena el formulario desde un archivo o texto.",
+      "unitToggle": "Unidad",
+      "inProgress": "En progreso",
+      "ai": {
+        "title": "Relleno rápido con IA",
+        "subtitle": "Suelte una lista de precios, pegue un mensaje, o dicte — llenamos el formulario en segundos.",
+        "minimize": "Minimizar",
+        "tryIt": "Probar IA",
+        "tab": { "pdf": "PDF", "excel": "Excel", "image": "Imagen", "voice": "Voz", "text": "Texto" },
+        "pasteLabel": "Pegue desde WhatsApp / email",
+        "placeholder": "Pegue un email, mensaje de WhatsApp, o describa la oferta:\n\n\"Hola, tengo 2 FCLs de ribeye premium 7-9lb a $7,20/kg, piso $6,95. También 1 FCL de striploin 8-10lb a $6,80. Destino Hong Kong, CFR, pago 50% adelanto saldo TT, embarque en junio.\"",
+        "dropzone": {
+          "pdf": "Suelte una lista de precios en PDF o haga clic para subir",
+          "excel": "Suelte un archivo Excel/CSV o haga clic para subir",
+          "image": "Suelte una imagen (p. ej. foto de una lista escrita) o haga clic para subir"
+        },
+        "voicePrompt": "Haga clic y grabe su oferta — transcribimos y extraemos.",
+        "stubNote": "(la extracción es un placeholder por ahora — integración real con Claude API próximamente)",
+        "poweredBy": "Powered by Claude — extrae cortes, precios y condiciones automáticamente",
+        "extract": "Extraer con IA",
+        "extracting": "Extrayendo…",
+        "extractedMock": "Extraído (simulado) — pre-llenado real próximamente",
+        "emptyError": "Pegue algún texto primero."
+      },
+      "placeholder": "Campos del formulario (nombre, especie, cortes, rutas y flete) próximamente.",
+      "cancel": "Cancelar",
+      "saveDraft": "Guardar borrador",
+      "publish": "Publicar oferta",
+      "complete": "completo",
+      "missingCutsRoutes": "aún faltan: cortes, rutas y flete",
+      "confirmCancel": "¿Descartar esta oferta? Los cambios no guardados se perderán.",
+      "draftSaved": "Borrador guardado (simulado)",
+      "notReadyToPublish": "Complete el formulario antes de publicar"
+    },
     "home": {
       "heroTitle": "Venda con inteligencia, negocie más rápido, mantenga el control.",
       "heroSubtitle": "Gestione sus ofertas activas, revise propuestas de compradores y embarque negocios desde un solo lugar.",
