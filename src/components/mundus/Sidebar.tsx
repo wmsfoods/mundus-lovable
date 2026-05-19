@@ -21,6 +21,7 @@ type SidebarProps = {
   userSubtitle?: string;
   mobileOpen?: boolean;
   onClose?: () => void;
+  onProBadgeClick?: (item: SidebarItem) => void;
 };
 
 export function Sidebar({
@@ -30,6 +31,7 @@ export function Sidebar({
   userSubtitle,
   mobileOpen = false,
   onClose,
+  onProBadgeClick,
 }: SidebarProps) {
   const initials = userName
     ? userName
@@ -78,7 +80,14 @@ export function Sidebar({
               >
                 <I size={18} />
                 <span className="sb-item-label">{item.label}</span>
-                {item.proBadge && <ProBadge />}
+                {item.proBadge && (
+                  <ProBadge
+                    onClick={
+                      onProBadgeClick ? () => onProBadgeClick(item) : undefined
+                    }
+                    title={onProBadgeClick ? "Preview premium" : undefined}
+                  />
+                )}
                 {item.badge ? <span className="sb-item-badge">{item.badge}</span> : null}
                 </NavLink>
               </div>
