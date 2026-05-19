@@ -7,6 +7,7 @@ import {
   BellIcon,
 } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { Logo } from "@/components/Logo";
@@ -14,6 +15,7 @@ import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 
 export function Topbar() {
   const { user, signOut } = useAuth();
+  const { company } = useCurrentCompany();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobileShell();
@@ -57,6 +59,14 @@ export function Topbar() {
           <Logo size="sm" />
         </div>
       )}
+      {!isMobile && company?.name && (
+        <div className="tb-posting-as">
+          <span className="dot" aria-hidden="true" />
+          <span className="tb-posting-label">{t("shell.postingAs")}</span>
+          <span className="tb-posting-name">{company.name}</span>
+        </div>
+      )}
+      {!isMobile && <div className="tb-spacer" />}
       <div ref={langRef} style={{ position: "relative" }}>
         <button
           className="tb-item"

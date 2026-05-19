@@ -127,6 +127,7 @@
     }
   },
   "shell": {
+    "postingAs": "Posting as",
     "unit": "kg",
     "notifications": "Notifications",
     "buyer": "Buyer",
