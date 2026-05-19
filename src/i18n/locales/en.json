@@ -255,6 +255,95 @@
         "4": "Premium",
         "default": "Not Classified"
       }
+    },
+    "orders": {
+      "title": "Orders",
+      "heroTitle": "Track your orders easily and quickly.",
+      "sortBy": "Sort by",
+      "sort": {
+        "recent": "Recent first",
+        "oldest": "Oldest first",
+        "status": "Status"
+      },
+      "showing": "Showing {{from}} - {{to}} items of {{total}} results",
+      "empty": "You have no orders yet.",
+      "col": {
+        "orderId": "Order ID",
+        "status": "Status",
+        "supplier": "Supplier",
+        "orderDate": "Order date",
+        "origin": "Origin"
+      },
+      "status": {
+        "awaiting_supplier_acceptance": "Awaiting supplier acceptance",
+        "awaiting_pre_payment": "Awaiting pre-payment",
+        "pre_payment_confirmed": "Pre-payment confirmed",
+        "in_production": "In production",
+        "awaiting_balance_payment": "Awaiting balance payment",
+        "shipped": "Shipped",
+        "delivered": "Delivered",
+        "completed": "Completed",
+        "rejected": "Rejected"
+      }
+    },
+    "orderDetail": {
+      "title": "Order Details",
+      "orderNumber": "Order Number #{{n}}",
+      "specifications": "Specifications",
+      "tabs": {
+        "overview": "Overview",
+        "documents": "Documents",
+        "shipment": "Shipment Information"
+      },
+      "orderData": "Order data",
+      "fields": {
+        "paymentTerms": "Payment Terms",
+        "advancePayment": "Advance payment",
+        "balancePayment": "Balance payment",
+        "incoterm": "Incoterm",
+        "originCountry": "Origin Country",
+        "originPort": "Origin Port",
+        "quantity": "Quantity",
+        "oceanFreight": "Ocean Freight",
+        "fcls": "FCL(s)",
+        "destination": "Destination",
+        "origin": "Origin",
+        "shipment": "Shipment",
+        "supplier": "Supplier",
+        "buyer": "Buyer",
+        "valuePerFcl": "Value per FCL",
+        "totalValue": "Total Value"
+      },
+      "cuts": {
+        "header": "Cuts",
+        "weight": "Weight",
+        "pricePerKg": "Price per kg",
+        "totalPrice": "Total price"
+      },
+      "ctas": {
+        "makePayment": "Make payment",
+        "cancelOrder": "Cancel order",
+        "trackShipment": "Track shipment",
+        "viewInvoice": "View invoice"
+      },
+      "messages": {
+        "awaiting_supplier_acceptance": "We're waiting for the supplier to accept your order.",
+        "awaiting_pre_payment": "Your order has been accepted. Please make the pre-payment to proceed.",
+        "pre_payment_confirmed": "Pre-payment confirmed. The supplier is preparing your order.",
+        "in_production": "Your order is being produced.",
+        "awaiting_balance_payment": "Production complete. Please make the balance payment to ship.",
+        "shipped": "Your order has been shipped.",
+        "delivered": "Your order has been delivered.",
+        "completed": "Order completed successfully.",
+        "rejected": "This order was rejected."
+      },
+      "documentsEmpty": "Documents will appear here as your order progresses.",
+      "shipmentWarning": "Delivery information is updated as the order progresses. You'll be notified of any changes.",
+      "notFound": "Order not found.",
+      "faq": {
+        "q1": "How does price negotiation work?",
+        "q2": "Is there a minimum amount for trading?"
+      }
     }
   },
   "supplier": {
