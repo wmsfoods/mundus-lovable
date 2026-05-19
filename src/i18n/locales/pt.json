@@ -145,7 +145,8 @@
       "myOffers": "Minhas Ofertas",
       "createOffer": "Criar Oferta",
       "sales": "Vendas",
-      "offerRequests": "Solicitações de Oferta"
+      "offerRequests": "Solicitações de Oferta",
+      "myCompany": "Minha Empresa"
     },
     "bottom": {
       "create": "Criar",
@@ -1009,6 +1010,58 @@
         "sendInvoiceDraft": "Enviar minuta",
         "viewSale": "Ver venda",
         "issueBalanceInvoice": "Emitir saldo"
+      }
+    },
+    "company": {
+      "title": "Minha Empresa",
+      "editProfile": "Editar perfil",
+      "verified": "Verificado",
+      "memberSince": "Membro desde {{year}}",
+      "toasts": {
+        "editComing": "Edição em breve",
+        "viewComing": "Visualização de documento em breve",
+        "uploadComing": "Upload em breve"
+      },
+      "about": {
+        "title": "Sobre",
+        "description": "A WMS Foods é uma das principais exportadoras brasileiras de cortes premium de carne bovina, atendendo 28 países na Ásia, Oriente Médio, África e Américas. Operamos três plantas com capacidade combinada de 4.600 MT/mês, todas aprovadas pelo USDA, autoridades Halal e principais mercados asiáticos.",
+        "tradeMarkets": "Mercados de atuação",
+        "mainSpecies": "Espécies principais",
+        "yearsExporting": "Anos exportando",
+        "fclsDelivered": "FCLs entregues",
+        "countriesServed": "Países atendidos"
+      },
+      "plants": {
+        "title": "Plantas & Capacidade de Produção",
+        "addPlant": "Adicionar planta",
+        "capacity": "Capacidade",
+        "certifications": "Certificações",
+        "vetRegistrations": "Registros veterinários"
+      },
+      "preferences": {
+        "title": "Preferências comerciais",
+        "defaultIncoterm": "Incoterm padrão",
+        "defaultPaymentTerms": "Condições de pagamento padrão",
+        "currencies": "Moedas aceitas",
+        "leadTime": "Lead time",
+        "fclSize": "Tamanho típico do FCL",
+        "originPorts": "Portos de origem"
+      },
+      "compliance": {
+        "title": "Conformidade & Certificações",
+        "validUntil": "Válido até",
+        "viewCertificate": "Ver certificado"
+      },
+      "documents": {
+        "title": "Documentos",
+        "uploadDocument": "Enviar documento",
+        "type": "Tipo",
+        "name": "Nome",
+        "lastUpdated": "Atualizado",
+        "view": "Ver"
+      },
+      "team": {
+        "title": "Contatos da equipe"
       }
     }
   }

@@ -145,7 +145,8 @@
       "myOffers": "My Offers",
       "createOffer": "Create Offer",
       "sales": "Sales",
-      "offerRequests": "Offer Requests"
+      "offerRequests": "Offer Requests",
+      "myCompany": "My Company"
     },
     "bottom": {
       "create": "Create",
@@ -1009,6 +1010,58 @@
         "sendInvoiceDraft": "Send invoice draft",
         "viewSale": "View sale",
         "issueBalanceInvoice": "Issue balance invoice"
+      }
+    },
+    "company": {
+      "title": "My Company",
+      "editProfile": "Edit profile",
+      "verified": "Verified",
+      "memberSince": "Member since {{year}}",
+      "toasts": {
+        "editComing": "Edit coming soon",
+        "viewComing": "Document view coming soon",
+        "uploadComing": "Upload coming soon"
+      },
+      "about": {
+        "title": "About",
+        "description": "WMS Foods is a leading Brazilian exporter of premium beef cuts, serving 28 countries across Asia, the Middle East, Africa and the Americas. We operate three plants with combined capacity of 4,600 MT/month, all approved by USDA, Halal authorities and key Asian markets.",
+        "tradeMarkets": "Trade markets",
+        "mainSpecies": "Main species",
+        "yearsExporting": "Years exporting",
+        "fclsDelivered": "FCLs delivered",
+        "countriesServed": "Countries served"
+      },
+      "plants": {
+        "title": "Plants & Production Capacity",
+        "addPlant": "Add plant",
+        "capacity": "Capacity",
+        "certifications": "Certifications",
+        "vetRegistrations": "Veterinary registrations"
+      },
+      "preferences": {
+        "title": "Trade preferences",
+        "defaultIncoterm": "Default incoterm",
+        "defaultPaymentTerms": "Default payment terms",
+        "currencies": "Accepted currencies",
+        "leadTime": "Lead time",
+        "fclSize": "Typical FCL size",
+        "originPorts": "Origin ports"
+      },
+      "compliance": {
+        "title": "Compliance & Certifications",
+        "validUntil": "Valid until",
+        "viewCertificate": "View certificate"
+      },
+      "documents": {
+        "title": "Documents",
+        "uploadDocument": "Upload document",
+        "type": "Type",
+        "name": "Name",
+        "lastUpdated": "Updated",
+        "view": "View"
+      },
+      "team": {
+        "title": "Team contacts"
       }
     }
   }
