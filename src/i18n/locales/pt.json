@@ -318,6 +318,8 @@
       "crumbOffers": "Ofertas",
       "illustrative": "IMAGEM ILUSTRATIVA",
       "perFcl": "Valor total (preço inicial) por FCL",
+      "askingPrice": "Preço de Pedido",
+      "floorPrice": "Preço Mínimo",
       "cutsHead": {
         "cut": "CORTE",
         "marbling": "MARMOREIO",
