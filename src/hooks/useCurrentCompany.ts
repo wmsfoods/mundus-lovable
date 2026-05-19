@@ -15,13 +15,6 @@ type State = {
   error: string | null;
 };
 
-/**
- * Returns the current user's active company along with role flags.
- *
- * Resolution: auth.users.id → public.users.id
- * Then prefers `active_company_id` (override) over `company_id` (default).
- * Joins `companies` to read `is_buyer` / `is_supplier`.
- */
 export function useCurrentCompany(): State {
   const { user, loading: authLoading } = useAuth();
   const [state, setState] = useState<State>({
@@ -41,7 +34,6 @@ export function useCurrentCompany(): State {
     setState((s) => ({ ...s, loading: true, error: null }));
 
     (async () => {
-      // 1) Resolve the user's company_id (prefer active_company_id when set)
       const { data: userRow, error: userErr } = await supabase
         .from("users")
         .select("company_id, active_company_id")
@@ -64,7 +56,6 @@ export function useCurrentCompany(): State {
         return;
       }
 
-      // 2) Load the company with role flags
       const { data: companyRow, error: companyErr } = await supabase
         .from("companies")
         .select("id, name, is_buyer, is_supplier")
