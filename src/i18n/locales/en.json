@@ -1173,17 +1173,23 @@
         "viewMyOffers": "View my offers"
       },
       "attention": {
-        "heading": "Needs your attention"
+        "title": "Needs your attention",
+        "proposalsWaiting": {
+          "title": "Proposals waiting for response",
+          "subtitle": "You have buyer proposals that need your review",
+          "cta": "Review proposals →"
+        },
+        "offerExpiring": {
+          "title": "Offers expiring soon",
+          "subtitle": "Some of your offers are about to expire",
+          "cta": "Review offers →"
+        },
+        "salesAction": {
+          "title": "Sales requiring action",
+          "subtitle": "Orders need your confirmation or document upload",
+          "cta": "View sales →"
+        }
       },
-      "attention.proposalsWaiting.title": "3 buyer proposals waiting for your reply",
-      "attention.proposalsWaiting.subtitle": "Round 2 · Boneless Beef 90VL · Beef Mixed (9 cuts) · +1",
-      "attention.proposalsWaiting.cta": "Review proposals",
-      "attention.offerExpiring.title": "1 offer expires in 3 days",
-      "attention.offerExpiring.subtitle": "Boneless Beef RFQ 90vl · BR → PH · CFR",
-      "attention.offerExpiring.cta": "Renew or update",
-      "attention.salesAction.title": "2 sales need supplier action",
-      "attention.salesAction.subtitle": "Send invoice draft · Issue balance invoice",
-      "attention.salesAction.cta": "Open sales",
       "stats": {
         "activeOffers": "Active Offers",
         "totalOffers": "Total Offers",
