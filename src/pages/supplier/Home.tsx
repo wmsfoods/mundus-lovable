@@ -282,7 +282,7 @@ export default function SupplierHome() {
       <div className="sh-attention">
         <div className="sh-attention-head">
           <MessageIcon size={14} />
-          {t("supplier.home.attention.heading")}
+          {t("supplier.home.attention.title")}
           <span className="count">{SUPPLIER_ATTENTION.length}</span>
         </div>
         <div className="sh-attention-list">
