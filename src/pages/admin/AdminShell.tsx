@@ -6,6 +6,7 @@ import {
   Search, Bell, HelpCircle, type LucideIcon,
 } from "lucide-react";
 import { ThemeToggle } from "@/contexts/ThemeContext";
+import { Logo } from "@/components/Logo";
 
 // TODO: gate to admin role only
 
@@ -49,7 +50,7 @@ export default function AdminShell() {
     <div className="adm-app">
       <aside className="adm-sidebar">
         <div className="adm-brand">
-          <span className="adm-brand-dot">M</span>
+          <Logo size="sm" />
           <span className="adm-brand-text">{t("admin.shell.brand")}</span>
         </div>
         <nav className="adm-nav">
