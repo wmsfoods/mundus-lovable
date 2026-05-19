@@ -454,7 +454,7 @@
 .od-cuts-head,
 .od-cuts-row {
   display: grid;
-  grid-template-columns: 1.4fr 1fr 1fr 1fr;
+  grid-template-columns: 1.4fr 0.9fr 0.9fr 1fr 1fr 1fr;
   gap: 12px;
   padding: 10px 14px;
   font-size: 12.5px;
@@ -478,6 +478,38 @@
 }
 .od-cuts-head .num {
   text-align: right;
+}
+
+@media (max-width: 720px) {
+  .od-cuts-head { display: none; }
+  .od-cuts-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+    padding: 12px 14px;
+  }
+  .od-cuts-row > span:nth-child(1) {
+    grid-column: 1 / -1;
+    font-weight: var(--weight-semibold);
+  }
+  .od-cuts-row > span:nth-child(2) {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    color: var(--fg-muted);
+  }
+  .od-cuts-row .num { text-align: left; }
+  .od-cuts-row > span.num::before {
+    display: block;
+    font-size: 10px;
+    color: var(--g500);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: var(--weight-medium);
+    margin-bottom: 2px;
+  }
+  .od-cuts-row > span.num:nth-child(3)::before { content: "Qty"; }
+  .od-cuts-row > span.num:nth-child(4)::before { content: "Price/kg"; }
+  .od-cuts-row > span.num:nth-child(5)::before { content: "Asking/kg"; }
+  .od-cuts-row > span.num:nth-child(6)::before { content: "Floor/kg"; }
 }
 
 /* --- Total weight pill --------------------------------------------------- */

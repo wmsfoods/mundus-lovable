@@ -1013,7 +1013,9 @@
           "cut": "CORTE",
           "marbling": "MARMOREIO",
           "qty": "QTD POR CORTE",
-          "price": "PREÇO POR KG"
+          "price": "PREÇO POR KG",
+          "asking": "PEDIDO / KG",
+          "floor": "MÍNIMO / KG"
         },
         "fields": {
           "marbling": "Marmoreio",
