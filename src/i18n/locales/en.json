@@ -785,6 +785,63 @@
       "confirmCancel": "Discard this offer? Any unsaved changes will be lost.",
       "draftSaved": "Draft saved (mock)",
       "notReadyToPublish": "Complete the form before publishing"
+      ,
+      "form": {
+        "basicInfo": {
+          "title": "Basic info",
+          "subtitle": "Name your offer and choose the species."
+        },
+        "offerName": {
+          "label": "Offer name",
+          "placeholder": "e.g. Premium Beef Cuts — Asia FCL #1"
+        },
+        "species": {
+          "label": "Species",
+          "beef": "Beef",
+          "pork": "Pork",
+          "poultry": "Poultry",
+          "lamb": "Lamb"
+        },
+        "cuts": {
+          "title": "Container & cuts",
+          "subtitle": "Define what goes inside the container.",
+          "loadType": "Load type",
+          "fullContainer": "Full container (single cut)",
+          "mixedLoad": "Mixed load (multiple cuts)",
+          "capacity": "Container capacity (25t FCL)",
+          "overCapacity": "Over capacity",
+          "remaining": "remaining",
+          "addCut": "Add cut",
+          "removeRow": "Remove this cut",
+          "col": {
+            "product": "Product",
+            "pack": "Pack",
+            "weightPerCut": "Wt/cut (kg)",
+            "qty": "Qty (ctn)",
+            "totalWeight": "Total wt",
+            "pricePerKg": "Price $/kg"
+          },
+          "placeholder": {
+            "product": "e.g. Ribeye 7-9 lb"
+          }
+        },
+        "routes": {
+          "title": "Routes & freight",
+          "subtitle": "Where you can deliver and at what cost.",
+          "originPort": "Origin port",
+          "destinations": "Destinations",
+          "selectPort": "Select destination port…",
+          "freightPlaceholder": "Freight",
+          "perFcl": "/ FCL",
+          "addMarket": "Add market",
+          "applyFreightAll": "Apply first freight to all routes",
+          "removeRow": "Remove this route"
+        }
+      },
+      "routes": {
+        "applyAllError": "Set the first route's freight before applying to all.",
+        "applyAllSuccess": "Freight applied to all routes."
+      }
     },
     "home": {
       "heroTitle": "Sell smarter, negotiate faster, stay in control.",
