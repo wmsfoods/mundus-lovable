@@ -309,60 +309,6 @@
           "import": "Import"
         }
       }
-    },
-    "customers": {
-      "title": "My Customers",
-      "crumbHome": "Home",
-      "showing": "Showing 1 - {{shown}} items of {{total}} results",
-      "searchPlaceholder": "Search customers",
-      "filter": {
-        "all": "All",
-        "active": "Active",
-        "inactive": "Inactive"
-      },
-      "selectAll": "Select all",
-      "clearSelection": "Clear selection",
-      "export": "Export",
-      "importCsv": "Import CSV",
-      "invite": "Invite Customer",
-      "edit": "Edit",
-      "columns": {
-        "company": "Company Name",
-        "contact": "Contact Name",
-        "phone": "Phone",
-        "country": "Country",
-        "email": "Email",
-        "status": "Status",
-        "invitedAt": "Invited At",
-        "active": "Active",
-        "actions": "Actions"
-      },
-      "status": {
-        "active": "Active",
-        "inactive": "Inactive"
-      },
-      "emptyAll": "You haven't invited any customers yet. Use \"Invite Customer\" to add your first one.",
-      "emptyFiltered": "No customers match your filters.",
-      "invite_modal": {
-        "title": "Invite New Customer",
-        "company": "Company Name",
-        "companyPlaceholder": "Ex: Acme Corp",
-        "contact": "Contact Name",
-        "contactPlaceholder": "Ex: John Doe",
-        "email": "Email",
-        "emailPlaceholder": "john@example.com",
-        "phone": "Phone",
-        "phonePlaceholder": "+1 234 567 8900",
-        "country": "Country",
-        "send": "Send Invite"
-      },
-      "import_modal": {
-        "title": "Import CSV",
-        "hint": "Upload a CSV file with the following columns: CompanyName, ContactName, Email, Phone, Country.",
-        "downloadTemplate": "Download Template",
-        "clickUpload": "Click to upload CSV",
-        "import": "Import"
-      }
     }
   }
 }

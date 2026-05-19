@@ -29,7 +29,6 @@ export default function BuyerShell() {
 
   const BUYER_NAV: SidebarItem[] = [
     { to: "/buyer", label: t("shell.nav.home"), icon: HomeIcon, end: true },
-    { to: "/buyer/customers", label: t("shell.nav.customers"), icon: UsersIcon },
     { to: "/buyer/requests", label: t("shell.nav.requests"), icon: ClipboardIcon },
     { to: "/buyer/requests/new", label: t("shell.nav.createRequest"), icon: PlusIcon, accent: true },
     { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },

@@ -21,7 +21,6 @@ const ROUTES: { group: string; items: Row[] }[] = [
       { path: "/buyer", label: "Buyer Home", status: "ready" },
       { path: "/buyer/offers", label: "Offers (marketplace)", status: "ready" },
       { path: "/buyer/offers/:id", label: "Offer Detail (pick from list)", status: "ready" },
-      { path: "/buyer/customers", label: "My Customers", status: "stub" },
       { path: "/buyer/requests", label: "My Offer Requests", status: "stub" },
       { path: "/buyer/requests/new", label: "Create Request", status: "stub" },
       { path: "/buyer/orders", label: "Orders", status: "stub" },
