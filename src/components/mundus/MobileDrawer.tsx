@@ -8,6 +8,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import type { SidebarItem } from "@/components/mundus/Sidebar";
+import { ProBadge } from "@/components/mundus/ProBadge";
 
 type Props = {
   open: boolean;
@@ -107,20 +108,25 @@ export function MobileDrawer({
           {items.map((item) => {
             const I = item.icon;
             return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  `md-item ${isActive ? "is-active" : ""} ${
-                    item.accent ? "is-accent" : ""
-                  }`.trim()
-                }
-                onClick={onClose}
-              >
-                <I size={20} />
-                <span>{item.label}</span>
-              </NavLink>
+              <div key={item.to} className="md-item-wrap">
+                {item.groupLabel && (
+                  <div className="md-group-label">{item.groupLabel}</div>
+                )}
+                <NavLink
+                  to={item.to}
+                  end={item.end}
+                  className={({ isActive }) =>
+                    `md-item ${isActive ? "is-active" : ""} ${
+                      item.accent ? "is-accent" : ""
+                    }`.trim()
+                  }
+                  onClick={onClose}
+                >
+                  <I size={20} />
+                  <span>{item.label}</span>
+                  {item.proBadge && <ProBadge />}
+                </NavLink>
+              </div>
             );
           })}
         </nav>
