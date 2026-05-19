@@ -1013,7 +1013,9 @@
           "cut": "CUT",
           "marbling": "MARBLING",
           "qty": "QTY PER CUT",
-          "price": "PRICE PER KG"
+          "price": "PRICE PER KG",
+          "asking": "ASKING / KG",
+          "floor": "FLOOR / KG"
         },
         "fields": {
           "marbling": "Marbling",
