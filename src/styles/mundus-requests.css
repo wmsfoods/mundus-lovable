@@ -12,7 +12,7 @@
   color: var(--g700);
 }
 .req-status-chip.is-draft  { background: var(--g100); color: var(--g700); }
-.req-status-chip.is-active { background: #fde2e7; color: var(--brand); }
+.req-status-chip.is-active { background: #fde2e7; color: var(--p800); }
 .req-status-chip.is-won    { background: #dcfce7; color: #15803d; }
 .req-status-chip.is-nowin  { background: var(--g100); color: var(--g700); }
 .req-status-chip.is-expired{ background: var(--g100); color: var(--g600, #6b7280); }
@@ -23,7 +23,7 @@
   padding: 2px 8px;
   border-radius: var(--radius-pill);
   background: #fde2e7;
-  color: var(--brand);
+  color: var(--p800);
   font-size: var(--fs-xs);
   font-weight: var(--weight-semibold);
 }
@@ -97,7 +97,7 @@
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--brand);
+  background: var(--p800);
   color: #fff;
   display: inline-flex;
   align-items: center;
@@ -172,7 +172,7 @@
   margin-top: 6px;
   flex-shrink: 0;
 }
-.req-status-timeline .step.done .dot { background: var(--brand); }
+.req-status-timeline .step.done .dot { background: var(--p800); }
 .req-status-timeline .step .label { font-weight: var(--weight-semibold); }
 .req-status-timeline .step .date { display: block; font-size: var(--fs-xs); color: var(--fg-muted); }
 
@@ -196,7 +196,7 @@
   font-weight: var(--weight-medium);
 }
 .req-banner.draft   { background: var(--g050); color: var(--fg-muted); border: 1px solid var(--border); }
-.req-banner.active  { background: #fde2e7; color: var(--brand); border: 1px solid #fbcfe8; }
+.req-banner.active  { background: #fde2e7; color: var(--p800); border: 1px solid #fbcfe8; }
 .req-banner.won     { background: #dcfce7; color: #15803d; border: 1px solid #86efac; }
 .req-banner.nowin   { background: var(--g050); color: var(--fg-muted); border: 1px solid var(--border); }
 .req-banner.expired { background: var(--g050); color: var(--fg-muted); border: 1px solid var(--border); }

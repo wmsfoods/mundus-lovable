@@ -120,7 +120,7 @@
 }
 .nego-row-parent .bid-dots .dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--brand, #be123c);
+  background: var(--p800);
 }
 .nego-row-parent .bid-dots .dot.muted { background: var(--g200, #e5e7eb); }
 
@@ -134,7 +134,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
   font-size: 11px;
   font-weight: var(--weight-semibold);
@@ -158,7 +158,7 @@
 }
 
 .nego-bid-amount     { color: #2563eb; font-weight: var(--weight-semibold); }
-.nego-counter-amount { color: var(--brand, #be123c); font-weight: var(--weight-semibold); }
+.nego-counter-amount { color: var(--p800); font-weight: var(--weight-semibold); }
 
 .nego-dest {
   display: inline-flex;
@@ -182,7 +182,7 @@
 
 .pill-action-required { background: #fef3c7; color: #92400e; }
 .pill-awaiting-buyer  { background: #dbeafe; color: #1e3a8a; }
-.pill-final-round     { background: #fce7f3; color: #9d174d; }
+.pill-final-round     { background: #fce7f3; color: var(--p900); }
 .pill-deal-closed     { background: #d1fae5; color: #065f46; }
 .pill-expired         { background: #f3f4f6; color: #6b7280; }
 .pill-rejected-nego   { background: #f3f4f6; color: #6b7280; }
@@ -219,7 +219,7 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--brand);
+  color: var(--p800);
   font-weight: var(--weight-medium);
   font-size: var(--fs-sm);
   margin-bottom: 16px;
@@ -242,7 +242,7 @@
   height: 44px;
   border-radius: 10px;
   background: #fde2e7;
-  color: var(--brand);
+  color: var(--p800);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -253,7 +253,7 @@
 .nd-header .nd-h-text { flex: 1; min-width: 0; }
 .nd-header h1 { margin: 0 0 4px; font-size: 20px; font-weight: var(--weight-bold); }
 .nd-header .nd-sub { font-size: var(--fs-sm); color: var(--fg-muted); }
-.nd-header .nd-sub .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.nd-header .nd-sub .mono { font-family: var(--font-mono); }
 .nd-header .nd-h-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 
 .nd-timer {
@@ -410,7 +410,7 @@
 }
 .nd-actions button { display: inline-flex; align-items: center; justify-content: center; }
 .nd-actions .btn-counter {
-  background: var(--brand);
+  background: var(--p800);
   color: #fff;
   padding: 10px 16px;
   border-radius: var(--radius-sm);
@@ -422,11 +422,11 @@
 .nd-actions .btn-counter:hover,
 .nd-actions .btn-counter:focus,
 .nd-actions .btn-counter:active {
-  background: var(--brand);
+  background: var(--p800);
   color: #fff;
 }
 .nd-actions .btn-counter:hover {
-  background: #9d174d;
+  background: var(--p900);
   color: #fff;
 }
 .nd-actions .btn-accept {
@@ -525,7 +525,7 @@
   flex-shrink: 0;
 }
 .nd-timeline-card.current {
-  border-color: var(--brand);
+  border-color: var(--p800);
   background: rgba(182, 71, 105, 0.04);
 }
 .nd-timeline-card .tl-label {
@@ -581,4 +581,4 @@
 .nd-banner.warning { background: #fff7e6; color: #d46b08; border: 1px solid #ffd591; }
 .nd-banner.danger  { background: rgba(192,57,43,0.06); color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
 .nd-banner.muted   { background: var(--bg-subtle, #f7f7f8); color: var(--fg-muted); border: 1px solid var(--border); }
-.nd-banner.final-round { background: rgba(182,71,105,0.06); color: var(--brand); border: 1px solid rgba(182,71,105,0.3); }
+.nd-banner.final-round { background: rgba(182,71,105,0.06); color: var(--p800); border: 1px solid rgba(182,71,105,0.3); }

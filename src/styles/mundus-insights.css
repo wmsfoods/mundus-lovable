@@ -75,7 +75,7 @@
    ============================================================ */
 
 .pb-hero {
-  background: linear-gradient(135deg, #B64769 0%, #8a3550 100%);
+  background: linear-gradient(135deg, #B64769 0%, var(--p900) 100%);
   border-radius: 12px;
   padding: 24px;
   color: #fff;
@@ -244,13 +244,13 @@
 }
 .sa-top__name { font-size: 13px; font-weight: 500; color: var(--fg); }
 .sa-top__sub { font-size: 11px; color: var(--fg-muted); }
-.sa-top__rev { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sa-top__rev { font-size: 13px; font-weight: 500; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
 
 /* Geography */
 .sa-geo { display: flex; flex-direction: column; gap: 12px; }
 .sa-geo__row { display: grid; grid-template-columns: 110px 32px 1fr; align-items: center; gap: 12px; }
 .sa-geo__country { font-size: 12px; color: var(--fg); }
-.sa-geo__count { font-size: 13px; color: var(--p800); font-variant-numeric: tabular-nums; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.sa-geo__count { font-size: 13px; color: var(--p800); font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
 .sa-geo__track { height: 6px; background: var(--bg-brand-soft); border-radius: 999px; overflow: hidden; }
 .sa-geo__fill { height: 100%; background: var(--p800); border-radius: 999px; }
 
@@ -388,7 +388,7 @@
 .ins-upsell-launching {
   display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
   font-size: 11px; color: var(--fg-muted);
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-family: var(--font-mono);
 }
 .ins-upsell-launching__pill {
   background: #fff;
@@ -415,7 +415,7 @@
 .ins-upsell-btn--primary {
   background: var(--p800); color: #fff; border-color: var(--p800);
 }
-.ins-upsell-btn--primary:hover { background: #8a3550; border-color: #8a3550; }
+.ins-upsell-btn--primary:hover { background: var(--p900); border-color: var(--p900); }
 .ins-upsell-btn--secondary {
   background: #fff; color: var(--fg); border-color: hsl(var(--border));
 }

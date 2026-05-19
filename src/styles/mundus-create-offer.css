@@ -14,7 +14,7 @@
 .co-title-icon {
   width: 48px; height: 48px;
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--brand, #be123c) 0%, #d4658a 100%);
+  background: linear-gradient(135deg, var(--p800) 0%, #d4658a 100%);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 28px; font-weight: var(--weight-bold, 700);
@@ -51,7 +51,7 @@
   cursor: pointer;
   font-family: inherit;
 }
-.co-unit.active { background: var(--brand, #be123c); color: #fff; }
+.co-unit.active { background: var(--p800); color: #fff; }
 
 .co-progress-chip {
   display: inline-flex; align-items: center; gap: 6px;
@@ -77,7 +77,7 @@
 .co-ai-icon {
   width: 36px; height: 36px;
   border-radius: 10px;
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px; flex-shrink: 0;
@@ -88,15 +88,15 @@
 .co-ai-toggle {
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid var(--brand, #be123c);
+  border: 1px solid var(--p800);
   border-radius: 999px;
-  color: var(--brand, #be123c);
+  color: var(--p800);
   font-size: var(--fs-sm);
   font-weight: var(--weight-semibold);
   cursor: pointer;
   font-family: inherit;
 }
-.co-ai-toggle:hover { background: rgba(182,71,105,0.06); color: var(--brand, #be123c); }
+.co-ai-toggle:hover { background: rgba(182,71,105,0.06); color: var(--p800); }
 
 .co-ai-body { padding: 0 20px 20px; }
 .co-ai-tabs { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
@@ -114,9 +114,9 @@
 .co-ai-tab:hover { background: #ececef; color: var(--fg); }
 .co-ai-tab.active,
 .co-ai-tab.active:hover {
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
-  border-color: var(--brand, #be123c);
+  border-color: var(--p800);
 }
 
 .co-ai-text-input { display: flex; flex-direction: column; gap: 6px; }
@@ -135,7 +135,7 @@
 }
 .co-ai-textarea:focus {
   outline: none;
-  border-color: var(--brand, #be123c);
+  border-color: var(--p800);
   box-shadow: 0 0 0 3px rgba(182,71,105,0.12);
 }
 
@@ -154,7 +154,7 @@
 .co-ai-extract,
 .co-ai-extract:focus,
 .co-ai-extract:active {
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
   padding: 10px 20px;
   border: none;
@@ -163,7 +163,7 @@
   cursor: pointer;
   font-family: inherit;
 }
-.co-ai-extract:hover { background: #9d174d; color: #fff; }
+.co-ai-extract:hover { background: var(--p900); color: #fff; }
 .co-ai-extract:disabled { background: #d1d5db; color: #6b7280; cursor: not-allowed; }
 
 .co-form-placeholder {
@@ -214,18 +214,18 @@
 .co-btn-primary,
 .co-btn-primary:focus,
 .co-btn-primary:active {
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
   border: none;
 }
-.co-btn-primary:hover { background: #9d174d; color: #fff; }
+.co-btn-primary:hover { background: var(--p900); color: #fff; }
 .co-btn-primary:disabled { background: #d1d5db; color: #6b7280; cursor: not-allowed; }
 
 .co-footer-progress { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .co-progress-bar { height: 6px; background: var(--bg-subtle, #f7f7f8); border-radius: 3px; overflow: hidden; }
 .co-progress-fill {
   height: 100%;
-  background: linear-gradient(to right, var(--brand, #be123c), #22c55e);
+  background: linear-gradient(to right, var(--p800), #22c55e);
   transition: width 200ms ease;
 }
 .co-progress-text { font-size: var(--fs-xs); color: var(--fg-muted); }
@@ -274,7 +274,7 @@
   color: var(--fg);
   width: 100%;
 }
-.co-input:focus { outline: none; border-color: var(--brand, #be123c); box-shadow: 0 0 0 3px rgba(182,71,105,0.12); }
+.co-input:focus { outline: none; border-color: var(--p800); box-shadow: 0 0 0 3px rgba(182,71,105,0.12); }
 .co-input-sm { padding: 7px 10px; font-size: var(--fs-xs); }
 .co-input-num { text-align: right; font-variant-numeric: tabular-nums; }
 
@@ -298,7 +298,7 @@
   font-family: inherit;
 }
 .co-seg-btn:hover { color: var(--fg); }
-.co-seg-btn.active { background: #fff; color: var(--brand, #be123c); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
+.co-seg-btn.active { background: #fff; color: var(--p800); box-shadow: 0 1px 2px rgba(0,0,0,0.08); }
 
 .co-capacity { display: flex; flex-direction: column; gap: 6px; }
 .co-capacity-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
@@ -315,7 +315,7 @@
 }
 .co-capacity-fill {
   height: 100%;
-  background: linear-gradient(to right, #22c55e, var(--brand, #be123c));
+  background: linear-gradient(to right, #22c55e, var(--p800));
   transition: width 200ms ease;
 }
 .co-capacity-fill.over { background: #c0392b; }
@@ -361,19 +361,19 @@
   padding: 8px 14px;
   border: 1px dashed var(--border);
   background: #fff;
-  color: var(--brand, #be123c);
+  color: var(--p800);
   border-radius: 8px;
   font-size: var(--fs-sm);
   font-weight: var(--weight-semibold);
   cursor: pointer;
   font-family: inherit;
 }
-.co-add-btn:hover { background: rgba(182,71,105,0.04); border-color: var(--brand, #be123c); }
+.co-add-btn:hover { background: rgba(182,71,105,0.04); border-color: var(--p800); }
 
 .co-link-btn {
   background: transparent;
   border: none;
-  color: var(--brand, #be123c);
+  color: var(--p800);
   font-size: var(--fs-xs);
   font-weight: var(--weight-semibold);
   cursor: pointer;
@@ -464,8 +464,8 @@
 .co-tag:hover { background: #ececef; }
 .co-tag.active {
   background: rgba(182,71,105,0.10);
-  color: var(--brand, #be123c);
-  border-color: var(--brand, #be123c);
+  color: var(--p800);
+  border-color: var(--p800);
 }
 
 .co-radio-list { display: flex; flex-direction: column; gap: 6px; }
@@ -480,8 +480,8 @@
   background: #fff;
 }
 .co-radio:hover { background: var(--bg-subtle, #f7f7f8); }
-.co-radio.active { border-color: var(--brand, #be123c); background: rgba(182,71,105,0.04); }
-.co-radio input { margin-top: 3px; accent-color: var(--brand, #be123c); }
+.co-radio.active { border-color: var(--p800); background: rgba(182,71,105,0.04); }
+.co-radio input { margin-top: 3px; accent-color: var(--p800); }
 .co-radio div { display: flex; flex-direction: column; gap: 2px; flex: 1; }
 .co-radio strong { font-size: 12px; font-weight: var(--weight-semibold); color: var(--fg); }
 .co-radio span { font-size: 11px; color: var(--fg-muted); }
@@ -546,7 +546,7 @@
 .co-preview-badge {
   padding: 4px 10px;
   background: rgba(182,71,105,0.10);
-  color: var(--brand, #be123c);
+  color: var(--p800);
   border-radius: 999px;
   font-size: 11px;
   font-weight: var(--weight-semibold);
@@ -597,7 +597,7 @@
 .co-preview-price-v {
   font-size: 24px;
   font-weight: var(--weight-bold);
-  color: var(--brand, #be123c);
+  color: var(--p800);
 }
 .co-preview-price-v small {
   font-size: 12px;

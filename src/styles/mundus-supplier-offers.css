@@ -169,7 +169,7 @@
 /* Stronger cuts badge */
 .mixed-badge.cuts-badge-strong {
   background: #fbe0e8;
-  color: #9d174d;
+  color: var(--p900);
   border: none;
   font-weight: var(--weight-semibold);
   font-size: 10px;

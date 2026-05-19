@@ -49,7 +49,7 @@
 .chat-conv-item:hover { background: var(--g050); }
 .chat-conv-item.is-active {
   background: #fde2e7;
-  border-left-color: var(--brand, var(--p800));
+  border-left-color: var(--p800);
 }
 
 .chat-avatar-wrap { position: relative; }
@@ -85,7 +85,7 @@
   font-size: 11px;
   font-weight: var(--weight-semibold);
   background: #fde2e7;
-  color: var(--brand, var(--p800));
+  color: var(--p800);
   padding: 2px 7px;
   border-radius: 999px;
   margin: 3px 0;
@@ -113,7 +113,7 @@
 .chat-unread-badge {
   min-width: 18px; height: 18px; padding: 0 6px;
   border-radius: 999px;
-  background: var(--brand, var(--p800));
+  background: var(--p800);
   color: #fff;
   font-size: 11px;
   font-weight: var(--weight-semibold);
@@ -177,7 +177,7 @@
 
 .chat-msg.is-buyer { align-self: flex-end; align-items: flex-end; }
 .chat-msg.is-buyer .chat-msg-bubble {
-  background: var(--brand, var(--p800));
+  background: var(--p800);
   color: #fff;
   border-bottom-right-radius: 4px;
 }
@@ -225,11 +225,11 @@
   outline: none;
   background: var(--g050);
 }
-.chat-footer textarea:focus { border-color: var(--brand, var(--p800)); background: #fff; }
+.chat-footer textarea:focus { border-color: var(--p800); background: #fff; }
 .chat-send-btn {
   display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-  background: var(--brand, var(--p800));
-  border: 1px solid var(--brand, var(--p800));
+  background: var(--p800);
+  border: 1px solid var(--p800);
   color: #fff;
   border-radius: 10px;
   padding: 8px 14px;
@@ -259,7 +259,7 @@
   margin-left: 8px;
   min-width: 22px; height: 22px; padding: 0 8px;
   border-radius: 999px;
-  background: var(--brand, var(--p800));
+  background: var(--p800);
   color: #fff;
   font-size: var(--fs-xs);
   font-weight: var(--weight-semibold);
