@@ -6,8 +6,8 @@ interface LogoProps {
 }
 
 export function Logo({ variant = "color", className }: LogoProps) {
-  const iconBg = "#9B2251";
-  const mundusColor = variant === "white" ? "#ffffff" : "#9B2251";
+  const iconBg = "#B64769";
+  const mundusColor = variant === "white" ? "#ffffff" : "#B64769";
   const tradeColor = variant === "white" ? "rgba(255,255,255,0.85)" : "#666666";
 
   return (
