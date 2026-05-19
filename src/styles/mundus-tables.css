@@ -498,3 +498,19 @@
   .rd-cta-row .btn-tb { flex: 1; }
   .rd-title { font-size: 20px; }
 }
+
+/* --- User cell (two-line: name + job title) ----------------- */
+.user-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.user-cell .name {
+  font-weight: var(--weight-semibold);
+  color: var(--brand);
+  font-size: var(--fs-sm);
+}
+.user-cell .job {
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+}
