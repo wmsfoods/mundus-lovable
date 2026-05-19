@@ -18,6 +18,7 @@ import {
   UsersIcon,
   MoreVerticalIcon,
 } from "@/components/icons";
+import { BarChart3, LineChart } from "lucide-react";
 
 export default function SupplierShell() {
   const { user } = useAuth();
@@ -32,6 +33,19 @@ export default function SupplierShell() {
     { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
     { to: "/supplier/offers/new", label: t("shell.nav.createOffer"), icon: PlusIcon, accent: true },
     { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
+    {
+      to: "/supplier/insights/price-benchmark",
+      label: t("supplier.insights.nav.priceBenchmark"),
+      icon: BarChart3 as unknown as SidebarItem["icon"],
+      proBadge: true,
+      groupLabel: t("supplier.insights.groupLabel"),
+    },
+    {
+      to: "/supplier/insights/analytics",
+      label: t("supplier.insights.nav.analytics"),
+      icon: LineChart as unknown as SidebarItem["icon"],
+      proBadge: true,
+    },
     { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon, badge: 3 },
     { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon, badge: 10 },
     { to: "/supplier/users", label: t("shell.nav.users"), icon: UsersIcon },
