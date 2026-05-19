@@ -161,6 +161,97 @@
     "note": "Esta tela será construída nos próximos commits do port."
   },
   "buyer": {
+    "requests": {
+      "title": "Minhas solicitações de oferta",
+      "newRequest": "Nova solicitação",
+      "searchPlaceholder": "Buscar solicitações…",
+      "speciesAll": "Todas as espécies",
+      "statusAll": "Todas",
+      "offersCount": "{{n}} ofertas",
+      "empty": "Nenhuma solicitação corresponde aos filtros.",
+      "status": {
+        "draft": "Rascunho",
+        "active": "Ativa",
+        "closed_won": "Encerrada (Vencedor)",
+        "closed_no_winner": "Encerrada (Sem vencedor)",
+        "expired": "Expirada"
+      },
+      "species": {
+        "beef": "Bovina",
+        "pork": "Suína",
+        "poultry": "Aves",
+        "lamb": "Cordeiro"
+      },
+      "col": {
+        "title": "Título",
+        "species": "Espécie",
+        "destination": "Destino",
+        "target": "Alvo US$/kg",
+        "volume": "Volume",
+        "shipment": "Embarque",
+        "offers": "Ofertas",
+        "status": "Status",
+        "updated": "Atualizado"
+      },
+      "detail": {
+        "back": "Voltar para solicitações",
+        "edit": "Editar",
+        "publish": "Publicar",
+        "close": "Encerrar solicitação",
+        "noOffers": "Nenhuma oferta recebida ainda.",
+        "section": {
+          "requirements": "Requisitos",
+          "offersReceived": "Ofertas recebidas",
+          "requestStatus": "Status da solicitação",
+          "quickStats": "Resumo rápido"
+        },
+        "banner": {
+          "draft": "Esta solicitação é um rascunho — publique para receber ofertas.",
+          "active": "Ativa — recebendo ofertas até {{deadline}}.",
+          "closedWon": "Encerrada com vencedor: {{supplier}}",
+          "closedNoWinner": "Encerrada sem vencedor.",
+          "expired": "Expirada — não está mais aceitando ofertas."
+        },
+        "meta": {
+          "target": "Alvo",
+          "volume": "Volume",
+          "fcl": "FCLs",
+          "shipment": "Embarque",
+          "incoterm": "Incoterm",
+          "payment": "Pagamento"
+        },
+        "offer": {
+          "viewBtn": "Ver",
+          "acceptBtn": "Aceitar",
+          "declineBtn": "Recusar",
+          "winnerBadge": "Vencedor",
+          "leadTime": "Prazo",
+          "perKg": "US$/kg",
+          "origin": "Origem",
+          "total": "Total"
+        },
+        "stats": {
+          "offersReceived": "Ofertas recebidas",
+          "bestPrice": "Melhor preço/kg",
+          "deadline": "Prazo final"
+        },
+        "timeline": {
+          "created": "Criada",
+          "published": "Publicada",
+          "firstOffer": "Primeira oferta",
+          "closed": "Encerrada"
+        }
+      },
+      "toast": {
+        "create": "Criação de nova solicitação em breve",
+        "edit": "Edição em breve",
+        "publish": "Solicitação publicada (mock)",
+        "closeRequest": "Solicitação encerrada (mock)",
+        "acceptOffer": "Oferta de {{name}} aceita (mock)",
+        "declineOffer": "Oferta de {{name}} recusada (mock)",
+        "viewOffer": "Detalhes da oferta em breve"
+      }
+    },
     "home": {
       "hero": "Venda com inteligência, negocie mais rápido, mantenha o controle.",
       "stats": {
