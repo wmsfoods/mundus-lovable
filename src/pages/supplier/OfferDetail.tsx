@@ -137,6 +137,17 @@ export default function SupplierOfferDetail() {
             </div>
           </div>
 
+          <div className="od-price-info">
+            <div className="od-price-info-item">
+              <span className="od-price-info-label">{t("supplier.offers.detail.askingPrice")}</span>
+              <span className="od-price-info-value">US$ {formatPrice(offer.askingPrice)}</span>
+            </div>
+            <div className="od-price-info-item">
+              <span className="od-price-info-label">{t("supplier.offers.detail.floorPrice")}</span>
+              <span className="od-price-info-value">US$ {formatPrice(offer.floorPrice)}</span>
+            </div>
+          </div>
+
           <div className="od-cuts">
             <div className="od-cuts-head">
               <span>{t("supplier.offers.detail.cutsHead.cut")}</span>
