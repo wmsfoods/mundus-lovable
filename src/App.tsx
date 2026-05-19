@@ -29,6 +29,9 @@ import BuyerChat from "./pages/buyer/BuyerChat.tsx";
 import AdminShell from "./pages/admin/AdminShell.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
+import AdminProspects from "./pages/admin/AdminProspects.tsx";
+import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
+import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
 import SupplierOffers from "./pages/supplier/Offers.tsx";
@@ -119,8 +122,9 @@ const App = () => (
               <Route path="negotiations" element={<AdminComingSoon section="negotiations" />} />
               <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
               <Route path="disputes" element={<AdminComingSoon section="disputes" />} />
-              <Route path="crm/prospects" element={<AdminComingSoon section="crm/prospects" />} />
-              <Route path="crm/pipeline" element={<AdminComingSoon section="crm/pipeline" />} />
+              <Route path="crm/prospects" element={<AdminProspects />} />
+              <Route path="crm/prospects/:id" element={<AdminProspectDetail />} />
+              <Route path="crm/pipeline" element={<AdminProspectsPipeline />} />
               <Route path="marketplace/products" element={<AdminComingSoon section="marketplace/products" />} />
               <Route path="marketplace/markets" element={<AdminComingSoon section="marketplace/markets" />} />
               <Route path="marketplace/ports" element={<AdminComingSoon section="marketplace/ports" />} />
