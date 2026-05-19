@@ -18,6 +18,7 @@ import BuyerHome from "./pages/buyer/Home.tsx";
 import BuyerOffers from "./pages/buyer/Offers.tsx";
 import BuyerOfferDetail from "./pages/buyer/OfferDetail.tsx";
 import SupplierHome from "./pages/supplier/Home.tsx";
+import DevIndex from "./pages/DevIndex.tsx";
 
 const queryClient = new QueryClient();
 
@@ -30,6 +31,7 @@ const App = () => (
         <AuthProvider>
           <Routes>
             <Route path="/" element={<RoleRedirect />} />
+            <Route path="/dev" element={<DevIndex />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/success" element={<SignupSuccess />} />
