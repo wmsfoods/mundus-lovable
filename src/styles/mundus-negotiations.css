@@ -451,21 +451,22 @@
 .nd-actions .btn-reject {
   padding: 10px 16px;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
+  border: 1px solid var(--danger);
   font-weight: var(--weight-semibold);
   cursor: pointer;
 }
 .nd-actions .btn-reject,
-.nd-actions .btn-reject:hover,
 .nd-actions .btn-reject:focus,
 .nd-actions .btn-reject:active {
-  background: #fff;
-  color: var(--fg, #1f1f1f);
-  border: 1px solid var(--border);
+  background: var(--bg) !important;
+  color: var(--danger) !important;
+  border-color: var(--danger) !important;
 }
 .nd-actions .btn-reject:hover {
-  background: #f7f7f8;
-  color: var(--fg, #1f1f1f);
+  background: var(--bg-brand-soft) !important;
+  color: var(--p800) !important;
+  border-color: var(--p300) !important;
+  box-shadow: 0 0 0 3px rgba(182, 71, 105, 0.12);
 }
 
 .nd-buyer-info { font-size: var(--fs-sm); }
