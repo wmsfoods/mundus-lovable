@@ -309,60 +309,6 @@
           "import": "Importar"
         }
       }
-    },
-    "customers": {
-      "title": "Mis Clientes",
-      "crumbHome": "Inicio",
-      "showing": "Mostrando 1 - {{shown}} de {{total}} resultados",
-      "searchPlaceholder": "Buscar clientes",
-      "filter": {
-        "all": "Todos",
-        "active": "Activos",
-        "inactive": "Inactivos"
-      },
-      "selectAll": "Seleccionar todos",
-      "clearSelection": "Limpiar selección",
-      "export": "Exportar",
-      "importCsv": "Importar CSV",
-      "invite": "Invitar Cliente",
-      "edit": "Editar",
-      "columns": {
-        "company": "Nombre de la Empresa",
-        "contact": "Nombre del Contacto",
-        "phone": "Teléfono",
-        "country": "País",
-        "email": "Correo",
-        "status": "Estado",
-        "invitedAt": "Invitado el",
-        "active": "Activo",
-        "actions": "Acciones"
-      },
-      "status": {
-        "active": "Activo",
-        "inactive": "Inactivo"
-      },
-      "emptyAll": "Aún no has invitado a ningún cliente. Usa \"Invitar Cliente\" para agregar el primero.",
-      "emptyFiltered": "Ningún cliente coincide con los filtros aplicados.",
-      "invite_modal": {
-        "title": "Invitar Nuevo Cliente",
-        "company": "Nombre de la Empresa",
-        "companyPlaceholder": "Ej: Acme Corp",
-        "contact": "Nombre del Contacto",
-        "contactPlaceholder": "Ej: Juan Pérez",
-        "email": "Correo electrónico",
-        "emailPlaceholder": "juan@ejemplo.com",
-        "phone": "Teléfono",
-        "phonePlaceholder": "+34 612 345 678",
-        "country": "País",
-        "send": "Enviar Invitación"
-      },
-      "import_modal": {
-        "title": "Importar CSV",
-        "hint": "Suba un archivo CSV con las siguientes columnas: CompanyName, ContactName, Email, Phone, Country.",
-        "downloadTemplate": "Descargar Plantilla",
-        "clickUpload": "Haga clic para subir el CSV",
-        "import": "Importar"
-      }
     }
   }
 }
