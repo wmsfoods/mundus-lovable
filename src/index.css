@@ -2,91 +2,189 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Mundus Trade Design System
-   Primary: #9B2251 — Dark Rose / Burgundy
-   Font: Inter (clean, professional B2B SaaS)
-   All colors in HSL.
-*/
+/* =========================================================================
+   Mundus Trade — Design System Foundation
+   Layer A: shadcn-compat HSL tokens (drives existing shadcn components)
+   Layer B: full named token system (drives ported design CSS)
+   ========================================================================= */
 
 @layer base {
   :root {
-    --background: 0 0% 98%;
-    --foreground: 220 20% 12%;
+    /* --- Layer A: shadcn HSL tokens (Mundus-tuned) ------------------------ */
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
 
     --card: 0 0% 100%;
-    --card-foreground: 220 20% 12%;
+    --card-foreground: 0 0% 4%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 220 20% 12%;
+    --popover-foreground: 0 0% 4%;
 
-    --primary: 337 64% 37%;
+    /* primary = --p800 = #B64769 = hsl(340, 44%, 50%) */
+    --primary: 340 44% 50%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 220 14% 96%;
-    --secondary-foreground: 220 20% 12%;
+    --secondary: 240 5% 96%;
+    --secondary-foreground: 0 0% 4%;
 
-    --muted: 220 14% 96%;
+    --muted: 240 5% 96%;
     --muted-foreground: 220 9% 46%;
 
-    --accent: 337 50% 95%;
-    --accent-foreground: 337 64% 37%;
+    /* accent = pale pink chip bg (--bg-brand-soft = #FFECEC) */
+    --accent: 0 100% 96%;
+    --accent-foreground: 340 44% 50%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 337 64% 37%;
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 340 44% 50%;
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 220 9% 26%;
-    --sidebar-primary: 337 64% 37%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 240 6% 26%;
+    --sidebar-primary: 340 44% 50%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 337 50% 95%;
-    --sidebar-accent-foreground: 337 64% 37%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 337 64% 37%;
+    --sidebar-accent: 0 100% 96%;
+    --sidebar-accent-foreground: 340 44% 50%;
+    --sidebar-border: 0 0% 90%;
+    --sidebar-ring: 340 44% 50%;
+
+    /* --- Layer B: named brand tokens ------------------------------------- */
+    /* Rose / Wine (p = pink) */
+    --p050: #fdf3f4;
+    --p100: #fbe8eb;
+    --p200: #f6d5db;
+    --p300: #efb2bd;
+    --p400: #e5879a;
+    --p500: #d75c77;
+    --p600: #c23c60;
+    --p700: #a22e50;
+    --p800: #B64769;   /* BRAND PRIMARY */
+    --p900: #752642;
+    --p950: #411020;
+
+    /* Brand gradients */
+    --brand-gradient: linear-gradient(to right, #6C0B28, #A74764);
+    --brand-gradient-soft: linear-gradient(to right, #7D3047, #EEC7D4);
+    --brand-gradient-banner: linear-gradient(to right, #7D3047 0%, rgba(227, 87, 129, 0.6) 60%);
+
+    /* Warm-cool neutrals (g = gray) */
+    --g050: #f7f7f8;
+    --g100: #eeeef0;
+    --g200: #d9d9d3;
+    --g300: #b8b8c1;
+    --g400: #91929f;
+    --g500: #6b7280;
+    --g600: #5e5f6b;
+    --g700: #4d4e57;
+    --g800: #42424A;
+    --g900: #3a3a40;
+    --g950: #26262b;
+
+    /* Semantic surfaces */
+    --bg:              #ffffff;
+    --bg-muted:        var(--g100);
+    --bg-subtle:       var(--g050);
+    --bg-brand-soft:   #FFECEC;
+    --bg-brand-medium: var(--p800);
+    --fg:              #0A0A0A;
+    --fg-muted:        var(--g500);
+    --fg-tertiary:     var(--g400);
+    --fg-on-brand:     #ffffff;
+    --fg-brand-heavy:  var(--p800);
+
+    --border-strong:   var(--g200);
+    --input-border:    hsl(0 0% 89.8%);
+
+    /* Status */
+    --success: #16a34a;
+    --warning: #d97706;
+    --danger:  #dc2626;
+    --info:    #0369a1;
+
+    /* Elevation */
+    --shadow-header: 0 1px 2px 0 rgba(0,0,0,0.06), 0 1px 3px 0 rgba(0,0,0,0.10);
+    --shadow-card:   0 1px 2px 0 rgba(0,0,0,0.05);
+    --shadow-hover:  0 4px 12px -2px rgba(0,0,0,0.10), 0 2px 4px -2px rgba(0,0,0,0.06);
+    --shadow-glow-orange: 0 0 8px rgba(255,102,0,0.6);
+
+    /* Radii (extras beyond shadcn) */
+    --radius-sm: 0.25rem;
+    --radius-md: 0.375rem;
+    --radius-lg: 0.5rem;
+    --radius-pill: 9999px;
+
+    /* Spacing (Chakra 4px base) */
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-6: 24px;
+    --space-8: 32px;
+    --space-10: 40px;
+    --space-12: 48px;
+    --space-16: 64px;
+
+    /* Layout */
+    --sidebar-w: 220px;
+    --header-h: 89px;
+    --container-max: 1400px;
+
+    /* Type — Inter via Google Fonts (added in index.html) */
+    --font-sans: "Inter", "Helvetica Neue", Arial, Helvetica, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+    --weight-regular:  400;
+    --weight-medium:   500;
+    --weight-semibold: 600;
+
+    --fs-xs:   12px;
+    --fs-sm:   14px;
+    --fs-base: 16px;
+    --fs-md:   16px;
+    --fs-lg:   18px;
+    --fs-xl:   20px;
+    --fs-2xl:  24px;
+    --fs-3xl:  30px;
+    --fs-4xl:  36px;
+    --fs-5xl:  48px;
+
+    --lh-tight:  1.2;
+    --lh-snug:   1.3;
+    --lh-normal: 1.5;
   }
 
   .dark {
     --background: 220 20% 8%;
     --foreground: 220 14% 96%;
-
     --card: 220 18% 12%;
     --card-foreground: 220 14% 96%;
-
     --popover: 220 18% 12%;
     --popover-foreground: 220 14% 96%;
-
-    --primary: 337 64% 45%;
+    --primary: 340 44% 55%;
     --primary-foreground: 0 0% 100%;
-
     --secondary: 220 14% 18%;
     --secondary-foreground: 220 14% 96%;
-
     --muted: 220 14% 18%;
     --muted-foreground: 220 9% 60%;
-
-    --accent: 337 40% 20%;
-    --accent-foreground: 337 64% 75%;
-
+    --accent: 340 30% 22%;
+    --accent-foreground: 340 60% 80%;
     --destructive: 0 62% 30%;
     --destructive-foreground: 0 0% 100%;
-
     --border: 220 14% 20%;
     --input: 220 14% 20%;
-    --ring: 337 64% 45%;
-
+    --ring: 340 44% 55%;
     --sidebar-background: 220 18% 10%;
     --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 337 64% 45%;
+    --sidebar-primary: 340 44% 55%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 337 40% 18%;
-    --sidebar-accent-foreground: 337 64% 75%;
+    --sidebar-accent: 340 30% 20%;
+    --sidebar-accent-foreground: 340 60% 80%;
     --sidebar-border: 220 14% 20%;
-    --sidebar-ring: 337 64% 45%;
+    --sidebar-ring: 340 44% 55%;
   }
 }
 
@@ -95,8 +193,40 @@
     @apply border-border;
   }
 
-  body {
+  html, body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    font-family: var(--font-sans);
+    font-size: var(--fs-base);
+    line-height: var(--lh-normal);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
+}
+
+/* =========================================================================
+   Utility classes from design system (used by ported design CSS)
+   ========================================================================= */
+@layer components {
+  .h1 { font-family: var(--font-sans); font-size: var(--fs-4xl); font-weight: var(--weight-semibold); line-height: var(--lh-tight); letter-spacing: -0.01em; color: var(--fg); }
+  .h2 { font-size: var(--fs-2xl); font-weight: var(--weight-semibold); line-height: var(--lh-snug); color: var(--fg); }
+  .h3 { font-size: var(--fs-xl); font-weight: var(--weight-semibold); line-height: var(--lh-snug); color: var(--fg); }
+  .h4 { font-size: var(--fs-lg); font-weight: var(--weight-medium); line-height: var(--lh-snug); }
+
+  .text-secondary { color: var(--fg-muted); }
+  .text-tertiary  { color: var(--fg-tertiary); }
+  .text-brand     { color: var(--fg-brand-heavy); }
+
+  .label-xs { font-size: var(--fs-xs); font-weight: var(--weight-medium); color: var(--g800); }
+  .label-sm { font-size: var(--fs-sm); font-weight: var(--weight-medium); color: var(--g800); }
+
+  .stat-value { font-size: 2rem; font-weight: var(--weight-semibold); color: var(--p700); line-height: 1; }
+
+  .bg-brand          { background: var(--bg-brand-medium); color: var(--fg-on-brand); }
+  .bg-brand-gradient { background: var(--brand-gradient); color: var(--fg-on-brand); }
+  .bg-brand-soft     { background: var(--bg-brand-soft); color: var(--fg-brand-heavy); }
+}
+
+:where(a, button, input, textarea, select):focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
 }
