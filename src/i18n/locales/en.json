@@ -1535,6 +1535,107 @@
         "issueDocs": "Docs incomplete",
         "issueOnboarding": "Onboarding ✓"
       }
+    },
+    "crm": {
+      "title": "Prospects",
+      "subtitle": "{{active}} active · {{total}} total",
+      "addProspect": "Add prospect",
+      "importCsv": "Import CSV",
+      "viewTable": "Table",
+      "viewKanban": "Kanban",
+      "filters": {
+        "search": "Search by company, contact, country…",
+        "allStages": "All stages",
+        "allRoles": "All",
+        "buyers": "Buyers",
+        "suppliers": "Suppliers",
+        "allOwners": "All owners"
+      },
+      "stages": {
+        "new": "New",
+        "researching": "Researching",
+        "contacted": "Contacted",
+        "qualified": "Qualified",
+        "onboarding": "Onboarding",
+        "onboarded": "Onboarded",
+        "lost": "Lost"
+      },
+      "roles": {
+        "potential_buyer": "Buyer",
+        "potential_supplier": "Supplier"
+      },
+      "sources": {
+        "linkedin": "LinkedIn",
+        "trade_show": "Trade show",
+        "referral": "Referral",
+        "web_scrape": "Web scrape",
+        "apollo": "Apollo",
+        "manual": "Manual",
+        "inbound": "Inbound"
+      },
+      "table": {
+        "company": "Company",
+        "role": "Role",
+        "stage": "Stage",
+        "source": "Source",
+        "country": "Country",
+        "estGmv": "Est. GMV",
+        "owner": "Owner",
+        "lastActivity": "Last activity"
+      },
+      "empty": "No prospects match these filters.",
+      "kanban": {
+        "funnelConversion": "Funnel conversion",
+        "ownerLeaderboard": "Owner leaderboard",
+        "sources": "Sources",
+        "qualifiedCount": "{{n}} qualified",
+        "onboardedCount": "{{n}} onboarded"
+      },
+      "detail": {
+        "back": "Prospects",
+        "invite": "Invite to platform",
+        "inviteDisabled": "Move to Qualified to enable invite",
+        "addNote": "Add note",
+        "edit": "Edit",
+        "created": "Created",
+        "lastContact": "Last contact",
+        "activity": "Activity",
+        "noActivity": "No activity yet",
+        "contact": "Contact",
+        "linkedinSearch": "LinkedIn search →",
+        "companyInfo": "Company info",
+        "owner": "Owner",
+        "reassign": "Reassign"
+      },
+      "add": {
+        "title": "Add prospect",
+        "companyName": "Company name",
+        "country": "Country",
+        "role": "Role",
+        "source": "Source",
+        "contactName": "Contact name",
+        "contactEmail": "Contact email",
+        "contactPhone": "Contact phone",
+        "estGmv": "Estimated annual GMV (USD)",
+        "owner": "Owner",
+        "notes": "Initial notes",
+        "submit": "Add prospect",
+        "cancel": "Cancel"
+      },
+      "import": {
+        "title": "Import CSV",
+        "dropzone": "Drag CSV here or click to upload",
+        "template": "Download template",
+        "preview": "Preview · first {{n}} rows of {{total}}",
+        "submit": "Import {{n}} prospects",
+        "invalidFormat": "Invalid CSV format"
+      },
+      "toast": {
+        "added": "{{company}} added to prospects",
+        "imported": "{{n}} prospects imported",
+        "stageChanged": "{{company}} moved to {{stage}}",
+        "invited": "Invite sent to {{email}} — prospect moved to Onboarding"
+      }
     }
   }
 }
