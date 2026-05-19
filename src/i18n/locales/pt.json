@@ -994,6 +994,8 @@
         "illustrative": "IMAGEM ILUSTRATIVA",
         "specifications": "Especificações ({{count}})",
         "totalValuePerFcl": "Valor Total (Preço inicial) por FCL",
+        "askingPrice": "Preço de Pedido",
+        "floorPrice": "Preço Mínimo",
         "totalWeight": "Peso total",
         "noMoreInfo": "Nada a exibir aqui.",
         "moreInfo": "Mais informações",
