@@ -253,13 +253,68 @@
         "3": "Alto",
         "4": "Premium",
         "default": "No Clasificado"
+      },
+      "customers": {
+        "title": "Mis Clientes",
+        "crumbHome": "Inicio",
+        "showing": "Mostrando 1 - {{shown}} elementos de {{total}} resultados",
+        "searchPlaceholder": "Buscar clientes",
+        "filterLabel": "Filtrar estado",
+        "filter": {
+          "all": "Todos",
+          "active": "Activos",
+          "inactive": "Inactivos"
+        },
+        "selectAll": "Seleccionar todos",
+        "clearSelection": "Limpiar selección",
+        "export": "Exportar",
+        "importCsv": "Importar CSV",
+        "inviteCustomer": "Invitar Cliente",
+        "edit": "Editar",
+        "empty": "Ningún cliente coincide con los filtros.",
+        "col": {
+          "company": "Empresa",
+          "contact": "Contacto",
+          "phone": "Teléfono",
+          "country": "País",
+          "email": "Correo",
+          "status": "Estado",
+          "invitedAt": "Invitado el",
+          "active": "Activo",
+          "actions": "Acciones"
+        },
+        "status": {
+          "active": "Activo",
+          "inactive": "Inactivo"
+        },
+        "invite": {
+          "title": "Invitar Nuevo Cliente",
+          "company": "Empresa",
+          "companyPlaceholder": "Ej.: Acme Corp",
+          "contact": "Nombre de Contacto",
+          "contactPlaceholder": "Ej.: Juan Pérez",
+          "email": "Correo",
+          "emailPlaceholder": "juan@ejemplo.com",
+          "phone": "Teléfono",
+          "phonePlaceholder": "+34 612 345 678",
+          "country": "País",
+          "selectPlaceholder": "Seleccione",
+          "send": "Enviar Invitación"
+        },
+        "import": {
+          "title": "Importar CSV",
+          "body": "Sube un archivo CSV con las siguientes columnas: CompanyName, ContactName, Email, Phone, Country.",
+          "template": "Descargar Plantilla",
+          "clickToUpload": "Haz clic para subir el CSV",
+          "import": "Importar"
+        }
+      }
     },
     "customers": {
       "title": "Mis Clientes",
       "crumbHome": "Inicio",
-      "showing": "Mostrando 1 - {{shown}} elementos de {{total}} resultados",
+      "showing": "Mostrando 1 - {{shown}} de {{total}} resultados",
       "searchPlaceholder": "Buscar clientes",
-      "filterLabel": "Filtrar estado",
       "filter": {
         "all": "Todos",
         "active": "Activos",
@@ -269,12 +324,11 @@
       "clearSelection": "Limpiar selección",
       "export": "Exportar",
       "importCsv": "Importar CSV",
-      "inviteCustomer": "Invitar Cliente",
+      "invite": "Invitar Cliente",
       "edit": "Editar",
-      "empty": "Ningún cliente coincide con los filtros.",
-      "col": {
-        "company": "Empresa",
-        "contact": "Contacto",
+      "columns": {
+        "company": "Nombre de la Empresa",
+        "contact": "Nombre del Contacto",
         "phone": "Teléfono",
         "country": "País",
         "email": "Correo",
@@ -287,28 +341,28 @@
         "active": "Activo",
         "inactive": "Inactivo"
       },
-      "invite": {
+      "emptyAll": "Aún no has invitado a ningún cliente. Usa \"Invitar Cliente\" para agregar el primero.",
+      "emptyFiltered": "Ningún cliente coincide con los filtros aplicados.",
+      "invite_modal": {
         "title": "Invitar Nuevo Cliente",
-        "company": "Empresa",
-        "companyPlaceholder": "Ej.: Acme Corp",
-        "contact": "Nombre de Contacto",
-        "contactPlaceholder": "Ej.: Juan Pérez",
-        "email": "Correo",
+        "company": "Nombre de la Empresa",
+        "companyPlaceholder": "Ej: Acme Corp",
+        "contact": "Nombre del Contacto",
+        "contactPlaceholder": "Ej: Juan Pérez",
+        "email": "Correo electrónico",
         "emailPlaceholder": "juan@ejemplo.com",
         "phone": "Teléfono",
         "phonePlaceholder": "+34 612 345 678",
         "country": "País",
-        "selectPlaceholder": "Seleccione",
         "send": "Enviar Invitación"
       },
-      "import": {
+      "import_modal": {
         "title": "Importar CSV",
-        "body": "Sube un archivo CSV con las siguientes columnas: CompanyName, ContactName, Email, Phone, Country.",
-        "template": "Descargar Plantilla",
-        "clickToUpload": "Haz clic para subir el CSV",
+        "hint": "Suba un archivo CSV con las siguientes columnas: CompanyName, ContactName, Email, Phone, Country.",
+        "downloadTemplate": "Descargar Plantilla",
+        "clickUpload": "Haga clic para subir el CSV",
         "import": "Importar"
       }
     }
   }
-}
 }
