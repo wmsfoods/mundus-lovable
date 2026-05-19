@@ -253,61 +253,74 @@
         "3": "High",
         "4": "Premium",
         "default": "Not Classified"
+      }
+    }
+  },
+  "supplier": {
+    "requests": {
+      "title": "My offer requests",
+      "subtitle": "Track the offer requests you have sent to the marketplace or suppliers.",
+      "crumbHome": "Home",
+      "searchPlaceholder": "Search",
+      "showing": "Showing {{from}} - {{to}} items of {{total}} results",
+      "empty": "No requests match your filters.",
+      "col": {
+        "requestNumber": "Request Number",
+        "client": "Client",
+        "product": "Product",
+        "destinationCountry": "Destination Country",
+        "incoterms": "Incoterms",
+        "quantity": "Quantity",
+        "container": "Container",
+        "status": "Status",
+        "createdAt": "Created At",
+        "actions": "Actions"
       },
-      "customers": {
-        "title": "My Customers",
-        "crumbHome": "Home",
-        "showing": "Showing 1 - {{shown}} items of {{total}} results",
-        "searchPlaceholder": "Search customers",
-        "filterLabel": "Filter status",
-        "filter": {
-          "all": "All",
-          "active": "Active",
-          "inactive": "Inactive"
+      "status": {
+        "new": "New",
+        "with_responses": "With responses",
+        "offer_sent": "Offer Sent",
+        "not_interested": "Not Interested"
+      },
+      "actions": {
+        "createOffer": "Create Offer",
+        "view": "View",
+        "notInterested": "Not Interested"
+      },
+      "notInterestedModal": {
+        "title": "Mark as Not Interested?",
+        "body": "Request {{requestNumber}} will be marked as Not Interested and removed from your active list.",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      },
+      "detail": {
+        "crumb": "Offer request {{requestNumber}}",
+        "title": "Offer request details",
+        "subtitle": "View the information for offer request {{requestNumber}}.",
+        "createdAt": "Created at",
+        "productsHeading": "Products",
+        "logisticsHeading": "Logistics & Details",
+        "additionalHeading": "Additional Information",
+        "fields": {
+          "category": "Category",
+          "quantity": "Quantity",
+          "targetPrice": "Target price",
+          "specification": "Specification",
+          "destinationCountry": "Destination country",
+          "destinationPort": "Destination port",
+          "incoterms": "Incoterms",
+          "containerSize": "Container size",
+          "productTemperature": "Product temperature",
+          "numberOfContainers": "Number of containers",
+          "shipmentDate": "Shipment date"
         },
-        "selectAll": "Select all",
-        "clearSelection": "Clear selection",
-        "export": "Export",
-        "importCsv": "Import CSV",
-        "inviteCustomer": "Invite Customer",
-        "edit": "Edit",
-        "empty": "No customers match your filters.",
-        "col": {
-          "company": "Company Name",
-          "contact": "Contact Name",
-          "phone": "Phone",
-          "country": "Country",
-          "email": "Email",
-          "status": "Status",
-          "invitedAt": "Invited At",
-          "active": "Active",
-          "actions": "Actions"
-        },
-        "status": {
-          "active": "Active",
-          "inactive": "Inactive"
-        },
-        "invite": {
-          "title": "Invite New Customer",
-          "company": "Company Name",
-          "companyPlaceholder": "Ex: Acme Corp",
-          "contact": "Contact Name",
-          "contactPlaceholder": "Ex: John Doe",
-          "email": "Email",
-          "emailPlaceholder": "john@example.com",
-          "phone": "Phone",
-          "phonePlaceholder": "+1 234 567 8900",
-          "country": "Country",
-          "selectPlaceholder": "Select",
-          "send": "Send Invite"
-        },
-        "import": {
-          "title": "Import CSV",
-          "body": "Upload a CSV file with the following columns: CompanyName, ContactName, Email, Phone, Country.",
-          "template": "Download Template",
-          "clickToUpload": "Click to upload CSV",
-          "import": "Import"
-        }
+        "noAdditionalInfo": "No additional information provided.",
+        "createOfferCta": "Create offer from this request",
+        "notInterestedCta": "Not Interested",
+        "createOfferComingSoon": "Create Offer flow — coming soon",
+        "notFoundTitle": "Request not found",
+        "notFoundBody": "This offer request doesn't exist or has been removed.",
+        "back": "Back to requests"
       }
     }
   }
