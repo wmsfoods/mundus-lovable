@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import { RoleRedirect } from "@/components/RoleRedirect";
 import Login from "./pages/Login.tsx";
@@ -25,6 +26,9 @@ import BuyerNegotiationDetail from "./pages/buyer/BuyerNegotiationDetail.tsx";
 import BuyerRequests from "./pages/buyer/BuyerRequests.tsx";
 import BuyerRequestDetail from "./pages/buyer/BuyerRequestDetail.tsx";
 import BuyerChat from "./pages/buyer/BuyerChat.tsx";
+import AdminShell from "./pages/admin/AdminShell.tsx";
+import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
+import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
 import SupplierOffers from "./pages/supplier/Offers.tsx";
@@ -44,12 +48,13 @@ const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AuthProvider>
-          <Routes>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AuthProvider>
+            <Routes>
             <Route path="/" element={<RoleRedirect />} />
             <Route path="/dev" element={<DevIndex />} />
             <Route path="/login" element={<Login />} />
@@ -106,11 +111,31 @@ const App = () => (
               <Route path="negotiations" element={<SupplierNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
             </Route>
+            <Route path="/admin" element={<AdminShell />}>
+              <Route index element={<Navigate to="/admin/dashboard" replace />} />
+              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="companies" element={<AdminComingSoon section="companies" />} />
+              <Route path="deals" element={<AdminComingSoon section="deals" />} />
+              <Route path="negotiations" element={<AdminComingSoon section="negotiations" />} />
+              <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
+              <Route path="disputes" element={<AdminComingSoon section="disputes" />} />
+              <Route path="crm/prospects" element={<AdminComingSoon section="crm/prospects" />} />
+              <Route path="crm/pipeline" element={<AdminComingSoon section="crm/pipeline" />} />
+              <Route path="marketplace/products" element={<AdminComingSoon section="marketplace/products" />} />
+              <Route path="marketplace/markets" element={<AdminComingSoon section="marketplace/markets" />} />
+              <Route path="marketplace/ports" element={<AdminComingSoon section="marketplace/ports" />} />
+              <Route path="finance/revenue" element={<AdminComingSoon section="finance/revenue" />} />
+              <Route path="finance/commissions" element={<AdminComingSoon section="finance/commissions" />} />
+              <Route path="settings/team" element={<AdminComingSoon section="settings/team" />} />
+              <Route path="settings/audit" element={<AdminComingSoon section="settings/audit" />} />
+              <Route path="settings/flags" element={<AdminComingSoon section="settings/flags" />} />
+            </Route>
             <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </TooltipProvider>
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 
