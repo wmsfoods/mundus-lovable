@@ -128,6 +128,19 @@
   margin-left: 6px;
   line-height: 1;
 }
+.pro-badge--btn {
+  border: none;
+  cursor: pointer;
+  transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
+}
+.pro-badge--btn:hover {
+  background: #8a3550;
+  box-shadow: 0 0 0 3px rgba(182, 71, 105, 0.18);
+}
+.pro-badge--btn:focus-visible {
+  outline: 2px solid var(--p800);
+  outline-offset: 2px;
+}
 
 /* Accent variant (Create Request, Create Offer) */
 .sb-item.is-accent {

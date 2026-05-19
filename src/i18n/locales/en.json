@@ -1315,6 +1315,72 @@
       "analytics": {
         "title": "Supplier analytics",
         "subtitle": "Performance of your operation — last 30 days vs. previous period"
+      },
+      "upsell": {
+        "eyebrow": "Coming soon",
+        "learnMore": "Learn more",
+        "earlyAccess": "Request early access",
+        "earlyAccessToast": "Thanks — we'll be in touch shortly.",
+        "contactSales": "Contact sales",
+        "salesBody": "Hi Mundus team,\n\nI'd like to learn more about the upcoming Insights add-on for my account.\n\nThanks!",
+        "perksLabel": "What you get",
+        "launching": "Launching Q3 2026",
+        "pricing": "Pricing announced at launch",
+        "priceBenchmark": {
+          "title": "Know exactly where your offer stands",
+          "lede": "Stop pricing in the dark. See how every offer you publish compares to the live marketplace in real time — without ever exposing competitor identities.",
+          "bullets": {
+            "distribution": {
+              "title": "Live market distribution",
+              "body": "Histogram of every competing offer for your cut + origin, refreshed every 24h."
+            },
+            "ranking": {
+              "title": "Anonymized competitor ranking",
+              "body": "See who you're up against by views, chats, and price — names always blurred."
+            },
+            "alerts": {
+              "title": "Price-drop & demand alerts",
+              "body": "Get notified the moment a competitor undercuts you or demand spikes in a region."
+            },
+            "suggested": {
+              "title": "AI-suggested target price",
+              "body": "A weekly recommendation calibrated to your margin floor and conversion goals."
+            }
+          },
+          "perks": [
+            "Weekly market report (PDF) for each of your active cuts",
+            "Slack and email alerts on competitor price changes",
+            "12-month historical price trend per cut and origin"
+          ]
+        },
+        "analytics": {
+          "title": "Turn every offer into a learning loop",
+          "lede": "Go beyond vanity metrics. Understand which buyers convert, which regions are heating up, and where your funnel leaks revenue.",
+          "bullets": {
+            "funnel": {
+              "title": "Full conversion funnel",
+              "body": "View → chat → counter → order, with drop-off rates per stage and per cut."
+            },
+            "cohort": {
+              "title": "Buyer cohort retention",
+              "body": "See which buyers come back, how often, and how much they grow order over order."
+            },
+            "geo": {
+              "title": "Geographic demand heatmap",
+              "body": "Spot emerging destinations early — by port, country, and incoterm preference."
+            },
+            "sla": {
+              "title": "Response-time SLA tracking",
+              "body": "Monitor how fast your team replies and how it correlates with win rate."
+            }
+          },
+          "perks": [
+            "Monthly performance review delivered to your inbox",
+            "Unlimited CSV exports of any metric or chart",
+            "Custom date ranges and saved views per teammate",
+            "Buyer-level drilldown with full negotiation history"
+          ]
+        }
       }
     }
   },

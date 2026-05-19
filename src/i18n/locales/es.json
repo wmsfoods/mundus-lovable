@@ -1315,6 +1315,72 @@
       "analytics": {
         "title": "Analítica del supplier",
         "subtitle": "Performance de tu operación — últimos 30 días vs. período anterior"
+      },
+      "upsell": {
+        "eyebrow": "Próximamente",
+        "learnMore": "Saber más",
+        "earlyAccess": "Solicitar acceso anticipado",
+        "earlyAccessToast": "Gracias — nos pondremos en contacto pronto.",
+        "contactSales": "Hablar con ventas",
+        "salesBody": "Hola equipo Mundus,\n\nMe gustaría saber más sobre el próximo add-on de Insights para mi cuenta.\n\n¡Gracias!",
+        "perksLabel": "Qué incluye",
+        "launching": "Lanzamiento Q3 2026",
+        "pricing": "Precio anunciado en el lanzamiento",
+        "priceBenchmark": {
+          "title": "Sabé exactamente dónde está tu oferta",
+          "lede": "Dejá de fijar precios a ciegas. Mirá cómo cada oferta publicada se compara con el marketplace en tiempo real — sin exponer nunca la identidad de los competidores.",
+          "bullets": {
+            "distribution": {
+              "title": "Distribución de mercado en vivo",
+              "body": "Histograma de todas las ofertas competidoras de tu corte + origen, actualizado cada 24h."
+            },
+            "ranking": {
+              "title": "Ranking anónimo de competidores",
+              "body": "Mirá contra quién competís por vistas, chats y precio — nombres siempre ocultos."
+            },
+            "alerts": {
+              "title": "Alertas de baja de precio y demanda",
+              "body": "Recibí notificación cuando un competidor baje el precio o la demanda suba en una región."
+            },
+            "suggested": {
+              "title": "Precio objetivo sugerido por IA",
+              "body": "Recomendación semanal calibrada a tu piso de margen y objetivos de conversión."
+            }
+          },
+          "perks": [
+            "Reporte semanal de mercado (PDF) para cada corte activo",
+            "Alertas por Slack y email sobre cambios de precio de competidores",
+            "Histórico de precio de 12 meses por corte y origen"
+          ]
+        },
+        "analytics": {
+          "title": "Convertí cada oferta en aprendizaje",
+          "lede": "Andá más allá de las métricas de vanidad. Entendé qué compradores convierten, qué regiones se calientan y dónde tu funnel pierde ingresos.",
+          "bullets": {
+            "funnel": {
+              "title": "Funnel de conversión completo",
+              "body": "Vista → chat → contraoferta → pedido, con tasas de caída por etapa y por corte."
+            },
+            "cohort": {
+              "title": "Retención por cohort de comprador",
+              "body": "Mirá qué compradores vuelven, con qué frecuencia y cuánto crecen pedido a pedido."
+            },
+            "geo": {
+              "title": "Mapa de calor de demanda geográfica",
+              "body": "Detectá destinos emergentes temprano — por puerto, país y preferencia de incoterm."
+            },
+            "sla": {
+              "title": "SLA de tiempo de respuesta",
+              "body": "Monitoreá qué tan rápido responde tu equipo y cómo impacta en la tasa de cierre."
+            }
+          },
+          "perks": [
+            "Revisión mensual de performance enviada a tu email",
+            "Exportaciones CSV ilimitadas de cualquier métrica o gráfico",
+            "Períodos personalizados y vistas guardadas por miembro del equipo",
+            "Drilldown por comprador con historial completo de negociación"
+          ]
+        }
       }
     }
   },

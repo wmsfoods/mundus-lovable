@@ -58,7 +58,7 @@ export default function PriceBenchmark() {
         </div>
       </div>
 
-      <PreviewBanner />
+      <PreviewBanner feature="price-benchmark" />
 
       {/* Hero */}
       <div className="pb-hero">
