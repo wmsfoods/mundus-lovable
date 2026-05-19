@@ -258,6 +258,47 @@
     }
   },
   "supplier": {
+    "users": {
+      "title": "Usuarios",
+      "searchPlaceholder": "Buscar por nombre, email o cargo...",
+      "profileFilter": "Perfil",
+      "statusFilter": "Estado",
+      "all": "Todos",
+      "allProfiles": "Todos los perfiles",
+      "inviteUser": "Invitar Usuario",
+      "userCount": "{{count}} de {{total}} usuarios",
+      "empty": "Ningún usuario coincide con los filtros.",
+      "col": {
+        "user": "Usuario",
+        "email": "Email",
+        "profileType": "Tipo de perfil",
+        "created": "Creado",
+        "lastLogin": "Último acceso",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "profile": {
+        "master_supplier": "Proveedor Master",
+        "sales_trader": "Trader de Ventas",
+        "export_manager": "Gerente de Exportación",
+        "quality_control": "Control de Calidad",
+        "logistics": "Logística"
+      },
+      "status": {
+        "active": "Activo",
+        "inactive": "Inactivo"
+      },
+      "invite": {
+        "title": "Invitar nuevo usuario",
+        "subtitle": "Envía un email de invitación — definirán su contraseña en el primer acceso.",
+        "emailLabel": "Email",
+        "emailPlaceholder": "usuario@ejemplo.com",
+        "profileLabel": "Tipo de perfil",
+        "send": "Enviar invitación",
+        "cancel": "Cancelar",
+        "success": "Invitación enviada"
+      }
+    },
     "requests": {
       "title": "Mis solicitudes de oferta",
       "subtitle": "Haga seguimiento de las solicitudes de oferta enviadas al marketplace o suppliers.",
