@@ -1,0 +1,430 @@
+/* =========================================================================
+   Mundus Trade — Form primitives CSS
+   Ported from the design system's styles.css (form fields + toggle + radio +
+   checkbox + tag select + select + phone + url + dropzone + toast).
+   Consumed by src/components/mundus/*.tsx.
+   ========================================================================= */
+
+/* --- Field wrapper --------------------------------------------------- */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field-label {
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+}
+.field-label .req { color: var(--danger); margin-left: 2px; }
+.field-hint  { font-size: var(--fs-xs); color: var(--fg-muted); }
+.field-error { font-size: var(--fs-xs); color: var(--danger); }
+.field-row { display: flex; gap: 12px; }
+.field-row > * { flex: 1; }
+
+/* --- Text input ------------------------------------------------------ */
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.input {
+  width: 100%;
+  height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--fg);
+  font-size: var(--fs-base);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input::placeholder { color: var(--g400); }
+.input:focus {
+  outline: none;
+  border-color: var(--p800);
+  box-shadow: 0 0 0 2px rgba(182, 71, 105, 0.18);
+}
+.input.has-icon { padding-right: 42px; }
+.input-icon {
+  position: absolute;
+  right: 12px;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--g400);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.input-icon[disabled], .input-icon.static { cursor: default; }
+.input-readonly {
+  background: var(--g050);
+  color: var(--fg);
+}
+
+/* --- Toggle ---------------------------------------------------------- */
+.toggle-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+}
+.toggle {
+  position: relative;
+  width: 34px;
+  height: 18px;
+  background: var(--g300);
+  border-radius: 999px;
+  transition: background 0.2s;
+  flex-shrink: 0;
+}
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.2s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+.toggle-wrap.on .toggle { background: var(--p800); }
+.toggle-wrap.on .toggle::after { transform: translateX(16px); }
+.toggle-label { font-size: var(--fs-sm); color: var(--fg); }
+
+/* --- Radio ----------------------------------------------------------- */
+.radio-row { display: inline-flex; gap: 24px; align-items: center; }
+.radio {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: var(--fs-base);
+}
+.radio input {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--g400);
+  border-radius: 50%;
+  position: relative;
+  margin: 0;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.radio input:checked {
+  border-color: var(--p800);
+  border-width: 5px;
+}
+.radio input:focus-visible { outline: 2px solid hsl(var(--ring)); outline-offset: 2px; }
+
+/* --- Checkbox (bonus, used in confirmation checkboxes) --------------- */
+.checkbox {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid var(--g400);
+  border-radius: var(--radius-sm);
+  background: #fff;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  margin: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+.checkbox:checked {
+  background: var(--p700);
+  border-color: var(--p700);
+}
+.checkbox:checked::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 5px;
+  height: 9px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* --- Tag select (multi-select with chips) ---------------------------- */
+.tag-select {
+  min-height: 44px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  background: #fff;
+  padding: 6px 36px 6px 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  position: relative;
+  cursor: text;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.tag-select.focused {
+  border-color: var(--p800);
+  box-shadow: 0 0 0 2px rgba(182, 71, 105, 0.18);
+}
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px 4px 10px;
+  background: var(--g100);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  color: var(--fg);
+}
+.tag-x {
+  border: none;
+  background: none;
+  cursor: pointer;
+  color: var(--g500);
+  font-size: 14px;
+  line-height: 1;
+  padding: 0;
+  display: inline-flex;
+}
+.tag-x:hover { color: var(--fg); }
+.tag-select-input {
+  flex: 1;
+  min-width: 100px;
+  border: none;
+  outline: none;
+  font-size: var(--fs-base);
+  background: transparent;
+  padding: 4px;
+}
+.tag-select-chevron {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--g400);
+  pointer-events: none;
+}
+.tag-select-clear {
+  position: absolute;
+  right: 32px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  color: var(--g400);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 0;
+}
+.tag-options {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-hover);
+  max-height: 240px;
+  overflow-y: auto;
+  z-index: 50;
+}
+.tag-option {
+  padding: 10px 14px;
+  font-size: var(--fs-base);
+  cursor: pointer;
+}
+.tag-option:hover, .tag-option.active { background: #eff5ff; }
+
+/* --- Select (single) ------------------------------------------------- */
+.select-wrap { position: relative; }
+.select {
+  width: 100%;
+  height: 44px;
+  padding: 0 36px 0 14px;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  background: #fff;
+  color: var(--fg);
+  font-size: var(--fs-base);
+  appearance: none;
+  cursor: pointer;
+}
+.select:focus {
+  outline: none;
+  border-color: var(--p800);
+  box-shadow: 0 0 0 2px rgba(182, 71, 105, 0.18);
+}
+.select-chevron {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--g400);
+  pointer-events: none;
+}
+
+/* --- Phone field ----------------------------------------------------- */
+.phone-wrap {
+  display: flex;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.phone-wrap:focus-within {
+  border-color: var(--p800);
+  box-shadow: 0 0 0 2px rgba(182, 71, 105, 0.18);
+}
+.phone-cc {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 10px;
+  border-right: 1px solid hsl(var(--border));
+  background: var(--g050);
+  font-size: var(--fs-sm);
+  color: var(--fg);
+  cursor: pointer;
+  border-top: none;
+  border-bottom: none;
+  border-left: none;
+}
+.phone-flag {
+  width: 22px;
+  height: 16px;
+  border-radius: 2px;
+  overflow: hidden;
+  display: inline-flex;
+  background: #ccc;
+}
+.phone-input {
+  flex: 1;
+  height: 42px;
+  border: none;
+  padding: 0 14px;
+  font-size: var(--fs-base);
+  outline: none;
+}
+
+/* --- URL field with https:// prefix ---------------------------------- */
+.url-wrap {
+  display: flex;
+  border: 1px solid var(--input-border);
+  border-radius: var(--radius);
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.url-wrap:focus-within {
+  border-color: var(--p800);
+  box-shadow: 0 0 0 2px rgba(182, 71, 105, 0.18);
+}
+.url-prefix {
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  background: var(--g050);
+  color: var(--g500);
+  font-size: var(--fs-sm);
+  border-right: 1px solid hsl(var(--border));
+}
+.url-input {
+  flex: 1;
+  height: 42px;
+  border: none;
+  padding: 0 14px;
+  font-size: var(--fs-base);
+  outline: none;
+}
+
+/* --- Dropzone -------------------------------------------------------- */
+.dropzone {
+  border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius);
+  background: var(--g050);
+  padding: 32px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.dropzone:hover, .dropzone.dragover {
+  background: var(--p050);
+  border-color: var(--p800);
+}
+.dropzone-icon {
+  width: 32px;
+  height: 32px;
+  margin: 0 auto 12px;
+  color: var(--fg);
+}
+.dropzone-text { font-size: var(--fs-base); color: var(--fg); }
+.dropzone-files { margin-top: 12px; text-align: left; display: flex; flex-direction: column; gap: 8px; }
+.dropzone-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+}
+.dropzone-file-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* --- Toast ----------------------------------------------------------- */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--danger);
+  color: #fff;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: var(--shadow-hover);
+  max-width: 520px;
+  z-index: 100;
+  animation: toast-in 0.2s ease-out;
+}
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to   { opacity: 1; transform: translate(-50%, 0); }
+}
+.toast-icon {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  background: #fff;
+  color: var(--danger);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin-top: 1px;
+}
+.toast-body  { flex: 1; font-size: var(--fs-sm); line-height: 1.4; }
+.toast-title { font-weight: var(--weight-semibold); margin-bottom: 2px; }
+.toast-close {
+  border: none;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  margin-top: -2px;
+}
