@@ -84,6 +84,11 @@
     --p900: #752642;
     --p950: #411020;
 
+    /* Brand alias — used by legacy var(--brand, fallback) calls.
+       Defined so all callers resolve to the canonical brand color (--p800)
+       instead of the hardcoded fallback (#be123c). */
+    --brand: var(--p800);
+
     /* Brand gradients */
     --brand-gradient: linear-gradient(to right, #6C0B28, #A74764);
     --brand-gradient-soft: linear-gradient(to right, #7D3047, #EEC7D4);
