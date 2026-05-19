@@ -53,7 +53,7 @@ export default function SupplierAnalytics() {
         </div>
       </div>
 
-      <PreviewBanner />
+      <PreviewBanner feature="analytics" />
 
       {/* KPIs */}
       <div className="sa-kpis">
