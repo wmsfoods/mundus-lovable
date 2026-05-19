@@ -322,6 +322,109 @@
         "notFoundBody": "Este pedido de oferta não existe ou foi removido.",
         "back": "Voltar aos pedidos"
       }
+    },
+    "sales": {
+      "heroTitle": "Acompanhe seus pedidos com facilidade.",
+      "crumbHome": "Início",
+      "title": "Vendas",
+      "showing": "Exibindo {{from}} - {{to}} de {{total}} resultados",
+      "sortBy": "Ordenar por",
+      "createOffer": "Criar Oferta +",
+      "createOfferComingSoon": "Fluxo de Criar Oferta — em breve",
+      "empty": "Nenhuma venda ainda.",
+      "sort": { "newest": "Mais recentes", "oldest": "Mais antigas" },
+      "col": {
+        "dealId": "ID do Pedido",
+        "status": "Status",
+        "buyer": "Comprador",
+        "orderDate": "Data do Pedido",
+        "destination": "Destino"
+      },
+      "status": {
+        "AWAITING_SUPPLIER_ACCEPTANCE": "Aguardando Aceite do Supplier",
+        "AWAITING_PRE_PAYMENT": "Aguardando Pré-pagamento"
+      },
+      "detail": {
+        "crumb": "Detalhes da Venda",
+        "back": "Voltar às vendas",
+        "notFoundTitle": "Venda não encontrada",
+        "notFoundBody": "Esta venda não existe ou foi removida.",
+        "orderNumberLabel": "Número do Pedido: {{id}} |",
+        "specifications": "Especificações",
+        "tabs": {
+          "overview": "Visão Geral",
+          "documents": "Documentos",
+          "shipment": "Informações de Embarque",
+          "ariaLabel": "Seções da venda"
+        },
+        "banner": {
+          "newOrderReceived": "NOVO PEDIDO RECEBIDO"
+        },
+        "overview": {
+          "title": "Um novo pedido foi recebido.",
+          "subtitle": "Pedido recebido! Por favor, revise e aprove para continuar com o processo.",
+          "orderData": "Dados do pedido"
+        },
+        "fields": {
+          "paymentTerms": "Condições de Pagamento",
+          "advance": "Pagamento adiantado ({{pct}}%)",
+          "balance": "Pagamento saldo ({{pct}}%)",
+          "incoterm": "Incoterm",
+          "originCountry": "País de Origem",
+          "originPort": "Porto de Origem"
+        },
+        "cuts": {
+          "cut": "Cortes",
+          "weight": "Peso",
+          "pricePerKg": "Preço por kg",
+          "totalPrice": "Preço Total"
+        },
+        "faq": {
+          "howNegotiation": "Como funciona a negociação de preços?",
+          "howNegotiationAnswer": "Compradores e suppliers podem negociar em até 3 rodadas de propostas antes do fechamento.",
+          "minAmount": "Existe uma quantidade mínima para negociação?",
+          "minAmountAnswer": "Sim. A quantidade mínima depende do tamanho do contêiner — tipicamente 13 MT para 20ft e 27 MT para 40ft."
+        },
+        "documents": {
+          "empty": "Nenhum documento disponível ainda. Os documentos aparecerão aqui conforme o processo avança."
+        },
+        "shipment": {
+          "warning": "Observe que as informações de entrega serão gradualmente atualizadas pela equipe Mundus à medida que o processo avança. Você receberá notificações sobre atualizações.",
+          "fclLabel": "FCL {{n}}",
+          "shippingDetails": "Detalhes do Envio",
+          "shippingLine": "Companhia de Navegação",
+          "vessel": "Navio",
+          "etd": "Data Estimada de Partida",
+          "eta": "Data Estimada de Chegada",
+          "cargoInfo": "Informações da Carga",
+          "booking": "Booking",
+          "container": "Contêiner",
+          "containerSize": "Tamanho do Contêiner",
+          "availableContainer": "Contêiner Disponível",
+          "unit": "unidade",
+          "portOfOrigin": "Porto de Origem",
+          "portOfDestination": "Porto de Destino",
+          "freightCost": "Custo do Frete"
+        },
+        "side": {
+          "title": "Detalhes da Venda",
+          "orderNumber": "Pedido Nº {{id}}",
+          "quantity": "Quantidade",
+          "oceanFreight": "Frete Marítimo",
+          "fclCount": "FCL(s)",
+          "destination": "Destino",
+          "origin": "Origem",
+          "shipment": "Embarque",
+          "companyName": "Empresa",
+          "buyer": "Comprador",
+          "valuePerFcl": "Valor por FCL",
+          "totalValue": "Valor Total",
+          "accept": "Aceitar Pedido",
+          "reject": "Rejeitar Pedido",
+          "acceptComingSoon": "Aceitar Pedido — em breve",
+          "rejectComingSoon": "Rejeitar Pedido — em breve"
+        }
+      }
     }
   }
 }

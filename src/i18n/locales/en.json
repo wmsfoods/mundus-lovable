@@ -322,6 +322,109 @@
         "notFoundBody": "This offer request doesn't exist or has been removed.",
         "back": "Back to requests"
       }
+    },
+    "sales": {
+      "heroTitle": "Track your orders easily and quickly.",
+      "crumbHome": "Home",
+      "title": "Sales",
+      "showing": "Showing {{from}} - {{to}} items of {{total}} results",
+      "sortBy": "Sort by",
+      "createOffer": "Create Offer +",
+      "createOfferComingSoon": "Create Offer flow — coming soon",
+      "empty": "No sales yet.",
+      "sort": { "newest": "Newest first", "oldest": "Oldest first" },
+      "col": {
+        "dealId": "Deal ID",
+        "status": "Status",
+        "buyer": "Buyer",
+        "orderDate": "Order Date",
+        "destination": "Destination"
+      },
+      "status": {
+        "AWAITING_SUPPLIER_ACCEPTANCE": "Awaiting Supplier Acceptance",
+        "AWAITING_PRE_PAYMENT": "Awaiting Pre-Payment"
+      },
+      "detail": {
+        "crumb": "Sale Details",
+        "back": "Back to sales",
+        "notFoundTitle": "Sale not found",
+        "notFoundBody": "This sale doesn't exist or has been removed.",
+        "orderNumberLabel": "Order Number: {{id}} |",
+        "specifications": "Specifications",
+        "tabs": {
+          "overview": "Overview",
+          "documents": "Documents",
+          "shipment": "Shipment Information",
+          "ariaLabel": "Sale sections"
+        },
+        "banner": {
+          "newOrderReceived": "NEW ORDER RECEIVED"
+        },
+        "overview": {
+          "title": "A new order received.",
+          "subtitle": "Order received! Please, review the order and approve it to continue with process.",
+          "orderData": "Order data"
+        },
+        "fields": {
+          "paymentTerms": "Payments Term",
+          "advance": "Advance payment ({{pct}}%)",
+          "balance": "Balance payment ({{pct}}%)",
+          "incoterm": "Incoterm",
+          "originCountry": "Origin Country",
+          "originPort": "Origin Port"
+        },
+        "cuts": {
+          "cut": "Cuts",
+          "weight": "Weight",
+          "pricePerKg": "Price per kg",
+          "totalPrice": "Total Price"
+        },
+        "faq": {
+          "howNegotiation": "How does price negotiation work?",
+          "howNegotiationAnswer": "Buyers and suppliers can negotiate over up to 3 rounds of bids and counters before a deal is closed.",
+          "minAmount": "Is there a minimum amount for trading?",
+          "minAmountAnswer": "Yes. Minimum quantities depend on container size — typically 13 MT for 20ft and 27 MT for 40ft."
+        },
+        "documents": {
+          "empty": "No documents available yet. Documents will appear here as the process progresses."
+        },
+        "shipment": {
+          "warning": "Please note that delivery information will be gradually updated by the Mundus team as the process progresses. You will receive notifications about any updates.",
+          "fclLabel": "FCL {{n}}",
+          "shippingDetails": "Shipping Details",
+          "shippingLine": "Shipping Line",
+          "vessel": "Vessel",
+          "etd": "Estimated Time of Departure",
+          "eta": "Estimated Time of Arrival",
+          "cargoInfo": "Cargo Information",
+          "booking": "Booking",
+          "container": "Container",
+          "containerSize": "Container Size",
+          "availableContainer": "Available Container",
+          "unit": "unit",
+          "portOfOrigin": "Port of Origin",
+          "portOfDestination": "Port of Destination",
+          "freightCost": "Freight Cost"
+        },
+        "side": {
+          "title": "Sale Details",
+          "orderNumber": "Order Number #{{id}}",
+          "quantity": "Quantity",
+          "oceanFreight": "Ocean Freight",
+          "fclCount": "FCL(s)",
+          "destination": "Destination",
+          "origin": "Origin",
+          "shipment": "Shipment",
+          "companyName": "Company Name",
+          "buyer": "Buyer",
+          "valuePerFcl": "Value per FCL",
+          "totalValue": "Total Value",
+          "accept": "Accept Order",
+          "reject": "Reject Order",
+          "acceptComingSoon": "Accept Order — coming soon",
+          "rejectComingSoon": "Reject Order — coming soon"
+        }
+      }
     }
   }
 }
