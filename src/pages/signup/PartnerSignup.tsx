@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { SignupShell } from "./SignupShell";
 import { PasswordRequirements } from "./PasswordRequirements";
 import { allRulesMet, checkPassword } from "./passwordRules";
@@ -16,6 +17,7 @@ const inputCls =
 export default function PartnerSignup() {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const companyName = params.get("company") ?? "Mundus Trade";
 
   const [name, setName] = useState("");
@@ -61,24 +63,24 @@ export default function PartnerSignup() {
   };
 
   return (
-    <SignupShell title="Partner Sign Up">
+    <SignupShell title={t("signup.partner.navTitle")}>
       <div className="bg-white rounded-2xl shadow-sm p-10">
         <h2 className="text-2xl font-bold text-center text-[#111]">
-          Sign Up via{" "}
+          {t("signup.partner.titlePrefix")}{" "}
           <span style={{ color: "#B64769" }} className="font-bold">
             {companyName}
           </span>{" "}
-          Partner
+          {t("signup.partner.titleSuffix")}
         </h2>
 
         <div className="mt-8 space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label className="block text-sm text-gray-700 mb-1.5">Full name</label>
+              <label className="block text-sm text-gray-700 mb-1.5">{t("signup.fields.fullName")}</label>
               <input className={inputCls} value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1.5">E-mail</label>
+              <label className="block text-sm text-gray-700 mb-1.5">{t("signup.fields.email")}</label>
               <input
                 type="email"
                 className={inputCls}
@@ -87,7 +89,7 @@ export default function PartnerSignup() {
               />
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1.5">Password</label>
+              <label className="block text-sm text-gray-700 mb-1.5">{t("signup.fields.password")}</label>
               <div className="relative">
                 <input
                   type={showP ? "text" : "password"}
@@ -105,7 +107,7 @@ export default function PartnerSignup() {
               </div>
             </div>
             <div>
-              <label className="block text-sm text-gray-700 mb-1.5">Repeat password</label>
+              <label className="block text-sm text-gray-700 mb-1.5">{t("signup.fields.repeatPassword")}</label>
               <div className="relative">
                 <input
                   type={showR ? "text" : "password"}
@@ -122,7 +124,7 @@ export default function PartnerSignup() {
                 </button>
               </div>
               {repeat && !match && (
-                <p className="text-red-500 text-sm mt-1">Passwords do not match.</p>
+                <p className="text-red-500 text-sm mt-1">{t("signup.passwordsMismatch")}</p>
               )}
             </div>
           </div>
@@ -137,9 +139,9 @@ export default function PartnerSignup() {
               className="mt-0.5 h-4 w-4 accent-[#B64769]"
             />
             <span>
-              I declare that I have read and agree to the{" "}
+              {t("signup.agreeTerms")}{" "}
               <a href="#" className="underline" style={{ color: "#B64769" }}>
-                Terms and Conditions
+                {t("signup.termsLink")}
               </a>
             </span>
           </label>
@@ -149,7 +151,7 @@ export default function PartnerSignup() {
               to="/login"
               className="h-11 px-6 inline-flex items-center justify-center rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
             >
-              Cancel
+              {t("common.cancel")}
             </Link>
             <button
               disabled={!can || submitting}
@@ -161,7 +163,7 @@ export default function PartnerSignup() {
                   : "bg-gray-300 text-gray-500 cursor-not-allowed",
               )}
             >
-              {submitting ? "Submitting..." : "Complete"}
+              {submitting ? t("common.submitting") : t("common.complete")}
             </button>
           </div>
         </div>
