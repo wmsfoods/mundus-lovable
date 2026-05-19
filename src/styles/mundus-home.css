@@ -1,0 +1,208 @@
+/* =========================================================================
+   Mundus Trade — Buyer Home CSS
+   Hero + KPI stats + action cards + section headings.
+   Ported verbatim from buyer.css (the design system).
+   Consumed by src/pages/buyer/Home.tsx.
+   ========================================================================= */
+
+/* --- Hero banner ------------------------------------------------ */
+.hero {
+  position: relative;
+  background: linear-gradient(100deg, #6C0B28 0%, #A74764 55%, #EEC7D4 100%);
+  border-radius: var(--radius);
+  padding: 48px 56px;
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  color: #fff;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+.hero h2 {
+  font-size: 32px;
+  line-height: 1.2;
+  font-weight: var(--weight-semibold);
+  margin: 0;
+  max-width: 640px;
+  letter-spacing: -0.01em;
+  color: inherit;
+}
+.hero-photo {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 380px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* --- KPI stat strip --------------------------------------------- */
+.stats {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 4px;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+  margin-bottom: 24px;
+}
+.stat {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 18px 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  position: relative;
+  border: 1px solid transparent;
+}
+.stat + .stat { border-left: 1px solid hsl(var(--border)); border-radius: 0; }
+.stat .label {
+  font-size: var(--fs-sm);
+  color: var(--p800);
+  font-weight: var(--weight-medium);
+}
+.stat .value {
+  font-size: 36px;
+  font-weight: var(--weight-semibold);
+  color: var(--p800);
+  line-height: 1.1;
+}
+.stat .ic {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--p300);
+}
+.stat.is-dark {
+  background: var(--p800);
+  color: #fff;
+  border-radius: var(--radius);
+  border-left: none;
+}
+.stat.is-dark + .stat,
+.stat + .stat.is-dark { border-left: none; }
+.stat.is-dark .label { color: #fff; }
+.stat.is-dark .value { color: #fff; }
+.stat.is-dark .ic { color: rgba(255,255,255,0.7); }
+
+/* --- Action cards ----------------------------------------------- */
+.action-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+.action-card {
+  background: #fff;
+  border-radius: var(--radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  border: 1px solid hsl(var(--border));
+}
+.action-card .head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.action-card .head .ic-chip {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--p050);
+  color: var(--p800);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.action-card .title { font-size: var(--fs-lg); font-weight: var(--weight-semibold); }
+.action-card .desc { color: var(--fg-muted); font-size: var(--fs-sm); margin: -8px 0 0; }
+.action-card.is-primary {
+  background: var(--p800);
+  border-color: var(--p800);
+  color: #fff;
+}
+.action-card.is-primary .title,
+.action-card.is-primary .desc { color: #fff; }
+.action-card.is-primary .desc { opacity: 0.9; }
+.action-card.is-primary .head .ic-chip {
+  background: rgba(255,255,255,0.18);
+  color: #fff;
+}
+.action-card .btn-block {
+  width: 100%;
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius);
+  font-size: var(--fs-sm);
+  font-weight: var(--weight-semibold);
+  text-decoration: none;
+  border: 1px solid var(--p800);
+  background: var(--p800);
+  color: #fff;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.action-card .btn-block:hover { background: var(--p900); border-color: var(--p900); }
+.action-card.is-primary .btn-block {
+  background: transparent;
+  color: #fff;
+  border-color: rgba(255,255,255,0.6);
+}
+.action-card.is-primary .btn-block:hover {
+  background: rgba(255,255,255,0.1);
+  border-color: #fff;
+}
+
+/* --- Section heading w/ See all --------------------------------- */
+.sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0 16px;
+}
+.sec-head h3 {
+  font-size: var(--fs-xl);
+  font-weight: var(--weight-semibold);
+  margin: 0;
+}
+.sec-head .see-all {
+  font-size: var(--fs-sm);
+  color: var(--p800);
+  font-weight: var(--weight-medium);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+}
+.sec-head .see-all:hover { text-decoration: underline; }
+
+/* --- Card row (for offer/sale cards) ---------------------------- */
+.card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+/* --- Empty state placeholder for unbuilt sections -------------- */
+.card-row-empty {
+  background: #fff;
+  border: 1px dashed hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--fg-muted);
+  font-size: var(--fs-sm);
+  margin-bottom: 32px;
+}
