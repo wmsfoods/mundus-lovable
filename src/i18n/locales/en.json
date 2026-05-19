@@ -994,6 +994,8 @@
         "illustrative": "ILLUSTRATIVE IMAGE",
         "specifications": "Specifications ({{count}})",
         "totalValuePerFcl": "Total Value (Starting price) per FCL",
+        "askingPrice": "Asking Price",
+        "floorPrice": "Floor Price",
         "totalWeight": "Total weight",
         "noMoreInfo": "Nothing to display here.",
         "moreInfo": "More information",
