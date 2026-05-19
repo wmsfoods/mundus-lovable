@@ -3,13 +3,13 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle,
   Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag,
-  Search, Bell, HelpCircle,
+  Search, Bell, HelpCircle, type LucideIcon,
 } from "lucide-react";
 import { ThemeToggle } from "@/contexts/ThemeContext";
 
 // TODO: gate to admin role only
 
-type NavItem = { to: string; labelKey: string; icon: React.ComponentType<{ size?: number }>; badge?: number };
+type NavItem = { to: string; labelKey: string; icon: LucideIcon; badge?: number };
 type NavGroup = { labelKey: string; items: NavItem[] };
 
 const GROUPS: NavGroup[] = [
