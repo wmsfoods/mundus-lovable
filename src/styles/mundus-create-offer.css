@@ -163,7 +163,7 @@
   cursor: pointer;
   font-family: inherit;
 }
-.co-ai-extract:hover { background: #9d174d; color: #fff; }
+.co-ai-extract:hover { background: var(--p900); color: #fff; }
 .co-ai-extract:disabled { background: #d1d5db; color: #6b7280; cursor: not-allowed; }
 
 .co-form-placeholder {
@@ -218,7 +218,7 @@
   color: #fff;
   border: none;
 }
-.co-btn-primary:hover { background: #9d174d; color: #fff; }
+.co-btn-primary:hover { background: var(--p900); color: #fff; }
 .co-btn-primary:disabled { background: #d1d5db; color: #6b7280; cursor: not-allowed; }
 
 .co-footer-progress { display: flex; flex-direction: column; gap: 4px; min-width: 0; }

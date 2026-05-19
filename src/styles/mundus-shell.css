@@ -134,7 +134,7 @@
   transition: transform 120ms ease, box-shadow 120ms ease, background 120ms ease;
 }
 .pro-badge--btn:hover {
-  background: #8a3550;
+  background: var(--p900);
   box-shadow: 0 0 0 3px rgba(182, 71, 105, 0.18);
 }
 .pro-badge--btn:focus-visible {

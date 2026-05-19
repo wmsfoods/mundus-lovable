@@ -75,7 +75,7 @@
    ============================================================ */
 
 .pb-hero {
-  background: linear-gradient(135deg, #B64769 0%, #8a3550 100%);
+  background: linear-gradient(135deg, #B64769 0%, var(--p900) 100%);
   border-radius: 12px;
   padding: 24px;
   color: #fff;
@@ -415,7 +415,7 @@
 .ins-upsell-btn--primary {
   background: var(--p800); color: #fff; border-color: var(--p800);
 }
-.ins-upsell-btn--primary:hover { background: #8a3550; border-color: #8a3550; }
+.ins-upsell-btn--primary:hover { background: var(--p900); border-color: var(--p900); }
 .ins-upsell-btn--secondary {
   background: #fff; color: var(--fg); border-color: hsl(var(--border));
 }
