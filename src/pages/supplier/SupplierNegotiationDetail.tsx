@@ -1,4 +1,4 @@
-import { Fragment } from "react";
+import { Fragment, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -210,7 +210,7 @@ export default function SupplierNegotiationDetail() {
                     {fmtSignedUsd(gapAbs)} ({gapPct >= 0 ? "+" : ""}{gapPct.toFixed(1)}%)
                   </span>
                 </div>
-                <div className="nd-gap-bar" style={{ ["--knob" as never]: `${knobPct}%` } as React.CSSProperties} />
+                <div className="nd-gap-bar" style={{ ["--knob" as never]: `${knobPct}%` } as CSSProperties} />
                 <div className="nd-gap-labels">
                   <span className="lbl-bid">{t("supplier.negotiations.detail.gapLabel.bid")}</span>
                   <span className="lbl-counter">{t("supplier.negotiations.detail.gapLabel.counter")}</span>
