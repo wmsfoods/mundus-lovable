@@ -545,41 +545,13 @@ export const FlagSVG = ({ code, size = 14 }: FlagSVGProps) => {
 // ============================================================================
 // Full Mundus Logo (used in heroes / banners — different from <Logo /> primitive)
 // ============================================================================
+import mundusLogoFull from "@/assets/mundus-logo.png";
 type FullMundusLogoProps = { height?: number; muted?: boolean };
 export const FullMundusLogo = ({ height = 56, muted = false }: FullMundusLogoProps) => (
-  <svg
-    width={height * 2.4}
-    height={height}
-    viewBox="0 0 360 150"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-label="Mundus Trade"
-  >
-    <rect x="0" y="6" width="138" height="138" rx="22" fill={muted ? "#a5a5ad" : "#762538"} />
-    <path
-      d="M48 110 V46 H62 L78 76 L94 46 H108 V110 H94 V72 L82 96 H74 L62 72 V110 Z"
-      fill="#fff"
-    />
-    <text
-      x="160"
-      y="92"
-      fontFamily="Inter, sans-serif"
-      fontWeight="800"
-      fontSize="60"
-      fill={muted ? "#a5a5ad" : "#762538"}
-      letterSpacing="-1"
-    >
-      Mundus
-    </text>
-    <text
-      x="161"
-      y="124"
-      fontFamily="Inter, sans-serif"
-      fontWeight="700"
-      fontSize="20"
-      fill={muted ? "#a5a5ad" : "#762538"}
-      letterSpacing="6"
-    >
-      TRADE
-    </text>
-  </svg>
+  <img
+    src={mundusLogoFull}
+    alt="Mundus Trade"
+    style={{ height, width: "auto", opacity: muted ? 0.55 : 1 }}
+    draggable={false}
+  />
 );
