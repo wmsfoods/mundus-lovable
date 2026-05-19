@@ -15,6 +15,7 @@ import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 
 export function Topbar() {
   const { user, signOut } = useAuth();
+  const { company } = useCurrentCompany();
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobileShell();
