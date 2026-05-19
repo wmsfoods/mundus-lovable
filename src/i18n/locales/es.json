@@ -785,6 +785,63 @@
       "confirmCancel": "¿Descartar esta oferta? Los cambios no guardados se perderán.",
       "draftSaved": "Borrador guardado (simulado)",
       "notReadyToPublish": "Complete el formulario antes de publicar"
+      ,
+      "form": {
+        "basicInfo": {
+          "title": "Información básica",
+          "subtitle": "Nombra tu oferta y elige la especie."
+        },
+        "offerName": {
+          "label": "Nombre de la oferta",
+          "placeholder": "ej: Cortes Vacunos Premium — FCL Asia #1"
+        },
+        "species": {
+          "label": "Especie",
+          "beef": "Vacuno",
+          "pork": "Cerdo",
+          "poultry": "Aves",
+          "lamb": "Ovino"
+        },
+        "cuts": {
+          "title": "Contenedor y cortes",
+          "subtitle": "Defina lo que va dentro del contenedor.",
+          "loadType": "Tipo de carga",
+          "fullContainer": "Contenedor completo (corte único)",
+          "mixedLoad": "Carga mixta (varios cortes)",
+          "capacity": "Capacidad del contenedor (25t FCL)",
+          "overCapacity": "Por encima de la capacidad",
+          "remaining": "restantes",
+          "addCut": "Agregar corte",
+          "removeRow": "Eliminar este corte",
+          "col": {
+            "product": "Producto",
+            "pack": "Pack",
+            "weightPerCut": "Peso/corte (kg)",
+            "qty": "Cant (cj)",
+            "totalWeight": "Peso total",
+            "pricePerKg": "Precio $/kg"
+          },
+          "placeholder": {
+            "product": "ej: Ribeye 7-9 lb"
+          }
+        },
+        "routes": {
+          "title": "Rutas y flete",
+          "subtitle": "Dónde puede entregar y a qué costo.",
+          "originPort": "Puerto de origen",
+          "destinations": "Destinos",
+          "selectPort": "Seleccione puerto de destino…",
+          "freightPlaceholder": "Flete",
+          "perFcl": "/ FCL",
+          "addMarket": "Agregar mercado",
+          "applyFreightAll": "Aplicar primer flete a todas las rutas",
+          "removeRow": "Eliminar esta ruta"
+        }
+      },
+      "routes": {
+        "applyAllError": "Defina el flete de la primera ruta antes de aplicar a todas.",
+        "applyAllSuccess": "Flete aplicado a todas las rutas."
+      }
     },
     "home": {
       "heroTitle": "Venda con inteligencia, negocie más rápido, mantenga el control.",

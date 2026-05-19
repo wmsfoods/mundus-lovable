@@ -785,6 +785,63 @@
       "confirmCancel": "Descartar esta oferta? Alterações não salvas serão perdidas.",
       "draftSaved": "Rascunho salvo (simulado)",
       "notReadyToPublish": "Complete o formulário antes de publicar"
+      ,
+      "form": {
+        "basicInfo": {
+          "title": "Informações básicas",
+          "subtitle": "Nomeie sua oferta e escolha a espécie."
+        },
+        "offerName": {
+          "label": "Nome da oferta",
+          "placeholder": "ex: Cortes Bovinos Premium — FCL Ásia #1"
+        },
+        "species": {
+          "label": "Espécie",
+          "beef": "Bovino",
+          "pork": "Suíno",
+          "poultry": "Aves",
+          "lamb": "Ovino"
+        },
+        "cuts": {
+          "title": "Container & cortes",
+          "subtitle": "Defina o que vai dentro do container.",
+          "loadType": "Tipo de carga",
+          "fullContainer": "Container completo (corte único)",
+          "mixedLoad": "Carga mista (vários cortes)",
+          "capacity": "Capacidade do container (25t FCL)",
+          "overCapacity": "Acima da capacidade",
+          "remaining": "restantes",
+          "addCut": "Adicionar corte",
+          "removeRow": "Remover este corte",
+          "col": {
+            "product": "Produto",
+            "pack": "Pack",
+            "weightPerCut": "Peso/corte (kg)",
+            "qty": "Qtd (cx)",
+            "totalWeight": "Peso total",
+            "pricePerKg": "Preço $/kg"
+          },
+          "placeholder": {
+            "product": "ex: Ribeye 7-9 lb"
+          }
+        },
+        "routes": {
+          "title": "Rotas & frete",
+          "subtitle": "Onde você pode entregar e a que custo.",
+          "originPort": "Porto de origem",
+          "destinations": "Destinos",
+          "selectPort": "Selecione o porto de destino…",
+          "freightPlaceholder": "Frete",
+          "perFcl": "/ FCL",
+          "addMarket": "Adicionar mercado",
+          "applyFreightAll": "Aplicar primeiro frete a todas as rotas",
+          "removeRow": "Remover esta rota"
+        }
+      },
+      "routes": {
+        "applyAllError": "Defina o frete da primeira rota antes de aplicar a todas.",
+        "applyAllSuccess": "Frete aplicado a todas as rotas."
+      }
     },
     "home": {
       "heroTitle": "Venda com inteligência, negocie mais rápido, mantenha o controle.",
