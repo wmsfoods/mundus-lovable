@@ -202,7 +202,7 @@
   display: inline-flex; align-items: center; gap: 6px;
   height: 34px; padding: 0 14px;
   border-radius: 8px;
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
   border: none;
   font-weight: var(--weight-semibold);
@@ -211,7 +211,7 @@
   font-family: inherit;
   transition: background 0.15s;
 }
-.oc-open-btn:hover { background: #9d174d; color: #fff; }
+.oc-open-btn:hover { background: var(--p900); color: #fff; }
 
 /* Densify the card for the 6-col grid */
 .so-grid .oc { padding: 14px; gap: 10px; }
