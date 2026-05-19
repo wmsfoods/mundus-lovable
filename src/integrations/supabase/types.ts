@@ -188,33 +188,46 @@ export type Database = {
       }
       counter_proposals: {
         Row: {
-          created_at: string | null
+          created_at: string
+          created_by_user_id: string | null
           cut_round_id: string
-          explanation: string | null
+          explanation: string
           id: string
-          is_final: boolean | null
-          price: number
+          is_final: boolean
+          price_per_kg: number
           rule: string | null
+          source: string
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
           cut_round_id: string
-          explanation?: string | null
+          explanation: string
           id?: string
-          is_final?: boolean | null
-          price: number
+          is_final: boolean
+          price_per_kg: number
           rule?: string | null
+          source: string
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
+          created_by_user_id?: string | null
           cut_round_id?: string
-          explanation?: string | null
+          explanation?: string
           id?: string
-          is_final?: boolean | null
-          price?: number
+          is_final?: boolean
+          price_per_kg?: number
           rule?: string | null
+          source?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "counter_proposals_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "counter_proposals_cut_round_id_fkey"
             columns: ["cut_round_id"]
@@ -361,28 +374,31 @@ export type Database = {
       }
       cut_rounds: {
         Row: {
-          created_at: string | null
+          created_at: string
           id: string
           offer_item_id: string
-          price: number
-          quantity: number
+          price_per_kg: number
+          quantity_kg: number
           round_proposal_id: string
+          total_value: number | null
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           offer_item_id: string
-          price: number
-          quantity: number
+          price_per_kg: number
+          quantity_kg: number
           round_proposal_id: string
+          total_value?: number | null
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
           id?: string
           offer_item_id?: string
-          price?: number
-          quantity?: number
+          price_per_kg?: number
+          quantity_kg?: number
           round_proposal_id?: string
+          total_value?: number | null
         }
         Relationships: [
           {
@@ -513,57 +529,73 @@ export type Database = {
       }
       negotiations: {
         Row: {
-          buyer_id: string
-          created_at: string | null
+          buyer_company_id: string
+          created_at: string
+          created_by_user_id: string
           deleted_at: string | null
-          fcl_count: number | null
-          freight_cost: number | null
+          expires_at: string | null
+          fcl_count: number
+          freight_cost_per_kg: number
           id: string
-          incoterm: string | null
+          incoterm: string
           locked_until: string | null
           offer_id: string
           order_id: string | null
           port_id: string | null
-          settled_price: number | null
-          status: string | null
-          updated_at: string | null
+          settled_round_proposal_id: string | null
+          settled_total_value: number | null
+          status: string
+          updated_at: string
         }
         Insert: {
-          buyer_id: string
-          created_at?: string | null
+          buyer_company_id: string
+          created_at?: string
+          created_by_user_id: string
           deleted_at?: string | null
-          fcl_count?: number | null
-          freight_cost?: number | null
+          expires_at?: string | null
+          fcl_count: number
+          freight_cost_per_kg?: number
           id?: string
-          incoterm?: string | null
+          incoterm: string
           locked_until?: string | null
           offer_id: string
           order_id?: string | null
           port_id?: string | null
-          settled_price?: number | null
-          status?: string | null
-          updated_at?: string | null
+          settled_round_proposal_id?: string | null
+          settled_total_value?: number | null
+          status?: string
+          updated_at?: string
         }
         Update: {
-          buyer_id?: string
-          created_at?: string | null
+          buyer_company_id?: string
+          created_at?: string
+          created_by_user_id?: string
           deleted_at?: string | null
-          fcl_count?: number | null
-          freight_cost?: number | null
+          expires_at?: string | null
+          fcl_count?: number
+          freight_cost_per_kg?: number
           id?: string
-          incoterm?: string | null
+          incoterm?: string
           locked_until?: string | null
           offer_id?: string
           order_id?: string | null
           port_id?: string | null
-          settled_price?: number | null
-          status?: string | null
-          updated_at?: string | null
+          settled_round_proposal_id?: string | null
+          settled_total_value?: number | null
+          status?: string
+          updated_at?: string
         }
         Relationships: [
           {
-            foreignKeyName: "negotiations_buyer_id_fkey"
-            columns: ["buyer_id"]
+            foreignKeyName: "negotiations_buyer_company_id_fkey"
+            columns: ["buyer_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negotiations_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -576,17 +608,17 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "negotiations_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "orders"
-            referencedColumns: ["id"]
-          },
-          {
             foreignKeyName: "negotiations_port_id_fkey"
             columns: ["port_id"]
             isOneToOne: false
             referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negotiations_settled_round_proposal_fk"
+            columns: ["settled_round_proposal_id"]
+            isOneToOne: false
+            referencedRelation: "round_proposals"
             referencedColumns: ["id"]
           },
         ]
@@ -1390,24 +1422,34 @@ export type Database = {
       }
       round_proposals: {
         Row: {
-          created_at: string | null
+          created_at: string
+          created_by_user_id: string
           id: string
           negotiation_id: string
-          round: string
+          round: number
         }
         Insert: {
-          created_at?: string | null
+          created_at?: string
+          created_by_user_id: string
           id?: string
           negotiation_id: string
-          round: string
+          round: number
         }
         Update: {
-          created_at?: string | null
+          created_at?: string
+          created_by_user_id?: string
           id?: string
           negotiation_id?: string
-          round?: string
+          round?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "round_proposals_created_by_user_id_fkey"
+            columns: ["created_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "round_proposals_negotiation_id_fkey"
             columns: ["negotiation_id"]
@@ -1503,6 +1545,44 @@ export type Database = {
             columns: ["product_category_id"]
             isOneToOne: false
             referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      supplier_negotiation_settings: {
+        Row: {
+          allow_manual_override: boolean
+          auto_close_on_final: boolean
+          created_at: string
+          expiration_hours: number | null
+          lock_minutes: number
+          supplier_company_id: string
+          updated_at: string
+        }
+        Insert: {
+          allow_manual_override?: boolean
+          auto_close_on_final?: boolean
+          created_at?: string
+          expiration_hours?: number | null
+          lock_minutes?: number
+          supplier_company_id: string
+          updated_at?: string
+        }
+        Update: {
+          allow_manual_override?: boolean
+          auto_close_on_final?: boolean
+          created_at?: string
+          expiration_hours?: number | null
+          lock_minutes?: number
+          supplier_company_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_negotiation_settings_supplier_company_id_fkey"
+            columns: ["supplier_company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -1678,7 +1758,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      submit_negotiation_round: {
+        Args: { p_items: Json; p_negotiation_id: string; p_user_id: string }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
