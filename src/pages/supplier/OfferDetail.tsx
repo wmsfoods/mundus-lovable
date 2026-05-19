@@ -137,23 +137,14 @@ export default function SupplierOfferDetail() {
             </div>
           </div>
 
-          <div className="od-price-info">
-            <div className="od-price-info-item">
-              <span className="od-price-info-label">{t("supplier.offers.detail.askingPrice")}</span>
-              <span className="od-price-info-value">US$ {formatPrice(offer.askingPrice)}</span>
-            </div>
-            <div className="od-price-info-item">
-              <span className="od-price-info-label">{t("supplier.offers.detail.floorPrice")}</span>
-              <span className="od-price-info-value">US$ {formatPrice(offer.floorPrice)}</span>
-            </div>
-          </div>
-
           <div className="od-cuts">
             <div className="od-cuts-head">
               <span>{t("supplier.offers.detail.cutsHead.cut")}</span>
               <span>{t("supplier.offers.detail.cutsHead.marbling")}</span>
               <span className="num">{t("supplier.offers.detail.cutsHead.qty")}</span>
               <span className="num">{t("supplier.offers.detail.cutsHead.price")}</span>
+              <span className="num">{t("supplier.offers.detail.cutsHead.asking")}</span>
+              <span className="num">{t("supplier.offers.detail.cutsHead.floor")}</span>
             </div>
             {offer.items.map((it, i) => (
               <div key={i} className="od-cuts-row">
@@ -161,6 +152,8 @@ export default function SupplierOfferDetail() {
                 <span>{it.marbling}</span>
                 <span className="num">{formatNumber(it.qtyKg)} kg</span>
                 <span className="num">US$ {formatPrice(it.pricePerKgUsd)}/kg</span>
+                <span className="num">US$ {formatPrice(it.pricePerKgUsd * 1.05)}/kg</span>
+                <span className="num">US$ {formatPrice(it.pricePerKgUsd * 0.90)}/kg</span>
               </div>
             ))}
           </div>
