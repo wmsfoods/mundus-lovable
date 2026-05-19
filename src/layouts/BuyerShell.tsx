@@ -8,6 +8,7 @@ import { MobileDrawer } from "@/components/mundus/MobileDrawer";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { BUYER_CHAT_TOTAL_UNREAD } from "@/hooks/useBuyerChat";
 import {
   HomeIcon,
   UsersIcon,
@@ -34,7 +35,7 @@ export default function BuyerShell() {
     { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },
     { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
     { to: "/buyer/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
-    { to: "/buyer/chat", label: t("shell.nav.messages"), icon: MessageIcon },
+    { to: "/buyer/chat", label: t("shell.nav.chat"), icon: MessageIcon, badge: BUYER_CHAT_TOTAL_UNREAD || undefined },
     { to: "/buyer/users", label: t("shell.nav.users"), icon: UsersIcon },
   ];
 

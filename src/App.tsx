@@ -83,6 +83,7 @@ const App = () => (
               <Route path="requests" element={<BuyerRequests />} />
               <Route path="requests/:id" element={<BuyerRequestDetail />} />
               <Route path="chat" element={<BuyerChat />} />
+              <Route path="chat/:conversationId" element={<BuyerChat />} />
             </Route>
             <Route
               path="/supplier"
