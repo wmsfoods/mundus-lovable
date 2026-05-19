@@ -32,8 +32,8 @@ export default function SupplierShell() {
     { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
     { to: "/supplier/offers/new", label: t("shell.nav.createOffer"), icon: PlusIcon, accent: true },
     { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
-    { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
-    { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon },
+    { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon, badge: 3 },
+    { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon, badge: 10 },
     { to: "/supplier/users", label: t("shell.nav.users"), icon: UsersIcon },
   ];
 
