@@ -82,3 +82,120 @@ export function useNegotiations() {
   const bidCount = MOCK.reduce((s, p) => s + p.bids.length, 0);
   return { data: MOCK, offerCount, bidCount, isLoading: false, error: null as null | Error };
 }
+
+export type RoundEntry = {
+  round: number;
+  type: 'bid' | 'counter';
+  amount: number;
+  date: string;
+  isCurrent?: boolean;
+};
+
+export type CutDetail = {
+  product: string;
+  pack: string;
+  quantityLb: number;
+  asking: number;
+  perRound: { round: number; bid?: number; counter?: number }[];
+};
+
+export type NegotiationDetail = NegotiationBid & {
+  parentTitle: string;
+  oppWmsRef: string;
+  incoterm: 'CFR' | 'CIF' | 'FOB';
+  paymentTerm: string;
+  fcls: number;
+  weightKg: number;
+  askingPrice: number;
+  buyerBid: number;
+  yourCounter: number;
+  timeline: RoundEntry[];
+  avgReplyTime: string;
+  valuePerFcl: number;
+  movement: number;
+  cuts: CutDetail[];
+};
+
+const RICH_DETAILS: Record<string, Partial<NegotiationDetail>> = {
+  'b-01': {
+    parentTitle: 'Beef Premium Cuts — Mixed Container',
+    oppWmsRef: 'Opp_Wms #01228',
+    incoterm: 'CFR',
+    paymentTerm: '30% Advance, Balance TT',
+    fcls: 1,
+    weightKg: 25000,
+    askingPrice: 129400,
+    buyerBid: 124510,
+    yourCounter: 126100,
+    timeline: [
+      { round: 1, type: 'bid',     amount: 122550, date: '2026-05-12' },
+      { round: 1, type: 'counter', amount: 126800, date: '2026-05-13' },
+      { round: 2, type: 'bid',     amount: 124510, date: '2026-05-17' },
+      { round: 2, type: 'counter', amount: 126100, date: '2026-05-18', isCurrent: true },
+    ],
+    avgReplyTime: '4d',
+    valuePerFcl: 189500,
+    movement: -4890,
+    cuts: [
+      { product: 'Ribeye, 7–9 lb',      pack: 'Vacuum 4×CTN', quantityLb: 13228, asking: 7.20, perRound: [{ round: 1, bid: 6.80, counter: 7.05 }, { round: 2, bid: 6.90, counter: 7.00 }] },
+      { product: 'Striploin, 8–10 lb',  pack: 'Vacuum 2×CTN', quantityLb: 11023, asking: 6.80, perRound: [{ round: 1, bid: 6.45, counter: 6.65 }, { round: 2, bid: 6.55, counter: 6.62 }] },
+      { product: 'Tenderloin, 4–6 lb',  pack: 'Vacuum 6×CTN', quantityLb: 6614,  asking: 8.40, perRound: [{ round: 1, bid: 8.00, counter: 8.25 }, { round: 2, bid: 8.12, counter: 8.20 }] },
+      { product: 'Top Sirloin, 6–8 lb', pack: 'Vacuum 4×CTN', quantityLb: 11023, asking: 5.40, perRound: [{ round: 1, bid: 5.10, counter: 5.30 }, { round: 2, bid: 5.20, counter: 5.28 }] },
+    ],
+  },
+};
+
+function buildDefaultDetail(bid: NegotiationBid, parent: ParentOffer): NegotiationDetail {
+  const buyerBid = bid.latestBidUsd;
+  const yourCounter = bid.yourCounterUsd;
+  const askingPrice = Math.round(buyerBid * 1.05);
+  const tl: RoundEntry[] = [];
+  for (let r = 1; r <= bid.round; r++) {
+    const factor = 1 - (bid.round - r) * 0.02;
+    if (r < bid.round) {
+      tl.push({ round: r, type: 'bid',     amount: Math.round(buyerBid * (factor - 0.02)), date: bid.updatedAt });
+      tl.push({ round: r, type: 'counter', amount: Math.round(yourCounter * factor),       date: bid.updatedAt });
+    } else {
+      tl.push({ round: r, type: 'bid',     amount: buyerBid,    date: bid.updatedAt });
+      tl.push({ round: r, type: 'counter', amount: yourCounter, date: bid.updatedAt, isCurrent: true });
+    }
+  }
+  const lbTotal = 27000 * 2.205;
+  return {
+    ...bid,
+    parentTitle: parent.title,
+    oppWmsRef: parent.oppWmsRef ?? `Opp_Wms #${parent.id.replace('po-', '')}`,
+    incoterm: 'CFR',
+    paymentTerm: '30% Advance, Balance TT',
+    fcls: 1,
+    weightKg: 27000,
+    askingPrice,
+    buyerBid,
+    yourCounter,
+    timeline: tl,
+    avgReplyTime: '3d',
+    valuePerFcl: Math.round(yourCounter * 1.5),
+    movement: buyerBid - askingPrice,
+    cuts: [
+      {
+        product: parent.title.split(' — ')[0] || parent.title,
+        pack: 'Vacuum',
+        quantityLb: Math.round(lbTotal),
+        asking: askingPrice / lbTotal,
+        perRound: [{ round: bid.round, bid: buyerBid / lbTotal, counter: yourCounter / lbTotal }],
+      },
+    ],
+  };
+}
+
+export function useNegotiationDetail(bidId: string) {
+  for (const parent of MOCK) {
+    const bid = parent.bids.find((b) => b.id === bidId);
+    if (bid) {
+      const base = buildDefaultDetail(bid, parent);
+      const overrides = RICH_DETAILS[bidId] ?? {};
+      return { data: { ...base, ...overrides } as NegotiationDetail, isLoading: false, error: null as null | Error };
+    }
+  }
+  return { data: null, isLoading: false, error: null as null | Error };
+}
