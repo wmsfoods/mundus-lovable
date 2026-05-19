@@ -425,6 +425,76 @@
           "rejectComingSoon": "Reject Order — coming soon"
         }
       }
+    },
+    "home": {
+      "heroTitle": "Sell smarter, negotiate faster, stay in control.",
+      "heroSubtitle": "Manage your active offers, review buyer proposals, and ship deals from one place.",
+      "greeting": {
+        "morning": "Good morning, {{name}}",
+        "afternoon": "Good afternoon, {{name}}",
+        "evening": "Good evening, {{name}}"
+      },
+      "cta": { "newOffer": "New offer", "viewMyOffers": "View my offers" },
+      "attention": { "heading": "Needs your attention" },
+      "attention.proposalsWaiting.title": "3 buyer proposals waiting for your reply",
+      "attention.proposalsWaiting.subtitle": "Round 2 · Boneless Beef 90VL · Beef Mixed (9 cuts) · +1",
+      "attention.proposalsWaiting.cta": "Review proposals",
+      "attention.offerExpiring.title": "1 offer expires in 3 days",
+      "attention.offerExpiring.subtitle": "Boneless Beef RFQ 90vl · BR → PH · CFR",
+      "attention.offerExpiring.cta": "Renew or update",
+      "attention.salesAction.title": "2 sales need supplier action",
+      "attention.salesAction.subtitle": "Send invoice draft · Issue balance invoice",
+      "attention.salesAction.cta": "Open sales",
+      "stats": {
+        "activeOffers": "Active Offers",
+        "totalOffers": "Total Offers",
+        "closedDeals": "Closed Deals",
+        "inNegotiation": "In Negotiation",
+        "avgClosing": "Avg order closing",
+        "days": "days"
+      },
+      "vsLastWeek": "vs last week",
+      "actions": {
+        "salesTitle": "Sales",
+        "salesDesc": "Track every order — from pre-payment through delivery.",
+        "salesCta": "See sales",
+        "offersTitle": "My Offers",
+        "offersDesc": "Manage your active offers, prices, and visibility.",
+        "offersCta": "See offers",
+        "newOfferTitle": "New offer",
+        "newOfferDesc": "Post a new offer — manually or extract from PDF, Excel, image or audio.",
+        "newOfferCta": "Create now"
+      },
+      "recentOffers": "Recent offers",
+      "recentSales": "Recent sales",
+      "seeAll": "See all",
+      "cuts": "cuts",
+      "more": "more",
+      "mt": "MT",
+      "statusAvailable": "Available",
+      "statusNew": "New",
+      "saleStatus": {
+        "AwaitingPrePayment": "Awaiting Pre-Payment",
+        "PrePaidLoading": "Pre-Paid · Loading",
+        "InTransit": "In Transit",
+        "BalanceDue": "Balance Due"
+      },
+      "card": {
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Shipment",
+        "volume": "Volume",
+        "buyer": "Buyer",
+        "qty": "QTY",
+        "views": "views",
+        "proposals": "proposals",
+        "daysLeft": "d left",
+        "openOffer": "Open offer",
+        "order": "Order {{id}}",
+        "sendInvoiceDraft": "Send invoice draft",
+        "viewSale": "View sale",
+        "issueBalanceInvoice": "Issue balance invoice"
+      }
     }
   }
 }
