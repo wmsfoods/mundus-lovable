@@ -12,6 +12,7 @@
 @import "./styles/mundus-company.css";
 @import "./styles/mundus-requests.css";
 @import "./styles/mundus-chat.css";
+@import "./styles/mundus-deal-detail.css";
 
 @tailwind base;
 @tailwind components;
