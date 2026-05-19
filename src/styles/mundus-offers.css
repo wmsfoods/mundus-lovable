@@ -478,6 +478,8 @@
 }
 .od-cuts-head .num {
   text-align: right;
+  /* compensate trailing letter-spacing so header right edge aligns with values */
+  margin-right: -0.05em;
 }
 
 @media (max-width: 720px) {
