@@ -35,6 +35,7 @@ export default function SupplierShell() {
     { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon, badge: 3 },
     { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon, badge: 10 },
     { to: "/supplier/users", label: t("shell.nav.users"), icon: UsersIcon },
+    { to: "/supplier/company", label: t("shell.nav.myCompany"), icon: HomeIcon },
   ];
 
   const SUPPLIER_BOTTOM: BottomNavItem[] = [
