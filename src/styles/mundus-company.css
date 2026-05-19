@@ -43,7 +43,7 @@
   width: 96px;
   height: 96px;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--brand, #be123c), #7f1d3a);
+  background: linear-gradient(135deg, var(--p800), #7f1d3a);
   color: #fff;
   display: flex;
   align-items: center;
@@ -133,7 +133,7 @@
   gap: 4px;
   align-items: flex-start;
 }
-.cp-stat-v { font-size: 22px; font-weight: var(--weight-bold); color: var(--brand, #be123c); line-height: 1; }
+.cp-stat-v { font-size: 22px; font-weight: var(--weight-bold); color: var(--p800); line-height: 1; }
 .cp-stat-l { font-size: 11px; color: var(--fg-muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: var(--weight-medium); }
 
 /* Plants */
@@ -227,7 +227,7 @@
   margin-top: 4px;
   text-align: left;
   font-size: 11px;
-  color: var(--brand, #be123c);
+  color: var(--p800);
   font-weight: var(--weight-medium);
   cursor: pointer;
   font-family: inherit;
@@ -280,7 +280,7 @@
   width: 44px;
   height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--brand, #be123c), #7f1d3a);
+  background: linear-gradient(135deg, var(--p800), #7f1d3a);
   color: #fff;
   display: flex;
   align-items: center;
@@ -300,4 +300,4 @@
   color: var(--fg);
   text-decoration: none;
 }
-.cp-contact-link:hover { color: var(--brand, #be123c); }
+.cp-contact-link:hover { color: var(--p800); }

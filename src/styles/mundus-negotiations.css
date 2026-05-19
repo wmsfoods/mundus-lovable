@@ -120,7 +120,7 @@
 }
 .nego-row-parent .bid-dots .dot {
   width: 6px; height: 6px; border-radius: 50%;
-  background: var(--brand, #be123c);
+  background: var(--p800);
 }
 .nego-row-parent .bid-dots .dot.muted { background: var(--g200, #e5e7eb); }
 
@@ -134,7 +134,7 @@
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--brand, #be123c);
+  background: var(--p800);
   color: #fff;
   font-size: 11px;
   font-weight: var(--weight-semibold);
@@ -158,7 +158,7 @@
 }
 
 .nego-bid-amount     { color: #2563eb; font-weight: var(--weight-semibold); }
-.nego-counter-amount { color: var(--brand, #be123c); font-weight: var(--weight-semibold); }
+.nego-counter-amount { color: var(--p800); font-weight: var(--weight-semibold); }
 
 .nego-dest {
   display: inline-flex;
@@ -253,7 +253,7 @@
 .nd-header .nd-h-text { flex: 1; min-width: 0; }
 .nd-header h1 { margin: 0 0 4px; font-size: 20px; font-weight: var(--weight-bold); }
 .nd-header .nd-sub { font-size: var(--fs-sm); color: var(--fg-muted); }
-.nd-header .nd-sub .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.nd-header .nd-sub .mono { font-family: var(--font-mono); }
 .nd-header .nd-h-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 
 .nd-timer {
