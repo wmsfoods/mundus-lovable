@@ -750,6 +750,42 @@
         }
       }
     },
+    "createOffer": {
+      "title": "Nova oferta",
+      "subtitle": "Construa em uma tela — a IA preenche o formulário a partir de um arquivo ou texto.",
+      "unitToggle": "Unidade",
+      "inProgress": "Em andamento",
+      "ai": {
+        "title": "Preenchimento rápido por IA",
+        "subtitle": "Solte uma lista de preços, cole uma mensagem, ou dite — preenchemos o formulário em segundos.",
+        "minimize": "Minimizar",
+        "tryIt": "Experimentar IA",
+        "tab": { "pdf": "PDF", "excel": "Excel", "image": "Imagem", "voice": "Voz", "text": "Texto" },
+        "pasteLabel": "Cole do WhatsApp / email",
+        "placeholder": "Cole um email, mensagem do WhatsApp, ou descreva a oferta:\n\n\"Olá, tenho 2 FCLs de ribeye premium 7-9lb a $7,20/kg, piso $6,95. Também 1 FCL de striploin 8-10lb a $6,80. Destino Hong Kong, CFR, pagamento 50% antecipado saldo TT, embarque em junho.\"",
+        "dropzone": {
+          "pdf": "Solte uma lista de preços em PDF ou clique para enviar",
+          "excel": "Solte um arquivo Excel/CSV ou clique para enviar",
+          "image": "Solte uma imagem (ex: foto de uma lista escrita) ou clique para enviar"
+        },
+        "voicePrompt": "Clique e grave sua oferta — transcrevemos e extraímos.",
+        "stubNote": "(extração é um placeholder por enquanto — integração real com Claude API em breve)",
+        "poweredBy": "Powered by Claude — extrai cortes, preços e condições automaticamente",
+        "extract": "Extrair com IA",
+        "extracting": "Extraindo…",
+        "extractedMock": "Extraído (simulado) — pré-preenchimento real chega em breve",
+        "emptyError": "Cole algum texto primeiro."
+      },
+      "placeholder": "Campos do formulário (nome da oferta, espécie, cortes, rotas & frete) chegam em seguida.",
+      "cancel": "Cancelar",
+      "saveDraft": "Salvar rascunho",
+      "publish": "Publicar oferta",
+      "complete": "completo",
+      "missingCutsRoutes": "ainda faltam: cortes, rotas & frete",
+      "confirmCancel": "Descartar esta oferta? Alterações não salvas serão perdidas.",
+      "draftSaved": "Rascunho salvo (simulado)",
+      "notReadyToPublish": "Complete o formulário antes de publicar"
+    },
     "home": {
       "heroTitle": "Venda com inteligência, negocie mais rápido, mantenha o controle.",
       "heroSubtitle": "Gerencie suas ofertas ativas, revise propostas de compradores e embarque negócios em um só lugar.",

@@ -8,6 +8,7 @@
 @import "./styles/mundus-supplier-home.css";
 @import "./styles/mundus-supplier-offers.css";
 @import "./styles/mundus-negotiations.css";
+@import "./styles/mundus-create-offer.css";
 
 @tailwind base;
 @tailwind components;

@@ -750,6 +750,42 @@
         }
       }
     },
+    "createOffer": {
+      "title": "New offer",
+      "subtitle": "Build it in one screen — AI fills the form from a file or text.",
+      "unitToggle": "Unit",
+      "inProgress": "In progress",
+      "ai": {
+        "title": "AI Quick-fill",
+        "subtitle": "Drop a price list, paste a message, or dictate — we'll fill the form in seconds.",
+        "minimize": "Minimize",
+        "tryIt": "Try AI Quick-fill",
+        "tab": { "pdf": "PDF", "excel": "Excel", "image": "Image", "voice": "Voice", "text": "Text" },
+        "pasteLabel": "Paste from WhatsApp / email",
+        "placeholder": "Paste an email, WhatsApp message, or just describe the offer:\n\n\"Hi, I have 2 FCLs of premium ribeye 7-9lb at $7.20/kg, asking floor $6.95. Also 1 FCL striploin 8-10lb at $6.80. Going to Hong Kong, CFR, payment 50% advance balance TT, June shipment.\"",
+        "dropzone": {
+          "pdf": "Drop a PDF price list or click to upload",
+          "excel": "Drop an Excel/CSV file or click to upload",
+          "image": "Drop an image (e.g. a photo of a written list) or click to upload"
+        },
+        "voicePrompt": "Click and record your offer — we'll transcribe and extract.",
+        "stubNote": "(extraction is a stub for now — real Claude API wiring coming soon)",
+        "poweredBy": "Powered by Claude — extracts cuts, prices, terms automatically",
+        "extract": "Extract with AI",
+        "extracting": "Extracting…",
+        "extractedMock": "Extracted (mock) — form pre-fill coming in next iteration",
+        "emptyError": "Please paste some text first."
+      },
+      "placeholder": "Form fields (offer name, species, cuts, routes & freight) coming next.",
+      "cancel": "Cancel",
+      "saveDraft": "Save draft",
+      "publish": "Publish offer",
+      "complete": "complete",
+      "missingCutsRoutes": "still missing: cuts, routes & freight",
+      "confirmCancel": "Discard this offer? Any unsaved changes will be lost.",
+      "draftSaved": "Draft saved (mock)",
+      "notReadyToPublish": "Complete the form before publishing"
+    },
     "home": {
       "heroTitle": "Sell smarter, negotiate faster, stay in control.",
       "heroSubtitle": "Manage your active offers, review buyer proposals, and ship deals from one place.",
