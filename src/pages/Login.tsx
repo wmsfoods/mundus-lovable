@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import mundusLogo from "@/assets/mundus-logo.png";
 import slide1 from "@/assets/login-carousel-1.png";
 import slide2 from "@/assets/login-carousel-2.png";
@@ -53,6 +54,9 @@ export default function Login() {
 
   return (
     <div className="flex min-h-screen flex-col bg-white">
+      <div className="flex justify-end px-4 pt-3 md:px-6 md:pt-4">
+        <LanguageSwitcher variant="pill" />
+      </div>
       <div className="flex flex-1 flex-col items-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
         {/* LEFT - carousel card (mobile: full-width header, no rounding) */}
         <div className="relative aspect-square w-full max-w-full md:max-w-[600px] overflow-hidden rounded-none md:rounded-[2.5rem] shadow-sm">
