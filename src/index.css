@@ -2,6 +2,8 @@
 @import "./styles/mundus-shell.css";
 @import "./styles/mundus-home.css";
 @import "./styles/mundus-offers.css";
+@import "./styles/mundus-tables.css";
+@import "./styles/mundus-modal.css";
 
 @tailwind base;
 @tailwind components;
