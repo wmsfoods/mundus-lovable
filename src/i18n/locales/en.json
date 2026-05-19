@@ -147,7 +147,8 @@
       "sales": "Sales",
       "offerRequests": "Offer Requests",
       "myCompany": "My Company",
-      "messages": "Messages"
+      "messages": "Messages",
+      "chat": "Chat"
     },
     "bottom": {
       "create": "Create",
@@ -585,32 +586,30 @@
       }
     },
     "chat": {
-      "title": "Messages",
+      "title": "Chat",
       "searchPlaceholder": "Search conversations…",
-      "inputPlaceholder": "Type a message…",
-      "empty": "No conversations",
-      "sendBtn": "Send",
-      "attachBtn": "Attach file",
-      "viewOffer": "View offer",
-      "viewNegotiation": "View negotiation",
-      "viewRequest": "View request",
-      "generalLabel": "General",
-      "linkedTo": {
-        "offer": "Offer",
+      "emptyState": "Select a conversation to start",
+      "emptyList": "No conversations match your search",
+      "sendButton": "Send",
+      "sendPlaceholder": "Type a message…",
+      "online": "Online",
+      "offline": "Offline",
+      "context": {
         "negotiation": "Negotiation",
+        "offer": "Offer",
         "request": "Request",
-        "general": "General"
+        "order": "Order"
       },
       "toast": {
         "messageSent": "Message sent (mock)",
-        "attachFile": "Attach file (mock)"
+        "contextOpen": "Open context details (mock)"
       },
-      "time": {
+      "relative": {
         "justNow": "just now",
-        "minutesAgo": "{{n}}m",
+        "minutesAgo": "{{n}}min",
         "hoursAgo": "{{n}}h",
-        "daysAgo": "{{n}}d",
-        "weeksAgo": "{{n}}w"
+        "yesterday": "yesterday",
+        "daysAgo": "{{n}}d"
       }
     }
   },
