@@ -1,55 +1,82 @@
-# Visual/DOM Audit — Findings & Normalization Plan
+# Create Offer v4 — single-screen, 3 panels
 
-Scope: all CSS under `src/styles/` powering Supplier, Buyer, and Admin pages.
+Substituir o wizard atual em `/supplier/offers/new` por um layout de tela única em 3 colunas (Markets/Terms · Cuts & Pricing · Live Preview), conforme `LOVABLE-CREATE-OFFER-V4-SPEC.md` e o protótipo `mundus-create-offer-v4.jsx`.
 
-## Findings
+**Constraint do usuário:** manter o bloco de **Certifications** (Halal, Kosher, USDA, HACCP, BRC, Organic) que existe hoje no sidebar — o spec v4 não mencionava, mas ele fica preservado como uma sub-seção dentro do painel esquerdo (entre Incoterms e Payment terms).
 
-### 1. Fonts — mostly OK, 3 leaks
-Global font is Inter (`var(--font-sans)` in `index.css`). Issues found:
-- `mundus-negotiations.css:256` — `.nd-header .nd-sub .mono` uses raw `ui-monospace, SFMono-Regular, Menlo, monospace`.
-- `mundus-insights.css:247, 253, 391` — three rules (`.sa-top__rev`, `.sa-geo__count`, one more) use raw monospace stack.
-- `mundus-admin.css` correctly uses `var(--font-mono)` — that's the canonical token.
+## Layout
 
-Fix: replace raw `ui-monospace,...` with `var(--font-mono)` so all numeric/mono displays share one token.
+```text
+┌──────────────────────────────────────────────────────────────┐
+│ HEADER  título + origem + 👁 Live preview toggle             │
+├────────────┬─────────────────────────┬───────────────────────┤
+│ LEFT 340px │ CENTER flex             │ RIGHT 320px (toggle)  │
+│ Container  │ Capacity bar            │ Buyer-eye preview     │
+│ Temperature│ ✨ AI Import (3 modos)   │ - hero + título       │
+│ Markets    │ Cuts table (com fotos,  │ - meta grid           │
+│  + ports   │   spec/pkg/grade/aging, │ - lista de cuts       │
+│  + freight │   ask/floor/notes)      │ - distribution badges │
+│ Incoterms  │ + Add cut inline        │                       │
+│ ★ Certifs  │                         │                       │
+│ Payment    │                         │                       │
+│ Distribut. │                         │                       │
+├────────────┴─────────────────────────┴───────────────────────┤
+│ FOOTER  resumo · Save draft · Review & publish               │
+└──────────────────────────────────────────────────────────────┘
+```
 
-### 2. Brand color — `--p800` is canonical but many files still use legacy fallbacks
+Mobile (<900px): colunas empilham; right panel vira accordion no topo quando aberto.
 
-The token `--brand: var(--p800)` is set globally, but several stylesheets still write `var(--brand, #be123c)` (52 occurrences across 6 files) or hardcoded magenta variants. The fallback `#be123c` is wrong (off-brand) and resolves only if `--brand` is ever unset.
+## Mudanças
 
-Hardcoded off-brand hover/active variants:
-- `mundus-create-offer.css` — `#9d174d` used as hover (lines 166, 221).
-- `mundus-insights.css:418` — `.ins-upsell-btn--primary:hover { background: #8a3550 }`.
-- `mundus-shell.css:137` — `background: #8a3550`.
-- `mundus-supplier-offers.css:172` — `color: #9d174d`.
-- `mundus-insights.css:78` — gradient `#B64769 → #8a3550` hardcoded.
+### Arquivos novos
+- `src/styles/mundus-create-offer-v2.css` — tokens do v4 (chips de mercado, market cards, ports, incoterm grid, cuts table com thumbs, AI panel, live preview)
+- `src/components/supplier/create-offer/MarketSelector.tsx` — chips de países
+- `src/components/supplier/create-offer/MarketCard.tsx` — card expandido por mercado (ports + freight, "same freight?" toggle)
+- `src/components/supplier/create-offer/IncotermSelector.tsx` — grid 3×2 + campos condicionais (CIF insurance, EXW/DDP/DAP city)
+- `src/components/supplier/create-offer/CutsTable.tsx` — tabela com foto, categoria+cut, spec/pkg/grade/aging, qty, ask/floor, notes
+- `src/components/supplier/create-offer/CutAddRow.tsx` — linha inline de adição
+- `src/components/supplier/create-offer/AiImportPanel.tsx` — 3 modos (paste/file/voice), mock de parser
+- `src/components/supplier/create-offer/LivePreview.tsx` — buyer-eye card
+- `src/components/supplier/create-offer/DistributionOptions.tsx` — 3 checkboxes + customer chips
 
-Canonical brand palette in use elsewhere: `--p800` (base), `--p900` (hover), `--p700` (lighter).
+### Arquivos editados
+- `src/pages/supplier/SupplierCreateOffer.tsx` — substituído pela nova composição em 3 colunas (mantém rota e `from=requestId` prefill)
+- `src/i18n/locales/{en,pt,es}.json` — namespace `supplier.createOffer.v4.*` com todas as labels (markets, incoterms condicionais, AI import, distribution, certifications, preview)
+- `src/styles/mundus-create-offer.css` — manter ou remover? **Manter** os tokens `.co-*` reutilizáveis (botões, footer); remover apenas o que conflita com v2
 
-Fix:
-- Replace every `var(--brand, #be123c)` with `var(--p800)` (no fallback) across `mundus-create-offer.css`, `mundus-chat.css`, `mundus-company.css`, `mundus-requests.css`, `mundus-negotiations.css`, `mundus-tables.css`.
-- Replace hardcoded `#9d174d` and `#8a3550` hover states with `var(--p900)`.
-- Replace gradient endpoints in `mundus-insights.css:78` and any banner gradients with `var(--p800)`/`var(--p900)`.
+### Certifications (preservado)
+Sub-seção no painel esquerdo, abaixo de Incoterms:
+- Label: "Certifications"
+- Tags toggleable: Halal, Kosher, USDA, HACCP, BRC, Organic
+- Mesmo visual `.co-tag` que já temos
+- Estado: `certifications: string[]` (igual ao atual)
+- Aparece no Live Preview como badges quando selecionado
 
-### 3. Hover states — inconsistent
-- Buttons sometimes hover to `#9d174d`, sometimes to `#8a3550`, sometimes have no hover.
-- Standardize all brand button hovers to `background: var(--p900)` and keep border-color in sync.
-- Standardize ghost/secondary hovers to `background: var(--p50)` or `rgba(182,71,105,0.06)` (already used in create-offer) — pick one. Recommend `var(--p50)` if defined, otherwise keep the rgba.
+### Mocks
+- `MARKETS` (China, Saudi Arabia, UAE, Egypt, Argentina, HK, Philippines, Chile) com ports
+- `CUTS_DB` por espécie (Beef, Pork, Poultry, Lamb)
+- `PAY_TERMS`, `INCOTERMS` com `extra` field
+- `MOCK_CUSTOMERS` para distribuição específica
+- AI Import: mock que injeta 2 cuts pré-definidos após 2s
 
-### 4. Semantic status colors — OK to leave as-is
-`mundus-requests.css` and `mundus-tables.css` use green/red/amber hex values for status pills (won/lost/pending/active). These are semantic, not brand — leave untouched unless we want to introduce `--success`, `--danger`, `--warning` tokens (out of scope for this audit).
+### Comportamento
+- Container: 20ft = 13.000 kg, 40ft = 28.000 kg
+- Capacity bar: <70% rosa, 70–95% âmbar, >95% verde
+- "Same freight for all ports?" só aparece com 2+ ports
+- Incoterm extras renderizam abaixo da grid (campos condicionais)
+- Publish habilitado quando: ≥1 mercado + ≥1 cut + ≥1 incoterm
+- Pré-preenchimento via `?from=requestId` mantido
 
-### 5. White (`#fff`) usage — leave as-is
-~40 occurrences of `#fff` for card backgrounds and button text on dark fills. Token-izing to `var(--surface)` is a separate refactor; not part of this audit.
+### Fora do escopo (mock, não backend)
+- Sem edge function `parse-cuts` (AI = mock setTimeout)
+- Sem upload real de fotos (DataURL local)
+- Sem persistência no Supabase (toast no publish)
 
-## Implementation Steps
+## Detalhes técnicos
 
-1. **Fonts** — sed-replace raw monospace stacks with `var(--font-mono)` in `mundus-negotiations.css` and `mundus-insights.css` (3 lines).
-2. **Brand color** — global find/replace `var(--brand, #be123c)` → `var(--p800)` in all 6 affected stylesheets.
-3. **Hover normalization** — replace `#9d174d` and `#8a3550` literals used as hover/active with `var(--p900)`. Update the insights hero gradient (`#B64769 → #8a3550`) to `var(--p800) → var(--p900)`.
-4. **Spot-check supplier-offers** — already audited in the previous commit; verify it stays consistent (one stray `#9d174d` on line 172).
-5. **Visual QA** — browser screenshots of Supplier Home, Supplier Offers, Supplier Create Offer, Supplier Negotiations, Buyer Requests, Buyer Insights, Admin Dashboard at desktop + mobile widths. Confirm primary buttons, hovers, links, and gradients render in the `--p800/--p900` family.
-
-## Out of Scope
-- Refactoring `#fff` to surface tokens.
-- Introducing `--success/--danger/--warning` semantic tokens.
-- Layout, spacing, or component structure changes.
+- Design tokens: `var(--p800)` `#B64769`, `var(--p900)` `#752642`, `var(--bg-brand-soft)`, fonte Inter via `var(--font-sans)`
+- Borders 8px cards / 6px inputs / 999px chips, labels uppercase 9–10px
+- Mobile: respeitar safe-area, single column, bottom sheet para preview
+- i18n: nenhum string hard-coded em componente; toda label via `t('supplier.createOffer.v4.*')`
+- Acessibilidade: `role="group"`, `aria-pressed` nos chips, `aria-label` em botões de ícone
