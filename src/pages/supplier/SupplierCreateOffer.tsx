@@ -1,6 +1,8 @@
 import { useCallback, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 
 /* ══════════════════════════════════════════════════════════
    DATA (mocks aligned with v4 prototype)
@@ -95,6 +97,8 @@ export default function SupplierCreateOffer() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromRequestId = searchParams.get("from");
+  const { t } = useTranslation();
+  const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
@@ -124,6 +128,9 @@ export default function SupplierCreateOffer() {
   const [aiProcessing, setAiProcessing] = useState(false);
 
   const [showPreview, setShowPreview] = useState(false);
+
+  const [mlOpen, setMlOpen] = useState(false);
+  const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
 
   useEffect(() => {
     if (fromRequestId) {
@@ -226,6 +233,40 @@ export default function SupplierCreateOffer() {
   const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
 
   const handleSaveDraft = () => toast("Draft saved");
+
+  const applyMarketplaceRate = useCallback((rate: MarketplaceRate) => {
+    const market = MARKETS.find((m) => m.id === rate.countryCode);
+    if (!market) return;
+    setSelMarkets((prev) => (prev.find((x) => x.id === market.id) ? prev : [...prev, market]));
+    setMktCfg((prev) => {
+      const existing = prev[market.id];
+      if (existing) {
+        const sp = existing.sp.includes(rate.portId) ? existing.sp : [...existing.sp, rate.portId];
+        return {
+          ...prev,
+          [market.id]: {
+            ...existing,
+            sp,
+            sm: false,
+            pf: { ...existing.pf, [rate.portId]: rate.freight },
+          },
+        };
+      }
+      return {
+        ...prev,
+        [market.id]: {
+          sp: [rate.portId],
+          sm: false,
+          gf: rate.freight,
+          pf: Object.fromEntries(market.p.map((p) => [p.id, p.id === rate.portId ? rate.freight : ""])),
+        },
+      };
+    });
+    setRouteSources((prev) => ({ ...prev, [`${rate.countryCode}-${rate.portId}`]: rate.source }));
+    toast.success(tm("importedToast", { carrier: rate.source.carrierShort, freight: Number(rate.freight).toLocaleString() }));
+    setMlOpen(false);
+  }, [tm]);
+
   const handlePublish = () => {
     if (!canPublish) return;
     toast.success("Offer ready to publish (mock)");
