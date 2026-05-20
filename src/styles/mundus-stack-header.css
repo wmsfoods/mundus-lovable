@@ -84,7 +84,10 @@
   }
   .sh-actions :where(button, a):active { background: var(--g100); }
 
-  /* On stack screens, the StackHeader already shows the title,
-     so hide the in-page breadcrumbs to avoid duplication. */
-  .app-shell.is-stack .crumbs { display: none; }
+  /* On stack screens the StackHeader already shows back + title,
+     so hide in-page breadcrumbs and back buttons to avoid duplication. */
+  .app-shell.is-stack .crumbs,
+  .app-shell.is-stack .nd-back,
+  .app-shell.is-stack .btn-back,
+  .app-shell.is-stack .back-link { display: none !important; }
 }
