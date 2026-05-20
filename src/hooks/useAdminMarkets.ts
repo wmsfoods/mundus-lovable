@@ -114,6 +114,14 @@ export function useAdminMarkets() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "markets"] }),
   });
 
+  const createMutation = useMutation({
+    mutationFn: async ({ countryId, isActive }: { countryId: string; isActive: boolean }) => {
+      const { error } = await supabase.from("markets").insert({ country_id: countryId, is_active: isActive });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "markets"] }),
+  });
+
   return {
     rows: query.data?.rows ?? [],
     totalPorts: query.data?.totalPorts ?? 0,
@@ -124,6 +132,8 @@ export function useAdminMarkets() {
       toggleMutation.mutateAsync({ marketId, isActive }),
     bulkToggleMarketsActive: (marketIds: string[], isActive: boolean) =>
       bulkToggleMutation.mutateAsync({ marketIds, isActive }),
+    createMarket: (countryId: string, isActive = true) => createMutation.mutateAsync({ countryId, isActive }),
+    isCreating: createMutation.isPending,
     isToggling: toggleMutation.isPending || bulkToggleMutation.isPending,
   };
 }
