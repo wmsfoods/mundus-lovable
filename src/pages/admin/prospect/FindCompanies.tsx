@@ -12,6 +12,7 @@ import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { PspPagination } from "@/components/prospect/Pagination";
 import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
+import { AddToListModal } from "@/components/prospect/AddToListModal";
 import { useProspectSearch } from "@/hooks/useProspectSearch";
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","Argentina","Egypt","Hong Kong","Philippines"];
@@ -51,6 +52,7 @@ export default function FindCompanies() {
   const [companyType, setCompanyType] = useState<"all" | "private" | "public">("all");
   const [saveModalCompany, setSaveModalCompany] = useState<MockCompany | null>(null);
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
+  const [addToListOpen, setAddToListOpen] = useState(false);
   const pageSize = 25;
 
   const apolloParams = useMemo(() => {
@@ -395,7 +397,7 @@ export default function FindCompanies() {
               <button onClick={() => setSelected(new Set())}>Clear</button>
               <div className="spacer" />
               <button className="solid" onClick={() => toast.success(`Saved ${selected.size} to CRM`)}>Save to CRM</button>
-              <button onClick={() => toast.info("Pick a list (coming soon)")}>Add to List</button>
+              <button onClick={() => setAddToListOpen(true)}>Add to List</button>
               <button onClick={() => toast.info("Enrichment coming soon")}>Enrich</button>
               <button onClick={exportCsv}><Download size={12} /> Export CSV</button>
             </div>
@@ -463,6 +465,13 @@ export default function FindCompanies() {
         onClose={() => setSaveModalCompany(null)}
         company={saveModalCompany}
         onSaved={() => { if (saveModalCompany) setSavedIds((s) => new Set(s).add(saveModalCompany.id)); }}
+      />
+
+      <AddToListModal
+        open={addToListOpen}
+        onClose={() => setAddToListOpen(false)}
+        companies={rows.filter((c) => selected.has(c.id))}
+        onDone={() => setSelected(new Set())}
       />
     </div>
   );
