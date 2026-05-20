@@ -675,3 +675,100 @@ function SearchPeopleDrawer({ prospect, onClose }: { prospect: Prospect; onClose
     </>
   );
 }
+
+function ConvertToMundusModal({ prospect, onClose, onDone }: {
+  prospect: Prospect;
+  onClose: () => void;
+  onDone: () => void;
+}) {
+  const { t } = useTranslation();
+  const main = prospect.contacts.find((c) => c.isPrimary) ?? prospect.contacts[0];
+  const [type, setType] = useState<MundusType>(prospect.leadType);
+  const [name, setName] = useState(main?.fullName ?? "");
+  const [email, setEmail] = useState(main?.email ?? "");
+  const [phone, setPhone] = useState(main?.phone ?? "");
+
+  const valid = name.trim().length > 1 && /.+@.+\..+/.test(email);
+
+  const submit = () => {
+    if (!valid) {
+      toast.error(t("admin.crm.detail.convert.invalidMaster"));
+      return;
+    }
+    const res = convertProspectToMundus(prospect.id, {
+      type,
+      master: { fullName: name.trim(), email: email.trim(), phone: phone.trim() || undefined },
+    });
+    if (!res.ok) {
+      toast.error(t("admin.crm.detail.convert.failed"));
+      return;
+    }
+    onDone();
+  };
+
+  const TYPES: Array<{ id: MundusType; label: string; desc: string }> = [
+    { id: "buyer", label: t("admin.crm.detail.convert.type.buyer"), desc: t("admin.crm.detail.convert.type.buyerDesc") },
+    { id: "supplier", label: t("admin.crm.detail.convert.type.supplier"), desc: t("admin.crm.detail.convert.type.supplierDesc") },
+    { id: "buyer_supplier", label: t("admin.crm.detail.convert.type.both"), desc: t("admin.crm.detail.convert.type.bothDesc") },
+  ];
+
+  return (
+    <>
+      <div className="psp-drawer-backdrop" onClick={onClose} />
+      <div className="psp-scrm-modal" style={{ width: "min(560px, 96vw)" }}>
+        <div className="psp-scrm-head">
+          <div>
+            <div className="psp-scrm-title">{t("admin.crm.detail.convert.title")}</div>
+            <div className="psp-scrm-sub">{prospect.companyName} · {prospect.country}</div>
+          </div>
+          <button className="psp-drawer-close" onClick={onClose}><X size={18}/></button>
+        </div>
+        <div className="psp-scrm-body" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
+          <div>
+            <label className="psp-scrm-label">{t("admin.crm.detail.convert.typeLabel")}</label>
+            <div className="psp-convert-types">
+              {TYPES.map((opt) => (
+                <label key={opt.id} className={`psp-convert-type ${type === opt.id ? "is-selected" : ""}`}>
+                  <input
+                    type="radio"
+                    name="mundus-type"
+                    value={opt.id}
+                    checked={type === opt.id}
+                    onChange={() => setType(opt.id)}
+                  />
+                  <div>
+                    <div className="psp-convert-type-label">{opt.label}</div>
+                    <div className="psp-convert-type-desc">{opt.desc}</div>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label className="psp-scrm-label">{t("admin.crm.detail.convert.master.title")}</label>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 4 }}>
+              <input className="psp-input" placeholder={t("admin.crm.detail.convert.master.name")}
+                value={name} onChange={(e) => setName(e.target.value)} />
+              <input className="psp-input" type="email" placeholder={t("admin.crm.detail.convert.master.email")}
+                value={email} onChange={(e) => setEmail(e.target.value)} />
+              <input className="psp-input" placeholder={t("admin.crm.detail.convert.master.phone")}
+                value={phone} onChange={(e) => setPhone(e.target.value)}
+                style={{ gridColumn: "1 / -1" }} />
+            </div>
+          </div>
+
+          <div className="psp-convert-warn">
+            {t("admin.crm.detail.convert.warning")}
+          </div>
+        </div>
+        <div className="psp-scrm-foot">
+          <button className="crm-btn-ghost" onClick={onClose}>{t("admin.crm.detail.actions.cancel")}</button>
+          <button className="crm-btn-primary" onClick={submit} disabled={!valid}>
+            <Building2 size={14} /> {t("admin.crm.detail.convert.confirm")}
+          </button>
+        </div>
+      </div>
+    </>
+  );
+}
