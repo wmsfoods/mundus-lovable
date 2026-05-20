@@ -582,3 +582,65 @@
   .cov4-fr-row { flex-direction: column; align-items: stretch; }
   .cov4-tblw { font-size: 10px; }
 }
+
+/* — markets: more popover & extra chip — */
+.cov4-chip-more {
+  background: #fff;
+  border: 1px dashed var(--border);
+  color: var(--fg-muted);
+}
+.cov4-chip-more:hover { background: var(--g050, #fafaf9); color: var(--fg); }
+
+/* — incoterm disabled state — */
+.cov4-inco-btn.disabled,
+.cov4-inco-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: var(--g050, #fafaf9);
+}
+
+/* — cut combobox trigger — */
+.cov4-cut-trigger {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  height: 28px;
+  padding: 0 8px;
+  font-size: 12px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--fg);
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  min-width: 0;
+}
+.cov4-cut-trigger:hover { border-color: var(--p800); }
+.cov4-cut-trigger-v { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cov4-cut-trigger-ph { color: var(--fg-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.cov4-cut-opt-thumb {
+  width: 28px; height: 28px;
+  border-radius: 4px;
+  background: var(--g100, #f5f4f3);
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-right: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.cov4-cut-opt-thumb img {
+  width: 100%; height: 100%; object-fit: cover;
+}
+
+.cov4-img-replace-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 8px 16px;
+  background: var(--p800);
+  color: #fff;
+  border-radius: 8px;
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+}
