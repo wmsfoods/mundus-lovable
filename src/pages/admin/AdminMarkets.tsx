@@ -408,6 +408,14 @@ export default function AdminMarkets() {
           </div>
         </>
       )}
+
+      <AddMarketModal
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        countries={availableCountries}
+        onCreate={(countryId) => createMarket(countryId, true)}
+        isCreating={isCreating}
+      />
     </div>
   );
 }
