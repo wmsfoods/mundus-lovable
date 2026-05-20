@@ -191,6 +191,19 @@
 .psp-region-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 8px; }
 .psp-region-row .psp-chip { font-weight: 600; }
 
+/* Prospect detail editing */
+.psp-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px 16px; }
+.psp-actions-wrap { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
+.psp-contacts-list { display: flex; flex-direction: column; gap: 12px; }
+.psp-contact-card {
+  position: relative;
+  border: 1px solid var(--adm-border-soft);
+  border-radius: var(--adm-radius-md);
+  padding: 12px 12px 12px 12px;
+  background: var(--adm-bg-tile);
+}
+.psp-contact-del { position: absolute; top: 8px; right: 8px; padding: 4px 8px; }
+
 @media (max-width: 900px) {
   .psp-layout { grid-template-columns: 1fr; }
   .psp-filters { display: none; position: fixed; inset: 0; z-index: 60; width: 100%; }
@@ -200,4 +213,7 @@
   .psp-scrm-modal { width: 100vw; height: 100vh; max-height: 100vh; border-radius: 0; }
   .psp-scrm-grid { grid-template-columns: 1fr; }
   .psp-scrm-addtl-row { grid-template-columns: 1fr; }
+  .psp-grid-2 { grid-template-columns: 1fr; }
+  .psp-actions-wrap { justify-content: stretch; }
+  .psp-actions-wrap > button { flex: 1; min-height: 40px; justify-content: center; }
 }
