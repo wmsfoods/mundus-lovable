@@ -2178,6 +2178,41 @@
           "title": "Ningún mercado coincide con estos filtros",
           "body": "Intente limpiar los filtros o buscar con otro término."
         }
+      },
+      "ports": {
+        "title": "Puertos",
+        "subtitle": "Administre los puertos disponibles para rutas de envío",
+        "searchPlaceholder": "Buscar nombre o código de puerto...",
+        "allCountries": "Todos los países",
+        "next": "Siguiente",
+        "showing": "Mostrando {{from}}-{{to}} de {{total}} resultados",
+        "shared": "Compartido",
+        "usedBy": "Usado por {{country}}",
+        "stats": {
+          "total": "Puertos totales",
+          "active": "Puertos activos",
+          "countries": "Países con puertos"
+        },
+        "filters": {
+          "all": "Todos",
+          "activeOnly": "Solo activos",
+          "inactiveOnly": "Solo inactivos"
+        },
+        "cols": {
+          "name": "Nombre del puerto",
+          "code": "Código",
+          "country": "País",
+          "shared": "Compartido",
+          "active": "Activo"
+        },
+        "toggle": {
+          "activated": "Puerto {{port}} activado",
+          "deactivated": "Puerto {{port}} desactivado"
+        },
+        "empty": {
+          "title": "Ningún puerto coincide con estos filtros",
+          "body": "Intente limpiar los filtros o buscar con otro término."
+        }
       }
     }
   },
