@@ -3,30 +3,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
+import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 
 /* ══════════════════════════════════════════════════════════
-   DATA (mocks aligned with v4 prototype)
+   DATA — markets & cuts come from Supabase via useSupplierOfferData
    ══════════════════════════════════════════════════════════ */
-type Port = { id: string; n: string };
-type Market = { id: string; n: string; f: string; p: Port[] };
-
-const MARKETS: Market[] = [
-  { id: "cn", n: "China", f: "🇨🇳", p: [{ id: "sha", n: "Shanghai (CNSHA)" }, { id: "ngb", n: "Ningbo (CNNGB)" }, { id: "tao", n: "Qingdao (CNTAO)" }, { id: "txg", n: "Tianjin (CNTXG)" }, { id: "dlc", n: "Dalian (CNDLC)" }] },
-  { id: "sa", n: "Saudi Arabia", f: "🇸🇦", p: [{ id: "jed", n: "Jeddah (SAJED)" }, { id: "dmm", n: "Dammam (SADMM)" }] },
-  { id: "ae", n: "UAE", f: "🇦🇪", p: [{ id: "jea", n: "Jebel Ali (AEJEA)" }, { id: "auh", n: "Abu Dhabi (AEAUH)" }] },
-  { id: "eg", n: "Egypt", f: "🇪🇬", p: [{ id: "alx", n: "Alexandria (EGALX)" }, { id: "psd", n: "Port Said (EGPSD)" }] },
-  { id: "ar", n: "Argentina", f: "🇦🇷", p: [{ id: "bue", n: "Buenos Aires (ARBUE)" }, { id: "ros", n: "Rosario (ARROS)" }] },
-  { id: "hk", n: "Hong Kong", f: "🇭🇰", p: [{ id: "hkg", n: "Hong Kong (HKHKG)" }] },
-  { id: "ph", n: "Philippines", f: "🇵🇭", p: [{ id: "mnl", n: "Manila (PHMNL)" }, { id: "ceb", n: "Cebu (PHCEB)" }] },
-  { id: "cl", n: "Chile", f: "🇨🇱", p: [{ id: "vap", n: "Valparaíso (CLVAP)" }, { id: "sai", n: "San Antonio (CLSAI)" }] },
-];
-
-const CUTS_DB: Record<string, string[]> = {
-  Beef: ["Forequarter", "Topside", "Brisket", "Knuckle", "Striploin", "Ribeye", "Bones", "Sangria 90VL", "Trim 80CL", "Chuck Roll"],
-  Pork: ["Loin", "Belly", "Ribs", "Shoulder", "Ham", "Trim 80CL"],
-  Poultry: ["Whole Chicken", "Breast", "Thigh", "Wings", "Drumstick", "Liver"],
-  Lamb: ["Leg", "Rack", "Shoulder", "Loin", "Shank"],
-};
+type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In", "Semi-Boneless"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
 const GRADES = ["Not Classified", "Low", "Medium", "High", "Prime"];
@@ -68,6 +50,8 @@ type Cut = {
   id: string;
   cat: string;
   cut: string;
+  cutId?: string;
+  cutImage?: string | null;
   spec: string;
   pkg: string;
   gr: string;
@@ -99,6 +83,8 @@ export default function SupplierCreateOffer() {
   const fromRequestId = searchParams.get("from");
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
+
+  const { markets: MARKETS, cutsByCategory, loading: dataLoading, error: dataError } = useSupplierOfferData();
 
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
@@ -158,7 +144,7 @@ export default function SupplierCreateOffer() {
       }));
       return [...prev, m];
     });
-  }, []);
+  }, [MARKETS]);
 
   const togglePort = useCallback((mid: string, pid: string) => {
     setMktCfg((prev) => {
@@ -265,7 +251,7 @@ export default function SupplierCreateOffer() {
     setRouteSources((prev) => ({ ...prev, [`${rate.countryCode}-${rate.portId}`]: rate.source }));
     toast.success(tm("importedToast", { carrier: rate.source.carrierShort, freight: Number(rate.freight).toLocaleString() }));
     setMlOpen(false);
-  }, [tm]);
+  }, [tm, MARKETS]);
 
   const handlePublish = () => {
     if (!canPublish) return;
