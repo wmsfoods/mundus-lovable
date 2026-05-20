@@ -295,7 +295,7 @@ export default function FindPeople() {
                       <td>{p.countryFlag} {p.city}, {p.country}</td>
                       <td><span className="psp-tag">{p.seniority}</span></td>
                       <td><a className="psp-icon-link" href={p.linkedin} target="_blank" rel="noreferrer"><Linkedin size={14} /></a></td>
-                      <td><span className={`psp-badge ${p.in_crm ? "in-crm" : "new"}`}>{p.in_crm ? "In CRM" : "New"}</span></td>
+                      <td><span className={`psp-badge ${p.in_crm || savedIds.has(p.id) ? "in-crm" : "new"}`}>{p.in_crm || savedIds.has(p.id) ? "In CRM" : "New"}</span></td>
                       <td>
                         {p.in_crm
                           ? <button className="psp-btn ghost" onClick={() => setDetail(p)}>View</button>
