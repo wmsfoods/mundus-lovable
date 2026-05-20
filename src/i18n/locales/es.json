@@ -2062,6 +2062,39 @@
         "offer_exhausted": "Agotada",
         "expired": "Expirada"
       }
+    },
+    "prospect": {
+      "lists": {
+        "title": "Listas",
+        "newList": "Nueva lista",
+        "createList": "Crear",
+        "listName": "Nombre de la lista",
+        "companies": "Empresas",
+        "noLists": "Sin listas aún",
+        "noListsDesc": "Crea una lista para organizar tus empresas prospectadas",
+        "itemCount": "{{count}} empresas",
+        "created": "Creada {{date}}",
+        "deleteList": "Eliminar lista",
+        "deleteConfirm": "¿Eliminar esta lista y todos sus elementos?",
+        "deleted": "Lista eliminada",
+        "emptyList": "Sin registros",
+        "emptyListDesc": "¡Aún no hay empresas guardadas! Agrega empresas a esta lista.",
+        "findCompanies": "Buscar empresas",
+        "findCompaniesDesc": "Busca empresas para agregar a esta lista",
+        "importCsv": "Importar CSV",
+        "importCsvDesc": "Importa registros desde un archivo CSV",
+        "createWorkflow": "Crear workflow",
+        "createWorkflowDesc": "Crea un workflow para agregar empresas automáticamente",
+        "addToList": "Agregar a lista",
+        "addedToList": "{{count}} empresas agregadas a {{list}}",
+        "selectList": "Selecciona una lista",
+        "removeFromList": "Eliminar",
+        "removed": "Eliminado de la lista",
+        "export": "Exportar CSV",
+        "cancel": "Cancelar",
+        "back": "Volver",
+        "searchPlaceholder": "Buscar empresa..."
+      }
     }
   },
   "profile": {
