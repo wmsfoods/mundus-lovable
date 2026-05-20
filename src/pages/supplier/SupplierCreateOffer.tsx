@@ -603,8 +603,14 @@ export default function SupplierCreateOffer() {
                 {cuts.map((c, i) => (
                   <tr key={c.id}>
                     <td>
-                      <label className={`cov4-img-box ${cutImgs[c.id] ? "has" : ""}`}>
-                        {cutImgs[c.id] ? <img src={cutImgs[c.id]} alt="" /> : <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>}
+                      <label className={`cov4-img-box ${cutImgs[c.id] || c.cutImage ? "has" : ""}`}>
+                        {cutImgs[c.id] ? (
+                          <img src={cutImgs[c.id]} alt="" />
+                        ) : c.cutImage ? (
+                          <img src={c.cutImage} alt="" />
+                        ) : (
+                          <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>
+                        )}
                         <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleCutImg(c.id, e.target.files[0])} />
                       </label>
                     </td>
@@ -642,12 +648,33 @@ export default function SupplierCreateOffer() {
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: 4 }}>
-                        <select value={nf.cat} onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "" }))}>
-                          {Object.keys(CUTS_DB).map((c) => <option key={c}>{c}</option>)}
+                        <select
+                          value={nf.cat}
+                          onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}
+                        >
+                          {Object.keys(cutsByCategory).map((c) => (
+                            <option key={c} value={c}>
+                              {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
+                            </option>
+                          ))}
                         </select>
-                        <select value={nf.cut} onChange={(e) => setNf((p) => ({ ...p, cut: e.target.value }))}>
-                          <option value="">Cut...</option>
-                          {(CUTS_DB[nf.cat] || []).map((c) => <option key={c}>{c}</option>)}
+                        <select
+                          value={nf.cutId ?? ""}
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            const found = (cutsByCategory[nf.cat] || []).find((x) => x.id === id);
+                            setNf((p) => ({
+                              ...p,
+                              cutId: id || undefined,
+                              cut: found?.displayName ?? "",
+                              cutImage: found?.image_url ?? null,
+                            }));
+                          }}
+                        >
+                          <option value="">{dataLoading ? "Loading..." : "Cut..."}</option>
+                          {(cutsByCategory[nf.cat] || []).map((c) => (
+                            <option key={c.id} value={c.id}>{c.displayName}</option>
+                          ))}
                         </select>
                       </div>
                     </td>
