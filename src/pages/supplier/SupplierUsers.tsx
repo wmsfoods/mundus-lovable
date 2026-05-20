@@ -117,7 +117,7 @@ export default function SupplierUsers() {
           <p>{t("supplier.users.empty")}</p>
         </div>
       ) : (
-        <div className="data-table-wrap">
+        <div className="data-table-wrap has-mobile-cards">
           <table className="data-table">
             <thead>
               <tr>
@@ -173,6 +173,26 @@ export default function SupplierUsers() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {filtered.length > 0 && (
+        <ListCardList>
+          {filtered.map((u) => (
+            <ListCard
+              key={u.id}
+              title={u.name}
+              subtitle={u.jobTitle ? `${u.jobTitle} · ${u.email}` : u.email}
+              chip={{
+                label: t(`supplier.users.status.${u.status}`),
+                className: u.status === "active" ? "pill-active" : "pill-inactive",
+              }}
+              meta={[
+                { label: t("supplier.users.col.profileType"), value: t(`supplier.users.profile.${u.profileType}`) },
+                { label: t("supplier.users.col.lastLogin"), value: formatDateTime(u.lastLoginAt, locale) },
+              ]}
+            />
+          ))}
+        </ListCardList>
       )}
 
       <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
