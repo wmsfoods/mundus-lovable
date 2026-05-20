@@ -368,6 +368,7 @@
     color: var(--fg);
     cursor: pointer;
     flex-shrink: 0;
+    margin-right: auto;
   }
   .tb-hamburger:hover { background: var(--g100); }
   .tb-brand-center {
