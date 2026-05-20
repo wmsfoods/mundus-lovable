@@ -23,7 +23,14 @@ Deno.serve(async (req) => {
   const payload: Record<string, unknown> = {
     reveal_personal_emails: true,
   };
-  if (body.reveal_phone) payload.reveal_phone_number = true;
+  if (body.reveal_phone) {
+    payload.reveal_phone_number = true;
+    // Apollo requires a webhook to deliver phone numbers asynchronously.
+    const supaUrl = Deno.env.get("SUPABASE_URL");
+    if (supaUrl) {
+      payload.webhook_url = `${supaUrl}/functions/v1/prospect-phone-webhook`;
+    }
+  }
 
   for (const k of ["id", "first_name", "last_name", "name", "organization_name", "domain", "email", "linkedin_url"]) {
     const v = (body as Record<string, unknown>)[k];
@@ -54,6 +61,8 @@ Deno.serve(async (req) => {
     return json({
       ok: true,
       person,
+      apollo_person_id: person?.id ?? null,
+      phone_pending: Boolean(body.reveal_phone),
       email: person?.email ?? null,
       phone: person?.sanitized_phone ?? person?.phone_numbers?.[0]?.sanitized_number ?? null,
       mobile: person?.mobile_phone ?? null,
