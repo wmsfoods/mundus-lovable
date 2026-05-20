@@ -687,7 +687,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Cuts table */}
-          <div className="cov4-tblw">
+          <div id="sec-cuts" className="cov4-tblw">
             <table className="cov4-tbl">
               <thead>
                 <tr>
