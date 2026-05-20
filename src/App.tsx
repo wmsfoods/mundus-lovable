@@ -30,6 +30,7 @@ import AdminShell from "./pages/admin/AdminShell.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
 import AdminProspects from "./pages/admin/AdminProspects.tsx";
+import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
@@ -129,7 +130,7 @@ const App = () => (
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="analytics" element={<AdminAnalytics />} />
-              <Route path="companies" element={<AdminComingSoon section="companies" />} />
+              <Route path="companies" element={<AdminCompanies />} />
               <Route path="deals" element={<AdminComingSoon section="deals" />} />
               <Route path="negotiations" element={<AdminComingSoon section="negotiations" />} />
               <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
