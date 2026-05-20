@@ -33,10 +33,12 @@ import AdminProspects from "./pages/admin/AdminProspects.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
-import FindCompanies from "./pages/admin/prospect/FindCompanies.tsx";
-import FindPeople from "./pages/admin/prospect/FindPeople.tsx";
 import ProspectLists from "./pages/admin/prospect/Lists.tsx";
 import ImportBuyers from "./pages/admin/ImportBuyers.tsx";
+import ContactsList from "./pages/admin/crm/ContactsList.tsx";
+import ContactForm from "./pages/admin/crm/ContactForm.tsx";
+import CompaniesList from "./pages/admin/crm/CompaniesList.tsx";
+import CompanyForm from "./pages/admin/crm/CompanyForm.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
 import SupplierOffers from "./pages/supplier/Offers.tsx";
@@ -138,8 +140,12 @@ const App = () => (
               <Route path="crm/prospects" element={<AdminProspects />} />
               <Route path="crm/prospects/:id" element={<AdminProspectDetail />} />
               <Route path="crm/pipeline" element={<AdminProspectsPipeline />} />
-              <Route path="prospect/companies" element={<FindCompanies />} />
-              <Route path="prospect/people" element={<FindPeople />} />
+              <Route path="prospect/companies" element={<CompaniesList />} />
+              <Route path="prospect/companies/new" element={<CompanyForm />} />
+              <Route path="prospect/companies/:id" element={<CompanyForm />} />
+              <Route path="prospect/people" element={<ContactsList />} />
+              <Route path="prospect/people/new" element={<ContactForm />} />
+              <Route path="prospect/people/:id" element={<ContactForm />} />
               <Route path="prospect/lists" element={<ProspectLists />} />
               <Route path="import-buyers" element={<ImportBuyers />} />
               <Route path="marketplace/products" element={<AdminComingSoon section="marketplace/products" />} />
