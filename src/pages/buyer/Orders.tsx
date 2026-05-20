@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FileTextIcon, FilterIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { useBuyerOrders, type BuyerOrderStatus } from "@/hooks/useBuyerOrders";
 
 const STATUS_CLASS: Record<BuyerOrderStatus, string> = {
@@ -85,7 +86,7 @@ export default function BuyerOrders() {
         </div>
       </div>
 
-      <div className="data-table-wrap">
+      <div className="data-table-wrap has-mobile-cards">
         <table className="data-table">
           <thead>
             <tr>
@@ -129,6 +130,29 @@ export default function BuyerOrders() {
           </tbody>
         </table>
       </div>
+
+      <ListCardList>
+        {sorted.length === 0 ? (
+          <div className="empty-state">{t("buyer.orders.empty")}</div>
+        ) : (
+          sorted.map((o) => (
+            <ListCard
+              key={o.id}
+              onClick={() => navigate(`/buyer/orders/${o.orderNumber}`)}
+              title={o.orderNumber}
+              subtitle={o.supplierName}
+              chip={{
+                label: t(`buyer.orders.status.${o.status}`),
+                className: `pill-status ${STATUS_CLASS[o.status]}`,
+              }}
+              meta={[
+                { label: t("buyer.orders.col.orderDate"), value: fmtDate(o.orderDate) },
+                { label: t("buyer.orders.col.origin"), value: o.origin },
+              ]}
+            />
+          ))
+        )}
+      </ListCardList>
     </>
   );
 }
