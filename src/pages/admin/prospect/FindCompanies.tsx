@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
   REGION_PRESETS, SIC_CODES, NAICS_CODES, MARKET_SEGMENTS,
-  LEAD_TYPE_TABS, type LeadTypeTab,
+  
   fmtRevenue, fmtNumber, type MockCompany,
 } from "@/types/prospect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
@@ -24,7 +24,7 @@ const REVENUE_PRESETS = [
 
 export default function FindCompanies() {
   const nav = useNavigate();
-  const [leadTypeTab, setLeadTypeTab] = useState<LeadTypeTab>("All");
+  
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [locations, setLocations] = useState<string[]>([]);
@@ -114,13 +114,6 @@ export default function FindCompanies() {
         <span className="psp-credits">Credits: 4,480</span>
       </div>
 
-      <div className="psp-tabs">
-        {LEAD_TYPE_TABS.map((t) => (
-          <button key={t}
-            className={`psp-tab ${leadTypeTab === t ? "is-active" : ""}`}
-            onClick={() => { setLeadTypeTab(t); setPage(1); }}>{t}</button>
-        ))}
-      </div>
 
       <div className="psp-layout">
         <aside className={`psp-filters ${showFilters ? "is-open" : ""}`}>
