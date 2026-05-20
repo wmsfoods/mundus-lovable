@@ -377,14 +377,19 @@ export type Database = {
           domain: string | null
           estimated_employees: number | null
           founded_year: number | null
+          headcount_growth_12m: number | null
+          headcount_growth_6m: number | null
           id: string
           industry: string | null
+          is_public: boolean | null
           keywords: string[] | null
           linkedin_url: string | null
           logo_url: string | null
           market_region: string | null
+          market_segment: string | null
           merged_into_id: string | null
           mundus_company_id: string | null
+          naics_codes: string[] | null
           name: string
           notes: string | null
           owner_id: string | null
@@ -392,11 +397,14 @@ export type Database = {
           postal_code: string | null
           product_categories: string[] | null
           short_description: string | null
+          sic_codes: string[] | null
           source: string | null
           source_detail: string | null
           stage: string | null
           state: string | null
           status: string | null
+          stock_exchange: string | null
+          stock_symbol: string | null
           tags: string[] | null
           tax_id: string | null
           technologies: Json | null
@@ -420,14 +428,19 @@ export type Database = {
           domain?: string | null
           estimated_employees?: number | null
           founded_year?: number | null
+          headcount_growth_12m?: number | null
+          headcount_growth_6m?: number | null
           id?: string
           industry?: string | null
+          is_public?: boolean | null
           keywords?: string[] | null
           linkedin_url?: string | null
           logo_url?: string | null
           market_region?: string | null
+          market_segment?: string | null
           merged_into_id?: string | null
           mundus_company_id?: string | null
+          naics_codes?: string[] | null
           name: string
           notes?: string | null
           owner_id?: string | null
@@ -435,11 +448,14 @@ export type Database = {
           postal_code?: string | null
           product_categories?: string[] | null
           short_description?: string | null
+          sic_codes?: string[] | null
           source?: string | null
           source_detail?: string | null
           stage?: string | null
           state?: string | null
           status?: string | null
+          stock_exchange?: string | null
+          stock_symbol?: string | null
           tags?: string[] | null
           tax_id?: string | null
           technologies?: Json | null
@@ -463,14 +479,19 @@ export type Database = {
           domain?: string | null
           estimated_employees?: number | null
           founded_year?: number | null
+          headcount_growth_12m?: number | null
+          headcount_growth_6m?: number | null
           id?: string
           industry?: string | null
+          is_public?: boolean | null
           keywords?: string[] | null
           linkedin_url?: string | null
           logo_url?: string | null
           market_region?: string | null
+          market_segment?: string | null
           merged_into_id?: string | null
           mundus_company_id?: string | null
+          naics_codes?: string[] | null
           name?: string
           notes?: string | null
           owner_id?: string | null
@@ -478,11 +499,14 @@ export type Database = {
           postal_code?: string | null
           product_categories?: string[] | null
           short_description?: string | null
+          sic_codes?: string[] | null
           source?: string | null
           source_detail?: string | null
           stage?: string | null
           state?: string | null
           status?: string | null
+          stock_exchange?: string | null
+          stock_symbol?: string | null
           tags?: string[] | null
           tax_id?: string | null
           technologies?: Json | null
@@ -531,6 +555,7 @@ export type Database = {
           country: string | null
           created_at: string | null
           created_by: string | null
+          decision_level: string | null
           department: string | null
           email: string | null
           email_bounce_count: number | null
@@ -573,6 +598,7 @@ export type Database = {
           mundus_company_id: string | null
           mundus_user_id: string | null
           notes: string | null
+          personal_linkedin: string | null
           phone: string | null
           phone_confidence: string | null
           phone_credits_used: number | null
@@ -619,6 +645,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           created_by?: string | null
+          decision_level?: string | null
           department?: string | null
           email?: string | null
           email_bounce_count?: number | null
@@ -661,6 +688,7 @@ export type Database = {
           mundus_company_id?: string | null
           mundus_user_id?: string | null
           notes?: string | null
+          personal_linkedin?: string | null
           phone?: string | null
           phone_confidence?: string | null
           phone_credits_used?: number | null
@@ -707,6 +735,7 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           created_by?: string | null
+          decision_level?: string | null
           department?: string | null
           email?: string | null
           email_bounce_count?: number | null
@@ -749,6 +778,7 @@ export type Database = {
           mundus_company_id?: string | null
           mundus_user_id?: string | null
           notes?: string | null
+          personal_linkedin?: string | null
           phone?: string | null
           phone_confidence?: string | null
           phone_credits_used?: number | null
