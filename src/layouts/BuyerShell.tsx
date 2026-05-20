@@ -17,7 +17,6 @@ import {
   TagIcon,
   FileTextIcon,
   MessageIcon,
-  MoreVerticalIcon,
 } from "@/components/icons";
 
 export default function BuyerShell() {
@@ -44,7 +43,7 @@ export default function BuyerShell() {
     { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },
     { to: "/buyer/requests/new", label: t("shell.bottom.create", { defaultValue: "Create" }), icon: PlusIcon, accent: true },
     { to: "/buyer/negotiations", label: t("shell.bottom.negotiations", { defaultValue: "Chat" }), icon: MessageIcon },
-    { label: t("shell.more"), icon: MoreVerticalIcon, onClick: () => setDrawerOpen(true) },
+    { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
   ];
 
   return (
@@ -54,7 +53,7 @@ export default function BuyerShell() {
         userName={userName}
         userSubtitle={company?.name}
       />
-      <Topbar />
+      <Topbar onMenuClick={() => setDrawerOpen(true)} />
       <main className="app-main">
         <Outlet />
       </main>

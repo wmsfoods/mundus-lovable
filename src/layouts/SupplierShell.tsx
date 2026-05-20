@@ -16,7 +16,6 @@ import {
   MessageIcon,
   ClipboardIcon,
   UsersIcon,
-  MoreVerticalIcon,
 } from "@/components/icons";
 import { BarChart3, LineChart } from "lucide-react";
 import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
@@ -79,7 +78,7 @@ function SupplierShellInner() {
     { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
     { to: "/supplier/offers/new", label: t("shell.bottom.create", { defaultValue: "Create" }), icon: PlusIcon, accent: true },
     { to: "/supplier/negotiations", label: t("shell.bottom.negotiations", { defaultValue: "Chat" }), icon: MessageIcon },
-    { label: t("shell.more"), icon: MoreVerticalIcon, onClick: () => setDrawerOpen(true) },
+    { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
   ];
 
   return (
@@ -91,7 +90,7 @@ function SupplierShellInner() {
         userSubtitle={company?.name}
         onProBadgeClick={onProBadgeClick}
       />
-      <Topbar />
+      <Topbar onMenuClick={() => setDrawerOpen(true)} />
       <main className="app-main">
         <Outlet />
       </main>

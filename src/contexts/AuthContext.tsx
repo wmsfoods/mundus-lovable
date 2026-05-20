@@ -17,14 +17,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    let currentUserId: string | null = null;
+
+    const applySession = (newSession: Session | null) => {
+      const nextUserId = newSession?.user?.id ?? null;
       setSession(newSession);
-      setUser(newSession?.user ?? null);
+      // Only update user when identity changes — avoids re-renders on token refresh
+      // that re-trigger downstream fetches (e.g. company lookup).
+      if (nextUserId !== currentUserId) {
+        currentUserId = nextUserId;
+        setUser(newSession?.user ?? null);
+      }
+    };
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      applySession(newSession);
     });
 
     supabase.auth.getSession().then(({ data: { session: currentSession } }) => {
-      setSession(currentSession);
-      setUser(currentSession?.user ?? null);
+      applySession(currentSession);
       setLoading(false);
     });
 
