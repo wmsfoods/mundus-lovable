@@ -447,22 +447,79 @@ function Field({ label, editing, value, children }: {
   );
 }
 
-function ContactBlock({ contact, editing, onChange, showRole, t }: {
+function ContactBlock({ contact, editing, onChange, showRole, leadType, t }: {
   contact: ProspectContact;
   editing: boolean;
   onChange: (cid: string, k: keyof ProspectContact, v: string | undefined) => void;
   showRole: boolean;
+  leadType: LeadType;
   t: (k: string) => string;
 }) {
   const c = contact;
+  const initials = (c.fullName || "?")
+    .replace(/[^A-Za-z\s]/g, "")
+    .split(/\s+/).filter(Boolean)
+    .slice(0, 2).map((s) => s[0]).join("").toUpperCase() || "?";
+  const roleOpts = ROLE_OPTIONS[leadType];
+  const roleInList = !c.role || roleOpts.includes(c.role);
+
+  const onPickPhoto = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => onChange(c.id, "photoUrl", String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
   return (
-    <div className="psp-grid-2">
+    <div className="psp-contact-row">
+      <div className="psp-contact-photo-wrap">
+        {c.photoUrl ? (
+          <img src={c.photoUrl} alt={c.fullName} className="psp-contact-photo" />
+        ) : (
+          <span className="psp-contact-photo psp-contact-photo-fallback">{initials}</span>
+        )}
+        {editing && (
+          <>
+            <label className="psp-contact-photo-edit" title={t("admin.crm.detail.actions.changePhoto") || "Change photo"}>
+              <Camera size={12} />
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => onPickPhoto(e.target.files?.[0])}
+              />
+            </label>
+            {c.photoUrl && (
+              <button
+                type="button"
+                className="psp-contact-photo-remove"
+                onClick={() => onChange(c.id, "photoUrl", undefined)}
+              >
+                {t("common.remove") || "Remove"}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+      <div className="psp-grid-2" style={{ flex: 1, minWidth: 0 }}>
       <Field label={t("admin.crm.detail.fields.fullName")} editing={editing} value={c.fullName || "—"}>
         <input className="psp-input" value={c.fullName} onChange={(e) => onChange(c.id, "fullName", e.target.value)} />
       </Field>
       {showRole && (
         <Field label={t("admin.crm.detail.fields.role")} editing={editing} value={c.role || "—"}>
-          <input className="psp-input" value={c.role ?? ""} onChange={(e) => onChange(c.id, "role", e.target.value)} />
+          <select
+            className="psp-input"
+            value={roleInList ? (c.role ?? "") : "__other__"}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "__other__") return;
+              onChange(c.id, "role", v || undefined);
+            }}
+          >
+            <option value="">—</option>
+            {roleOpts.map((r) => <option key={r} value={r}>{r}</option>)}
+            {!roleInList && c.role && <option value={c.role}>{c.role}</option>}
+          </select>
         </Field>
       )}
       <Field label={t("admin.crm.detail.fields.email")} editing={editing}
@@ -494,6 +551,7 @@ function ContactBlock({ contact, editing, onChange, showRole, t }: {
           </select>
         </Field>
       )}
+      </div>
     </div>
   );
 }
