@@ -54,6 +54,13 @@
   white-space: nowrap;
   flex-shrink: 0;
 }
+/* Inherit status-pill colors when the chip carries pill-* classes */
+.lc-chip.pill-inactive { background: #fdecec; color: #b42323; }
+.lc-chip.pill-active   { background: #e6f7ed; color: #15803d; }
+.lc-chip.pill-pending  { background: #fff4e0; color: #b45309; }
+.lc-chip.pill-info     { background: #e0effc; color: #1d4ed8; }
+.lc-chip.pill-neutral  { background: var(--g100); color: var(--g700); }
+.lc-chip.pill-action-required { background: #fef0f0; color: #b6354b; }
 
 .lc-meta {
   display: grid;
