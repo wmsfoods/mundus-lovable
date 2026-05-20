@@ -10,16 +10,20 @@ const Toaster = ({ ...props }: ToasterProps) => {
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
-      // Constrain width so toasts never overflow on small screens.
+      position="top-center"
+      richColors
+      closeButton
+      // Keep toasts inside the viewport on small screens.
       style={
         {
-          "--width": "min(calc(100vw - 64px), 380px)",
+          "--width": "min(calc(100vw - 32px), 380px)",
+          "--mobile-offset": "16px",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-background group-[.toaster]:text-foreground group-[.toaster]:border-border group-[.toaster]:shadow-lg",
+            "group toast group-[.toaster]:border-border group-[.toaster]:shadow-lg",
           description: "group-[.toast]:text-muted-foreground",
           actionButton: "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground",
           cancelButton: "group-[.toast]:bg-muted group-[.toast]:text-muted-foreground",
