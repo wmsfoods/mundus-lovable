@@ -1232,7 +1232,7 @@
         "ctaDesc": "Get real-time freight quotes for your routes from our partner carriers",
         "ctaBtn": "Search freight quotes",
         "importedToast": "Imported rate from {{carrier}} — US$ {{freight}} per FCL",
-        "moreMarkets": "More markets",
+        "moreMarkets": "Search for more markets/destinations",
         "searchMarketsPh": "Search countries…",
         "noMarkets": "No markets found",
         "incoConflict": "Not compatible with the selected incoterm",

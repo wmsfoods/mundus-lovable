@@ -1232,7 +1232,7 @@
         "ctaDesc": "Cotizaciones de flete en tiempo real con navieras asociadas",
         "ctaBtn": "Buscar cotizaciones",
         "importedToast": "Cotización importada de {{carrier}} — US$ {{freight}} por FCL",
-        "moreMarkets": "Más mercados",
+        "moreMarkets": "Search for more markets/destinations",
         "searchMarketsPh": "Buscar países…",
         "noMarkets": "No hay mercados",
         "incoConflict": "Incompatible con el incoterm seleccionado",
