@@ -102,6 +102,41 @@ export default function AdminMarkets() {
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const pageAllSelected = pageRows.length > 0 && pageRows.every((r) => selectedIds.has(r.market_id));
+  const pageSomeSelected = pageRows.some((r) => selectedIds.has(r.market_id));
+  const togglePageAll = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (pageAllSelected) pageRows.forEach((r) => next.delete(r.market_id));
+      else pageRows.forEach((r) => next.add(r.market_id));
+      return next;
+    });
+  };
+  const selectAllFiltered = () => setSelectedIds(new Set(filtered.map((r) => r.market_id)));
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulk = async (next: boolean) => {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    try {
+      await bulkToggleMarketsActive(ids, next);
+      toast.success(
+        t(next ? "admin.marketplace.markets.toggle.activated" : "admin.marketplace.markets.toggle.deactivated", { country: `${ids.length}` }),
+      );
+      clearSelection();
+    } catch (e: any) {
+      toast.error(e?.message || "Bulk update failed");
+    }
+  };
+
+
   return (
     <div className="adm-body">
       <div className="adm-page-header" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
