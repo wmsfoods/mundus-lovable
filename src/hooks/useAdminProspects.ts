@@ -397,6 +397,87 @@ export function deleteProspect(id: string): { ok: boolean; reason?: string } {
   return { ok: true };
 }
 
+// ===== Mundus companies (mock) ==========================================
+
+export type MundusType = "buyer" | "supplier" | "buyer_supplier";
+
+export interface MundusMasterUser {
+  fullName: string;
+  email: string;
+  phone?: string;
+}
+
+export interface MundusCompanyMock {
+  id: string;
+  name: string;
+  country: string;
+  isBuyer: boolean;
+  isSupplier: boolean;
+  masterUser: MundusMasterUser;
+  sourceProspectId: string;
+  createdAt: string;
+}
+
+export const MUNDUS_COMPANIES: MundusCompanyMock[] = [];
+
+export function convertProspectToMundus(
+  id: string,
+  input: { type: MundusType; master: MundusMasterUser },
+  actor = "FN",
+): { ok: boolean; mundusCompanyId?: string; reason?: string } {
+  const p = STATE.find((x) => x.id === id);
+  if (!p) return { ok: false, reason: "not_found" };
+  if (p.isOnboarded || p.mundusCompanyId) return { ok: false, reason: "already_onboarded" };
+
+  const mundusCompanyId = `mc-${id}-${Date.now()}`;
+  const isBuyer = input.type === "buyer" || input.type === "buyer_supplier";
+  const isSupplier = input.type === "supplier" || input.type === "buyer_supplier";
+
+  MUNDUS_COMPANIES.push({
+    id: mundusCompanyId,
+    name: p.companyName,
+    country: p.country,
+    isBuyer,
+    isSupplier,
+    masterUser: input.master,
+    sourceProspectId: p.id,
+    createdAt: new Date().toISOString(),
+  });
+
+  const typeLabel = input.type === "buyer_supplier" ? "Buyer & Supplier"
+    : input.type === "buyer" ? "Buyer" : "Supplier";
+  const convertEvt: ProspectActivity = {
+    id: `ev-${id}-${Date.now()}`,
+    type: "system",
+    body: `Converted to Mundus Company (${typeLabel}). Master user: ${input.master.fullName} <${input.master.email}>`,
+    actor,
+    at: "now",
+  };
+  const stageEvt: ProspectActivity = {
+    id: `ev-${id}-${Date.now() + 1}`,
+    type: "stage_change",
+    body: `Stage moved to onboarded`,
+    actor,
+    at: "now",
+  };
+
+  STATE = STATE.map((x) => {
+    if (x.id !== id) return x;
+    return {
+      ...x,
+      isOnboarded: true,
+      mundusCompanyId,
+      leadType: input.type,
+      stage: "onboarded",
+      activity: [stageEvt, convertEvt, ...x.activity],
+      lastActivity: { type: "stage_change", when: "now" },
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+  });
+  emit();
+  return { ok: true, mundusCompanyId };
+}
+
 export function upsertContact(prospectId: string, contact: ProspectContact) {
   STATE = STATE.map((p) => {
     if (p.id !== prospectId) return p;

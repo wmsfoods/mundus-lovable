@@ -1723,7 +1723,8 @@
           "edit": "Editar", "save": "Guardar", "cancel": "Cancelar",
           "deactivate": "Desactivar", "reactivate": "Reactivar",
           "delete": "Eliminar", "searchMorePeople": "Buscar más personas",
-          "addContact": "Agregar contacto"
+          "addContact": "Agregar contacto",
+          "convert": "Convertir a Mundus"
         },
         "status": { "active": "Activo", "inactive": "Inactivo", "onboarded": "Onboarded" },
         "leadType": { "buyer": "Comprador", "supplier": "Proveedor", "buyer_supplier": "Comprador y Proveedor" },
@@ -1757,6 +1758,29 @@
           "toast": "Empresa desactivada"
         },
         "reactivate": { "toast": "Empresa reactivada" },
+        "convert": {
+          "title": "Convertir a Empresa Mundus",
+          "typeLabel": "¿Cómo se unirá esta empresa a Mundus?",
+          "type": {
+            "buyer": "Buyer Mundus",
+            "buyerDesc": "Puede ver ofertas, negociar y hacer pedidos.",
+            "supplier": "Supplier Mundus",
+            "supplierDesc": "Puede publicar ofertas y recibir pedidos.",
+            "both": "Buyer y Supplier Mundus",
+            "bothDesc": "Actúa como buyer y supplier en la plataforma."
+          },
+          "master": {
+            "title": "Usuario master (primer usuario de la empresa)",
+            "name": "Nombre completo",
+            "email": "Correo electrónico",
+            "phone": "Teléfono (opcional)"
+          },
+          "warning": "Una vez convertido, este prospect se vuelve una Empresa Mundus y ya no puede eliminarse — solo desactivarse.",
+          "confirm": "Convertir",
+          "toast": "Convertido a Empresa Mundus",
+          "invalidMaster": "Indica un nombre y correo válidos para el usuario master.",
+          "failed": "No se pudo convertir este prospect."
+        },
         "delete": {
           "title": "Eliminar prospect",
           "body": "Esta acción no se puede deshacer. La empresa y todos sus contactos se eliminarán permanentemente.",
