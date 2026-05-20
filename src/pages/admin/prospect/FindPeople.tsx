@@ -70,10 +70,11 @@ export default function FindPeople() {
     if (emailStatuses.length) list = list.filter((p) => emailStatuses.includes(p.emailStatus));
     if (personLocations.length) list = list.filter((p) => personLocations.includes(p.country));
     if (companyFilter) list = list.filter((p) => p.companyName.toLowerCase().includes(companyFilter.toLowerCase()));
+    if (productsOfInterest.length) list = list.filter((p) => (p.productsOfInterest ?? []).some((x) => productsOfInterest.includes(x)));
     if (sort === "name") list.sort((a, b) => a.fullName.localeCompare(b.fullName));
     if (sort === "company") list.sort((a, b) => a.companyName.localeCompare(b.companyName));
     return list;
-  }, [tab, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, sort]);
+  }, [tab, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, productsOfInterest, sort]);
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((p) => selected.has(p.id));
@@ -298,7 +299,7 @@ export default function FindPeople() {
                       <td>
                         {p.in_crm
                           ? <button className="psp-btn ghost" onClick={() => setDetail(p)}>View</button>
-                          : <button className="psp-btn" onClick={() => toast.success(`${p.fullName} saved`)}>Save</button>}
+                          : <button className="psp-btn" onClick={() => setSavePerson(p)}>Save</button>}
                       </td>
                     </tr>
                   );
@@ -346,7 +347,7 @@ export default function FindPeople() {
             <>
               {detail.in_crm
                 ? <button className="psp-btn solid">Open in CRM</button>
-                : <button className="psp-btn solid" onClick={() => toast.success("Saved to CRM")}>Save to CRM</button>}
+                : <button className="psp-btn solid" onClick={() => setSavePerson(detail)}>Save to CRM</button>}
               <button className="psp-btn ghost" onClick={() => toast.info("Sequence builder coming soon")}>Add to Sequence</button>
             </>
           }
