@@ -717,7 +717,8 @@
 
 .role-switch {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-auto-columns: 1fr;
+  grid-auto-flow: column;
   gap: 6px;
   background: var(--bg-muted, #f3f4f6);
   border-radius: 10px;
