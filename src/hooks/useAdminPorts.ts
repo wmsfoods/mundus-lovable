@@ -28,6 +28,15 @@ type CountryRow = {
 type PortRow = { id: string; name: string; code: string | null; country_id: string; is_active: boolean };
 type PortSharingRow = { country_id: string; uses_ports_from_country_id: string };
 
+export type AdminCountryOption = {
+  id: string;
+  english_name: string;
+  portuguese_name: string;
+  spanish_name: string;
+  iso_code: string | null;
+  flag_emoji: string | null;
+};
+
 export function useAdminPorts() {
   const qc = useQueryClient();
 
@@ -82,7 +91,16 @@ export function useAdminPorts() {
       const activePorts = rows.filter((r) => r.is_active).length;
       const countriesWithPorts = new Set(rows.map((r) => r.country_id)).size;
 
-      return { rows, totalPorts, activePorts, countriesWithPorts };
+      const allCountries: AdminCountryOption[] = countries
+        .map((c) => ({
+          id: c.id,
+          english_name: c.english_name,
+          portuguese_name: c.portuguese_name,
+          spanish_name: c.spanish_name,
+          iso_code: c.iso_code,
+          flag_emoji: c.flag_emoji,
+        }));
+      return { rows, totalPorts, activePorts, countriesWithPorts, allCountries };
     },
   });
 
@@ -109,17 +127,34 @@ export function useAdminPorts() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "ports"] }),
   });
 
+  const createMutation = useMutation({
+    mutationFn: async ({ name, code, countryId, isActive }: { name: string; code: string | null; countryId: string; isActive: boolean }) => {
+      const { error } = await supabase.from("ports").insert({
+        name,
+        code: code && code.trim() ? code.trim().toUpperCase() : null,
+        country_id: countryId,
+        is_active: isActive,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "ports"] }),
+  });
+
   return {
     rows: query.data?.rows ?? [],
     totalPorts: query.data?.totalPorts ?? 0,
     activePorts: query.data?.activePorts ?? 0,
     countriesWithPorts: query.data?.countriesWithPorts ?? 0,
+    allCountries: query.data?.allCountries ?? [],
     loading: query.isLoading,
     error: query.error ? (query.error as Error).message : null,
     togglePortActive: (portId: string, isActive: boolean) =>
       toggleMutation.mutateAsync({ portId, isActive }),
     bulkTogglePortsActive: (portIds: string[], isActive: boolean) =>
       bulkToggleMutation.mutateAsync({ portIds, isActive }),
+    createPort: (input: { name: string; code: string | null; countryId: string; isActive?: boolean }) =>
+      createMutation.mutateAsync({ name: input.name, code: input.code, countryId: input.countryId, isActive: input.isActive ?? true }),
+    isCreating: createMutation.isPending,
     isToggling: toggleMutation.isPending || bulkToggleMutation.isPending,
   };
 }

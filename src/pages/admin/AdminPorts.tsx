@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Ship, Search, Check, Anchor, Globe, X } from "lucide-react";
+import { Ship, Search, Check, Anchor, Globe, X, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAdminPorts, type AdminPortRow } from "@/hooks/useAdminPorts";
+import AddPortModal from "@/components/admin/AddPortModal";
 
 type ActiveKey = "all" | "active" | "inactive";
 type SortKey = "name" | "code" | "country";
@@ -20,7 +21,8 @@ function pickCountry(r: AdminPortRow, locale: string): string {
 export default function AdminPorts() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || "en";
-  const { rows, totalPorts, activePorts, countriesWithPorts, loading, error, togglePortActive, bulkTogglePortsActive, isToggling } = useAdminPorts();
+  const { rows, totalPorts, activePorts, countriesWithPorts, allCountries, loading, error, togglePortActive, bulkTogglePortsActive, isToggling, createPort, isCreating } = useAdminPorts();
+  const [addOpen, setAddOpen] = useState(false);
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
@@ -144,6 +146,16 @@ export default function AdminPorts() {
             <span className="adm-page-subtle">{t("admin.marketplace.ports.subtitle")}</span>
           </div>
         </div>
+        <div style={{ flex: 1 }} />
+        <button
+          type="button"
+          className="crm-btn-primary"
+          onClick={() => setAddOpen(true)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          <Plus size={14} />
+          {t("admin.marketplace.ports.create.button", { defaultValue: "Add port" })}
+        </button>
       </div>
 
       {/* stats */}
@@ -368,6 +380,14 @@ export default function AdminPorts() {
           </div>
         </>
       )}
+
+      <AddPortModal
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        countries={allCountries}
+        onCreate={(input) => createPort({ ...input, isActive: true })}
+        isCreating={isCreating}
+      />
     </div>
   );
 }
