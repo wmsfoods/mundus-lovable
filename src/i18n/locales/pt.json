@@ -1720,17 +1720,33 @@
         "reassign": "Reatribuir",
         "savedToast": "Alterações salvas",
         "actions": {
-          "edit": "Editar", "save": "Salvar", "cancel": "Cancelar",
-          "deactivate": "Desativar", "reactivate": "Reativar",
-          "delete": "Excluir", "searchMorePeople": "Buscar mais pessoas",
+          "edit": "Editar",
+          "save": "Salvar",
+          "cancel": "Cancelar",
+          "deactivate": "Desativar",
+          "reactivate": "Reativar",
+          "delete": "Excluir",
+          "searchMorePeople": "Buscar mais pessoas",
           "addContact": "Adicionar contato",
           "convert": "Converter em Mundus"
         },
-        "status": { "active": "Ativo", "inactive": "Inativo", "onboarded": "Onboarded" },
-        "leadType": { "buyer": "Comprador", "supplier": "Fornecedor", "buyer_supplier": "Comprador e Fornecedor" },
+        "status": {
+          "active": "Ativo",
+          "inactive": "Inativo",
+          "onboarded": "Onboarded"
+        },
+        "leadType": {
+          "buyer": "Comprador",
+          "supplier": "Fornecedor",
+          "buyer_supplier": "Comprador e Fornecedor"
+        },
         "decisionLevel": {
-          "c_level": "C-Level", "vp": "VP", "director": "Diretor",
-          "manager": "Gerente", "specialist": "Especialista", "other": "Outro"
+          "c_level": "C-Level",
+          "vp": "VP",
+          "director": "Diretor",
+          "manager": "Gerente",
+          "specialist": "Especialista",
+          "other": "Outro"
         },
         "sections": {
           "company": "Informações da empresa",
@@ -1739,16 +1755,27 @@
           "notes": "Notas"
         },
         "fields": {
-          "leadType": "Tipo de lead", "industry": "Setor",
-          "street": "Rua", "city": "Cidade", "state": "Estado",
-          "zipCode": "CEP", "country": "País",
-          "website": "Website", "companyLinkedin": "LinkedIn da empresa",
-          "fullName": "Nome completo", "role": "Cargo",
-          "email": "E-mail", "additionalEmail": "E-mail adicional",
-          "phone": "Telefone", "mobile": "Celular",
-          "personalLinkedin": "LinkedIn pessoal", "decisionLevel": "Nível de decisão"
+          "leadType": "Tipo de lead",
+          "industry": "Setor",
+          "street": "Rua",
+          "city": "Cidade",
+          "state": "Estado",
+          "zipCode": "CEP",
+          "country": "País",
+          "website": "Website",
+          "companyLinkedin": "LinkedIn da empresa",
+          "fullName": "Nome completo",
+          "role": "Cargo",
+          "email": "E-mail",
+          "additionalEmail": "E-mail adicional",
+          "phone": "Telefone",
+          "mobile": "Celular",
+          "personalLinkedin": "LinkedIn pessoal",
+          "decisionLevel": "Nível de decisão"
         },
-        "contacts": { "empty": "Nenhum contato adicional ainda." },
+        "contacts": {
+          "empty": "Nenhum contato adicional ainda."
+        },
         "deactivate": {
           "title": "Desativar empresa",
           "body": "Você está desativando esta empresa. Os usuários não poderão mais entrar. Os dados existentes são preservados.",
@@ -1757,7 +1784,9 @@
           "confirm": "Desativar",
           "toast": "Empresa desativada"
         },
-        "reactivate": { "toast": "Empresa reativada" },
+        "reactivate": {
+          "toast": "Empresa reativada"
+        },
         "convert": {
           "title": "Converter em Empresa Mundus",
           "typeLabel": "Como esta empresa entrará na Mundus?",
@@ -1859,6 +1888,42 @@
         "page": "Página",
         "country": "País",
         "device": "Dispositivo"
+      }
+    },
+    "companies": {
+      "title": "Empresas Mundus",
+      "subtitle": "{{active}} ativas · {{total}} no total",
+      "tiles": {
+        "total": "Total",
+        "buyers": "Buyers",
+        "suppliers": "Suppliers",
+        "both": "Buyer + Supplier",
+        "inactive": "Inativas"
+      },
+      "filters": {
+        "search": "Buscar por nome, país, #número…",
+        "allTypes": "Todos os tipos",
+        "buyer": "Buyer Mundus",
+        "supplier": "Supplier Mundus",
+        "both": "Buyer + Supplier",
+        "allStatuses": "Todos os status",
+        "active": "Ativa",
+        "inactive": "Inativa",
+        "allCountries": "Todos os países"
+      },
+      "cols": {
+        "company": "Empresa",
+        "type": "Tipo",
+        "location": "Localização",
+        "verified": "Verificada",
+        "onboarded": "Entrou em",
+        "status": "Status",
+        "actions": "Ações"
+      },
+      "empty": {
+        "title": "Nenhuma empresa ainda",
+        "body": "Converta um prospect em empresa Mundus para vê-lo aqui.",
+        "cta": "Abrir CRM"
       }
     }
   },
