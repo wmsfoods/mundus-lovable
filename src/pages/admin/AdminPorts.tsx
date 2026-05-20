@@ -192,12 +192,63 @@ export default function AdminPorts() {
         </div>
       ) : (
         <>
+          {/* bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div
+              className="adm-panel"
+              style={{
+                marginTop: 12, padding: "10px 12px", display: "flex", alignItems: "center",
+                gap: 10, flexWrap: "wrap", background: "#FFF7ED", borderColor: "#FED7AA",
+              }}
+            >
+              <strong style={{ fontSize: 13 }}>
+                {t("admin.marketplace.ports.bulk.selected", { count: selectedIds.size, defaultValue: "{{count}} selected" })}
+              </strong>
+              {selectedIds.size < filtered.length && (
+                <button type="button" className="crm-btn-outline" onClick={selectAllFiltered}>
+                  {t("admin.marketplace.ports.bulk.selectAllFiltered", { count: filtered.length, defaultValue: "Select all {{count}} filtered" })}
+                </button>
+              )}
+              <div style={{ flex: 1 }} />
+              <button
+                type="button"
+                className="crm-btn-outline"
+                disabled={isToggling}
+                onClick={() => handleBulk(true)}
+                style={{ borderColor: "#16a34a", color: "#16a34a" }}
+              >
+                <Check size={14} style={{ marginRight: 4 }} />
+                {t("admin.marketplace.ports.bulk.activate", { defaultValue: "Activate" })}
+              </button>
+              <button
+                type="button"
+                className="crm-btn-outline"
+                disabled={isToggling}
+                onClick={() => handleBulk(false)}
+                style={{ borderColor: "#dc2626", color: "#dc2626" }}
+              >
+                <X size={14} style={{ marginRight: 4 }} />
+                {t("admin.marketplace.ports.bulk.deactivate", { defaultValue: "Deactivate" })}
+              </button>
+              <button type="button" className="crm-btn-outline" onClick={clearSelection}>
+                {t("admin.marketplace.ports.bulk.clear", { defaultValue: "Clear" })}
+              </button>
+            </div>
+          )}
+
           {/* desktop table */}
           <div className="adm-panel adm-only-desktop" style={{ padding: 0, marginTop: 12 }}>
             <div className="adm-table-wrap">
               <table className="adm-table">
                 <thead>
                   <tr>
+                    <th style={{ width: 36 }}>
+                      <Checkbox
+                        checked={pageAllSelected ? true : pageSomeSelected ? "indeterminate" : false}
+                        onCheckedChange={togglePageAll}
+                        aria-label="Select page"
+                      />
+                    </th>
                     <th style={{ width: 48 }}></th>
                     <th>{sortHeader("name", t("admin.marketplace.ports.cols.name"))}</th>
                     <th>{sortHeader("code", t("admin.marketplace.ports.cols.code"))}</th>
@@ -208,7 +259,14 @@ export default function AdminPorts() {
                 </thead>
                 <tbody>
                   {pageRows.map((r) => (
-                    <tr key={r.port_id}>
+                    <tr key={r.port_id} style={selectedIds.has(r.port_id) ? { background: "#FFF7ED" } : undefined}>
+                      <td>
+                        <Checkbox
+                          checked={selectedIds.has(r.port_id)}
+                          onCheckedChange={() => toggleSelect(r.port_id)}
+                          aria-label={`Select ${r.name}`}
+                        />
+                      </td>
                       <td style={{ fontSize: 22 }}>{r.flag_emoji ?? "🏳️"}</td>
                       <td><strong>{r.name}</strong></td>
                       <td><span className="adm-chip">{r.code ?? "—"}</span></td>
@@ -243,36 +301,56 @@ export default function AdminPorts() {
 
           {/* mobile cards */}
           <div className="adm-only-mobile adm-cards-stack" style={{ marginTop: 12 }}>
-            {pageRows.map((r) => (
-              <div key={r.port_id} className="adm-panel" style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start" }}>
-                <span style={{ fontSize: 28, lineHeight: 1 }}>{r.flag_emoji ?? "🏳️"}</span>
-                <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                    <strong style={{ fontSize: 14 }}>{r.name}</strong>
-                    <span className="adm-chip" style={{ fontSize: 11 }}>{r.code ?? "—"}</span>
-                  </div>
-                  <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>{pickCountry(r, locale)}</div>
-                  {r.shared_with_country && (
-                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                      <span className="adm-chip" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D", fontSize: 11 }}>
-                        <Anchor size={10} style={{ marginRight: 3 }} />
-                        {t("admin.marketplace.ports.usedBy", { country: r.shared_with_country })}
-                      </span>
+            <div className="adm-panel" style={{ padding: 10, display: "flex", alignItems: "center", gap: 10 }}>
+              <Checkbox
+                checked={pageAllSelected ? true : pageSomeSelected ? "indeterminate" : false}
+                onCheckedChange={togglePageAll}
+                aria-label="Select page"
+              />
+              <span style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
+                {pageAllSelected
+                  ? t("admin.marketplace.ports.bulk.deselectPage", { defaultValue: "Deselect page" })
+                  : t("admin.marketplace.ports.bulk.selectPage", { defaultValue: "Select all on page" })}
+              </span>
+            </div>
+            {pageRows.map((r) => {
+              const isSel = selectedIds.has(r.port_id);
+              return (
+                <div
+                  key={r.port_id}
+                  className="adm-panel"
+                  style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", background: isSel ? "#FFF7ED" : undefined }}
+                >
+                  <Checkbox checked={isSel} onCheckedChange={() => toggleSelect(r.port_id)} aria-label={`Select ${r.name}`} />
+                  <span style={{ fontSize: 28, lineHeight: 1 }}>{r.flag_emoji ?? "🏳️"}</span>
+                  <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
+                      <strong style={{ fontSize: 14 }}>{r.name}</strong>
+                      <span className="adm-chip" style={{ fontSize: 11 }}>{r.code ?? "—"}</span>
                     </div>
-                  )}
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                    <span style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
-                      {r.is_active ? t("admin.marketplace.ports.filters.activeOnly") : t("admin.marketplace.ports.filters.inactiveOnly")}
-                    </span>
-                    <Switch
-                      checked={r.is_active}
-                      disabled={pendingId === r.port_id}
-                      onCheckedChange={(v) => handleToggle(r, !!v)}
-                    />
+                    <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>{pickCountry(r, locale)}</div>
+                    {r.shared_with_country && (
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <span className="adm-chip" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D", fontSize: 11 }}>
+                          <Anchor size={10} style={{ marginRight: 3 }} />
+                          {t("admin.marketplace.ports.usedBy", { country: r.shared_with_country })}
+                        </span>
+                      </div>
+                    )}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
+                      <span style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
+                        {r.is_active ? t("admin.marketplace.ports.filters.activeOnly") : t("admin.marketplace.ports.filters.inactiveOnly")}
+                      </span>
+                      <Switch
+                        checked={r.is_active}
+                        disabled={pendingId === r.port_id}
+                        onCheckedChange={(v) => handleToggle(r, !!v)}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
 
           {/* pagination */}
