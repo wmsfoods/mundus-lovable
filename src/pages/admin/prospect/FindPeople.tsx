@@ -355,6 +355,7 @@ export default function FindPeople() {
                       <td><Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggleSelect(p.id)} /></td>
                       <td>
                         <div className="psp-company-cell">
+                          {p.photoUrl && <img src={p.photoUrl} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover" }} />}
                           <div>
                             <div className="name" onClick={() => setDetail(p)}>{p.fullName}</div>
                             <div className="domain">{p.jobTitle}</div>
