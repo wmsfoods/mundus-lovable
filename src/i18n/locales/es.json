@@ -2129,6 +2129,56 @@
         "back": "Volver",
         "searchPlaceholder": "Buscar empresa..."
       }
+    },
+    "marketplace": {
+      "markets": {
+        "title": "Mercados",
+        "subtitle": "Administre los países de destino disponibles en el marketplace",
+        "searchPlaceholder": "Buscar país, ISO...",
+        "next": "Siguiente",
+        "showing": "Mostrando {{from}}-{{to}} de {{total}} resultados",
+        "shared": "Compartido",
+        "portsShort": "puertos",
+        "usesPortsFrom": "Usa puertos de {{country}}",
+        "stats": {
+          "total": "Mercados totales",
+          "active": "Mercados activos",
+          "ports": "Puertos totales",
+          "origins": "Países de origen"
+        },
+        "regions": {
+          "all": "Todas las regiones",
+          "americas": "Américas",
+          "europe": "Europa",
+          "asia": "Asia",
+          "middleEast": "Medio Oriente",
+          "africa": "África",
+          "oceania": "Oceanía",
+          "other": "Otros"
+        },
+        "filters": {
+          "all": "Todos",
+          "activeOnly": "Solo activos",
+          "inactiveOnly": "Solo inactivos"
+        },
+        "cols": {
+          "country": "País",
+          "iso": "ISO",
+          "ports": "Puertos",
+          "origin": "Origen",
+          "destination": "Destino",
+          "active": "Activo",
+          "special": "Especial"
+        },
+        "toggle": {
+          "activated": "Mercado {{country}} activado",
+          "deactivated": "Mercado {{country}} desactivado"
+        },
+        "empty": {
+          "title": "Ningún mercado coincide con estos filtros",
+          "body": "Intente limpiar los filtros o buscar con otro término."
+        }
+      }
     }
   },
   "profile": {
