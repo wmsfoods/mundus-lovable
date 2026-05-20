@@ -14,14 +14,9 @@ export function useIsMundusAdmin(): { isAdmin: boolean; loading: boolean } {
     }
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase
-        .from("company_users")
-        .select("id, roles!inner(name)")
-        .eq("user_id", user.id)
-        .eq("roles.name", "mundus_admin")
-        .limit(1);
+      const { data, error } = await supabase.rpc("is_mundus_admin");
       if (cancelled) return;
-      setState({ isAdmin: !error && !!data && data.length > 0, loading: false });
+      setState({ isAdmin: !error && data === true, loading: false });
     })();
     return () => {
       cancelled = true;
