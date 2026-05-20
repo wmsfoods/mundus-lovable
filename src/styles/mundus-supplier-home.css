@@ -231,6 +231,28 @@
     padding-top: 2px;
   }
 }
+  /* Recent Offers / Sales → horizontal snap carousel on mobile */
+  .sh-card-row {
+    display: flex;
+    grid-template-columns: none;
+    flex-wrap: nowrap;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding: 4px 16px 8px;
+    margin: 0 -16px 24px;
+    scroll-padding-left: 16px;
+  }
+  .sh-card-row::-webkit-scrollbar { display: none; }
+  .sh-card-row > * {
+    flex: 0 0 86%;
+    max-width: 320px;
+    scroll-snap-align: start;
+  }
+}
 @media (max-width: 480px) {
   .sh-hero h2 { font-size: 19px; }
   .sh-hero-sub { font-size: var(--fs-xs); }
