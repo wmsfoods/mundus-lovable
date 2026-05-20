@@ -63,7 +63,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isNew = mode === "new";
-  const { data, loading, error, save, create, refresh, remove } = useAdminCompany(isNew ? undefined : id);
+  const { data, loading, error, save, create, remove } = useAdminCompany(isNew ? undefined : id);
 
   const [form, setForm] = useState<CompanyPatch>(EMPTY);
   const [dirty, setDirty] = useState(false);
@@ -358,7 +358,6 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         </AlertDialogContent>
       </AlertDialog>
 
-      {refresh && null}
     </div>
   );
 }
