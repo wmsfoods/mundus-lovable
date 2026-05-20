@@ -1,11 +1,10 @@
 import { useEffect } from "react";
 import { createPortal } from "react-dom";
-import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Logo } from "@/components/Logo";
-import { XIcon, GlobeIcon } from "@/components/icons";
+import { XIcon, GlobeIcon, UserIcon } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import type { SidebarItem } from "@/components/mundus/Sidebar";
 import { ProBadge } from "@/components/mundus/ProBadge";
@@ -29,10 +28,9 @@ export function MobileDrawer({
   userSubtitle,
   onProBadgeClick,
 }: Props) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const location = useLocation();
-  const navigate = useNavigate();
 
   // Close on route change
   useEffect(() => {
@@ -61,12 +59,10 @@ export function MobileDrawer({
     ? userName.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 1).toUpperCase() ?? "A";
 
-  const handleLogout = async () => {
-    onClose();
-    await signOut();
-    toast.success(t("common.signedOut"));
-    navigate("/login", { replace: true });
-  };
+  // Profile link target depends on current shell (buyer vs supplier).
+  const profileHref = location.pathname.startsWith("/supplier")
+    ? "/supplier/profile"
+    : "/buyer/profile";
 
   return createPortal(
     <div className={`md-root ${open ? "is-open" : ""}`} aria-hidden={!open}>
@@ -164,13 +160,14 @@ export function MobileDrawer({
             ))}
           </div>
 
-          <button
-            type="button"
-            className="md-logout"
-            onClick={handleLogout}
+          <NavLink
+            to={profileHref}
+            onClick={onClose}
+            className="md-profile-link"
           >
-            {t("common.signOut")}
-          </button>
+            <UserIcon size={18} />
+            <span>{t("shell.nav.profile", { defaultValue: "Profile" })}</span>
+          </NavLink>
         </div>
       </aside>
     </div>,

@@ -4,7 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, setRememberMe } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import mundusLogo from "@/assets/mundus-logo.png";
@@ -25,7 +25,9 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
-  const [remember, setRemember] = useState(false);
+  const [remember, setRemember] = useState<boolean>(() => {
+    try { return localStorage.getItem("mundus.rememberMe") !== "0"; } catch { return true; }
+  });
   const [submitting, setSubmitting] = useState(false);
   const [slide, setSlide] = useState(0);
 
@@ -42,6 +44,7 @@ export default function Login() {
     e.preventDefault();
     if (!email || !password) return;
     setSubmitting(true);
+    setRememberMe(remember);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (error) {
@@ -57,9 +60,9 @@ export default function Login() {
       <div className="flex justify-end px-4 pt-3 md:px-6 md:pt-4">
         <LanguageSwitcher variant="pill" />
       </div>
-      <div className="flex flex-1 flex-col items-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
-        {/* LEFT - carousel card (mobile: full-width header, no rounding) */}
-        <div className="relative aspect-square w-full max-w-full md:max-w-[600px] overflow-hidden rounded-none md:rounded-[2.5rem] shadow-sm">
+      <div className="flex flex-1 flex-col-reverse items-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
+        {/* Carousel — below the form on mobile, left side on desktop */}
+        <div className="relative w-full max-w-full md:max-w-[600px] md:aspect-square aspect-[16/9] overflow-hidden rounded-none md:rounded-[2.5rem] shadow-sm">
           {slides.map((src, i) => (
             <div
               key={i}
