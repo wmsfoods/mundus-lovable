@@ -1,46 +1,68 @@
-## Goals
+## Convert Prospect → Mundus Company
 
-1. Allow uploading/changing a **photo** on each contact card (main + additional), editable in edit mode.
-2. Replace the free-text **Role** field on Additional contacts with a **dropdown** whose options depend on the company's `leadType`.
+Add a "Convert to Mundus" action on the Prospect detail page that turns the prospect into a real Mundus Company as **Buyer**, **Supplier**, or **Buyer + Supplier**. After conversion, the prospect is marked as onboarded (cannot be deleted, only deactivated) and a reference to the new company is stored.
 
-## 1. Editable photo on contact cards
+### Scope
+- Admin-only, on `/admin/crm/prospects/:id` (`AdminProspectDetail.tsx`).
+- Mock-store only for now (consistent with the rest of Prospect features). Real DB write to `companies` will plug in later when CRM ↔ Companies is wired end-to-end.
 
-- Extend `ProspectContact` in `src/hooks/useAdminProspects.ts` with `photoUrl?: string`.
-- In `AdminProspectDetail.tsx` `ContactBlock`, render an avatar at the top-left of the card:
-  - View mode: circular `<img>` if `photoUrl`, otherwise initials fallback (reuse `.crm-detail-av` style at ~56px).
-  - Edit mode: same avatar with a small camera overlay button → opens a hidden `<input type="file" accept="image/*">`. On change, convert to data URL via `FileReader` and call `onChange(c.id, "photoUrl", dataUrl)`. Also show a "Remove" link if a photo exists.
-- Apply to both the **Main contact** block and each **Additional contact** card (same `ContactBlock` already serves both).
-- Add minimal CSS in `src/styles/mundus-prospect.css` for `.psp-contact-photo`, `.psp-contact-photo-edit-btn`, and a `psp-contact-row` flex wrapper so the photo sits beside the existing `psp-grid-2`.
+### UI
 
-Out of scope: persisting uploads to storage (mock store keeps data URLs in memory, consistent with the rest of the prospect mock).
+1. **New header button** "Convert to Mundus" next to Edit / Deactivate / Delete.
+   - Visible only when: `p.isActive` AND `!p.isOnboarded` AND `!p.mundusCompanyId`.
+   - Style: `crm-btn-primary` with a `Building2` (or `ArrowRightCircle`) icon.
 
-## 2. Role dropdown by lead type (Additional contacts only)
+2. **Conversion modal** (reuses existing modal pattern from Deactivate):
+   - Title: "Convert to Mundus Company".
+   - Subtitle: prospect company name + country.
+   - Choice (radio cards, single-select, required):
+     - Buyer Mundus
+     - Supplier Mundus
+     - Buyer + Supplier Mundus
+   - Read-only summary of fields that will be carried over: name, country, city/state/zip, website, phone (from main contact), industry.
+   - Master user section: pre-filled from the prospect's main contact (full name, email, phone). Editable inline. This is the company's first user (master).
+   - Warning callout: "Once converted, this prospect becomes a Mundus Company and can no longer be deleted — only deactivated."
+   - Buttons: Cancel / Confirm conversion.
 
-Add a constant in `AdminProspectDetail.tsx`:
+3. **After confirmation**:
+   - Toast success: "Converted to Mundus Company".
+   - Header gains the existing `Onboarded` pill (already rendered when `isOnboarded`).
+   - Delete button becomes disabled with the existing onboarded tooltip.
+   - A new activity entry is added: `Converted to Mundus Company (Buyer|Supplier|Both). Master user: <name>`.
+   - Stage auto-moves to `onboarded`.
+
+### Data (mock store — `useAdminProspects.ts`)
+
+Add a new mutation:
 
 ```ts
-const ROLE_OPTIONS: Record<LeadType, string[]> = {
-  buyer: ["CEO","Owner/Founder","Sales Director","International Trader","Logistics"],
-  supplier: ["CEO","Owner/Founder","Purchase Director","Procurement","Logistics"],
-  buyer_supplier: ["CEO","Owner/Founder","Operations","Director"],
-};
+convertProspectToMundus(id, {
+  type: "buyer" | "supplier" | "buyer_supplier",
+  master: { fullName, email, phone? }
+}): { ok: boolean; mundusCompanyId?: string }
 ```
 
-In `ContactBlock`, when `showRole` is true:
-- Pass current `leadType` as a prop (from `d.leadType`).
-- Edit mode: render `<select className="psp-input">` populated from `ROLE_OPTIONS[leadType]`, with an empty `—` option and an "Other…" option that swaps the field to a free-text input (covers legacy values like the seeded "Director" not in the new lists).
-- If the contact already has a `role` value that isn't in the list, keep it selected and visible (extra option at top labeled with the existing value).
-- View mode: unchanged (plain text).
+Effects on the prospect:
+- `isOnboarded = true`
+- `mundusCompanyId = "mc-<id>-<timestamp>"`
+- `stage = "onboarded"` (+ stage_change activity)
+- `leadType` is updated to match the chosen type
+- Prepend a `system` activity describing the conversion + master user
 
-Main contact block is unaffected (it doesn't show role).
+Mundus-side mock (so the rest of the app can later read it):
+- Add a tiny in-memory list `MUNDUS_COMPANIES` in the same hook file (or a new `useMundusCompanies.ts`) storing `{ id, name, country, isBuyer, isSupplier, masterUser, sourceProspectId, createdAt }`. Not consumed yet by other screens; placeholder for the future hookup to the `companies` table.
 
-## Files
+### i18n
+Add keys under `admin.crm.detail`:
+- `actions.convert`, `convert.title`, `convert.type.buyer|supplier|both`, `convert.master.title|name|email|phone`, `convert.warning`, `convert.confirm`, `convert.toast`.
+Add to `en.json`, `pt.json`, `es.json`.
 
-- `src/hooks/useAdminProspects.ts` — add `photoUrl?: string` to `ProspectContact`.
-- `src/pages/admin/AdminProspectDetail.tsx` — photo upload UI in `ContactBlock`, `ROLE_OPTIONS` map, role `<select>` wired to lead type, pass `leadType` prop down.
-- `src/styles/mundus-prospect.css` — styles for the contact photo + edit overlay.
+### Out of scope (this turn)
+- Real insert into the `companies` table — kept mock-only. When we wire the real backend, `convertProspectToMundus` becomes a Supabase insert into `companies` (+ `company_users` for the master) and the rest of the UI stays the same.
+- Creating the actual auth user / sending invite email for the master.
 
-## Not changed
-
-- No DB migration (the prospect store is in-memory mock).
-- No i18n keys added — role option labels are short proper-noun strings; if you want them translated, say so and I'll add `admin.crm.detail.contactRoles.*` keys.
+### Files
+- `src/hooks/useAdminProspects.ts` — add `convertProspectToMundus` + Mundus mock list.
+- `src/pages/admin/AdminProspectDetail.tsx` — new button, new modal, wiring.
+- `src/styles/mundus-prospect.css` — small styles for the convert modal radio cards.
+- `src/i18n/locales/{en,pt,es}.json` — new keys.
