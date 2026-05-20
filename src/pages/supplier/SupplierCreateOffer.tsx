@@ -1,746 +1,727 @@
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Crumbs } from "@/components/mundus/Crumbs";
 
-type QuickFillTab = "pdf" | "excel" | "image" | "voice" | "text";
-type Species = "beef" | "pork" | "poultry" | "lamb";
-type LoadType = "full_container" | "mixed_load";
+/* ══════════════════════════════════════════════════════════
+   DATA (mocks aligned with v4 prototype)
+   ══════════════════════════════════════════════════════════ */
+type Port = { id: string; n: string };
+type Market = { id: string; n: string; f: string; p: Port[] };
+
+const MARKETS: Market[] = [
+  { id: "cn", n: "China", f: "🇨🇳", p: [{ id: "sha", n: "Shanghai (CNSHA)" }, { id: "ngb", n: "Ningbo (CNNGB)" }, { id: "tao", n: "Qingdao (CNTAO)" }, { id: "txg", n: "Tianjin (CNTXG)" }, { id: "dlc", n: "Dalian (CNDLC)" }] },
+  { id: "sa", n: "Saudi Arabia", f: "🇸🇦", p: [{ id: "jed", n: "Jeddah (SAJED)" }, { id: "dmm", n: "Dammam (SADMM)" }] },
+  { id: "ae", n: "UAE", f: "🇦🇪", p: [{ id: "jea", n: "Jebel Ali (AEJEA)" }, { id: "auh", n: "Abu Dhabi (AEAUH)" }] },
+  { id: "eg", n: "Egypt", f: "🇪🇬", p: [{ id: "alx", n: "Alexandria (EGALX)" }, { id: "psd", n: "Port Said (EGPSD)" }] },
+  { id: "ar", n: "Argentina", f: "🇦🇷", p: [{ id: "bue", n: "Buenos Aires (ARBUE)" }, { id: "ros", n: "Rosario (ARROS)" }] },
+  { id: "hk", n: "Hong Kong", f: "🇭🇰", p: [{ id: "hkg", n: "Hong Kong (HKHKG)" }] },
+  { id: "ph", n: "Philippines", f: "🇵🇭", p: [{ id: "mnl", n: "Manila (PHMNL)" }, { id: "ceb", n: "Cebu (PHCEB)" }] },
+  { id: "cl", n: "Chile", f: "🇨🇱", p: [{ id: "vap", n: "Valparaíso (CLVAP)" }, { id: "sai", n: "San Antonio (CLSAI)" }] },
+];
+
+const CUTS_DB: Record<string, string[]> = {
+  Beef: ["Forequarter", "Topside", "Brisket", "Knuckle", "Striploin", "Ribeye", "Bones", "Sangria 90VL", "Trim 80CL", "Chuck Roll"],
+  Pork: ["Loin", "Belly", "Ribs", "Shoulder", "Ham", "Trim 80CL"],
+  Poultry: ["Whole Chicken", "Breast", "Thigh", "Wings", "Drumstick", "Liver"],
+  Lamb: ["Leg", "Rack", "Shoulder", "Loin", "Shank"],
+};
+const SPECS = ["Boneless", "Bone-In", "Semi-Boneless"];
+const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
+const GRADES = ["Not Classified", "Low", "Medium", "High", "Prime"];
+const AGINGS = ["None", "Wet Aged", "Dry Aged"];
+
+type Incoterm = { id: string; name: string; extra: null | "insurance" | "city" };
+const INCOTERMS: Incoterm[] = [
+  { id: "FOB", name: "FOB - Free on Board", extra: null },
+  { id: "CFR", name: "CFR - Cost and Freight", extra: null },
+  { id: "CIF", name: "CIF - Cost, Insurance & Freight", extra: "insurance" },
+  { id: "EXW", name: "EXW - Ex Works", extra: "city" },
+  { id: "DDP", name: "DDP - Delivered Duty Paid", extra: "city" },
+  { id: "DAP", name: "DAP - Delivered at Place", extra: "city" },
+];
+
+const PAY_TERMS = [
+  "30% Advance, Balance TT - Against finalized doc copies",
+  "50% Advance, 50% Against BL copy",
+  "100% TT in advance",
+  "L/C at sight",
+  "L/C 30 days",
+  "10% Advance, Balance TT - Against finalized doc copies",
+  "Open account 30 days",
+];
+
+const MOCK_CUSTOMERS = [
+  { id: "c1", name: "Delta Imports", country: "China" },
+  { id: "c2", name: "Gamma Buyers", country: "Argentina" },
+  { id: "c3", name: "Alpha Foods", country: "UAE" },
+  { id: "c4", name: "Atrides Mt", country: "Brazil" },
+  { id: "c5", name: "WMS Foods", country: "United States" },
+];
+
+const CERTIFICATION_OPTIONS = ["Halal", "Kosher", "USDA", "HACCP", "BRC", "Organic"];
+
+type MktCfg = { sp: string[]; sm: boolean; gf: string; pf: Record<string, string> };
 
 type Cut = {
   id: string;
-  product: string;
-  pack: string;
-  weightPerCutKg: number;
-  qtyCartons: number;
-  pricePerKgUsd: number;
+  cat: string;
+  cut: string;
+  spec: string;
+  pkg: string;
+  gr: string;
+  ag: string;
+  qty: string;
+  ask: string;
+  floor: string;
+  notes: string;
 };
 
-type Route = {
-  id: string;
-  destPortId: string;
-  destPortLabel: string;
-  freightUsdPerFcl: number;
+type IncoExtras = {
+  cifInsurance?: string;
+  exwCity?: string;
+  ddpCity?: string;
+  dapCity?: string;
 };
 
-const CONTAINER_CAPACITY_KG = 25000;
+const EMPTY_NF: Omit<Cut, "id"> = {
+  cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
+  qty: "", ask: "", floor: "", notes: "",
+};
 
-const ORIGIN_PORTS = [
-  { value: "santos-br", label: "Santos, Brazil" },
-  { value: "buenos-aires-ar", label: "Buenos Aires, Argentina" },
-  { value: "montevideo-uy", label: "Montevideo, Uruguay" },
-  { value: "houston-us", label: "Houston, USA" },
-];
-const DEST_PORTS = [
-  { value: "busan-kr", label: "Busan, South Korea" },
-  { value: "tokyo-jp", label: "Tokyo, Japan" },
-  { value: "hong-kong-hk", label: "Kwai Tsing, Hong Kong" },
-  { value: "singapore-sg", label: "Singapore" },
-  { value: "jeddah-sa", label: "Jeddah, Saudi Arabia" },
-  { value: "shanghai-cn", label: "Shanghai, China" },
-  { value: "ho-chi-minh-vn", label: "Ho Chi Minh, Vietnam" },
-  { value: "tema-gh", label: "Tema, Ghana" },
-  { value: "luanda-ao", label: "Luanda, Angola" },
-  { value: "veracruz-mx", label: "Veracruz, Mexico" },
-];
-
+/* ══════════════════════════════════════════════════════════
+   PAGE
+   ══════════════════════════════════════════════════════════ */
 export default function SupplierCreateOffer() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const fromRequestId = searchParams.get("from");
 
-  const [unit, setUnit] = useState<"kg" | "lbs">("kg");
-  const [aiOpen, setAiOpen] = useState(true);
-  const [activeTab, setActiveTab] = useState<QuickFillTab>("text");
-  const [textPrompt, setTextPrompt] = useState("");
-  const [extracting, setExtracting] = useState(false);
+  const [selMarkets, setSelMarkets] = useState<Market[]>([]);
+  const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
+  const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
+  const [temp, setTemp] = useState<"Frozen" | "Chilled">("Frozen");
 
-  // Form state (C16b)
-  const [offerName, setOfferName] = useState("");
-  const [species, setSpecies] = useState<Species>("beef");
-  const [loadType, setLoadType] = useState<LoadType>("mixed_load");
-  const [cuts, setCuts] = useState<Cut[]>([
-    { id: crypto.randomUUID(), product: "", pack: "Vacuum 4×CTN", weightPerCutKg: 25, qtyCartons: 0, pricePerKgUsd: 0 },
-  ]);
-  const [originPort, setOriginPort] = useState("santos-br");
-  const [routes, setRoutes] = useState<Route[]>([
-    { id: crypto.randomUUID(), destPortId: "", destPortLabel: "", freightUsdPerFcl: 0 },
-  ]);
+  const [selInco, setSelInco] = useState<string[]>(["CIF"]);
+  const [incoExtras, setIncoExtras] = useState<IncoExtras>({});
 
-  // Logistics & Terms sidebar state (C16c)
-  const [containerSize, setContainerSize] = useState<"20ft" | "40ft">("40ft");
-  const [temperature, setTemperature] = useState<"frozen" | "chilled">("frozen");
+  const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
   const [certifications, setCertifications] = useState<string[]>([]);
-  const [incoterms, setIncoterms] = useState<string[]>(["CFR"]);
-  const [paymentTerms, setPaymentTerms] = useState("30% Advance, Balance TT");
-  const [shipmentMonth, setShipmentMonth] = useState("");
-  const [distribution, setDistribution] = useState<"marketplace" | "all_customers" | "specific">("marketplace");
 
-  const CERTIFICATION_OPTIONS = ["Halal", "Kosher", "USDA", "HACCP", "BRC", "Organic"];
-  const INCOTERM_OPTIONS = ["CFR", "CIF", "FOB", "EXW", "DAP", "DDP"];
+  const [cuts, setCuts] = useState<Cut[]>([]);
+  const [cutImgs, setCutImgs] = useState<Record<string, string>>({});
+  const [addRow, setAddRow] = useState(false);
+  const [newImgPrev, setNewImgPrev] = useState<string | null>(null);
+  const [nf, setNf] = useState<Omit<Cut, "id">>({ ...EMPTY_NF });
 
+  const [distMarketplace, setDistMarketplace] = useState(true);
+  const [distAllCustomers, setDistAllCustomers] = useState(false);
+  const [distSpecific, setDistSpecific] = useState(false);
+  const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
+
+  const [showAiImport, setShowAiImport] = useState(false);
+  const [aiMode, setAiMode] = useState<null | "paste" | "file" | "voice">(null);
+  const [aiInput, setAiInput] = useState("");
+  const [aiProcessing, setAiProcessing] = useState(false);
+
+  const [showPreview, setShowPreview] = useState(false);
+
+  useEffect(() => {
+    if (fromRequestId) {
+      toast.success(`Prefilled from request #${fromRequestId}`, { duration: 4000 });
+    }
+  }, [fromRequestId]);
+
+  const cap = csize === "40ft" ? 28000 : 13000;
+  const tw = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
+  const fp = Math.min((tw / cap) * 100, 100);
+  const fc = fp > 95 ? "#16a34a" : fp > 70 ? "#ca8a04" : "var(--p800)";
+
+  /* Markets */
+  const toggleMarket = useCallback((id: string) => {
+    const m = MARKETS.find((x) => x.id === id);
+    if (!m) return;
+    setSelMarkets((prev) => {
+      if (prev.find((x) => x.id === id)) {
+        setMktCfg((c) => { const n = { ...c }; delete n[id]; return n; });
+        return prev.filter((x) => x.id !== id);
+      }
+      setMktCfg((c) => ({
+        ...c,
+        [id]: { sp: m.p.map((p) => p.id), sm: true, gf: "", pf: Object.fromEntries(m.p.map((p) => [p.id, ""])) },
+      }));
+      return [...prev, m];
+    });
+  }, []);
+
+  const togglePort = useCallback((mid: string, pid: string) => {
+    setMktCfg((prev) => {
+      const c = { ...prev[mid] };
+      c.sp = c.sp.includes(pid) ? c.sp.filter((p) => p !== pid) : [...c.sp, pid];
+      return { ...prev, [mid]: c };
+    });
+  }, []);
+
+  /* Incoterms */
+  const toggleInco = useCallback((id: string) => {
+    setSelInco((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      return next.length === 0 ? [id] : next;
+    });
+  }, []);
+
+  /* Certifications */
   const toggleCert = (cert: string) => {
     setCertifications((prev) => (prev.includes(cert) ? prev.filter((c) => c !== cert) : [...prev, cert]));
   };
-  const toggleIncoterm = (term: string) => {
-    setIncoterms((prev) => (prev.includes(term) ? prev.filter((t) => t !== term) : [...prev, term]));
-  };
 
-  // Pre-fill from request detection
-  const [searchParams] = useSearchParams();
-  const fromRequestId = searchParams.get("from");
-  useEffect(() => {
-    if (fromRequestId) {
-      setOfferName(`Offer for request #${fromRequestId}`);
-      setIncoterms(["CFR"]);
-      toast.success(
-        t("supplier.createOffer.prefill.toast", { requestId: fromRequestId }),
-        { duration: 5000 }
-      );
+  /* Cuts */
+  const addCut = useCallback(() => {
+    if (!nf.cut || !nf.qty || !nf.ask) return;
+    const id = Date.now().toString();
+    setCuts((prev) => [...prev, { id, ...nf }]);
+    if (newImgPrev) {
+      setCutImgs((prev) => ({ ...prev, [id]: newImgPrev }));
+      setNewImgPrev(null);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fromRequestId]);
+    setNf({ ...EMPTY_NF });
+    setAddRow(false);
+  }, [nf, newImgPrev]);
 
-  const SPECIES_OPTIONS: { value: Species; label: string }[] = [
-    { value: "beef", label: t("supplier.createOffer.form.species.beef") },
-    { value: "pork", label: t("supplier.createOffer.form.species.pork") },
-    { value: "poultry", label: t("supplier.createOffer.form.species.poultry") },
-    { value: "lamb", label: t("supplier.createOffer.form.species.lamb") },
-  ];
+  const removeCut = useCallback((i: number) => {
+    setCuts((prev) => {
+      const id = prev[i].id;
+      setCutImgs((imgs) => { const n = { ...imgs }; delete n[id]; return n; });
+      return prev.filter((_, idx) => idx !== i);
+    });
+  }, []);
 
-  const cutWeightKg = (c: Cut) => c.weightPerCutKg * c.qtyCartons;
-  const totalCutsWeightKg = cuts.reduce((sum, c) => sum + cutWeightKg(c), 0);
-  const capacityPct = Math.min(100, (totalCutsWeightKg / CONTAINER_CAPACITY_KG) * 100);
-  const capacityRemaining = Math.max(0, CONTAINER_CAPACITY_KG - totalCutsWeightKg);
-  const capacityOver = totalCutsWeightKg > CONTAINER_CAPACITY_KG;
+  const handleCutImg = useCallback((cutId: string, file: File) => {
+    const r = new FileReader();
+    r.onload = (e) => setCutImgs((prev) => ({ ...prev, [cutId]: e.target?.result as string }));
+    r.readAsDataURL(file);
+  }, []);
 
-  const addCut = () => {
-    setCuts((prev) => [...prev, { id: crypto.randomUUID(), product: "", pack: "Vacuum 4×CTN", weightPerCutKg: 25, qtyCartons: 0, pricePerKgUsd: 0 }]);
-  };
-  const removeCut = (id: string) => {
-    if (cuts.length <= 1) return;
-    setCuts((prev) => prev.filter((c) => c.id !== id));
-  };
-  const updateCut = (id: string, patch: Partial<Cut>) => {
-    setCuts((prev) => prev.map((c) => (c.id === id ? { ...c, ...patch } : c)));
-  };
-
-  const addRoute = () => {
-    setRoutes((prev) => [...prev, { id: crypto.randomUUID(), destPortId: "", destPortLabel: "", freightUsdPerFcl: 0 }]);
-  };
-  const removeRoute = (id: string) => {
-    if (routes.length <= 1) return;
-    setRoutes((prev) => prev.filter((r) => r.id !== id));
-  };
-  const updateRoute = (id: string, patch: Partial<Route>) => {
-    setRoutes((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
-  };
-  const applyFreightToAll = () => {
-    const first = routes[0];
-    if (!first || first.freightUsdPerFcl <= 0) {
-      toast.error(t("supplier.createOffer.routes.applyAllError"));
-      return;
-    }
-    setRoutes((prev) => prev.map((r) => ({ ...r, freightUsdPerFcl: first.freightUsdPerFcl })));
-    toast.success(t("supplier.createOffer.routes.applyAllSuccess"));
-  };
-
-  const basicFilled = offerName.trim() && species ? 1 : 0;
-  const cutsFilled = cuts.some((c) => c.product.trim() && c.qtyCartons > 0 && c.pricePerKgUsd > 0) ? 1 : 0;
-  const routesFilled = routes.some((r) => r.destPortId && r.freightUsdPerFcl > 0) ? 1 : 0;
-  const progress = Math.round((basicFilled * 25) + (cutsFilled * 50) + (routesFilled * 25));
-
-  const handleExtract = () => {
-    if (!textPrompt.trim() && activeTab === "text") {
-      toast.error(t("supplier.createOffer.ai.emptyError"));
-      return;
-    }
-    setExtracting(true);
+  /* AI Import (mock) */
+  const simulateAiImport = useCallback(() => {
+    setAiProcessing(true);
     setTimeout(() => {
-      setExtracting(false);
-      toast.success(t("supplier.createOffer.ai.extractedMock"));
+      const mockParsed: Cut[] = [
+        { id: Date.now().toString(), cat: "Beef", cut: "Forequarter", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None", qty: "14000", ask: "6.40", floor: "5.80", notes: "98 VL" },
+        { id: (Date.now() + 1).toString(), cat: "Beef", cut: "Brisket", spec: "Boneless", pkg: "Carton Box", gr: "Medium", ag: "Wet Aged", qty: "13000", ask: "4.35", floor: "3.90", notes: "" },
+      ];
+      setCuts((prev) => [...prev, ...mockParsed]);
+      setAiProcessing(false);
+      setShowAiImport(false);
+      setAiMode(null);
+      setAiInput("");
+      toast.success("AI parsed 2 cuts");
     }, 1500);
-  };
+  }, []);
 
-  const handleCancel = () => {
-    if (confirm(t("supplier.createOffer.confirmCancel"))) {
-      navigate("/supplier/offers");
-    }
-  };
-  const handleSaveDraft = () => {
-    console.log("save draft");
-    toast(t("supplier.createOffer.draftSaved"));
-  };
+  const toggleCustomer = useCallback((id: string) => {
+    setSelectedCustomers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  }, []);
+
+  const canPublish = selMarkets.length > 0 && cuts.length > 0 && selInco.length > 0;
+  const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
+
+  const handleSaveDraft = () => toast("Draft saved");
   const handlePublish = () => {
-    console.log("publish");
-    toast.error(t("supplier.createOffer.notReadyToPublish"));
+    if (!canPublish) return;
+    toast.success("Offer ready to publish (mock)");
+  };
+  const handleCancel = () => {
+    if (confirm("Discard this offer?")) navigate("/supplier/offers");
   };
 
   return (
-    <div className="co-page">
-      <Crumbs
-        items={[
-          { label: t("shell.home", { defaultValue: "Home" }), to: "/supplier" },
-          { label: t("supplier.createOffer.title") },
-        ]}
-      />
-
-      <div className="co-header">
-        <div className="co-title-row">
-          <div className="co-title-icon" aria-hidden="true">+</div>
-          <div className="co-title-text">
-            <h1>{t("supplier.createOffer.title")}</h1>
-            <p>{t("supplier.createOffer.subtitle")}</p>
-          </div>
-          <div className="co-header-right">
-            <div className="co-unit-toggle" role="group" aria-label={t("supplier.createOffer.unitToggle")}>
-              <button
-                type="button"
-                className={`co-unit ${unit === "kg" ? "active" : ""}`}
-                onClick={() => setUnit("kg")}
-              >
-                kg
-              </button>
-              <button
-                type="button"
-                className={`co-unit ${unit === "lbs" ? "active" : ""}`}
-                onClick={() => setUnit("lbs")}
-              >
-                lbs
-              </button>
-            </div>
-            <div className="co-progress-chip">
-              <span className="co-progress-dot" />
-              <span className="co-progress-label">{t("supplier.createOffer.inProgress")}</span>
-              <span className="co-progress-value">· {progress}%</span>
-            </div>
+    <div className="cov4">
+      {/* HEADER */}
+      <header className="cov4-header">
+        <div className="cov4-hdr-l">
+          <div className="cov4-hdr-logo">M</div>
+          <div>
+            <h1>Create new offer</h1>
+            <p>Markets · Products · Pricing · Distribution</p>
           </div>
         </div>
-      </div>
-
-      <section className={`co-ai-card ${aiOpen ? "open" : "closed"}`}>
-        <header className="co-ai-head">
-          <span className="co-ai-icon" aria-hidden="true">✦</span>
-          <div className="co-ai-text">
-            <strong>{t("supplier.createOffer.ai.title")}</strong>
-            <p>{t("supplier.createOffer.ai.subtitle")}</p>
-          </div>
+        <div className="cov4-hdr-r">
+          <span className="cov4-orig-badge">🇧🇷 Brazil · Santos (BRSSZ)</span>
           <button
             type="button"
-            className="co-ai-toggle"
-            onClick={() => setAiOpen((v) => !v)}
+            className={`cov4-preview-btn ${showPreview ? "on" : ""}`}
+            onClick={() => setShowPreview((v) => !v)}
           >
-            {aiOpen ? t("supplier.createOffer.ai.minimize") : t("supplier.createOffer.ai.tryIt")}
+            {showPreview ? "✕ Close preview" : "👁 Live preview"}
           </button>
-        </header>
+        </div>
+      </header>
 
-        {aiOpen && (
-          <div className="co-ai-body">
-            <div className="co-ai-tabs" role="tablist">
-              {(["pdf", "excel", "image", "voice", "text"] as const).map((tab) => (
-                <button
-                  key={tab}
-                  type="button"
-                  role="tab"
-                  aria-selected={activeTab === tab}
-                  className={`co-ai-tab ${activeTab === tab ? "active" : ""}`}
-                  onClick={() => setActiveTab(tab)}
-                >
-                  {t(`supplier.createOffer.ai.tab.${tab}`)}
-                </button>
-              ))}
+      <div className={`cov4-grid ${showPreview ? "with-preview" : ""}`}>
+        {/* ═══════════ LEFT PANEL ═══════════ */}
+        <aside className="cov4-panel cov4-panel-l">
+          <SectionHeader icon="🌍" t="Markets & freight" s="Countries, ports, freight costs" />
+
+          {/* Container & Temp */}
+          <div className="cov4-cfg-row">
+            <div className="cov4-cfg-g">
+              <span className="cov4-cfg-l">Container</span>
+              <div className="cov4-tgl">
+                {(["20ft", "40ft"] as const).map((opt) => (
+                  <button key={opt} type="button" className={csize === opt ? "on" : ""} onClick={() => setCsize(opt)}>{opt}</button>
+                ))}
+              </div>
             </div>
-
-            {activeTab === "text" && (
-              <div className="co-ai-text-input">
-                <label className="co-ai-label">{t("supplier.createOffer.ai.pasteLabel")}</label>
-                <textarea
-                  className="co-ai-textarea"
-                  rows={5}
-                  placeholder={t("supplier.createOffer.ai.placeholder")}
-                  value={textPrompt}
-                  onChange={(e) => setTextPrompt(e.target.value)}
-                />
-              </div>
-            )}
-
-            {(activeTab === "pdf" || activeTab === "excel" || activeTab === "image") && (
-              <div className="co-ai-dropzone">
-                <p>{t(`supplier.createOffer.ai.dropzone.${activeTab}`)}</p>
-                <span className="co-ai-stub">{t("supplier.createOffer.ai.stubNote")}</span>
-              </div>
-            )}
-
-            {activeTab === "voice" && (
-              <div className="co-ai-dropzone">
-                <p>{t("supplier.createOffer.ai.voicePrompt")}</p>
-                <span className="co-ai-stub">{t("supplier.createOffer.ai.stubNote")}</span>
-              </div>
-            )}
-
-            <footer className="co-ai-footer">
-              <span className="co-ai-powered">✦ {t("supplier.createOffer.ai.poweredBy")}</span>
-              <button
-                type="button"
-                className="co-ai-extract"
-                onClick={handleExtract}
-                disabled={extracting || (activeTab === "text" && !textPrompt.trim())}
-              >
-                {extracting ? t("supplier.createOffer.ai.extracting") : t("supplier.createOffer.ai.extract")}
-              </button>
-            </footer>
-          </div>
-        )}
-      </section>
-
-      <div className="co-layout">
-      <div className="co-main-col">
-      <div className="co-form">
-        {/* SECTION 1: Basic info */}
-        <section className="co-section">
-          <header className="co-section-head">
-            <h2>{t("supplier.createOffer.form.basicInfo.title")}</h2>
-            <p>{t("supplier.createOffer.form.basicInfo.subtitle")}</p>
-          </header>
-          <div className="co-section-body">
-            <div className="co-field">
-              <label className="co-field-label" htmlFor="offer-name">
-                {t("supplier.createOffer.form.offerName.label")}
-              </label>
-              <input
-                id="offer-name"
-                type="text"
-                className="co-input"
-                placeholder={t("supplier.createOffer.form.offerName.placeholder")}
-                value={offerName}
-                onChange={(e) => setOfferName(e.target.value)}
-              />
-            </div>
-            <div className="co-field">
-              <label className="co-field-label">{t("supplier.createOffer.form.species.label")}</label>
-              <div className="co-segmented" role="group">
-                {SPECIES_OPTIONS.map((opt) => (
-                  <button
-                    key={opt.value}
-                    type="button"
-                    className={`co-seg-btn ${species === opt.value ? "active" : ""}`}
-                    onClick={() => setSpecies(opt.value)}
-                  >
-                    {opt.label}
-                  </button>
+            <div className="cov4-cfg-g">
+              <span className="cov4-cfg-l">Temperature</span>
+              <div className="cov4-tgl">
+                {(["Frozen", "Chilled"] as const).map((opt) => (
+                  <button key={opt} type="button" className={temp === opt ? "on" : ""} onClick={() => setTemp(opt)}>{opt}</button>
                 ))}
               </div>
             </div>
           </div>
-        </section>
 
-        {/* SECTION 2: Container & cuts */}
-        <section className="co-section">
-          <header className="co-section-head">
-            <h2>{t("supplier.createOffer.form.cuts.title")}</h2>
-            <p>{t("supplier.createOffer.form.cuts.subtitle")}</p>
-          </header>
-          <div className="co-section-body">
-            <div className="co-field">
-              <label className="co-field-label">{t("supplier.createOffer.form.cuts.loadType")}</label>
-              <div className="co-segmented" role="group">
-                <button type="button" className={`co-seg-btn ${loadType === "full_container" ? "active" : ""}`} onClick={() => setLoadType("full_container")}>
-                  {t("supplier.createOffer.form.cuts.fullContainer")}
+          {/* Market chips */}
+          <div className="cov4-chips">
+            {MARKETS.map((m) => {
+              const on = !!selMarkets.find((x) => x.id === m.id);
+              return (
+                <button key={m.id} type="button" className={`cov4-chip ${on ? "on" : ""}`} onClick={() => toggleMarket(m.id)}>
+                  {m.f} {m.n} {on && <span className="cov4-chip-ck">✓</span>}
                 </button>
-                <button type="button" className={`co-seg-btn ${loadType === "mixed_load" ? "active" : ""}`} onClick={() => setLoadType("mixed_load")}>
-                  {t("supplier.createOffer.form.cuts.mixedLoad")}
-                </button>
-              </div>
-            </div>
+              );
+            })}
+          </div>
 
-            <div className="co-capacity">
-              <div className="co-capacity-head">
-                <span className="co-capacity-label">{t("supplier.createOffer.form.cuts.capacity")}</span>
-                <span className={`co-capacity-value ${capacityOver ? "over" : ""}`}>
-                  {totalCutsWeightKg.toLocaleString()} / {CONTAINER_CAPACITY_KG.toLocaleString()} kg
-                  {capacityOver && <span className="co-capacity-warn"> · {t("supplier.createOffer.form.cuts.overCapacity")}</span>}
-                  {!capacityOver && capacityRemaining > 0 && <span className="co-capacity-muted"> · {capacityRemaining.toLocaleString()} kg {t("supplier.createOffer.form.cuts.remaining")}</span>}
-                </span>
-              </div>
-              <div className="co-capacity-bar">
-                <div
-                  className={`co-capacity-fill ${capacityOver ? "over" : ""}`}
-                  style={{ width: `${capacityPct}%` }}
-                />
-              </div>
-            </div>
-
-            <div className="co-cuts-table-wrap">
-              <table className="co-cuts-table">
-                <thead>
-                  <tr>
-                    <th>{t("supplier.createOffer.form.cuts.col.product")}</th>
-                    <th>{t("supplier.createOffer.form.cuts.col.pack")}</th>
-                    <th className="num">{t("supplier.createOffer.form.cuts.col.weightPerCut")}</th>
-                    <th className="num">{t("supplier.createOffer.form.cuts.col.qty")}</th>
-                    <th className="num">{t("supplier.createOffer.form.cuts.col.totalWeight")}</th>
-                    <th className="num">{t("supplier.createOffer.form.cuts.col.pricePerKg")}</th>
-                    <th aria-label="actions" />
-                  </tr>
-                </thead>
-                <tbody>
-                  {cuts.map((c) => (
-                    <tr key={c.id}>
-                      <td>
-                        <input
-                          type="text"
-                          className="co-input co-input-sm"
-                          placeholder={t("supplier.createOffer.form.cuts.placeholder.product")}
-                          value={c.product}
-                          onChange={(e) => updateCut(c.id, { product: e.target.value })}
-                        />
-                      </td>
-                      <td>
-                        <input
-                          type="text"
-                          className="co-input co-input-sm"
-                          value={c.pack}
-                          onChange={(e) => updateCut(c.id, { pack: e.target.value })}
-                        />
-                      </td>
-                      <td className="num">
-                        <input
-                          type="number"
-                          min="0"
-                          step="0.5"
-                          className="co-input co-input-sm co-input-num"
-                          value={c.weightPerCutKg || ""}
-                          onChange={(e) => updateCut(c.id, { weightPerCutKg: Number(e.target.value) || 0 })}
-                        />
-                      </td>
-                      <td className="num">
-                        <input
-                          type="number"
-                          min="0"
-                          step="1"
-                          className="co-input co-input-sm co-input-num"
-                          value={c.qtyCartons || ""}
-                          onChange={(e) => updateCut(c.id, { qtyCartons: Number(e.target.value) || 0 })}
-                        />
-                      </td>
-                      <td className="num co-cuts-derived">
-                        {cutWeightKg(c).toLocaleString()} kg
-                      </td>
-                      <td className="num">
-                        <div className="co-price-input">
-                          <span className="co-price-prefix">$</span>
-                          <input
-                            type="number"
-                            min="0"
-                            step="0.01"
-                            className="co-input co-input-sm co-input-num"
-                            value={c.pricePerKgUsd || ""}
-                            onChange={(e) => updateCut(c.id, { pricePerKgUsd: Number(e.target.value) || 0 })}
-                          />
+          {/* Market cards */}
+          {selMarkets.map((m) => {
+            const c = mktCfg[m.id];
+            if (!c) return null;
+            return (
+              <div key={m.id} className="cov4-mcard">
+                <div className="cov4-mc-h">
+                  <span style={{ fontSize: 16 }}>{m.f}</span>
+                  <h3>{m.n}</h3>
+                  <span className="cov4-mc-cnt">{c.sp.length}p</span>
+                  <button type="button" className="cov4-rm-btn" onClick={() => toggleMarket(m.id)} aria-label="Remove market">✕</button>
+                </div>
+                <div className="cov4-ports">
+                  {m.p.map((p) => {
+                    const on = c.sp.includes(p.id);
+                    return (
+                      <button key={p.id} type="button" className={`cov4-port ${on ? "on" : ""}`} onClick={() => togglePort(m.id, p.id)}>
+                        <span className="cov4-p-dot" />{p.n}
+                      </button>
+                    );
+                  })}
+                </div>
+                {c.sp.length > 1 && (
+                  <div className="cov4-ftgl">
+                    <span>Same freight all ports?</span>
+                    <div className="cov4-tgl cov4-tgl-sm">
+                      {(["Yes", "No"] as const).map((opt) => (
+                        <button key={opt} type="button" className={(c.sm ? "Yes" : "No") === opt ? "on" : ""}
+                          onClick={() => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], sm: opt === "Yes" } }))}>{opt}</button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {(c.sm || c.sp.length <= 1) ? (
+                  <div className="cov4-fr-row">
+                    <label className="cov4-fr-lbl">Freight</label>
+                    <PriceInput value={c.gf} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], gf: v } }))} />
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 6, marginTop: 4 }}>
+                    {c.sp.map((pid) => {
+                      const pn = m.p.find((x) => x.id === pid);
+                      return (
+                        <div key={pid} className="cov4-ppf-r">
+                          <span className="cov4-ppf-n">{pn?.n}</span>
+                          <PriceInput value={c.pf[pid] || ""} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], pf: { ...pr[m.id].pf, [pid]: v } } }))} />
                         </div>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className="co-row-remove"
-                          onClick={() => removeCut(c.id)}
-                          disabled={cuts.length <= 1}
-                          aria-label={t("supplier.createOffer.form.cuts.removeRow")}
-                        >
-                          ×
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            <button type="button" className="co-add-btn" onClick={addCut}>
-              + {t("supplier.createOffer.form.cuts.addCut")}
-            </button>
-          </div>
-        </section>
-
-        {/* SECTION 3: Routes & freight */}
-        <section className="co-section">
-          <header className="co-section-head">
-            <h2>{t("supplier.createOffer.form.routes.title")}</h2>
-            <p>{t("supplier.createOffer.form.routes.subtitle")}</p>
-          </header>
-          <div className="co-section-body">
-            <div className="co-field">
-              <label className="co-field-label" htmlFor="origin-port">
-                {t("supplier.createOffer.form.routes.originPort")}
-              </label>
-              <select
-                id="origin-port"
-                className="co-input"
-                value={originPort}
-                onChange={(e) => setOriginPort(e.target.value)}
-              >
-                {ORIGIN_PORTS.map((p) => (
-                  <option key={p.value} value={p.value}>{p.label}</option>
-                ))}
-              </select>
-            </div>
-
-            <div className="co-field">
-              <div className="co-field-row">
-                <label className="co-field-label">{t("supplier.createOffer.form.routes.destinations")}</label>
-                {routes.length > 1 && (
-                  <button type="button" className="co-link-btn" onClick={applyFreightToAll}>
-                    {t("supplier.createOffer.form.routes.applyFreightAll")}
-                  </button>
+                      );
+                    })}
+                  </div>
                 )}
               </div>
+            );
+          })}
+          {selMarkets.length === 0 && (
+            <div className="cov4-empty">
+              <span style={{ fontSize: 22 }}>📍</span>
+              <p>Select destination markets above</p>
+            </div>
+          )}
 
-              <div className="co-routes">
-                {routes.map((r) => (
-                  <div key={r.id} className="co-route-row">
-                    <select
-                      className="co-input co-route-port"
-                      value={r.destPortId}
-                      onChange={(e) => {
-                        const selected = DEST_PORTS.find((p) => p.value === e.target.value);
-                        updateRoute(r.id, {
-                          destPortId: e.target.value,
-                          destPortLabel: selected?.label ?? "",
-                        });
-                      }}
-                    >
-                      <option value="">{t("supplier.createOffer.form.routes.selectPort")}</option>
-                      {DEST_PORTS.map((p) => (
-                        <option key={p.value} value={p.value}>{p.label}</option>
-                      ))}
-                    </select>
-                    <div className="co-price-input co-route-freight">
-                      <span className="co-price-prefix">$</span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="50"
-                        className="co-input co-input-num"
-                        placeholder={t("supplier.createOffer.form.routes.freightPlaceholder")}
-                        value={r.freightUsdPerFcl || ""}
-                        onChange={(e) => updateRoute(r.id, { freightUsdPerFcl: Number(e.target.value) || 0 })}
-                      />
-                      <span className="co-price-suffix">{t("supplier.createOffer.form.routes.perFcl")}</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="co-row-remove"
-                      onClick={() => removeRoute(r.id)}
-                      disabled={routes.length <= 1}
-                      aria-label={t("supplier.createOffer.form.routes.removeRow")}
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+          {/* Incoterms */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">Incoterms</div>
+            <div className="cov4-inco-grid">
+              {INCOTERMS.map((ic) => {
+                const on = selInco.includes(ic.id);
+                return (
+                  <button key={ic.id} type="button" className={`cov4-inco-btn ${on ? "on" : ""}`} onClick={() => toggleInco(ic.id)}>
+                    <span>{on ? "☑" : "☐"}</span>
+                    <span>{ic.id}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {selInco.includes("CIF") && (
+              <div className="cov4-inco-extra">
+                <span className="cov4-inco-ex-lbl">🛡 CIF Insurance cost</span>
+                <PriceInput value={incoExtras.cifInsurance || ""} onChange={(v) => setIncoExtras((p) => ({ ...p, cifInsurance: v }))} />
               </div>
-
-              <button type="button" className="co-add-btn" onClick={addRoute}>
-                + {t("supplier.createOffer.form.routes.addMarket")}
-              </button>
-            </div>
-          </div>
-        </section>
-      </div>
-      </div>
-
-      <aside className="co-side-col">
-        <div className="co-sidebar">
-          <header className="co-sidebar-head">
-            <h2>{t("supplier.createOffer.sidebar.title")}</h2>
-            <p>{t("supplier.createOffer.sidebar.subtitle")}</p>
-          </header>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label">{t("supplier.createOffer.sidebar.containerSize")}</label>
-            <div className="co-segmented co-segmented-sm">
-              <button type="button" className={`co-seg-btn ${containerSize === "20ft" ? "active" : ""}`} onClick={() => setContainerSize("20ft")}>20' FCL</button>
-              <button type="button" className={`co-seg-btn ${containerSize === "40ft" ? "active" : ""}`} onClick={() => setContainerSize("40ft")}>40' FCL</button>
-            </div>
-          </div>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label">{t("supplier.createOffer.sidebar.temperature")}</label>
-            <div className="co-segmented co-segmented-sm">
-              <button type="button" className={`co-seg-btn ${temperature === "frozen" ? "active" : ""}`} onClick={() => setTemperature("frozen")}>
-                ❄ {t("supplier.createOffer.sidebar.frozen")}
-              </button>
-              <button type="button" className={`co-seg-btn ${temperature === "chilled" ? "active" : ""}`} onClick={() => setTemperature("chilled")}>
-                {t("supplier.createOffer.sidebar.chilled")}
-              </button>
-            </div>
-          </div>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label">{t("supplier.createOffer.sidebar.certifications")}</label>
-            <div className="co-tag-list">
-              {CERTIFICATION_OPTIONS.map((cert) => (
-                <button
-                  key={cert}
-                  type="button"
-                  className={`co-tag ${certifications.includes(cert) ? "active" : ""}`}
-                  onClick={() => toggleCert(cert)}
-                >
-                  {cert}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label">{t("supplier.createOffer.sidebar.incoterms")}</label>
-            <div className="co-tag-list">
-              {INCOTERM_OPTIONS.map((term) => (
-                <button
-                  key={term}
-                  type="button"
-                  className={`co-tag ${incoterms.includes(term) ? "active" : ""}`}
-                  onClick={() => toggleIncoterm(term)}
-                >
-                  {term}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label" htmlFor="payment-terms">{t("supplier.createOffer.sidebar.paymentTerms")}</label>
-            <input
-              id="payment-terms"
-              type="text"
-              className="co-input"
-              value={paymentTerms}
-              onChange={(e) => setPaymentTerms(e.target.value)}
-              placeholder={t("supplier.createOffer.sidebar.paymentTermsPlaceholder")}
-            />
-          </div>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label" htmlFor="shipment-month">{t("supplier.createOffer.sidebar.shipment")}</label>
-            <input
-              id="shipment-month"
-              type="month"
-              className="co-input"
-              value={shipmentMonth}
-              onChange={(e) => setShipmentMonth(e.target.value)}
-            />
-          </div>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label">{t("supplier.createOffer.sidebar.distribution")}</label>
-            <div className="co-radio-list">
-              {(["marketplace", "all_customers", "specific"] as const).map((opt) => (
-                <label key={opt} className={`co-radio ${distribution === opt ? "active" : ""}`}>
-                  <input
-                    type="radio"
-                    name="distribution"
-                    value={opt}
-                    checked={distribution === opt}
-                    onChange={() => setDistribution(opt)}
-                  />
-                  <div>
-                    <strong>{t(`supplier.createOffer.sidebar.dist.${opt}`)}</strong>
-                    <span>{t(`supplier.createOffer.sidebar.dist.${opt}Hint`)}</span>
-                  </div>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="co-sb-field">
-            <label className="co-sb-label">{t("supplier.createOffer.sidebar.attachments")}</label>
-            <div className="co-dropzone-sm">
-              <p>{t("supplier.createOffer.sidebar.attachmentsHint")}</p>
-              <span className="co-ai-stub">{t("supplier.createOffer.sidebar.attachmentsStub")}</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-      </div>
-
-      <section className="co-preview">
-        <header className="co-preview-head">
-          <h2>
-            <span className="co-preview-icon">👁</span> {t("supplier.createOffer.preview.title")}
-          </h2>
-          <span className="co-preview-hint">{t("supplier.createOffer.preview.hint")}</span>
-        </header>
-        <div className="co-preview-card">
-          <div className="co-preview-card-head">
-            <span className="co-preview-chip">
-              {t(`supplier.createOffer.form.species.${species}`)} · {temperature === "frozen" ? t("supplier.createOffer.sidebar.frozen") : t("supplier.createOffer.sidebar.chilled")}
-            </span>
-            {cuts.filter((c) => c.product.trim()).length > 1 && (
-              <span className="co-preview-badge">
-                {cuts.filter((c) => c.product.trim()).length} {t("supplier.createOffer.preview.cuts")}
-              </span>
+            )}
+            {selInco.includes("EXW") && (
+              <div className="cov4-inco-extra">
+                <span className="cov4-inco-ex-lbl">📍 EXW Pickup location</span>
+                <input className="cov4-text-in" placeholder="City, warehouse address..." value={incoExtras.exwCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, exwCity: e.target.value }))} />
+              </div>
+            )}
+            {selInco.includes("DDP") && (
+              <div className="cov4-inco-extra">
+                <span className="cov4-inco-ex-lbl">🚚 DDP Delivery city</span>
+                <input className="cov4-text-in" placeholder="Final destination city..." value={incoExtras.ddpCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, ddpCity: e.target.value }))} />
+              </div>
+            )}
+            {selInco.includes("DAP") && (
+              <div className="cov4-inco-extra">
+                <span className="cov4-inco-ex-lbl">📦 DAP Delivery place</span>
+                <input className="cov4-text-in" placeholder="Delivery address or terminal..." value={incoExtras.dapCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, dapCity: e.target.value }))} />
+              </div>
             )}
           </div>
-          <h3>{offerName.trim() || t("supplier.createOffer.preview.placeholderTitle")}</h3>
-          <div className="co-preview-meta">
-            <div>
-              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.destinations")}</span>
-              <span className="co-preview-meta-v">
-                {routes.filter((r) => r.destPortLabel).length > 0
-                  ? routes.filter((r) => r.destPortLabel).map((r) => r.destPortLabel.split(",")[0]).join(", ")
-                  : "—"}
+
+          {/* Certifications (preserved) */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">Certifications</div>
+            <div className="cov4-chips" style={{ marginBottom: 0 }}>
+              {CERTIFICATION_OPTIONS.map((cert) => (
+                <button key={cert} type="button"
+                  className={`cov4-chip ${certifications.includes(cert) ? "on" : ""}`}
+                  onClick={() => toggleCert(cert)}>
+                  {certifications.includes(cert) && <span className="cov4-chip-ck">✓</span>} {cert}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Payment terms */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">Payment terms</div>
+            <select className="cov4-pay-select" value={payTerm} onChange={(e) => setPayTerm(e.target.value)}>
+              {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
+            </select>
+            <p className="cov4-hint">From your supplier preferences — editable per offer</p>
+          </div>
+
+          {/* Distribution */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">Offer distribution</div>
+            <div className="cov4-dist-opts">
+              <label className="cov4-dist-opt">
+                <input type="checkbox" checked={distMarketplace} onChange={() => setDistMarketplace((v) => !v)} />
+                <div>
+                  <div className="cov4-dist-label">🏪 Publish to Marketplace</div>
+                  <div className="cov4-dist-desc">Visible to all buyers on the platform</div>
+                </div>
+              </label>
+              <label className="cov4-dist-opt">
+                <input type="checkbox" checked={distAllCustomers} onChange={() => setDistAllCustomers((v) => !v)} />
+                <div>
+                  <div className="cov4-dist-label">📨 Send to all my customers</div>
+                  <div className="cov4-dist-desc">Notify all registered buyers</div>
+                </div>
+              </label>
+              <label className="cov4-dist-opt">
+                <input type="checkbox" checked={distSpecific} onChange={() => setDistSpecific((v) => !v)} />
+                <div>
+                  <div className="cov4-dist-label">🎯 Specific customers</div>
+                  <div className="cov4-dist-desc">Choose which buyers receive this offer</div>
+                </div>
+              </label>
+            </div>
+            {distSpecific && (
+              <div className="cov4-cust-list">
+                {MOCK_CUSTOMERS.map((c) => {
+                  const on = selectedCustomers.includes(c.id);
+                  return (
+                    <button key={c.id} type="button" className={`cov4-cust-chip ${on ? "on" : ""}`} onClick={() => toggleCustomer(c.id)}>
+                      {on ? "✓ " : ""}{c.name}
+                      <span className="cov4-cust-country">{c.country}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </aside>
+
+        {/* ═══════════ CENTER PANEL ═══════════ */}
+        <main className="cov4-panel cov4-panel-c">
+          <div className="cov4-center-head">
+            <SectionHeader icon="🥩" t="Cuts & pricing" s="Products, specs, photos, ask & floor price" />
+            <button type="button" className="cov4-ai-btn" onClick={() => setShowAiImport((v) => !v)}>
+              ✨ AI Import
+            </button>
+          </div>
+
+          {/* AI panel */}
+          {showAiImport && (
+            <div className="cov4-ai-panel">
+              <div className="cov4-ai-h">
+                <span className="cov4-ai-t">✨ AI-powered import</span>
+                <button type="button" className="cov4-rm-btn" onClick={() => { setShowAiImport(false); setAiMode(null); }}>✕</button>
+              </div>
+              <p className="cov4-ai-d">Import cuts from any source — AI will parse and auto-fill the table</p>
+              <div className="cov4-ai-modes">
+                <button type="button" className={`cov4-ai-mode ${aiMode === "paste" ? "on" : ""}`} onClick={() => setAiMode("paste")}>📋 Paste from Excel/Text</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "file" ? "on" : ""}`} onClick={() => setAiMode("file")}>📄 Upload PDF / Image</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "voice" ? "on" : ""}`} onClick={() => setAiMode("voice")}>🎤 Voice input</button>
+              </div>
+              {aiMode === "paste" && (
+                <div>
+                  <textarea
+                    className="cov4-ai-textarea"
+                    rows={4}
+                    placeholder={"Paste your data here...\ne.g.: Beef Forequarter | Boneless | 14,000 kg | $6.40/kg\n       Beef Brisket | Bone-In | 13,000 kg | $4.35/kg"}
+                    value={aiInput}
+                    onChange={(e) => setAiInput(e.target.value)}
+                  />
+                  <button type="button" className="cov4-ai-process" onClick={simulateAiImport} disabled={!aiInput || aiProcessing}>
+                    {aiProcessing ? "⏳ Processing..." : "✨ Parse & import"}
+                  </button>
+                </div>
+              )}
+              {aiMode === "file" && (
+                <label className="cov4-ai-upload">
+                  <span style={{ fontSize: 24 }}>📎</span>
+                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>Drop PDF, image, or click to upload</span>
+                  <input type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.csv" onChange={() => simulateAiImport()} />
+                </label>
+              )}
+              {aiMode === "voice" && (
+                <button type="button" className="cov4-voice" onClick={simulateAiImport}>
+                  <span style={{ fontSize: 28 }}>🎙</span>
+                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>{aiProcessing ? "Listening..." : "Tap to start recording"}</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Capacity bar */}
+          <div className="cov4-cap">
+            <div className="cov4-cap-h">
+              <span className="cov4-cap-l">Container capacity</span>
+              <span className="cov4-cap-v">
+                {tw.toLocaleString()} / {cap.toLocaleString()} kg
+                <span className="cov4-cap-p" style={{ color: fc }}>({fp.toFixed(0)}%)</span>
               </span>
             </div>
-            <div>
-              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.incoterm")}</span>
-              <span className="co-preview-meta-v">{incoterms.length > 0 ? incoterms.join(" / ") : "—"}</span>
-            </div>
-            <div>
-              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.shipment")}</span>
-              <span className="co-preview-meta-v">{shipmentMonth || "—"}</span>
-            </div>
-            <div>
-              <span className="co-preview-meta-l">{t("supplier.createOffer.preview.volume")}</span>
-              <span className="co-preview-meta-v">{totalCutsWeightKg > 0 ? `${totalCutsWeightKg.toLocaleString()} kg` : "—"}</span>
+            <div className="cov4-pbar">
+              <div className="cov4-pfill" style={{ width: `${fp}%`, background: fc }} />
             </div>
           </div>
-          <div className="co-preview-price">
-            <span className="co-preview-price-l">{t("supplier.createOffer.preview.from")}</span>
-            <span className="co-preview-price-v">
-              ${cuts.length > 0 && cuts.some((c) => c.pricePerKgUsd > 0)
-                ? Math.min(...cuts.filter((c) => c.pricePerKgUsd > 0).map((c) => c.pricePerKgUsd)).toFixed(2)
-                : "0.00"}
-              <small>/kg</small>
-            </span>
-          </div>
-        </div>
-      </section>
 
-      <footer className="co-footer">
-        <button type="button" className="co-btn co-btn-ghost" onClick={handleCancel}>
-          {t("supplier.createOffer.cancel")}
-        </button>
-        <div className="co-footer-progress">
-          <div className="co-progress-bar">
-            <div className="co-progress-fill" style={{ width: `${progress}%` }} />
+          {/* Cuts table */}
+          <div className="cov4-tblw">
+            <table className="cov4-tbl">
+              <thead>
+                <tr>
+                  <th style={{ width: 44 }}>Photo</th>
+                  <th>Cut</th>
+                  <th>Spec</th>
+                  <th>Packaging</th>
+                  <th>Grading</th>
+                  <th>Aging</th>
+                  <th className="num">Qty (kg)</th>
+                  <th className="num">Ask $/kg</th>
+                  <th className="num">Floor $/kg</th>
+                  <th>Notes</th>
+                  <th style={{ width: 28 }} aria-label="actions" />
+                </tr>
+              </thead>
+              <tbody>
+                {cuts.map((c, i) => (
+                  <tr key={c.id}>
+                    <td>
+                      <label className={`cov4-img-box ${cutImgs[c.id] ? "has" : ""}`}>
+                        {cutImgs[c.id] ? <img src={cutImgs[c.id]} alt="" /> : <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>}
+                        <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleCutImg(c.id, e.target.files[0])} />
+                      </label>
+                    </td>
+                    <td><span className="cov4-cut-nm">{c.cat} {c.cut}</span></td>
+                    <td><span className="cov4-tag">{c.spec}</span></td>
+                    <td><span className="cov4-tag">{c.pkg}</span></td>
+                    <td><span className="cov4-tag">{c.gr !== "Not Classified" ? c.gr : "—"}</span></td>
+                    <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
+                    <td className="num">{Number(c.qty).toLocaleString()}</td>
+                    <td className="num">{Number(c.ask).toFixed(2)}</td>
+                    <td className="num cov4-floor">{c.floor ? Number(c.floor).toFixed(2) : "—"}</td>
+                    <td><span className="cov4-notes-cell">{c.notes || "—"}</span></td>
+                    <td>
+                      <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label="Remove cut">✕</button>
+                    </td>
+                  </tr>
+                ))}
+
+                {addRow && (
+                  <tr style={{ background: "var(--bg-brand-soft)" }}>
+                    <td>
+                      <label className="cov4-img-box">
+                        {newImgPrev
+                          ? <img src={newImgPrev} alt="" />
+                          : <span style={{ fontSize: 11, color: "#aaa" }}>📷</span>}
+                        <input type="file" accept="image/*" onChange={(e) => {
+                          const f = e.target.files?.[0];
+                          if (f) {
+                            const r = new FileReader();
+                            r.onload = (ev) => setNewImgPrev(ev.target?.result as string);
+                            r.readAsDataURL(f);
+                          }
+                        }} />
+                      </label>
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <select value={nf.cat} onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "" }))}>
+                          {Object.keys(CUTS_DB).map((c) => <option key={c}>{c}</option>)}
+                        </select>
+                        <select value={nf.cut} onChange={(e) => setNf((p) => ({ ...p, cut: e.target.value }))}>
+                          <option value="">Cut...</option>
+                          {(CUTS_DB[nf.cat] || []).map((c) => <option key={c}>{c}</option>)}
+                        </select>
+                      </div>
+                    </td>
+                    <td><select value={nf.spec} onChange={(e) => setNf((p) => ({ ...p, spec: e.target.value }))}>{SPECS.map((x) => <option key={x}>{x}</option>)}</select></td>
+                    <td><select value={nf.pkg} onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}>{PKGS.map((x) => <option key={x}>{x}</option>)}</select></td>
+                    <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
+                    <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
+                    <td><input type="number" placeholder="27000" value={nf.qty} onChange={(e) => setNf((p) => ({ ...p, qty: e.target.value }))} /></td>
+                    <td><input type="number" step="0.01" placeholder="6.40" value={nf.ask} onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))} /></td>
+                    <td><input type="number" step="0.01" placeholder="5.80" value={nf.floor} onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))} /></td>
+                    <td><input type="text" placeholder="Notes..." value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
+                    <td>
+                      <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                        <button type="button" className="cov4-add-confirm" onClick={addCut} disabled={!nf.cut || !nf.qty || !nf.ask}>+</button>
+                        <button type="button" className="cov4-add-cancel" onClick={() => { setAddRow(false); setNewImgPrev(null); }}>✕</button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-          <span className="co-progress-text">
-            {progress}% {t("supplier.createOffer.complete")}
-            {progress < 100 && <span className="co-progress-missing"> · {t("supplier.createOffer.missingCutsRoutes")}</span>}
-          </span>
+
+          {!addRow && (
+            <button type="button" className="cov4-add-row-btn" onClick={() => setAddRow(true)}>+ Add cut manually</button>
+          )}
+          {cuts.length === 0 && !addRow && !showAiImport && (
+            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add cuts manually or use AI Import</p></div>
+          )}
+        </main>
+
+        {/* ═══════════ RIGHT: LIVE PREVIEW ═══════════ */}
+        {showPreview && (
+          <aside className="cov4-panel cov4-panel-r">
+            <div className="cov4-prev-h">
+              <span className="cov4-prev-h-t">👁 Live preview</span>
+              <span className="cov4-prev-h-s">Buyer's view</span>
+            </div>
+            <div className="cov4-prev-card">
+              <div className="cov4-prev-img">
+                {cuts.length > 0 && cutImgs[cuts[0].id]
+                  ? <img src={cutImgs[cuts[0].id]} alt="" />
+                  : <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>}
+              </div>
+              <h3 className="cov4-prev-title">
+                {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? "Mix FCL" : "Untitled Offer"}
+              </h3>
+              <div className="cov4-prev-meta">
+                <PrevRow l="Origin" v="🇧🇷 Brazil, Santos" />
+                <PrevRow l="Destination" v={selMarkets.map((m) => m.f + " " + m.n).join(", ") || "—"} />
+                <PrevRow l="Incoterm" v={selInco.join(", ")} />
+                <PrevRow l="Temperature" v={temp} />
+                <PrevRow l="Container" v={`${csize} · ${tw.toLocaleString()} kg`} />
+                {certifications.length > 0 && <PrevRow l="Certifications" v={certifications.join(", ")} />}
+              </div>
+              {cuts.length > 0 && (
+                <div className="cov4-prev-cuts">
+                  <div className="cov4-prev-cuts-t">Cuts included</div>
+                  {cuts.map((c) => (
+                    <div key={c.id} className="cov4-prev-cut-row">
+                      <span>{c.cat} {c.cut}</span>
+                      <span>US$ {Number(c.ask).toFixed(2)}/kg</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+              <div className="cov4-prev-price">
+                <span className="cov4-prev-price-l">Starting from</span>
+                <span className="cov4-prev-price-v">
+                  US$ {totalPriceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+                <span className="cov4-prev-price-sub">per FCL</span>
+              </div>
+              <div className="cov4-prev-dist">
+                <div className="cov4-prev-dist-t">Distribution</div>
+                {distMarketplace && <span className="cov4-prev-dist-tag">🏪 Marketplace</span>}
+                {distAllCustomers && <span className="cov4-prev-dist-tag">📨 All customers</span>}
+                {distSpecific && <span className="cov4-prev-dist-tag">🎯 {selectedCustomers.length} selected</span>}
+              </div>
+            </div>
+          </aside>
+        )}
+      </div>
+
+      {/* FOOTER */}
+      <footer className="cov4-footer">
+        <span className="cov4-ft-sum">
+          {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {selInco.join(", ") || "—"} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {tw.toLocaleString()} kg · {payTerm.split(",")[0]}
+        </span>
+        <div className="cov4-ft-r">
+          <button type="button" className="cov4-btn-s" onClick={handleCancel}>Cancel</button>
+          <button type="button" className="cov4-btn-s" onClick={handleSaveDraft}>Save draft</button>
+          <button type="button" className="cov4-btn-p" onClick={handlePublish} disabled={!canPublish}>
+            Review &amp; publish →
+          </button>
         </div>
-        <button type="button" className="co-btn co-btn-ghost" onClick={handleSaveDraft}>
-          {t("supplier.createOffer.saveDraft")}
-        </button>
-        <button
-          type="button"
-          className="co-btn co-btn-primary"
-          onClick={handlePublish}
-          disabled={progress < 100}
-        >
-          {t("supplier.createOffer.publish")}
-        </button>
       </footer>
+    </div>
+  );
+}
+
+/* ── helpers ── */
+function SectionHeader({ icon, t, s }: { icon: string; t: string; s: string }) {
+  return (
+    <div className="cov4-sh">
+      <div className="cov4-sh-ic">{icon}</div>
+      <div>
+        <h2>{t}</h2>
+        <p>{s}</p>
+      </div>
+    </div>
+  );
+}
+
+function PriceInput({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="cov4-ip">
+      <span className="cov4-ip-px">US$</span>
+      <input type="number" placeholder="0.00" value={value} onChange={(e) => onChange(e.target.value)} />
+    </div>
+  );
+}
+
+function PrevRow({ l, v }: { l: string; v: string }) {
+  return (
+    <div className="cov4-prev-row">
+      <span className="cov4-prev-row-l">{l}</span>
+      <span className="cov4-prev-row-v">{v}</span>
     </div>
   );
 }
