@@ -1,75 +1,25 @@
-## Objetivo
+# Diagnóstico da barra fininha no topo
 
-Criar uma página **Analytics** no painel Admin (`/admin/analytics`) inspirada no Plausible (screenshot enviado), com todas as funcionalidades equivalentes: KPIs, gráfico de tendência, breakdowns por Source / Page / Country / Device e filtro de período. Foco em desktop + experiência mobile fluida (cards verticais, sem tabelas largas).
+## O que verifiquei
+- Não existe `NProgress`, `TopLoader`, `LinearProgress` fixo, nem componente de progress bar global no projeto.
+- Toda a navegação do admin (`Sidebar`, `MobileDrawer`, `BottomNav`) usa `NavLink` do React Router — não há `<a href>` nem `window.location` causando full reload.
+- Não há `@keyframes` de barra deslizante no CSS (só animação do drawer de prospect).
+- Nenhuma rota usa `React.lazy` + `Suspense` no `App.tsx`, então não há fallback global.
+- O console mostra `[vite] server connection lost. Polling for restart...` — sinal de que o HMR do Vite às vezes desconecta e reconecta.
 
-## Funcionalidades
+## Hipótese principal
+A barra fininha animada que aparece no topo **não é do seu app** — é o indicador de carregamento do **iframe do preview do Lovable** (a plataforma exibe uma barra de progresso no topo do iframe enquanto a URL recarrega/troca). Quando o Vite HMR cai e reconecta, o iframe recarrega → a barra aparece e some.
 
-1. **Header**
-   - Indicador "X current visitors" (ponto verde pulsando) — visitantes ativos nos últimos 5 min.
-   - Seletor de período: Realtime, Last 24h, Last 7 days (default), Last 30 days, Last 90 days, Custom range.
+Para confirmar: abrir a versão publicada (`https://mundus-lovable.lovable.app`) em uma aba normal do navegador (fora do preview do Lovable) e navegar entre `/admin/dashboard` → `/admin/settings/flags`. Se a barrinha **não** aparecer ali, é 100% a barra do preview do Lovable e não há nada a corrigir no app.
 
-2. **KPI cards (5)** com valor + comparação vs período anterior (% delta colorido):
-   - Visitors (únicos)
-   - Pageviews
-   - Views per Visit
-   - Visit Duration (m s)
-   - Bounce Rate (%)
-   - Clique no card destaca a métrica no gráfico (estado ativo azul como no print).
+## Hipótese secundária (caso confirme que é dentro do app)
+Pode haver alguma extensão de browser, um banner injetado pela rota `/admin`, ou um reload causado por `useEffect` que dispara `navigate` repetidamente. Nesse caso eu precisaria de:
+- Screenshot do momento exato em que a barra aparece, ou
+- Vídeo curto da navegação na versão publicada.
 
-3. **Gráfico de tendência** (área/linha) — Recharts, granularidade auto (hora p/ ≤24h, dia p/ ≤90d), tooltip com data + métrica selecionada, gradient sutil. Linha de comparação tracejada do período anterior (toggle).
+## Próximos passos sugeridos
+1. Você testa na URL publicada e me diz se a barra continua aparecendo.
+2. Se **sim**: me envia um screenshot/vídeo curto para eu identificar o elemento e remover.
+3. Se **não**: é só o indicador da plataforma de preview — nada para corrigir no código.
 
-4. **Breakdowns (4 painéis em grid 2×2)** — cada linha com barra de progresso proporcional ao topo + valor numérico:
-   - **Source** (referrer / utm_source agrupado; "Direct" quando vazio)
-   - **Page** (path mais visitado)
-   - **Country** (com bandeira emoji)
-   - **Device** (Mobile / Desktop / Tablet com %)
-   - Cada painel: top 10 + botão "Details" abrindo modal com lista completa, busca e paginação.
-
-5. **Filtros cruzados**: clicar em qualquer linha de breakdown adiciona um chip de filtro no topo (ex.: `Page = /login ×`) e refiltra todos os outros painéis e o gráfico — comportamento idêntico ao Plausible.
-
-6. **Export**: botão para baixar CSV do período/filtros atuais.
-
-7. **Auto-refresh** a cada 30s quando período = Realtime / Last 24h.
-
-## Mobile (pocket)
-
-- KPIs em carrossel horizontal scroll-snap (1.2 cards visíveis).
-- Gráfico ocupa largura total, altura reduzida.
-- Breakdowns viram acordeões empilhados (um por vez expandido), respeitando safe-area.
-- Filtros ativos viram bottom sheet.
-- Sem tabelas — só listas verticais com barras.
-
-## Dados
-
-**Fase 1 (entrega):** hook `useAdminAnalyticsTraffic()` retornando dados mock determinísticos (mesmo padrão do `useAdminAnalytics.ts` existente), para que a UI fique 100% funcional imediatamente.
-
-**Fase 2 (fora do escopo desta tarefa, deixar TODO):** tabela `analytics_pageviews` + edge function de ingestão (pixel `/track`) + queries reais. Não criar tabelas agora.
-
-## Integração no shell
-
-- Nova rota `/admin/analytics` em `src/App.tsx`.
-- Novo item em `ADMIN_NAV` no `AdminShell.tsx` no grupo **Overview** (ícone `BarChart3`), entre Dashboard e Companies.
-- i18n: chaves `admin.analytics.*` em en/pt/es.
-
-## Arquivos novos
-
-- `src/pages/admin/AdminAnalytics.tsx` — página principal.
-- `src/components/admin/analytics/KpiCard.tsx`
-- `src/components/admin/analytics/TrendChart.tsx`
-- `src/components/admin/analytics/BreakdownPanel.tsx`
-- `src/components/admin/analytics/BreakdownDetailModal.tsx`
-- `src/components/admin/analytics/PeriodPicker.tsx`
-- `src/components/admin/analytics/FilterChips.tsx`
-- `src/hooks/useAdminAnalyticsTraffic.ts` — mock determinístico.
-- `src/styles/mundus-analytics.css` — visual escuro inspirado no print (cards `bg-card`, barras azuis com gradiente sutil).
-
-## Arquivos alterados
-
-- `src/App.tsx` — rota.
-- `src/pages/admin/AdminShell.tsx` — item de menu + bottom nav (opcional substituir um item).
-- `src/i18n/locales/{en,pt,es}.json` — textos.
-
-## Fora do escopo
-
-- Ingestão real de eventos / pixel de tracking / tabelas no banco (fase 2).
-- Funis, retenção, goals (recursos Plausible Pro) — podem vir depois.
+Não vou modificar nada agora porque qualquer mudança às cegas pode quebrar comportamento real sem resolver o que te incomoda.
