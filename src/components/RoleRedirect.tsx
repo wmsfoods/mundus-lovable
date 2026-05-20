@@ -1,13 +1,15 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { getActiveRole } from "@/lib/activeRole";
 
 export function RoleRedirect() {
   const { user, loading: authLoading } = useAuth();
   const { company, loading: companyLoading } = useCurrentCompany();
+  const { isAdmin, loading: adminLoading } = useIsMundusAdmin();
 
-  if (authLoading || (user && companyLoading)) {
+  if (authLoading || (user && (companyLoading || adminLoading))) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="h-8 w-8 rounded-full border-2 border-[#B64769] border-t-transparent animate-spin" />
@@ -17,12 +19,16 @@ export function RoleRedirect() {
 
   if (!user) return <Navigate to="/login" replace />;
 
-  if (company?.is_buyer && company?.is_supplier) {
+  const available: string[] = [
+    ...(company?.is_buyer ? ["buyer"] : []),
+    ...(company?.is_supplier ? ["supplier"] : []),
+    ...(isAdmin ? ["admin"] : []),
+  ];
+  if (available.length > 0) {
     const saved = getActiveRole();
-    return <Navigate to={saved === "supplier" ? "/supplier" : "/buyer"} replace />;
+    const target = saved && available.includes(saved) ? saved : available[0];
+    return <Navigate to={`/${target}`} replace />;
   }
-  if (company?.is_buyer) return <Navigate to="/buyer" replace />;
-  if (company?.is_supplier) return <Navigate to="/supplier" replace />;
 
   return <Navigate to="/dashboard" replace />;
 }

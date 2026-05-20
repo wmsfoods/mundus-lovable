@@ -1747,6 +1747,7 @@
   "profile": {
     "activeRole": "Perfil activo",
     "buyer": "Comprador",
-    "supplier": "Proveedor"
+    "supplier": "Proveedor",
+    "admin": "Admin"
   }
 }
