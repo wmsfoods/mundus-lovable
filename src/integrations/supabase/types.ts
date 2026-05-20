@@ -67,6 +67,7 @@ export type Database = {
           onboarded_by: string | null
           onboarded_from_prospect_id: string | null
           phone: string
+          preferred_cuts: string[] | null
           protein_profiles: string[] | null
           rating: number | null
           state: string
@@ -95,6 +96,7 @@ export type Database = {
           onboarded_by?: string | null
           onboarded_from_prospect_id?: string | null
           phone: string
+          preferred_cuts?: string[] | null
           protein_profiles?: string[] | null
           rating?: number | null
           state: string
@@ -123,6 +125,7 @@ export type Database = {
           onboarded_by?: string | null
           onboarded_from_prospect_id?: string | null
           phone?: string
+          preferred_cuts?: string[] | null
           protein_profiles?: string[] | null
           rating?: number | null
           state?: string
