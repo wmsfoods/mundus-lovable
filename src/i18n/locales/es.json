@@ -183,7 +183,8 @@
         "beef": "Bovino",
         "pork": "Cerdo",
         "poultry": "Aves",
-        "lamb": "Cordero"
+        "lamb": "Cordero",
+        "ovine": "Ovino"
       },
       "col": {
         "title": "Título",
@@ -253,6 +254,42 @@
         "acceptOffer": "Oferta de {{name}} aceptada (mock)",
         "declineOffer": "Oferta de {{name}} rechazada (mock)",
         "viewOffer": "Detalles de la oferta próximamente"
+      },
+      "newModal": {
+        "title": "Nueva solicitud de oferta",
+        "cancel": "Cancelar",
+        "submit": "Crear solicitud",
+        "selectAll": "Seleccionar todos",
+        "clearAll": "Limpiar selección",
+        "loading": "Cargando…",
+        "noCuts": "No hay cortes disponibles",
+        "selectMarket": "Seleccione un mercado…",
+        "selectPort": "Seleccione un puerto…",
+        "noPorts": "Este mercado no tiene puertos configurados.",
+        "fields": {
+          "title": "Título",
+          "category": "Categoría",
+          "cuts": "Cortes",
+          "targetPrice": "Precio objetivo (US$/kg)",
+          "targetVolume": "Volumen objetivo (kg)",
+          "market": "Mercado de destino",
+          "port": "Puerto de destino",
+          "incoterm": "Incoterm",
+          "shipment": "Mes de embarque",
+          "payment": "Condiciones de pago",
+          "notes": "Descripción / Notas"
+        },
+        "placeholders": { "title": "ej.: Ribeye 7-9 lb para Q3" },
+        "err": {
+          "title": "El título es obligatorio",
+          "cuts": "Seleccione al menos un corte",
+          "price": "El precio objetivo es obligatorio",
+          "volume": "El volumen objetivo es obligatorio",
+          "market": "Seleccione un mercado de destino",
+          "port": "Seleccione un puerto de destino",
+          "shipment": "Seleccione el mes de embarque"
+        },
+        "toast": { "created": "Solicitud creada (mock)" }
       }
     },
     "home": {
