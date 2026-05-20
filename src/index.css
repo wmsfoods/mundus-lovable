@@ -19,6 +19,7 @@
 @import "./styles/mundus-admin.css";
 @import "./styles/mundus-insights.css";
 @import "./styles/mundus-analytics.css";
+@import "./styles/mundus-prospect.css";
 
 @tailwind base;
 @tailwind components;
