@@ -378,8 +378,8 @@ export default function FindPeople() {
                                     try {
                                       const r = await enrichPerson(p);
                                       const v = r.email || p.email || "";
+                                      setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, email: v || undefined } }));
                                       if (!v) { toast.error("Email not found"); return ""; }
-                                      setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], email: v } }));
                                       return v;
                                     } catch (e: any) {
                                       toast.error(`Reveal failed: ${e.message}`);
@@ -396,8 +396,8 @@ export default function FindPeople() {
                                 try {
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.phone || "";
+                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, phone: v || undefined } }));
                                   if (!v) { toast.error("Phone not found"); return ""; }
-                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], phone: v } }));
                                   return v;
                                 } catch (e: any) {
                                   toast.error(`Reveal failed: ${e.message}`);
@@ -413,8 +413,8 @@ export default function FindPeople() {
                                 try {
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.mobile || r.phone || "";
+                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, mobile: v || undefined } }));
                                   if (!v) { toast.error("Mobile not found"); return ""; }
-                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], mobile: v } }));
                                   return v;
                                 } catch (e: any) {
                                   toast.error(`Reveal failed: ${e.message}`);
