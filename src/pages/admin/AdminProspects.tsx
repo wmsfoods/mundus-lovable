@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Upload, Plus, KanbanSquare, Table as TableIcon } from "lucide-react";
+import { Search, Upload, Plus, KanbanSquare, Table as TableIcon, Trash2, X } from "lucide-react";
+import { toast } from "sonner";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   useAdminProspects, getStageCounts, STAGES,
   OWNERS, type ProspectStage,
@@ -19,13 +21,17 @@ export default function AdminProspects() {
   const nav = useNavigate();
   const mockList = useAdminProspects();
   const [dbList, setDbList] = useState<Prospect[]>([]);
+  const [refreshTick, setRefreshTick] = useState(0);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [deleting, setDeleting] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("crm_companies")
-        .select("id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,crm_contacts(id,full_name,email,phone,linkedin)")
+        .select("id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin)")
         .order("created_at", { ascending: false })
         .limit(500);
       if (cancelled || !data) return;
@@ -64,13 +70,14 @@ export default function AdminProspects() {
           companyLinkedin: c.linkedin_url ?? undefined,
           contacts: [],
           isActive: true,
-          isOnboarded: stage === "onboarded",
+          isOnboarded: stage === "onboarded" || !!c.onboarded_at,
+          mundusCompanyId: c.mundus_company_id ?? undefined,
         } as Prospect;
       });
       setDbList(mapped);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [refreshTick]);
 
   const list = useMemo(() => [...dbList, ...mockList], [dbList, mockList]);
 
@@ -98,6 +105,49 @@ export default function AdminProspects() {
       return true;
     });
   }, [list, search, stage, role, owner]);
+
+  const isDbId = (id: string) => !id.startsWith("pr-");
+  const deletableFiltered = useMemo(
+    () => filtered.filter((p) => isDbId(p.id) && !p.isOnboarded && !p.mundusCompanyId),
+    [filtered],
+  );
+  const pageAllSelected = deletableFiltered.length > 0 && deletableFiltered.every((p) => selectedIds.has(p.id));
+  const pageSomeSelected = deletableFiltered.some((p) => selectedIds.has(p.id));
+  const togglePageAll = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (pageAllSelected) deletableFiltered.forEach((p) => next.delete(p.id));
+      else deletableFiltered.forEach((p) => next.add(p.id));
+      return next;
+    });
+  };
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulkDelete = async () => {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    setDeleting(true);
+    try {
+      await supabase.from("crm_contacts").delete().in("company_id", ids);
+      const { error } = await supabase.from("crm_companies").delete().in("id", ids);
+      if (error) throw error;
+      toast.success(t("admin.crm.bulkDelete.success", { count: ids.length, defaultValue: "{{count}} prospect(s) deleted" }));
+      clearSelection();
+      setConfirmDelete(false);
+      setRefreshTick((n) => n + 1);
+    } catch (e: any) {
+      toast.error(e?.message || "Bulk delete failed");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   return (
     <div className="adm-body">
@@ -165,10 +215,36 @@ export default function AdminProspects() {
       </div>
 
       {/* table */}
+      {selectedIds.size > 0 && (
+        <div
+          className="adm-panel"
+          style={{ padding: "10px 12px", display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", background: "#FEF2F2", borderColor: "#FECACA", marginBottom: 8 }}
+        >
+          <strong style={{ fontSize: 13 }}>
+            {t("admin.crm.bulkDelete.selected", { count: selectedIds.size, defaultValue: "{{count}} selected" })}
+          </strong>
+          <div style={{ flex: 1 }} />
+          <button
+            type="button"
+            className="crm-btn-outline"
+            disabled={deleting}
+            onClick={() => setConfirmDelete(true)}
+            style={{ borderColor: "#dc2626", color: "#dc2626" }}
+          >
+            <Trash2 size={14} style={{ marginRight: 4 }} />
+            {t("admin.crm.bulkDelete.delete", { defaultValue: "Delete" })}
+          </button>
+          <button type="button" className="crm-btn-outline" onClick={clearSelection}>
+            <X size={14} style={{ marginRight: 4 }} />
+            {t("admin.crm.bulkDelete.clear", { defaultValue: "Clear" })}
+          </button>
+        </div>
+      )}
       <div className="adm-panel" style={{ padding: 0 }}>
         <div className="adm-table-wrap">
           <table className="adm-table">
             <colgroup>
+              <col style={{ width: "3%" }} />
               <col style={{ width: "26%" }} />
               <col style={{ width: "10%" }} />
               <col style={{ width: "12%" }} />
@@ -176,10 +252,17 @@ export default function AdminProspects() {
               <col style={{ width: "6%" }} />
               <col style={{ width: "10%" }} />
               <col style={{ width: "8%" }} />
-              <col style={{ width: "18%" }} />
+              <col style={{ width: "15%" }} />
             </colgroup>
             <thead>
               <tr>
+                <th onClick={(e) => e.stopPropagation()}>
+                  <Checkbox
+                    checked={pageAllSelected ? true : pageSomeSelected ? "indeterminate" : false}
+                    onCheckedChange={togglePageAll}
+                    aria-label="Select page"
+                  />
+                </th>
                 <th>{t("admin.crm.table.company")}</th>
                 <th>{t("admin.crm.table.role")}</th>
                 <th>{t("admin.crm.table.stage")}</th>
@@ -192,7 +275,21 @@ export default function AdminProspects() {
             </thead>
             <tbody>
               {filtered.map((p) => (
-                <tr key={p.id} className="crm-row" onClick={() => nav(`/admin/crm/prospects/${p.id}`)}>
+                <tr
+                  key={p.id}
+                  className="crm-row"
+                  onClick={() => nav(`/admin/crm/prospects/${p.id}`)}
+                  style={selectedIds.has(p.id) ? { background: "#FEF2F2" } : undefined}
+                >
+                  <td onClick={(e) => e.stopPropagation()}>
+                    {isDbId(p.id) && !p.isOnboarded && !p.mundusCompanyId ? (
+                      <Checkbox
+                        checked={selectedIds.has(p.id)}
+                        onCheckedChange={() => toggleSelect(p.id)}
+                        aria-label={`Select ${p.companyName}`}
+                      />
+                    ) : null}
+                  </td>
                   <td>
                     <div className="adm-table-company">
                       <span className="adm-table-av crm-av-blue">{p.initials}</span>
@@ -219,7 +316,7 @@ export default function AdminProspects() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={8} style={{ textAlign: "center", padding: 28, color: "var(--adm-text-tertiary)" }}>
+                <tr><td colSpan={9} style={{ textAlign: "center", padding: 28, color: "var(--adm-text-tertiary)" }}>
                   {t("admin.crm.empty")}
                 </td></tr>
               )}
@@ -230,6 +327,44 @@ export default function AdminProspects() {
 
       <AddProspectModal open={addOpen} onOpenChange={setAddOpen} />
       <ImportProspectsModal open={importOpen} onOpenChange={setImportOpen} />
+
+      {confirmDelete && (
+        <>
+          <div
+            onClick={() => !deleting && setConfirmDelete(false)}
+            style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", zIndex: 50 }}
+          />
+          <div
+            style={{
+              position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+              width: "min(440px, 96vw)", background: "#fff", borderRadius: 12, zIndex: 51,
+              boxShadow: "0 20px 50px rgba(0,0,0,.25)", padding: 20,
+            }}
+          >
+            <h3 style={{ margin: "0 0 8px", fontSize: 16 }}>
+              {t("admin.crm.bulkDelete.confirmTitle", { defaultValue: "Delete prospects?" })}
+            </h3>
+            <p style={{ margin: "0 0 16px", fontSize: 13, color: "var(--adm-text-tertiary, #6b7280)" }}>
+              {t("admin.crm.bulkDelete.confirmBody", { count: selectedIds.size, defaultValue: "This will permanently delete {{count}} prospect(s) and their contacts. This cannot be undone." })}
+            </p>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 8 }}>
+              <button type="button" className="crm-btn-outline" disabled={deleting} onClick={() => setConfirmDelete(false)}>
+                {t("common.cancel", { defaultValue: "Cancel" })}
+              </button>
+              <button
+                type="button"
+                className="crm-btn-primary"
+                disabled={deleting}
+                onClick={handleBulkDelete}
+                style={{ background: "#dc2626" }}
+              >
+                <Trash2 size={14} style={{ marginRight: 4 }} />
+                {deleting ? "…" : t("admin.crm.bulkDelete.delete", { defaultValue: "Delete" })}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
