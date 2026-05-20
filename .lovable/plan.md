@@ -1,47 +1,75 @@
-## Problema
+## Objetivo
 
-O `AdminShell` usa um layout próprio (`adm-sidebar` + `adm-topbar`) que não tem responsividade mobile — não há `BottomNav`, `MobileDrawer` nem `StackHeader`. Por isso, no celular o admin fica sem menu/navegação.
+Criar uma página **Analytics** no painel Admin (`/admin/analytics`) inspirada no Plausible (screenshot enviado), com todas as funcionalidades equivalentes: KPIs, gráfico de tendência, breakdowns por Source / Page / Country / Device e filtro de período. Foco em desktop + experiência mobile fluida (cards verticais, sem tabelas largas).
 
-Os shells `BuyerShell` e `SupplierShell` já seguem um padrão consistente baseado em `Sidebar`, `Topbar`, `BottomNav`, `MobileDrawer` e `StackHeader`, controlados por `useIsMobileShell()` e `isStackRoute()`.
+## Funcionalidades
 
-## Solução
+1. **Header**
+   - Indicador "X current visitors" (ponto verde pulsando) — visitantes ativos nos últimos 5 min.
+   - Seletor de período: Realtime, Last 24h, Last 7 days (default), Last 30 days, Last 90 days, Custom range.
 
-Reescrever `src/pages/admin/AdminShell.tsx` para usar exatamente o mesmo padrão de shell mobile dos outros papéis, mantendo todos os itens de navegação atuais do admin (Dashboard, Companies, Deals, Negotiations, Verifications, Disputes, Prospects, Pipeline, Products, Markets, Ports, Revenue, Commissions, Team, Audit, Flags).
+2. **KPI cards (5)** com valor + comparação vs período anterior (% delta colorido):
+   - Visitors (únicos)
+   - Pageviews
+   - Views per Visit
+   - Visit Duration (m s)
+   - Bounce Rate (%)
+   - Clique no card destaca a métrica no gráfico (estado ativo azul como no print).
 
-### Estrutura nova do AdminShell
+3. **Gráfico de tendência** (área/linha) — Recharts, granularidade auto (hora p/ ≤24h, dia p/ ≤90d), tooltip com data + métrica selecionada, gradient sutil. Linha de comparação tracejada do período anterior (toggle).
 
-- `StackHeaderProvider` na raiz.
-- `div.app-shell` com classes `is-mobile` / `is-stack` calculadas via `useIsMobileShell()` e `isStackRoute(location.pathname)`.
-- `<Sidebar items={ADMIN_NAV} rolePill={t("shell.admin")} userName userSubtitle={company?.name} />` — usado no desktop e dentro do `MobileDrawer`.
-- `<Topbar onMenuClick={() => setDrawerOpen(true)} />` no topo (ou `<StackHeader />` quando em rota de stack mobile).
-- `<main className="app-main"><Outlet /></main>`.
-- `<BottomNav items={ADMIN_BOTTOM} />` no mobile (quando não estiver em stack).
-- `<MobileDrawer items={ADMIN_NAV} rolePill={t("shell.admin")} ... />` no mobile.
+4. **Breakdowns (4 painéis em grid 2×2)** — cada linha com barra de progresso proporcional ao topo + valor numérico:
+   - **Source** (referrer / utm_source agrupado; "Direct" quando vazio)
+   - **Page** (path mais visitado)
+   - **Country** (com bandeira emoji)
+   - **Device** (Mobile / Desktop / Tablet com %)
+   - Cada painel: top 10 + botão "Details" abrindo modal com lista completa, busca e paginação.
 
-### Itens de navegação
+5. **Filtros cruzados**: clicar em qualquer linha de breakdown adiciona um chip de filtro no topo (ex.: `Page = /login ×`) e refiltra todos os outros painéis e o gráfico — comportamento idêntico ao Plausible.
 
-`ADMIN_NAV` (sidebar/drawer) — mantém todos os links atuais; cada grupo vira um item com `groupLabel` (mesmo mecanismo já usado no Supplier para "Insights") para preservar a divisão visual entre Overview / Operations / CRM / Marketplace / Finance / Settings. Ícones permanecem os atuais (lucide-react).
+6. **Export**: botão para baixar CSV do período/filtros atuais.
 
-`ADMIN_BOTTOM` (5 itens) — escolha pragmática para mobile:
-1. Dashboard (`/admin/dashboard`) — `LayoutDashboard`
-2. Companies (`/admin/companies`) — `Building`
-3. Deals (`/admin/deals`) — `Package`, `accent: true`
-4. Prospects (`/admin/crm/prospects`) — `Users`
-5. Verifications (`/admin/verifications`) — `ShieldCheck`
+7. **Auto-refresh** a cada 30s quando período = Realtime / Last 24h.
 
-### i18n
+## Mobile (pocket)
 
-Adicionar a chave `shell.admin` em `src/i18n/locales/{en,pt,es}.json` (espelhando `shell.buyer` / `shell.supplier`) para o `rolePill`.
+- KPIs em carrossel horizontal scroll-snap (1.2 cards visíveis).
+- Gráfico ocupa largura total, altura reduzida.
+- Breakdowns viram acordeões empilhados (um por vez expandido), respeitando safe-area.
+- Filtros ativos viram bottom sheet.
+- Sem tabelas — só listas verticais com barras.
 
-### Limpeza
+## Dados
 
-Remover o uso das classes próprias `adm-app` / `adm-sidebar` / `adm-main` / `adm-topbar` etc. do JSX. Os estilos CSS antigos em `src/styles` podem ser deixados em paz por ora (sem referências quebradas, apenas não usados); não tocaremos em CSS para manter o escopo só de frontend de shell.
+**Fase 1 (entrega):** hook `useAdminAnalyticsTraffic()` retornando dados mock determinísticos (mesmo padrão do `useAdminAnalytics.ts` existente), para que a UI fique 100% funcional imediatamente.
+
+**Fase 2 (fora do escopo desta tarefa, deixar TODO):** tabela `analytics_pageviews` + edge function de ingestão (pixel `/track`) + queries reais. Não criar tabelas agora.
+
+## Integração no shell
+
+- Nova rota `/admin/analytics` em `src/App.tsx`.
+- Novo item em `ADMIN_NAV` no `AdminShell.tsx` no grupo **Overview** (ícone `BarChart3`), entre Dashboard e Companies.
+- i18n: chaves `admin.analytics.*` em en/pt/es.
+
+## Arquivos novos
+
+- `src/pages/admin/AdminAnalytics.tsx` — página principal.
+- `src/components/admin/analytics/KpiCard.tsx`
+- `src/components/admin/analytics/TrendChart.tsx`
+- `src/components/admin/analytics/BreakdownPanel.tsx`
+- `src/components/admin/analytics/BreakdownDetailModal.tsx`
+- `src/components/admin/analytics/PeriodPicker.tsx`
+- `src/components/admin/analytics/FilterChips.tsx`
+- `src/hooks/useAdminAnalyticsTraffic.ts` — mock determinístico.
+- `src/styles/mundus-analytics.css` — visual escuro inspirado no print (cards `bg-card`, barras azuis com gradiente sutil).
 
 ## Arquivos alterados
 
-- `src/pages/admin/AdminShell.tsx` — reescrito no padrão Buyer/Supplier.
-- `src/i18n/locales/en.json`, `pt.json`, `es.json` — adicionar `shell.admin`.
+- `src/App.tsx` — rota.
+- `src/pages/admin/AdminShell.tsx` — item de menu + bottom nav (opcional substituir um item).
+- `src/i18n/locales/{en,pt,es}.json` — textos.
 
 ## Fora do escopo
 
-- Nenhuma mudança em rotas, páginas internas do admin, banco de dados, RLS, ou no switch de papéis (que já mostra Admin corretamente após o fix recente do `useIsMundusAdmin`).
+- Ingestão real de eventos / pixel de tracking / tabelas no banco (fase 2).
+- Funis, retenção, goals (recursos Plausible Pro) — podem vir depois.
