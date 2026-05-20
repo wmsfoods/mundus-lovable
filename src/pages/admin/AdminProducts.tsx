@@ -296,3 +296,77 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
     </div>
   );
 }
+
+function useRowDropzone(cutId: string, onUpload: (id: string, f: File) => Promise<string>) {
+  const [drag, setDrag] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const handlers = {
+    onDragOver: (e: React.DragEvent) => {
+      if (Array.from(e.dataTransfer.types).includes("Files")) {
+        e.preventDefault();
+        setDrag(true);
+      }
+    },
+    onDragLeave: (e: React.DragEvent) => {
+      if (e.currentTarget === e.target) setDrag(false);
+    },
+    onDrop: async (e: React.DragEvent) => {
+      e.preventDefault();
+      setDrag(false);
+      const f = e.dataTransfer.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith("image/")) { toast.error("Only image files"); return; }
+      setBusy(true);
+      try {
+        await onUpload(cutId, f);
+        toast.success("Image uploaded");
+      } catch (err: any) { toast.error(err?.message || "Upload failed"); }
+      finally { setBusy(false); }
+    },
+  };
+  return { drag, busy, handlers };
+}
+
+function RowDrop({ cutId, onUpload, children }: { cutId: string; onUpload: (id: string, f: File) => Promise<string>; children: React.ReactNode }) {
+  const { drag, busy, handlers } = useRowDropzone(cutId, onUpload);
+  return (
+    <tr
+      {...handlers}
+      style={{
+        outline: drag ? "2px dashed #6366F1" : "none",
+        outlineOffset: -2,
+        background: drag ? "rgba(99,102,241,0.06)" : undefined,
+        transition: "background 0.15s",
+        position: "relative",
+      }}
+    >
+      {children}
+      {busy && (
+        <td style={{ position: "absolute", right: 8, top: 8, padding: 0, border: 0, fontSize: 11, color: "#6366F1", fontWeight: 600 }}>Uploading…</td>
+      )}
+    </tr>
+  );
+}
+
+function CardDrop({ cutId, onUpload, children }: { cutId: string; onUpload: (id: string, f: File) => Promise<string>; children: React.ReactNode }) {
+  const { drag, busy, handlers } = useRowDropzone(cutId, onUpload);
+  return (
+    <div
+      {...handlers}
+      className="adm-panel"
+      style={{
+        padding: 12, display: "flex", gap: 12, alignItems: "flex-start",
+        border: drag ? "2px dashed #6366F1" : undefined,
+        background: drag ? "rgba(99,102,241,0.06)" : undefined,
+        position: "relative", transition: "all 0.15s",
+      }}
+    >
+      {children}
+      {busy && (
+        <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#6366F1", fontWeight: 600, borderRadius: 8 }}>
+          <ImagePlus size={14} style={{ marginRight: 6 }} /> Uploading…
+        </div>
+      )}
+    </div>
+  );
+}
