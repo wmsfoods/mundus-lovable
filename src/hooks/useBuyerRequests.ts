@@ -5,7 +5,7 @@ export type BuyerRequestStatus =
   | "closed_no_winner"
   | "expired";
 
-export type Species = "beef" | "pork" | "poultry" | "lamb";
+export type Species = "beef" | "pork" | "poultry" | "ovine";
 
 export type ReceivedOffer = {
   id: string;
@@ -217,7 +217,7 @@ const MOCK: BuyerRequest[] = [
   {
     id: "req-0015",
     title: "Lamb Chops — Saudi Arabia",
-    species: "lamb",
+    species: "ovine",
     description: "Halal-certified lamb chops, frozen. Drafting requirements for Jeddah delivery.",
     targetPricePerKgUsd: 11.50,
     targetVolumeKg: 18000,
