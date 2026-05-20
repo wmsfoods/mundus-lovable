@@ -1925,6 +1925,51 @@
         "body": "Converta um prospect em empresa Mundus para vê-lo aqui.",
         "cta": "Abrir CRM"
       }
+    },
+    "negotiations": {
+      "title": "Negociações",
+      "subtitle": "Todas as negociações da plataforma",
+      "stats": {
+        "active": "Negociações ativas",
+        "total_value": "Valor total",
+        "avg_gap": "Gap médio",
+        "avg_rounds": "Média de rounds",
+        "win_rate": "Taxa de conversão"
+      },
+      "filter": {
+        "all": "Todas",
+        "awaiting_supplier": "Aguardando fornecedor",
+        "pending_buyer": "Aguardando comprador",
+        "accepted": "Aceita",
+        "rejected": "Rejeitada",
+        "expired": "Expirada"
+      },
+      "table": {
+        "id": "ID",
+        "product": "Produto",
+        "supplier": "Fornecedor",
+        "buyer": "Comprador",
+        "route": "Rota",
+        "status": "Status",
+        "round": "Round",
+        "original": "Original",
+        "latest_bid": "Último bid",
+        "our_counter": "Nosso counter",
+        "gap": "Gap",
+        "last_activity": "Última atividade"
+      },
+      "empty": {
+        "title": "Nenhuma negociação ainda",
+        "description": "As negociações aparecerão aqui quando compradores começarem a fazer bids nas ofertas."
+      },
+      "status": {
+        "awaiting_supplier": "Aguardando fornecedor",
+        "pending_buyer_review": "Aguardando comprador",
+        "bid_accepted": "Bid aceito",
+        "offer_rejected": "Rejeitada",
+        "offer_exhausted": "Esgotada",
+        "expired": "Expirada"
+      }
     }
   },
   "profile": {
