@@ -333,12 +333,12 @@ export default function FindCompanies() {
                         <a className="psp-icon-link" href={c.linkedin} target="_blank" rel="noreferrer"><Linkedin size={14} /></a>
                       </span>
                     </td>
-                    <td><span className={`psp-badge ${c.in_crm ? "in-crm" : "new"}`}>{c.in_crm ? "In CRM" : "New"}</span></td>
+                    <td><span className={`psp-badge ${c.in_crm || savedIds.has(c.id) ? "in-crm" : "new"}`}>{c.in_crm || savedIds.has(c.id) ? "In CRM" : "New"}</span></td>
                     <td>
-                      {c.in_crm ? (
+                      {c.in_crm || savedIds.has(c.id) ? (
                         <button className="psp-btn ghost" onClick={() => setDetail(c)}>View</button>
                       ) : (
-                        <button className="psp-btn" onClick={() => toast.success(`${c.name} saved`)}>Save</button>
+                        <button className="psp-btn" onClick={() => setSaveModalCompany(c)}>Save</button>
                       )}
                     </td>
                   </tr>
@@ -386,7 +386,7 @@ export default function FindCompanies() {
             <>
               {detail.in_crm
                 ? <button className="psp-btn solid">Open in CRM</button>
-                : <button className="psp-btn solid" onClick={() => toast.success("Saved to CRM")}>Save to CRM</button>}
+                : <button className="psp-btn solid" onClick={() => { setSaveModalCompany(detail); }}>Save to CRM</button>}
               <a className="psp-btn ghost" href={detail.website} target="_blank" rel="noreferrer"><ExternalLink size={12} />Website</a>
               <a className="psp-btn ghost" href={detail.linkedin} target="_blank" rel="noreferrer"><Linkedin size={12} />LinkedIn</a>
             </>
