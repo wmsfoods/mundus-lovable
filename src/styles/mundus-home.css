@@ -219,10 +219,12 @@
 }
 @media (max-width: 768px) {
   .hero {
-    padding: 28px 24px;
-    min-height: 180px;
+    padding: 20px 20px;
+    min-height: 0;
+    margin-bottom: 16px;
+    border-radius: 14px;
   }
-  .hero h2 { font-size: 22px; max-width: 100%; }
+  .hero h2 { font-size: 20px; max-width: 100%; }
   .hero-photo { width: 160px; opacity: 0.4; }
 
   /* KPIs → carrossel horizontal snap, tiles compactos */
@@ -237,7 +239,7 @@
     -webkit-overflow-scrolling: touch;
     scrollbar-width: none;
     padding: 4px 16px 8px;
-    margin: 0 -16px 20px;
+    margin: 0 -16px 16px;
     background: transparent;
     scroll-padding-left: 16px;
   }
@@ -259,10 +261,13 @@
   .stat .ic svg { width: 18px; height: 18px; }
   .sh-stat-delta { font-size: 10.5px; margin-top: 2px; }
 
-  .action-row {
-    grid-template-columns: 1fr;
-  }
+  .action-row { grid-template-columns: 1fr; margin-bottom: 16px; }
   .action-card { padding: 18px; }
+
+  /* Padroniza ritmo vertical entre seções no mobile */
+  .sec-head { margin: 4px 0 10px; }
+  .sec-head h3 { font-size: var(--fs-lg); }
+  .card-row { margin-bottom: 16px; }
 }
 @media (max-width: 480px) {
   .hero h2 { font-size: 18px; }
