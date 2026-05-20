@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
 import { BottomNav, type BottomNavItem } from "@/components/mundus/BottomNav";
 import { MobileDrawer } from "@/components/mundus/MobileDrawer";
+import { StackHeader } from "@/components/mundus/StackHeader";
+import { StackHeaderProvider } from "@/contexts/StackHeaderContext";
+import { isStackRoute } from "@/lib/mobile-nav";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
@@ -34,9 +37,11 @@ function SupplierShellInner() {
   const { company } = useCurrentCompany();
   const { t } = useTranslation();
   const isMobile = useIsMobileShell();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userName = user?.email?.split("@")[0] ?? "User";
   const { openUpsell } = useInsightsUpsell();
+  const stackMode = isMobile && isStackRoute(location.pathname);
 
   const featureForPath = (to: string): UpsellFeature | null => {
     if (to === "/supplier/insights/price-benchmark") return "price-benchmark";
@@ -82,30 +87,34 @@ function SupplierShellInner() {
   ];
 
   return (
-    <div className={`app-shell ${isMobile ? "is-mobile" : ""}`.trim()}>
-      <Sidebar
-        items={SUPPLIER_NAV}
-        rolePill={t("shell.supplier")}
-        userName={userName}
-        userSubtitle={company?.name}
-        onProBadgeClick={onProBadgeClick}
-      />
-      <Topbar onMenuClick={() => setDrawerOpen(true)} />
-      <main className="app-main">
-        <Outlet />
-      </main>
-      {isMobile && <BottomNav items={SUPPLIER_BOTTOM} />}
-      {isMobile && (
-        <MobileDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+    <StackHeaderProvider>
+      <div
+        className={`app-shell ${isMobile ? "is-mobile" : ""} ${stackMode ? "is-stack" : ""}`.trim()}
+      >
+        <Sidebar
           items={SUPPLIER_NAV}
           rolePill={t("shell.supplier")}
           userName={userName}
           userSubtitle={company?.name}
           onProBadgeClick={onProBadgeClick}
         />
-      )}
-    </div>
+        {stackMode ? <StackHeader /> : <Topbar onMenuClick={() => setDrawerOpen(true)} />}
+        <main className="app-main">
+          <Outlet />
+        </main>
+        {isMobile && !stackMode && <BottomNav items={SUPPLIER_BOTTOM} />}
+        {isMobile && (
+          <MobileDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            items={SUPPLIER_NAV}
+            rolePill={t("shell.supplier")}
+            userName={userName}
+            userSubtitle={company?.name}
+            onProBadgeClick={onProBadgeClick}
+          />
+        )}
+      </div>
+    </StackHeaderProvider>
   );
 }

@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
 import { BottomNav, type BottomNavItem } from "@/components/mundus/BottomNav";
 import { MobileDrawer } from "@/components/mundus/MobileDrawer";
+import { StackHeader } from "@/components/mundus/StackHeader";
+import { StackHeaderProvider } from "@/contexts/StackHeaderContext";
+import { isStackRoute } from "@/lib/mobile-nav";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
@@ -24,8 +27,10 @@ export default function BuyerShell() {
   const { company } = useCurrentCompany();
   const { t } = useTranslation();
   const isMobile = useIsMobileShell();
+  const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userName = user?.email?.split("@")[0] ?? "User";
+  const stackMode = isMobile && isStackRoute(location.pathname);
 
   const BUYER_NAV: SidebarItem[] = [
     { to: "/buyer", label: t("shell.nav.home"), icon: HomeIcon, end: true },
@@ -47,27 +52,31 @@ export default function BuyerShell() {
   ];
 
   return (
-    <div className={`app-shell ${isMobile ? "is-mobile" : ""}`.trim()}>
-      <Sidebar
-        items={BUYER_NAV}
-        userName={userName}
-        userSubtitle={company?.name}
-      />
-      <Topbar onMenuClick={() => setDrawerOpen(true)} />
-      <main className="app-main">
-        <Outlet />
-      </main>
-      {isMobile && <BottomNav items={BUYER_BOTTOM} />}
-      {isMobile && (
-        <MobileDrawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+    <StackHeaderProvider>
+      <div
+        className={`app-shell ${isMobile ? "is-mobile" : ""} ${stackMode ? "is-stack" : ""}`.trim()}
+      >
+        <Sidebar
           items={BUYER_NAV}
-          rolePill={t("shell.buyer")}
           userName={userName}
           userSubtitle={company?.name}
         />
-      )}
-    </div>
+        {stackMode ? <StackHeader /> : <Topbar onMenuClick={() => setDrawerOpen(true)} />}
+        <main className="app-main">
+          <Outlet />
+        </main>
+        {isMobile && !stackMode && <BottomNav items={BUYER_BOTTOM} />}
+        {isMobile && (
+          <MobileDrawer
+            open={drawerOpen}
+            onClose={() => setDrawerOpen(false)}
+            items={BUYER_NAV}
+            rolePill={t("shell.buyer")}
+            userName={userName}
+            userSubtitle={company?.name}
+          />
+        )}
+      </div>
+    </StackHeaderProvider>
   );
 }
