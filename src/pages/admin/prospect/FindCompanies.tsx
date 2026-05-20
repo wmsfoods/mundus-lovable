@@ -115,8 +115,11 @@ export default function FindCompanies() {
       </div>
 
       <div className="psp-tabs">
-        <button className={`psp-tab ${tab === "total" ? "is-active" : ""}`} onClick={() => { setTab("total"); setPage(1); }}>Total ({MOCK_COMPANIES.length})</button>
-        <button className={`psp-tab ${tab === "saved" ? "is-active" : ""}`} onClick={() => { setTab("saved"); setPage(1); }}>Saved ({MOCK_COMPANIES.filter((c) => c.in_crm).length})</button>
+        {LEAD_TYPE_TABS.map((t) => (
+          <button key={t}
+            className={`psp-tab ${leadTypeTab === t ? "is-active" : ""}`}
+            onClick={() => { setLeadTypeTab(t); setPage(1); }}>{t}</button>
+        ))}
       </div>
 
       <div className="psp-layout">
@@ -154,15 +157,11 @@ export default function FindCompanies() {
           </FilterAccordion>
 
           <FilterAccordion label="Employees" icon={<Users size={14} />} hasActive={empRanges.length > 0}>
-            {EMPLOYEE_RANGES.map((r) => {
-              const count = MOCK_COMPANIES.filter((c) => c.employeeRange === r).length;
-              return (
-                <div key={r} className="psp-checkbox-row">
-                  <label><Checkbox checked={empRanges.includes(r)} onCheckedChange={() => { toggle(empRanges, r, setEmpRanges); setPage(1); }} />{r}</label>
-                  <span className="count">{count}</span>
-                </div>
-              );
-            })}
+            {EMPLOYEE_RANGES.map((r) => (
+              <div key={r} className="psp-checkbox-row">
+                <label><Checkbox checked={empRanges.includes(r)} onCheckedChange={() => { toggle(empRanges, r, setEmpRanges); setPage(1); }} />{r}</label>
+              </div>
+            ))}
           </FilterAccordion>
 
           <FilterAccordion label="Industry & Keywords" icon={<Briefcase size={14} />} hasActive={industries.length > 0 || keywords.length > 0}>
