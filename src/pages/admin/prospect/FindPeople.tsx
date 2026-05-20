@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import {
   EMPLOYEE_RANGES, SENIORITIES, DEPARTMENTS, JOB_TITLES,
   DECISION_LEVELS, LEAD_TYPES, PRODUCT_INTERESTS,
-  LEAD_TYPE_TABS, type LeadTypeTab,
+  
   fakePhone, type MockPerson,
 } from "@/types/prospect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
@@ -19,7 +19,7 @@ const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil"
 
 export default function FindPeople() {
   const [sp] = useSearchParams();
-  const [leadTypeTab, setLeadTypeTab] = useState<LeadTypeTab>("All");
+  
   const [search, setSearch] = useState("");
   const [titles, setTitles] = useState<string[]>([]);
   const [titleInput, setTitleInput] = useState("");
@@ -108,13 +108,6 @@ export default function FindPeople() {
         <span className="psp-credits">Credits: 4,480</span>
       </div>
 
-      <div className="psp-tabs">
-        {LEAD_TYPE_TABS.map((t) => (
-          <button key={t}
-            className={`psp-tab ${leadTypeTab === t ? "is-active" : ""}`}
-            onClick={() => { setLeadTypeTab(t); setPage(1); }}>{t}</button>
-        ))}
-      </div>
 
       <div className="psp-layout">
         <aside className={`psp-filters ${showFilters ? "is-open" : ""}`}>

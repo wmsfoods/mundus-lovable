@@ -92,8 +92,6 @@ export const DECISION_LEVELS = ["Decision Maker","Influencer","Gatekeeper","User
 // Unified Lead Type values used by tabs, filters and SaveToCrmModal.
 export const LEAD_TYPES = ["Buyer","Supplier","Buyer/Supplier","Prospect"] as const;
 export type LeadType = typeof LEAD_TYPES[number];
-export const LEAD_TYPE_TABS = ["All", ...LEAD_TYPES] as const;
-export type LeadTypeTab = typeof LEAD_TYPE_TABS[number];
 
 export const PRODUCT_INTERESTS = ["Beef","Pork","Poultry","Lamb","Halal","Organic"];
 
