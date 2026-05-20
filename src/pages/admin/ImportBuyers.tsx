@@ -136,7 +136,10 @@ export default function ImportBuyers() {
         } else {
           const company_id = companyIdByDomain.get(r.domain.toLowerCase()) ?? null;
           const { error } = await supabase.from("crm_contacts").insert({
-            full_name: r.full_name ?? `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() || email,
+            full_name:
+              r.full_name ||
+              `${r.first_name ?? ""} ${r.last_name ?? ""}`.trim() ||
+              email,
             first_name: r.first_name ?? null,
             last_name: r.last_name ?? null,
             email,
