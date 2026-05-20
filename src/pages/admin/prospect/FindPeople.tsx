@@ -16,7 +16,22 @@ import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
 import { useProspectSearch } from "@/hooks/useProspectSearch";
 import { supabase } from "@/integrations/supabase/client";
 
-async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}) {
+export type EnrichResult = {
+  email: string | null;
+  phone: string | null;
+  mobile: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  fullName?: string | null;
+  photoUrl?: string | null;
+  linkedin?: string | null;
+  jobTitle?: string | null;
+  city?: string | null;
+  country?: string | null;
+  person?: any;
+};
+
+async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}): Promise<EnrichResult> {
   const { data, error } = await supabase.functions.invoke("prospect-enrich", {
     body: {
       id: p.id,
@@ -32,7 +47,21 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
     const msg = data?.error || error?.message || "enrich_failed";
     throw new Error(msg);
   }
-  return data as { email: string | null; phone: string | null; mobile: string | null };
+  const person = data.person ?? {};
+  return {
+    email: data.email ?? null,
+    phone: data.phone ?? null,
+    mobile: data.mobile ?? null,
+    firstName: person.first_name ?? null,
+    lastName: person.last_name ?? null,
+    fullName: person.name ?? null,
+    photoUrl: person.photo_url ?? null,
+    linkedin: person.linkedin_url ?? null,
+    jobTitle: person.title ?? null,
+    city: person.city ?? null,
+    country: person.country ?? null,
+    person,
+  };
 }
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","United States","Japan","Denmark"];
