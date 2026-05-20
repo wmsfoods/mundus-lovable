@@ -4,6 +4,12 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Check, Plus, Search as SearchIcon } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════
    DATA — markets & cuts come from Supabase via useSupplierOfferData
@@ -13,6 +19,17 @@ const SPECS = ["Boneless", "Bone-In", "Semi-Boneless"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
 const GRADES = ["Not Classified", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
+
+// Primary destination markets shown as chips (in this order).
+// Match is done against country english_name.
+const PRIMARY_MARKETS = [
+  "China", "Hong Kong", "Vietnam", "Taiwan", "Thailand",
+  "South Korea", "Indonesia", "Egypt", "Russia", "Jordan",
+  "United States", "Canada", "Mexico",
+];
+
+// Incoterms that are mutually exclusive (selecting one disables the others).
+const INCO_EXCLUSIVE_GROUPS: string[][] = [["CIF", "CFR"]];
 
 type Incoterm = { id: string; name: string; extra: null | "insurance" | "city" };
 const INCOTERMS: Incoterm[] = [
@@ -85,6 +102,9 @@ export default function SupplierCreateOffer() {
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
   const { markets: MARKETS, cutsByCategory, loading: dataLoading, error: dataError } = useSupplierOfferData();
+  const isMobile = useIsMobile();
+  const [moreMktsOpen, setMoreMktsOpen] = useState(false);
+  const [cutPickerOpen, setCutPickerOpen] = useState(false);
 
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
@@ -161,6 +181,13 @@ export default function SupplierCreateOffer() {
   /* Incoterms */
   const toggleInco = useCallback((id: string) => {
     setSelInco((prev) => {
+      // Block adding if it conflicts with already-selected exclusive incoterm
+      if (!prev.includes(id)) {
+        const conflict = INCO_EXCLUSIVE_GROUPS.some(
+          (grp) => grp.includes(id) && grp.some((x) => x !== id && prev.includes(x))
+        );
+        if (conflict) return prev;
+      }
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
       return next.length === 0 ? [id] : next;
     });
