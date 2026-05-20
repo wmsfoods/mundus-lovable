@@ -304,7 +304,7 @@ export default function SupplierNegotiationDetail() {
             <div className="nd-card-head">
               <strong>{t("supplier.negotiations.detail.priceDetails")}</strong>
             </div>
-            <div className="nd-price-scroll">
+            <div style={{ overflowX: "auto" }}>
               <table className="nd-price-table">
                 <thead>
                   <tr>

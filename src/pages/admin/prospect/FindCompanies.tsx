@@ -1,14 +1,13 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Building, MapPin, Users, Briefcase, DollarSign, Tag, Filter, ExternalLink, Linkedin, Save, Download, Globe, BarChart3, FileCode, SearchX } from "lucide-react";
+import { Search, Building, MapPin, Users, Briefcase, DollarSign, Tag, Filter, ExternalLink, Linkedin, Save, Download, Globe, BarChart3, FileCode } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
-  EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
+  MOCK_COMPANIES, EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
   REGION_PRESETS, SIC_CODES, NAICS_CODES, MARKET_SEGMENTS,
-  
   fmtRevenue, fmtNumber, type MockCompany,
-} from "@/types/prospect";
+} from "@/data/mockProspect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { PspPagination } from "@/components/prospect/Pagination";
@@ -24,7 +23,7 @@ const REVENUE_PRESETS = [
 
 export default function FindCompanies() {
   const nav = useNavigate();
-  
+  const [tab, setTab] = useState<"total" | "saved">("total");
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [locations, setLocations] = useState<string[]>([]);
@@ -70,8 +69,33 @@ export default function FindCompanies() {
     setMarketSegments([]); setCompanyType("all");
   };
 
-  // TODO: Connect to prospect-search edge function to fetch real data
-  const filtered: MockCompany[] = [];
+  const filtered = useMemo(() => {
+    let list = [...MOCK_COMPANIES];
+    if (tab === "saved") list = list.filter((c) => c.in_crm);
+    const q = search.toLowerCase().trim();
+    if (q) list = list.filter((c) => c.name.toLowerCase().includes(q) || c.domain.toLowerCase().includes(q));
+    const qn = name.toLowerCase().trim();
+    if (qn) list = list.filter((c) => c.name.toLowerCase().includes(qn) || c.domain.toLowerCase().includes(qn));
+    if (locations.length) list = list.filter((c) => locations.includes(c.country));
+    if (excludeLocations.length) list = list.filter((c) => !excludeLocations.includes(c.country));
+    if (cityQuery.trim()) {
+      const cq = cityQuery.toLowerCase().trim();
+      list = list.filter((c) => c.city.toLowerCase().includes(cq));
+    }
+    if (empRanges.length) list = list.filter((c) => empRanges.includes(c.employeeRange));
+    if (industries.length) list = list.filter((c) => industries.includes(c.industry));
+    if (keywords.length) list = list.filter((c) => keywords.some((k) => (c.keywords ?? []).includes(k) || c.description.toLowerCase().includes(k.toLowerCase())));
+    if (revMin != null) list = list.filter((c) => c.revenue >= revMin);
+    if (revMax != null) list = list.filter((c) => c.revenue <= revMax);
+    if (stages.length) list = list.filter((c) => c.stage && stages.includes(c.stage));
+    if (notInCrm) list = list.filter((c) => !c.in_crm && !savedIds.has(c.id));
+    if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "emp-desc") list.sort((a, b) => b.employees - a.employees);
+    if (sort === "emp-asc") list.sort((a, b) => a.employees - b.employees);
+    if (sort === "rev-desc") list.sort((a, b) => b.revenue - a.revenue);
+    if (sort === "rev-asc") list.sort((a, b) => a.revenue - b.revenue);
+    return list;
+  }, [tab, search, name, locations, excludeLocations, cityQuery, empRanges, industries, keywords, revMin, revMax, stages, notInCrm, savedIds, sort]);
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((c) => selected.has(c.id));
@@ -89,7 +113,15 @@ export default function FindCompanies() {
   };
 
   const exportCsv = () => {
-    toast.info("No data to export yet");
+    const ids = selected.size ? [...selected] : pageItems.map((c) => c.id);
+    const rows = MOCK_COMPANIES.filter((c) => ids.includes(c.id));
+    const csv = ["Name,Domain,Industry,Country,City,Employees,Revenue,Founded,Website",
+      ...rows.map((c) => `"${c.name}","${c.domain}","${c.industry}","${c.country}","${c.city}",${c.employees},${c.revenue},${c.founded},"${c.website}"`)
+    ].join("\n");
+    const blob = new Blob([csv], { type: "text/csv" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a"); a.href = url; a.download = "companies.csv"; a.click();
+    toast.success(`Exported ${rows.length} companies`);
   };
 
   return (
@@ -114,6 +146,10 @@ export default function FindCompanies() {
         <span className="psp-credits">Credits: 4,480</span>
       </div>
 
+      <div className="psp-tabs">
+        <button className={`psp-tab ${tab === "total" ? "is-active" : ""}`} onClick={() => { setTab("total"); setPage(1); }}>Total ({MOCK_COMPANIES.length})</button>
+        <button className={`psp-tab ${tab === "saved" ? "is-active" : ""}`} onClick={() => { setTab("saved"); setPage(1); }}>Saved ({MOCK_COMPANIES.filter((c) => c.in_crm).length})</button>
+      </div>
 
       <div className="psp-layout">
         <aside className={`psp-filters ${showFilters ? "is-open" : ""}`}>
@@ -150,11 +186,15 @@ export default function FindCompanies() {
           </FilterAccordion>
 
           <FilterAccordion label="Employees" icon={<Users size={14} />} hasActive={empRanges.length > 0}>
-            {EMPLOYEE_RANGES.map((r) => (
-              <div key={r} className="psp-checkbox-row">
-                <label><Checkbox checked={empRanges.includes(r)} onCheckedChange={() => { toggle(empRanges, r, setEmpRanges); setPage(1); }} />{r}</label>
-              </div>
-            ))}
+            {EMPLOYEE_RANGES.map((r) => {
+              const count = MOCK_COMPANIES.filter((c) => c.employeeRange === r).length;
+              return (
+                <div key={r} className="psp-checkbox-row">
+                  <label><Checkbox checked={empRanges.includes(r)} onCheckedChange={() => { toggle(empRanges, r, setEmpRanges); setPage(1); }} />{r}</label>
+                  <span className="count">{count}</span>
+                </div>
+              );
+            })}
           </FilterAccordion>
 
           <FilterAccordion label="Industry & Keywords" icon={<Briefcase size={14} />} hasActive={industries.length > 0 || keywords.length > 0}>
@@ -253,11 +293,63 @@ export default function FindCompanies() {
         </aside>
 
         <div className="psp-results">
-          <div className="psp-empty-state" style={{ padding: "80px 20px", textAlign: "center", color: "var(--adm-text-tertiary)" }}>
-            <SearchX size={48} style={{ margin: "0 auto 16px", opacity: 0.5 }} />
-            <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--adm-text-primary)", margin: "0 0 8px" }}>Search for companies</h3>
-            <p style={{ fontSize: 13, margin: 0 }}>Use the filters to find prospects, or search by name</p>
+          <div className="psp-results-scroll">
+            <table className="psp-table">
+              <thead>
+                <tr>
+                  <th style={{ width: 36 }}><Checkbox checked={allOnPageSelected} onCheckedChange={toggleAll} /></th>
+                  <th>Company</th>
+                  <th>Industry</th>
+                  <th>Location</th>
+                  <th>Employees</th>
+                  <th>Revenue</th>
+                  <th>Founded</th>
+                  <th>Links</th>
+                  <th>Status</th>
+                  <th style={{ width: 90 }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {pageItems.map((c) => (
+                  <tr key={c.id} className={selected.has(c.id) ? "is-selected" : ""}>
+                    <td><Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggleSelect(c.id)} /></td>
+                    <td>
+                      <div className="psp-company-cell">
+                        <img src={c.logo_url} alt="" />
+                        <div>
+                          <div className="name" onClick={() => setDetail(c)}>{c.name}</div>
+                          <div className="domain">{c.domain}</div>
+                        </div>
+                      </div>
+                    </td>
+                    <td><span className="psp-tag">{c.industry}</span></td>
+                    <td>{c.countryFlag} {c.city}, {c.country}</td>
+                    <td>{fmtNumber(c.employees)}</td>
+                    <td>{fmtRevenue(c.revenue)}</td>
+                    <td>{c.founded}</td>
+                    <td>
+                      <span style={{ display: "inline-flex", gap: 8 }}>
+                        <a className="psp-icon-link" href={c.website} target="_blank" rel="noreferrer"><ExternalLink size={14} /></a>
+                        <a className="psp-icon-link" href={c.linkedin} target="_blank" rel="noreferrer"><Linkedin size={14} /></a>
+                      </span>
+                    </td>
+                    <td><span className={`psp-badge ${c.in_crm || savedIds.has(c.id) ? "in-crm" : "new"}`}>{c.in_crm || savedIds.has(c.id) ? "In CRM" : "New"}</span></td>
+                    <td>
+                      {c.in_crm || savedIds.has(c.id) ? (
+                        <button className="psp-btn ghost" onClick={() => setDetail(c)}>View</button>
+                      ) : (
+                        <button className="psp-btn" onClick={() => setSaveModalCompany(c)}>Save</button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+                {pageItems.length === 0 && (
+                  <tr><td colSpan={10} className="psp-empty">No companies match your filters.</td></tr>
+                )}
+              </tbody>
+            </table>
           </div>
+          <PspPagination total={filtered.length} page={page} pageSize={pageSize} onChange={setPage} />
 
           {selected.size > 0 && (
             <div className="psp-bulk-bar">

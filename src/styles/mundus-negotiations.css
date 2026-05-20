@@ -196,7 +196,23 @@
   color: #b45309;
 }
 
-/* Mobile overrides moved to end of file so they win over the base rules below. */
+/* --- Mobile --------------------------------------------------- */
+@media (max-width: 768px) {
+  .nego-table thead { display: none; }
+  .nego-table tbody td { display: block; padding: 6px 12px; border-bottom: none; }
+  .nego-table tbody tr { display: block; border-bottom: 1px solid #f1f1f4; padding: 8px 0; }
+  .nego-row-parent td { padding: 12px; }
+  .nego-row-child td::before {
+    content: attr(data-label);
+    display: inline-block;
+    min-width: 110px;
+    font-size: var(--fs-xs);
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    margin-right: 8px;
+  }
+}
 
 /* --- Negotiation Detail page ----------------- */
 .nd-back {
@@ -314,10 +330,7 @@
   margin-bottom: 16px;
 }
 @media (max-width: 640px) {
-  .nd-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
-  .nd-stat { padding: 8px 10px; }
-  .nd-stat-value { font-size: 15px; }
-  .nd-stat-label { font-size: 10px; letter-spacing: 0.02em; }
+  .nd-stats { grid-template-columns: 1fr; }
 }
 .nd-stat {
   padding: 14px;
@@ -569,194 +582,3 @@
 .nd-banner.danger  { background: rgba(192,57,43,0.06); color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
 .nd-banner.muted   { background: var(--bg-subtle, #f7f7f8); color: var(--fg-muted); border: 1px solid var(--border); }
 .nd-banner.final-round { background: rgba(182,71,105,0.06); color: var(--p800); border: 1px solid rgba(182,71,105,0.3); }
-
-/* =========================================================================
-   Mobile overrides (kept at end of file so they always beat base styles)
-   ========================================================================= */
-@media (max-width: 768px) {
-  .nego-table thead { display: none; }
-  .nego-table tbody td { display: block; padding: 6px 12px; border-bottom: none; }
-  .nego-table tbody tr { display: block; border-bottom: 1px solid #f1f1f4; padding: 8px 0; }
-  .nego-row-parent td { padding: 12px; }
-  .nego-row-child td::before {
-    content: attr(data-label);
-    display: inline-block;
-    min-width: 110px;
-    font-size: var(--fs-xs);
-    color: var(--fg-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    margin-right: 8px;
-  }
-
-  /* Toolbar: search full-width, sort + counts em uma linha embaixo */
-  .nego-toolbar { gap: 8px; margin: 0 0 12px; }
-  .nego-toolbar .search-input { flex: 1 1 100%; min-width: 0; }
-  .nego-toolbar .mini-select { flex: 0 0 auto; }
-  .nego-toolbar .nego-counts { margin-left: 0; font-size: var(--fs-xs); }
-
-  /* Filter chips → scroll horizontal em uma única linha */
-  .nego-chips {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    scroll-snap-type: x proximity;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    padding: 4px 16px;
-    margin: 0 -16px 12px;
-    gap: 6px;
-  }
-  .nego-chips::-webkit-scrollbar { display: none; }
-  .nego-chip { flex: 0 0 auto; scroll-snap-align: start; padding: 5px 12px; font-size: var(--fs-xs); }
-
-  /* ===== Detail page ===== */
-  .nd-back { margin-bottom: 12px; }
-
-  .nd-header {
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 14px;
-    margin: 0 0 12px;
-    border-radius: 12px;
-    max-width: 100%;
-    box-sizing: border-box;
-  }
-  .nd-header .nd-avatar { width: 36px; height: 36px; border-radius: 8px; font-size: 16px; }
-  .nd-header .nd-h-text { flex: 1 1 calc(100% - 48px); min-width: 0; }
-  .nd-header h1 {
-    font-size: 17px;
-    line-height: 1.25;
-    word-break: normal;
-    overflow-wrap: anywhere;
-  }
-  .nd-header .nd-sub {
-    font-size: var(--fs-xs);
-    overflow-wrap: anywhere;
-  }
-  .nd-header .nd-h-right {
-    flex: 1 1 100%;
-    justify-content: flex-start;
-    gap: 6px;
-    flex-wrap: wrap;
-  }
-  .nd-timer { padding: 3px 8px; font-size: 11px; }
-
-  /* Meta chips: linha única deslizável, respeita o padding lateral da página */
-  .nd-meta-chips {
-    display: flex;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
-    gap: 6px;
-    padding: 4px 16px;
-    margin: 0 -16px 12px;
-    max-width: calc(100% + 32px);
-  }
-  .nd-meta-chips::-webkit-scrollbar { display: none; }
-  .nd-meta-chips .chip {
-    flex: 0 0 auto;
-    padding: 5px 10px;
-    font-size: 11px;
-    white-space: nowrap;
-  }
-
-  /* Cards mais compactos e sem estourar a largura do container */
-  .nd-grid { gap: 12px; }
-  .nd-grid,
-  .nd-grid > div {
-    min-width: 0;
-    max-width: 100%;
-    overflow: hidden;
-    box-sizing: border-box;
-  }
-  .nd-card {
-    padding: 14px;
-    margin-bottom: 12px;
-    border-radius: 12px;
-    max-width: 100%;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
-  .nd-card-head { margin-bottom: 10px; flex-wrap: wrap; gap: 6px; }
-  .nd-summary { margin: 8px 0 12px; }
-  .nd-stats { gap: 8px; margin-bottom: 12px; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .nd-stat { padding: 10px 12px; min-width: 0; }
-  .nd-stat-value { font-size: 16px; word-break: break-word; }
-  .nd-stat-label { font-size: 10.5px; margin-bottom: 2px; }
-
-  .nd-buyer-info dl { grid-template-columns: 1fr auto; gap: 8px 10px; font-size: var(--fs-xs); }
-
-  .nd-timeline-head { align-items: flex-start; }
-  .nd-timeline-flow {
-    position: relative;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 8px;
-    overflow: visible;
-    padding-left: 12px;
-  }
-  .nd-timeline-flow::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 10px;
-    bottom: 10px;
-    width: 2px;
-    border-radius: 999px;
-    background: var(--border);
-  }
-  .nd-timeline-flow .tl-pill {
-    position: relative;
-    width: 100%;
-    justify-content: space-between;
-    white-space: normal;
-    border-radius: var(--radius-sm);
-    padding: 9px 10px;
-  }
-  .nd-timeline-flow .tl-pill::before {
-    content: "";
-    position: absolute;
-    left: -16px;
-    top: 50%;
-    width: 8px;
-    height: 8px;
-    border-radius: 999px;
-    background: currentColor;
-    transform: translateY(-50%);
-    box-shadow: 0 0 0 3px var(--bg);
-  }
-  .nd-timeline-flow .tl-sep { display: none; }
-
-  /* Price details: scroll horizontal interno, sem estourar o card */
-  .nd-price-wrap, .nd-price-scroll {
-    display: block;
-    overflow-x: auto;
-    overflow-y: hidden;
-    max-width: 100%;
-    width: 100%;
-    -webkit-overflow-scrolling: touch;
-    box-sizing: border-box;
-  }
-  .nd-price-table { font-size: 11px; width: max-content; min-width: 640px; }
-  .nd-price-table th,
-  .nd-price-table td { padding: 8px 6px; white-space: nowrap; }
-  .nd-price-table .product-name { white-space: normal; }
-  .nd-price-table .product-pack { white-space: nowrap; }
-
-  .nd-actions {
-    grid-template-columns: 1fr;
-    gap: 8px;
-    max-width: 100%;
-  }
-  .nd-actions .btn-counter,
-  .nd-actions .btn-accept,
-  .nd-actions .btn-reject {
-    width: 100%;
-    padding: 12px 14px;
-    font-size: var(--fs-sm);
-    min-width: 0;
-  }
-}
