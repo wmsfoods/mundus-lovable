@@ -6,6 +6,7 @@ import {
   ChevronDownIcon,
   BellIcon,
 } from "@/components/icons";
+import { Menu as MenuIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
@@ -13,7 +14,11 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { Logo } from "@/components/Logo";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 
-export function Topbar() {
+type TopbarProps = {
+  onMenuClick?: () => void;
+};
+
+export function Topbar({ onMenuClick }: TopbarProps = {}) {
   const { user, signOut } = useAuth();
   const { company } = useCurrentCompany();
   const navigate = useNavigate();
@@ -55,9 +60,19 @@ export function Topbar() {
   return (
     <div className={`tb ${isMobile ? "tb-mobile" : ""}`.trim()}>
       {isMobile && (
-        <div className="tb-brand">
-          <Logo size="sm" />
-        </div>
+        <>
+          <button
+            type="button"
+            className="tb-hamburger"
+            onClick={onMenuClick}
+            aria-label={t("shell.openMenu", { defaultValue: "Open menu" })}
+          >
+            <MenuIcon size={22} />
+          </button>
+          <div className="tb-brand-center">
+            <Logo size="sm" />
+          </div>
+        </>
       )}
       {!isMobile && company?.name && (
         <div className="tb-posting-as">
@@ -67,7 +82,7 @@ export function Topbar() {
         </div>
       )}
       {!isMobile && <div className="tb-spacer" />}
-      <div ref={langRef} style={{ position: "relative" }}>
+      {!isMobile && <div ref={langRef} style={{ position: "relative" }}>
         <button
           className="tb-item"
           type="button"
@@ -123,7 +138,7 @@ export function Topbar() {
             ))}
           </div>
         )}
-      </div>
+      </div>}
       {!isMobile && <div className="tb-divider" />}
       {!isMobile && (
         <button className="tb-item" type="button">
