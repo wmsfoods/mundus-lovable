@@ -2129,6 +2129,56 @@
         "back": "Back",
         "searchPlaceholder": "Search company..."
       }
+    },
+    "marketplace": {
+      "markets": {
+        "title": "Markets",
+        "subtitle": "Manage destination countries available on the marketplace",
+        "searchPlaceholder": "Search country, ISO...",
+        "next": "Next",
+        "showing": "Showing {{from}}-{{to}} of {{total}} results",
+        "shared": "Shared",
+        "portsShort": "ports",
+        "usesPortsFrom": "Uses {{country}} ports",
+        "stats": {
+          "total": "Total markets",
+          "active": "Active markets",
+          "ports": "Total ports",
+          "origins": "Origin countries"
+        },
+        "regions": {
+          "all": "All regions",
+          "americas": "Americas",
+          "europe": "Europe",
+          "asia": "Asia",
+          "middleEast": "Middle East",
+          "africa": "Africa",
+          "oceania": "Oceania",
+          "other": "Other"
+        },
+        "filters": {
+          "all": "All",
+          "activeOnly": "Active only",
+          "inactiveOnly": "Inactive only"
+        },
+        "cols": {
+          "country": "Country",
+          "iso": "ISO",
+          "ports": "Ports",
+          "origin": "Origin",
+          "destination": "Destination",
+          "active": "Active",
+          "special": "Special"
+        },
+        "toggle": {
+          "activated": "Market {{country}} activated",
+          "deactivated": "Market {{country}} deactivated"
+        },
+        "empty": {
+          "title": "No markets match these filters",
+          "body": "Try clearing filters or searching with another term."
+        }
+      }
     }
   },
   "profile": {
