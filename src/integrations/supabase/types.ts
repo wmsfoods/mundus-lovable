@@ -586,21 +586,33 @@ export type Database = {
         Row: {
           created_at: string | null
           english_name: string
+          flag_emoji: string | null
           id: string
+          is_destination: boolean | null
+          is_origin: boolean | null
+          iso_code: string | null
           portuguese_name: string
           spanish_name: string
         }
         Insert: {
           created_at?: string | null
           english_name: string
+          flag_emoji?: string | null
           id?: string
+          is_destination?: boolean | null
+          is_origin?: boolean | null
+          iso_code?: string | null
           portuguese_name: string
           spanish_name: string
         }
         Update: {
           created_at?: string | null
           english_name?: string
+          flag_emoji?: string | null
           id?: string
+          is_destination?: boolean | null
+          is_origin?: boolean | null
+          iso_code?: string | null
           portuguese_name?: string
           spanish_name?: string
         }
@@ -3071,6 +3083,48 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      port_sharing: {
+        Row: {
+          certificate_options: string[] | null
+          certificate_prompt: string | null
+          country_id: string
+          created_at: string | null
+          id: string
+          uses_ports_from_country_id: string
+        }
+        Insert: {
+          certificate_options?: string[] | null
+          certificate_prompt?: string | null
+          country_id: string
+          created_at?: string | null
+          id?: string
+          uses_ports_from_country_id: string
+        }
+        Update: {
+          certificate_options?: string[] | null
+          certificate_prompt?: string | null
+          country_id?: string
+          created_at?: string | null
+          id?: string
+          uses_ports_from_country_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "port_sharing_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "port_sharing_uses_ports_from_country_id_fkey"
+            columns: ["uses_ports_from_country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       ports: {
         Row: {
