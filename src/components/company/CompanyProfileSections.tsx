@@ -1,15 +1,13 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   CheckCircleIcon, UploadCloudIcon, FileTextIcon, PhoneIcon,
   MessageIcon, FlagSVG, EditIcon,
 } from "@/components/icons";
-import { Plus, Trash2, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Trash2 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
 import {
   useCompanyProfile,
   type CompanyAbout, type CompanyPlant, type CompanyCertification,
