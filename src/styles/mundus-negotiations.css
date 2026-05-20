@@ -726,7 +726,7 @@
     border-radius: 999px;
     background: currentColor;
     transform: translateY(-50%);
-    box-shadow: 0 0 0 3px #fff;
+    box-shadow: 0 0 0 3px var(--bg);
   }
   .nd-timeline-flow .tl-sep { display: none; }
 
