@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      apollo_cache: {
+        Row: {
+          apollo_id: string
+          entity_type: string
+          expires_at: string | null
+          fetched_at: string | null
+          id: string
+          mobile_available: boolean | null
+          payload: Json
+          phone_available: boolean | null
+        }
+        Insert: {
+          apollo_id: string
+          entity_type: string
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          mobile_available?: boolean | null
+          payload: Json
+          phone_available?: boolean | null
+        }
+        Update: {
+          apollo_id?: string
+          entity_type?: string
+          expires_at?: string | null
+          fetched_at?: string | null
+          id?: string
+          mobile_available?: boolean | null
+          payload?: Json
+          phone_available?: boolean | null
+        }
+        Relationships: []
+      }
       companies: {
         Row: {
           address: string
@@ -261,6 +294,939 @@ export type Database = {
         }
         Relationships: []
       }
+      crm_activities: {
+        Row: {
+          activity_type: string
+          company_id: string | null
+          completed_at: string | null
+          contact_id: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          due_date: string | null
+          id: string
+          metadata: Json | null
+          status: string | null
+          subject: string | null
+        }
+        Insert: {
+          activity_type: string
+          company_id?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          subject?: string | null
+        }
+        Update: {
+          activity_type?: string
+          company_id?: string | null
+          completed_at?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          due_date?: string | null
+          id?: string
+          metadata?: Json | null
+          status?: string | null
+          subject?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_activities_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "crm_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_activities_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_companies: {
+        Row: {
+          address: string | null
+          annual_revenue: number | null
+          apollo_company_id: string | null
+          apollo_enriched_at: string | null
+          city: string | null
+          company_category: string | null
+          company_size: string | null
+          company_type: string | null
+          country: string | null
+          created_at: string | null
+          created_by: string | null
+          domain: string | null
+          estimated_employees: number | null
+          founded_year: number | null
+          id: string
+          industry: string | null
+          keywords: string[] | null
+          linkedin_url: string | null
+          logo_url: string | null
+          market_region: string | null
+          merged_into_id: string | null
+          mundus_company_id: string | null
+          name: string
+          notes: string | null
+          owner_id: string | null
+          phone: string | null
+          postal_code: string | null
+          product_categories: string[] | null
+          short_description: string | null
+          source: string | null
+          source_detail: string | null
+          stage: string | null
+          state: string | null
+          status: string | null
+          tags: string[] | null
+          tax_id: string | null
+          technologies: Json | null
+          trade_name: string | null
+          updated_at: string | null
+          website: string | null
+          wms_company_name: string | null
+        }
+        Insert: {
+          address?: string | null
+          annual_revenue?: number | null
+          apollo_company_id?: string | null
+          apollo_enriched_at?: string | null
+          city?: string | null
+          company_category?: string | null
+          company_size?: string | null
+          company_type?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          domain?: string | null
+          estimated_employees?: number | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          keywords?: string[] | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          market_region?: string | null
+          merged_into_id?: string | null
+          mundus_company_id?: string | null
+          name: string
+          notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          product_categories?: string[] | null
+          short_description?: string | null
+          source?: string | null
+          source_detail?: string | null
+          stage?: string | null
+          state?: string | null
+          status?: string | null
+          tags?: string[] | null
+          tax_id?: string | null
+          technologies?: Json | null
+          trade_name?: string | null
+          updated_at?: string | null
+          website?: string | null
+          wms_company_name?: string | null
+        }
+        Update: {
+          address?: string | null
+          annual_revenue?: number | null
+          apollo_company_id?: string | null
+          apollo_enriched_at?: string | null
+          city?: string | null
+          company_category?: string | null
+          company_size?: string | null
+          company_type?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          domain?: string | null
+          estimated_employees?: number | null
+          founded_year?: number | null
+          id?: string
+          industry?: string | null
+          keywords?: string[] | null
+          linkedin_url?: string | null
+          logo_url?: string | null
+          market_region?: string | null
+          merged_into_id?: string | null
+          mundus_company_id?: string | null
+          name?: string
+          notes?: string | null
+          owner_id?: string | null
+          phone?: string | null
+          postal_code?: string | null
+          product_categories?: string[] | null
+          short_description?: string | null
+          source?: string | null
+          source_detail?: string | null
+          stage?: string | null
+          state?: string | null
+          status?: string | null
+          tags?: string[] | null
+          tax_id?: string | null
+          technologies?: Json | null
+          trade_name?: string | null
+          updated_at?: string | null
+          website?: string | null
+          wms_company_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_companies_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_companies_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "crm_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_companies_owner_id_fkey"
+            columns: ["owner_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_contacts: {
+        Row: {
+          apollo_company_id: string | null
+          apollo_enriched_at: string | null
+          apollo_match_reason: string | null
+          apollo_match_score: number | null
+          apollo_person_id: string | null
+          apollo_person_payload: Json | null
+          assigned_to: string | null
+          buyer_type: string | null
+          city: string | null
+          company_id: string | null
+          contact_type: string | null
+          country: string | null
+          created_at: string | null
+          created_by: string | null
+          department: string | null
+          email: string | null
+          email_bounce_count: number | null
+          email_invalid: boolean | null
+          email_invalid_reason: string | null
+          email_opt_out: boolean | null
+          email_opt_out_at: string | null
+          email_opt_out_source: string | null
+          email_source: string | null
+          email_status: string | null
+          email_verification_details: Json | null
+          email_verification_score: number | null
+          email_verified_at: string | null
+          first_name: string | null
+          full_name: string
+          headline: string | null
+          id: string
+          is_registered: boolean | null
+          job_title: string | null
+          last_activity_at: string | null
+          last_bounce_at: string | null
+          last_clicked_at: string | null
+          last_contacted_at: string | null
+          last_emailed_at: string | null
+          last_name: string | null
+          last_opened_at: string | null
+          last_replied_at: string | null
+          lead_score: number | null
+          lead_source: string | null
+          lead_status: string | null
+          linkedin: string | null
+          location_display: string | null
+          merged_into_id: string | null
+          mobile: string | null
+          mobile_confidence: string | null
+          mobile_credits_used: number | null
+          mobile_revealed_at: string | null
+          mobile_source: string | null
+          mobile_status: string | null
+          mundus_company_id: string | null
+          mundus_user_id: string | null
+          notes: string | null
+          phone: string | null
+          phone_confidence: string | null
+          phone_credits_used: number | null
+          phone_revealed_at: string | null
+          phone_source: string | null
+          phone_status: string | null
+          phone_type: string | null
+          photo_url: string | null
+          preferred_language: string | null
+          products_of_interest: string[] | null
+          receives_deal_offers: boolean | null
+          role: string | null
+          scoring_points: number | null
+          secondary_email: string | null
+          seniority: string | null
+          source: string | null
+          source_detail: string | null
+          state: string | null
+          status: string | null
+          tags: string[] | null
+          timezone: string | null
+          total_emails_bounced: number | null
+          total_emails_clicked: number | null
+          total_emails_opened: number | null
+          total_emails_replied: number | null
+          total_emails_sent: number | null
+          updated_at: string | null
+          wechat: string | null
+          whatsapp: string | null
+          wms_contact_id: string | null
+        }
+        Insert: {
+          apollo_company_id?: string | null
+          apollo_enriched_at?: string | null
+          apollo_match_reason?: string | null
+          apollo_match_score?: number | null
+          apollo_person_id?: string | null
+          apollo_person_payload?: Json | null
+          assigned_to?: string | null
+          buyer_type?: string | null
+          city?: string | null
+          company_id?: string | null
+          contact_type?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          email_bounce_count?: number | null
+          email_invalid?: boolean | null
+          email_invalid_reason?: string | null
+          email_opt_out?: boolean | null
+          email_opt_out_at?: string | null
+          email_opt_out_source?: string | null
+          email_source?: string | null
+          email_status?: string | null
+          email_verification_details?: Json | null
+          email_verification_score?: number | null
+          email_verified_at?: string | null
+          first_name?: string | null
+          full_name: string
+          headline?: string | null
+          id?: string
+          is_registered?: boolean | null
+          job_title?: string | null
+          last_activity_at?: string | null
+          last_bounce_at?: string | null
+          last_clicked_at?: string | null
+          last_contacted_at?: string | null
+          last_emailed_at?: string | null
+          last_name?: string | null
+          last_opened_at?: string | null
+          last_replied_at?: string | null
+          lead_score?: number | null
+          lead_source?: string | null
+          lead_status?: string | null
+          linkedin?: string | null
+          location_display?: string | null
+          merged_into_id?: string | null
+          mobile?: string | null
+          mobile_confidence?: string | null
+          mobile_credits_used?: number | null
+          mobile_revealed_at?: string | null
+          mobile_source?: string | null
+          mobile_status?: string | null
+          mundus_company_id?: string | null
+          mundus_user_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          phone_confidence?: string | null
+          phone_credits_used?: number | null
+          phone_revealed_at?: string | null
+          phone_source?: string | null
+          phone_status?: string | null
+          phone_type?: string | null
+          photo_url?: string | null
+          preferred_language?: string | null
+          products_of_interest?: string[] | null
+          receives_deal_offers?: boolean | null
+          role?: string | null
+          scoring_points?: number | null
+          secondary_email?: string | null
+          seniority?: string | null
+          source?: string | null
+          source_detail?: string | null
+          state?: string | null
+          status?: string | null
+          tags?: string[] | null
+          timezone?: string | null
+          total_emails_bounced?: number | null
+          total_emails_clicked?: number | null
+          total_emails_opened?: number | null
+          total_emails_replied?: number | null
+          total_emails_sent?: number | null
+          updated_at?: string | null
+          wechat?: string | null
+          whatsapp?: string | null
+          wms_contact_id?: string | null
+        }
+        Update: {
+          apollo_company_id?: string | null
+          apollo_enriched_at?: string | null
+          apollo_match_reason?: string | null
+          apollo_match_score?: number | null
+          apollo_person_id?: string | null
+          apollo_person_payload?: Json | null
+          assigned_to?: string | null
+          buyer_type?: string | null
+          city?: string | null
+          company_id?: string | null
+          contact_type?: string | null
+          country?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          department?: string | null
+          email?: string | null
+          email_bounce_count?: number | null
+          email_invalid?: boolean | null
+          email_invalid_reason?: string | null
+          email_opt_out?: boolean | null
+          email_opt_out_at?: string | null
+          email_opt_out_source?: string | null
+          email_source?: string | null
+          email_status?: string | null
+          email_verification_details?: Json | null
+          email_verification_score?: number | null
+          email_verified_at?: string | null
+          first_name?: string | null
+          full_name?: string
+          headline?: string | null
+          id?: string
+          is_registered?: boolean | null
+          job_title?: string | null
+          last_activity_at?: string | null
+          last_bounce_at?: string | null
+          last_clicked_at?: string | null
+          last_contacted_at?: string | null
+          last_emailed_at?: string | null
+          last_name?: string | null
+          last_opened_at?: string | null
+          last_replied_at?: string | null
+          lead_score?: number | null
+          lead_source?: string | null
+          lead_status?: string | null
+          linkedin?: string | null
+          location_display?: string | null
+          merged_into_id?: string | null
+          mobile?: string | null
+          mobile_confidence?: string | null
+          mobile_credits_used?: number | null
+          mobile_revealed_at?: string | null
+          mobile_source?: string | null
+          mobile_status?: string | null
+          mundus_company_id?: string | null
+          mundus_user_id?: string | null
+          notes?: string | null
+          phone?: string | null
+          phone_confidence?: string | null
+          phone_credits_used?: number | null
+          phone_revealed_at?: string | null
+          phone_source?: string | null
+          phone_status?: string | null
+          phone_type?: string | null
+          photo_url?: string | null
+          preferred_language?: string | null
+          products_of_interest?: string[] | null
+          receives_deal_offers?: boolean | null
+          role?: string | null
+          scoring_points?: number | null
+          secondary_email?: string | null
+          seniority?: string | null
+          source?: string | null
+          source_detail?: string | null
+          state?: string | null
+          status?: string | null
+          tags?: string[] | null
+          timezone?: string | null
+          total_emails_bounced?: number | null
+          total_emails_clicked?: number | null
+          total_emails_opened?: number | null
+          total_emails_replied?: number | null
+          total_emails_sent?: number | null
+          updated_at?: string | null
+          wechat?: string | null
+          whatsapp?: string | null
+          wms_contact_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_contacts_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contacts_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "crm_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contacts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contacts_merged_into_id_fkey"
+            columns: ["merged_into_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_credit_usage: {
+        Row: {
+          company_id: string | null
+          contact_id: string | null
+          created_at: string | null
+          created_by: string | null
+          credit_type: string
+          credits_used: number
+          description: string | null
+          enrichment_job_id: string | null
+          id: string
+        }
+        Insert: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          credit_type: string
+          credits_used?: number
+          description?: string | null
+          enrichment_job_id?: string | null
+          id?: string
+        }
+        Update: {
+          company_id?: string | null
+          contact_id?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          credit_type?: string
+          credits_used?: number
+          description?: string | null
+          enrichment_job_id?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_credit_usage_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "crm_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_credit_usage_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_credit_usage_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_credit_usage_enrichment_job_id_fkey"
+            columns: ["enrichment_job_id"]
+            isOneToOne: false
+            referencedRelation: "crm_enrichment_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_enrichment_jobs: {
+        Row: {
+          company_ids: string[] | null
+          completed_at: string | null
+          contact_ids: string[] | null
+          created_at: string | null
+          created_by: string | null
+          credits_used: number | null
+          error_message: string | null
+          id: string
+          job_type: string
+          record_count: number | null
+          records_enriched: number | null
+          records_failed: number | null
+          result_data: Json | null
+          started_at: string | null
+          status: string | null
+        }
+        Insert: {
+          company_ids?: string[] | null
+          completed_at?: string | null
+          contact_ids?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          credits_used?: number | null
+          error_message?: string | null
+          id?: string
+          job_type: string
+          record_count?: number | null
+          records_enriched?: number | null
+          records_failed?: number | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Update: {
+          company_ids?: string[] | null
+          completed_at?: string | null
+          contact_ids?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          credits_used?: number | null
+          error_message?: string | null
+          id?: string
+          job_type?: string
+          record_count?: number | null
+          records_enriched?: number | null
+          records_failed?: number | null
+          result_data?: Json | null
+          started_at?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_enrichment_jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_import_logs: {
+        Row: {
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          duplicates_found: number | null
+          duplicates_merged: number | null
+          duplicates_skipped: number | null
+          error_log: Json | null
+          errors: number | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          import_type: string
+          imported: number | null
+          invalid_email: number | null
+          list_ids: string[] | null
+          started_at: string | null
+          status: string | null
+          total_records: number | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          duplicates_found?: number | null
+          duplicates_merged?: number | null
+          duplicates_skipped?: number | null
+          error_log?: Json | null
+          errors?: number | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          import_type: string
+          imported?: number | null
+          invalid_email?: number | null
+          list_ids?: string[] | null
+          started_at?: string | null
+          status?: string | null
+          total_records?: number | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          duplicates_found?: number | null
+          duplicates_merged?: number | null
+          duplicates_skipped?: number | null
+          error_log?: Json | null
+          errors?: number | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          import_type?: string
+          imported?: number | null
+          invalid_email?: number | null
+          list_ids?: string[] | null
+          started_at?: string | null
+          status?: string | null
+          total_records?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_import_logs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_list_members: {
+        Row: {
+          added_at: string | null
+          added_by: string | null
+          company_id: string | null
+          contact_id: string | null
+          id: string
+          list_id: string
+        }
+        Insert: {
+          added_at?: string | null
+          added_by?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          id?: string
+          list_id: string
+        }
+        Update: {
+          added_at?: string | null
+          added_by?: string | null
+          company_id?: string | null
+          contact_id?: string | null
+          id?: string
+          list_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_list_members_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_list_members_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "crm_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_list_members_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_list_members_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "crm_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_lists: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          dynamic_filters: Json | null
+          id: string
+          is_dynamic: boolean | null
+          list_type: string
+          name: string
+          record_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          dynamic_filters?: Json | null
+          id?: string
+          is_dynamic?: boolean | null
+          list_type: string
+          name: string
+          record_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          dynamic_filters?: Json | null
+          id?: string
+          is_dynamic?: boolean | null
+          list_type?: string
+          name?: string
+          record_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_lists_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_personas: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          filters: Json
+          id: string
+          is_active: boolean | null
+          match_count: number | null
+          name: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_active?: boolean | null
+          match_count?: number | null
+          name: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          filters?: Json
+          id?: string
+          is_active?: boolean | null
+          match_count?: number | null
+          name?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_personas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_saved_searches: {
+        Row: {
+          alert_enabled: boolean | null
+          alert_frequency: string | null
+          columns: Json | null
+          created_at: string | null
+          created_by: string | null
+          filters: Json
+          id: string
+          is_default: boolean | null
+          is_shared: boolean | null
+          is_starred: boolean | null
+          last_run_at: string | null
+          name: string
+          result_count: number | null
+          search_type: string
+          sort_ascending: boolean | null
+          sort_field: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          alert_enabled?: boolean | null
+          alert_frequency?: string | null
+          columns?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          filters?: Json
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          is_starred?: boolean | null
+          last_run_at?: string | null
+          name: string
+          result_count?: number | null
+          search_type: string
+          sort_ascending?: boolean | null
+          sort_field?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          alert_enabled?: boolean | null
+          alert_frequency?: string | null
+          columns?: Json | null
+          created_at?: string | null
+          created_by?: string | null
+          filters?: Json
+          id?: string
+          is_default?: boolean | null
+          is_shared?: boolean | null
+          is_starred?: boolean | null
+          last_run_at?: string | null
+          name?: string
+          result_count?: number | null
+          search_type?: string
+          sort_ascending?: boolean | null
+          sort_field?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_saved_searches_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customer_product_documents: {
         Row: {
           customer_product_id: string
@@ -434,6 +1400,401 @@ export type Database = {
           id?: string
         }
         Relationships: []
+      }
+      email_domain_health: {
+        Row: {
+          alert_sent: boolean | null
+          bounce_rate: number | null
+          click_rate: number | null
+          complaint_rate: number | null
+          date: string
+          domain: string
+          emails_bounced: number | null
+          emails_bounced_hard: number | null
+          emails_bounced_soft: number | null
+          emails_clicked: number | null
+          emails_complained: number | null
+          emails_delivered: number | null
+          emails_opened: number | null
+          emails_replied: number | null
+          emails_sent: number | null
+          id: string
+          is_healthy: boolean | null
+          open_rate: number | null
+          reply_rate: number | null
+        }
+        Insert: {
+          alert_sent?: boolean | null
+          bounce_rate?: number | null
+          click_rate?: number | null
+          complaint_rate?: number | null
+          date: string
+          domain: string
+          emails_bounced?: number | null
+          emails_bounced_hard?: number | null
+          emails_bounced_soft?: number | null
+          emails_clicked?: number | null
+          emails_complained?: number | null
+          emails_delivered?: number | null
+          emails_opened?: number | null
+          emails_replied?: number | null
+          emails_sent?: number | null
+          id?: string
+          is_healthy?: boolean | null
+          open_rate?: number | null
+          reply_rate?: number | null
+        }
+        Update: {
+          alert_sent?: boolean | null
+          bounce_rate?: number | null
+          click_rate?: number | null
+          complaint_rate?: number | null
+          date?: string
+          domain?: string
+          emails_bounced?: number | null
+          emails_bounced_hard?: number | null
+          emails_bounced_soft?: number | null
+          emails_clicked?: number | null
+          emails_complained?: number | null
+          emails_delivered?: number | null
+          emails_opened?: number | null
+          emails_replied?: number | null
+          emails_sent?: number | null
+          id?: string
+          is_healthy?: boolean | null
+          open_rate?: number | null
+          reply_rate?: number | null
+        }
+        Relationships: []
+      }
+      email_enrollments: {
+        Row: {
+          completed_at: string | null
+          contact_id: string
+          current_step: number | null
+          enrolled_at: string | null
+          id: string
+          last_sent_at: string | null
+          next_send_at: string | null
+          pause_reason: string | null
+          sequence_id: string
+          status: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          contact_id: string
+          current_step?: number | null
+          enrolled_at?: string | null
+          id?: string
+          last_sent_at?: string | null
+          next_send_at?: string | null
+          pause_reason?: string | null
+          sequence_id: string
+          status?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          contact_id?: string
+          current_step?: number | null
+          enrolled_at?: string | null
+          id?: string
+          last_sent_at?: string | null
+          next_send_at?: string | null
+          pause_reason?: string | null
+          sequence_id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_enrollments_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_enrollments_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_events: {
+        Row: {
+          contact_id: string | null
+          email_send_id: string
+          event_data: Json | null
+          event_type: string
+          id: string
+          occurred_at: string | null
+        }
+        Insert: {
+          contact_id?: string | null
+          email_send_id: string
+          event_data?: Json | null
+          event_type: string
+          id?: string
+          occurred_at?: string | null
+        }
+        Update: {
+          contact_id?: string | null
+          email_send_id?: string
+          event_data?: Json | null
+          event_type?: string
+          id?: string
+          occurred_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_events_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_events_email_send_id_fkey"
+            columns: ["email_send_id"]
+            isOneToOne: false
+            referencedRelation: "email_sends"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sends: {
+        Row: {
+          ai_generated: boolean | null
+          ai_model_used: string | null
+          ai_prompt_context: Json | null
+          body_html: string | null
+          body_text: string | null
+          bounce_reason: string | null
+          bounce_type: string | null
+          bounced_at: string | null
+          click_count: number | null
+          clicked_at: string | null
+          contact_id: string
+          created_at: string | null
+          delivered_at: string | null
+          email_type: string | null
+          enrollment_id: string | null
+          from_email: string
+          from_name: string | null
+          id: string
+          open_count: number | null
+          opened_at: string | null
+          replied_at: string | null
+          reply_to: string | null
+          sent_at: string | null
+          sequence_step_id: string | null
+          status: string | null
+          subject: string
+          zoho_message_id: string | null
+        }
+        Insert: {
+          ai_generated?: boolean | null
+          ai_model_used?: string | null
+          ai_prompt_context?: Json | null
+          body_html?: string | null
+          body_text?: string | null
+          bounce_reason?: string | null
+          bounce_type?: string | null
+          bounced_at?: string | null
+          click_count?: number | null
+          clicked_at?: string | null
+          contact_id: string
+          created_at?: string | null
+          delivered_at?: string | null
+          email_type?: string | null
+          enrollment_id?: string | null
+          from_email: string
+          from_name?: string | null
+          id?: string
+          open_count?: number | null
+          opened_at?: string | null
+          replied_at?: string | null
+          reply_to?: string | null
+          sent_at?: string | null
+          sequence_step_id?: string | null
+          status?: string | null
+          subject: string
+          zoho_message_id?: string | null
+        }
+        Update: {
+          ai_generated?: boolean | null
+          ai_model_used?: string | null
+          ai_prompt_context?: Json | null
+          body_html?: string | null
+          body_text?: string | null
+          bounce_reason?: string | null
+          bounce_type?: string | null
+          bounced_at?: string | null
+          click_count?: number | null
+          clicked_at?: string | null
+          contact_id?: string
+          created_at?: string | null
+          delivered_at?: string | null
+          email_type?: string | null
+          enrollment_id?: string | null
+          from_email?: string
+          from_name?: string | null
+          id?: string
+          open_count?: number | null
+          opened_at?: string | null
+          replied_at?: string | null
+          reply_to?: string | null
+          sent_at?: string | null
+          sequence_step_id?: string | null
+          status?: string | null
+          subject?: string
+          zoho_message_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sends_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sends_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "email_enrollments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "email_sends_sequence_step_id_fkey"
+            columns: ["sequence_step_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequence_steps"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sequence_steps: {
+        Row: {
+          body_template: string
+          created_at: string | null
+          delay_days: number
+          id: string
+          send_time_preference: string | null
+          sequence_id: string
+          skip_if_clicked: boolean | null
+          skip_if_opened: boolean | null
+          skip_if_replied: boolean | null
+          step_number: number
+          subject_template: string
+          variant_label: string | null
+        }
+        Insert: {
+          body_template: string
+          created_at?: string | null
+          delay_days: number
+          id?: string
+          send_time_preference?: string | null
+          sequence_id: string
+          skip_if_clicked?: boolean | null
+          skip_if_opened?: boolean | null
+          skip_if_replied?: boolean | null
+          step_number: number
+          subject_template: string
+          variant_label?: string | null
+        }
+        Update: {
+          body_template?: string
+          created_at?: string | null
+          delay_days?: number
+          id?: string
+          send_time_preference?: string | null
+          sequence_id?: string
+          skip_if_clicked?: boolean | null
+          skip_if_opened?: boolean | null
+          skip_if_replied?: boolean | null
+          step_number?: number
+          subject_template?: string
+          variant_label?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequence_steps_sequence_id_fkey"
+            columns: ["sequence_id"]
+            isOneToOne: false
+            referencedRelation: "email_sequences"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_sequences: {
+        Row: {
+          avg_open_rate: number | null
+          avg_reply_rate: number | null
+          created_at: string | null
+          created_by: string | null
+          daily_send_limit: number | null
+          description: string | null
+          id: string
+          language: string | null
+          max_emails: number | null
+          name: string
+          status: string | null
+          target_type: string
+          tone: string | null
+          total_completed: number | null
+          total_enrolled: number | null
+          total_replied: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          avg_open_rate?: number | null
+          avg_reply_rate?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          daily_send_limit?: number | null
+          description?: string | null
+          id?: string
+          language?: string | null
+          max_emails?: number | null
+          name: string
+          status?: string | null
+          target_type: string
+          tone?: string | null
+          total_completed?: number | null
+          total_enrolled?: number | null
+          total_replied?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          avg_open_rate?: number | null
+          avg_reply_rate?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          daily_send_limit?: number | null
+          description?: string | null
+          id?: string
+          language?: string | null
+          max_emails?: number | null
+          name?: string
+          status?: string | null
+          target_type?: string
+          tone?: string | null
+          total_completed?: number | null
+          total_enrolled?: number | null
+          total_replied?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_sequences_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       freight_options: {
         Row: {
@@ -1763,6 +3124,7 @@ export type Database = {
         Returns: Json
       }
       current_user_company_id: { Args: never; Returns: string }
+      is_mundus_admin: { Args: never; Returns: boolean }
       reject_negotiation: {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
         Returns: Json
