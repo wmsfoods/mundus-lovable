@@ -226,9 +226,18 @@
   .hero-photo { width: 160px; opacity: 0.4; }
   .stats {
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 12px;
+    background: transparent;
+    padding: 0;
   }
-  .stat { padding: 14px 16px; }
+  .stat {
+    padding: 16px;
+    border: 1px solid hsl(var(--border));
+    border-radius: var(--radius);
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  }
+  .stat + .stat { border-left: 1px solid hsl(var(--border)); border-radius: var(--radius); }
+  .stat.is-dark { border-color: var(--p800); }
   .stat .value { font-size: 24px; }
   .action-row {
     grid-template-columns: 1fr;
