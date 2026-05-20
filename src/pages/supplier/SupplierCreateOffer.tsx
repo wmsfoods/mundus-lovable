@@ -341,14 +341,62 @@ export default function SupplierCreateOffer() {
 
           {/* Market chips */}
           <div className="cov4-chips">
-            {MARKETS.map((m) => {
-              const on = !!selMarkets.find((x) => x.id === m.id);
+            {(() => {
+              const byName = new Map(MARKETS.map((m) => [m.n, m]));
+              const primary = PRIMARY_MARKETS.map((n) => byName.get(n)).filter(Boolean) as Market[];
+              const primaryIds = new Set(primary.map((m) => m.id));
+              const extraSelected = selMarkets.filter((m) => !primaryIds.has(m.id));
+              const others = MARKETS.filter((m) => !primaryIds.has(m.id));
               return (
-                <button key={m.id} type="button" className={`cov4-chip ${on ? "on" : ""}`} onClick={() => toggleMarket(m.id)}>
-                  {m.f} {m.n} {on && <span className="cov4-chip-ck">✓</span>}
-                </button>
+                <>
+                  {primary.map((m) => {
+                    const on = !!selMarkets.find((x) => x.id === m.id);
+                    return (
+                      <button key={m.id} type="button" className={`cov4-chip ${on ? "on" : ""}`} onClick={() => toggleMarket(m.id)}>
+                        {m.f} {m.n} {on && <span className="cov4-chip-ck">✓</span>}
+                      </button>
+                    );
+                  })}
+                  {extraSelected.map((m) => (
+                    <button key={m.id} type="button" className="cov4-chip on" onClick={() => toggleMarket(m.id)}>
+                      {m.f} {m.n} <span className="cov4-chip-ck">✓</span>
+                    </button>
+                  ))}
+                  <Popover open={moreMktsOpen} onOpenChange={setMoreMktsOpen}>
+                    <PopoverTrigger asChild>
+                      <button type="button" className="cov4-chip cov4-chip-more">
+                        <Plus size={12} style={{ marginRight: 4, display: "inline" }} />
+                        {tm("moreMarkets")}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[320px]" align="start">
+                      <Command>
+                        <CommandInput placeholder={tm("searchMarketsPh") as string} />
+                        <CommandList className="max-h-[320px]">
+                          <CommandEmpty>{tm("noMarkets")}</CommandEmpty>
+                          <CommandGroup>
+                            {others.map((m) => {
+                              const on = !!selMarkets.find((x) => x.id === m.id);
+                              return (
+                                <CommandItem
+                                  key={m.id}
+                                  value={`${m.n} ${m.f}`}
+                                  onSelect={() => toggleMarket(m.id)}
+                                >
+                                  <span style={{ marginRight: 8 }}>{m.f}</span>
+                                  <span style={{ flex: 1 }}>{m.n}</span>
+                                  {on && <Check size={14} className="text-primary" />}
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </>
               );
-            })}
+            })()}
           </div>
 
           {/* Market cards */}
