@@ -39,6 +39,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 import FindCompanies from "./pages/admin/prospect/FindCompanies.tsx";
 import FindPeople from "./pages/admin/prospect/FindPeople.tsx";
 import ProspectLists from "./pages/admin/prospect/Lists.tsx";
+import ProspectListDetail from "./pages/admin/prospect/ListDetail.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
 import SupplierOffers from "./pages/supplier/Offers.tsx";
@@ -145,6 +146,7 @@ const App = () => (
               <Route path="prospect/companies" element={<FindCompanies />} />
               <Route path="prospect/people" element={<FindPeople />} />
               <Route path="prospect/lists" element={<ProspectLists />} />
+              <Route path="prospect/lists/:id" element={<ProspectListDetail />} />
               <Route path="marketplace/products" element={<AdminComingSoon section="marketplace/products" />} />
               <Route path="marketplace/markets" element={<AdminComingSoon section="marketplace/markets" />} />
               <Route path="marketplace/ports" element={<AdminComingSoon section="marketplace/ports" />} />
