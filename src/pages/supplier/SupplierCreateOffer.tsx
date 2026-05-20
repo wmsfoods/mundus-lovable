@@ -124,6 +124,10 @@ export default function SupplierCreateOffer() {
     }
   }, [fromRequestId]);
 
+  useEffect(() => {
+    if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
+  }, [dataError]);
+
   const cap = csize === "40ft" ? 28000 : 13000;
   const tw = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
   const fp = Math.min((tw / cap) * 100, 100);
