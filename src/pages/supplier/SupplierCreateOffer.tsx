@@ -246,7 +246,23 @@ export default function SupplierCreateOffer() {
     setSelectedCustomers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
-  const canPublish = selMarkets.length > 0 && cuts.length > 0 && selInco.length > 0;
+  const distOk = distMarketplace || distAllCustomers || (distSpecific && selectedCustomers.length > 0);
+  const publishSteps = [
+    { key: "markets",  label: "Select at least one destination market", done: selMarkets.length > 0, anchor: "sec-markets" },
+    { key: "cuts",     label: "Add at least one product cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
+    { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
+    { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
+  ];
+  const stepsDone = publishSteps.filter((s) => s.done).length;
+  const nextStep  = publishSteps.find((s) => !s.done);
+  const canPublish = !nextStep;
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("cov4-pulse");
+    window.setTimeout(() => el.classList.remove("cov4-pulse"), 1400);
+  }, []);
   const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
 
   const handleSaveDraft = () => toast("Draft saved");
@@ -340,7 +356,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Market chips */}
-          <div className="cov4-chips">
+          <div id="sec-markets" className="cov4-chips">
             {(() => {
               const byName = new Map(MARKETS.map((m) => [m.n, m]));
               const primary = PRIMARY_MARKETS.map((n) => byName.get(n)).filter(Boolean) as Market[];
@@ -489,7 +505,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Incoterms */}
-          <div className="cov4-sec">
+          <div id="sec-inco" className="cov4-sec">
             <div className="cov4-sec-t">Incoterms</div>
             <div className="cov4-inco-grid">
               {INCOTERMS.map((ic) => {
@@ -563,7 +579,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Distribution */}
-          <div className="cov4-sec">
+          <div id="sec-dist" className="cov4-sec">
             <div className="cov4-sec-t">Offer distribution</div>
             <div className="cov4-dist-opts">
               <label className="cov4-dist-opt">
@@ -671,7 +687,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Cuts table */}
-          <div className="cov4-tblw">
+          <div id="sec-cuts" className="cov4-tblw">
             <table className="cov4-tbl">
               <thead>
                 <tr>
@@ -878,13 +894,73 @@ export default function SupplierCreateOffer() {
 
       {/* FOOTER */}
       <footer className="cov4-footer">
-        <span className="cov4-ft-sum">
-          {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {selInco.join(", ") || "—"} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {tw.toLocaleString()} kg · {payTerm.split(",")[0]}
-        </span>
+        <div className="cov4-ft-l">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={`cov4-ready-pill ${canPublish ? "ready" : ""}`}
+                aria-label="Publishing checklist"
+              >
+                <span className="cov4-ready-ring" aria-hidden>
+                  <svg viewBox="0 0 36 36" width="22" height="22">
+                    <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="3" />
+                    <circle
+                      cx="18" cy="18" r="15" fill="none"
+                      stroke="currentColor" strokeWidth="3" strokeLinecap="round"
+                      strokeDasharray={`${(stepsDone / publishSteps.length) * 94.25} 94.25`}
+                      transform="rotate(-90 18 18)"
+                      style={{ transition: "stroke-dasharray .35s ease" }}
+                    />
+                  </svg>
+                </span>
+                <span className="cov4-ready-txt">
+                  {canPublish
+                    ? "Ready to publish"
+                    : `${stepsDone} of ${publishSteps.length} ready · ${nextStep?.label.split(" ").slice(0, 4).join(" ")}…`}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="start" className="cov4-ready-pop p-0 w-[320px]">
+              <div className="cov4-ready-head">
+                {canPublish ? "All set — you can publish 🎉" : "A few things left"}
+              </div>
+              <ul className="cov4-ready-list">
+                {publishSteps.map((s) => (
+                  <li key={s.key}>
+                    <button
+                      type="button"
+                      className={`cov4-ready-item ${s.done ? "done" : ""}`}
+                      onClick={() => !s.done && scrollToSection(s.anchor)}
+                      disabled={s.done}
+                    >
+                      <span className={`cov4-ready-dot ${s.done ? "done" : ""}`}>
+                        {s.done ? <Check size={12} /> : ""}
+                      </span>
+                      <span className="cov4-ready-lbl">{s.label}</span>
+                      {!s.done && <span className="cov4-ready-go">→</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="cov4-ready-foot">
+                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {tw.toLocaleString()} kg
+              </div>
+            </PopoverContent>
+          </Popover>
+        </div>
         <div className="cov4-ft-r">
           <button type="button" className="cov4-btn-s" onClick={handleCancel}>Cancel</button>
           <button type="button" className="cov4-btn-s" onClick={handleSaveDraft}>Save draft</button>
-          <button type="button" className="cov4-btn-p" onClick={handlePublish} disabled={!canPublish}>
+          <button
+            type="button"
+            className="cov4-btn-p"
+            onClick={() => {
+              if (!canPublish && nextStep) { scrollToSection(nextStep.anchor); return; }
+              handlePublish();
+            }}
+            title={nextStep ? `Next: ${nextStep.label}` : "Review & publish your offer"}
+          >
             Review &amp; publish →
           </button>
         </div>
