@@ -295,6 +295,14 @@
     min-height: 0;
     background: #fff;
   }
+  /* List view (tab root): account for topbar + bottom nav */
+  .app-shell:not(.is-stack) .chat-layout {
+    height: calc(100dvh - 56px - 64px - env(safe-area-inset-bottom));
+  }
+  /* Thread view (stack): account only for StackHeader */
+  .app-shell.is-stack .chat-layout {
+    height: calc(100dvh - 52px - env(safe-area-inset-top));
+  }
 
   /* List view: no internal scroll container border; search sits at top */
   .chat-search { padding: 10px 12px; }
@@ -315,6 +323,10 @@
   min-width: 0;
   width: 100%;
   text-align: left;
+}
+.sh .sh-title:has(.sh-chat-title) {
+  text-align: left;
+  overflow: visible;
 }
 .sh-chat-title .chat-avatar { width: 34px; height: 34px; font-size: 12px; }
 .sh-chat-title .chat-online-dot { width: 9px; height: 9px; }
