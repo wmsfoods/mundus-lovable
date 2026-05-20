@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MessageIcon, SearchIcon, ChevronRightIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import {
   useBuyerNegotiations,
   type BuyerNegotiationBid,
