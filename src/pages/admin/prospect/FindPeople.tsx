@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, User, Building, Briefcase, Layers, Mail, MapPin, Filter, Linkedin, Phone, Smartphone, Save, Download } from "lucide-react";
+import { Search, User, Building, Briefcase, Layers, Mail, MapPin, Filter, Linkedin, Phone, Smartphone, Save, Download, Target, UserCheck, Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   MOCK_PEOPLE, EMPLOYEE_RANGES, SENIORITIES, DEPARTMENTS, JOB_TITLES,
+  DECISION_LEVELS, LEAD_TYPES, PRODUCT_INTERESTS,
   fakePhone, type MockPerson,
 } from "@/data/mockProspect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { RevealButton } from "@/components/prospect/RevealButton";
 import { PspPagination } from "@/components/prospect/Pagination";
+import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","United States","Japan","Denmark"];
 
@@ -32,6 +34,11 @@ export default function FindPeople() {
   const [detail, setDetail] = useState<MockPerson | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [revealedMap, setRevealedMap] = useState<Record<string, { email?: string; phone?: string; mobile?: string }>>({});
+  const [decisionLevels, setDecisionLevels] = useState<string[]>([]);
+  const [leadTypes, setLeadTypes] = useState<string[]>([]);
+  const [productsOfInterest, setProductsOfInterest] = useState<string[]>([]);
+  const [savePerson, setSavePerson] = useState<MockPerson | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const pageSize = 25;
 
   useEffect(() => {
@@ -194,6 +201,30 @@ export default function FindPeople() {
                 <label><Checkbox checked={companySizes.includes(r)} onCheckedChange={() => toggle(companySizes, r, setCompanySizes)} />{r}</label>
               </div>
             ))}
+          </FilterAccordion>
+
+          <FilterAccordion label="Decision Level" icon={<Target size={14} />} hasActive={decisionLevels.length > 0} defaultOpen={false}>
+            {DECISION_LEVELS.map((d) => (
+              <div key={d} className="psp-checkbox-row">
+                <label><Checkbox checked={decisionLevels.includes(d)} onCheckedChange={() => toggle(decisionLevels, d, setDecisionLevels)} />{d}</label>
+              </div>
+            ))}
+          </FilterAccordion>
+
+          <FilterAccordion label="Lead Type" icon={<UserCheck size={14} />} hasActive={leadTypes.length > 0} defaultOpen={false}>
+            {LEAD_TYPES.map((d) => (
+              <div key={d} className="psp-checkbox-row">
+                <label><Checkbox checked={leadTypes.includes(d)} onCheckedChange={() => toggle(leadTypes, d, setLeadTypes)} />{d}</label>
+              </div>
+            ))}
+          </FilterAccordion>
+
+          <FilterAccordion label="Products of Interest" icon={<Package size={14} />} hasActive={productsOfInterest.length > 0} defaultOpen={false}>
+            <div className="psp-chip-row">
+              {PRODUCT_INTERESTS.map((p) => (
+                <span key={p} className={`psp-chip ${productsOfInterest.includes(p) ? "is-active" : ""}`} onClick={() => toggle(productsOfInterest, p, setProductsOfInterest)}>{p}</span>
+              ))}
+            </div>
           </FilterAccordion>
 
           {activeFilters > 0 && (
