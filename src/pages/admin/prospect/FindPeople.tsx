@@ -337,6 +337,8 @@ export default function FindPeople() {
                 {pageItems.length === 0 && (
                   <tr><td colSpan={11} className="psp-empty">
                     {loading ? "Searching Apollo…"
+                      : errorCode === "API_INACCESSIBLE"
+                        ? "People search is not enabled on this Apollo plan. Upgrade Apollo (People Search API add-on) to enable Find People. Find Companies works on the current plan."
                       : error ? `Search failed: ${error}`
                       : hasSearched ? "No people match these filters."
                       : "Adjust a filter or type a keyword + Enter to search Apollo."}
