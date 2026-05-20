@@ -14,6 +14,26 @@ import { RevealButton } from "@/components/prospect/RevealButton";
 import { PspPagination } from "@/components/prospect/Pagination";
 import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
 import { useProspectSearch } from "@/hooks/useProspectSearch";
+import { supabase } from "@/integrations/supabase/client";
+
+async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}) {
+  const { data, error } = await supabase.functions.invoke("prospect-enrich", {
+    body: {
+      id: p.id,
+      first_name: p.firstName,
+      last_name: p.lastName,
+      name: p.fullName,
+      organization_name: p.companyName,
+      linkedin_url: p.linkedin || undefined,
+      reveal_phone: !!opts.reveal_phone,
+    },
+  });
+  if (error || !data?.ok) {
+    const msg = data?.error || error?.message || "enrich_failed";
+    throw new Error(msg);
+  }
+  return data as { email: string | null; phone: string | null; mobile: string | null };
+}
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","United States","Japan","Denmark"];
 
@@ -307,20 +327,53 @@ export default function FindPeople() {
                           : (rev.email
                               ? <span style={{ display: "inline-flex", gap: 4, alignItems: "center", fontSize: 12 }}>{rev.email} <span className={`psp-badge ${p.emailStatus}`}>{p.emailStatus[0].toUpperCase()}</span></span>
                               : <RevealButton label="Reveal email" icon={<Mail size={11} />} value={null}
-                                  onReveal={() => { const v = p.email!; setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], email: v } })); return v; }} />)
+                                  onReveal={async () => {
+                                    try {
+                                      const r = await enrichPerson(p);
+                                      const v = r.email || p.email || "";
+                                      if (!v) { toast.error("Email not found"); return ""; }
+                                      setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], email: v } }));
+                                      return v;
+                                    } catch (e: any) {
+                                      toast.error(`Reveal failed: ${e.message}`);
+                                      return "";
+                                    }
+                                  }} />)
                         }
                       </td>
                       <td>
                         {!p.phoneAvailable ? "—" : rev.phone
                           ? <span style={{ fontSize: 12 }}>{rev.phone}</span>
                           : <RevealButton label="Reveal" icon={<Phone size={11} />} value={null}
-                              onReveal={() => { const v = fakePhone(p.id); setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], phone: v } })); return v; }} />}
+                              onReveal={async () => {
+                                try {
+                                  const r = await enrichPerson(p, { reveal_phone: true });
+                                  const v = r.phone || "";
+                                  if (!v) { toast.error("Phone not found"); return ""; }
+                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], phone: v } }));
+                                  return v;
+                                } catch (e: any) {
+                                  toast.error(`Reveal failed: ${e.message}`);
+                                  return "";
+                                }
+                              }} />}
                       </td>
                       <td>
                         {!p.mobileAvailable ? "—" : rev.mobile
                           ? <span style={{ fontSize: 12 }}>{rev.mobile}</span>
                           : <RevealButton label="Reveal" icon={<Smartphone size={11} />} value={null}
-                              onReveal={() => { const v = fakePhone(p.id + "m"); setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], mobile: v } })); return v; }} />}
+                              onReveal={async () => {
+                                try {
+                                  const r = await enrichPerson(p, { reveal_phone: true });
+                                  const v = r.mobile || r.phone || "";
+                                  if (!v) { toast.error("Mobile not found"); return ""; }
+                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], mobile: v } }));
+                                  return v;
+                                } catch (e: any) {
+                                  toast.error(`Reveal failed: ${e.message}`);
+                                  return "";
+                                }
+                              }} />}
                       </td>
                       <td>{p.countryFlag} {p.city}, {p.country}</td>
                       <td><span className="psp-tag">{p.seniority}</span></td>
