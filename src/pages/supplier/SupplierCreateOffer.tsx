@@ -3,30 +3,12 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
+import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 
 /* ══════════════════════════════════════════════════════════
-   DATA (mocks aligned with v4 prototype)
+   DATA — markets & cuts come from Supabase via useSupplierOfferData
    ══════════════════════════════════════════════════════════ */
-type Port = { id: string; n: string };
-type Market = { id: string; n: string; f: string; p: Port[] };
-
-const MARKETS: Market[] = [
-  { id: "cn", n: "China", f: "🇨🇳", p: [{ id: "sha", n: "Shanghai (CNSHA)" }, { id: "ngb", n: "Ningbo (CNNGB)" }, { id: "tao", n: "Qingdao (CNTAO)" }, { id: "txg", n: "Tianjin (CNTXG)" }, { id: "dlc", n: "Dalian (CNDLC)" }] },
-  { id: "sa", n: "Saudi Arabia", f: "🇸🇦", p: [{ id: "jed", n: "Jeddah (SAJED)" }, { id: "dmm", n: "Dammam (SADMM)" }] },
-  { id: "ae", n: "UAE", f: "🇦🇪", p: [{ id: "jea", n: "Jebel Ali (AEJEA)" }, { id: "auh", n: "Abu Dhabi (AEAUH)" }] },
-  { id: "eg", n: "Egypt", f: "🇪🇬", p: [{ id: "alx", n: "Alexandria (EGALX)" }, { id: "psd", n: "Port Said (EGPSD)" }] },
-  { id: "ar", n: "Argentina", f: "🇦🇷", p: [{ id: "bue", n: "Buenos Aires (ARBUE)" }, { id: "ros", n: "Rosario (ARROS)" }] },
-  { id: "hk", n: "Hong Kong", f: "🇭🇰", p: [{ id: "hkg", n: "Hong Kong (HKHKG)" }] },
-  { id: "ph", n: "Philippines", f: "🇵🇭", p: [{ id: "mnl", n: "Manila (PHMNL)" }, { id: "ceb", n: "Cebu (PHCEB)" }] },
-  { id: "cl", n: "Chile", f: "🇨🇱", p: [{ id: "vap", n: "Valparaíso (CLVAP)" }, { id: "sai", n: "San Antonio (CLSAI)" }] },
-];
-
-const CUTS_DB: Record<string, string[]> = {
-  Beef: ["Forequarter", "Topside", "Brisket", "Knuckle", "Striploin", "Ribeye", "Bones", "Sangria 90VL", "Trim 80CL", "Chuck Roll"],
-  Pork: ["Loin", "Belly", "Ribs", "Shoulder", "Ham", "Trim 80CL"],
-  Poultry: ["Whole Chicken", "Breast", "Thigh", "Wings", "Drumstick", "Liver"],
-  Lamb: ["Leg", "Rack", "Shoulder", "Loin", "Shank"],
-};
+type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In", "Semi-Boneless"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
 const GRADES = ["Not Classified", "Low", "Medium", "High", "Prime"];
@@ -68,6 +50,8 @@ type Cut = {
   id: string;
   cat: string;
   cut: string;
+  cutId?: string;
+  cutImage?: string | null;
   spec: string;
   pkg: string;
   gr: string;
@@ -99,6 +83,8 @@ export default function SupplierCreateOffer() {
   const fromRequestId = searchParams.get("from");
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
+
+  const { markets: MARKETS, cutsByCategory, loading: dataLoading, error: dataError } = useSupplierOfferData();
 
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
@@ -138,6 +124,10 @@ export default function SupplierCreateOffer() {
     }
   }, [fromRequestId]);
 
+  useEffect(() => {
+    if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
+  }, [dataError]);
+
   const cap = csize === "40ft" ? 28000 : 13000;
   const tw = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
   const fp = Math.min((tw / cap) * 100, 100);
@@ -158,7 +148,7 @@ export default function SupplierCreateOffer() {
       }));
       return [...prev, m];
     });
-  }, []);
+  }, [MARKETS]);
 
   const togglePort = useCallback((mid: string, pid: string) => {
     setMktCfg((prev) => {
@@ -265,7 +255,7 @@ export default function SupplierCreateOffer() {
     setRouteSources((prev) => ({ ...prev, [`${rate.countryCode}-${rate.portId}`]: rate.source }));
     toast.success(tm("importedToast", { carrier: rate.source.carrierShort, freight: Number(rate.freight).toLocaleString() }));
     setMlOpen(false);
-  }, [tm]);
+  }, [tm, MARKETS]);
 
   const handlePublish = () => {
     if (!canPublish) return;
@@ -617,8 +607,14 @@ export default function SupplierCreateOffer() {
                 {cuts.map((c, i) => (
                   <tr key={c.id}>
                     <td>
-                      <label className={`cov4-img-box ${cutImgs[c.id] ? "has" : ""}`}>
-                        {cutImgs[c.id] ? <img src={cutImgs[c.id]} alt="" /> : <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>}
+                      <label className={`cov4-img-box ${cutImgs[c.id] || c.cutImage ? "has" : ""}`}>
+                        {cutImgs[c.id] ? (
+                          <img src={cutImgs[c.id]} alt="" />
+                        ) : c.cutImage ? (
+                          <img src={c.cutImage} alt="" />
+                        ) : (
+                          <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>
+                        )}
                         <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleCutImg(c.id, e.target.files[0])} />
                       </label>
                     </td>
@@ -656,12 +652,33 @@ export default function SupplierCreateOffer() {
                     </td>
                     <td>
                       <div style={{ display: "flex", gap: 4 }}>
-                        <select value={nf.cat} onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "" }))}>
-                          {Object.keys(CUTS_DB).map((c) => <option key={c}>{c}</option>)}
+                        <select
+                          value={nf.cat}
+                          onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}
+                        >
+                          {Object.keys(cutsByCategory).map((c) => (
+                            <option key={c} value={c}>
+                              {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
+                            </option>
+                          ))}
                         </select>
-                        <select value={nf.cut} onChange={(e) => setNf((p) => ({ ...p, cut: e.target.value }))}>
-                          <option value="">Cut...</option>
-                          {(CUTS_DB[nf.cat] || []).map((c) => <option key={c}>{c}</option>)}
+                        <select
+                          value={nf.cutId ?? ""}
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            const found = (cutsByCategory[nf.cat] || []).find((x) => x.id === id);
+                            setNf((p) => ({
+                              ...p,
+                              cutId: id || undefined,
+                              cut: found?.displayName ?? "",
+                              cutImage: found?.image_url ?? null,
+                            }));
+                          }}
+                        >
+                          <option value="">{dataLoading ? "Loading..." : "Cut..."}</option>
+                          {(cutsByCategory[nf.cat] || []).map((c) => (
+                            <option key={c.id} value={c.id}>{c.displayName}</option>
+                          ))}
                         </select>
                       </div>
                     </td>
@@ -702,9 +719,11 @@ export default function SupplierCreateOffer() {
             </div>
             <div className="cov4-prev-card">
               <div className="cov4-prev-img">
-                {cuts.length > 0 && cutImgs[cuts[0].id]
-                  ? <img src={cutImgs[cuts[0].id]} alt="" />
-                  : <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>}
+                {cuts.length > 0 && (cutImgs[cuts[0].id] || cuts[0].cutImage) ? (
+                  <img src={cutImgs[cuts[0].id] || (cuts[0].cutImage as string)} alt="" />
+                ) : (
+                  <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>
+                )}
               </div>
               <h3 className="cov4-prev-title">
                 {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? "Mix FCL" : "Untitled Offer"}
