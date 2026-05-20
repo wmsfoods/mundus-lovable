@@ -109,8 +109,11 @@ export default function FindPeople() {
       </div>
 
       <div className="psp-tabs">
-        <button className={`psp-tab ${tab === "total" ? "is-active" : ""}`} onClick={() => { setTab("total"); setPage(1); }}>Total ({MOCK_PEOPLE.length})</button>
-        <button className={`psp-tab ${tab === "saved" ? "is-active" : ""}`} onClick={() => { setTab("saved"); setPage(1); }}>Saved ({MOCK_PEOPLE.filter((p) => p.in_crm).length})</button>
+        {LEAD_TYPE_TABS.map((t) => (
+          <button key={t}
+            className={`psp-tab ${leadTypeTab === t ? "is-active" : ""}`}
+            onClick={() => { setLeadTypeTab(t); setPage(1); }}>{t}</button>
+        ))}
       </div>
 
       <div className="psp-layout">
@@ -201,83 +204,11 @@ export default function FindPeople() {
         </aside>
 
         <div className="psp-results">
-          <div className="psp-results-scroll">
-            <table className="psp-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 36 }}><Checkbox checked={allOnPageSelected} onCheckedChange={toggleAll} /></th>
-                  <th>Name</th>
-                  <th>Company</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Mobile</th>
-                  <th>Location</th>
-                  <th>Seniority</th>
-                  <th>Links</th>
-                  <th>Status</th>
-                  <th style={{ width: 80 }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((p) => {
-                  const rev = revealedMap[p.id] ?? {};
-                  return (
-                    <tr key={p.id} className={selected.has(p.id) ? "is-selected" : ""}>
-                      <td><Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggleSelect(p.id)} /></td>
-                      <td>
-                        <div className="psp-company-cell">
-                          <div>
-                            <div className="name" onClick={() => setDetail(p)}>{p.fullName}</div>
-                            <div className="domain">{p.jobTitle}</div>
-                          </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="psp-company-cell">
-                          <img src={p.companyLogo} alt="" />
-                          <span style={{ fontSize: 12 }}>{p.companyName}</span>
-                        </div>
-                      </td>
-                      <td>
-                        {p.emailStatus === "unavailable"
-                          ? <span className="psp-badge unavailable">N/A</span>
-                          : (rev.email
-                              ? <span style={{ display: "inline-flex", gap: 4, alignItems: "center", fontSize: 12 }}>{rev.email} <span className={`psp-badge ${p.emailStatus}`}>{p.emailStatus[0].toUpperCase()}</span></span>
-                              : <RevealButton label="Reveal email" icon={<Mail size={11} />} value={null}
-                                  onReveal={() => { const v = p.email!; setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], email: v } })); return v; }} />)
-                        }
-                      </td>
-                      <td>
-                        {!p.phoneAvailable ? "—" : rev.phone
-                          ? <span style={{ fontSize: 12 }}>{rev.phone}</span>
-                          : <RevealButton label="Reveal" icon={<Phone size={11} />} value={null}
-                              onReveal={() => { const v = fakePhone(p.id); setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], phone: v } })); return v; }} />}
-                      </td>
-                      <td>
-                        {!p.mobileAvailable ? "—" : rev.mobile
-                          ? <span style={{ fontSize: 12 }}>{rev.mobile}</span>
-                          : <RevealButton label="Reveal" icon={<Smartphone size={11} />} value={null}
-                              onReveal={() => { const v = fakePhone(p.id + "m"); setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], mobile: v } })); return v; }} />}
-                      </td>
-                      <td>{p.countryFlag} {p.city}, {p.country}</td>
-                      <td><span className="psp-tag">{p.seniority}</span></td>
-                      <td><a className="psp-icon-link" href={p.linkedin} target="_blank" rel="noreferrer"><Linkedin size={14} /></a></td>
-                      <td><span className={`psp-badge ${p.in_crm || savedIds.has(p.id) ? "in-crm" : "new"}`}>{p.in_crm || savedIds.has(p.id) ? "In CRM" : "New"}</span></td>
-                      <td>
-                        {p.in_crm
-                          ? <button className="psp-btn ghost" onClick={() => setDetail(p)}>View</button>
-                          : <button className="psp-btn" onClick={() => setSavePerson(p)}>Save</button>}
-                      </td>
-                    </tr>
-                  );
-                })}
-                {pageItems.length === 0 && (
-                  <tr><td colSpan={11} className="psp-empty">No people match your filters.</td></tr>
-                )}
-              </tbody>
-            </table>
+          <div className="psp-empty-state" style={{ padding: "80px 20px", textAlign: "center", color: "var(--adm-text-tertiary)" }}>
+            <SearchX size={48} style={{ margin: "0 auto 16px", opacity: 0.5 }} />
+            <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--adm-text-primary)", margin: "0 0 8px" }}>Search for people</h3>
+            <p style={{ fontSize: 13, margin: 0 }}>Use the filters to find prospects, or search by name</p>
           </div>
-          <PspPagination total={filtered.length} page={page} pageSize={pageSize} onChange={setPage} />
 
           {selected.size > 0 && (
             <div className="psp-bulk-bar">
