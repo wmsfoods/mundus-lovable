@@ -12,7 +12,9 @@ import {
   useProspect, updateProspectStage, addProspectActivity,
   updateProspect, deactivateProspect, reactivateProspect, deleteProspect,
   upsertContact, deleteContact,
+  STAGES, OWNERS,
   type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel,
+  type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 
 const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
@@ -21,6 +23,7 @@ const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
 
 const DECISION_LEVELS: DecisionLevel[] = ["c_level","vp","director","manager","specialist","other"];
 const LEAD_TYPES: LeadType[] = ["buyer","supplier","buyer_supplier"];
+const SOURCES: ProspectSource[] = ["linkedin","trade_show","referral","web_scrape","apollo","manual","inbound"];
 
 // ---- Search more people (Mundus Intelligence) mock --------------------
 type Discovered = {
@@ -74,7 +77,11 @@ export default function AdminProspectDetail() {
       street: draft.street, city: draft.city, state: draft.state, zipCode: draft.zipCode,
       country: draft.country, industry: draft.industry, website: draft.website,
       companyLinkedin: draft.companyLinkedin, notes: draft.notes,
+      source: draft.source, owner: draft.owner, ownerName: OWNERS.find(o => o.initials === draft.owner)?.name ?? draft.owner,
     });
+    if (draft.stage !== p.stage) {
+      updateProspectStage(p.id, draft.stage);
+    }
     draft.contacts.forEach((c) => upsertContact(p.id, c));
     p.contacts.forEach((orig) => {
       if (!draft.contacts.some((c) => c.id === orig.id)) deleteContact(p.id, orig.id);
@@ -183,14 +190,47 @@ export default function AdminProspectDetail() {
           </div>
         </div>
         <div className="crm-chips">
+          {/* Active/Inactive */}
           <span className={`pill ${p.isActive ? "stage-qualified" : "stage-lost"}`}>
             {p.isActive ? t("admin.crm.detail.status.active") : t("admin.crm.detail.status.inactive")}
           </span>
-          <span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span>
-          <span className="pill info">{t(`admin.crm.detail.leadType.${p.leadType}`)}</span>
+          {/* Stage */}
+          {editing ? (
+            <select className="psp-chip-select" value={d.stage}
+              onChange={(e) => setDraftField("stage", e.target.value as ProspectStage)}>
+              {STAGES.map(s => <option key={s} value={s}>{t(`admin.crm.stages.${s}`)}</option>)}
+            </select>
+          ) : (
+            <span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span>
+          )}
+          {/* Lead type */}
+          {editing ? (
+            <select className="psp-chip-select" value={d.leadType}
+              onChange={(e) => setDraftField("leadType", e.target.value as LeadType)}>
+              {LEAD_TYPES.map(lt => <option key={lt} value={lt}>{t(`admin.crm.detail.leadType.${lt}`)}</option>)}
+            </select>
+          ) : (
+            <span className="pill info">{t(`admin.crm.detail.leadType.${p.leadType}`)}</span>
+          )}
           {p.isOnboarded && <span className="pill stage-onboarded">{t("admin.crm.detail.status.onboarded")}</span>}
-          <span className={`crm-source ${p.source}`}>{t(`admin.crm.sources.${p.source}`)}</span>
-          <span className="crm-chip"><span className="crm-owner-av">{p.owner}</span> {p.ownerName}</span>
+          {/* Source */}
+          {editing ? (
+            <select className="psp-chip-select" value={d.source}
+              onChange={(e) => setDraftField("source", e.target.value as ProspectSource)}>
+              {SOURCES.map(s => <option key={s} value={s}>{t(`admin.crm.sources.${s}`)}</option>)}
+            </select>
+          ) : (
+            <span className={`crm-source ${p.source}`}>{t(`admin.crm.sources.${p.source}`)}</span>
+          )}
+          {/* Owner */}
+          {editing ? (
+            <select className="psp-chip-select" value={d.owner}
+              onChange={(e) => setDraftField("owner", e.target.value)}>
+              {OWNERS.map(o => <option key={o.initials} value={o.initials}>{o.initials} — {o.name}</option>)}
+            </select>
+          ) : (
+            <span className="crm-chip"><span className="crm-owner-av">{p.owner}</span> {p.ownerName}</span>
+          )}
           <span className="crm-chip">{t("admin.crm.detail.created")}: {p.createdAt}</span>
         </div>
       </div>
