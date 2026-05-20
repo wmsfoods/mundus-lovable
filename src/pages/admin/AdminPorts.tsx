@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Ship, Search, Check, Anchor, Globe } from "lucide-react";
+import { Ship, Search, Check, Anchor, Globe, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAdminPorts, type AdminPortRow } from "@/hooks/useAdminPorts";
 
 type ActiveKey = "all" | "active" | "inactive";
