@@ -505,7 +505,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Incoterms */}
-          <div className="cov4-sec">
+          <div id="sec-inco" className="cov4-sec">
             <div className="cov4-sec-t">Incoterms</div>
             <div className="cov4-inco-grid">
               {INCOTERMS.map((ic) => {
@@ -579,7 +579,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Distribution */}
-          <div className="cov4-sec">
+          <div id="sec-dist" className="cov4-sec">
             <div className="cov4-sec-t">Offer distribution</div>
             <div className="cov4-dist-opts">
               <label className="cov4-dist-opt">
