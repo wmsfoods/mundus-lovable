@@ -2178,6 +2178,41 @@
           "title": "No markets match these filters",
           "body": "Try clearing filters or searching with another term."
         }
+      },
+      "ports": {
+        "title": "Ports",
+        "subtitle": "Manage ports available for shipping routes",
+        "searchPlaceholder": "Search port name or code...",
+        "allCountries": "All countries",
+        "next": "Next",
+        "showing": "Showing {{from}}-{{to}} of {{total}} results",
+        "shared": "Shared",
+        "usedBy": "Used by {{country}}",
+        "stats": {
+          "total": "Total ports",
+          "active": "Active ports",
+          "countries": "Countries with ports"
+        },
+        "filters": {
+          "all": "All",
+          "activeOnly": "Active only",
+          "inactiveOnly": "Inactive only"
+        },
+        "cols": {
+          "name": "Port name",
+          "code": "Code",
+          "country": "Country",
+          "shared": "Shared",
+          "active": "Active"
+        },
+        "toggle": {
+          "activated": "Port {{port}} activated",
+          "deactivated": "Port {{port}} deactivated"
+        },
+        "empty": {
+          "title": "No ports match these filters",
+          "body": "Try clearing filters or searching with another term."
+        }
       }
     }
   },
