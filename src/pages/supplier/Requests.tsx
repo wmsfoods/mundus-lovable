@@ -114,7 +114,7 @@ export default function SupplierRequests() {
         </div>
       </div>
 
-      <div className="data-table-wrap">
+      <div className="data-table-wrap has-mobile-cards">
         <table className="data-table">
           <thead>
             <tr>
@@ -225,6 +225,31 @@ export default function SupplierRequests() {
           </tbody>
         </table>
       </div>
+
+      <ListCardList>
+        {slice.length === 0 ? (
+          <div className="empty-state">{t("supplier.requests.empty")}</div>
+        ) : (
+          slice.map((r) => (
+            <ListCard
+              key={r.id}
+              onClick={() => navigate(`/supplier/requests/${r.id}`)}
+              title={r.product}
+              subtitle={`${r.id} · ${r.client}`}
+              chip={{
+                label: t(`supplier.requests.status.${r.status}`),
+                className: `pill-status ${STATUS_CLASS[r.status]}`,
+              }}
+              meta={[
+                { label: t("supplier.requests.col.destinationCountry"), value: r.destinationCountry },
+                { label: t("supplier.requests.col.incoterms"), value: r.incoterms },
+                { label: t("supplier.requests.col.quantity"), value: `${formatKg(r.quantityKg)} kg` },
+                { label: t("supplier.requests.col.container"), value: `${r.containerSize} (${r.numberOfContainers})` },
+              ]}
+            />
+          ))
+        )}
+      </ListCardList>
 
       <div className="table-footer">
         <Pagination
