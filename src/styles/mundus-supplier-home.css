@@ -230,7 +230,7 @@
     font-size: var(--fs-xs);
     padding-top: 2px;
   }
-}
+
   /* Recent Offers / Sales → horizontal snap carousel on mobile */
   .sh-card-row {
     display: flex;
