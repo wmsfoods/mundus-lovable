@@ -356,6 +356,35 @@
     display: inline-flex;
     align-items: center;
   }
+  .tb-hamburger {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    background: none;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fg);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .tb-hamburger:hover { background: var(--g100); }
+  .tb-brand-center {
+    position: absolute;
+    left: 50%;
+    top: env(safe-area-inset-top);
+    height: 56px;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    pointer-events: none;
+  }
+  .tb {
+    position: sticky;
+    /* ensure absolute children (centered logo) anchor to tb */
+  }
+  .tb.tb-mobile { position: sticky; }
   .app-main {
     grid-row: 2;
     grid-column: 1;
