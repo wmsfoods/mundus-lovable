@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Beef, Search, Check, Languages, Tag, Pencil } from "lucide-react";
+import { Beef, Search, Check, Languages, Tag, Pencil, Upload } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdminCuts, CATEGORY_COLORS, type AdminCutRow, type CutCategory } from "@/hooks/useAdminCuts";
 import EditCutModal from "@/components/admin/EditCutModal";
@@ -136,7 +136,7 @@ export default function AdminProducts() {
                     const c = CATEGORY_COLORS[r.category];
                     return (
                       <tr key={r.id}>
-                        <td><Thumb url={r.image_url} alt={r.name} /></td>
+                        <td><Thumb url={r.image_url} alt={r.name} cutId={r.id} onUpload={uploadCutImage} /></td>
                         <td><strong>{r.name}</strong></td>
                         <td>{r.product_number != null ? <span className="adm-chip">{r.product_number}</span> : <span style={{ color: "var(--fg-muted, #6b7280)" }}>—</span>}</td>
                         <td>
@@ -172,7 +172,7 @@ export default function AdminProducts() {
               const c = CATEGORY_COLORS[r.category];
               return (
                 <div key={r.id} className="adm-panel" style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start" }}>
-                  <Thumb url={r.image_url} alt={r.name} />
+                  <Thumb url={r.image_url} alt={r.name} cutId={r.id} onUpload={uploadCutImage} />
                   <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
                       <strong style={{ fontSize: 14 }}>{r.name}</strong>
@@ -230,13 +230,57 @@ export default function AdminProducts() {
   );
 }
 
-function Thumb({ url, alt }: { url: string | null; alt: string }) {
+function Thumb({ url, alt, cutId, onUpload }: { url: string | null; alt: string; cutId: string; onUpload: (id: string, f: File) => Promise<string> }) {
+  const [drag, setDrag] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [localUrl, setLocalUrl] = useState<string | null>(url);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => { setLocalUrl(url); }, [url]);
+
+  const upload = async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Only image files"); return; }
+    setBusy(true);
+    try {
+      const next = await onUpload(cutId, file);
+      setLocalUrl(next);
+      toast.success("Image uploaded");
+    } catch (e: any) { toast.error(e?.message || "Upload failed"); }
+    finally { setBusy(false); }
+  };
+
   return (
-    <div style={{ width: 64, height: 64, borderRadius: 10, overflow: "hidden", background: "#F3F4F6", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid #E5E7EB" }}>
-      {url ? (
-        <img src={url} alt={alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+    <div
+      onClick={(e) => { e.stopPropagation(); inputRef.current?.click(); }}
+      onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
+      onDragLeave={() => setDrag(false)}
+      onDrop={(e) => {
+        e.preventDefault(); setDrag(false);
+        const f = e.dataTransfer.files?.[0];
+        if (f) upload(f);
+      }}
+      title="Click or drag an image"
+      style={{
+        width: 64, height: 64, borderRadius: 10, overflow: "hidden",
+        background: drag ? "#EEF2FF" : "#F3F4F6",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        border: `${drag ? 2 : 1}px ${drag ? "dashed" : "solid"} ${drag ? "#6366F1" : "#E5E7EB"}`,
+        cursor: "pointer", position: "relative", transition: "all 0.15s",
+      }}
+    >
+      <input
+        ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
+        onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.currentTarget.value = ""; }}
+      />
+      {localUrl ? (
+        <img src={localUrl} alt={alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
       ) : (
-        <Beef size={22} color="#9CA3AF" />
+        <Upload size={18} color="#9CA3AF" />
+      )}
+      {(busy || drag) && (
+        <div style={{ position: "absolute", inset: 0, background: "rgba(99,102,241,0.35)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 600 }}>
+          {busy ? "..." : "Drop"}
+        </div>
       )}
     </div>
   );
