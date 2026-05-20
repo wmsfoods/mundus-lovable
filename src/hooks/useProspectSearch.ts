@@ -116,6 +116,7 @@ export function useProspectSearch<T = MockCompany | MockPerson>(
     pagination: { page: 1, per_page: 25, total_entries: 0, total_pages: 0 },
     loading: false,
     error: null,
+    errorCode: null,
     source: null,
     hasSearched: false,
   });
