@@ -260,63 +260,11 @@ export default function FindCompanies() {
         </aside>
 
         <div className="psp-results">
-          <div className="psp-results-scroll">
-            <table className="psp-table">
-              <thead>
-                <tr>
-                  <th style={{ width: 36 }}><Checkbox checked={allOnPageSelected} onCheckedChange={toggleAll} /></th>
-                  <th>Company</th>
-                  <th>Industry</th>
-                  <th>Location</th>
-                  <th>Employees</th>
-                  <th>Revenue</th>
-                  <th>Founded</th>
-                  <th>Links</th>
-                  <th>Status</th>
-                  <th style={{ width: 90 }}>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map((c) => (
-                  <tr key={c.id} className={selected.has(c.id) ? "is-selected" : ""}>
-                    <td><Checkbox checked={selected.has(c.id)} onCheckedChange={() => toggleSelect(c.id)} /></td>
-                    <td>
-                      <div className="psp-company-cell">
-                        <img src={c.logo_url} alt="" />
-                        <div>
-                          <div className="name" onClick={() => setDetail(c)}>{c.name}</div>
-                          <div className="domain">{c.domain}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span className="psp-tag">{c.industry}</span></td>
-                    <td>{c.countryFlag} {c.city}, {c.country}</td>
-                    <td>{fmtNumber(c.employees)}</td>
-                    <td>{fmtRevenue(c.revenue)}</td>
-                    <td>{c.founded}</td>
-                    <td>
-                      <span style={{ display: "inline-flex", gap: 8 }}>
-                        <a className="psp-icon-link" href={c.website} target="_blank" rel="noreferrer"><ExternalLink size={14} /></a>
-                        <a className="psp-icon-link" href={c.linkedin} target="_blank" rel="noreferrer"><Linkedin size={14} /></a>
-                      </span>
-                    </td>
-                    <td><span className={`psp-badge ${c.in_crm || savedIds.has(c.id) ? "in-crm" : "new"}`}>{c.in_crm || savedIds.has(c.id) ? "In CRM" : "New"}</span></td>
-                    <td>
-                      {c.in_crm || savedIds.has(c.id) ? (
-                        <button className="psp-btn ghost" onClick={() => setDetail(c)}>View</button>
-                      ) : (
-                        <button className="psp-btn" onClick={() => setSaveModalCompany(c)}>Save</button>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-                {pageItems.length === 0 && (
-                  <tr><td colSpan={10} className="psp-empty">No companies match your filters.</td></tr>
-                )}
-              </tbody>
-            </table>
+          <div className="psp-empty-state" style={{ padding: "80px 20px", textAlign: "center", color: "var(--adm-text-tertiary)" }}>
+            <SearchX size={48} style={{ margin: "0 auto 16px", opacity: 0.5 }} />
+            <h3 style={{ fontSize: 18, fontWeight: 600, color: "var(--adm-text-primary)", margin: "0 0 8px" }}>Search for companies</h3>
+            <p style={{ fontSize: 13, margin: 0 }}>Use the filters to find prospects, or search by name</p>
           </div>
-          <PspPagination total={filtered.length} page={page} pageSize={pageSize} onChange={setPage} />
 
           {selected.size > 0 && (
             <div className="psp-bulk-bar">
