@@ -216,7 +216,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
           market_region: coMarketRegion || null,
           product_categories: coProductCats,
           is_public: coIsPublic,
-          source: "mundus_prospect",
+          source: "apollo",
           stage: "cold",
         }).select("id").single();
         if (coErr) throw coErr;
@@ -238,7 +238,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
           personal_linkedin: personalLinkedin || null,
           job_title: jobTitle || null,
           department: department || null,
-          seniority: seniority || null,
+          seniority: seniority ? seniority.toLowerCase().replace(/[- ]/g, "_") : null,
           decision_level: decisionLevel || null,
           role: role || null,
           lead_status: leadStatus.toLowerCase().replace(/\s/g, "_"),
@@ -253,7 +253,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
           company_id: companyId,
           notes: notes || null,
           tags,
-          source: "mundus_prospect",
+          source: "apollo_search",
         });
         if (ctErr) throw ctErr;
       }
@@ -271,7 +271,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
             mobile: a.mobile || null,
             linkedin: a.linkedin || null,
             company_id: companyId,
-            source: "mundus_prospect",
+            source: "apollo_search",
           }));
         if (rows.length) await supabase.from("crm_contacts").insert(rows);
       }
@@ -289,8 +289,9 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
       toast.success("Saved to CRM");
       onSaved?.(companyId ?? "ok");
       onClose();
-    } catch (e) {
-      const msg = e instanceof Error ? e.message : String(e);
+    } catch (e: any) {
+      const msg = e?.message || e?.details || e?.hint || (typeof e === "string" ? e : JSON.stringify(e));
+      console.error("Save to CRM failed", e);
       toast.error(`Save failed: ${msg}`);
     } finally {
       setSaving(false);
