@@ -26,7 +26,9 @@ Deno.serve(async (req) => {
   const entity = body.entity === "people" ? "people" : "companies";
   // For people, try the prospect DB (mixed_people/search) first, and fall back
   // to CRM contacts/search if the plan can't access it.
-  const path = entity === "people" ? "people/search" : "mixed_companies/search";
+  // Apollo plan only allows CRM contacts/search for people (mixed_people/search
+  // and people/search both return 403 API_INACCESSIBLE on this plan).
+  const path = entity === "people" ? "contacts/search" : "mixed_companies/search";
 
   // Whitelist of Apollo params we forward. Empty arrays / null / "" are stripped.
   const allow = entity === "companies"
@@ -82,17 +84,6 @@ Deno.serve(async (req) => {
 
   try {
     let { r, j: json } = await callApollo(path, payload);
-    console.log("apollo first call", path, r.status, JSON.stringify(json).slice(0, 300));
-    let usedPath = path;
-    // Fallback: if people prospect DB is inaccessible, try CRM contacts/search
-    if (!r.ok && entity === "people") {
-      const code = json?.error_code ?? json?.apollo?.error_code ?? null;
-      if (r.status === 403 || code === "API_INACCESSIBLE") {
-        usedPath = "contacts/search";
-        ({ r, j: json } = await callApollo(usedPath, payload));
-        console.log("apollo fallback contacts", r.status, JSON.stringify(json).slice(0, 300));
-      }
-    }
     if (!r.ok) {
       const code = json?.error_code ?? json?.apollo?.error_code ?? null;
       // Return 200 with ok:false so the client always gets a parsed body
