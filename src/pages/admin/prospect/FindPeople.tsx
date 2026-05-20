@@ -58,7 +58,7 @@ export default function FindPeople() {
     return params;
   }, [page, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, companySizes]);
 
-  const { rows, pagination, loading, error, hasSearched } = useProspectSearch<MockPerson>(
+  const { rows, pagination, loading, error, errorCode, hasSearched } = useProspectSearch<MockPerson>(
     "people",
     apolloParams,
   );
