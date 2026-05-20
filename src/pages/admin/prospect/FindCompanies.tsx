@@ -158,10 +158,29 @@ export default function FindCompanies() {
           </FilterAccordion>
 
           <FilterAccordion label="Location" icon={<MapPin size={14} />} hasActive={locations.length > 0}>
-            <input className="psp-input" placeholder="Enter countries or cities..." />
-            <div className="psp-chip-row">
+            <div className="psp-region-row">
+              {REGION_PRESETS.map((r) => {
+                const allSelected = r.countries.every((c) => locations.includes(c));
+                return (
+                  <span key={r.label} className={`psp-chip ${allSelected ? "is-active" : ""}`}
+                    onClick={() => {
+                      if (allSelected) setLocations(locations.filter((c) => !r.countries.includes(c)));
+                      else setLocations(Array.from(new Set([...locations, ...r.countries])));
+                      setPage(1);
+                    }}>{r.label}</span>
+                );
+              })}
+            </div>
+            <input className="psp-input" placeholder="Search city..." value={cityQuery} onChange={(e) => { setCityQuery(e.target.value); setPage(1); }} />
+            <div className="psp-chip-row" style={{ marginTop: 6 }}>
               {PRESET_COUNTRIES.map((c) => (
                 <span key={c} className={`psp-chip ${locations.includes(c) ? "is-active" : ""}`} onClick={() => { toggle(locations, c, setLocations); setPage(1); }}>{c}</span>
+              ))}
+            </div>
+            <div style={{ marginTop: 10, fontSize: 11, color: "var(--adm-text-tertiary)" }}>Exclude locations</div>
+            <div className="psp-chip-row">
+              {PRESET_COUNTRIES.map((c) => (
+                <span key={`x-${c}`} className={`psp-chip ${excludeLocations.includes(c) ? "is-active" : ""}`} onClick={() => { toggle(excludeLocations, c, setExcludeLocations); setPage(1); }}>{c}</span>
               ))}
             </div>
           </FilterAccordion>
@@ -226,6 +245,46 @@ export default function FindCompanies() {
             <div className="psp-checkbox-row">
               <label><Checkbox checked={notInCrm} onCheckedChange={(v) => setNotInCrm(!!v)} />Not in CRM</label>
             </div>
+          </FilterAccordion>
+
+          <FilterAccordion label="SIC / NAICS Codes" icon={<FileCode size={14} />} hasActive={sicCodes.length > 0 || naicsCodes.length > 0} defaultOpen={false}>
+            <div className="psp-chip-row">
+              <span className={`psp-chip ${sicNaicsTab === "sic" ? "is-active" : ""}`} onClick={() => setSicNaicsTab("sic")}>SIC</span>
+              <span className={`psp-chip ${sicNaicsTab === "naics" ? "is-active" : ""}`} onClick={() => setSicNaicsTab("naics")}>NAICS</span>
+            </div>
+            <input className="psp-input" placeholder={sicNaicsTab === "sic" ? "Search SIC code..." : "Search NAICS code..."} />
+            <div className="psp-chip-row">
+              {(sicNaicsTab === "sic" ? SIC_CODES : NAICS_CODES).map((c) => {
+                const arr = sicNaicsTab === "sic" ? sicCodes : naicsCodes;
+                const setArr = sicNaicsTab === "sic" ? setSicCodes : setNaicsCodes;
+                return (
+                  <span key={c.code} className={`psp-chip ${arr.includes(c.code) ? "is-active" : ""}`}
+                    onClick={() => toggle(arr, c.code, setArr)} title={c.label}>
+                    {c.code} · {c.label}
+                  </span>
+                );
+              })}
+            </div>
+          </FilterAccordion>
+
+          <FilterAccordion label="Market Segment" icon={<BarChart3 size={14} />} hasActive={marketSegments.length > 0} defaultOpen={false}>
+            <div style={{ fontSize: 11, color: "var(--adm-text-tertiary)", marginBottom: 6 }}>Hint: most meat trade is B2B</div>
+            {MARKET_SEGMENTS.map((s) => (
+              <div key={s} className="psp-checkbox-row">
+                <label><Checkbox checked={marketSegments.includes(s)} onCheckedChange={() => toggle(marketSegments, s, setMarketSegments)} />{s}</label>
+              </div>
+            ))}
+          </FilterAccordion>
+
+          <FilterAccordion label="Company Type" icon={<Globe size={14} />} hasActive={companyType !== "all"} defaultOpen={false}>
+            {(["all", "private", "public"] as const).map((t) => (
+              <div key={t} className="psp-checkbox-row">
+                <label>
+                  <input type="radio" name="psp-co-type" checked={companyType === t} onChange={() => setCompanyType(t)} />
+                  {t === "all" ? "All" : t === "private" ? "Private Company" : "Public Company"}
+                </label>
+              </div>
+            ))}
           </FilterAccordion>
 
           {activeFilters > 0 && (
