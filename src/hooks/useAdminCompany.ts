@@ -78,5 +78,15 @@ export function useAdminCompany(id: string | undefined) {
     return save({ status: active ? "active" : "inactive" });
   }, [save]);
 
-  return { data, loading, error, refresh: load, save, create, setActive };
+  const remove = useCallback(async (): Promise<{ ok: boolean; error?: string }> => {
+    if (!id) return { ok: false, error: "missing_id" };
+    const { error: err } = await supabase
+      .from("companies")
+      .update({ deleted_at: new Date().toISOString(), status: "inactive" } as never)
+      .eq("id", id);
+    if (err) return { ok: false, error: err.message };
+    return { ok: true };
+  }, [id]);
+
+  return { data, loading, error, refresh: load, save, create, setActive, remove };
 }
