@@ -860,6 +860,8 @@
   .adm-only-desktop { display: none; }
 }
 
+.adm-cards-stack { flex-direction: column; gap: 8px; }
+
 /* Company detail / form */
 .adm-btn-ghost {
   display: inline-flex; align-items: center; gap: 4px;
