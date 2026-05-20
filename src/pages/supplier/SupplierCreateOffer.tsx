@@ -380,10 +380,14 @@ export default function SupplierCreateOffer() {
                         <div key={pid} className="cov4-ppf-r">
                           <span className="cov4-ppf-n">{pn?.n}</span>
                           <PriceInput value={c.pf[pid] || ""} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], pf: { ...pr[m.id].pf, [pid]: v } } }))} />
+                          <MarketplaceSourceTag src={routeSources[`${m.id}-${pid}`]} via={tm("via")} />
                         </div>
                       );
                     })}
                   </div>
+                )}
+                {(c.sm || c.sp.length <= 1) && c.sp[0] && (
+                  <MarketplaceSourceTag src={routeSources[`${m.id}-${c.sp[0]}`]} via={tm("via")} />
                 )}
               </div>
             );
@@ -394,6 +398,30 @@ export default function SupplierCreateOffer() {
               <p>Select destination markets above</p>
             </div>
           )}
+
+          {/* Marketplace Logistics CTA */}
+          <div
+            style={{
+              marginTop: 12, background: "#8B2252", color: "#fff",
+              borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 8,
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              🚢 {tm("ctaTitle")}
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.92, lineHeight: 1.4 }}>{tm("ctaDesc")}</div>
+            <button
+              type="button"
+              onClick={() => setMlOpen(true)}
+              style={{
+                alignSelf: "flex-start", background: "transparent", color: "#fff",
+                border: "1px solid rgba(255,255,255,0.6)", borderRadius: 8,
+                padding: "7px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              }}
+            >
+              {tm("ctaBtn")} →
+            </button>
+          </div>
 
           {/* Incoterms */}
           <div className="cov4-sec">
