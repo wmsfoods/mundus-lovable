@@ -1,7 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin, Camera,
   StickyNote, ArrowRight, Settings as SettingsIcon, PhoneCall,
@@ -16,6 +17,68 @@ import {
   type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel, type MundusType,
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
+
+const STAGE_TO_DB: Record<ProspectStage, string> = {
+  new: "cold", researching: "warm", contacted: "contacted",
+  qualified: "qualified", onboarding: "onboarding", onboarded: "onboarded", lost: "lost",
+};
+const STAGE_FROM_DB: Record<string, ProspectStage> = {
+  cold: "new", warm: "researching", contacted: "contacted",
+  qualified: "qualified", onboarding: "onboarding", onboarded: "onboarded", lost: "lost",
+};
+
+function mapDbCompanyToProspect(c: any): Prospect {
+  const primary = c.crm_contacts?.[0] ?? null;
+  const stage = STAGE_FROM_DB[c.stage] ?? "new";
+  const role: ProspectRoleLike = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
+  const leadType: LeadType = role === "potential_buyer" ? "buyer" : "supplier";
+  const initials = (c.name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "?";
+  const contacts: ProspectContact[] = (c.crm_contacts ?? []).map((ct: any, i: number) => ({
+    id: ct.id,
+    isPrimary: i === 0,
+    fullName: ct.full_name ?? "",
+    email: ct.email ?? undefined,
+    phone: ct.phone ?? undefined,
+    mobile: ct.mobile ?? undefined,
+    linkedin: ct.linkedin ?? undefined,
+    role: ct.job_title ?? undefined,
+    photoUrl: ct.photo_url ?? undefined,
+  }));
+  return {
+    id: c.id,
+    companyName: c.name,
+    initials,
+    country: c.country || "—",
+    role,
+    source: (c.source as ProspectSource) || "manual",
+    contactName: primary?.full_name || "—",
+    contactEmail: primary?.email || "—",
+    contactPhone: primary?.phone || undefined,
+    notes: c.notes || "",
+    stage,
+    owner: "FN",
+    ownerName: "Fernando Nascimento",
+    estGmv: c.annual_revenue ?? undefined,
+    createdAt: c.created_at,
+    updatedAt: c.updated_at,
+    lastActivity: { type: "system", when: "—" },
+    activity: [],
+    leadType,
+    street: c.street ?? c.address ?? undefined,
+    city: c.city ?? undefined,
+    state: c.state ?? undefined,
+    zipCode: c.postal_code ?? undefined,
+    industry: c.industry ?? undefined,
+    website: c.website ?? undefined,
+    companyLinkedin: c.linkedin_url ?? undefined,
+    contacts,
+    isActive: c.is_active !== false,
+    isOnboarded: stage === "onboarded" || !!c.onboarded_at,
+    mundusCompanyId: c.mundus_company_id ?? undefined,
+  } as Prospect;
+}
+
+type ProspectRoleLike = "potential_buyer" | "potential_supplier";
 
 const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
   note: StickyNote, email: Mail, call: PhoneCall, stage_change: ArrowRight, system: SettingsIcon,
@@ -55,9 +118,33 @@ export default function AdminProspectDetail() {
   const { id } = useParams<{ id: string }>();
   const { t } = useTranslation();
   const nav = useNavigate();
-  const p = useProspect(id);
+  const mock = useProspect(id);
+  const isDbProspect = !!id && !id.startsWith("pr-");
+  const [dbP, setDbP] = useState<Prospect | null>(null);
+  const [dbLoading, setDbLoading] = useState(false);
+
+  useEffect(() => {
+    if (mock || !isDbProspect || !id) return;
+    let cancelled = false;
+    setDbLoading(true);
+    (async () => {
+      const { data, error } = await supabase
+        .from("crm_companies")
+        .select("id,name,domain,country,city,state,street,postal_code,address,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,notes,is_active,mundus_company_id,onboarded_at,crm_contacts(id,full_name,email,phone,mobile,linkedin,job_title,photo_url)")
+        .eq("id", id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) { setDbP(null); setDbLoading(false); return; }
+      setDbP(mapDbCompanyToProspect(data));
+      setDbLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [id, isDbProspect, mock]);
+
+  const p = mock ?? dbP;
 
   const [editing, setEditing] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [draft, setDraft] = useState<Prospect | null>(null);
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
@@ -66,6 +153,14 @@ export default function AdminProspectDetail() {
   const [deactivateReason, setDeactivateReason] = useState("");
 
   if (!p) {
+    if (isDbProspect && dbLoading) {
+      return (
+        <div className="adm-body">
+          <Link to="/admin/crm/prospects" className="adm-link">← {t("admin.crm.detail.back")}</Link>
+          <div className="adm-panel" style={{ padding: 16 }}>{t("common.loading", { defaultValue: "Loading…" })}</div>
+        </div>
+      );
+    }
     return (
       <div className="adm-body">
         <Link to="/admin/crm/prospects" className="adm-link">← {t("admin.crm.detail.back")}</Link>
@@ -77,8 +172,50 @@ export default function AdminProspectDetail() {
   const d = editing && draft ? draft : p;
   const startEdit = () => { setDraft({ ...p, contacts: p.contacts.map(c => ({...c})) }); setEditing(true); };
   const cancelEdit = () => { setDraft(null); setEditing(false); };
-  const save = () => {
+  const save = async () => {
     if (!draft) return;
+    if (isDbProspect) {
+      setSaving(true);
+      try {
+        const companyType = draft.leadType === "supplier" ? "supplier" : draft.leadType === "buyer_supplier" ? "buyer_supplier" : "prospect";
+        const { error } = await supabase.from("crm_companies").update({
+          name: draft.companyName,
+          country: draft.country || null,
+          city: draft.city || null,
+          state: draft.state || null,
+          street: draft.street || null,
+          postal_code: draft.zipCode || null,
+          industry: draft.industry || null,
+          website: draft.website || null,
+          linkedin_url: draft.companyLinkedin || null,
+          notes: draft.notes || null,
+          source: draft.source,
+          stage: STAGE_TO_DB[draft.stage],
+          company_type: companyType,
+        }).eq("id", p.id);
+        if (error) throw error;
+        // primary contact basic fields
+        const primary = draft.contacts.find((c) => c.isPrimary) ?? draft.contacts[0];
+        if (primary && primary.id) {
+          await supabase.from("crm_contacts").update({
+            full_name: primary.fullName,
+            email: primary.email || null,
+            phone: primary.phone || null,
+            mobile: primary.mobile || null,
+            linkedin: primary.linkedin || null,
+            job_title: primary.role || null,
+          }).eq("id", primary.id);
+        }
+        setDbP({ ...draft });
+        setEditing(false); setDraft(null);
+        toast.success(t("admin.crm.detail.savedToast"));
+      } catch (e: any) {
+        toast.error(e?.message || "Failed to save");
+      } finally {
+        setSaving(false);
+      }
+      return;
+    }
     updateProspect(p.id, {
       companyName: draft.companyName, leadType: draft.leadType,
       street: draft.street, city: draft.city, state: draft.state, zipCode: draft.zipCode,
@@ -97,16 +234,46 @@ export default function AdminProspectDetail() {
     toast.success(t("admin.crm.detail.savedToast"));
   };
 
-  const onDeactivate = () => {
-    deactivateProspect(p.id, deactivateReason);
+  const onDeactivate = async () => {
+    if (isDbProspect) {
+      const { error } = await supabase.from("crm_companies")
+        .update({ is_active: false, deactivation_reason: deactivateReason || null, deactivated_at: new Date().toISOString() })
+        .eq("id", p.id);
+      if (error) { toast.error(error.message); return; }
+      setDbP(dbP ? { ...dbP, isActive: false, deactivationReason: deactivateReason } : null);
+    } else {
+      deactivateProspect(p.id, deactivateReason);
+    }
     setShowDeactivate(false); setDeactivateReason("");
     toast.success(t("admin.crm.detail.deactivate.toast"));
   };
-  const onReactivate = () => {
-    reactivateProspect(p.id);
+  const onReactivate = async () => {
+    if (isDbProspect) {
+      const { error } = await supabase.from("crm_companies")
+        .update({ is_active: true, deactivation_reason: null, deactivated_at: null })
+        .eq("id", p.id);
+      if (error) { toast.error(error.message); return; }
+      setDbP(dbP ? { ...dbP, isActive: true, deactivationReason: undefined } : null);
+    } else {
+      reactivateProspect(p.id);
+    }
     toast.success(t("admin.crm.detail.reactivate.toast"));
   };
-  const onDelete = () => {
+  const onDelete = async () => {
+    if (isDbProspect) {
+      if (p.isOnboarded || p.mundusCompanyId) {
+        toast.error(t("admin.crm.detail.delete.cannotOnboarded"));
+        return;
+      }
+      // delete contacts then company (no FK cascade declared)
+      await supabase.from("crm_contacts").delete().eq("company_id", p.id);
+      const { error } = await supabase.from("crm_companies").delete().eq("id", p.id);
+      if (error) { toast.error(error.message); return; }
+      setShowDelete(false);
+      toast.success(t("admin.crm.detail.delete.toast"));
+      nav("/admin/crm/prospects");
+      return;
+    }
     const res = deleteProspect(p.id);
     if (!res.ok) {
       toast.error(t("admin.crm.detail.delete.cannotOnboarded"));
@@ -195,8 +362,8 @@ export default function AdminProspectDetail() {
                 <button type="button" className="crm-btn-ghost" onClick={cancelEdit}>
                   <X size={14} /> {t("admin.crm.detail.actions.cancel")}
                 </button>
-                <button type="button" className="crm-btn-primary" onClick={save}>
-                  <Save size={14} /> {t("admin.crm.detail.actions.save")}
+                <button type="button" className="crm-btn-primary" onClick={save} disabled={saving}>
+                  <Save size={14} /> {saving ? "…" : t("admin.crm.detail.actions.save")}
                 </button>
               </>
             )}
