@@ -340,3 +340,72 @@
 .adm-profile-scope-certifications > .cp-page > section:nth-child(4) { display: block; }
 .adm-profile-scope-documents > .cp-page > section:nth-child(5) { display: block; }
 .adm-profile-scope-team      > .cp-page > section:nth-child(6) { display: block; }
+
+/* ---------- Inline editing ---------- */
+.cp-inline {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  padding: 4px 8px;
+  font: inherit;
+  color: inherit;
+  min-width: 80px;
+  max-width: 100%;
+  transition: background .15s ease, border-color .15s ease;
+}
+.cp-inline:hover:not(:focus) {
+  background: rgba(139,34,82,0.04);
+  border-color: rgba(139,34,82,0.12);
+}
+.cp-inline:focus {
+  outline: none;
+  background: #fff;
+  border-color: #8B2252;
+  box-shadow: 0 0 0 3px rgba(139,34,82,0.12);
+}
+.cp-inline::placeholder { color: #c4c4c8; font-style: italic; }
+.cp-inline-area { width: 100%; resize: vertical; min-height: 64px; line-height: 1.5; }
+.cp-inline-sm { min-width: 54px; max-width: 70px; text-transform: uppercase; }
+.cp-inline-xs { min-width: 90px; font-size: 12px; padding: 2px 6px; }
+select.cp-inline { cursor: pointer; }
+
+.cp-plant-name, .cp-cert-name, .cp-contact-name {
+  font-weight: 600; font-size: 15px; color: #111827;
+}
+.cp-doc-name { font-weight: 500; }
+
+/* Inline number stat */
+.cp-stat input.cp-stat-v {
+  font-size: 22px; font-weight: 700; text-align: center; width: 100%;
+  padding: 2px 4px;
+}
+
+/* Toggleable chip */
+.cp-chip-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px; font-size: 12px;
+  border: 1px solid rgba(0,0,0,0.12); background: #fff; color: #374151;
+  cursor: pointer; transition: all .15s ease;
+}
+.cp-chip-btn:hover { border-color: #8B2252; color: #8B2252; }
+.cp-chip-btn.is-on {
+  background: #8B2252; border-color: #8B2252; color: #fff;
+}
+
+/* Inline icon delete */
+.cp-icon-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; border-radius: 6px;
+  background: transparent; border: 1px solid transparent;
+  color: #9ca3af; cursor: pointer; transition: all .15s ease;
+}
+.cp-icon-btn:hover {
+  background: rgba(185,28,28,0.08); border-color: rgba(185,28,28,0.2); color: #b91c1c;
+}
+
+/* Draft row highlight */
+.cp-plant-draft {
+  border: 1px dashed #8B2252 !important;
+  background: rgba(139,34,82,0.02);
+}
