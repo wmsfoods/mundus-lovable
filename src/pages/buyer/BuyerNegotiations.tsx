@@ -161,7 +161,7 @@ export default function BuyerNegotiations() {
           <p>{t("buyer.negotiations.empty")}</p>
         </div>
       ) : (
-        <div className="data-table-wrap">
+        <div className="data-table-wrap has-mobile-cards">
           <table className="nego-table">
             <thead>
               <tr>
