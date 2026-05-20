@@ -9,6 +9,22 @@ export type ProspectSource =
   | "linkedin" | "trade_show" | "referral" | "web_scrape"
   | "apollo" | "manual" | "inbound";
 
+export type LeadType = "buyer" | "supplier" | "buyer_supplier";
+export type DecisionLevel = "c_level" | "vp" | "director" | "manager" | "specialist" | "other";
+
+export interface ProspectContact {
+  id: string;
+  isPrimary: boolean;
+  fullName: string;
+  role?: string;
+  email?: string;
+  additionalEmail?: string;
+  phone?: string;
+  mobile?: string;
+  linkedin?: string;
+  decisionLevel?: DecisionLevel;
+}
+
 export interface ProspectActivity {
   id: string;
   type: "note" | "email" | "call" | "stage_change" | "system";
@@ -36,6 +52,21 @@ export interface Prospect {
   updatedAt: string;
   lastActivity?: { type: ProspectActivity["type"]; when: string };
   activity: ProspectActivity[];
+  // --- extended (editable) ---
+  leadType: LeadType;
+  street?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  industry?: string;
+  website?: string;
+  companyLinkedin?: string;
+  contacts: ProspectContact[]; // primary first, then additional
+  isActive: boolean;
+  isOnboarded: boolean;
+  mundusCompanyId?: string;
+  deactivationReason?: string;
+  deactivatedAt?: string;
 }
 
 export const STAGES: ProspectStage[] = [
