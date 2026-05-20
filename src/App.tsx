@@ -37,6 +37,7 @@ import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 import AdminMarkets from "./pages/admin/AdminMarkets.tsx";
+import AdminPorts from "./pages/admin/AdminPorts.tsx";
 import FindCompanies from "./pages/admin/prospect/FindCompanies.tsx";
 import FindPeople from "./pages/admin/prospect/FindPeople.tsx";
 import ProspectLists from "./pages/admin/prospect/Lists.tsx";
