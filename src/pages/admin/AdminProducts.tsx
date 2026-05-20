@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Beef, Search, Check, Languages, Tag, Pencil, Upload } from "lucide-react";
+import { Beef, Search, Check, Languages, Tag, Pencil, Upload, ImagePlus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdminCuts, CATEGORY_COLORS, type AdminCutRow, type CutCategory } from "@/hooks/useAdminCuts";
 import EditCutModal from "@/components/admin/EditCutModal";
@@ -135,7 +135,7 @@ export default function AdminProducts() {
                   {pageRows.map((r) => {
                     const c = CATEGORY_COLORS[r.category];
                     return (
-                      <tr key={r.id}>
+                      <RowDrop key={r.id} cutId={r.id} onUpload={uploadCutImage}>
                         <td><Thumb url={r.image_url} alt={r.name} cutId={r.id} onUpload={uploadCutImage} /></td>
                         <td><strong>{r.name}</strong></td>
                         <td>{r.product_number != null ? <span className="adm-chip">{r.product_number}</span> : <span style={{ color: "var(--fg-muted, #6b7280)" }}>—</span>}</td>
@@ -159,7 +159,7 @@ export default function AdminProducts() {
                             <Pencil size={14} />
                           </button>
                         </td>
-                      </tr>
+                      </RowDrop>
                     );
                   })}
                 </tbody>
@@ -171,7 +171,7 @@ export default function AdminProducts() {
             {pageRows.map((r) => {
               const c = CATEGORY_COLORS[r.category];
               return (
-                <div key={r.id} className="adm-panel" style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <CardDrop key={r.id} cutId={r.id} onUpload={uploadCutImage}>
                   <Thumb url={r.image_url} alt={r.name} cutId={r.id} onUpload={uploadCutImage} />
                   <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
@@ -195,7 +195,7 @@ export default function AdminProducts() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </CardDrop>
               );
             })}
           </div>
