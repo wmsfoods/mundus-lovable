@@ -384,6 +384,13 @@ export default function FindPeople() {
           </div>
         </DetailDrawer>
       )}
+
+      <SaveToCrmModal
+        open={!!savePerson}
+        onClose={() => setSavePerson(null)}
+        person={savePerson}
+        onSaved={() => { if (savePerson) setSavedIds((s) => new Set(s).add(savePerson.id)); }}
+      />
     </div>
   );
 }
