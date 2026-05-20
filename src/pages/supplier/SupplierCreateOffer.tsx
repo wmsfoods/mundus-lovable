@@ -831,13 +831,11 @@ export default function SupplierCreateOffer() {
               <span className="cov4-prev-h-s">Buyer's view</span>
             </div>
             <div className="cov4-prev-card">
-              <div className="cov4-prev-img">
-                {cuts.length > 0 && (cutImgs[cuts[0].id] || cuts[0].cutImage) ? (
-                  <img src={cutImgs[cuts[0].id] || (cuts[0].cutImage as string)} alt="" />
-                ) : (
-                  <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>
-                )}
-              </div>
+              <PreviewImages
+                images={cuts
+                  .map((c) => ({ id: c.id, src: cutImgs[c.id] || (c.cutImage as string) || "", label: `${c.cat} ${c.cut}` }))
+                  .filter((x) => !!x.src)}
+              />
               <h3 className="cov4-prev-title">
                 {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? "Mix FCL" : "Untitled Offer"}
               </h3>
