@@ -380,6 +380,14 @@ export default function AdminPorts() {
           </div>
         </>
       )}
+
+      <AddPortModal
+        open={addOpen}
+        onOpenChange={setAddOpen}
+        countries={allCountries}
+        onCreate={(input) => createPort({ ...input, isActive: true })}
+        isCreating={isCreating}
+      />
     </div>
   );
 }
