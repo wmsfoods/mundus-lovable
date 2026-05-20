@@ -1717,7 +1717,62 @@
         "linkedinSearch": "Buscar en LinkedIn →",
         "companyInfo": "Información de la empresa",
         "owner": "Responsable",
-        "reassign": "Reasignar"
+        "reassign": "Reasignar",
+        "savedToast": "Cambios guardados",
+        "actions": {
+          "edit": "Editar", "save": "Guardar", "cancel": "Cancelar",
+          "deactivate": "Desactivar", "reactivate": "Reactivar",
+          "delete": "Eliminar", "searchMorePeople": "Buscar más personas",
+          "addContact": "Agregar contacto"
+        },
+        "status": { "active": "Activo", "inactive": "Inactivo", "onboarded": "Onboarded" },
+        "leadType": { "buyer": "Comprador", "supplier": "Proveedor", "buyer_supplier": "Comprador y Proveedor" },
+        "decisionLevel": {
+          "c_level": "C-Level", "vp": "VP", "director": "Director",
+          "manager": "Gerente", "specialist": "Especialista", "other": "Otro"
+        },
+        "sections": {
+          "company": "Información de la empresa",
+          "mainContact": "Contacto principal",
+          "additionalContacts": "Contactos adicionales",
+          "notes": "Notas"
+        },
+        "fields": {
+          "leadType": "Tipo de lead", "industry": "Industria",
+          "street": "Calle", "city": "Ciudad", "state": "Estado",
+          "zipCode": "Código postal", "country": "País",
+          "website": "Sitio web", "companyLinkedin": "LinkedIn de la empresa",
+          "fullName": "Nombre completo", "role": "Cargo",
+          "email": "Email", "additionalEmail": "Email adicional",
+          "phone": "Teléfono", "mobile": "Móvil",
+          "personalLinkedin": "LinkedIn personal", "decisionLevel": "Nivel de decisión"
+        },
+        "contacts": { "empty": "Aún no hay contactos adicionales." },
+        "deactivate": {
+          "title": "Desactivar empresa",
+          "body": "Estás desactivando esta empresa. Los usuarios ya no podrán iniciar sesión. Los datos existentes se conservan.",
+          "reason": "Motivo (opcional)",
+          "reasonPlaceholder": "¿Por qué estás desactivando esta empresa?",
+          "confirm": "Desactivar",
+          "toast": "Empresa desactivada"
+        },
+        "reactivate": { "toast": "Empresa reactivada" },
+        "delete": {
+          "title": "Eliminar prospect",
+          "body": "Esta acción no se puede deshacer. La empresa y todos sus contactos se eliminarán permanentemente.",
+          "cannotOnboarded": "Las empresas onboardeadas no se pueden eliminar — desactívalas en su lugar.",
+          "toast": "Prospect eliminado"
+        },
+        "apollo": {
+          "title": "Buscar más personas",
+          "empty": "No se encontraron más personas para esta empresa.",
+          "revealed": "Información revelada",
+          "added": "Contacto agregado al prospect",
+          "add": "Agregar",
+          "revealEmail": "Revelar email",
+          "revealPhone": "Revelar teléfono",
+          "revealMobile": "Revelar móvil"
+        }
       },
       "add": {
         "title": "Agregar prospect",
