@@ -419,6 +419,13 @@ export default function FindCompanies() {
           </div>
         </DetailDrawer>
       )}
+
+      <SaveToCrmModal
+        open={!!saveModalCompany}
+        onClose={() => setSaveModalCompany(null)}
+        company={saveModalCompany}
+        onSaved={() => { if (saveModalCompany) setSavedIds((s) => new Set(s).add(saveModalCompany.id)); }}
+      />
     </div>
   );
 }
