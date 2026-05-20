@@ -1044,8 +1044,8 @@ function PrevRow({ l, v }: { l: string; v: string }) {
 }
 
 function PreviewImages({ images }: { images: { id: string; src: string; label: string }[] }) {
-  const scrollerRef = React.useRef<HTMLDivElement>(null);
-  const [idx, setIdx] = React.useState(0);
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [idx, setIdx] = useState(0);
 
   if (images.length === 0) {
     return (
