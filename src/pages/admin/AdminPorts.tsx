@@ -20,7 +20,7 @@ function pickCountry(r: AdminPortRow, locale: string): string {
 export default function AdminPorts() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || "en";
-  const { rows, totalPorts, activePorts, countriesWithPorts, loading, error, togglePortActive } = useAdminPorts();
+  const { rows, totalPorts, activePorts, countriesWithPorts, loading, error, togglePortActive, bulkTogglePortsActive, isToggling } = useAdminPorts();
 
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
