@@ -98,6 +98,40 @@ export default function AdminPorts() {
     }
   };
 
+  const toggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      next.has(id) ? next.delete(id) : next.add(id);
+      return next;
+    });
+  };
+  const pageAllSelected = pageRows.length > 0 && pageRows.every((r) => selectedIds.has(r.port_id));
+  const pageSomeSelected = pageRows.some((r) => selectedIds.has(r.port_id));
+  const togglePageAll = () => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (pageAllSelected) pageRows.forEach((r) => next.delete(r.port_id));
+      else pageRows.forEach((r) => next.add(r.port_id));
+      return next;
+    });
+  };
+  const selectAllFiltered = () => setSelectedIds(new Set(filtered.map((r) => r.port_id)));
+  const clearSelection = () => setSelectedIds(new Set());
+
+  const handleBulk = async (next: boolean) => {
+    const ids = [...selectedIds];
+    if (!ids.length) return;
+    try {
+      await bulkTogglePortsActive(ids, next);
+      toast.success(
+        t(next ? "admin.marketplace.ports.toggle.activated" : "admin.marketplace.ports.toggle.deactivated", { port: `${ids.length}` }),
+      );
+      clearSelection();
+    } catch (e: any) {
+      toast.error(e?.message || "Bulk update failed");
+    }
+  };
+
   return (
     <div className="adm-body">
       <div className="adm-page-header" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
