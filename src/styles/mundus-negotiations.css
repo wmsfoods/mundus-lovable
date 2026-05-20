@@ -421,7 +421,10 @@
   margin-bottom: 16px;
 }
 @media (max-width: 640px) {
-  .nd-stats { grid-template-columns: 1fr; }
+  .nd-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .nd-stat { padding: 8px 10px; }
+  .nd-stat-value { font-size: 15px; }
+  .nd-stat-label { font-size: 10px; letter-spacing: 0.02em; }
 }
 .nd-stat {
   padding: 14px;
