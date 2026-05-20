@@ -302,6 +302,49 @@ export default function BuyerNegotiations() {
           </table>
         </div>
       )}
+
+      {groups.length > 0 && (
+        <ListCardList>
+          {groups.map((g) => {
+            const bids = g._bids;
+            const actionCount = bids.filter((b) => b.status === "action_required").length;
+            const finalCount = bids.filter((b) => b.status === "final_round").length;
+            const needAction = actionCount + finalCount;
+            const mostSevere = bids
+              .slice()
+              .sort((a, b) => PRIORITY[a.status] - PRIORITY[b.status])[0].status;
+            const latestUpdate = bids
+              .map((b) => new Date(b.updatedAt).getTime())
+              .reduce((a, b) => Math.max(a, b), 0);
+            const minBid = Math.min(...bids.map((b) => b.yourBidUsd));
+            const maxBid = Math.max(...bids.map((b) => b.yourBidUsd));
+            const bidRange = minBid === maxBid ? fmtUsd(minBid) : `${fmtUsd(minBid)} – ${fmtUsd(maxBid)}`;
+            return (
+              <ListCard
+                key={g.id}
+                onClick={() => navigate(`/buyer/negotiations/${bids[0].id}`)}
+                title={g.title}
+                subtitle={t("buyer.negotiations.bidsCount", { n: bids.length })}
+                chip={
+                  needAction > 0
+                    ? {
+                        label: t("buyer.negotiations.needAction", { n: needAction }),
+                        className: "pill-status pill-action-required",
+                      }
+                    : {
+                        label: t(`buyer.negotiations.status.${mostSevere}`),
+                        className: `pill-status ${STATUS_PILL[mostSevere]}`,
+                      }
+                }
+                meta={[
+                  { label: t("buyer.negotiations.col.yourBid"), value: bidRange },
+                  { label: t("buyer.negotiations.col.updated"), value: fmtDate(new Date(latestUpdate).toISOString(), locale) },
+                ]}
+              />
+            );
+          })}
+        </ListCardList>
+      )}
     </>
   );
 }
