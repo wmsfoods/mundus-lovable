@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeftIcon } from "@/components/icons";
 import { useStackHeaderConfig } from "@/contexts/StackHeaderContext";
-import { backFallbackFor, defaultTitleKeyFor } from "@/lib/mobile-nav";
+import { backFallbackFor, defaultTitleFor } from "@/lib/mobile-nav";
 
 /**
  * Mobile-only header for stack screens.
@@ -22,9 +22,9 @@ export function StackHeader() {
     }
   };
 
-  const fallbackKey = defaultTitleKeyFor(location.pathname);
+  const fallback = defaultTitleFor(location.pathname);
   const resolvedTitle =
-    title ?? (fallbackKey ? t(fallbackKey, { defaultValue: "" }) : "");
+    title ?? (fallback ? t(fallback.key, { defaultValue: fallback.fallback }) : "");
 
   return (
     <header className="sh" role="banner">
