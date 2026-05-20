@@ -362,8 +362,8 @@ export default function AdminProspectDetail() {
                 <button type="button" className="crm-btn-ghost" onClick={cancelEdit}>
                   <X size={14} /> {t("admin.crm.detail.actions.cancel")}
                 </button>
-                <button type="button" className="crm-btn-primary" onClick={save}>
-                  <Save size={14} /> {t("admin.crm.detail.actions.save")}
+                <button type="button" className="crm-btn-primary" onClick={save} disabled={saving}>
+                  <Save size={14} /> {saving ? "…" : t("admin.crm.detail.actions.save")}
                 </button>
               </>
             )}
