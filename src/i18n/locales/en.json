@@ -1924,6 +1924,66 @@
         "title": "No companies yet",
         "body": "Convert a prospect into a Mundus company to see it listed here.",
         "cta": "Open CRM"
+      },
+      "actions": {
+        "new": "New company",
+        "edit": "Edit",
+        "save": "Save",
+        "cancel": "Cancel",
+        "deactivate": "Deactivate",
+        "activate": "Activate"
+      },
+      "sections": {
+        "identity": "Identity",
+        "address": "Address",
+        "classification": "Classification",
+        "onboarding": "Onboarding"
+      },
+      "fields": {
+        "name": "Company name",
+        "taxId": "Tax ID",
+        "website": "Website",
+        "phone": "Phone",
+        "logoUrl": "Logo URL",
+        "rating": "Rating",
+        "address": "Address",
+        "city": "City",
+        "state": "State",
+        "country": "Country",
+        "zipCode": "ZIP code",
+        "isBuyer": "Is buyer",
+        "isSupplier": "Is supplier",
+        "isVerified": "Verified",
+        "businessTypes": "Business types",
+        "proteinProfiles": "Protein profiles",
+        "onboardedAt": "Onboarded at",
+        "onboardedBy": "Onboarded by",
+        "onboardedFromProspect": "From prospect",
+        "createdAt": "Created at",
+        "updatedAt": "Updated at"
+      },
+      "validation": {
+        "name": "Company name is required",
+        "taxId": "Tax ID is required",
+        "country": "Country is required",
+        "state": "State is required",
+        "address": "Address is required",
+        "phone": "Phone is required"
+      },
+      "confirmDeactivate": {
+        "title": "Deactivate this company?",
+        "body": "The company will be marked inactive. You can reactivate it at any time."
+      },
+      "confirmActivate": {
+        "title": "Activate this company?",
+        "body": "The company will be marked active again."
+      },
+      "toast": {
+        "created": "Company created",
+        "saved": "Changes saved",
+        "deactivated": "Company deactivated",
+        "activated": "Company activated",
+        "error": "Something went wrong"
       }
     },
     "negotiations": {

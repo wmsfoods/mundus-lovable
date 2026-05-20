@@ -859,3 +859,42 @@
   .adm-only-mobile { display: flex; }
   .adm-only-desktop { display: none; }
 }
+
+/* Company detail / form */
+.adm-btn-ghost {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 6px 10px; border-radius: 6px;
+  font-size: 12px; font-weight: 500; color: #374151;
+  background: transparent; border: 1px solid transparent;
+  cursor: pointer; transition: background 0.15s, border-color 0.15s;
+}
+.adm-btn-ghost:hover { background: #f3f4f6; border-color: #e5e7eb; }
+
+.adm-form-grid {
+  display: grid; gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  margin-top: 12px;
+}
+
+.adm-field {
+  display: flex; flex-direction: column; gap: 4px;
+  font-size: 12px; color: #374151;
+}
+.adm-field > span {
+  font-size: 11px; font-weight: 600; color: #6b7280;
+  text-transform: uppercase; letter-spacing: 0.4px;
+}
+.adm-field input, .adm-field select, .adm-field textarea {
+  padding: 8px 10px; border-radius: 6px;
+  border: 1px solid #e5e7eb; background: #fff;
+  font-size: 13px; color: #111827;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.adm-field input:focus, .adm-field select:focus, .adm-field textarea:focus {
+  outline: none; border-color: #8B2252;
+  box-shadow: 0 0 0 3px rgba(139, 34, 82, 0.12);
+}
+
+@media (max-width: 760px) {
+  .adm-form-grid { grid-template-columns: 1fr; }
+}

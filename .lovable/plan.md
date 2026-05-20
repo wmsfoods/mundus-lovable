@@ -1,73 +1,72 @@
-
 ## Goal
-Transform Find Prospect (Companies & People) from local mock filtering into a real Apollo-powered search, matching Apollo's UX: results refresh as filters are toggled, and pressing Enter in the search bar runs a name search. Trim mock data so it does not pollute the new flow.
 
-## 1. Apollo wiring (edge function)
+Transformar `/admin/companies` em uma **listagem em tabela** (sem cards de estatística por enquanto) e adicionar **CRUD completo** para admins editarem todos os campos de cada empresa.
 
-Replace the current placeholder in `supabase/functions/prospect-search/index.ts` with a real call to Apollo:
+## 1. Listagem — `/admin/companies`
 
-- Read `APOLLO_API_KEY` from `Deno.env` (the existing `apollo` secret will be renamed/copied to `APOLLO_API_KEY` — secret already exists in the project as `apollo`, we'll use that key directly).
-- Validate body with Zod: `entity: "companies" | "people"`, plus Apollo's documented params (`q_organization_name`, `organization_locations[]`, `organization_num_employees_ranges[]`, `q_organization_keyword_tags[]`, `revenue_range{min,max}`, `organization_industry_tag_ids[]`, `organization_sic_codes[]`, `organization_naics_codes[]`, `person_titles[]`, `person_seniorities[]`, `person_department_or_subdepartments[]`, `contact_email_status[]`, `person_locations[]`, `page`, `per_page`).
-- POST to `https://api.apollo.io/api/v1/mixed_companies/search` or `mixed_people/search` with header `X-Api-Key`.
-- Return `{ ok, entity, results, pagination: { page, per_page, total_entries, total_pages }, source: "apollo" }`.
-- CORS + 400 on validation error + 502 on Apollo error.
-- Optional (skipped this round): cache layer in `apollo_cache` — defer to a follow-up.
+**Remover:**
+- Os 5 cards de estatística (`crm-funnel-tiles`).
 
-## 2. Frontend hook — `useProspectSearch`
+**Manter:**
+- Header com título.
+- Toolbar com busca, filtro de status e filtro de país (já funciona bem).
+- Tabela desktop **+ cards mobile** (regra do projeto: mobile precisa funcionar bem; tabelas complexas viram cards verticais em telas pequenas).
 
-New `src/hooks/useProspectSearch.ts`:
+**Adicionar:**
+- Botão **"+ New company"** no topo direito do header, abre o detalhe em modo criação (`/admin/companies/new`).
+- Cada linha da tabela é clicável → navega para `/admin/companies/:id`.
+- Coluna de ações com ícone de "edit" (atalho que também leva para o detalhe).
 
-- Accepts a `params` object (companies or people shape).
-- Debounces param changes (250ms) and calls `supabase.functions.invoke("prospect-search", { body: params })`.
-- Exposes `{ data, loading, error, page, setPage, total, refetch }`.
-- Handles abort/race so the latest request wins.
-- Maps Apollo's response into the existing `MockCompany` / `MockPerson` shapes used by the table so the rest of the page is untouched.
+## 2. Detalhe / Edit — `/admin/companies/:id` (e `/new`)
 
-## 3. Find Companies page
+Página única que cobre **view + edit + create + deactivate**, baseada no padrão de `AdminProspectDetail`.
 
-`src/pages/admin/prospect/FindCompanies.tsx`:
+**Layout (desktop):**
+- Header: logo + nome + `#company_number` + chips (Type, Status, Verified) + botões `Save`, `Cancel`, `Deactivate` (ou `Activate`).
+- 2 colunas:
+  - **Esquerda — Identity**: name, tax_id, logo_url, website, phone, rating.
+  - **Direita — Address**: address, city, state, country, zip_code.
+- Bloco abaixo — **Classification**: toggles `is_buyer`, `is_supplier`, `is_verified`; campos `business_types`, `protein_profiles` (lista de tags).
+- Bloco — **Onboarding (read-only)**: onboarded_at, onboarded_by, onboarded_from_prospect_id, created_at, updated_at.
 
-- Replace `MOCK_COMPANIES`-based `filtered` with `useProspectSearch({ entity: "companies", ... })`.
-- Search input: type freely (no auto-fire); fire on **Enter** OR via a visible "Search" button next to the input (icon + label). The current code has no button — add a styled `psp-btn solid` "Search".
-- Filters: every chip/checkbox/range/text change triggers the debounced search automatically (Apollo-style live refinement). Keyword and city free-text inputs commit on blur or Enter.
-- Loading state: skeleton rows in the table; "Searching Apollo…" indicator in the toolbar.
-- Empty state: "No companies match these filters. Try widening location, revenue, or employees."
-- Credits chip stays static for now.
-- Pagination uses Apollo's `total_entries` / `total_pages`.
+**Mobile:**
+- Layout em coluna única, seções colapsáveis, botões de ação fixos no rodapé (safe-area respeitada).
 
-## 4. Find People page
+**Ações:**
+- `Save` → `UPDATE companies SET ... WHERE id = :id` (ou `INSERT` no modo "new").
+- `Deactivate` → `UPDATE companies SET status='inactive'`. `Activate` faz o inverso.
+- **Não** expomos botão de delete físico — o trigger `crm_companies_prevent_delete_if_onboarded` bloqueia exclusão de empresas onboarded. Tratamos "delete" como deactivate (soft).
+- Confirmação modal antes de Deactivate.
 
-Same treatment in `src/pages/admin/prospect/FindPeople.tsx`:
+## 3. Hook — `useAdminCompany(id)`
 
-- `useProspectSearch({ entity: "people", ... })`.
-- Enter or "Search" button for the top text search.
-- Filters trigger live re-query.
-- Reveal email/phone buttons remain mock for now (real reveal needs a separate Apollo `people/match` call — out of scope this round).
+Novo hook: carrega uma empresa pelo id, expõe `data`, `loading`, `error`, `save(patch)`, `setActive(boolean)`. Reutiliza supabase client com RLS `is_mundus_admin()`.
 
-## 5. Trim mock data
+`useAdminCompanies` (listagem) continua igual — só não usaremos mais o objeto `counts` para tiles.
 
-`src/data/mockProspect.ts`:
+## 4. Rotas — `src/App.tsx`
 
-- Reduce `MOCK_COMPANIES` to **1** entry (keep `JBS S.A.` as canonical example).
-- Reduce `MOCK_PEOPLE` to **1** entry (keep `Carlos Mendes` at JBS).
-- Keep all preset constants (`COUNTRIES`, `INDUSTRIES`, `KEYWORDS`, etc.) — those drive the filter UI.
+Adicionar:
+```
+<Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
+<Route path="companies/:id" element={<AdminCompanyDetail />} />
+```
 
-`src/hooks/useAdminProspects.ts`:
+## 5. i18n — en/pt/es
 
-- Reduce `SEEDS` to **1 supplier + 1 buyer** (JBS Brasil and Tokyo Premium Imports) so the Prospects list/Pipeline still demonstrates both lead types without being noisy.
+Sob `admin.companies` adicionar:
+- `actions.new`, `actions.save`, `actions.cancel`, `actions.deactivate`, `actions.activate`, `actions.edit`
+- `sections.identity`, `sections.address`, `sections.classification`, `sections.onboarding`
+- `fields.*` para todos os campos editáveis (name, taxId, website, phone, address, city, state, country, zipCode, logoUrl, rating, businessTypes, proteinProfiles, isBuyer, isSupplier, isVerified)
+- `confirmDeactivate.title/body`, `toast.saved/deactivated/activated/error`
 
-## 6. Out of scope (for follow-ups)
+## 6. Arquivos
 
-- Apollo cache table (`apollo_cache`) with 30-day TTL.
-- Real email/phone reveal via Apollo enrichment endpoints (credit charge).
-- "Save search" persistence (currently just a toast).
-- Industry tag-id resolution (Apollo expects IDs, not labels) — first cut sends `q_organization_keyword_tags` from our `INDUSTRIES` array as keywords; we'll add a tag-id mapping table in a follow-up.
+- **edit** `src/pages/admin/AdminCompanies.tsx` — remove tiles, adiciona botão "New" e onClick na linha.
+- **new** `src/pages/admin/AdminCompanyDetail.tsx` — página de detalhe/edit/create.
+- **new** `src/hooks/useAdminCompany.ts`
+- **edit** `src/App.tsx` — 2 rotas.
+- **edit** `src/i18n/locales/{en,pt,es}.json`.
+- **edit** `src/styles/mundus-admin.css` — apenas se precisarmos de classes novas para o form (provável: `.adm-form-grid`, `.adm-field`, `.adm-actions-bar`).
 
-## Technical notes
-
-- Files touched: `supabase/functions/prospect-search/index.ts`, `src/hooks/useProspectSearch.ts` (new), `src/pages/admin/prospect/FindCompanies.tsx`, `src/pages/admin/prospect/FindPeople.tsx`, `src/data/mockProspect.ts`, `src/hooks/useAdminProspects.ts`, `src/styles/mundus-prospect.css` (add `.psp-search-btn` and loading skeleton styles).
-- Secret: `apollo` is already configured — the edge function will read it as `Deno.env.get("apollo")`. No new secret needed.
-- Existing `verify_jwt = false` is fine for an admin-only page protected at the React Router layer; we'll add a `is_mundus_admin()` server check inside the function using the caller's JWT before charging Apollo credits.
-- No DB migration required.
-
-After implementation we'll verify by opening `/admin/prospect/companies`, typing "jbs" + Enter, and toggling a country chip to confirm a fresh Apollo call fires and results render.
+Sem migrations: o schema atual de `companies` já tem todos os campos e o RLS `companies_admin_all` já dá CRUD pleno para admins.

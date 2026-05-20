@@ -31,6 +31,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
 import AdminProspects from "./pages/admin/AdminProspects.tsx";
 import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
+import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
 import AdminNegotiations from "./pages/admin/AdminNegotiations.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
@@ -132,6 +133,8 @@ const App = () => (
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="companies" element={<AdminCompanies />} />
+              <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
+              <Route path="companies/:id" element={<AdminCompanyDetail />} />
               <Route path="deals" element={<AdminComingSoon section="deals" />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
               <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
