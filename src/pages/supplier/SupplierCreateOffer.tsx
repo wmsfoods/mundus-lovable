@@ -692,16 +692,12 @@ export default function SupplierCreateOffer() {
                 {cuts.map((c, i) => (
                   <tr key={c.id}>
                     <td>
-                      <label className={`cov4-img-box ${cutImgs[c.id] || c.cutImage ? "has" : ""}`}>
-                        {cutImgs[c.id] ? (
-                          <img src={cutImgs[c.id]} alt="" />
-                        ) : c.cutImage ? (
-                          <img src={c.cutImage} alt="" />
-                        ) : (
-                          <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>
-                        )}
-                        <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleCutImg(c.id, e.target.files[0])} />
-                      </label>
+                      <CutPhotoCell
+                        src={cutImgs[c.id] || c.cutImage || null}
+                        label={`${c.cat} ${c.cut}`}
+                        onFile={(f) => handleCutImg(c.id, f)}
+                        isMobile={isMobile}
+                      />
                     </td>
                     <td><span className="cov4-cut-nm">{c.cat} {c.cut}</span></td>
                     <td><span className="cov4-tag">{c.spec}</span></td>
@@ -747,24 +743,56 @@ export default function SupplierCreateOffer() {
                             </option>
                           ))}
                         </select>
-                        <select
-                          value={nf.cutId ?? ""}
-                          onChange={(e) => {
-                            const id = e.target.value;
-                            const found = (cutsByCategory[nf.cat] || []).find((x) => x.id === id);
-                            setNf((p) => ({
-                              ...p,
-                              cutId: id || undefined,
-                              cut: found?.displayName ?? "",
-                              cutImage: found?.image_url ?? null,
-                            }));
-                          }}
-                        >
-                          <option value="">{dataLoading ? "Loading..." : "Cut..."}</option>
-                          {(cutsByCategory[nf.cat] || []).map((c) => (
-                            <option key={c.id} value={c.id}>{c.displayName}</option>
-                          ))}
-                        </select>
+                        <Popover open={cutPickerOpen} onOpenChange={setCutPickerOpen}>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="cov4-cut-trigger"
+                              aria-label="Pick cut"
+                            >
+                              {nf.cut ? (
+                                <span className="cov4-cut-trigger-v">{nf.cut}</span>
+                              ) : (
+                                <span className="cov4-cut-trigger-ph">
+                                  {dataLoading ? "Loading..." : (tm("pickCut") as string)}
+                                </span>
+                              )}
+                              <SearchIcon size={12} style={{ opacity: 0.5 }} />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-0 w-[300px]" align="start">
+                            <Command>
+                              <CommandInput placeholder={tm("searchCutsPh") as string} />
+                              <CommandList className="max-h-[320px]">
+                                <CommandEmpty>{tm("noCuts")}</CommandEmpty>
+                                <CommandGroup>
+                                  {(cutsByCategory[nf.cat] || []).map((c) => (
+                                    <CommandItem
+                                      key={c.id}
+                                      value={c.displayName}
+                                      onSelect={() => {
+                                        setNf((p) => ({
+                                          ...p,
+                                          cutId: c.id,
+                                          cut: c.displayName,
+                                          cutImage: c.image_url ?? null,
+                                        }));
+                                        if (c.image_url) setNewImgPrev(c.image_url);
+                                        setCutPickerOpen(false);
+                                      }}
+                                    >
+                                      <span className="cov4-cut-opt-thumb">
+                                        {c.image_url ? <img src={c.image_url} alt="" /> : <span>📷</span>}
+                                      </span>
+                                      <span style={{ flex: 1 }}>{c.displayName}</span>
+                                      {nf.cutId === c.id && <Check size={14} className="text-primary" />}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </td>
                     <td><select value={nf.spec} onChange={(e) => setNf((p) => ({ ...p, spec: e.target.value }))}>{SPECS.map((x) => <option key={x}>{x}</option>)}</select></td>
