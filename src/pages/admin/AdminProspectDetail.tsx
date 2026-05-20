@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
-  Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin,
+  Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin, Camera,
   StickyNote, ArrowRight, Settings as SettingsIcon, PhoneCall,
   Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe,
   type LucideIcon,
@@ -24,6 +24,12 @@ const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
 const DECISION_LEVELS: DecisionLevel[] = ["c_level","vp","director","manager","specialist","other"];
 const LEAD_TYPES: LeadType[] = ["buyer","supplier","buyer_supplier"];
 const SOURCES: ProspectSource[] = ["linkedin","trade_show","referral","web_scrape","apollo","manual","inbound"];
+
+const ROLE_OPTIONS: Record<LeadType, string[]> = {
+  buyer: ["CEO", "Owner/Founder", "Sales Director", "International Trader", "Logistics"],
+  supplier: ["CEO", "Owner/Founder", "Purchase Director", "Procurement", "Logistics"],
+  buyer_supplier: ["CEO", "Owner/Founder", "Operations", "Director"],
+};
 
 // ---- Search more people (Mundus Intelligence) mock --------------------
 type Discovered = {
