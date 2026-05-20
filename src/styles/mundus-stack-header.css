@@ -1,0 +1,86 @@
+/* =========================================================================
+   Mundus — StackHeader (mobile-only)
+   Renders on app-shell.is-mobile.is-stack screens, replacing topbar+bottom.
+   ========================================================================= */
+
+.sh { display: none; }
+
+@media (max-width: 1023px) {
+  .app-shell.is-stack .sh {
+    grid-row: 1;
+    grid-column: 1;
+    display: grid;
+    grid-template-columns: 44px 1fr 88px;
+    align-items: center;
+    gap: 4px;
+    background: #fff;
+    border-bottom: 1px solid hsl(var(--border));
+    padding: env(safe-area-inset-top) 8px 0 8px;
+    height: calc(52px + env(safe-area-inset-top));
+    position: sticky;
+    top: 0;
+    z-index: 20;
+  }
+
+  /* Hide the normal topbar + bottom nav on stack screens */
+  .app-shell.is-stack .tb { display: none; }
+  .app-shell.is-stack .bn { display: none; }
+
+  /* Stack-mode main: header is 52px, no bottombar reserve */
+  .app-shell.is-stack .app-main {
+    padding: 16px 16px calc(24px + env(safe-area-inset-bottom));
+  }
+
+  /* Stack-mode grid rows */
+  .app-shell.is-stack {
+    grid-template-rows: calc(52px + env(safe-area-inset-top)) 1fr;
+  }
+
+  .sh-back {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--fg);
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .sh-back:active { background: var(--g100); }
+
+  .sh-title {
+    margin: 0;
+    font-size: var(--fs-md, 15px);
+    font-weight: var(--weight-semibold);
+    color: var(--fg);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 0 4px;
+  }
+
+  .sh-actions {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 2px;
+  }
+  .sh-actions :where(button, a) {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background: none;
+    color: var(--fg);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .sh-actions :where(button, a):active { background: var(--g100); }
+}
