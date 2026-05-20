@@ -1,13 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, Upload, Plus, KanbanSquare, Table as TableIcon } from "lucide-react";
 import {
   useAdminProspects, getStageCounts, STAGES,
   OWNERS, type ProspectStage,
+  type Prospect,
 } from "@/hooks/useAdminProspects";
 import { AddProspectModal } from "@/components/admin/AddProspectModal";
 import { ImportProspectsModal } from "@/components/admin/ImportProspectsModal";
+import { supabase } from "@/integrations/supabase/client";
 
 const fmtGmv = (v?: number) =>
   v == null ? "—" : v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}k`;
@@ -15,7 +17,62 @@ const fmtGmv = (v?: number) =>
 export default function AdminProspects() {
   const { t } = useTranslation();
   const nav = useNavigate();
-  const list = useAdminProspects();
+  const mockList = useAdminProspects();
+  const [dbList, setDbList] = useState<Prospect[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("crm_companies")
+        .select("id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,crm_contacts(id,full_name,email,phone,linkedin)")
+        .order("created_at", { ascending: false })
+        .limit(500);
+      if (cancelled || !data) return;
+      const mapped: Prospect[] = data.map((c: any) => {
+        const primary = c.crm_contacts?.[0] ?? null;
+        const stageMap: Record<string, ProspectStage> = {
+          cold: "new", warm: "researching", contacted: "contacted",
+          qualified: "qualified", onboarding: "onboarding",
+          onboarded: "onboarded", lost: "lost",
+        };
+        const stage = stageMap[c.stage] ?? "new";
+        const role = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
+        return {
+          id: c.id,
+          companyName: c.name,
+          initials: (c.name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "?",
+          country: c.country || "—",
+          role,
+          source: (c.source as any) || "manual",
+          contactName: primary?.full_name || "—",
+          contactEmail: primary?.email || "—",
+          contactPhone: primary?.phone || undefined,
+          notes: "",
+          stage,
+          owner: "FN",
+          ownerName: "Fernando Nascimento",
+          estGmv: c.annual_revenue ?? undefined,
+          createdAt: c.created_at,
+          updatedAt: c.updated_at,
+          lastActivity: { type: "system", when: "just now" },
+          activity: [],
+          leadType: role === "potential_buyer" ? "buyer" : "supplier",
+          city: c.city ?? undefined,
+          industry: c.industry ?? undefined,
+          website: c.website ?? undefined,
+          companyLinkedin: c.linkedin_url ?? undefined,
+          contacts: [],
+          isActive: true,
+          isOnboarded: stage === "onboarded",
+        } as Prospect;
+      });
+      setDbList(mapped);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  const list = useMemo(() => [...dbList, ...mockList], [dbList, mockList]);
 
   const [search, setSearch] = useState("");
   const [stage, setStage] = useState<ProspectStage | "all">("all");
