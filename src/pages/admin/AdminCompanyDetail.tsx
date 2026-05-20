@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Save, X, Power, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
 import {
@@ -17,6 +17,20 @@ import {
 
 type Props = { mode?: "edit" | "new" };
 
+const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine"] as const;
+type Protein = (typeof PROTEINS)[number];
+
+const CUTS_BY_PROTEIN: Record<Protein, string[]> = {
+  Beef: [
+    "Forequarter", "Topside", "Brisket", "Knuckle", "Striploin", "Ribeye",
+    "Bones", "Sangria 90VL", "Trim 80CL", "Chuck Roll", "Hindquarter",
+    "Tenderloin", "Short Ribs", "Flank",
+  ],
+  Pork: ["Loin", "Belly", "Ribs", "Shoulder", "Ham", "Trim 80CL"],
+  Poultry: ["Whole Chicken", "Breast", "Thigh", "Wings", "Drumstick", "Liver", "Gizzard"],
+  Ovine: ["Leg", "Rack", "Shoulder", "Loin", "Shank"],
+};
+
 const EMPTY: CompanyPatch = {
   name: "",
   tax_id: "",
@@ -27,13 +41,12 @@ const EMPTY: CompanyPatch = {
   zip_code: "",
   phone: "",
   website: "",
-  logo_url: "",
   is_buyer: false,
   is_supplier: false,
   is_verified: false,
   rating: 0,
-  business_types: "",
   protein_profiles: [],
+  preferred_cuts: [],
   status: "active",
 };
 
@@ -41,17 +54,21 @@ function initials(name: string) {
   return name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "M";
 }
 
+function cutKey(protein: Protein, cut: string) {
+  return `${protein}: ${cut}`;
+}
+
 export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const isNew = mode === "new";
-  const { data, loading, error, save, create, setActive, refresh } = useAdminCompany(isNew ? undefined : id);
+  const { data, loading, error, save, create, remove } = useAdminCompany(isNew ? undefined : id);
 
   const [form, setForm] = useState<CompanyPatch>(EMPTY);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   useEffect(() => {
     if (data) {
@@ -65,24 +82,43 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         zip_code: data.zip_code ?? "",
         phone: data.phone,
         website: data.website ?? "",
-        logo_url: data.logo_url ?? "",
         is_buyer: !!data.is_buyer,
         is_supplier: !!data.is_supplier,
         is_verified: !!data.is_verified,
         rating: data.rating ?? 0,
-        business_types: data.business_types ?? "",
         protein_profiles: data.protein_profiles ?? [],
+        preferred_cuts: data.preferred_cuts ?? [],
         status: data.status ?? "active",
       });
       setDirty(false);
     }
   }, [data]);
 
-  const isActive = (form.status ?? "active") === "active";
-
   const setField = <K extends keyof CompanyPatch>(k: K, v: CompanyPatch[K]) => {
     setForm((f) => ({ ...f, [k]: v }));
     setDirty(true);
+  };
+
+  const proteins = (form.protein_profiles ?? []) as Protein[];
+  const cuts = form.preferred_cuts ?? [];
+
+  const toggleProtein = (p: Protein) => {
+    const has = proteins.includes(p);
+    const next = has ? proteins.filter((x) => x !== p) : [...proteins, p];
+    // When unselecting a protein, remove its cuts
+    let nextCuts = cuts;
+    if (has) {
+      const prefix = `${p}:`;
+      nextCuts = cuts.filter((c) => !c.startsWith(prefix));
+    }
+    setForm((f) => ({ ...f, protein_profiles: next, preferred_cuts: nextCuts }));
+    setDirty(true);
+  };
+
+  const toggleCut = (p: Protein, cut: string) => {
+    const key = cutKey(p, cut);
+    const next = cuts.includes(key) ? cuts.filter((c) => c !== key) : [...cuts, key];
+    setField("preferred_cuts", next);
   };
 
   const validate = (): string | null => {
@@ -103,28 +139,35 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
       if (isNew) {
         const res = await create(form);
         if (!res.ok) { toast.error(res.error ?? t("admin.companies.toast.error")); return; }
-        toast.success(t("admin.companies.toast.created"));
+        toast.success(t("admin.companies.detail.saved"));
         if (res.id) navigate(`/admin/companies/${res.id}`, { replace: true });
       } else {
         const res = await save(form);
         if (!res.ok) { toast.error(res.error ?? t("admin.companies.toast.error")); return; }
-        toast.success(t("admin.companies.toast.saved"));
+        toast.success(t("admin.companies.detail.saved"));
         setDirty(false);
       }
     } finally { setSaving(false); }
   };
 
-  const handleToggleActive = async () => {
-    setConfirmOpen(false);
+  const handleDelete = async () => {
+    setDeleteOpen(false);
     setSaving(true);
-    const res = await setActive(!isActive);
+    const res = await remove();
     setSaving(false);
     if (!res.ok) { toast.error(res.error ?? t("admin.companies.toast.error")); return; }
-    toast.success(isActive ? t("admin.companies.toast.deactivated") : t("admin.companies.toast.activated"));
-    await refresh();
+    toast.success(t("admin.companies.detail.deleted"));
+    navigate("/admin/companies");
   };
 
-  const proteinText = useMemo(() => (form.protein_profiles ?? []).join(", "), [form.protein_profiles]);
+  const bothChecked = !!form.is_buyer && !!form.is_supplier;
+  const isActive = (form.status ?? "active") === "active";
+
+  const onboardedDisplay = useMemo(() => {
+    const v = data?.onboarded_at ?? data?.created_at;
+    if (!v) return "—";
+    try { return new Intl.DateTimeFormat(undefined, { year: "numeric", month: "short", day: "2-digit" }).format(new Date(v)); } catch { return v; }
+  }, [data]);
 
   if (!isNew && loading) return <div className="adm-body"><div className="adm-panel" style={{ padding: 16 }}>{t("common.loading")}</div></div>;
   if (!isNew && error) return <div className="adm-body"><div className="adm-panel" style={{ padding: 16, color: "#b91c1c" }}>{error}</div></div>;
@@ -136,131 +179,185 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         <button type="button" onClick={() => navigate("/admin/companies")} className="adm-btn-ghost" aria-label="Back">
           <ArrowLeft size={16} />
         </button>
-        {form.logo_url ? (
-          <img src={form.logo_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover" }} />
-        ) : (
-          <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg,#9b2251,#7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600 }}>
-            {initials(form.name || "")}
-          </span>
-        )}
+        <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg,#8B2252,#7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600 }}>
+          {initials(form.name || "")}
+        </span>
         <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-          <strong style={{ fontSize: 16 }}>{form.name || t("admin.companies.actions.new")}</strong>
+          <strong style={{ fontSize: 16 }}>{isNew ? t("admin.companies.detail.newTitle") : (form.name || t("admin.companies.detail.title"))}</strong>
           {data && <span style={{ fontSize: 11, color: "#6b7280" }}>#{data.company_number}</span>}
         </div>
-        <div style={{ display: "flex", gap: 6, marginLeft: 8 }}>
-          {form.is_buyer && <span className="adm-chip is-buyer">{t("admin.companies.filters.buyer")}</span>}
-          {form.is_supplier && <span className="adm-chip is-supplier">{t("admin.companies.filters.supplier")}</span>}
+        <div style={{ display: "flex", gap: 6, marginLeft: 8, flexWrap: "wrap" }}>
+          {form.is_buyer && <span className="adm-chip is-buyer">{t("admin.companies.fields.buyer")}</span>}
+          {form.is_supplier && <span className="adm-chip is-supplier">{t("admin.companies.fields.supplier")}</span>}
           {form.is_verified && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16a34a", fontSize: 12, fontWeight: 600 }}>
-              <CheckCircle2 size={14} /> {t("admin.companies.fields.isVerified")}
+              <CheckCircle2 size={14} /> {t("admin.companies.fields.verified")}
             </span>
           )}
-          <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>{isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}</span>
+          {!isNew && (
+            <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>{isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}</span>
+          )}
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          {!isNew && (
-            <button type="button" className="adm-btn-ghost" onClick={() => setConfirmOpen(true)}>
-              <Power size={14} style={{ marginRight: 4 }} />
-              {isActive ? t("admin.companies.actions.deactivate") : t("admin.companies.actions.activate")}
-            </button>
-          )}
           <button type="button" className="adm-btn-ghost" onClick={() => navigate("/admin/companies")}>
             <X size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.cancel")}
           </button>
-          <button type="button" className="crm-btn-primary" onClick={handleSave} disabled={saving || (!dirty && !isNew)}>
-            <Save size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.save")}
+          <button type="button" className="crm-btn-primary" onClick={handleSave} disabled={saving || (!dirty && !isNew)} style={{ background: "#8B2252" }}>
+            <Save size={14} style={{ marginRight: 4 }} /> {saving ? t("admin.companies.detail.saving") : t("admin.companies.detail.save")}
           </button>
         </div>
       </div>
 
       {/* Form */}
       <div className="adm-form-grid">
-        <Section title={t("admin.companies.sections.identity")}>
-          <Field label={t("admin.companies.fields.name") + " *"}>
+        {/* Section 1: Business role */}
+        <Section title={t("admin.companies.sections.role")} full>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap", padding: "4px 0 12px" }}>
+            <Check label={t("admin.companies.fields.buyer")} checked={!!form.is_buyer} onChange={(v) => setField("is_buyer", v)} />
+            <Check label={t("admin.companies.fields.supplier")} checked={!!form.is_supplier} onChange={(v) => setField("is_supplier", v)} />
+          </div>
+          {bothChecked && (
+            <div style={{ display: "flex", gap: 8, padding: 12, borderRadius: 8, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#1E40AF" }}>
+              <Info size={16} style={{ flexShrink: 0, marginTop: 1 }} />
+              <span>{t("admin.companies.fields.bothRoleNote")}</span>
+            </div>
+          )}
+        </Section>
+
+        {/* Section 2: Protein + Cuts */}
+        <Section title={t("admin.companies.sections.protein")} full>
+          <div style={{ gridColumn: "1 / -1" }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
+              {t("admin.companies.fields.proteinProfile")}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              {PROTEINS.map((p) => {
+                const active = proteins.includes(p);
+                return (
+                  <button key={p} type="button" onClick={() => toggleProtein(p)} className="adm-chip" style={{ cursor: "pointer", background: active ? "#8B2252" : "#fff", color: active ? "#fff" : "#374151", borderColor: active ? "#8B2252" : "#e5e7eb" }}>
+                    {t(`admin.companies.proteins.${p.toLowerCase()}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {proteins.length > 0 && (
+            <div style={{ gridColumn: "1 / -1", marginTop: 4 }}>
+              <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
+                {t("admin.companies.fields.preferredCuts")}
+              </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {proteins.map((p) => (
+                  <div key={p}>
+                    <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 6 }}>
+                      {t(`admin.companies.proteins.${p.toLowerCase()}`)}
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      {CUTS_BY_PROTEIN[p].map((cut) => {
+                        const active = cuts.includes(cutKey(p, cut));
+                        return (
+                          <button key={cut} type="button" onClick={() => toggleCut(p, cut)} className="adm-chip" style={{ cursor: "pointer", fontSize: 11, background: active ? "#8B2252" : "#fff", color: active ? "#fff" : "#374151", borderColor: active ? "#8B2252" : "#e5e7eb" }}>
+                            {cut}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </Section>
+
+        {/* Section 3: Company info */}
+        <Section title={t("admin.companies.sections.company")}>
+          <Field label={t("admin.companies.fields.companyName") + " *"}>
             <input value={form.name ?? ""} onChange={(e) => setField("name", e.target.value)} />
           </Field>
           <Field label={t("admin.companies.fields.taxId") + " *"}>
             <input value={form.tax_id ?? ""} onChange={(e) => setField("tax_id", e.target.value)} />
           </Field>
-          <Field label={t("admin.companies.fields.website")}>
-            <input value={form.website ?? ""} onChange={(e) => setField("website", e.target.value)} placeholder="https://…" />
-          </Field>
-          <Field label={t("admin.companies.fields.phone") + " *"}>
-            <input value={form.phone ?? ""} onChange={(e) => setField("phone", e.target.value)} />
-          </Field>
-          <Field label={t("admin.companies.fields.logoUrl")}>
-            <input value={form.logo_url ?? ""} onChange={(e) => setField("logo_url", e.target.value)} placeholder="https://…" />
-          </Field>
-          <Field label={t("admin.companies.fields.rating")}>
-            <input type="number" min={0} max={5} step={0.1} value={form.rating ?? 0} onChange={(e) => setField("rating", Number(e.target.value))} />
+          <Field label={t("admin.companies.fields.licenses")}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 12px", border: "1px dashed #d1d5db", borderRadius: 6, color: "#6b7280", fontSize: 12, background: "#f9fafb" }}>
+              <Upload size={14} />
+              {t("admin.companies.fields.licensesHint")}
+            </div>
           </Field>
         </Section>
 
-        <Section title={t("admin.companies.sections.address")}>
-          <Field label={t("admin.companies.fields.address") + " *"}>
-            <input value={form.address ?? ""} onChange={(e) => setField("address", e.target.value)} />
-          </Field>
-          <Field label={t("admin.companies.fields.city")}>
-            <input value={form.city ?? ""} onChange={(e) => setField("city", e.target.value)} />
+        {/* Section 4: Business contact */}
+        <Section title={t("admin.companies.sections.contact")}>
+          <Field label={t("admin.companies.fields.country") + " *"}>
+            <input value={form.country ?? ""} onChange={(e) => setField("country", e.target.value)} />
           </Field>
           <Field label={t("admin.companies.fields.state") + " *"}>
             <input value={form.state ?? ""} onChange={(e) => setField("state", e.target.value)} />
           </Field>
-          <Field label={t("admin.companies.fields.country") + " *"}>
-            <input value={form.country ?? ""} onChange={(e) => setField("country", e.target.value)} />
+          <Field label={t("admin.companies.fields.city")}>
+            <input value={form.city ?? ""} onChange={(e) => setField("city", e.target.value)} />
+          </Field>
+          <Field label={t("admin.companies.fields.address") + " *"}>
+            <input value={form.address ?? ""} onChange={(e) => setField("address", e.target.value)} />
           </Field>
           <Field label={t("admin.companies.fields.zipCode")}>
             <input value={form.zip_code ?? ""} onChange={(e) => setField("zip_code", e.target.value)} />
           </Field>
-        </Section>
-
-        <Section title={t("admin.companies.sections.classification")} full>
-          <div style={{ display: "flex", gap: 16, flexWrap: "wrap", marginBottom: 12 }}>
-            <Toggle label={t("admin.companies.fields.isBuyer")} checked={!!form.is_buyer} onChange={(v) => setField("is_buyer", v)} />
-            <Toggle label={t("admin.companies.fields.isSupplier")} checked={!!form.is_supplier} onChange={(v) => setField("is_supplier", v)} />
-            <Toggle label={t("admin.companies.fields.isVerified")} checked={!!form.is_verified} onChange={(v) => setField("is_verified", v)} />
-          </div>
-          <Field label={t("admin.companies.fields.businessTypes")}>
-            <input value={form.business_types ?? ""} onChange={(e) => setField("business_types", e.target.value)} placeholder='e.g. ["processor","exporter"]' />
+          <Field label={t("admin.companies.fields.phone") + " *"}>
+            <input value={form.phone ?? ""} onChange={(e) => setField("phone", e.target.value)} placeholder="+1 555 555 5555" />
           </Field>
-          <Field label={t("admin.companies.fields.proteinProfiles")}>
-            <input
-              value={proteinText}
-              onChange={(e) => setField("protein_profiles", e.target.value.split(",").map((s) => s.trim()).filter(Boolean))}
-              placeholder="beef, pork, poultry"
-            />
+          <Field label={t("admin.companies.fields.website")}>
+            <input value={form.website ?? ""} onChange={(e) => setField("website", e.target.value)} placeholder="https://…" />
           </Field>
         </Section>
 
+        {/* Section 5: Admin (only edit) */}
         {!isNew && data && (
-          <Section title={t("admin.companies.sections.onboarding")} full>
-            <ReadOnly label={t("admin.companies.fields.onboardedAt")} value={data.onboarded_at ?? "—"} />
-            <ReadOnly label={t("admin.companies.fields.onboardedBy")} value={data.onboarded_by ?? "—"} />
-            <ReadOnly label={t("admin.companies.fields.onboardedFromProspect")} value={data.onboarded_from_prospect_id ?? "—"} />
-            <ReadOnly label={t("admin.companies.fields.createdAt")} value={data.created_at ?? "—"} />
-            <ReadOnly label={t("admin.companies.fields.updatedAt")} value={data.updated_at ?? "—"} />
+          <Section title={t("admin.companies.sections.admin")} full>
+            <Field label={t("admin.companies.fields.verified")}>
+              <label style={{ display: "inline-flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer" }}>
+                <input type="checkbox" checked={!!form.is_verified} onChange={(e) => setField("is_verified", e.target.checked)} style={{ accentColor: "#8B2252" }} />
+                {form.is_verified ? t("common.yes") : "—"}
+              </label>
+            </Field>
+            <Field label={t("admin.companies.fields.status")}>
+              <select value={form.status ?? "active"} onChange={(e) => setField("status", e.target.value)}>
+                <option value="active">{t("admin.companies.filters.active")}</option>
+                <option value="inactive">{t("admin.companies.filters.inactive")}</option>
+              </select>
+            </Field>
+            <Field label={t("admin.companies.fields.rating")}>
+              <input type="number" min={0} max={5} step={0.1} value={form.rating ?? 0} onChange={(e) => setField("rating", Number(e.target.value))} />
+            </Field>
+            <ReadOnly label={t("admin.companies.fields.onboarded")} value={onboardedDisplay} />
+            <ReadOnly label={t("admin.companies.fields.companyNumber")} value={`#${data.company_number}`} />
           </Section>
         )}
       </div>
 
-      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      {!isNew && (
+        <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
+          <button type="button" onClick={() => setDeleteOpen(true)} className="adm-btn-ghost" style={{ color: "#b91c1c", borderColor: "#fecaca" }}>
+            <Trash2 size={14} style={{ marginRight: 6 }} /> {t("admin.companies.detail.deleteTitle")}
+          </button>
+        </div>
+      )}
+
+      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              {isActive ? t("admin.companies.confirmDeactivate.title") : t("admin.companies.confirmActivate.title")}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {isActive ? t("admin.companies.confirmDeactivate.body") : t("admin.companies.confirmActivate.body")}
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t("admin.companies.detail.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("admin.companies.detail.deleteConfirm")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>{t("admin.companies.actions.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleToggleActive}>
-              {isActive ? t("admin.companies.actions.deactivate") : t("admin.companies.actions.activate")}
+            <AlertDialogAction onClick={handleDelete} style={{ background: "#b91c1c" }}>
+              {t("admin.companies.detail.deleteTitle")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
     </div>
   );
 }
@@ -294,10 +391,10 @@ function ReadOnly({ label, value }: { label: string; value: string }) {
   );
 }
 
-function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
+function Check({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 13 }}>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ accentColor: "#8B2252" }} />
+    <label style={{ display: "inline-flex", alignItems: "center", gap: 8, cursor: "pointer", fontSize: 14, fontWeight: 500 }}>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ accentColor: "#8B2252", width: 16, height: 16 }} />
       {label}
     </label>
   );
