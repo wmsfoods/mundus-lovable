@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
+import CompanyProfileSections from "@/components/company/CompanyProfileSections";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -14,6 +15,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import "@/styles/mundus-company.css";
 
 type Props = { mode?: "edit" | "new" };
 
@@ -62,6 +64,13 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [search, setSearch] = useSearchParams();
+  const activeTab = search.get("tab") || "profile";
+  const setTab = (tab: string) => {
+    const next = new URLSearchParams(search);
+    if (tab === "profile") next.delete("tab"); else next.set("tab", tab);
+    setSearch(next, { replace: true });
+  };
   const isNew = mode === "new";
   const { data, loading, error, save, create, remove } = useAdminCompany(isNew ? undefined : id);
 
@@ -172,6 +181,16 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   if (!isNew && loading) return <div className="adm-body"><div className="adm-panel" style={{ padding: 16 }}>{t("common.loading")}</div></div>;
   if (!isNew && error) return <div className="adm-body"><div className="adm-panel" style={{ padding: 16, color: "#b91c1c" }}>{error}</div></div>;
 
+  const tabs = [
+    { key: "profile", label: t("admin.companies.tabs.profile", "Profile") },
+    { key: "about", label: t("admin.companies.tabs.about", "About") },
+    { key: "plants", label: t("admin.companies.tabs.plants", "Plants") },
+    { key: "certifications", label: t("admin.companies.tabs.certifications", "Certifications") },
+    { key: "documents", label: t("admin.companies.tabs.documents", "Documents") },
+    { key: "team", label: t("admin.companies.tabs.team", "Team") },
+    { key: "preferences", label: t("admin.companies.tabs.preferences", "Preferences") },
+  ];
+
   return (
     <div className="adm-body" style={{ paddingBottom: 96 }}>
       {/* Header */}
@@ -202,13 +221,31 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
           <button type="button" className="adm-btn-ghost" onClick={() => navigate("/admin/companies")}>
             <X size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.cancel")}
           </button>
+          {activeTab === "profile" && (
           <button type="button" className="crm-btn-primary" onClick={handleSave} disabled={saving || (!dirty && !isNew)} style={{ background: "#8B2252" }}>
             <Save size={14} style={{ marginRight: 4 }} /> {saving ? t("admin.companies.detail.saving") : t("admin.companies.detail.save")}
-          </button>
+          </button>)}
         </div>
       </div>
 
-      {/* Form */}
+      {/* Tab bar (only when editing existing company) */}
+      {!isNew && (
+        <div className="adm-company-tabs">
+          {tabs.map((tb) => (
+            <button
+              key={tb.key}
+              type="button"
+              className={`adm-company-tab ${activeTab === tb.key ? "is-active" : ""}`}
+              onClick={() => setTab(tb.key)}
+            >
+              {tb.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Profile tab — original form */}
+      {(activeTab === "profile" || isNew) && (
       <div className="adm-form-grid">
         {/* Section 1: Business role */}
         <Section title={t("admin.companies.sections.role")} full>
@@ -334,6 +371,14 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
           </Section>
         )}
       </div>
+      )}
+
+      {/* Profile-related sub-tabs use shared component */}
+      {!isNew && id && activeTab !== "profile" && (
+        <div style={{ marginTop: 16 }}>
+          <ProfileTabContent tab={activeTab} companyId={id} />
+        </div>
+      )}
 
       {!isNew && (
         <div style={{ marginTop: 24, display: "flex", justifyContent: "flex-end" }}>
@@ -397,5 +442,16 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
       <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} style={{ accentColor: "#8B2252", width: 16, height: 16 }} />
       {label}
     </label>
+  );
+}
+
+function ProfileTabContent({ tab, companyId }: { tab: string; companyId: string }) {
+  // The shared component renders all 6 sections; we hide via CSS using a data-attribute scope per tab.
+  // Simpler: just render the full sections; admin can scroll to the active one. Each section is independent.
+  // But to keep tabs meaningful, we scope visibility with a wrapper class.
+  return (
+    <div className={`adm-profile-scope adm-profile-scope-${tab}`}>
+      <CompanyProfileSections companyId={companyId} canEdit />
+    </div>
   );
 }
