@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -831,13 +831,11 @@ export default function SupplierCreateOffer() {
               <span className="cov4-prev-h-s">Buyer's view</span>
             </div>
             <div className="cov4-prev-card">
-              <div className="cov4-prev-img">
-                {cuts.length > 0 && (cutImgs[cuts[0].id] || cuts[0].cutImage) ? (
-                  <img src={cutImgs[cuts[0].id] || (cuts[0].cutImage as string)} alt="" />
-                ) : (
-                  <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>
-                )}
-              </div>
+              <PreviewImages
+                images={cuts
+                  .map((c) => ({ id: c.id, src: cutImgs[c.id] || (c.cutImage as string) || "", label: `${c.cat} ${c.cut}` }))
+                  .filter((x) => !!x.src)}
+              />
               <h3 className="cov4-prev-title">
                 {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? "Mix FCL" : "Untitled Offer"}
               </h3>
@@ -1041,6 +1039,74 @@ function PrevRow({ l, v }: { l: string; v: string }) {
     <div className="cov4-prev-row">
       <span className="cov4-prev-row-l">{l}</span>
       <span className="cov4-prev-row-v">{v}</span>
+    </div>
+  );
+}
+
+function PreviewImages({ images }: { images: { id: string; src: string; label: string }[] }) {
+  const scrollerRef = useRef<HTMLDivElement>(null);
+  const [idx, setIdx] = useState(0);
+
+  if (images.length === 0) {
+    return (
+      <div className="cov4-prev-img">
+        <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>
+      </div>
+    );
+  }
+
+  const scrollTo = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(images.length - 1, i));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
+  };
+
+  const onScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== idx) setIdx(i);
+  };
+
+  return (
+    <div className="cov4-prev-img cov4-prev-img-carousel">
+      <div className="cov4-prev-img-scroller" ref={scrollerRef} onScroll={onScroll}>
+        {images.map((im) => (
+          <div key={im.id} className="cov4-prev-img-slide">
+            <img src={im.src} alt={im.label} />
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            className="cov4-prev-img-nav prev"
+            aria-label="Previous"
+            onClick={() => scrollTo(idx - 1)}
+            disabled={idx === 0}
+          >‹</button>
+          <button
+            type="button"
+            className="cov4-prev-img-nav next"
+            aria-label="Next"
+            onClick={() => scrollTo(idx + 1)}
+            disabled={idx === images.length - 1}
+          >›</button>
+          <div className="cov4-prev-img-dots">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to image ${i + 1}`}
+                className={`cov4-prev-img-dot ${i === idx ? "on" : ""}`}
+                onClick={() => scrollTo(i)}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
