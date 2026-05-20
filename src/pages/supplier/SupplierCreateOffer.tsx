@@ -356,7 +356,7 @@ export default function SupplierCreateOffer() {
           </div>
 
           {/* Market chips */}
-          <div className="cov4-chips">
+          <div id="sec-markets" className="cov4-chips">
             {(() => {
               const byName = new Map(MARKETS.map((m) => [m.n, m]));
               const primary = PRIMARY_MARKETS.map((n) => byName.get(n)).filter(Boolean) as Market[];
