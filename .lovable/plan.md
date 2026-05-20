@@ -1,82 +1,38 @@
-# Create Offer v4 — single-screen, 3 panels
+## Manter design atual + completar v4
 
-Substituir o wizard atual em `/supplier/offers/new` por um layout de tela única em 3 colunas (Markets/Terms · Cuts & Pricing · Live Preview), conforme `LOVABLE-CREATE-OFFER-V4-SPEC.md` e o protótipo `mundus-create-offer-v4.jsx`.
+O layout 3-painéis e a paleta (`--p800` #B64769, cards brancos, `--bg-brand-soft`, Inter, raios 6-8px, chips 999px) que já estão em `SupplierCreateOffer.tsx` + `mundus-create-offer-v2.css` ficam **intocados**.
 
-**Constraint do usuário:** manter o bloco de **Certifications** (Halal, Kosher, USDA, HACCP, BRC, Organic) que existe hoje no sidebar — o spec v4 não mencionava, mas ele fica preservado como uma sub-seção dentro do painel esquerdo (entre Incoterms e Payment terms).
+### Verificar/completar contra o spec v4
 
-## Layout
+Vou revisar a implementação atual contra `LOVABLE-CREATE-OFFER-V4-SPEC-2.md` e o mock `mundus-create-offer-v4-2.jsx` e ajustar **apenas o que estiver faltando ou divergente**, sem mexer em cores, tipografia, espaçamentos ou estrutura visual.
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ HEADER  título + origem + 👁 Live preview toggle             │
-├────────────┬─────────────────────────┬───────────────────────┤
-│ LEFT 340px │ CENTER flex             │ RIGHT 320px (toggle)  │
-│ Container  │ Capacity bar            │ Buyer-eye preview     │
-│ Temperature│ ✨ AI Import (3 modos)   │ - hero + título       │
-│ Markets    │ Cuts table (com fotos,  │ - meta grid           │
-│  + ports   │   spec/pkg/grade/aging, │ - lista de cuts       │
-│  + freight │   ask/floor/notes)      │ - distribution badges │
-│ Incoterms  │ + Add cut inline        │                       │
-│ ★ Certifs  │                         │                       │
-│ Payment    │                         │                       │
-│ Distribut. │                         │                       │
-├────────────┴─────────────────────────┴───────────────────────┤
-│ FOOTER  resumo · Save draft · Review & publish               │
-└──────────────────────────────────────────────────────────────┘
-```
+Pontos que vou conferir:
 
-Mobile (<900px): colunas empilham; right panel vira accordion no topo quando aberto.
+1. **Header** — badge de origem `🇧🇷 Brazil · Santos (BRSSZ)` read-only + toggle "👁 Live preview".
+2. **Painel esquerdo**
+   - Container `20ft`/`40ft` (default 40ft) e Temperatura `Frozen`/`Chilled` (default Frozen).
+   - Chips de mercados (CN, SA, AE, EG, AR, HK, PH, CL) com seleção múltipla.
+   - Para cada mercado selecionado: card com portos selecionáveis, toggle "Same freight for all ports?" e input de frete US$/kg.
+   - Incoterms (FOB, CFR, CIF, EXW, DDP, DAP) com campo extra condicional (insurance / city).
+   - Certifications (Halal, Kosher, USDA, HACCP, BRC, Organic) — **preservar como está**.
+   - Payment terms (select) + Distribution (Public / Selected customers com lista mock).
+3. **Painel central**
+   - Botão "✨ AI Import" abrindo painel com modos Paste / File / Voice (mock `setTimeout`).
+   - Barra de capacidade (20ft = 13.000 kg, 40ft = 28.000 kg) com cor por % preenchimento.
+   - Tabela de cuts com colunas: foto, cut, spec, packaging, grade, aging, peso, asking, floor, notes, remover.
+   - Linha "Add cut" com selects de `CUTS_DB` por espécie + confirm/cancel.
+4. **Painel direito (Live Preview)** — card no formato buyer: foto, título, metadados, lista de cuts, preço médio destacado, tags de distribuição.
+5. **Footer sticky** — resumo (X mercados · Y cuts · Z kg) + botões "Save draft" e "Publish" (desabilitado até ter ≥1 mercado + ≥1 cut + ≥1 incoterm). Toast no publish, sem persistência.
+6. **i18n** — chaves em `supplier.createOffer.v4.*` nos 3 idiomas (en/pt/es).
+7. **Mobile** — empilhar em 1 coluna abaixo de 1100px (já no CSS), garantir scroll/safe-area no footer.
 
-## Mudanças
+### Fora do escopo
+- Sem alterar cores, fontes, raios, espaçamentos, sombras da v2 atual.
+- Sem edge function de parse real (AI Import é mock).
+- Sem upload real de fotos para storage (preview local com `URL.createObjectURL`).
+- Sem persistência em Supabase.
 
-### Arquivos novos
-- `src/styles/mundus-create-offer-v2.css` — tokens do v4 (chips de mercado, market cards, ports, incoterm grid, cuts table com thumbs, AI panel, live preview)
-- `src/components/supplier/create-offer/MarketSelector.tsx` — chips de países
-- `src/components/supplier/create-offer/MarketCard.tsx` — card expandido por mercado (ports + freight, "same freight?" toggle)
-- `src/components/supplier/create-offer/IncotermSelector.tsx` — grid 3×2 + campos condicionais (CIF insurance, EXW/DDP/DAP city)
-- `src/components/supplier/create-offer/CutsTable.tsx` — tabela com foto, categoria+cut, spec/pkg/grade/aging, qty, ask/floor, notes
-- `src/components/supplier/create-offer/CutAddRow.tsx` — linha inline de adição
-- `src/components/supplier/create-offer/AiImportPanel.tsx` — 3 modos (paste/file/voice), mock de parser
-- `src/components/supplier/create-offer/LivePreview.tsx` — buyer-eye card
-- `src/components/supplier/create-offer/DistributionOptions.tsx` — 3 checkboxes + customer chips
-
-### Arquivos editados
-- `src/pages/supplier/SupplierCreateOffer.tsx` — substituído pela nova composição em 3 colunas (mantém rota e `from=requestId` prefill)
-- `src/i18n/locales/{en,pt,es}.json` — namespace `supplier.createOffer.v4.*` com todas as labels (markets, incoterms condicionais, AI import, distribution, certifications, preview)
-- `src/styles/mundus-create-offer.css` — manter ou remover? **Manter** os tokens `.co-*` reutilizáveis (botões, footer); remover apenas o que conflita com v2
-
-### Certifications (preservado)
-Sub-seção no painel esquerdo, abaixo de Incoterms:
-- Label: "Certifications"
-- Tags toggleable: Halal, Kosher, USDA, HACCP, BRC, Organic
-- Mesmo visual `.co-tag` que já temos
-- Estado: `certifications: string[]` (igual ao atual)
-- Aparece no Live Preview como badges quando selecionado
-
-### Mocks
-- `MARKETS` (China, Saudi Arabia, UAE, Egypt, Argentina, HK, Philippines, Chile) com ports
-- `CUTS_DB` por espécie (Beef, Pork, Poultry, Lamb)
-- `PAY_TERMS`, `INCOTERMS` com `extra` field
-- `MOCK_CUSTOMERS` para distribuição específica
-- AI Import: mock que injeta 2 cuts pré-definidos após 2s
-
-### Comportamento
-- Container: 20ft = 13.000 kg, 40ft = 28.000 kg
-- Capacity bar: <70% rosa, 70–95% âmbar, >95% verde
-- "Same freight for all ports?" só aparece com 2+ ports
-- Incoterm extras renderizam abaixo da grid (campos condicionais)
-- Publish habilitado quando: ≥1 mercado + ≥1 cut + ≥1 incoterm
-- Pré-preenchimento via `?from=requestId` mantido
-
-### Fora do escopo (mock, não backend)
-- Sem edge function `parse-cuts` (AI = mock setTimeout)
-- Sem upload real de fotos (DataURL local)
-- Sem persistência no Supabase (toast no publish)
-
-## Detalhes técnicos
-
-- Design tokens: `var(--p800)` `#B64769`, `var(--p900)` `#752642`, `var(--bg-brand-soft)`, fonte Inter via `var(--font-sans)`
-- Borders 8px cards / 6px inputs / 999px chips, labels uppercase 9–10px
-- Mobile: respeitar safe-area, single column, bottom sheet para preview
-- i18n: nenhum string hard-coded em componente; toda label via `t('supplier.createOffer.v4.*')`
-- Acessibilidade: `role="group"`, `aria-pressed` nos chips, `aria-label` em botões de ícone
+### Arquivos
+- `src/pages/supplier/SupplierCreateOffer.tsx` — ajustes pontuais conforme checklist acima.
+- `src/styles/mundus-create-offer-v2.css` — apenas adicionar regras se algum elemento novo aparecer; nenhuma mudança nos tokens existentes.
+- `src/i18n/locales/{en,pt,es}.json` — completar chaves faltantes em `supplier.createOffer.v4.*`.
