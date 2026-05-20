@@ -12,7 +12,9 @@ import {
   useProspect, updateProspectStage, addProspectActivity,
   updateProspect, deactivateProspect, reactivateProspect, deleteProspect,
   upsertContact, deleteContact,
+  STAGES, OWNERS,
   type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel,
+  type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 
 const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
@@ -21,6 +23,7 @@ const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
 
 const DECISION_LEVELS: DecisionLevel[] = ["c_level","vp","director","manager","specialist","other"];
 const LEAD_TYPES: LeadType[] = ["buyer","supplier","buyer_supplier"];
+const SOURCES: ProspectSource[] = ["linkedin","trade_show","referral","web_scrape","apollo","manual","inbound"];
 
 // ---- Search more people (Mundus Intelligence) mock --------------------
 type Discovered = {
