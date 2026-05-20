@@ -1835,6 +1835,68 @@ export type Database = {
           },
         ]
       }
+      cut_translations: {
+        Row: {
+          created_at: string | null
+          cut_id: string
+          id: string
+          locale: string
+          name: string
+        }
+        Insert: {
+          created_at?: string | null
+          cut_id: string
+          id?: string
+          locale: string
+          name: string
+        }
+        Update: {
+          created_at?: string | null
+          cut_id?: string
+          id?: string
+          locale?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cut_translations_cut_id_fkey"
+            columns: ["cut_id"]
+            isOneToOne: false
+            referencedRelation: "cuts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cuts: {
+        Row: {
+          category: string
+          created_at: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean | null
+          name: string
+          product_number: number | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name: string
+          product_number?: number | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean | null
+          name?: string
+          product_number?: number | null
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string | null
