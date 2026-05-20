@@ -3,7 +3,7 @@ import { createPortal } from "react-dom";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Logo } from "@/components/Logo";
-import { XIcon, GlobeIcon, UserIcon } from "@/components/icons";
+import { XIcon, GlobeIcon } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import type { SidebarItem } from "@/components/mundus/Sidebar";
@@ -58,11 +58,6 @@ export function MobileDrawer({
   const initials = userName
     ? userName.slice(0, 2).toUpperCase()
     : user?.email?.slice(0, 1).toUpperCase() ?? "A";
-
-  // Profile link target depends on current shell (buyer vs supplier).
-  const profileHref = location.pathname.startsWith("/supplier")
-    ? "/supplier/profile"
-    : "/buyer/profile";
 
   return createPortal(
     <div className={`md-root ${open ? "is-open" : ""}`} aria-hidden={!open}>
@@ -159,15 +154,6 @@ export function MobileDrawer({
               </button>
             ))}
           </div>
-
-          <NavLink
-            to={profileHref}
-            onClick={onClose}
-            className="md-profile-link"
-          >
-            <UserIcon size={18} />
-            <span>{t("shell.nav.profile", { defaultValue: "Profile" })}</span>
-          </NavLink>
         </div>
       </aside>
     </div>,
