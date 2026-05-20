@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, CheckCircle2, AlertCircle } from "lucide-react";
+import { Search, CheckCircle2, AlertCircle, Plus, Pencil } from "lucide-react";
 import {
   useAdminCompanies,
   companyType,
@@ -39,6 +39,7 @@ function TypeChip({ type, t }: { type: ReturnType<typeof companyType>; t: (k: st
 export default function AdminCompanies() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || "en";
+  const navigate = useNavigate();
   const { rows, loading, error } = useAdminCompanies();
 
   const [search, setSearch] = useState("");
@@ -52,16 +53,10 @@ export default function AdminCompanies() {
     return Array.from(s).sort();
   }, [rows]);
 
-  const counts = useMemo(() => {
-    let buyers = 0, suppliers = 0, both = 0, inactive = 0;
-    rows.forEach((r) => {
-      const k = companyType(r);
-      if (k === "buyer") buyers++;
-      else if (k === "supplier") suppliers++;
-      else if (k === "both") both++;
-      if ((r.status ?? "active") !== "active") inactive++;
-    });
-    return { total: rows.length, buyers, suppliers, both, inactive };
+  const totals = useMemo(() => {
+    let inactive = 0;
+    rows.forEach((r) => { if ((r.status ?? "active") !== "active") inactive++; });
+    return { total: rows.length, active: rows.length - inactive };
   }, [rows]);
 
   const filtered = useMemo(() => {
@@ -85,36 +80,15 @@ export default function AdminCompanies() {
 
   return (
     <div className="adm-body">
-      <div className="adm-page-header">
+      <div className="adm-page-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <div>
           <span className="adm-page-title">{t("admin.companies.title")}</span>
           <span className="adm-page-subtle">
-            · {t("admin.companies.subtitle", { active: counts.total - counts.inactive, total: counts.total })}
+            · {t("admin.companies.subtitle", { active: totals.active, total: totals.total })}
           </span>
         </div>
-      </div>
-
-      {/* tiles */}
-      <div className="crm-funnel-tiles">
-        <button type="button" className={`crm-tile ${typeF === "all" && statusF === "all" ? "is-active" : ""}`} onClick={() => { setTypeF("all"); setStatusF("all"); }}>
-          <span className="l">{t("admin.companies.tiles.total")}</span>
-          <span className="v">{counts.total}</span>
-        </button>
-        <button type="button" className={`crm-tile ${typeF === "buyer" ? "is-active" : ""}`} onClick={() => setTypeF((v) => v === "buyer" ? "all" : "buyer")}>
-          <span className="l">{t("admin.companies.tiles.buyers")}</span>
-          <span className="v">{counts.buyers}</span>
-        </button>
-        <button type="button" className={`crm-tile ${typeF === "supplier" ? "is-active" : ""}`} onClick={() => setTypeF((v) => v === "supplier" ? "all" : "supplier")}>
-          <span className="l">{t("admin.companies.tiles.suppliers")}</span>
-          <span className="v">{counts.suppliers}</span>
-        </button>
-        <button type="button" className={`crm-tile ${typeF === "both" ? "is-active" : ""}`} onClick={() => setTypeF((v) => v === "both" ? "all" : "both")}>
-          <span className="l">{t("admin.companies.tiles.both")}</span>
-          <span className="v">{counts.both}</span>
-        </button>
-        <button type="button" className={`crm-tile ${statusF === "inactive" ? "is-active" : ""}`} onClick={() => setStatusF((v) => v === "inactive" ? "all" : "inactive")}>
-          <span className="l">{t("admin.companies.tiles.inactive")}</span>
-          <span className="v">{counts.inactive}</span>
+        <button type="button" className="crm-btn-primary" onClick={() => navigate("/admin/companies/new")}>
+          <Plus size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.new")}
         </button>
       </div>
 
@@ -137,6 +111,12 @@ export default function AdminCompanies() {
         <select className="crm-select" value={country} onChange={(e) => setCountry(e.target.value)}>
           <option value="all">{t("admin.companies.filters.allCountries")}</option>
           {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select className="crm-select" value={typeF} onChange={(e) => setTypeF(e.target.value as CompanyTypeFilter)}>
+          <option value="all">{t("admin.companies.filters.allTypes")}</option>
+          <option value="buyer">{t("admin.companies.filters.buyer")}</option>
+          <option value="supplier">{t("admin.companies.filters.supplier")}</option>
+          <option value="both">{t("admin.companies.filters.both")}</option>
         </select>
       </div>
 
@@ -163,10 +143,11 @@ export default function AdminCompanies() {
                     <th>{t("admin.companies.cols.verified")}</th>
                     <th>{t("admin.companies.cols.onboarded")}</th>
                     <th>{t("admin.companies.cols.status")}</th>
+                    <th style={{ width: 60 }}>{t("admin.companies.cols.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((r) => <Row key={r.id} row={r} locale={locale} t={t} />)}
+                  {filtered.map((r) => <Row key={r.id} row={r} locale={locale} t={t} onOpen={() => navigate(`/admin/companies/${r.id}`)} />)}
                 </tbody>
               </table>
             </div>
@@ -174,7 +155,7 @@ export default function AdminCompanies() {
 
           {/* mobile cards */}
           <div className="adm-only-mobile" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-            {filtered.map((r) => <CardRow key={r.id} row={r} locale={locale} t={t} />)}
+            {filtered.map((r) => <CardRow key={r.id} row={r} locale={locale} t={t} onOpen={() => navigate(`/admin/companies/${r.id}`)} />)}
           </div>
         </>
       )}
@@ -182,11 +163,11 @@ export default function AdminCompanies() {
   );
 }
 
-function Row({ row, locale, t }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string }) {
+function Row({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string; onOpen: () => void }) {
   const k = companyType(row);
   const isActive = (row.status ?? "active") === "active";
   return (
-    <tr>
+    <tr onClick={onOpen} style={{ cursor: "pointer" }}>
       <td>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           {row.logo_url ? (
@@ -217,15 +198,20 @@ function Row({ row, locale, t }: { row: AdminCompanyRow; locale: string; t: (k: 
           {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
         </span>
       </td>
+      <td onClick={(e) => e.stopPropagation()}>
+        <button type="button" onClick={onOpen} className="adm-btn-ghost" aria-label="Edit" title={t("admin.companies.actions.edit") as string}>
+          <Pencil size={14} />
+        </button>
+      </td>
     </tr>
   );
 }
 
-function CardRow({ row, locale, t }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string }) {
+function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string; onOpen: () => void }) {
   const k = companyType(row);
   const isActive = (row.status ?? "active") === "active";
   return (
-    <div className="adm-panel" style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start" }}>
+    <div className="adm-panel" onClick={onOpen} style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}>
       {row.logo_url ? (
         <img src={row.logo_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
       ) : (
