@@ -20,6 +20,7 @@ export type AdminCompanyFull = {
   rating: number | null;
   business_types: string | null;
   protein_profiles: string[] | null;
+  preferred_cuts: string[] | null;
   status: string | null;
   onboarded_at: string | null;
   onboarded_by: string | null;
