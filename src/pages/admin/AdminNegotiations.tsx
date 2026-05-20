@@ -222,7 +222,7 @@ export default function AdminNegotiations() {
           </div>
 
           {/* Mobile */}
-          <div className="adm-only-mobile" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="adm-only-mobile adm-cards-stack">
             {filtered.map((r) => (
               <div key={r.id} className="adm-panel" onClick={() => handleRowClick(r)} style={{ padding: 12, cursor: "pointer" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
