@@ -79,7 +79,7 @@ export function mapPerson(p: any): MockPerson {
   const hasEmail = p.has_email === true || !!p.email;
   const emailStatus: MockPerson["emailStatus"] = (p.email_status as MockPerson["emailStatus"])
     ?? (p.email ? "verified" : hasEmail ? "unverified" : "unavailable");
-  const hasPhone = !!(p.sanitized_phone ?? p.phone_numbers?.length ?? p.has_direct_phone === "Yes" || p.has_direct_phone === true);
+  const hasPhone = !!(p.sanitized_phone || p.phone_numbers?.length || p.has_direct_phone === "Yes" || p.has_direct_phone === true);
   return {
     id: p.id ?? p._id ?? String(Math.random()),
     firstName: first,
