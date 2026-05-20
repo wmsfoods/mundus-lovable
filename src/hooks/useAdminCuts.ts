@@ -111,7 +111,11 @@ export function useAdminCuts() {
     });
     if (upErr) throw upErr;
     const { data } = supabase.storage.from("cut-images").getPublicUrl(path);
-    return `${data.publicUrl}?v=${Date.now()}`;
+    const url = `${data.publicUrl}?v=${Date.now()}`;
+    const { error: updErr } = await supabase.from("cuts").update({ image_url: url }).eq("id", cutId);
+    if (updErr) throw updErr;
+    qc.invalidateQueries({ queryKey: ["admin", "cuts"] });
+    return url;
   };
 
   return {
