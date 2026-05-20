@@ -246,7 +246,23 @@ export default function SupplierCreateOffer() {
     setSelectedCustomers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
 
-  const canPublish = selMarkets.length > 0 && cuts.length > 0 && selInco.length > 0;
+  const distOk = distMarketplace || distAllCustomers || (distSpecific && selectedCustomers.length > 0);
+  const publishSteps = [
+    { key: "markets",  label: "Select at least one destination market", done: selMarkets.length > 0, anchor: "sec-markets" },
+    { key: "cuts",     label: "Add at least one product cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
+    { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
+    { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
+  ];
+  const stepsDone = publishSteps.filter((s) => s.done).length;
+  const nextStep  = publishSteps.find((s) => !s.done);
+  const canPublish = !nextStep;
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("cov4-pulse");
+    window.setTimeout(() => el.classList.remove("cov4-pulse"), 1400);
+  }, []);
   const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
 
   const handleSaveDraft = () => toast("Draft saved");
