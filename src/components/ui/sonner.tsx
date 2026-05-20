@@ -13,7 +13,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       // Constrain width so toasts never overflow on small screens.
       style={
         {
-          "--width": "min(calc(100vw - 32px), 380px)",
+          "--width": "min(calc(100vw - 64px), 380px)",
         } as React.CSSProperties
       }
       toastOptions={{
