@@ -5,7 +5,7 @@ export type BuyerRequestStatus =
   | "closed_no_winner"
   | "expired";
 
-export type Species = "beef" | "pork" | "poultry" | "lamb";
+export type Species = "beef" | "pork" | "poultry" | "ovine";
 
 export type ReceivedOffer = {
   id: string;
