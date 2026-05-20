@@ -3191,6 +3191,36 @@ export type Database = {
         }
         Relationships: []
       }
+      prospect_phone_reveals: {
+        Row: {
+          apollo_person_id: string
+          created_at: string
+          id: string
+          mobile: string | null
+          phone: string | null
+          raw: Json | null
+          updated_at: string
+        }
+        Insert: {
+          apollo_person_id: string
+          created_at?: string
+          id?: string
+          mobile?: string | null
+          phone?: string | null
+          raw?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          apollo_person_id?: string
+          created_at?: string
+          id?: string
+          mobile?: string | null
+          phone?: string | null
+          raw?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           granted: boolean | null

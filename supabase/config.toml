@@ -1,1 +1,4 @@
 project_id = "kypyqxicwbusadnlhnwe"
+
+[functions.prospect-phone-webhook]
+verify_jwt = false
