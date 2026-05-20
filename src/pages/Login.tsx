@@ -60,7 +60,7 @@ export default function Login() {
       <div className="flex justify-end px-4 pt-3 md:px-6 md:pt-4">
         <LanguageSwitcher variant="pill" />
       </div>
-      <div className="flex flex-1 flex-col-reverse items-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
+      <div className="flex flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
         {/* Carousel — desktop only; hidden on mobile */}
         <div className="relative hidden md:block w-full md:max-w-[600px] md:aspect-square overflow-hidden rounded-[2.5rem] shadow-sm">
           {slides.map((src, i) => (
@@ -95,13 +95,13 @@ export default function Login() {
           </div>
 
           {/* RIGHT - form */}
-          <div className="w-full max-w-[380px] px-6 py-10 md:p-0">
+          <div className="w-full max-w-[380px] px-6 py-10 md:p-0 text-center md:text-left">
             <img
               src={mundusLogo}
               alt="Mundus Trade"
               className="md:hidden mx-auto mb-6 h-10 w-auto"
             />
-            <h1 className="text-[28px] font-bold text-[#111]">{t("auth.login")}</h1>
+            <h1 className="text-[28px] font-bold text-[#111] text-center md:text-left">{t("auth.login")}</h1>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
             <div>
