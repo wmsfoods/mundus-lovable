@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   GlobeIcon,
@@ -9,7 +9,6 @@ import {
 import { Menu as MenuIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
-import { toast } from "sonner";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { Logo } from "@/components/Logo";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
@@ -19,21 +18,17 @@ type TopbarProps = {
 };
 
 export function Topbar({ onMenuClick }: TopbarProps = {}) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { company } = useCurrentCompany();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t, i18n } = useTranslation();
   const isMobile = useIsMobileShell();
-  const [menuOpen, setMenuOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const wrapRef = useRef<HTMLDivElement | null>(null);
   const langRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
-      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) {
-        setMenuOpen(false);
-      }
       if (langRef.current && !langRef.current.contains(e.target as Node)) {
         setLangOpen(false);
       }
@@ -42,11 +37,11 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
     return () => document.removeEventListener("mousedown", onDocClick);
   }, []);
 
-  const handleLogout = async () => {
-    setMenuOpen(false);
-    await signOut();
-    toast.success(t("common.signedOut"));
-    navigate("/login", { replace: true });
+  const goToProfile = () => {
+    const target = location.pathname.startsWith("/supplier")
+      ? "/supplier/profile"
+      : "/buyer/profile";
+    navigate(target);
   };
 
   const initials = user?.email
@@ -150,71 +145,14 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
         <BellIcon size={18} />
         <span className="dot" />
       </button>
-      <div ref={wrapRef} style={{ position: "relative" }}>
-        <button
-          className="tb-avatar"
-          type="button"
-          onClick={() => setMenuOpen((o) => !o)}
-          aria-haspopup="menu"
-          aria-expanded={menuOpen}
-        >
-          <span className="av">{initials}</span>
-          <ChevronDownIcon size={14} />
-        </button>
-        {menuOpen && (
-          <div
-            role="menu"
-            style={{
-              position: "absolute",
-              top: "100%",
-              right: 0,
-              marginTop: 8,
-              background: "#fff",
-              border: "1px solid hsl(var(--border))",
-              borderRadius: "var(--radius)",
-              boxShadow: "var(--shadow-hover)",
-              minWidth: 180,
-              padding: 6,
-              zIndex: 50,
-            }}
-          >
-            {user?.email && (
-              <div
-                style={{
-                  padding: "8px 12px",
-                  fontSize: "var(--fs-xs)",
-                  color: "var(--fg-muted)",
-                  borderBottom: "1px solid hsl(var(--border))",
-                  marginBottom: 4,
-                  wordBreak: "break-all",
-                }}
-              >
-                {user.email}
-              </div>
-            )}
-            <button
-              type="button"
-              onClick={handleLogout}
-              style={{
-                display: "block",
-                width: "100%",
-                textAlign: "left",
-                padding: "8px 12px",
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontSize: "var(--fs-sm)",
-                color: "var(--danger)",
-                borderRadius: "var(--radius-sm)",
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = "#fef0f0")}
-              onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
-            >
-              {t("common.signOut")}
-            </button>
-          </div>
-        )}
-      </div>
+      <button
+        className="tb-avatar"
+        type="button"
+        onClick={goToProfile}
+        aria-label={t("shell.nav.profile", { defaultValue: "Profile" })}
+      >
+        <span className="av">{initials}</span>
+      </button>
     </div>
   );
 }
