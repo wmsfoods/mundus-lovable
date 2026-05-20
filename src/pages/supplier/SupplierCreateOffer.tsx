@@ -4,6 +4,12 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { useIsMobile } from "@/hooks/use-mobile";
+import { Check, Plus, Search as SearchIcon } from "lucide-react";
 
 /* ══════════════════════════════════════════════════════════
    DATA — markets & cuts come from Supabase via useSupplierOfferData
@@ -13,6 +19,17 @@ const SPECS = ["Boneless", "Bone-In", "Semi-Boneless"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
 const GRADES = ["Not Classified", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
+
+// Primary destination markets shown as chips (in this order).
+// Match is done against country english_name.
+const PRIMARY_MARKETS = [
+  "China", "Hong Kong", "Vietnam", "Taiwan", "Thailand",
+  "South Korea", "Indonesia", "Egypt", "Russia", "Jordan",
+  "United States", "Canada", "Mexico",
+];
+
+// Incoterms that are mutually exclusive (selecting one disables the others).
+const INCO_EXCLUSIVE_GROUPS: string[][] = [["CIF", "CFR"]];
 
 type Incoterm = { id: string; name: string; extra: null | "insurance" | "city" };
 const INCOTERMS: Incoterm[] = [
@@ -85,6 +102,9 @@ export default function SupplierCreateOffer() {
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
   const { markets: MARKETS, cutsByCategory, loading: dataLoading, error: dataError } = useSupplierOfferData();
+  const isMobile = useIsMobile();
+  const [moreMktsOpen, setMoreMktsOpen] = useState(false);
+  const [cutPickerOpen, setCutPickerOpen] = useState(false);
 
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
@@ -161,6 +181,13 @@ export default function SupplierCreateOffer() {
   /* Incoterms */
   const toggleInco = useCallback((id: string) => {
     setSelInco((prev) => {
+      // Block adding if it conflicts with already-selected exclusive incoterm
+      if (!prev.includes(id)) {
+        const conflict = INCO_EXCLUSIVE_GROUPS.some(
+          (grp) => grp.includes(id) && grp.some((x) => x !== id && prev.includes(x))
+        );
+        if (conflict) return prev;
+      }
       const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
       return next.length === 0 ? [id] : next;
     });
@@ -314,14 +341,62 @@ export default function SupplierCreateOffer() {
 
           {/* Market chips */}
           <div className="cov4-chips">
-            {MARKETS.map((m) => {
-              const on = !!selMarkets.find((x) => x.id === m.id);
+            {(() => {
+              const byName = new Map(MARKETS.map((m) => [m.n, m]));
+              const primary = PRIMARY_MARKETS.map((n) => byName.get(n)).filter(Boolean) as Market[];
+              const primaryIds = new Set(primary.map((m) => m.id));
+              const extraSelected = selMarkets.filter((m) => !primaryIds.has(m.id));
+              const others = MARKETS.filter((m) => !primaryIds.has(m.id));
               return (
-                <button key={m.id} type="button" className={`cov4-chip ${on ? "on" : ""}`} onClick={() => toggleMarket(m.id)}>
-                  {m.f} {m.n} {on && <span className="cov4-chip-ck">✓</span>}
-                </button>
+                <>
+                  {primary.map((m) => {
+                    const on = !!selMarkets.find((x) => x.id === m.id);
+                    return (
+                      <button key={m.id} type="button" className={`cov4-chip ${on ? "on" : ""}`} onClick={() => toggleMarket(m.id)}>
+                        {m.f} {m.n} {on && <span className="cov4-chip-ck">✓</span>}
+                      </button>
+                    );
+                  })}
+                  {extraSelected.map((m) => (
+                    <button key={m.id} type="button" className="cov4-chip on" onClick={() => toggleMarket(m.id)}>
+                      {m.f} {m.n} <span className="cov4-chip-ck">✓</span>
+                    </button>
+                  ))}
+                  <Popover open={moreMktsOpen} onOpenChange={setMoreMktsOpen}>
+                    <PopoverTrigger asChild>
+                      <button type="button" className="cov4-chip cov4-chip-more">
+                        <Plus size={12} style={{ marginRight: 4, display: "inline" }} />
+                        {tm("moreMarkets")}
+                      </button>
+                    </PopoverTrigger>
+                    <PopoverContent className="p-0 w-[320px]" align="start">
+                      <Command>
+                        <CommandInput placeholder={tm("searchMarketsPh") as string} />
+                        <CommandList className="max-h-[320px]">
+                          <CommandEmpty>{tm("noMarkets")}</CommandEmpty>
+                          <CommandGroup>
+                            {others.map((m) => {
+                              const on = !!selMarkets.find((x) => x.id === m.id);
+                              return (
+                                <CommandItem
+                                  key={m.id}
+                                  value={`${m.n} ${m.f}`}
+                                  onSelect={() => toggleMarket(m.id)}
+                                >
+                                  <span style={{ marginRight: 8 }}>{m.f}</span>
+                                  <span style={{ flex: 1 }}>{m.n}</span>
+                                  {on && <Check size={14} className="text-primary" />}
+                                </CommandItem>
+                              );
+                            })}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </>
               );
-            })}
+            })()}
           </div>
 
           {/* Market cards */}
@@ -419,8 +494,18 @@ export default function SupplierCreateOffer() {
             <div className="cov4-inco-grid">
               {INCOTERMS.map((ic) => {
                 const on = selInco.includes(ic.id);
+                const conflicted = !on && INCO_EXCLUSIVE_GROUPS.some(
+                  (grp) => grp.includes(ic.id) && grp.some((x) => x !== ic.id && selInco.includes(x))
+                );
                 return (
-                  <button key={ic.id} type="button" className={`cov4-inco-btn ${on ? "on" : ""}`} onClick={() => toggleInco(ic.id)}>
+                  <button
+                    key={ic.id}
+                    type="button"
+                    className={`cov4-inco-btn ${on ? "on" : ""} ${conflicted ? "disabled" : ""}`}
+                    onClick={() => !conflicted && toggleInco(ic.id)}
+                    disabled={conflicted}
+                    title={conflicted ? (tm("incoConflict") as string) : undefined}
+                  >
                     <span>{on ? "☑" : "☐"}</span>
                     <span>{ic.id}</span>
                   </button>
@@ -607,16 +692,12 @@ export default function SupplierCreateOffer() {
                 {cuts.map((c, i) => (
                   <tr key={c.id}>
                     <td>
-                      <label className={`cov4-img-box ${cutImgs[c.id] || c.cutImage ? "has" : ""}`}>
-                        {cutImgs[c.id] ? (
-                          <img src={cutImgs[c.id]} alt="" />
-                        ) : c.cutImage ? (
-                          <img src={c.cutImage} alt="" />
-                        ) : (
-                          <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>
-                        )}
-                        <input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleCutImg(c.id, e.target.files[0])} />
-                      </label>
+                      <CutPhotoCell
+                        src={cutImgs[c.id] || c.cutImage || null}
+                        label={`${c.cat} ${c.cut}`}
+                        onFile={(f) => handleCutImg(c.id, f)}
+                        isMobile={isMobile}
+                      />
                     </td>
                     <td><span className="cov4-cut-nm">{c.cat} {c.cut}</span></td>
                     <td><span className="cov4-tag">{c.spec}</span></td>
@@ -662,24 +743,56 @@ export default function SupplierCreateOffer() {
                             </option>
                           ))}
                         </select>
-                        <select
-                          value={nf.cutId ?? ""}
-                          onChange={(e) => {
-                            const id = e.target.value;
-                            const found = (cutsByCategory[nf.cat] || []).find((x) => x.id === id);
-                            setNf((p) => ({
-                              ...p,
-                              cutId: id || undefined,
-                              cut: found?.displayName ?? "",
-                              cutImage: found?.image_url ?? null,
-                            }));
-                          }}
-                        >
-                          <option value="">{dataLoading ? "Loading..." : "Cut..."}</option>
-                          {(cutsByCategory[nf.cat] || []).map((c) => (
-                            <option key={c.id} value={c.id}>{c.displayName}</option>
-                          ))}
-                        </select>
+                        <Popover open={cutPickerOpen} onOpenChange={setCutPickerOpen}>
+                          <PopoverTrigger asChild>
+                            <button
+                              type="button"
+                              className="cov4-cut-trigger"
+                              aria-label="Pick cut"
+                            >
+                              {nf.cut ? (
+                                <span className="cov4-cut-trigger-v">{nf.cut}</span>
+                              ) : (
+                                <span className="cov4-cut-trigger-ph">
+                                  {dataLoading ? "Loading..." : (tm("pickCut") as string)}
+                                </span>
+                              )}
+                              <SearchIcon size={12} style={{ opacity: 0.5 }} />
+                            </button>
+                          </PopoverTrigger>
+                          <PopoverContent className="p-0 w-[300px]" align="start">
+                            <Command>
+                              <CommandInput placeholder={tm("searchCutsPh") as string} />
+                              <CommandList className="max-h-[320px]">
+                                <CommandEmpty>{tm("noCuts")}</CommandEmpty>
+                                <CommandGroup>
+                                  {(cutsByCategory[nf.cat] || []).map((c) => (
+                                    <CommandItem
+                                      key={c.id}
+                                      value={c.displayName}
+                                      onSelect={() => {
+                                        setNf((p) => ({
+                                          ...p,
+                                          cutId: c.id,
+                                          cut: c.displayName,
+                                          cutImage: c.image_url ?? null,
+                                        }));
+                                        if (c.image_url) setNewImgPrev(c.image_url);
+                                        setCutPickerOpen(false);
+                                      }}
+                                    >
+                                      <span className="cov4-cut-opt-thumb">
+                                        {c.image_url ? <img src={c.image_url} alt="" /> : <span>📷</span>}
+                                      </span>
+                                      <span style={{ flex: 1 }}>{c.displayName}</span>
+                                      {nf.cutId === c.id && <Check size={14} className="text-primary" />}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                       </div>
                     </td>
                     <td><select value={nf.spec} onChange={(e) => setNf((p) => ({ ...p, spec: e.target.value }))}>{SPECS.map((x) => <option key={x}>{x}</option>)}</select></td>
@@ -838,6 +951,88 @@ function PriceInput({ value, onChange }: { value: string; onChange: (v: string) 
       <span className="cov4-ip-px">US$</span>
       <input type="number" placeholder="0.00" value={value} onChange={(e) => onChange(e.target.value)} />
     </div>
+  );
+}
+
+function CutPhotoCell({
+  src,
+  label,
+  onFile,
+  isMobile,
+}: {
+  src: string | null;
+  label: string;
+  onFile: (f: File) => void;
+  isMobile: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const fileInput = (
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+    />
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <button
+          type="button"
+          className={`cov4-img-box ${src ? "has" : ""}`}
+          onClick={() => (src ? setOpen(true) : (document.getElementById(`cut-photo-${label}`) as HTMLInputElement)?.click())}
+          aria-label={src ? "Preview photo" : "Upload photo"}
+        >
+          {src ? <img src={src} alt="" /> : <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>}
+        </button>
+        <input
+          id={`cut-photo-${label}`}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+        />
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-w-[92vw] sm:max-w-md p-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+              {src && <img src={src} alt={label} style={{ maxWidth: "100%", maxHeight: "60vh", borderRadius: 8 }} />}
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{label}</div>
+              <label className="cov4-img-replace-btn">
+                Trocar foto
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) { onFile(f); setOpen(false); }
+                  }}
+                />
+              </label>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  return (
+    <HoverCard openDelay={120} closeDelay={60}>
+      <HoverCardTrigger asChild>
+        <label className={`cov4-img-box ${src ? "has" : ""}`}>
+          {src ? <img src={src} alt="" /> : <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>}
+          {fileInput}
+        </label>
+      </HoverCardTrigger>
+      {src && (
+        <HoverCardContent side="right" align="start" className="w-auto p-2">
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+            <img src={src} alt={label} style={{ width: 240, height: 240, objectFit: "cover", borderRadius: 8 }} />
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>{label}</div>
+          </div>
+        </HoverCardContent>
+      )}
+    </HoverCard>
   );
 }
 

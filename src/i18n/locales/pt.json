@@ -1231,7 +1231,14 @@
         "ctaTitle": "Logística Marketplace",
         "ctaDesc": "Cotações de frete em tempo real com transportadoras parceiras",
         "ctaBtn": "Buscar cotações",
-        "importedToast": "Cotação importada de {{carrier}} — US$ {{freight}} por FCL"
+        "importedToast": "Cotação importada de {{carrier}} — US$ {{freight}} por FCL",
+        "moreMarkets": "Mais mercados",
+        "searchMarketsPh": "Buscar países…",
+        "noMarkets": "Nenhum mercado encontrado",
+        "incoConflict": "Incompatível com o incoterm selecionado",
+        "pickCut": "Escolher corte…",
+        "searchCutsPh": "Buscar cortes…",
+        "noCuts": "Nenhum corte encontrado"
       }
     },
     "home": {
