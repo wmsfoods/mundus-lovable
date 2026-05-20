@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Globe, Search, Check, Anchor, MapPin, Ship, X } from "lucide-react";
+import { Globe, Search, Check, Anchor, MapPin, Ship, X, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAdminMarkets, regionFromIso, type AdminMarketRow } from "@/hooks/useAdminMarkets";
+import AddMarketModal from "@/components/admin/AddMarketModal";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 
 type RegionKey = "all" | "americas" | "europe" | "asia" | "middleEast" | "africa" | "oceania" | "other";
@@ -23,7 +26,23 @@ function pickName(r: AdminMarketRow, locale: string): string {
 export default function AdminMarkets() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || "en";
-  const { rows, totalPorts, originCount, loading, error, toggleMarketActive, bulkToggleMarketsActive, isToggling } = useAdminMarkets();
+  const { rows, totalPorts, originCount, loading, error, toggleMarketActive, bulkToggleMarketsActive, isToggling, createMarket, isCreating } = useAdminMarkets();
+
+  const [addOpen, setAddOpen] = useState(false);
+  const allCountriesQ = useQuery({
+    queryKey: ["admin", "countries-all"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("countries")
+        .select("id, english_name, portuguese_name, spanish_name, iso_code, flag_emoji");
+      if (error) throw error;
+      return data ?? [];
+    },
+  });
+  const availableCountries = useMemo(() => {
+    const taken = new Set(rows.map((r) => r.country_id));
+    return (allCountriesQ.data ?? []).filter((c) => !taken.has(c.id));
+  }, [allCountriesQ.data, rows]);
 
 
   const [searchInput, setSearchInput] = useState("");
@@ -149,6 +168,16 @@ export default function AdminMarkets() {
             <span className="adm-page-subtle">{t("admin.marketplace.markets.subtitle")}</span>
           </div>
         </div>
+        <div style={{ flex: 1 }} />
+        <button
+          type="button"
+          className="crm-btn-primary"
+          onClick={() => setAddOpen(true)}
+          style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          <Plus size={14} />
+          {t("admin.marketplace.markets.create.button", { defaultValue: "Add market" })}
+        </button>
       </div>
 
       {/* stats */}
