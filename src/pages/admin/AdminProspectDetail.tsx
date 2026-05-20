@@ -5,15 +5,15 @@ import { toast } from "sonner";
 import {
   Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin, Camera,
   StickyNote, ArrowRight, Settings as SettingsIcon, PhoneCall,
-  Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe,
+  Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe, Building2,
   type LucideIcon,
 } from "lucide-react";
 import {
   useProspect, updateProspectStage, addProspectActivity,
   updateProspect, deactivateProspect, reactivateProspect, deleteProspect,
-  upsertContact, deleteContact,
+  upsertContact, deleteContact, convertProspectToMundus,
   STAGES, OWNERS,
-  type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel,
+  type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel, type MundusType,
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 
@@ -62,6 +62,7 @@ export default function AdminProspectDetail() {
   const [showDeactivate, setShowDeactivate] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
+  const [showConvert, setShowConvert] = useState(false);
   const [deactivateReason, setDeactivateReason] = useState("");
 
   if (!p) {
@@ -138,6 +139,7 @@ export default function AdminProspectDetail() {
   const additional = d.contacts.filter((c) => !c.isPrimary);
   const canDelete = !p.isOnboarded && !p.mundusCompanyId;
   const canSearchMore = !p.isOnboarded && !p.mundusCompanyId;
+  const canConvert = p.isActive && !p.isOnboarded && !p.mundusCompanyId;
 
   return (
     <div className="adm-body">
@@ -179,6 +181,11 @@ export default function AdminProspectDetail() {
                 {canSearchMore && (
                   <button type="button" className="crm-btn-primary" onClick={() => setShowSearch(true)}>
                     <Search size={14} /> {t("admin.crm.detail.actions.searchMorePeople")}
+                  </button>
+                )}
+                {canConvert && (
+                  <button type="button" className="crm-btn-primary" onClick={() => setShowConvert(true)}>
+                    <Building2 size={14} /> {t("admin.crm.detail.actions.convert")}
                   </button>
                 )}
               </>
@@ -429,6 +436,15 @@ export default function AdminProspectDetail() {
       {/* Search more people drawer */}
       {showSearch && (
         <SearchPeopleDrawer prospect={p} onClose={() => setShowSearch(false)} />
+      )}
+
+      {/* Convert to Mundus modal */}
+      {showConvert && (
+        <ConvertToMundusModal
+          prospect={p}
+          onClose={() => setShowConvert(false)}
+          onDone={() => { setShowConvert(false); toast.success(t("admin.crm.detail.convert.toast")); }}
+        />
       )}
     </div>
   );
