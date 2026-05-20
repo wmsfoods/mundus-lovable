@@ -82,6 +82,7 @@ Deno.serve(async (req) => {
 
   try {
     let { r, j: json } = await callApollo(path, payload);
+    console.log("apollo first call", path, r.status, JSON.stringify(json).slice(0, 300));
     let usedPath = path;
     // Fallback: if people prospect DB is inaccessible, try CRM contacts/search
     if (!r.ok && entity === "people") {
@@ -89,6 +90,7 @@ Deno.serve(async (req) => {
       if (r.status === 403 || code === "API_INACCESSIBLE") {
         usedPath = "contacts/search";
         ({ r, j: json } = await callApollo(usedPath, payload));
+        console.log("apollo fallback contacts", r.status, JSON.stringify(json).slice(0, 300));
       }
     }
     if (!r.ok) {
