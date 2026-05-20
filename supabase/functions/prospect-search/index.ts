@@ -66,17 +66,31 @@ Deno.serve(async (req) => {
   if (!payload.page) payload.page = 1;
   if (!payload.per_page) payload.per_page = 25;
 
-  try {
-    const r = await fetch(`${APOLLO_BASE}/${path}`, {
+  async function callApollo(p: string, pl: Record<string, unknown>) {
+    const r = await fetch(`${APOLLO_BASE}/${p}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-cache",
         "X-Api-Key": apiKey,
       },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(pl),
     });
-    const json = await r.json().catch(() => ({}));
+    const j = await r.json().catch(() => ({}));
+    return { r, j };
+  }
+
+  try {
+    let { r, j: json } = await callApollo(path, payload);
+    let usedPath = path;
+    // Fallback: if people prospect DB is inaccessible, try CRM contacts/search
+    if (!r.ok && entity === "people") {
+      const code = json?.error_code ?? json?.apollo?.error_code ?? null;
+      if (r.status === 403 || code === "API_INACCESSIBLE") {
+        usedPath = "contacts/search";
+        ({ r, j: json } = await callApollo(usedPath, payload));
+      }
+    }
     if (!r.ok) {
       const code = json?.error_code ?? json?.apollo?.error_code ?? null;
       // Return 200 with ok:false so the client always gets a parsed body
@@ -96,7 +110,7 @@ Deno.serve(async (req) => {
 
     const results = entity === "companies"
       ? (json.organizations ?? json.accounts ?? [])
-      : (json.contacts ?? json.people ?? []);
+      : (json.people ?? json.contacts ?? []);
     const pagination = json.pagination ?? {
       page: payload.page, per_page: payload.per_page,
       total_entries: results.length, total_pages: 1,
