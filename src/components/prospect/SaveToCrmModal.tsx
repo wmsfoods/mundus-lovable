@@ -2,12 +2,12 @@ import { useEffect, useMemo, useState } from "react";
 import { X, ChevronDown, Plus, Trash2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import type { MockPerson, MockCompany } from "@/data/mockProspect";
+import type { MockPerson, MockCompany } from "@/types/prospect";
 
 const DEPARTMENTS = ["Operations","Purchasing","Sales","Marketing","Logistics","Finance","Executive","Other"];
 const SENIORITIES = ["C-Level","VP","Director","Manager","Senior","Staff","Entry"];
 const DECISION_LEVELS = ["Decision Maker","Influencer","Gatekeeper","User","Champion"];
-const LEAD_TYPES = ["Buyer","Supplier","Both","Prospect"];
+const LEAD_TYPES = ["Buyer","Supplier","Buyer/Supplier","Prospect"];
 const LEAD_STATUSES = ["New","Contacted","Qualified","Nurturing","Opportunity","Customer"];
 const BUYER_TYPES = ["Importer","Retailer","Distributor","Restaurant Chain","Foodservice","Wholesaler"];
 const LANGUAGES = ["English","Portuguese","Spanish","Chinese","Arabic","French"];
