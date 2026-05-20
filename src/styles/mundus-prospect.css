@@ -217,3 +217,24 @@
   .psp-actions-wrap { justify-content: stretch; }
   .psp-actions-wrap > button { flex: 1; min-height: 40px; justify-content: center; }
 }
+
+/* Inline editable chip selects in detail header */
+.psp-chip-select {
+  height: 28px;
+  padding: 0 26px 0 10px;
+  border: 1px solid var(--g300, #d1d5db);
+  border-radius: 999px;
+  background: #fff url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='none' stroke='%23666' stroke-width='1.5' d='M1 1l4 4 4-4'/></svg>") no-repeat right 10px center;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--g700, #374151);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  line-height: 1;
+}
+.psp-chip-select:hover { border-color: var(--mundus-rose, #9B2251); }
+.psp-chip-select:focus { outline: none; border-color: var(--mundus-rose, #9B2251); box-shadow: 0 0 0 2px rgba(155,34,81,0.15); }
+@media (max-width: 640px) {
+  .psp-chip-select { height: 36px; font-size: 13px; }
+}
