@@ -239,7 +239,6 @@ export default function SupplierCreateOffer() {
       {/* HEADER */}
       <header className="cov4-header">
         <div className="cov4-hdr-l">
-          <div className="cov4-hdr-logo">M</div>
           <div>
             <h1>Create new offer</h1>
             <p>Markets · Products · Pricing · Distribution</p>
