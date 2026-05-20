@@ -1042,3 +1042,71 @@ function PrevRow({ l, v }: { l: string; v: string }) {
     </div>
   );
 }
+
+function PreviewImages({ images }: { images: { id: string; src: string; label: string }[] }) {
+  const scrollerRef = React.useRef<HTMLDivElement>(null);
+  const [idx, setIdx] = React.useState(0);
+
+  if (images.length === 0) {
+    return (
+      <div className="cov4-prev-img">
+        <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>
+      </div>
+    );
+  }
+
+  const scrollTo = (i: number) => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(images.length - 1, i));
+    el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
+  };
+
+  const onScroll = () => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const i = Math.round(el.scrollLeft / el.clientWidth);
+    if (i !== idx) setIdx(i);
+  };
+
+  return (
+    <div className="cov4-prev-img cov4-prev-img-carousel">
+      <div className="cov4-prev-img-scroller" ref={scrollerRef} onScroll={onScroll}>
+        {images.map((im) => (
+          <div key={im.id} className="cov4-prev-img-slide">
+            <img src={im.src} alt={im.label} />
+          </div>
+        ))}
+      </div>
+      {images.length > 1 && (
+        <>
+          <button
+            type="button"
+            className="cov4-prev-img-nav prev"
+            aria-label="Previous"
+            onClick={() => scrollTo(idx - 1)}
+            disabled={idx === 0}
+          >‹</button>
+          <button
+            type="button"
+            className="cov4-prev-img-nav next"
+            aria-label="Next"
+            onClick={() => scrollTo(idx + 1)}
+            disabled={idx === images.length - 1}
+          >›</button>
+          <div className="cov4-prev-img-dots">
+            {images.map((_, i) => (
+              <button
+                key={i}
+                type="button"
+                aria-label={`Go to image ${i + 1}`}
+                className={`cov4-prev-img-dot ${i === idx ? "on" : ""}`}
+                onClick={() => scrollTo(i)}
+              />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
