@@ -11,6 +11,7 @@ import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { Modal } from "@/components/mundus/Modal";
 import { Pagination } from "@/components/mundus/Pagination";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import {
   MOCK_OFFER_REQUESTS,
   type OfferRequest,
