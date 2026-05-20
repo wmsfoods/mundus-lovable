@@ -63,9 +63,9 @@ Deno.serve(async (req) => {
     const json = await r.json().catch(() => ({}));
     if (!r.ok) {
       const code = json?.error_code ?? null;
-      // Pass Apollo's status through so the client can render a meaningful message
-      // (e.g. 403 API_INACCESSIBLE → people search not enabled on this Apollo plan).
-      const status = r.status === 403 || r.status === 401 || r.status === 429 ? r.status : 502;
+      // Return 200 with ok:false so the client always gets a parsed body
+      // (supabase.functions.invoke swallows the body on non-2xx).
+      // The UI can branch on `error_code` (e.g. API_INACCESSIBLE → upgrade Apollo plan).
       return new Response(
         JSON.stringify({
           ok: false,
@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
           error: json?.error ?? json?.message ?? "apollo_error",
           apollo: json,
         }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status },
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
     }
 
