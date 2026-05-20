@@ -84,7 +84,7 @@ export default function FindPeople() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<MockPerson | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [revealedMap, setRevealedMap] = useState<Record<string, { email?: string; phone?: string; mobile?: string }>>({});
+  const [revealedMap, setRevealedMap] = useState<Record<string, Partial<EnrichResult>>>({});
   const [decisionLevels, setDecisionLevels] = useState<string[]>([]);
   const [leadTypes, setLeadTypes] = useState<string[]>([]);
   const [productsOfInterest, setProductsOfInterest] = useState<string[]>([]);
@@ -139,7 +139,24 @@ export default function FindPeople() {
     return list;
   }, [rows, tab, productsOfInterest, sort, savedIds]);
 
-  const pageItems = filtered;
+  const pageItems = useMemo(() =>
+    filtered.map((p) => {
+      const r = revealedMap[p.id];
+      if (!r) return p;
+      return {
+        ...p,
+        firstName: r.firstName || p.firstName,
+        lastName: r.lastName || p.lastName,
+        fullName: r.fullName || (r.firstName || r.lastName ? `${r.firstName ?? p.firstName} ${r.lastName ?? p.lastName}`.trim() : p.fullName),
+        photoUrl: r.photoUrl ?? p.photoUrl,
+        email: r.email ?? p.email,
+        phone: r.phone ?? p.phone,
+        mobile: r.mobile ?? p.mobile,
+        linkedin: r.linkedin || p.linkedin,
+        jobTitle: r.jobTitle || p.jobTitle,
+      } as MockPerson;
+    }),
+  [filtered, revealedMap]);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((p) => selected.has(p.id));
 
   const toggleSelect = (id: string) => {
