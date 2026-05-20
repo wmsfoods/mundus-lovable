@@ -23,6 +23,7 @@ export interface ProspectContact {
   mobile?: string;
   linkedin?: string;
   decisionLevel?: DecisionLevel;
+  photoUrl?: string;
 }
 
 export interface ProspectActivity {

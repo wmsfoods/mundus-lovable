@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
-  Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin,
+  Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin, Camera,
   StickyNote, ArrowRight, Settings as SettingsIcon, PhoneCall,
   Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe,
   type LucideIcon,
@@ -24,6 +24,12 @@ const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
 const DECISION_LEVELS: DecisionLevel[] = ["c_level","vp","director","manager","specialist","other"];
 const LEAD_TYPES: LeadType[] = ["buyer","supplier","buyer_supplier"];
 const SOURCES: ProspectSource[] = ["linkedin","trade_show","referral","web_scrape","apollo","manual","inbound"];
+
+const ROLE_OPTIONS: Record<LeadType, string[]> = {
+  buyer: ["CEO", "Owner/Founder", "Sales Director", "International Trader", "Logistics"],
+  supplier: ["CEO", "Owner/Founder", "Purchase Director", "Procurement", "Logistics"],
+  buyer_supplier: ["CEO", "Owner/Founder", "Operations", "Director"],
+};
 
 // ---- Search more people (Mundus Intelligence) mock --------------------
 type Discovered = {
@@ -283,7 +289,7 @@ export default function AdminProspectDetail() {
           <span className="adm-panel-title">{t("admin.crm.detail.sections.mainContact")}</span>
         </div>
         {main ? (
-          <ContactBlock contact={main} editing={editing} onChange={setContactField} showRole={false} t={t} />
+          <ContactBlock contact={main} editing={editing} onChange={setContactField} showRole={false} leadType={d.leadType} t={t} />
         ) : <div style={{ color: "var(--adm-text-tertiary)", fontSize: 12 }}>—</div>}
       </div>
 
@@ -303,7 +309,7 @@ export default function AdminProspectDetail() {
           <div className="psp-contacts-list">
             {additional.map((c) => (
               <div key={c.id} className="psp-contact-card">
-                <ContactBlock contact={c} editing={editing} onChange={setContactField} showRole={true} t={t} />
+                <ContactBlock contact={c} editing={editing} onChange={setContactField} showRole={true} leadType={d.leadType} t={t} />
                 {editing && (
                   <button type="button" className="crm-btn-ghost psp-contact-del" onClick={() => removeContact(c.id)}>
                     <Trash2 size={12} />
@@ -441,22 +447,79 @@ function Field({ label, editing, value, children }: {
   );
 }
 
-function ContactBlock({ contact, editing, onChange, showRole, t }: {
+function ContactBlock({ contact, editing, onChange, showRole, leadType, t }: {
   contact: ProspectContact;
   editing: boolean;
   onChange: (cid: string, k: keyof ProspectContact, v: string | undefined) => void;
   showRole: boolean;
+  leadType: LeadType;
   t: (k: string) => string;
 }) {
   const c = contact;
+  const initials = (c.fullName || "?")
+    .replace(/[^A-Za-z\s]/g, "")
+    .split(/\s+/).filter(Boolean)
+    .slice(0, 2).map((s) => s[0]).join("").toUpperCase() || "?";
+  const roleOpts = ROLE_OPTIONS[leadType];
+  const roleInList = !c.role || roleOpts.includes(c.role);
+
+  const onPickPhoto = (file: File | undefined) => {
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => onChange(c.id, "photoUrl", String(reader.result));
+    reader.readAsDataURL(file);
+  };
+
   return (
-    <div className="psp-grid-2">
+    <div className="psp-contact-row">
+      <div className="psp-contact-photo-wrap">
+        {c.photoUrl ? (
+          <img src={c.photoUrl} alt={c.fullName} className="psp-contact-photo" />
+        ) : (
+          <span className="psp-contact-photo psp-contact-photo-fallback">{initials}</span>
+        )}
+        {editing && (
+          <>
+            <label className="psp-contact-photo-edit" title={t("admin.crm.detail.actions.changePhoto") || "Change photo"}>
+              <Camera size={12} />
+              <input
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => onPickPhoto(e.target.files?.[0])}
+              />
+            </label>
+            {c.photoUrl && (
+              <button
+                type="button"
+                className="psp-contact-photo-remove"
+                onClick={() => onChange(c.id, "photoUrl", undefined)}
+              >
+                {t("common.remove") || "Remove"}
+              </button>
+            )}
+          </>
+        )}
+      </div>
+      <div className="psp-grid-2" style={{ flex: 1, minWidth: 0 }}>
       <Field label={t("admin.crm.detail.fields.fullName")} editing={editing} value={c.fullName || "—"}>
         <input className="psp-input" value={c.fullName} onChange={(e) => onChange(c.id, "fullName", e.target.value)} />
       </Field>
       {showRole && (
         <Field label={t("admin.crm.detail.fields.role")} editing={editing} value={c.role || "—"}>
-          <input className="psp-input" value={c.role ?? ""} onChange={(e) => onChange(c.id, "role", e.target.value)} />
+          <select
+            className="psp-input"
+            value={roleInList ? (c.role ?? "") : "__other__"}
+            onChange={(e) => {
+              const v = e.target.value;
+              if (v === "__other__") return;
+              onChange(c.id, "role", v || undefined);
+            }}
+          >
+            <option value="">—</option>
+            {roleOpts.map((r) => <option key={r} value={r}>{r}</option>)}
+            {!roleInList && c.role && <option value={c.role}>{c.role}</option>}
+          </select>
         </Field>
       )}
       <Field label={t("admin.crm.detail.fields.email")} editing={editing}
@@ -488,6 +551,7 @@ function ContactBlock({ contact, editing, onChange, showRole, t }: {
           </select>
         </Field>
       )}
+      </div>
     </div>
   );
 }

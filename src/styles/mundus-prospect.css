@@ -238,3 +238,64 @@
 @media (max-width: 640px) {
   .psp-chip-select { height: 36px; font-size: 13px; }
 }
+
+/* Contact card with editable photo */
+.psp-contact-row {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+.psp-contact-photo-wrap {
+  position: relative;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.psp-contact-photo {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: var(--g100, #f3f4f6);
+  border: 1px solid var(--g200, #e5e7eb);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--g600, #4b5563);
+}
+.psp-contact-photo-fallback { font-family: inherit; }
+.psp-contact-photo-edit {
+  position: absolute;
+  bottom: 18px;
+  right: -4px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--mundus-rose, #9B2251);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.psp-contact-photo-edit:hover { background: #7a1a40; }
+.psp-contact-photo-remove {
+  background: none;
+  border: none;
+  color: var(--g500, #6b7280);
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+}
+.psp-contact-photo-remove:hover { color: var(--mundus-rose, #9B2251); }
+@media (max-width: 640px) {
+  .psp-contact-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .psp-contact-photo-wrap { align-self: center; }
+}
