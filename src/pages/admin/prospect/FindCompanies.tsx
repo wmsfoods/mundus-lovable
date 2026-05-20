@@ -95,7 +95,7 @@ export default function FindCompanies() {
     if (sort === "rev-desc") list.sort((a, b) => b.revenue - a.revenue);
     if (sort === "rev-asc") list.sort((a, b) => a.revenue - b.revenue);
     return list;
-  }, [tab, search, name, locations, empRanges, industries, keywords, revMin, revMax, stages, notInCrm, sort]);
+  }, [tab, search, name, locations, excludeLocations, cityQuery, empRanges, industries, keywords, revMin, revMax, stages, notInCrm, savedIds, sort]);
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((c) => selected.has(c.id));
