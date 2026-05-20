@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MessageIcon, SearchIcon, ChevronRightIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import {
   useNegotiations,
   type NegotiationBid,
@@ -161,7 +162,7 @@ export default function SupplierNegotiations() {
           <p>{t("supplier.negotiations.empty")}</p>
         </div>
       ) : (
-        <div className="data-table-wrap">
+        <div className="data-table-wrap has-mobile-cards">
           <table className="nego-table">
             <thead>
               <tr>
