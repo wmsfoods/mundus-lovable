@@ -4,7 +4,7 @@ import { Search, User, Building, Briefcase, Layers, Mail, MapPin, Filter, Linked
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
-  MOCK_PEOPLE, EMPLOYEE_RANGES, SENIORITIES, DEPARTMENTS, JOB_TITLES,
+  EMPLOYEE_RANGES, SENIORITIES, DEPARTMENTS, JOB_TITLES,
   DECISION_LEVELS, LEAD_TYPES, PRODUCT_INTERESTS,
   fakePhone, type MockPerson,
 } from "@/data/mockProspect";
@@ -13,12 +13,14 @@ import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { RevealButton } from "@/components/prospect/RevealButton";
 import { PspPagination } from "@/components/prospect/Pagination";
 import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
+import { useProspectSearch } from "@/hooks/useProspectSearch";
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","United States","Japan","Denmark"];
 
 export default function FindPeople() {
   const [sp] = useSearchParams();
   const [tab, setTab] = useState<"total" | "saved">("total");
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [titles, setTitles] = useState<string[]>([]);
   const [titleInput, setTitleInput] = useState("");
@@ -41,6 +43,26 @@ export default function FindPeople() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const pageSize = 25;
 
+  const apolloParams = useMemo(() => {
+    const params: Record<string, unknown> = { page, per_page: pageSize };
+    const q = search.trim();
+    if (q) params.q_keywords = q;
+    const titleList = [...titles];
+    if (titleList.length) params.person_titles = titleList;
+    if (seniorities.length) params.person_seniorities = seniorities.map((s) => s.toLowerCase().replace(/[- ]/g, "_"));
+    if (departments.length) params.person_department_or_subdepartments = departments;
+    if (emailStatuses.length) params.contact_email_status = emailStatuses;
+    if (personLocations.length) params.person_locations = personLocations;
+    if (companyFilter.trim()) params.q_organization_name = companyFilter.trim();
+    if (companySizes.length) params.organization_num_employees_ranges = companySizes;
+    return params;
+  }, [page, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, companySizes]);
+
+  const { rows, pagination, loading, error, hasSearched } = useProspectSearch<MockPerson>(
+    "people",
+    apolloParams,
+  );
+
   useEffect(() => {
     const c = sp.get("company");
     if (c) setCompanyFilter(c);
@@ -60,23 +82,15 @@ export default function FindPeople() {
   };
 
   const filtered = useMemo(() => {
-    let list = [...MOCK_PEOPLE];
-    if (tab === "saved") list = list.filter((p) => p.in_crm);
-    const q = search.toLowerCase().trim();
-    if (q) list = list.filter((p) => p.fullName.toLowerCase().includes(q) || p.jobTitle.toLowerCase().includes(q) || p.companyName.toLowerCase().includes(q));
-    if (titles.length) list = list.filter((p) => titles.some((t) => p.jobTitle.toLowerCase().includes(t.toLowerCase())));
-    if (seniorities.length) list = list.filter((p) => seniorities.includes(p.seniority));
-    if (departments.length) list = list.filter((p) => departments.includes(p.department));
-    if (emailStatuses.length) list = list.filter((p) => emailStatuses.includes(p.emailStatus));
-    if (personLocations.length) list = list.filter((p) => personLocations.includes(p.country));
-    if (companyFilter) list = list.filter((p) => p.companyName.toLowerCase().includes(companyFilter.toLowerCase()));
+    let list = rows;
+    if (tab === "saved") list = list.filter((p) => p.in_crm || savedIds.has(p.id));
     if (productsOfInterest.length) list = list.filter((p) => (p.productsOfInterest ?? []).some((x) => productsOfInterest.includes(x)));
-    if (sort === "name") list.sort((a, b) => a.fullName.localeCompare(b.fullName));
-    if (sort === "company") list.sort((a, b) => a.companyName.localeCompare(b.companyName));
+    if (sort === "name") list = [...list].sort((a, b) => a.fullName.localeCompare(b.fullName));
+    if (sort === "company") list = [...list].sort((a, b) => a.companyName.localeCompare(b.companyName));
     return list;
-  }, [tab, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, productsOfInterest, sort]);
+  }, [rows, tab, productsOfInterest, sort, savedIds]);
 
-  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const pageItems = filtered;
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((p) => selected.has(p.id));
 
   const toggleSelect = (id: string) => {
@@ -94,7 +108,7 @@ export default function FindPeople() {
   const bulkRevealEmails = () => {
     const n = { ...revealedMap };
     [...selected].forEach((id) => {
-      const p = MOCK_PEOPLE.find((x) => x.id === id);
+      const p = rows.find((x) => x.id === id);
       if (p && p.email) n[id] = { ...n[id], email: p.email };
     });
     setRevealedMap(n);
@@ -103,7 +117,7 @@ export default function FindPeople() {
   const bulkRevealPhones = () => {
     const n = { ...revealedMap };
     [...selected].forEach((id) => {
-      const p = MOCK_PEOPLE.find((x) => x.id === id);
+      const p = rows.find((x) => x.id === id);
       if (p && p.phoneAvailable) n[id] = { ...n[id], phone: fakePhone(id) };
     });
     setRevealedMap(n);
@@ -112,14 +126,14 @@ export default function FindPeople() {
 
   const exportCsv = () => {
     const ids = selected.size ? [...selected] : pageItems.map((c) => c.id);
-    const rows = MOCK_PEOPLE.filter((p) => ids.includes(p.id));
+    const exportRows = rows.filter((p) => ids.includes(p.id));
     const csv = ["Name,Title,Company,Email,Country,City,Seniority,LinkedIn",
-      ...rows.map((p) => `"${p.fullName}","${p.jobTitle}","${p.companyName}","${revealedMap[p.id]?.email ?? p.email ?? ""}","${p.country}","${p.city}","${p.seniority}","${p.linkedin}"`)
+      ...exportRows.map((p) => `"${p.fullName}","${p.jobTitle}","${p.companyName}","${revealedMap[p.id]?.email ?? p.email ?? ""}","${p.country}","${p.city}","${p.seniority}","${p.linkedin}"`)
     ].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = "people.csv"; a.click();
-    toast.success(`Exported ${rows.length} people`);
+    toast.success(`Exported ${exportRows.length} people`);
   };
 
   return (
@@ -127,8 +141,22 @@ export default function FindPeople() {
       <div className="psp-toolbar">
         <div className="psp-search">
           <Search size={14} className="psp-search-icon" />
-          <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search people..." />
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") { e.preventDefault(); setSearch(searchInput); setPage(1); }
+            }}
+            placeholder="Search people and press Enter..."
+          />
         </div>
+        <button
+          className="psp-btn solid"
+          onClick={() => { setSearch(searchInput); setPage(1); }}
+          disabled={loading}
+        >
+          <Search size={12} />{loading ? "Searching…" : "Search"}
+        </button>
         <button className="psp-btn ghost psp-mobile-filter-btn" onClick={() => setShowFilters(true)}>
           <Filter size={12} />Filters {activeFilters > 0 && `(${activeFilters})`}
         </button>
@@ -138,12 +166,14 @@ export default function FindPeople() {
           <option value="name">Name A-Z</option>
           <option value="company">Company A-Z</option>
         </select>
-        <span className="psp-credits">Credits: 4,480</span>
+        <span className="psp-credits">
+          {loading ? "Searching Apollo…" : hasSearched ? `${pagination.total_entries.toLocaleString()} results` : "Apollo ready"}
+        </span>
       </div>
 
       <div className="psp-tabs">
-        <button className={`psp-tab ${tab === "total" ? "is-active" : ""}`} onClick={() => { setTab("total"); setPage(1); }}>Total ({MOCK_PEOPLE.length})</button>
-        <button className={`psp-tab ${tab === "saved" ? "is-active" : ""}`} onClick={() => { setTab("saved"); setPage(1); }}>Saved ({MOCK_PEOPLE.filter((p) => p.in_crm).length})</button>
+        <button className={`psp-tab ${tab === "total" ? "is-active" : ""}`} onClick={() => { setTab("total"); setPage(1); }}>Total ({pagination.total_entries.toLocaleString() || 0})</button>
+        <button className={`psp-tab ${tab === "saved" ? "is-active" : ""}`} onClick={() => { setTab("saved"); setPage(1); }}>Saved ({savedIds.size})</button>
       </div>
 
       <div className="psp-layout">
@@ -305,12 +335,17 @@ export default function FindPeople() {
                   );
                 })}
                 {pageItems.length === 0 && (
-                  <tr><td colSpan={11} className="psp-empty">No people match your filters.</td></tr>
+                  <tr><td colSpan={11} className="psp-empty">
+                    {loading ? "Searching Apollo…"
+                      : error ? `Search failed: ${error}`
+                      : hasSearched ? "No people match these filters."
+                      : "Adjust a filter or type a keyword + Enter to search Apollo."}
+                  </td></tr>
                 )}
               </tbody>
             </table>
           </div>
-          <PspPagination total={filtered.length} page={page} pageSize={pageSize} onChange={setPage} />
+          <PspPagination total={pagination.total_entries} page={page} pageSize={pageSize} onChange={setPage} />
 
           {selected.size > 0 && (
             <div className="psp-bulk-bar">
