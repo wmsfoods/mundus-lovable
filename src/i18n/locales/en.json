@@ -2213,6 +2213,70 @@
           "title": "No ports match these filters",
           "body": "Try clearing filters or searching with another term."
         }
+      },
+      "cuts": {
+        "title": "Products & Cuts",
+        "subtitle": "Manage the meat cuts catalog for the marketplace",
+        "searchPlaceholder": "Search cut name or product number...",
+        "allCategories": "All categories",
+        "next": "Next",
+        "showing": "Showing {{from}}-{{to}} of {{total}} results",
+        "langsCount": "{{count}} langs",
+        "stats": {
+          "total": "Total cuts",
+          "active": "Active cuts",
+          "categories": "Categories",
+          "translations": "Translations"
+        },
+        "filters": {
+          "all": "All",
+          "activeOnly": "Active only",
+          "inactiveOnly": "Inactive only"
+        },
+        "categories": {
+          "Beef": "Beef",
+          "Pork": "Pork",
+          "Poultry": "Poultry",
+          "Ovine": "Ovine"
+        },
+        "cols": {
+          "name": "Cut name",
+          "pn": "PN",
+          "category": "Category",
+          "translations": "Translations",
+          "active": "Active",
+          "actions": "Actions"
+        },
+        "toggle": {
+          "activated": "Cut {{name}} activated",
+          "deactivated": "Cut {{name}} deactivated"
+        },
+        "empty": {
+          "title": "No cuts match these filters",
+          "body": "Try clearing filters or searching with another term."
+        },
+        "modal": {
+          "title": "Edit cut",
+          "name": "Cut name",
+          "productNumber": "Product number",
+          "category": "Category",
+          "uploadImage": "Upload image",
+          "replaceImage": "Replace image",
+          "uploading": "Uploading...",
+          "noImage": "No image yet",
+          "imageUploaded": "Image uploaded",
+          "translations": "Translations",
+          "noTranslations": "No translations yet",
+          "selectLocale": "Select locale",
+          "translatedName": "Translated name",
+          "translationAdded": "Translation added",
+          "translationRemoved": "Translation removed",
+          "saved": "Cut saved",
+          "delete": "Delete",
+          "deleted": "Cut deleted",
+          "confirmDeleteTitle": "Delete this cut?",
+          "confirmDeleteBody": "This will permanently remove the cut and its translations."
+        }
       }
     }
   },

@@ -2213,6 +2213,70 @@
           "title": "Nenhum porto corresponde a esses filtros",
           "body": "Tente limpar os filtros ou buscar por outro termo."
         }
+      },
+      "cuts": {
+        "title": "Produtos & Cortes",
+        "subtitle": "Gerencie o catálogo de cortes de carne do marketplace",
+        "searchPlaceholder": "Buscar nome do corte ou número do produto...",
+        "allCategories": "Todas as categorias",
+        "next": "Próximo",
+        "showing": "Mostrando {{from}}-{{to}} de {{total}} resultados",
+        "langsCount": "{{count}} idiomas",
+        "stats": {
+          "total": "Total de cortes",
+          "active": "Cortes ativos",
+          "categories": "Categorias",
+          "translations": "Traduções"
+        },
+        "filters": {
+          "all": "Todos",
+          "activeOnly": "Somente ativos",
+          "inactiveOnly": "Somente inativos"
+        },
+        "categories": {
+          "Beef": "Bovino",
+          "Pork": "Suíno",
+          "Poultry": "Aves",
+          "Ovine": "Ovino"
+        },
+        "cols": {
+          "name": "Nome do corte",
+          "pn": "PN",
+          "category": "Categoria",
+          "translations": "Traduções",
+          "active": "Ativo",
+          "actions": "Ações"
+        },
+        "toggle": {
+          "activated": "Corte {{name}} ativado",
+          "deactivated": "Corte {{name}} desativado"
+        },
+        "empty": {
+          "title": "Nenhum corte corresponde a esses filtros",
+          "body": "Tente limpar os filtros ou buscar por outro termo."
+        },
+        "modal": {
+          "title": "Editar corte",
+          "name": "Nome do corte",
+          "productNumber": "Número do produto",
+          "category": "Categoria",
+          "uploadImage": "Enviar imagem",
+          "replaceImage": "Substituir imagem",
+          "uploading": "Enviando...",
+          "noImage": "Sem imagem ainda",
+          "imageUploaded": "Imagem enviada",
+          "translations": "Traduções",
+          "noTranslations": "Sem traduções ainda",
+          "selectLocale": "Selecionar idioma",
+          "translatedName": "Nome traduzido",
+          "translationAdded": "Tradução adicionada",
+          "translationRemoved": "Tradução removida",
+          "saved": "Corte salvo",
+          "delete": "Excluir",
+          "deleted": "Corte excluído",
+          "confirmDeleteTitle": "Excluir este corte?",
+          "confirmDeleteBody": "Isso removerá permanentemente o corte e suas traduções."
+        }
       }
     }
   },
