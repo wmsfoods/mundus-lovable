@@ -1,15 +1,17 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Building, MapPin, Users, Briefcase, DollarSign, Tag, Filter, ExternalLink, Linkedin, Save, Download } from "lucide-react";
+import { Search, Building, MapPin, Users, Briefcase, DollarSign, Tag, Filter, ExternalLink, Linkedin, Save, Download, Globe, BarChart3, FileCode } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
-  MOCK_COMPANIES, EMPLOYEE_RANGES, COUNTRIES, INDUSTRIES, KEYWORDS, STAGES,
+  MOCK_COMPANIES, EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
+  REGION_PRESETS, SIC_CODES, NAICS_CODES, MARKET_SEGMENTS,
   fmtRevenue, fmtNumber, type MockCompany,
 } from "@/data/mockProspect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { PspPagination } from "@/components/prospect/Pagination";
+import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","Argentina","Egypt","Hong Kong","Philippines"];
 const REVENUE_PRESETS = [
@@ -38,6 +40,15 @@ export default function FindCompanies() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<MockCompany | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [excludeLocations, setExcludeLocations] = useState<string[]>([]);
+  const [cityQuery, setCityQuery] = useState("");
+  const [sicNaicsTab, setSicNaicsTab] = useState<"sic" | "naics">("sic");
+  const [sicCodes, setSicCodes] = useState<string[]>([]);
+  const [naicsCodes, setNaicsCodes] = useState<string[]>([]);
+  const [marketSegments, setMarketSegments] = useState<string[]>([]);
+  const [companyType, setCompanyType] = useState<"all" | "private" | "public">("all");
+  const [saveModalCompany, setSaveModalCompany] = useState<MockCompany | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const pageSize = 25;
 
   const toggle = <T extends string>(arr: T[], v: T, set: (a: T[]) => void) =>
@@ -46,11 +57,16 @@ export default function FindCompanies() {
   const activeFilters =
     (name ? 1 : 0) + (locations.length ? 1 : 0) + (empRanges.length ? 1 : 0) +
     (industries.length ? 1 : 0) + (keywords.length ? 1 : 0) +
-    (revMin || revMax ? 1 : 0) + (stages.length || notInCrm ? 1 : 0);
+    (revMin || revMax ? 1 : 0) + (stages.length || notInCrm ? 1 : 0) +
+    (excludeLocations.length ? 1 : 0) + (cityQuery ? 1 : 0) +
+    (sicCodes.length || naicsCodes.length ? 1 : 0) +
+    (marketSegments.length ? 1 : 0) + (companyType !== "all" ? 1 : 0);
 
   const clearAll = () => {
     setName(""); setLocations([]); setEmpRanges([]); setIndustries([]);
     setKeywords([]); setRevMin(null); setRevMax(null); setStages([]); setNotInCrm(false);
+    setExcludeLocations([]); setCityQuery(""); setSicCodes([]); setNaicsCodes([]);
+    setMarketSegments([]); setCompanyType("all");
   };
 
   const filtered = useMemo(() => {
@@ -61,13 +77,18 @@ export default function FindCompanies() {
     const qn = name.toLowerCase().trim();
     if (qn) list = list.filter((c) => c.name.toLowerCase().includes(qn) || c.domain.toLowerCase().includes(qn));
     if (locations.length) list = list.filter((c) => locations.includes(c.country));
+    if (excludeLocations.length) list = list.filter((c) => !excludeLocations.includes(c.country));
+    if (cityQuery.trim()) {
+      const cq = cityQuery.toLowerCase().trim();
+      list = list.filter((c) => c.city.toLowerCase().includes(cq));
+    }
     if (empRanges.length) list = list.filter((c) => empRanges.includes(c.employeeRange));
     if (industries.length) list = list.filter((c) => industries.includes(c.industry));
     if (keywords.length) list = list.filter((c) => keywords.some((k) => (c.keywords ?? []).includes(k) || c.description.toLowerCase().includes(k.toLowerCase())));
     if (revMin != null) list = list.filter((c) => c.revenue >= revMin);
     if (revMax != null) list = list.filter((c) => c.revenue <= revMax);
     if (stages.length) list = list.filter((c) => c.stage && stages.includes(c.stage));
-    if (notInCrm) list = list.filter((c) => !c.in_crm);
+    if (notInCrm) list = list.filter((c) => !c.in_crm && !savedIds.has(c.id));
     if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
     if (sort === "emp-desc") list.sort((a, b) => b.employees - a.employees);
     if (sort === "emp-asc") list.sort((a, b) => a.employees - b.employees);
