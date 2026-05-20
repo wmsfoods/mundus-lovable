@@ -1,6 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { getActiveRole } from "@/lib/activeRole";
 
 export function RoleRedirect() {
   const { user, loading: authLoading } = useAuth();
@@ -16,6 +17,10 @@ export function RoleRedirect() {
 
   if (!user) return <Navigate to="/login" replace />;
 
+  if (company?.is_buyer && company?.is_supplier) {
+    const saved = getActiveRole();
+    return <Navigate to={saved === "supplier" ? "/supplier" : "/buyer"} replace />;
+  }
   if (company?.is_buyer) return <Navigate to="/buyer" replace />;
   if (company?.is_supplier) return <Navigate to="/supplier" replace />;
 
