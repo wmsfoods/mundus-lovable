@@ -183,7 +183,8 @@
         "beef": "Beef",
         "pork": "Pork",
         "poultry": "Poultry",
-        "lamb": "Lamb"
+        "lamb": "Lamb",
+        "ovine": "Ovine"
       },
       "col": {
         "title": "Title",
@@ -253,6 +254,42 @@
         "acceptOffer": "Accepted offer from {{name}} (mock)",
         "declineOffer": "Declined offer from {{name}} (mock)",
         "viewOffer": "Offer details coming soon"
+      },
+      "newModal": {
+        "title": "New offer request",
+        "cancel": "Cancel",
+        "submit": "Create request",
+        "selectAll": "Select all",
+        "clearAll": "Clear all",
+        "loading": "Loading…",
+        "noCuts": "No cuts available",
+        "selectMarket": "Select a market…",
+        "selectPort": "Select a port…",
+        "noPorts": "This market has no ports configured.",
+        "fields": {
+          "title": "Title",
+          "category": "Category",
+          "cuts": "Cuts",
+          "targetPrice": "Target price (USD/kg)",
+          "targetVolume": "Target volume (kg)",
+          "market": "Destination market",
+          "port": "Destination port",
+          "incoterm": "Incoterm",
+          "shipment": "Shipment month",
+          "payment": "Payment terms",
+          "notes": "Description / Notes"
+        },
+        "placeholders": { "title": "e.g. Ribeye 7-9 lb for Q3" },
+        "err": {
+          "title": "Title is required",
+          "cuts": "Select at least one cut",
+          "price": "Target price is required",
+          "volume": "Target volume is required",
+          "market": "Select a destination market",
+          "port": "Select a destination port",
+          "shipment": "Select a shipment month"
+        },
+        "toast": { "created": "Request created (mock)" }
       }
     },
     "home": {
