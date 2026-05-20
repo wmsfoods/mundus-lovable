@@ -4,7 +4,7 @@ import { Search, Building, MapPin, Users, Briefcase, DollarSign, Tag, Filter, Ex
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
-  MOCK_COMPANIES, EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
+  EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
   REGION_PRESETS, SIC_CODES, NAICS_CODES, MARKET_SEGMENTS,
   fmtRevenue, fmtNumber, type MockCompany,
 } from "@/data/mockProspect";
@@ -12,6 +12,7 @@ import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { PspPagination } from "@/components/prospect/Pagination";
 import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
+import { useProspectSearch } from "@/hooks/useProspectSearch";
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","Argentina","Egypt","Hong Kong","Philippines"];
 const REVENUE_PRESETS = [
@@ -24,6 +25,7 @@ const REVENUE_PRESETS = [
 export default function FindCompanies() {
   const nav = useNavigate();
   const [tab, setTab] = useState<"total" | "saved">("total");
+  const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [locations, setLocations] = useState<string[]>([]);
@@ -51,6 +53,31 @@ export default function FindCompanies() {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const pageSize = 25;
 
+  const apolloParams = useMemo(() => {
+    const params: Record<string, unknown> = { page, per_page: pageSize };
+    const q = (search || name).trim();
+    if (q) params.q_organization_name = q;
+    if (locations.length) params.organization_locations = locations;
+    if (excludeLocations.length) params.organization_not_locations = excludeLocations;
+    if (empRanges.length) params.organization_num_employees_ranges = empRanges;
+    const tags = [...new Set([...industries, ...keywords])];
+    if (tags.length) params.q_organization_keyword_tags = tags;
+    if (revMin != null || revMax != null) {
+      params.revenue_range = {
+        ...(revMin != null ? { min: String(revMin) } : {}),
+        ...(revMax != null ? { max: String(revMax) } : {}),
+      };
+    }
+    if (sicCodes.length) params.organization_sic_codes = sicCodes;
+    if (naicsCodes.length) params.organization_naics_codes = naicsCodes;
+    return params;
+  }, [page, search, name, locations, excludeLocations, empRanges, industries, keywords, revMin, revMax, sicCodes, naicsCodes]);
+
+  const { rows, pagination, loading, error, hasSearched } = useProspectSearch<MockCompany>(
+    "companies",
+    apolloParams,
+  );
+
   const toggle = <T extends string>(arr: T[], v: T, set: (a: T[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
@@ -63,41 +90,31 @@ export default function FindCompanies() {
     (marketSegments.length ? 1 : 0) + (companyType !== "all" ? 1 : 0);
 
   const clearAll = () => {
-    setName(""); setLocations([]); setEmpRanges([]); setIndustries([]);
+    setName(""); setSearch(""); setSearchInput("");
+    setLocations([]); setEmpRanges([]); setIndustries([]);
     setKeywords([]); setRevMin(null); setRevMax(null); setStages([]); setNotInCrm(false);
     setExcludeLocations([]); setCityQuery(""); setSicCodes([]); setNaicsCodes([]);
     setMarketSegments([]); setCompanyType("all");
   };
 
   const filtered = useMemo(() => {
-    let list = [...MOCK_COMPANIES];
-    if (tab === "saved") list = list.filter((c) => c.in_crm);
-    const q = search.toLowerCase().trim();
-    if (q) list = list.filter((c) => c.name.toLowerCase().includes(q) || c.domain.toLowerCase().includes(q));
-    const qn = name.toLowerCase().trim();
-    if (qn) list = list.filter((c) => c.name.toLowerCase().includes(qn) || c.domain.toLowerCase().includes(qn));
-    if (locations.length) list = list.filter((c) => locations.includes(c.country));
-    if (excludeLocations.length) list = list.filter((c) => !excludeLocations.includes(c.country));
+    let list = rows;
+    if (tab === "saved") list = list.filter((c) => c.in_crm || savedIds.has(c.id));
     if (cityQuery.trim()) {
       const cq = cityQuery.toLowerCase().trim();
       list = list.filter((c) => c.city.toLowerCase().includes(cq));
     }
-    if (empRanges.length) list = list.filter((c) => empRanges.includes(c.employeeRange));
-    if (industries.length) list = list.filter((c) => industries.includes(c.industry));
-    if (keywords.length) list = list.filter((c) => keywords.some((k) => (c.keywords ?? []).includes(k) || c.description.toLowerCase().includes(k.toLowerCase())));
-    if (revMin != null) list = list.filter((c) => c.revenue >= revMin);
-    if (revMax != null) list = list.filter((c) => c.revenue <= revMax);
     if (stages.length) list = list.filter((c) => c.stage && stages.includes(c.stage));
     if (notInCrm) list = list.filter((c) => !c.in_crm && !savedIds.has(c.id));
-    if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
-    if (sort === "emp-desc") list.sort((a, b) => b.employees - a.employees);
-    if (sort === "emp-asc") list.sort((a, b) => a.employees - b.employees);
-    if (sort === "rev-desc") list.sort((a, b) => b.revenue - a.revenue);
-    if (sort === "rev-asc") list.sort((a, b) => a.revenue - b.revenue);
+    if (sort === "name") list = [...list].sort((a, b) => a.name.localeCompare(b.name));
+    if (sort === "emp-desc") list = [...list].sort((a, b) => b.employees - a.employees);
+    if (sort === "emp-asc") list = [...list].sort((a, b) => a.employees - b.employees);
+    if (sort === "rev-desc") list = [...list].sort((a, b) => b.revenue - a.revenue);
+    if (sort === "rev-asc") list = [...list].sort((a, b) => a.revenue - b.revenue);
     return list;
-  }, [tab, search, name, locations, excludeLocations, cityQuery, empRanges, industries, keywords, revMin, revMax, stages, notInCrm, savedIds, sort]);
+  }, [rows, tab, cityQuery, stages, notInCrm, savedIds, sort]);
 
-  const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
+  const pageItems = filtered;
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((c) => selected.has(c.id));
 
   const toggleSelect = (id: string) => {
@@ -114,14 +131,14 @@ export default function FindCompanies() {
 
   const exportCsv = () => {
     const ids = selected.size ? [...selected] : pageItems.map((c) => c.id);
-    const rows = MOCK_COMPANIES.filter((c) => ids.includes(c.id));
+    const exportRows = rows.filter((c) => ids.includes(c.id));
     const csv = ["Name,Domain,Industry,Country,City,Employees,Revenue,Founded,Website",
-      ...rows.map((c) => `"${c.name}","${c.domain}","${c.industry}","${c.country}","${c.city}",${c.employees},${c.revenue},${c.founded},"${c.website}"`)
+      ...exportRows.map((c) => `"${c.name}","${c.domain}","${c.industry}","${c.country}","${c.city}",${c.employees},${c.revenue},${c.founded},"${c.website}"`)
     ].join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = "companies.csv"; a.click();
-    toast.success(`Exported ${rows.length} companies`);
+    toast.success(`Exported ${exportRows.length} companies`);
   };
 
   return (
@@ -129,8 +146,22 @@ export default function FindCompanies() {
       <div className="psp-toolbar">
         <div className="psp-search">
           <Search size={14} className="psp-search-icon" />
-          <input value={search} onChange={(e) => { setSearch(e.target.value); setPage(1); }} placeholder="Search companies..." />
+          <input
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") { e.preventDefault(); setSearch(searchInput); setPage(1); }
+            }}
+            placeholder="Search company name and press Enter..."
+          />
         </div>
+        <button
+          className="psp-btn solid"
+          onClick={() => { setSearch(searchInput); setPage(1); }}
+          disabled={loading}
+        >
+          <Search size={12} />{loading ? "Searching…" : "Search"}
+        </button>
         <button className="psp-btn ghost psp-mobile-filter-btn" onClick={() => setShowFilters(true)}>
           <Filter size={12} />Filters {activeFilters > 0 && `(${activeFilters})`}
         </button>
@@ -143,12 +174,14 @@ export default function FindCompanies() {
           <option value="rev-desc">Revenue ↓</option>
           <option value="rev-asc">Revenue ↑</option>
         </select>
-        <span className="psp-credits">Credits: 4,480</span>
+        <span className="psp-credits">
+          {loading ? "Searching Apollo…" : hasSearched ? `${pagination.total_entries.toLocaleString()} results` : "Apollo ready"}
+        </span>
       </div>
 
       <div className="psp-tabs">
-        <button className={`psp-tab ${tab === "total" ? "is-active" : ""}`} onClick={() => { setTab("total"); setPage(1); }}>Total ({MOCK_COMPANIES.length})</button>
-        <button className={`psp-tab ${tab === "saved" ? "is-active" : ""}`} onClick={() => { setTab("saved"); setPage(1); }}>Saved ({MOCK_COMPANIES.filter((c) => c.in_crm).length})</button>
+        <button className={`psp-tab ${tab === "total" ? "is-active" : ""}`} onClick={() => { setTab("total"); setPage(1); }}>Total ({pagination.total_entries.toLocaleString() || 0})</button>
+        <button className={`psp-tab ${tab === "saved" ? "is-active" : ""}`} onClick={() => { setTab("saved"); setPage(1); }}>Saved ({savedIds.size})</button>
       </div>
 
       <div className="psp-layout">
@@ -187,7 +220,7 @@ export default function FindCompanies() {
 
           <FilterAccordion label="Employees" icon={<Users size={14} />} hasActive={empRanges.length > 0}>
             {EMPLOYEE_RANGES.map((r) => {
-              const count = MOCK_COMPANIES.filter((c) => c.employeeRange === r).length;
+              const count = rows.filter((c) => c.employeeRange === r).length;
               return (
                 <div key={r} className="psp-checkbox-row">
                   <label><Checkbox checked={empRanges.includes(r)} onCheckedChange={() => { toggle(empRanges, r, setEmpRanges); setPage(1); }} />{r}</label>
@@ -344,12 +377,17 @@ export default function FindCompanies() {
                   </tr>
                 ))}
                 {pageItems.length === 0 && (
-                  <tr><td colSpan={10} className="psp-empty">No companies match your filters.</td></tr>
+                  <tr><td colSpan={10} className="psp-empty">
+                    {loading ? "Searching Apollo…"
+                      : error ? `Search failed: ${error}`
+                      : hasSearched ? "No companies match these filters. Try widening location, revenue, or employees."
+                      : "Adjust a filter or type a company name + Enter to search Apollo."}
+                  </td></tr>
                 )}
               </tbody>
             </table>
           </div>
-          <PspPagination total={filtered.length} page={page} pageSize={pageSize} onChange={setPage} />
+          <PspPagination total={pagination.total_entries} page={page} pageSize={pageSize} onChange={setPage} />
 
           {selected.size > 0 && (
             <div className="psp-bulk-bar">
