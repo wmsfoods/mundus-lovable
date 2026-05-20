@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Beef, Search, Check, Languages, Tag, Pencil, Upload } from "lucide-react";
+import { Beef, Search, Check, Languages, Tag, Pencil, Upload, ImagePlus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdminCuts, CATEGORY_COLORS, type AdminCutRow, type CutCategory } from "@/hooks/useAdminCuts";
 import EditCutModal from "@/components/admin/EditCutModal";
@@ -135,7 +135,7 @@ export default function AdminProducts() {
                   {pageRows.map((r) => {
                     const c = CATEGORY_COLORS[r.category];
                     return (
-                      <tr key={r.id}>
+                      <RowDrop key={r.id} cutId={r.id} onUpload={uploadCutImage}>
                         <td><Thumb url={r.image_url} alt={r.name} cutId={r.id} onUpload={uploadCutImage} /></td>
                         <td><strong>{r.name}</strong></td>
                         <td>{r.product_number != null ? <span className="adm-chip">{r.product_number}</span> : <span style={{ color: "var(--fg-muted, #6b7280)" }}>—</span>}</td>
@@ -159,7 +159,7 @@ export default function AdminProducts() {
                             <Pencil size={14} />
                           </button>
                         </td>
-                      </tr>
+                      </RowDrop>
                     );
                   })}
                 </tbody>
@@ -171,7 +171,7 @@ export default function AdminProducts() {
             {pageRows.map((r) => {
               const c = CATEGORY_COLORS[r.category];
               return (
-                <div key={r.id} className="adm-panel" style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start" }}>
+                <CardDrop key={r.id} cutId={r.id} onUpload={uploadCutImage}>
                   <Thumb url={r.image_url} alt={r.name} cutId={r.id} onUpload={uploadCutImage} />
                   <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
@@ -195,7 +195,7 @@ export default function AdminProducts() {
                       </button>
                     </div>
                   </div>
-                </div>
+                </CardDrop>
               );
             })}
           </div>
@@ -293,6 +293,80 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
         <span style={{ color: accent ?? "#8B2252" }}>{icon}</span> {label}
       </span>
       <strong style={{ fontSize: 22, fontVariantNumeric: "tabular-nums", color: accent ?? "inherit" }}>{value.toLocaleString()}</strong>
+    </div>
+  );
+}
+
+function useRowDropzone(cutId: string, onUpload: (id: string, f: File) => Promise<string>) {
+  const [drag, setDrag] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const handlers = {
+    onDragOver: (e: React.DragEvent) => {
+      if (Array.from(e.dataTransfer.types).includes("Files")) {
+        e.preventDefault();
+        setDrag(true);
+      }
+    },
+    onDragLeave: (e: React.DragEvent) => {
+      if (e.currentTarget === e.target) setDrag(false);
+    },
+    onDrop: async (e: React.DragEvent) => {
+      e.preventDefault();
+      setDrag(false);
+      const f = e.dataTransfer.files?.[0];
+      if (!f) return;
+      if (!f.type.startsWith("image/")) { toast.error("Only image files"); return; }
+      setBusy(true);
+      try {
+        await onUpload(cutId, f);
+        toast.success("Image uploaded");
+      } catch (err: any) { toast.error(err?.message || "Upload failed"); }
+      finally { setBusy(false); }
+    },
+  };
+  return { drag, busy, handlers };
+}
+
+function RowDrop({ cutId, onUpload, children }: { cutId: string; onUpload: (id: string, f: File) => Promise<string>; children: React.ReactNode }) {
+  const { drag, busy, handlers } = useRowDropzone(cutId, onUpload);
+  return (
+    <tr
+      {...handlers}
+      style={{
+        outline: drag ? "2px dashed #6366F1" : "none",
+        outlineOffset: -2,
+        background: drag ? "rgba(99,102,241,0.06)" : undefined,
+        transition: "background 0.15s",
+        position: "relative",
+      }}
+    >
+      {children}
+      {busy && (
+        <td style={{ position: "absolute", right: 8, top: 8, padding: 0, border: 0, fontSize: 11, color: "#6366F1", fontWeight: 600 }}>Uploading…</td>
+      )}
+    </tr>
+  );
+}
+
+function CardDrop({ cutId, onUpload, children }: { cutId: string; onUpload: (id: string, f: File) => Promise<string>; children: React.ReactNode }) {
+  const { drag, busy, handlers } = useRowDropzone(cutId, onUpload);
+  return (
+    <div
+      {...handlers}
+      className="adm-panel"
+      style={{
+        padding: 12, display: "flex", gap: 12, alignItems: "flex-start",
+        border: drag ? "2px dashed #6366F1" : undefined,
+        background: drag ? "rgba(99,102,241,0.06)" : undefined,
+        position: "relative", transition: "all 0.15s",
+      }}
+    >
+      {children}
+      {busy && (
+        <div style={{ position: "absolute", inset: 0, background: "rgba(255,255,255,0.7)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, color: "#6366F1", fontWeight: 600, borderRadius: 8 }}>
+          <ImagePlus size={14} style={{ marginRight: 6 }} /> Uploading…
+        </div>
+      )}
     </div>
   );
 }
