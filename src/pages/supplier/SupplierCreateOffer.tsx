@@ -759,11 +759,48 @@ export default function SupplierCreateOffer() {
           </button>
         </div>
       </footer>
+
+      <MarketplaceLogisticsDrawer
+        open={mlOpen}
+        onClose={() => setMlOpen(false)}
+        markets={MARKETS}
+        csize={csize}
+        origin="Santos (BRSSZ)"
+        onApplyRate={applyMarketplaceRate}
+      />
     </div>
   );
 }
 
 /* ── helpers ── */
+function MarketplaceSourceTag({
+  src,
+  via,
+}: {
+  src?: MarketplaceRate["source"];
+  via: string;
+}) {
+  if (!src) return null;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+      <span
+        style={{
+          background: src.carrierColor,
+          color: src.carrierTextColor,
+          borderRadius: 999,
+          padding: "1px 7px",
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: 0.2,
+        }}
+      >
+        {src.carrierShort}
+      </span>
+      <span style={{ fontSize: 10, color: "#6b7280" }}>{via}</span>
+    </div>
+  );
+}
+
 function SectionHeader({ icon, t, s }: { icon: string; t: string; s: string }) {
   return (
     <div className="cov4-sh">
