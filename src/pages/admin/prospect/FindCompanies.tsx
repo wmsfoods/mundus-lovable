@@ -220,7 +220,7 @@ export default function FindCompanies() {
 
           <FilterAccordion label="Employees" icon={<Users size={14} />} hasActive={empRanges.length > 0}>
             {EMPLOYEE_RANGES.map((r) => {
-              const count = MOCK_COMPANIES.filter((c) => c.employeeRange === r).length;
+              const count = rows.filter((c) => c.employeeRange === r).length;
               return (
                 <div key={r} className="psp-checkbox-row">
                   <label><Checkbox checked={empRanges.includes(r)} onCheckedChange={() => { toggle(empRanges, r, setEmpRanges); setPage(1); }} />{r}</label>
