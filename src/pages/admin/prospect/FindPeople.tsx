@@ -48,10 +48,40 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
     throw new Error(msg);
   }
   const person = data.person ?? {};
+  let phone = data.phone ?? null;
+  let mobile = data.mobile ?? null;
+
+  // Apollo delivers phones asynchronously via webhook. Poll the cache for up to ~20s.
+  if (opts.reveal_phone && !phone && !mobile && data.apollo_person_id) {
+    const apolloId = String(data.apollo_person_id);
+    const client = supabase as unknown as {
+      from: (t: string) => {
+        select: (c: string) => {
+          eq: (k: string, v: string) => {
+            maybeSingle: () => Promise<{ data: { phone: string | null; mobile: string | null } | null }>;
+          };
+        };
+      };
+    };
+    for (let i = 0; i < 20; i++) {
+      await new Promise((res) => setTimeout(res, 1000));
+      const { data: row } = await client
+        .from("prospect_phone_reveals")
+        .select("phone,mobile")
+        .eq("apollo_person_id", apolloId)
+        .maybeSingle();
+      if (row && (row.phone || row.mobile)) {
+        phone = row.phone ?? phone;
+        mobile = row.mobile ?? mobile;
+        break;
+      }
+    }
+  }
+
   return {
     email: data.email ?? null,
-    phone: data.phone ?? null,
-    mobile: data.mobile ?? null,
+    phone,
+    mobile,
     firstName: person.first_name ?? null,
     lastName: person.last_name ?? null,
     fullName: person.name ?? null,
