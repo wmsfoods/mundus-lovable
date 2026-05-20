@@ -1,15 +1,11 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
   CheckCircleIcon, UploadCloudIcon, FileTextIcon, PhoneIcon,
-  MessageIcon, FlagSVG, EditIcon,
+  MessageIcon, FlagSVG,
 } from "@/components/icons";
-import { Plus, Trash2, X } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
+import { Plus, Trash2, Check } from "lucide-react";
 import {
   useCompanyProfile,
   type CompanyAbout, type CompanyPlant, type CompanyCertification,
@@ -40,6 +36,101 @@ function csvParse(s: string): string[] {
   return s.split(",").map((x) => x.trim()).filter(Boolean);
 }
 
+/* ========================================================== Inline primitives */
+
+type SaveFn<T> = (value: T) => Promise<void> | void;
+
+function InlineText({
+  value, onSave, placeholder, canEdit, type = "text", className,
+}: {
+  value: string | number | null | undefined;
+  onSave: SaveFn<string>;
+  placeholder?: string;
+  canEdit: boolean;
+  type?: "text" | "email" | "url" | "number" | "date";
+  className?: string;
+}) {
+  const initial = value == null ? "" : String(value);
+  const [v, setV] = useState(initial);
+  useEffect(() => { setV(initial); }, [initial]);
+
+  if (!canEdit) {
+    return <span className={className}>{initial || <span style={{ color: "#9ca3af" }}>—</span>}</span>;
+  }
+
+  return (
+    <input
+      type={type}
+      className={`cp-inline ${className ?? ""}`}
+      value={v}
+      placeholder={placeholder}
+      onChange={(e) => setV(e.target.value)}
+      onBlur={() => { if (v !== initial) onSave(v); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+        if (e.key === "Escape") { setV(initial); (e.target as HTMLInputElement).blur(); }
+      }}
+    />
+  );
+}
+
+function InlineTextarea({
+  value, onSave, placeholder, canEdit, rows = 3,
+}: {
+  value: string | null | undefined;
+  onSave: SaveFn<string>;
+  placeholder?: string;
+  canEdit: boolean;
+  rows?: number;
+}) {
+  const initial = value ?? "";
+  const [v, setV] = useState(initial);
+  useEffect(() => { setV(initial); }, [initial]);
+
+  if (!canEdit) {
+    return <p className="cp-description">{initial || <span style={{ color: "#9ca3af" }}>{placeholder}</span>}</p>;
+  }
+  return (
+    <textarea
+      rows={rows}
+      className="cp-inline cp-inline-area"
+      value={v}
+      placeholder={placeholder}
+      onChange={(e) => setV(e.target.value)}
+      onBlur={() => { if (v !== initial) onSave(v); }}
+    />
+  );
+}
+
+function InlineSelect({
+  value, options, onSave, canEdit,
+}: { value: string | null | undefined; options: string[]; onSave: SaveFn<string>; canEdit: boolean }) {
+  if (!canEdit) return <span>{value || "—"}</span>;
+  return (
+    <select
+      className="cp-inline"
+      value={value ?? ""}
+      onChange={(e) => onSave(e.target.value)}
+    >
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
+}
+
+function InlineCheckbox({
+  checked, onSave, label, canEdit,
+}: { checked: boolean; onSave: SaveFn<boolean>; label: string; canEdit: boolean }) {
+  if (!canEdit) return checked ? <span style={{ fontSize: 12, color: "#16a34a" }}>★ {label}</span> : null;
+  return (
+    <label style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 12, color: "#374151" }}>
+      <input type="checkbox" checked={checked} onChange={(e) => onSave(e.target.checked)} style={{ accentColor: "#8B2252" }} />
+      {label}
+    </label>
+  );
+}
+
+/* ========================================================== Main */
+
 export default function CompanyProfileSections({ companyId, canEdit }: Props) {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || "en";
@@ -62,417 +153,417 @@ export default function CompanyProfileSections({ companyId, canEdit }: Props) {
   );
 }
 
-/* ============================================================ ABOUT */
+/* ========================================================== ABOUT */
 function AboutSection({ data, profile, canEdit }: { data: CompanyAbout | null; profile: ReturnType<typeof useCompanyProfile>; canEdit: boolean }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<Partial<CompanyAbout>>(data ?? {});
-  const start = () => { setForm(data ?? {}); setOpen(true); };
-  const save = async () => {
-    const r = await profile.saveAbout(form);
-    if (!r.ok) { toast.error(r.error); return; }
-    toast.success(t("supplier.company.toasts.saved", "Saved"));
-    setOpen(false);
+  const save = async (patch: Partial<CompanyAbout>) => {
+    const r = await profile.saveAbout({ ...(data ?? {}), ...patch });
+    if (!r.ok) toast.error(r.error);
   };
   return (
     <section className="cp-card">
-      <header className="cp-section-head">
-        <h2>{t("supplier.company.about.title", "About")}</h2>
-        {canEdit && <button type="button" className="btn-tb" onClick={start}><EditIcon size={12} /> {t("common.edit", "Edit")}</button>}
-      </header>
+      <header className="cp-section-head"><h2>{t("supplier.company.about.title", "About")}</h2></header>
       <div className="cp-about-grid">
         <div>
-          <p className="cp-description">{data?.description || <span style={{ color: "#9ca3af" }}>{t("supplier.company.about.empty", "No description yet.")}</span>}</p>
-          <div className="cp-kv"><span className="cp-kv-l">{t("supplier.company.about.tradeMarkets", "Trade markets")}</span><span className="cp-kv-v">{csv(data?.trade_markets) || "—"}</span></div>
-          <div className="cp-kv"><span className="cp-kv-l">{t("supplier.company.about.mainSpecies", "Main species")}</span>
-            <span className="cp-kv-v cp-chips">
-              {(data?.main_species ?? []).length > 0
-                ? data!.main_species.map((s) => <span key={s} className="cp-chip">{s}</span>)
-                : "—"}
-            </span>
-          </div>
-          {data?.trade_name && <div className="cp-kv"><span className="cp-kv-l">{t("supplier.company.about.tradeName", "Trade name")}</span><span className="cp-kv-v">{data.trade_name}</span></div>}
+          <InlineTextarea
+            value={data?.description}
+            canEdit={canEdit}
+            placeholder={t("supplier.company.about.empty", "No description yet.")}
+            onSave={(v) => save({ description: v })}
+          />
+          <FieldRow label={t("supplier.company.about.tradeName", "Trade name")}>
+            <InlineText canEdit={canEdit} value={data?.trade_name} onSave={(v) => save({ trade_name: v })} />
+          </FieldRow>
+          <FieldRow label={t("supplier.company.about.tradeMarkets", "Trade markets")}>
+            <InlineText canEdit={canEdit} value={csv(data?.trade_markets)} placeholder="MERCOSUR, EU…" onSave={(v) => save({ trade_markets: csvParse(v) })} />
+          </FieldRow>
+          <FieldRow label={t("supplier.company.about.mainSpecies", "Main species")}>
+            {canEdit ? (
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {SPECIES.map((s) => {
+                  const on = (data?.main_species ?? []).includes(s);
+                  return (
+                    <button
+                      key={s} type="button"
+                      className={`cp-chip-btn ${on ? "is-on" : ""}`}
+                      onClick={() => {
+                        const cur = data?.main_species ?? [];
+                        save({ main_species: on ? cur.filter((x) => x !== s) : [...cur, s] });
+                      }}
+                    >{s}</button>
+                  );
+                })}
+              </div>
+            ) : (
+              <span className="cp-chips">
+                {(data?.main_species ?? []).length > 0
+                  ? data!.main_species.map((s) => <span key={s} className="cp-chip">{s}</span>)
+                  : "—"}
+              </span>
+            )}
+          </FieldRow>
         </div>
         <div className="cp-stat-grid">
-          <div className="cp-stat"><span className="cp-stat-v">{data?.years_exporting ?? "—"}</span><span className="cp-stat-l">{t("supplier.company.about.yearsExporting", "Years exporting")}</span></div>
-          <div className="cp-stat"><span className="cp-stat-v">{data?.fcls_delivered?.toLocaleString() ?? "—"}</span><span className="cp-stat-l">{t("supplier.company.about.fclsDelivered", "FCLs delivered")}</span></div>
-          <div className="cp-stat"><span className="cp-stat-v">{data?.countries_served ?? "—"}</span><span className="cp-stat-l">{t("supplier.company.about.countriesServed", "Countries served")}</span></div>
+          <StatInline label={t("supplier.company.about.yearsExporting", "Years exporting")} value={data?.years_exporting} canEdit={canEdit} onSave={(n) => save({ years_exporting: n })} />
+          <StatInline label={t("supplier.company.about.fclsDelivered", "FCLs delivered")} value={data?.fcls_delivered} canEdit={canEdit} onSave={(n) => save({ fcls_delivered: n })} />
+          <StatInline label={t("supplier.company.about.countriesServed", "Countries served")} value={data?.countries_served} canEdit={canEdit} onSave={(n) => save({ countries_served: n })} />
         </div>
       </div>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader><DialogTitle>{t("supplier.company.about.edit", "Edit about")}</DialogTitle></DialogHeader>
-          <div className="grid gap-3">
-            <Field label={t("supplier.company.about.tradeName", "Trade name")}><Input value={form.trade_name ?? ""} onChange={(e) => setForm({ ...form, trade_name: e.target.value })} /></Field>
-            <Field label={t("supplier.company.about.description", "Description")}><Textarea rows={4} value={form.description ?? ""} onChange={(e) => setForm({ ...form, description: e.target.value })} /></Field>
-            <Field label={t("supplier.company.about.tradeMarkets", "Trade markets") + " (csv)"}><Input value={csv(form.trade_markets)} onChange={(e) => setForm({ ...form, trade_markets: csvParse(e.target.value) })} /></Field>
-            <Field label={t("supplier.company.about.mainSpecies", "Main species") + " (csv)"}><Input value={csv(form.main_species)} placeholder={SPECIES.join(", ")} onChange={(e) => setForm({ ...form, main_species: csvParse(e.target.value) })} /></Field>
-            <div className="grid grid-cols-3 gap-3">
-              <Field label={t("supplier.company.about.yearsExporting", "Years exporting")}><Input type="number" value={form.years_exporting ?? ""} onChange={(e) => setForm({ ...form, years_exporting: e.target.value ? Number(e.target.value) : null })} /></Field>
-              <Field label={t("supplier.company.about.fclsDelivered", "FCLs delivered")}><Input type="number" value={form.fcls_delivered ?? ""} onChange={(e) => setForm({ ...form, fcls_delivered: e.target.value ? Number(e.target.value) : null })} /></Field>
-              <Field label={t("supplier.company.about.countriesServed", "Countries served")}><Input type="number" value={form.countries_served ?? ""} onChange={(e) => setForm({ ...form, countries_served: e.target.value ? Number(e.target.value) : null })} /></Field>
-            </div>
-          </div>
-          <DialogFooter>
-            <button type="button" className="btn-tb" onClick={() => setOpen(false)}>{t("common.cancel", "Cancel")}</button>
-            <button type="button" className="btn-tb is-primary" onClick={save}>{t("common.save", "Save")}</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }
 
-/* ============================================================ PLANTS */
+function StatInline({ label, value, canEdit, onSave }: { label: string; value: number | null | undefined; canEdit: boolean; onSave: (n: number | null) => void }) {
+  return (
+    <div className="cp-stat">
+      {canEdit ? (
+        <input
+          type="number"
+          className="cp-inline cp-stat-v"
+          defaultValue={value ?? ""}
+          onBlur={(e) => {
+            const v = e.target.value;
+            const n = v === "" ? null : Number(v);
+            if (n !== (value ?? null)) onSave(n);
+          }}
+        />
+      ) : (
+        <span className="cp-stat-v">{value?.toLocaleString() ?? "—"}</span>
+      )}
+      <span className="cp-stat-l">{label}</span>
+    </div>
+  );
+}
+
+/* ========================================================== PLANTS */
 function PlantsSection({ data, profile, canEdit }: { data: CompanyPlant[]; profile: ReturnType<typeof useCompanyProfile>; canEdit: boolean }) {
   const { t } = useTranslation();
-  const [editing, setEditing] = useState<Partial<CompanyPlant> | null>(null);
-  const save = async () => {
-    if (!editing) return;
-    const { id, company_id, ...rest } = editing;
-    const payload = { ...rest, sort_order: rest.sort_order ?? 0 };
-    const r = id ? await profile.updateRow("company_plants", id, payload) : await profile.insertRow("company_plants", payload);
-    if (!r.ok) { toast.error(r.error); return; }
-    toast.success(t("supplier.company.toasts.saved", "Saved"));
-    setEditing(null);
+  const [draft, setDraft] = useState<Partial<CompanyPlant> | null>(null);
+
+  const update = async (id: string, patch: Partial<CompanyPlant>) => {
+    const r = await profile.updateRow("company_plants", id, patch);
+    if (!r.ok) toast.error(r.error);
   };
   const remove = async (id: string) => {
     if (!confirm(t("common.deleteConfirm", "Delete?"))) return;
     const r = await profile.deleteRow("company_plants", id);
-    if (!r.ok) toast.error(r.error); else toast.success(t("common.deleted", "Deleted"));
+    if (!r.ok) toast.error(r.error);
   };
+  const saveDraft = async () => {
+    if (!draft?.name?.trim()) { toast.error(t("common.nameRequired", "Name is required")); return; }
+    const r = await profile.insertRow("company_plants", { ...draft, sort_order: 0 });
+    if (!r.ok) { toast.error(r.error); return; }
+    setDraft(null);
+  };
+
   return (
     <section className="cp-card">
       <header className="cp-section-head">
         <h2>{t("supplier.company.plants.title", "Plants")}</h2>
-        {canEdit && <button type="button" className="btn-tb" onClick={() => setEditing({ name: "", certifications: [] })}><Plus size={12} /> {t("supplier.company.plants.addPlant", "Add plant")}</button>}
+        {canEdit && !draft && <button type="button" className="btn-tb" onClick={() => setDraft({ name: "", certifications: [] })}><Plus size={12} /> {t("supplier.company.plants.addPlant", "Add plant")}</button>}
       </header>
-      {data.length === 0 ? (
+      {data.length === 0 && !draft ? (
         <EmptyState text={t("supplier.company.plants.empty", "No plants registered yet.")} />
       ) : (
         <div className="cp-plants">
           {data.map((p) => (
             <div key={p.id} className="cp-plant">
               <div className="cp-plant-head">
-                <h3>{p.name}</h3>
+                <InlineText canEdit={canEdit} value={p.name} onSave={(v) => update(p.id, { name: v })} className="cp-plant-name" />
                 <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
-                  <span className="cp-plant-loc">
-                    {p.country_code && <FlagSVG code={p.country_code} size={14} />} {p.city}{p.city && p.country ? ", " : ""}{p.country}
-                  </span>
-                  {canEdit && (
-                    <>
-                      <button type="button" className="cp-link" onClick={() => setEditing(p)}>{t("common.edit", "Edit")}</button>
-                      <button type="button" className="cp-link" style={{ color: "#b91c1c" }} onClick={() => remove(p.id)}>{t("common.delete", "Delete")}</button>
-                    </>
-                  )}
+                  {p.country_code && <FlagSVG code={p.country_code} size={14} />}
+                  <InlineText canEdit={canEdit} value={p.city} placeholder={t("supplier.company.plants.city", "City")} onSave={(v) => update(p.id, { city: v })} />
+                  <InlineText canEdit={canEdit} value={p.country} placeholder={t("supplier.company.plants.country", "Country")} onSave={(v) => update(p.id, { country: v })} />
+                  <InlineText canEdit={canEdit} value={p.country_code} placeholder="ISO" onSave={(v) => update(p.id, { country_code: v.toUpperCase() })} className="cp-inline-sm" />
+                  {canEdit && <button type="button" className="cp-icon-btn" onClick={() => remove(p.id)} aria-label="Delete"><Trash2 size={14} /></button>}
                 </div>
               </div>
-              {p.capacity && <div className="cp-kv"><span className="cp-kv-l">{t("supplier.company.plants.capacity", "Capacity")}</span><span className="cp-kv-v">{p.capacity}</span></div>}
-              {p.certifications?.length > 0 && (
-                <div className="cp-kv"><span className="cp-kv-l">{t("supplier.company.plants.certifications", "Certifications")}</span>
-                  <span className="cp-kv-v cp-chips">{p.certifications.map((c) => <span key={c} className="cp-chip">{c}</span>)}</span>
-                </div>
-              )}
-              {p.vet_registrations && <div className="cp-kv"><span className="cp-kv-l">{t("supplier.company.plants.vetRegistrations", "Vet registrations")}</span><span className="cp-kv-v">{p.vet_registrations}</span></div>}
+              <FieldRow label={t("supplier.company.plants.capacity", "Capacity")}>
+                <InlineText canEdit={canEdit} value={p.capacity} placeholder="Beef 2,800 MT/month" onSave={(v) => update(p.id, { capacity: v })} />
+              </FieldRow>
+              <FieldRow label={t("supplier.company.plants.certifications", "Certifications")}>
+                <InlineText canEdit={canEdit} value={csv(p.certifications)} placeholder="USDA, Halal, HACCP" onSave={(v) => update(p.id, { certifications: csvParse(v) })} />
+              </FieldRow>
+              <FieldRow label={t("supplier.company.plants.vetRegistrations", "Vet registrations")}>
+                <InlineText canEdit={canEdit} value={p.vet_registrations} placeholder="SIF 2154 · China-approved" onSave={(v) => update(p.id, { vet_registrations: v })} />
+              </FieldRow>
             </div>
           ))}
-        </div>
-      )}
 
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader><DialogTitle>{editing?.id ? t("supplier.company.plants.edit", "Edit plant") : t("supplier.company.plants.addPlant", "Add plant")}</DialogTitle></DialogHeader>
-          {editing && (
-            <div className="grid gap-3">
-              <Field label={t("common.name", "Name") + " *"}><Input value={editing.name ?? ""} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></Field>
-              <div className="grid grid-cols-3 gap-3">
-                <Field label={t("supplier.company.plants.city", "City")}><Input value={editing.city ?? ""} onChange={(e) => setEditing({ ...editing, city: e.target.value })} /></Field>
-                <Field label={t("supplier.company.plants.country", "Country")}><Input value={editing.country ?? ""} onChange={(e) => setEditing({ ...editing, country: e.target.value })} /></Field>
-                <Field label={t("supplier.company.plants.countryCode", "ISO code") + " (BR, AR…)"}><Input maxLength={2} value={editing.country_code ?? ""} onChange={(e) => setEditing({ ...editing, country_code: e.target.value.toUpperCase() })} /></Field>
+          {draft && (
+            <div className="cp-plant cp-plant-draft">
+              <div className="cp-plant-head">
+                <input className="cp-inline cp-plant-name" autoFocus placeholder={t("common.name", "Name") + " *"} value={draft.name ?? ""} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <input className="cp-inline" placeholder={t("supplier.company.plants.city", "City")} value={draft.city ?? ""} onChange={(e) => setDraft({ ...draft, city: e.target.value })} />
+                  <input className="cp-inline" placeholder={t("supplier.company.plants.country", "Country")} value={draft.country ?? ""} onChange={(e) => setDraft({ ...draft, country: e.target.value })} />
+                  <input className="cp-inline cp-inline-sm" placeholder="ISO" maxLength={2} value={draft.country_code ?? ""} onChange={(e) => setDraft({ ...draft, country_code: e.target.value.toUpperCase() })} />
+                </div>
               </div>
-              <Field label={t("supplier.company.plants.capacity", "Capacity")}><Input value={editing.capacity ?? ""} onChange={(e) => setEditing({ ...editing, capacity: e.target.value })} placeholder="Beef 2,800 MT/month" /></Field>
-              <Field label={t("supplier.company.plants.certifications", "Certifications") + " (csv)"}><Input value={csv(editing.certifications)} onChange={(e) => setEditing({ ...editing, certifications: csvParse(e.target.value) })} placeholder="USDA, Halal, HACCP" /></Field>
-              <Field label={t("supplier.company.plants.vetRegistrations", "Vet registrations")}><Input value={editing.vet_registrations ?? ""} onChange={(e) => setEditing({ ...editing, vet_registrations: e.target.value })} placeholder="SIF 2154 · China-approved" /></Field>
+              <FieldRow label={t("supplier.company.plants.capacity", "Capacity")}>
+                <input className="cp-inline" placeholder="Beef 2,800 MT/month" value={draft.capacity ?? ""} onChange={(e) => setDraft({ ...draft, capacity: e.target.value })} />
+              </FieldRow>
+              <FieldRow label={t("supplier.company.plants.certifications", "Certifications")}>
+                <input className="cp-inline" placeholder="USDA, Halal, HACCP" value={csv(draft.certifications)} onChange={(e) => setDraft({ ...draft, certifications: csvParse(e.target.value) })} />
+              </FieldRow>
+              <FieldRow label={t("supplier.company.plants.vetRegistrations", "Vet registrations")}>
+                <input className="cp-inline" placeholder="SIF 2154" value={draft.vet_registrations ?? ""} onChange={(e) => setDraft({ ...draft, vet_registrations: e.target.value })} />
+              </FieldRow>
+              <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+                <button type="button" className="btn-tb is-primary" onClick={saveDraft}><Check size={12} /> {t("common.save", "Save")}</button>
+                <button type="button" className="btn-tb" onClick={() => setDraft(null)}>{t("common.cancel", "Cancel")}</button>
+              </div>
             </div>
           )}
-          <DialogFooter>
-            <button type="button" className="btn-tb" onClick={() => setEditing(null)}>{t("common.cancel", "Cancel")}</button>
-            <button type="button" className="btn-tb is-primary" onClick={save} disabled={!editing?.name?.trim()}>{t("common.save", "Save")}</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </section>
   );
 }
 
-/* ============================================================ PREFERENCES */
+/* ========================================================== PREFERENCES */
 function PreferencesSection({ data, profile, canEdit }: { data: CompanyPreferences | null; profile: ReturnType<typeof useCompanyProfile>; canEdit: boolean }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [form, setForm] = useState<Partial<CompanyPreferences>>(data ?? {});
-  const start = () => { setForm(data ?? {}); setOpen(true); };
-  const save = async () => {
-    const r = await profile.savePreferences(form);
-    if (!r.ok) { toast.error(r.error); return; }
-    toast.success(t("supplier.company.toasts.saved", "Saved"));
-    setOpen(false);
+  const save = async (patch: Partial<CompanyPreferences>) => {
+    const r = await profile.savePreferences({ ...(data ?? {}), ...patch });
+    if (!r.ok) toast.error(r.error);
   };
-  const row = (label: string, value: any) => (
-    <div><dt>{label}</dt><dd>{value || "—"}</dd></div>
+  const row = (label: string, node: React.ReactNode) => (
+    <div><dt>{label}</dt><dd>{node}</dd></div>
   );
   return (
     <section className="cp-card">
-      <header className="cp-section-head">
-        <h2>{t("supplier.company.preferences.title", "Trade preferences")}</h2>
-        {canEdit && <button type="button" className="btn-tb" onClick={start}><EditIcon size={12} /> {t("common.edit", "Edit")}</button>}
-      </header>
+      <header className="cp-section-head"><h2>{t("supplier.company.preferences.title", "Trade preferences")}</h2></header>
       <dl className="cp-prefs">
-        {row(t("supplier.company.preferences.defaultIncoterm", "Default incoterm"), data?.default_incoterm)}
-        {row(t("supplier.company.preferences.defaultPaymentTerms", "Default payment terms"), data?.default_payment_terms)}
-        {row(t("supplier.company.preferences.currencies", "Currencies"), csv(data?.currencies))}
-        {row(t("supplier.company.preferences.leadTime", "Lead time"), data?.lead_time)}
-        {row(t("supplier.company.preferences.fclSize", "FCL size"), data?.fcl_size)}
-        {row(t("supplier.company.preferences.originPorts", "Origin ports"), csv(data?.origin_ports))}
+        {row(t("supplier.company.preferences.defaultIncoterm", "Default incoterm"),
+          <InlineText canEdit={canEdit} value={data?.default_incoterm} placeholder="CFR, FOB…" onSave={(v) => save({ default_incoterm: v })} />)}
+        {row(t("supplier.company.preferences.defaultPaymentTerms", "Default payment terms"),
+          <InlineText canEdit={canEdit} value={data?.default_payment_terms} onSave={(v) => save({ default_payment_terms: v })} />)}
+        {row(t("supplier.company.preferences.currencies", "Currencies"),
+          <InlineText canEdit={canEdit} value={csv(data?.currencies)} placeholder="USD, EUR" onSave={(v) => save({ currencies: csvParse(v) })} />)}
+        {row(t("supplier.company.preferences.leadTime", "Lead time"),
+          <InlineText canEdit={canEdit} value={data?.lead_time} placeholder="30–45 days from PO" onSave={(v) => save({ lead_time: v })} />)}
+        {row(t("supplier.company.preferences.fclSize", "FCL size"),
+          <InlineText canEdit={canEdit} value={data?.fcl_size} placeholder="25 MT (40' reefer)" onSave={(v) => save({ fcl_size: v })} />)}
+        {row(t("supplier.company.preferences.originPorts", "Origin ports"),
+          <InlineText canEdit={canEdit} value={csv(data?.origin_ports)} onSave={(v) => save({ origin_ports: csvParse(v) })} />)}
       </dl>
-
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-xl">
-          <DialogHeader><DialogTitle>{t("supplier.company.preferences.edit", "Edit trade preferences")}</DialogTitle></DialogHeader>
-          <div className="grid gap-3">
-            <div className="grid grid-cols-2 gap-3">
-              <Field label={t("supplier.company.preferences.defaultIncoterm", "Default incoterm")}><Input value={form.default_incoterm ?? ""} onChange={(e) => setForm({ ...form, default_incoterm: e.target.value })} placeholder="CFR, FOB…" /></Field>
-              <Field label={t("supplier.company.preferences.defaultPaymentTerms", "Default payment terms")}><Input value={form.default_payment_terms ?? ""} onChange={(e) => setForm({ ...form, default_payment_terms: e.target.value })} /></Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label={t("supplier.company.preferences.currencies", "Currencies") + " (csv)"}><Input value={csv(form.currencies)} onChange={(e) => setForm({ ...form, currencies: csvParse(e.target.value) })} placeholder="USD, EUR" /></Field>
-              <Field label={t("supplier.company.preferences.leadTime", "Lead time")}><Input value={form.lead_time ?? ""} onChange={(e) => setForm({ ...form, lead_time: e.target.value })} placeholder="30–45 days from PO" /></Field>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <Field label={t("supplier.company.preferences.fclSize", "FCL size")}><Input value={form.fcl_size ?? ""} onChange={(e) => setForm({ ...form, fcl_size: e.target.value })} placeholder="25 MT (40' reefer)" /></Field>
-              <Field label={t("supplier.company.preferences.originPorts", "Origin ports") + " (csv)"}><Input value={csv(form.origin_ports)} onChange={(e) => setForm({ ...form, origin_ports: csvParse(e.target.value) })} /></Field>
-            </div>
-          </div>
-          <DialogFooter>
-            <button type="button" className="btn-tb" onClick={() => setOpen(false)}>{t("common.cancel", "Cancel")}</button>
-            <button type="button" className="btn-tb is-primary" onClick={save}>{t("common.save", "Save")}</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }
 
-/* ============================================================ CERTIFICATIONS */
+/* ========================================================== CERTIFICATIONS */
 function CertificationsSection({ data, profile, canEdit, locale }: { data: CompanyCertification[]; profile: ReturnType<typeof useCompanyProfile>; canEdit: boolean; locale: string }) {
   const { t } = useTranslation();
-  const [editing, setEditing] = useState<Partial<CompanyCertification> | null>(null);
-  const save = async () => {
-    if (!editing) return;
-    const { id, company_id, ...rest } = editing;
-    const r = id ? await profile.updateRow("company_certifications", id, rest) : await profile.insertRow("company_certifications", rest);
-    if (!r.ok) { toast.error(r.error); return; }
-    toast.success(t("supplier.company.toasts.saved", "Saved"));
-    setEditing(null);
+  const [draft, setDraft] = useState<Partial<CompanyCertification> | null>(null);
+  const update = async (id: string, patch: Partial<CompanyCertification>) => {
+    const r = await profile.updateRow("company_certifications", id, patch);
+    if (!r.ok) toast.error(r.error);
   };
   const remove = async (id: string) => {
     if (!confirm(t("common.deleteConfirm", "Delete?"))) return;
     const r = await profile.deleteRow("company_certifications", id);
-    if (!r.ok) toast.error(r.error); else toast.success(t("common.deleted", "Deleted"));
+    if (!r.ok) toast.error(r.error);
+  };
+  const saveDraft = async () => {
+    if (!draft?.name?.trim()) { toast.error(t("common.nameRequired", "Name is required")); return; }
+    const r = await profile.insertRow("company_certifications", draft);
+    if (!r.ok) { toast.error(r.error); return; }
+    setDraft(null);
   };
   return (
     <section className="cp-card">
       <header className="cp-section-head">
         <h2>{t("supplier.company.compliance.title", "Compliance & certifications")}</h2>
-        {canEdit && <button type="button" className="btn-tb" onClick={() => setEditing({ name: "" })}><Plus size={12} /> {t("common.add", "Add")}</button>}
+        {canEdit && !draft && <button type="button" className="btn-tb" onClick={() => setDraft({ name: "" })}><Plus size={12} /> {t("common.add", "Add")}</button>}
       </header>
-      {data.length === 0 ? <EmptyState text={t("supplier.company.compliance.empty", "No certifications yet.")} /> : (
+      {data.length === 0 && !draft ? <EmptyState text={t("supplier.company.compliance.empty", "No certifications yet.")} /> : (
         <div className="cp-cert-grid">
           {data.map((c) => (
             <div key={c.id} className="cp-cert">
               <span className="cp-cert-icon" aria-hidden="true"><CheckCircleIcon size={18} /></span>
-              <div className="cp-cert-body">
-                <strong>{c.name}</strong>
-                {c.valid_until && <span className="cp-cert-valid">{t("supplier.company.compliance.validUntil", "Valid until")} {fmtDate(c.valid_until, locale)}</span>}
-                {c.issuer && <span className="cp-cert-valid">{c.issuer}</span>}
-                <div style={{ display: "flex", gap: 10, marginTop: 4 }}>
-                  {c.certificate_url && <a className="cp-link" href={c.certificate_url} target="_blank" rel="noreferrer">{t("supplier.company.compliance.viewCertificate", "View certificate")}</a>}
-                  {canEdit && <button type="button" className="cp-link" onClick={() => setEditing(c)}>{t("common.edit", "Edit")}</button>}
-                  {canEdit && <button type="button" className="cp-link" style={{ color: "#b91c1c" }} onClick={() => remove(c.id)}>{t("common.delete", "Delete")}</button>}
+              <div className="cp-cert-body" style={{ flex: 1 }}>
+                <InlineText canEdit={canEdit} value={c.name} className="cp-cert-name" onSave={(v) => update(c.id, { name: v })} />
+                <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap", fontSize: 12, color: "#6b7280" }}>
+                  <span>{t("supplier.company.compliance.validUntil", "Valid until")}:</span>
+                  <InlineText canEdit={canEdit} type="date" value={c.valid_until} onSave={(v) => update(c.id, { valid_until: v || null })} />
+                  <InlineText canEdit={canEdit} value={c.issuer} placeholder={t("supplier.company.compliance.issuer", "Issuer")} onSave={(v) => update(c.id, { issuer: v })} />
+                </div>
+                <InlineText canEdit={canEdit} type="url" value={c.certificate_url} placeholder="https://… certificate URL" onSave={(v) => update(c.id, { certificate_url: v })} />
+                {!canEdit && c.certificate_url && <a className="cp-link" href={c.certificate_url} target="_blank" rel="noreferrer">{t("supplier.company.compliance.viewCertificate", "View certificate")}</a>}
+              </div>
+              {canEdit && <button type="button" className="cp-icon-btn" onClick={() => remove(c.id)} aria-label="Delete"><Trash2 size={14} /></button>}
+            </div>
+          ))}
+          {draft && (
+            <div className="cp-cert cp-plant-draft">
+              <span className="cp-cert-icon" aria-hidden="true"><CheckCircleIcon size={18} /></span>
+              <div className="cp-cert-body" style={{ flex: 1, display: "grid", gap: 6 }}>
+                <input className="cp-inline cp-cert-name" autoFocus placeholder={t("common.name", "Name") + " *"} value={draft.name ?? ""} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <input className="cp-inline" type="date" value={draft.valid_until ?? ""} onChange={(e) => setDraft({ ...draft, valid_until: e.target.value })} />
+                  <input className="cp-inline" placeholder={t("supplier.company.compliance.issuer", "Issuer")} value={draft.issuer ?? ""} onChange={(e) => setDraft({ ...draft, issuer: e.target.value })} />
+                </div>
+                <input className="cp-inline" placeholder="https://… certificate URL" value={draft.certificate_url ?? ""} onChange={(e) => setDraft({ ...draft, certificate_url: e.target.value })} />
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" className="btn-tb is-primary" onClick={saveDraft}><Check size={12} /> {t("common.save", "Save")}</button>
+                  <button type="button" className="btn-tb" onClick={() => setDraft(null)}>{t("common.cancel", "Cancel")}</button>
                 </div>
               </div>
             </div>
-          ))}
+          )}
         </div>
       )}
-
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editing?.id ? t("supplier.company.compliance.edit", "Edit certification") : t("supplier.company.compliance.add", "Add certification")}</DialogTitle></DialogHeader>
-          {editing && (
-            <div className="grid gap-3">
-              <Field label={t("common.name", "Name") + " *"}><Input value={editing.name ?? ""} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></Field>
-              <Field label={t("supplier.company.compliance.issuer", "Issuer")}><Input value={editing.issuer ?? ""} onChange={(e) => setEditing({ ...editing, issuer: e.target.value })} /></Field>
-              <Field label={t("supplier.company.compliance.validUntil", "Valid until")}><Input type="date" value={editing.valid_until ?? ""} onChange={(e) => setEditing({ ...editing, valid_until: e.target.value })} /></Field>
-              <Field label={t("supplier.company.compliance.certificateUrl", "Certificate URL")}><Input value={editing.certificate_url ?? ""} onChange={(e) => setEditing({ ...editing, certificate_url: e.target.value })} placeholder="https://…" /></Field>
-            </div>
-          )}
-          <DialogFooter>
-            <button type="button" className="btn-tb" onClick={() => setEditing(null)}>{t("common.cancel", "Cancel")}</button>
-            <button type="button" className="btn-tb is-primary" onClick={save} disabled={!editing?.name?.trim()}>{t("common.save", "Save")}</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }
 
-/* ============================================================ DOCUMENTS */
+/* ========================================================== DOCUMENTS */
 function DocumentsSection({ data, profile, canEdit, locale }: { data: CompanyDocument[]; profile: ReturnType<typeof useCompanyProfile>; canEdit: boolean; locale: string }) {
   const { t } = useTranslation();
-  const [uploadOpen, setUploadOpen] = useState(false);
-  const [file, setFile] = useState<File | null>(null);
   const [docType, setDocType] = useState("Brochure");
-  const [displayName, setDisplayName] = useState("");
   const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
-  const doUpload = async () => {
-    if (!file) return;
+  const onPick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
     setUploading(true);
-    const r = await profile.uploadDocument(file, docType, displayName || undefined);
+    const r = await profile.uploadDocument(f, docType);
     setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
     if (!r.ok) { toast.error(r.error); return; }
     toast.success(t("supplier.company.documents.uploaded", "Document uploaded"));
-    setUploadOpen(false); setFile(null); setDisplayName(""); setDocType("Brochure");
+  };
+  const renameDoc = async (id: string, name: string) => {
+    const r = await profile.updateRow("company_documents", id, { name });
+    if (!r.ok) toast.error(r.error);
+  };
+  const retypeDoc = async (id: string, doc_type: string) => {
+    const r = await profile.updateRow("company_documents", id, { doc_type });
+    if (!r.ok) toast.error(r.error);
   };
   const remove = async (doc: CompanyDocument) => {
     if (!confirm(t("common.deleteConfirm", "Delete?"))) return;
     const r = await profile.deleteDocument(doc);
-    if (!r.ok) toast.error(r.error); else toast.success(t("common.deleted", "Deleted"));
+    if (!r.ok) toast.error(r.error);
   };
 
   return (
     <section className="cp-card">
       <header className="cp-section-head">
         <h2>{t("supplier.company.documents.title", "Documents")}</h2>
-        {canEdit && <button type="button" className="btn-tb is-primary" onClick={() => setUploadOpen(true)}><UploadCloudIcon size={14} /> {t("supplier.company.documents.uploadDocument", "Upload document")}</button>}
+        {canEdit && (
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <select className="cp-inline" value={docType} onChange={(e) => setDocType(e.target.value)}>
+              {DOC_TYPES.map((dt) => <option key={dt} value={dt}>{dt}</option>)}
+            </select>
+            <input ref={fileRef} type="file" style={{ display: "none" }} onChange={onPick} />
+            <button type="button" className="btn-tb is-primary" disabled={uploading} onClick={() => fileRef.current?.click()}>
+              <UploadCloudIcon size={14} /> {uploading ? t("common.uploading", "Uploading…") : t("supplier.company.documents.uploadDocument", "Upload document")}
+            </button>
+          </div>
+        )}
       </header>
       {data.length === 0 ? <EmptyState text={t("supplier.company.documents.empty", "No documents yet.")} /> : (
         <div className="cp-docs">
           {data.map((d) => (
             <div key={d.id} className="cp-doc">
               <span className="cp-doc-icon" aria-hidden="true"><FileTextIcon size={18} /></span>
-              <div className="cp-doc-body">
-                <span className="cp-doc-name">{d.name}</span>
-                <span className="cp-doc-meta">{d.doc_type} {d.file_size ? `· ${fmtSize(d.file_size)}` : ""} · {t("supplier.company.documents.lastUpdated", "Last updated")} {fmtDate(d.updated_at, locale)}</span>
+              <div className="cp-doc-body" style={{ flex: 1 }}>
+                <InlineText canEdit={canEdit} value={d.name} onSave={(v) => renameDoc(d.id, v)} className="cp-doc-name" />
+                <span className="cp-doc-meta">
+                  {canEdit ? (
+                    <select className="cp-inline cp-inline-xs" value={d.doc_type ?? "Other"} onChange={(e) => retypeDoc(d.id, e.target.value)}>
+                      {DOC_TYPES.map((dt) => <option key={dt} value={dt}>{dt}</option>)}
+                    </select>
+                  ) : d.doc_type}
+                  {d.file_size ? ` · ${fmtSize(d.file_size)}` : ""} · {t("supplier.company.documents.lastUpdated", "Last updated")} {fmtDate(d.updated_at, locale)}
+                </span>
               </div>
               {d.file_url && <a className="cp-link" href={d.file_url} target="_blank" rel="noreferrer">{t("supplier.company.documents.view", "View")}</a>}
-              {canEdit && <button type="button" className="cp-link" style={{ color: "#b91c1c", marginLeft: 8 }} onClick={() => remove(d)}><Trash2 size={12} /></button>}
+              {canEdit && <button type="button" className="cp-icon-btn" style={{ marginLeft: 8 }} onClick={() => remove(d)} aria-label="Delete"><Trash2 size={14} /></button>}
             </div>
           ))}
         </div>
       )}
-
-      <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{t("supplier.company.documents.uploadDocument", "Upload document")}</DialogTitle></DialogHeader>
-          <div className="grid gap-3">
-            <Field label={t("supplier.company.documents.docType", "Type")}>
-              <select className="w-full h-10 px-3 border rounded-md text-sm" value={docType} onChange={(e) => setDocType(e.target.value)}>
-                {DOC_TYPES.map((dt) => <option key={dt} value={dt}>{dt}</option>)}
-              </select>
-            </Field>
-            <Field label={t("supplier.company.documents.displayName", "Display name (optional)")}><Input value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder={file?.name} /></Field>
-            <Field label={t("supplier.company.documents.file", "File") + " (max 20MB)"}>
-              <Input type="file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-            </Field>
-          </div>
-          <DialogFooter>
-            <button type="button" className="btn-tb" onClick={() => setUploadOpen(false)}>{t("common.cancel", "Cancel")}</button>
-            <button type="button" className="btn-tb is-primary" onClick={doUpload} disabled={!file || uploading}>{uploading ? t("common.uploading", "Uploading…") : t("common.upload", "Upload")}</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </section>
   );
 }
 
-/* ============================================================ TEAM */
+/* ========================================================== TEAM */
 function TeamSection({ data, profile, canEdit }: { data: CompanyTeamMember[]; profile: ReturnType<typeof useCompanyProfile>; canEdit: boolean }) {
   const { t } = useTranslation();
-  const [editing, setEditing] = useState<Partial<CompanyTeamMember> | null>(null);
-  const save = async () => {
-    if (!editing) return;
-    const { id, company_id, ...rest } = editing;
-    const r = id ? await profile.updateRow("company_team_members", id, rest) : await profile.insertRow("company_team_members", rest);
-    if (!r.ok) { toast.error(r.error); return; }
-    toast.success(t("supplier.company.toasts.saved", "Saved"));
-    setEditing(null);
+  const [draft, setDraft] = useState<Partial<CompanyTeamMember> | null>(null);
+  const update = async (id: string, patch: Partial<CompanyTeamMember>) => {
+    const r = await profile.updateRow("company_team_members", id, patch);
+    if (!r.ok) toast.error(r.error);
   };
   const remove = async (id: string) => {
     if (!confirm(t("common.deleteConfirm", "Delete?"))) return;
     const r = await profile.deleteRow("company_team_members", id);
-    if (!r.ok) toast.error(r.error); else toast.success(t("common.deleted", "Deleted"));
+    if (!r.ok) toast.error(r.error);
+  };
+  const saveDraft = async () => {
+    if (!draft?.name?.trim()) { toast.error(t("common.nameRequired", "Name is required")); return; }
+    const r = await profile.insertRow("company_team_members", draft);
+    if (!r.ok) { toast.error(r.error); return; }
+    setDraft(null);
   };
   return (
     <section className="cp-card">
       <header className="cp-section-head">
         <h2>{t("supplier.company.team.title", "Team")}</h2>
-        {canEdit && <button type="button" className="btn-tb" onClick={() => setEditing({ name: "" })}><Plus size={12} /> {t("common.add", "Add")}</button>}
+        {canEdit && !draft && <button type="button" className="btn-tb" onClick={() => setDraft({ name: "" })}><Plus size={12} /> {t("common.add", "Add")}</button>}
       </header>
-      {data.length === 0 ? <EmptyState text={t("supplier.company.team.empty", "No team members yet.")} /> : (
+      {data.length === 0 && !draft ? <EmptyState text={t("supplier.company.team.empty", "No team members yet.")} /> : (
         <div className="cp-team">
           {data.map((c) => (
             <div key={c.id} className="cp-contact">
               <div className="cp-avatar" aria-hidden="true">{initials(c.name)}</div>
               <div className="cp-contact-body" style={{ flex: 1 }}>
-                <strong>{c.name} {c.is_primary && <span style={{ fontSize: 10, color: "#16a34a", marginLeft: 4 }}>★</span>}</strong>
-                {c.title && <span className="cp-contact-title">{c.title}</span>}
-                {c.email && <a className="cp-contact-link" href={`mailto:${c.email}`}><MessageIcon size={12} /> {c.email}</a>}
-                {c.whatsapp && <span className="cp-contact-link"><PhoneIcon size={12} /> {c.whatsapp}</span>}
-                {canEdit && (
-                  <div style={{ display: "flex", gap: 10, marginTop: 6 }}>
-                    <button type="button" className="cp-link" onClick={() => setEditing(c)}>{t("common.edit", "Edit")}</button>
-                    <button type="button" className="cp-link" style={{ color: "#b91c1c" }} onClick={() => remove(c.id)}>{t("common.delete", "Delete")}</button>
-                  </div>
-                )}
+                <InlineText canEdit={canEdit} value={c.name} className="cp-contact-name" onSave={(v) => update(c.id, { name: v })} />
+                <InlineText canEdit={canEdit} value={c.title} placeholder={t("supplier.company.team.titleField", "Title")} onSave={(v) => update(c.id, { title: v })} />
+                <InlineText canEdit={canEdit} type="email" value={c.email} placeholder="email@company.com" onSave={(v) => update(c.id, { email: v })} />
+                <InlineText canEdit={canEdit} value={c.whatsapp} placeholder="+55 11 98000-0000" onSave={(v) => update(c.id, { whatsapp: v })} />
+                <div style={{ display: "flex", gap: 10, alignItems: "center", marginTop: 4 }}>
+                  <InlineCheckbox canEdit={canEdit} checked={!!c.is_primary} label={t("supplier.company.team.primary", "Primary contact")} onSave={(v) => update(c.id, { is_primary: v })} />
+                </div>
               </div>
+              {canEdit && <button type="button" className="cp-icon-btn" onClick={() => remove(c.id)} aria-label="Delete"><Trash2 size={14} /></button>}
             </div>
           ))}
-        </div>
-      )}
-
-      <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
-        <DialogContent className="max-w-md">
-          <DialogHeader><DialogTitle>{editing?.id ? t("supplier.company.team.edit", "Edit team member") : t("supplier.company.team.add", "Add team member")}</DialogTitle></DialogHeader>
-          {editing && (
-            <div className="grid gap-3">
-              <Field label={t("common.name", "Name") + " *"}><Input value={editing.name ?? ""} onChange={(e) => setEditing({ ...editing, name: e.target.value })} /></Field>
-              <Field label={t("supplier.company.team.titleField", "Title")}><Input value={editing.title ?? ""} onChange={(e) => setEditing({ ...editing, title: e.target.value })} placeholder="Sales Director" /></Field>
-              <Field label="Email"><Input type="email" value={editing.email ?? ""} onChange={(e) => setEditing({ ...editing, email: e.target.value })} /></Field>
-              <Field label="WhatsApp"><Input value={editing.whatsapp ?? ""} onChange={(e) => setEditing({ ...editing, whatsapp: e.target.value })} placeholder="+55 11 98000-0000" /></Field>
-              <label style={{ display: "inline-flex", gap: 8, alignItems: "center", fontSize: 13 }}>
-                <input type="checkbox" checked={!!editing.is_primary} onChange={(e) => setEditing({ ...editing, is_primary: e.target.checked })} style={{ accentColor: "#8B2252" }} />
-                {t("supplier.company.team.primary", "Primary contact")}
-              </label>
+          {draft && (
+            <div className="cp-contact cp-plant-draft">
+              <div className="cp-avatar" aria-hidden="true">{initials(draft.name ?? "")}</div>
+              <div className="cp-contact-body" style={{ flex: 1, display: "grid", gap: 6 }}>
+                <input className="cp-inline cp-contact-name" autoFocus placeholder={t("common.name", "Name") + " *"} value={draft.name ?? ""} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
+                <input className="cp-inline" placeholder={t("supplier.company.team.titleField", "Title")} value={draft.title ?? ""} onChange={(e) => setDraft({ ...draft, title: e.target.value })} />
+                <input className="cp-inline" type="email" placeholder="email@company.com" value={draft.email ?? ""} onChange={(e) => setDraft({ ...draft, email: e.target.value })} />
+                <input className="cp-inline" placeholder="+55 11 98000-0000" value={draft.whatsapp ?? ""} onChange={(e) => setDraft({ ...draft, whatsapp: e.target.value })} />
+                <label style={{ display: "inline-flex", gap: 6, alignItems: "center", fontSize: 12 }}>
+                  <input type="checkbox" checked={!!draft.is_primary} onChange={(e) => setDraft({ ...draft, is_primary: e.target.checked })} style={{ accentColor: "#8B2252" }} />
+                  {t("supplier.company.team.primary", "Primary contact")}
+                </label>
+                <div style={{ display: "flex", gap: 8 }}>
+                  <button type="button" className="btn-tb is-primary" onClick={saveDraft}><Check size={12} /> {t("common.save", "Save")}</button>
+                  <button type="button" className="btn-tb" onClick={() => setDraft(null)}>{t("common.cancel", "Cancel")}</button>
+                </div>
+              </div>
             </div>
           )}
-          <DialogFooter>
-            <button type="button" className="btn-tb" onClick={() => setEditing(null)}>{t("common.cancel", "Cancel")}</button>
-            <button type="button" className="btn-tb is-primary" onClick={save} disabled={!editing?.name?.trim()}>{t("common.save", "Save")}</button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        </div>
+      )}
     </section>
   );
 }
 
-/* ============================================================ Helpers */
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+/* ========================================================== Helpers */
+function FieldRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="grid gap-1.5">
-      <Label className="text-xs uppercase tracking-wider text-muted-foreground font-medium">{label}</Label>
-      {children}
+    <div className="cp-kv">
+      <span className="cp-kv-l">{label}</span>
+      <span className="cp-kv-v">{children}</span>
     </div>
   );
 }
