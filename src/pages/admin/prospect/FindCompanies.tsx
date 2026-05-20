@@ -1,13 +1,14 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Search, Building, MapPin, Users, Briefcase, DollarSign, Tag, Filter, ExternalLink, Linkedin, Save, Download, Globe, BarChart3, FileCode } from "lucide-react";
+import { Search, Building, MapPin, Users, Briefcase, DollarSign, Tag, Filter, ExternalLink, Linkedin, Save, Download, Globe, BarChart3, FileCode, SearchX } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
-  MOCK_COMPANIES, EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
+  EMPLOYEE_RANGES, INDUSTRIES, KEYWORDS, STAGES,
   REGION_PRESETS, SIC_CODES, NAICS_CODES, MARKET_SEGMENTS,
+  LEAD_TYPE_TABS, type LeadTypeTab,
   fmtRevenue, fmtNumber, type MockCompany,
-} from "@/data/mockProspect";
+} from "@/types/prospect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { PspPagination } from "@/components/prospect/Pagination";
@@ -23,7 +24,7 @@ const REVENUE_PRESETS = [
 
 export default function FindCompanies() {
   const nav = useNavigate();
-  const [tab, setTab] = useState<"total" | "saved">("total");
+  const [leadTypeTab, setLeadTypeTab] = useState<LeadTypeTab>("All");
   const [search, setSearch] = useState("");
   const [name, setName] = useState("");
   const [locations, setLocations] = useState<string[]>([]);
@@ -69,33 +70,8 @@ export default function FindCompanies() {
     setMarketSegments([]); setCompanyType("all");
   };
 
-  const filtered = useMemo(() => {
-    let list = [...MOCK_COMPANIES];
-    if (tab === "saved") list = list.filter((c) => c.in_crm);
-    const q = search.toLowerCase().trim();
-    if (q) list = list.filter((c) => c.name.toLowerCase().includes(q) || c.domain.toLowerCase().includes(q));
-    const qn = name.toLowerCase().trim();
-    if (qn) list = list.filter((c) => c.name.toLowerCase().includes(qn) || c.domain.toLowerCase().includes(qn));
-    if (locations.length) list = list.filter((c) => locations.includes(c.country));
-    if (excludeLocations.length) list = list.filter((c) => !excludeLocations.includes(c.country));
-    if (cityQuery.trim()) {
-      const cq = cityQuery.toLowerCase().trim();
-      list = list.filter((c) => c.city.toLowerCase().includes(cq));
-    }
-    if (empRanges.length) list = list.filter((c) => empRanges.includes(c.employeeRange));
-    if (industries.length) list = list.filter((c) => industries.includes(c.industry));
-    if (keywords.length) list = list.filter((c) => keywords.some((k) => (c.keywords ?? []).includes(k) || c.description.toLowerCase().includes(k.toLowerCase())));
-    if (revMin != null) list = list.filter((c) => c.revenue >= revMin);
-    if (revMax != null) list = list.filter((c) => c.revenue <= revMax);
-    if (stages.length) list = list.filter((c) => c.stage && stages.includes(c.stage));
-    if (notInCrm) list = list.filter((c) => !c.in_crm && !savedIds.has(c.id));
-    if (sort === "name") list.sort((a, b) => a.name.localeCompare(b.name));
-    if (sort === "emp-desc") list.sort((a, b) => b.employees - a.employees);
-    if (sort === "emp-asc") list.sort((a, b) => a.employees - b.employees);
-    if (sort === "rev-desc") list.sort((a, b) => b.revenue - a.revenue);
-    if (sort === "rev-asc") list.sort((a, b) => a.revenue - b.revenue);
-    return list;
-  }, [tab, search, name, locations, excludeLocations, cityQuery, empRanges, industries, keywords, revMin, revMax, stages, notInCrm, savedIds, sort]);
+  // TODO: Connect to prospect-search edge function to fetch real data
+  const filtered: MockCompany[] = [];
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((c) => selected.has(c.id));
@@ -113,15 +89,7 @@ export default function FindCompanies() {
   };
 
   const exportCsv = () => {
-    const ids = selected.size ? [...selected] : pageItems.map((c) => c.id);
-    const rows = MOCK_COMPANIES.filter((c) => ids.includes(c.id));
-    const csv = ["Name,Domain,Industry,Country,City,Employees,Revenue,Founded,Website",
-      ...rows.map((c) => `"${c.name}","${c.domain}","${c.industry}","${c.country}","${c.city}",${c.employees},${c.revenue},${c.founded},"${c.website}"`)
-    ].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "companies.csv"; a.click();
-    toast.success(`Exported ${rows.length} companies`);
+    toast.info("No data to export yet");
   };
 
   return (
