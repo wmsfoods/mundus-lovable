@@ -111,7 +111,7 @@ export default function SupplierCreateOffer() {
   const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
   const [temp, setTemp] = useState<"Frozen" | "Chilled">("Frozen");
 
-  const [selInco, setSelInco] = useState<string[]>(["CIF"]);
+  const [selInco, setSelInco] = useState<string[]>([]);
   const [incoExtras, setIncoExtras] = useState<IncoExtras>({});
 
   const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
