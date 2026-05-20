@@ -61,8 +61,8 @@ export default function Login() {
         <LanguageSwitcher variant="pill" />
       </div>
       <div className="flex flex-1 flex-col-reverse items-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
-        {/* Carousel — below the form on mobile, left side on desktop */}
-        <div className="relative w-full max-w-full md:max-w-[600px] md:aspect-square aspect-[16/9] overflow-hidden rounded-none md:rounded-[2.5rem] shadow-sm">
+        {/* Carousel — desktop only; hidden on mobile */}
+        <div className="relative hidden md:block w-full md:max-w-[600px] md:aspect-square overflow-hidden rounded-[2.5rem] shadow-sm">
           {slides.map((src, i) => (
             <div
               key={i}
@@ -96,6 +96,11 @@ export default function Login() {
 
           {/* RIGHT - form */}
           <div className="w-full max-w-[380px] px-6 py-10 md:p-0">
+            <img
+              src={mundusLogo}
+              alt="Mundus Trade"
+              className="md:hidden mx-auto mb-6 h-10 w-auto"
+            />
             <h1 className="text-[28px] font-bold text-[#111]">{t("auth.login")}</h1>
 
           <form onSubmit={handleSubmit} className="mt-8 space-y-5">
@@ -167,8 +172,8 @@ export default function Login() {
           </div>
       </div>
 
-      {/* Footer */}
-      <footer className="border-t border-gray-100 py-5">
+      {/* Footer — desktop only */}
+      <footer className="hidden md:block border-t border-gray-100 py-5">
         <div className="flex items-center justify-center gap-3 text-xs text-gray-500">
           <img src={mundusLogo} alt="Mundus Trade" className="h-5 w-auto opacity-80" />
           <span>{t("common.copyright")}</span>
