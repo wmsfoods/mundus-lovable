@@ -32,6 +32,7 @@ import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
 import AdminProspects from "./pages/admin/AdminProspects.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
+import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 
 import SupplierHome from "./pages/supplier/Home.tsx";
 import SupplierOffers from "./pages/supplier/Offers.tsx";
@@ -124,6 +125,7 @@ const App = () => (
             <Route path="/admin" element={<AdminShell />}>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="companies" element={<AdminComingSoon section="companies" />} />
               <Route path="deals" element={<AdminComingSoon section="deals" />} />
               <Route path="negotiations" element={<AdminComingSoon section="negotiations" />} />

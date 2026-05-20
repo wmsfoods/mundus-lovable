@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle,
+  LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle, Activity,
   Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
@@ -30,6 +30,7 @@ export default function AdminShell() {
 
   const ADMIN_NAV: SidebarItem[] = [
     { to: "/admin/dashboard", label: t("admin.shell.nav.dashboard"), icon: LayoutDashboard as unknown as IconCmp, groupLabel: t("admin.shell.nav.overview") },
+    { to: "/admin/analytics", label: t("admin.shell.nav.analytics"), icon: Activity as unknown as IconCmp },
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
     { to: "/admin/deals", label: t("admin.shell.nav.deals"), icon: Package as unknown as IconCmp },

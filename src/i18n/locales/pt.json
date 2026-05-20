@@ -1533,6 +1533,7 @@
       "nav": {
         "overview": "Visão geral",
         "dashboard": "Painel",
+        "analytics": "Analytics",
         "operations": "Operações",
         "companies": "Empresas",
         "deals": "Negócios",
@@ -1742,6 +1743,39 @@
         "imported": "{{n}} prospects importados",
         "stageChanged": "{{company}} movido para {{stage}}",
         "invited": "Convite enviado para {{email}} — prospect movido para Onboarding"
+      }
+    },
+    "analytics": {
+      "title": "Analytics",
+      "currentVisitors_one": "{{count}} visitante agora",
+      "currentVisitors_other": "{{count}} visitantes agora",
+      "export": "Exportar CSV",
+      "details": "Detalhes",
+      "search": "Buscar…",
+      "empty": "Sem dados",
+      "clearAll": "Limpar tudo",
+      "visitorsLabel": "Visitantes",
+      "current": "Atual",
+      "previous": "Anterior",
+      "period": {
+        "realtime": "Tempo real",
+        "last24h": "Últimas 24 horas",
+        "last7d": "Últimos 7 dias",
+        "last30d": "Últimos 30 dias",
+        "last90d": "Últimos 90 dias"
+      },
+      "metric": {
+        "visitors": "Visitantes",
+        "pageviews": "Visualizações",
+        "viewsPerVisit": "Páginas por visita",
+        "duration": "Duração da visita",
+        "bounceRate": "Taxa de rejeição"
+      },
+      "dim": {
+        "source": "Origem",
+        "page": "Página",
+        "country": "País",
+        "device": "Dispositivo"
       }
     }
   },
