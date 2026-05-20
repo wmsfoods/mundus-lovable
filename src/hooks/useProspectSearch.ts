@@ -16,6 +16,7 @@ export interface ProspectSearchState<T> {
   pagination: ApolloPagination;
   loading: boolean;
   error: string | null;
+  errorCode: string | null;
   source: "apollo" | null;
   hasSearched: boolean;
 }
@@ -135,6 +136,7 @@ export function useProspectSearch<T = MockCompany | MockPerson>(
           ...s,
           loading: false,
           error: error?.message ?? data?.error ?? "search_failed",
+          errorCode: data?.error_code ?? null,
           hasSearched: true,
         }));
         return;
@@ -147,6 +149,7 @@ export function useProspectSearch<T = MockCompany | MockPerson>(
         pagination: data.pagination,
         loading: false,
         error: null,
+        errorCode: null,
         source: data.source ?? "apollo",
         hasSearched: true,
       });
