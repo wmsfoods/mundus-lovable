@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, User, Building, Briefcase, Layers, Mail, MapPin, Filter, Linkedin, Phone, Smartphone, Save, Download } from "lucide-react";
+import { Search, User, Building, Briefcase, Layers, Mail, MapPin, Filter, Linkedin, Phone, Smartphone, Save, Download, Target, UserCheck, Package } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
   MOCK_PEOPLE, EMPLOYEE_RANGES, SENIORITIES, DEPARTMENTS, JOB_TITLES,
+  DECISION_LEVELS, LEAD_TYPES, PRODUCT_INTERESTS,
   fakePhone, type MockPerson,
 } from "@/data/mockProspect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { RevealButton } from "@/components/prospect/RevealButton";
 import { PspPagination } from "@/components/prospect/Pagination";
+import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","United States","Japan","Denmark"];
 
@@ -32,6 +34,11 @@ export default function FindPeople() {
   const [detail, setDetail] = useState<MockPerson | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [revealedMap, setRevealedMap] = useState<Record<string, { email?: string; phone?: string; mobile?: string }>>({});
+  const [decisionLevels, setDecisionLevels] = useState<string[]>([]);
+  const [leadTypes, setLeadTypes] = useState<string[]>([]);
+  const [productsOfInterest, setProductsOfInterest] = useState<string[]>([]);
+  const [savePerson, setSavePerson] = useState<MockPerson | null>(null);
+  const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
   const pageSize = 25;
 
   useEffect(() => {
@@ -63,10 +70,11 @@ export default function FindPeople() {
     if (emailStatuses.length) list = list.filter((p) => emailStatuses.includes(p.emailStatus));
     if (personLocations.length) list = list.filter((p) => personLocations.includes(p.country));
     if (companyFilter) list = list.filter((p) => p.companyName.toLowerCase().includes(companyFilter.toLowerCase()));
+    if (productsOfInterest.length) list = list.filter((p) => (p.productsOfInterest ?? []).some((x) => productsOfInterest.includes(x)));
     if (sort === "name") list.sort((a, b) => a.fullName.localeCompare(b.fullName));
     if (sort === "company") list.sort((a, b) => a.companyName.localeCompare(b.companyName));
     return list;
-  }, [tab, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, sort]);
+  }, [tab, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, productsOfInterest, sort]);
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((p) => selected.has(p.id));
@@ -196,6 +204,30 @@ export default function FindPeople() {
             ))}
           </FilterAccordion>
 
+          <FilterAccordion label="Decision Level" icon={<Target size={14} />} hasActive={decisionLevels.length > 0} defaultOpen={false}>
+            {DECISION_LEVELS.map((d) => (
+              <div key={d} className="psp-checkbox-row">
+                <label><Checkbox checked={decisionLevels.includes(d)} onCheckedChange={() => toggle(decisionLevels, d, setDecisionLevels)} />{d}</label>
+              </div>
+            ))}
+          </FilterAccordion>
+
+          <FilterAccordion label="Lead Type" icon={<UserCheck size={14} />} hasActive={leadTypes.length > 0} defaultOpen={false}>
+            {LEAD_TYPES.map((d) => (
+              <div key={d} className="psp-checkbox-row">
+                <label><Checkbox checked={leadTypes.includes(d)} onCheckedChange={() => toggle(leadTypes, d, setLeadTypes)} />{d}</label>
+              </div>
+            ))}
+          </FilterAccordion>
+
+          <FilterAccordion label="Products of Interest" icon={<Package size={14} />} hasActive={productsOfInterest.length > 0} defaultOpen={false}>
+            <div className="psp-chip-row">
+              {PRODUCT_INTERESTS.map((p) => (
+                <span key={p} className={`psp-chip ${productsOfInterest.includes(p) ? "is-active" : ""}`} onClick={() => toggle(productsOfInterest, p, setProductsOfInterest)}>{p}</span>
+              ))}
+            </div>
+          </FilterAccordion>
+
           {activeFilters > 0 && (
             <button className="psp-clear-btn" onClick={clearAll}>Clear all ({activeFilters})</button>
           )}
@@ -263,11 +295,11 @@ export default function FindPeople() {
                       <td>{p.countryFlag} {p.city}, {p.country}</td>
                       <td><span className="psp-tag">{p.seniority}</span></td>
                       <td><a className="psp-icon-link" href={p.linkedin} target="_blank" rel="noreferrer"><Linkedin size={14} /></a></td>
-                      <td><span className={`psp-badge ${p.in_crm ? "in-crm" : "new"}`}>{p.in_crm ? "In CRM" : "New"}</span></td>
+                      <td><span className={`psp-badge ${p.in_crm || savedIds.has(p.id) ? "in-crm" : "new"}`}>{p.in_crm || savedIds.has(p.id) ? "In CRM" : "New"}</span></td>
                       <td>
                         {p.in_crm
                           ? <button className="psp-btn ghost" onClick={() => setDetail(p)}>View</button>
-                          : <button className="psp-btn" onClick={() => toast.success(`${p.fullName} saved`)}>Save</button>}
+                          : <button className="psp-btn" onClick={() => setSavePerson(p)}>Save</button>}
                       </td>
                     </tr>
                   );
@@ -315,7 +347,7 @@ export default function FindPeople() {
             <>
               {detail.in_crm
                 ? <button className="psp-btn solid">Open in CRM</button>
-                : <button className="psp-btn solid" onClick={() => toast.success("Saved to CRM")}>Save to CRM</button>}
+                : <button className="psp-btn solid" onClick={() => setSavePerson(detail)}>Save to CRM</button>}
               <button className="psp-btn ghost" onClick={() => toast.info("Sequence builder coming soon")}>Add to Sequence</button>
             </>
           }
@@ -352,6 +384,13 @@ export default function FindPeople() {
           </div>
         </DetailDrawer>
       )}
+
+      <SaveToCrmModal
+        open={!!savePerson}
+        onClose={() => setSavePerson(null)}
+        person={savePerson}
+        onSaved={() => { if (savePerson) setSavedIds((s) => new Set(s).add(savePerson.id)); }}
+      />
     </div>
   );
 }

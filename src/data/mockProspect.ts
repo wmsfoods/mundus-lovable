@@ -141,6 +141,33 @@ export const SENIORITIES = ["C-Level","VP","Director","Manager","Senior","Staff"
 export const DEPARTMENTS = ["Operations","Purchasing","Sales","Marketing","Logistics","Finance","Executive"];
 export const JOB_TITLES = ["Procurement Manager","Purchasing Director","Import Manager","Export Manager","VP of Operations","Supply Chain Manager","Head of Sourcing","CEO","COO","Commercial Director","Trade Manager","Logistics Manager","Category Manager","Buyer"];
 
+export const REGION_PRESETS: { label: string; countries: string[] }[] = [
+  { label: "Asia Pacific", countries: ["China","Japan","Philippines","Hong Kong"] },
+  { label: "Middle East & Africa", countries: ["United Arab Emirates","Saudi Arabia","Egypt","Turkey"] },
+  { label: "Europe", countries: ["Denmark","Netherlands","France"] },
+  { label: "Latin America", countries: ["Brazil","Argentina","Mexico","Colombia"] },
+  { label: "North America", countries: ["United States","Canada"] },
+];
+
+export const SIC_CODES = [
+  { code: "2011", label: "Meat Packing Plants" },
+  { code: "2013", label: "Sausages & Prepared Meats" },
+  { code: "2015", label: "Poultry Slaughtering & Processing" },
+  { code: "5141", label: "Groceries — General Line" },
+  { code: "5147", label: "Meats & Meat Products" },
+  { code: "5149", label: "Groceries & Related Products NEC" },
+];
+export const NAICS_CODES = [
+  { code: "311611", label: "Animal (except Poultry) Slaughtering" },
+  { code: "311612", label: "Meat Processed from Carcasses" },
+  { code: "311615", label: "Poultry Processing" },
+  { code: "424470", label: "Meat & Meat Product Merchant Wholesalers" },
+];
+export const MARKET_SEGMENTS = ["B2B","B2C","B2B2C","E-commerce","D2C","Retail","Services","Consulting"];
+export const DECISION_LEVELS = ["Decision Maker","Influencer","Gatekeeper","User","Champion"];
+export const LEAD_TYPES = ["Buyer","Supplier","Both","Prospect"];
+export const PRODUCT_INTERESTS = ["Beef","Pork","Poultry","Lamb","Halal","Organic"];
+
 export const fmtRevenue = (v: number) =>
   v >= 1e9 ? `$${(v / 1e9).toFixed(1)}B` : v >= 1e6 ? `$${(v / 1e6).toFixed(1)}M` : `$${Math.round(v / 1e3)}k`;
 export const fmtNumber = (v: number) => v.toLocaleString("en-US");
