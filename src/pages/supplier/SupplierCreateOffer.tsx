@@ -954,6 +954,89 @@ function PriceInput({ value, onChange }: { value: string; onChange: (v: string) 
   );
 }
 
+function CutPhotoCell({
+  src,
+  label,
+  onFile,
+  isMobile,
+}: {
+  src: string | null;
+  label: string;
+  onFile: (f: File) => void;
+  isMobile: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const inputRef = (typeof window !== "undefined") ? null : null;
+  const fileInput = (
+    <input
+      type="file"
+      accept="image/*"
+      onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+    />
+  );
+
+  if (isMobile) {
+    return (
+      <>
+        <button
+          type="button"
+          className={`cov4-img-box ${src ? "has" : ""}`}
+          onClick={() => (src ? setOpen(true) : (document.getElementById(`cut-photo-${label}`) as HTMLInputElement)?.click())}
+          aria-label={src ? "Preview photo" : "Upload photo"}
+        >
+          {src ? <img src={src} alt="" /> : <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>}
+        </button>
+        <input
+          id={`cut-photo-${label}`}
+          type="file"
+          accept="image/*"
+          style={{ display: "none" }}
+          onChange={(e) => e.target.files?.[0] && onFile(e.target.files[0])}
+        />
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogContent className="max-w-[92vw] sm:max-w-md p-4">
+            <div style={{ display: "flex", flexDirection: "column", gap: 12, alignItems: "center" }}>
+              {src && <img src={src} alt={label} style={{ maxWidth: "100%", maxHeight: "60vh", borderRadius: 8 }} />}
+              <div style={{ fontSize: 13, fontWeight: 600 }}>{label}</div>
+              <label className="cov4-img-replace-btn">
+                Trocar foto
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={(e) => {
+                    const f = e.target.files?.[0];
+                    if (f) { onFile(f); setOpen(false); }
+                  }}
+                />
+              </label>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </>
+    );
+  }
+
+  return (
+    <HoverCard openDelay={120} closeDelay={60}>
+      <HoverCardTrigger asChild>
+        <label className={`cov4-img-box ${src ? "has" : ""}`}>
+          {src ? <img src={src} alt="" /> : <span style={{ fontSize: 12, color: "#aaa" }}>📷</span>}
+          {fileInput}
+        </label>
+      </HoverCardTrigger>
+      {src && (
+        <HoverCardContent side="right" align="start" className="w-auto p-2">
+          <div style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center" }}>
+            <img src={src} alt={label} style={{ width: 240, height: 240, objectFit: "cover", borderRadius: 8 }} />
+            <div style={{ fontSize: 12, fontWeight: 600, color: "var(--fg)" }}>{label}</div>
+          </div>
+        </HoverCardContent>
+      )}
+    </HoverCard>
+  );
+}
+
 function PrevRow({ l, v }: { l: string; v: string }) {
   return (
     <div className="cov4-prev-row">
