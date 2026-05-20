@@ -34,6 +34,8 @@ export default function AdminMarkets() {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [page, setPage] = useState(1);
   const [pendingId, setPendingId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+
 
   // debounce search 300ms
   useEffect(() => {
