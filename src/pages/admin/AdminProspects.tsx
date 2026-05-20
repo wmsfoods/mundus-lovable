@@ -295,7 +295,15 @@ export default function AdminProspects() {
                       <span className="adm-table-av crm-av-blue">{p.initials}</span>
                       <div className="crm-cell-stack">
                         <span className="name">{p.companyName}</span>
-                        <span className="mono">{p.country} · #{p.id}</span>
+                        {(() => {
+                          const primary = p.contacts?.find((c) => c.isPrimary) ?? p.contacts?.[0];
+                          const contactName = primary?.fullName || p.contactName;
+                          return (
+                            <span className="crm-cell-sub">
+                              {p.country}{contactName ? ` · ${contactName}` : ""}
+                            </span>
+                          );
+                        })()}
                       </div>
                     </div>
                   </td>
