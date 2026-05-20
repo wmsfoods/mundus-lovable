@@ -1924,6 +1924,66 @@
         "title": "Aún no hay empresas",
         "body": "Convierte un prospect en empresa Mundus para verlo aquí.",
         "cta": "Abrir CRM"
+      },
+      "actions": {
+        "new": "Nueva empresa",
+        "edit": "Editar",
+        "save": "Guardar",
+        "cancel": "Cancelar",
+        "deactivate": "Desactivar",
+        "activate": "Activar"
+      },
+      "sections": {
+        "identity": "Identidad",
+        "address": "Dirección",
+        "classification": "Clasificación",
+        "onboarding": "Onboarding"
+      },
+      "fields": {
+        "name": "Nombre de la empresa",
+        "taxId": "Tax ID",
+        "website": "Sitio web",
+        "phone": "Teléfono",
+        "logoUrl": "URL del logo",
+        "rating": "Valoración",
+        "address": "Dirección",
+        "city": "Ciudad",
+        "state": "Estado",
+        "country": "País",
+        "zipCode": "Código postal",
+        "isBuyer": "Es comprador",
+        "isSupplier": "Es proveedor",
+        "isVerified": "Verificada",
+        "businessTypes": "Tipos de negocio",
+        "proteinProfiles": "Perfiles de proteína",
+        "onboardedAt": "Onboarded en",
+        "onboardedBy": "Onboarded por",
+        "onboardedFromProspect": "Del prospect",
+        "createdAt": "Creado en",
+        "updatedAt": "Actualizado en"
+      },
+      "validation": {
+        "name": "El nombre es obligatorio",
+        "taxId": "Tax ID es obligatorio",
+        "country": "El país es obligatorio",
+        "state": "El estado es obligatorio",
+        "address": "La dirección es obligatoria",
+        "phone": "El teléfono es obligatorio"
+      },
+      "confirmDeactivate": {
+        "title": "¿Desactivar esta empresa?",
+        "body": "La empresa quedará inactiva. Puedes reactivarla cuando quieras."
+      },
+      "confirmActivate": {
+        "title": "¿Activar esta empresa?",
+        "body": "La empresa volverá a estar activa."
+      },
+      "toast": {
+        "created": "Empresa creada",
+        "saved": "Cambios guardados",
+        "deactivated": "Empresa desactivada",
+        "activated": "Empresa activada",
+        "error": "Algo salió mal"
       }
     },
     "negotiations": {
