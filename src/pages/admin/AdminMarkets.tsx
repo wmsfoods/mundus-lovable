@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Globe, Search, Check, Anchor, MapPin, Ship } from "lucide-react";
+import { Globe, Search, Check, Anchor, MapPin, Ship, X } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useAdminMarkets, regionFromIso, type AdminMarketRow } from "@/hooks/useAdminMarkets";
+
 
 type RegionKey = "all" | "americas" | "europe" | "asia" | "middleEast" | "africa" | "oceania" | "other";
 type ActiveKey = "all" | "active" | "inactive";
