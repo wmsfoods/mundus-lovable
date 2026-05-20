@@ -282,26 +282,3 @@
   outline-offset: 2px;
 }
 
-@media (max-width: 600px) {
-  [data-sonner-toaster][data-x-position="center"] {
-    left: calc(env(safe-area-inset-left) + 16px) !important;
-    right: calc(env(safe-area-inset-right) + 16px) !important;
-    width: auto !important;
-  }
-
-  [data-sonner-toaster] [data-sonner-toast] {
-    left: 0 !important;
-    right: 0 !important;
-    width: 100% !important;
-    min-height: 56px;
-    padding: 14px 44px 14px 16px !important;
-    align-items: flex-start !important;
-  }
-
-  [data-sonner-toaster] [data-sonner-toast] [data-close-button] {
-    left: auto !important;
-    right: 12px !important;
-    top: 12px !important;
-    transform: none !important;
-  }
-}
