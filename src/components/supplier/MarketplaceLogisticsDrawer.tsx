@@ -114,7 +114,7 @@ export default function MarketplaceLogisticsDrawer({
   onApplyRate,
 }: Props) {
   const { t } = useTranslation();
-  const tr = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any);
+  const tr = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
   const [stage, setStage] = useState<"search" | "loading" | "results" | "confirm">("search");
   const [country, setCountry] = useState<string>(markets[0]?.id ?? "");
