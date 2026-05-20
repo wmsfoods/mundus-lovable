@@ -150,7 +150,13 @@ function genActivity(seed: number, owner: string, stage: ProspectStage): Prospec
   return out;
 }
 
-type Seed = Omit<Prospect, "id" | "initials" | "ownerName" | "createdAt" | "updatedAt" | "lastActivity" | "activity">;
+type Seed = Omit<
+  Prospect,
+  "id" | "initials" | "ownerName" | "createdAt" | "updatedAt" | "lastActivity" | "activity"
+    | "leadType" | "contacts" | "isActive" | "isOnboarded" | "street" | "city" | "state"
+    | "zipCode" | "industry" | "website" | "companyLinkedin" | "mundusCompanyId"
+    | "deactivationReason" | "deactivatedAt"
+>;
 
 const SEEDS: Seed[] = [
   // SUPPLIERS
@@ -188,16 +194,42 @@ function buildInitial(): Prospect[] {
     const seedN = i + 1;
     const activity = genActivity(seedN, s.owner, s.stage);
     const last = activity[0];
+    const phone = `+${["55","598","54","86","81","82","84","63","966","971","20","212","60","66","51","57","27"][i % 17]} ${1000 + i}-${2000 + i}`;
+    const domain = s.companyName.toLowerCase().replace(/[^a-z0-9]+/g, "") + ".com";
+    const leadType: LeadType = s.role === "potential_buyer" ? "buyer" : "supplier";
+    const isOnboarded = s.stage === "onboarded";
+    const cityMap: Record<string, string> = { BR:"São Paulo", AR:"Buenos Aires", UY:"Montevideo", JP:"Tokyo", VN:"Hanoi", PH:"Manila", SA:"Riyadh", AE:"Dubai", EG:"Cairo", TH:"Bangkok", MY:"Kuala Lumpur", MA:"Casablanca", PE:"Lima", CO:"Bogotá", ZA:"Cape Town" };
     return {
       ...s,
       id,
       initials: initialsOf(s.companyName),
       ownerName: ownerName(s.owner),
-      contactPhone: `+${["55","598","54","86","81","82","84","63","966","971","20","212","60","66","51","57","27"][i % 17]} ${1000 + i}-${2000 + i}`,
+      contactPhone: phone,
       createdAt: `2025-0${(i % 9) + 1}-1${(i % 9)}`,
       updatedAt: `2025-05-${10 + (i % 18)}`,
       lastActivity: last ? { type: last.type, when: last.at } : undefined,
       activity,
+      leadType,
+      street: `${100 + i} Main St`,
+      city: cityMap[s.country] ?? "—",
+      state: "—",
+      zipCode: `${10000 + i}`,
+      industry: s.role === "potential_buyer" ? "Food Distribution" : "Meat Processing",
+      website: `https://${domain}`,
+      companyLinkedin: `https://linkedin.com/company/${domain.replace(".com","")}`,
+      contacts: [{
+        id: `co-${id}-main`,
+        isPrimary: true,
+        fullName: s.contactName,
+        email: s.contactEmail,
+        phone,
+        mobile: undefined,
+        linkedin: undefined,
+        decisionLevel: i % 4 === 0 ? "c_level" : i % 4 === 1 ? "director" : i % 4 === 2 ? "manager" : "vp",
+      }],
+      isActive: true,
+      isOnboarded,
+      mundusCompanyId: isOnboarded ? `mc-${id}` : undefined,
     };
   });
 }
@@ -295,10 +327,93 @@ export function addProspect(input: AddProspectInput): Prospect {
     updatedAt: now,
     lastActivity: { type: "system", when: "now" },
     activity: [evt],
+    leadType: input.role === "potential_buyer" ? "buyer" : "supplier",
+    contacts: [{
+      id: `co-${id}-main`,
+      isPrimary: true,
+      fullName: input.contactName,
+      email: input.contactEmail,
+      phone: input.contactPhone,
+    }],
+    isActive: true,
+    isOnboarded: false,
   };
   STATE = [p, ...STATE];
   emit();
   return p;
+}
+
+// ===== mutations for detail page =========================================
+
+export function updateProspect(id: string, patch: Partial<Prospect>) {
+  STATE = STATE.map((p) => p.id === id ? { ...p, ...patch, updatedAt: new Date().toISOString().slice(0,10) } : p);
+  emit();
+}
+
+export function deactivateProspect(id: string, reason: string, actor = "FN") {
+  STATE = STATE.map((p) => {
+    if (p.id !== id) return p;
+    const evt: ProspectActivity = {
+      id: `ev-${id}-${Date.now()}`,
+      type: "system",
+      body: `Company deactivated${reason ? `: ${reason}` : ""}`,
+      actor,
+      at: "now",
+    };
+    return {
+      ...p,
+      isActive: false,
+      deactivationReason: reason,
+      deactivatedAt: new Date().toISOString(),
+      contacts: p.contacts.map((c) => ({ ...c })),
+      activity: [evt, ...p.activity],
+      lastActivity: { type: "system", when: "now" },
+      updatedAt: new Date().toISOString().slice(0,10),
+    };
+  });
+  emit();
+}
+
+export function reactivateProspect(id: string, actor = "FN") {
+  STATE = STATE.map((p) => {
+    if (p.id !== id) return p;
+    const evt: ProspectActivity = {
+      id: `ev-${id}-${Date.now()}`, type: "system", body: "Company reactivated", actor, at: "now",
+    };
+    return { ...p, isActive: true, deactivationReason: undefined, deactivatedAt: undefined,
+      activity: [evt, ...p.activity], lastActivity: { type: "system", when: "now" },
+      updatedAt: new Date().toISOString().slice(0,10) };
+  });
+  emit();
+}
+
+export function deleteProspect(id: string): { ok: boolean; reason?: string } {
+  const p = STATE.find((x) => x.id === id);
+  if (!p) return { ok: false, reason: "not_found" };
+  if (p.isOnboarded || p.mundusCompanyId) return { ok: false, reason: "onboarded" };
+  STATE = STATE.filter((x) => x.id !== id);
+  emit();
+  return { ok: true };
+}
+
+export function upsertContact(prospectId: string, contact: ProspectContact) {
+  STATE = STATE.map((p) => {
+    if (p.id !== prospectId) return p;
+    const exists = p.contacts.some((c) => c.id === contact.id);
+    const contacts = exists
+      ? p.contacts.map((c) => c.id === contact.id ? contact : c)
+      : [...p.contacts, contact];
+    return { ...p, contacts, updatedAt: new Date().toISOString().slice(0,10) };
+  });
+  emit();
+}
+
+export function deleteContact(prospectId: string, contactId: string) {
+  STATE = STATE.map((p) => {
+    if (p.id !== prospectId) return p;
+    return { ...p, contacts: p.contacts.filter((c) => c.id !== contactId || c.isPrimary) };
+  });
+  emit();
 }
 
 export function addProspectsBulk(inputs: AddProspectInput[]): number {
