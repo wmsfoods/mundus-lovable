@@ -195,12 +195,63 @@ export default function AdminMarkets() {
         </div>
       ) : (
         <>
+          {/* bulk action bar */}
+          {selectedIds.size > 0 && (
+            <div
+              className="adm-panel"
+              style={{
+                marginTop: 12, padding: "10px 12px", display: "flex", alignItems: "center",
+                gap: 10, flexWrap: "wrap", background: "#FFF7ED", borderColor: "#FED7AA",
+              }}
+            >
+              <strong style={{ fontSize: 13 }}>
+                {t("admin.marketplace.markets.bulk.selected", { count: selectedIds.size, defaultValue: "{{count}} selected" })}
+              </strong>
+              {selectedIds.size < filtered.length && (
+                <button type="button" className="crm-btn-outline" onClick={selectAllFiltered}>
+                  {t("admin.marketplace.markets.bulk.selectAllFiltered", { count: filtered.length, defaultValue: "Select all {{count}} filtered" })}
+                </button>
+              )}
+              <div style={{ flex: 1 }} />
+              <button
+                type="button"
+                className="crm-btn-outline"
+                disabled={isToggling}
+                onClick={() => handleBulk(true)}
+                style={{ borderColor: "#16a34a", color: "#16a34a" }}
+              >
+                <Check size={14} style={{ marginRight: 4 }} />
+                {t("admin.marketplace.markets.bulk.activate", { defaultValue: "Activate" })}
+              </button>
+              <button
+                type="button"
+                className="crm-btn-outline"
+                disabled={isToggling}
+                onClick={() => handleBulk(false)}
+                style={{ borderColor: "#dc2626", color: "#dc2626" }}
+              >
+                <X size={14} style={{ marginRight: 4 }} />
+                {t("admin.marketplace.markets.bulk.deactivate", { defaultValue: "Deactivate" })}
+              </button>
+              <button type="button" className="crm-btn-outline" onClick={clearSelection}>
+                {t("admin.marketplace.markets.bulk.clear", { defaultValue: "Clear" })}
+              </button>
+            </div>
+          )}
+
           {/* desktop table */}
           <div className="adm-panel adm-only-desktop" style={{ padding: 0, marginTop: 12 }}>
             <div className="adm-table-wrap">
               <table className="adm-table">
                 <thead>
                   <tr>
+                    <th style={{ width: 36 }}>
+                      <Checkbox
+                        checked={pageAllSelected ? true : pageSomeSelected ? "indeterminate" : false}
+                        onCheckedChange={togglePageAll}
+                        aria-label="Select page"
+                      />
+                    </th>
                     <th style={{ width: 48 }}></th>
                     <th>{sortHeader("name", t("admin.marketplace.markets.cols.country"))}</th>
                     <th>{t("admin.marketplace.markets.cols.iso")}</th>
@@ -213,7 +264,14 @@ export default function AdminMarkets() {
                 </thead>
                 <tbody>
                   {pageRows.map((r) => (
-                    <tr key={r.market_id}>
+                    <tr key={r.market_id} style={selectedIds.has(r.market_id) ? { background: "#FFF7ED" } : undefined}>
+                      <td>
+                        <Checkbox
+                          checked={selectedIds.has(r.market_id)}
+                          onCheckedChange={() => toggleSelect(r.market_id)}
+                          aria-label={`Select ${pickName(r, locale)}`}
+                        />
+                      </td>
                       <td style={{ fontSize: 22 }}>{r.flag_emoji ?? "🏳️"}</td>
                       <td><strong>{pickName(r, locale)}</strong></td>
                       <td><span className="adm-chip">{r.iso_code ?? "—"}</span></td>
@@ -244,6 +302,7 @@ export default function AdminMarkets() {
               </table>
             </div>
           </div>
+
 
           {/* mobile cards */}
           <div className="adm-only-mobile adm-cards-stack" style={{ marginTop: 12 }}>
