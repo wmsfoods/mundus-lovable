@@ -1231,7 +1231,14 @@
         "ctaTitle": "Access Marketplace Logistics",
         "ctaDesc": "Get real-time freight quotes for your routes from our partner carriers",
         "ctaBtn": "Search freight quotes",
-        "importedToast": "Imported rate from {{carrier}} — US$ {{freight}} per FCL"
+        "importedToast": "Imported rate from {{carrier}} — US$ {{freight}} per FCL",
+        "moreMarkets": "More markets",
+        "searchMarketsPh": "Search countries…",
+        "noMarkets": "No markets found",
+        "incoConflict": "Not compatible with the selected incoterm",
+        "pickCut": "Pick a cut…",
+        "searchCutsPh": "Search cuts…",
+        "noCuts": "No cuts found"
       }
     },
     "home": {
