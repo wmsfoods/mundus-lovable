@@ -1163,6 +1163,38 @@
       },
       "prefill": {
         "toast": "Pre-filled from request #{{requestId}} — review & complete the missing fields"
+      },
+      "marketplace": {
+        "title": "Marketplace Logistics",
+        "subtitle": "Get real-time freight quotes from partner carriers",
+        "searchBtn": "Search freight quotes",
+        "from": "From",
+        "destination": "Destination country",
+        "port": "Destination port",
+        "container": "Container",
+        "readyToLoad": "Ready to load",
+        "loading": "Searching carriers...",
+        "noResults": "No quotes available for this route",
+        "bestPrice": "Best price",
+        "fastest": "Fastest",
+        "useRate": "Use this rate",
+        "confirmTitle": "Rate selected",
+        "freight": "Freight",
+        "insurance": "Insurance (est.)",
+        "source": "Source",
+        "pickDifferent": "Pick different",
+        "confirmAdd": "Confirm & add to offer",
+        "sortBy": "Sort by",
+        "price": "Price",
+        "transit": "Transit",
+        "departure": "Departure",
+        "transitDays": "{{days}} days",
+        "perFcl": "per FCL",
+        "via": "via Marketplace Logistics",
+        "ctaTitle": "Access Marketplace Logistics",
+        "ctaDesc": "Get real-time freight quotes for your routes from our partner carriers",
+        "ctaBtn": "Search freight quotes",
+        "importedToast": "Imported rate from {{carrier}} — US$ {{freight}} per FCL"
       }
     },
     "home": {
