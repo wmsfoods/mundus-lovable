@@ -5,6 +5,7 @@ import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { useSupplierUsers, type SupplierUser } from "@/hooks/useSupplierUsers";
 import { InviteUserModal } from "@/components/supplier/InviteUserModal";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 
 const PROFILE_OPTIONS: SupplierUser["profileType"][] = [
   "master_supplier",
