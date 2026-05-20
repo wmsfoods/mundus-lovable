@@ -1925,6 +1925,51 @@
         "body": "Convert a prospect into a Mundus company to see it listed here.",
         "cta": "Open CRM"
       }
+    },
+    "negotiations": {
+      "title": "Negotiations",
+      "subtitle": "All negotiations across the platform",
+      "stats": {
+        "active": "Active negotiations",
+        "total_value": "Total value",
+        "avg_gap": "Avg gap",
+        "avg_rounds": "Avg rounds",
+        "win_rate": "Win rate"
+      },
+      "filter": {
+        "all": "All",
+        "awaiting_supplier": "Awaiting supplier",
+        "pending_buyer": "Pending buyer review",
+        "accepted": "Bid accepted",
+        "rejected": "Rejected",
+        "expired": "Expired"
+      },
+      "table": {
+        "id": "ID",
+        "product": "Product",
+        "supplier": "Supplier",
+        "buyer": "Buyer",
+        "route": "Route",
+        "status": "Status",
+        "round": "Round",
+        "original": "Original",
+        "latest_bid": "Latest bid",
+        "our_counter": "Our counter",
+        "gap": "Gap",
+        "last_activity": "Last activity"
+      },
+      "empty": {
+        "title": "No negotiations yet",
+        "description": "Negotiations will appear here when buyers start bidding on offers."
+      },
+      "status": {
+        "awaiting_supplier": "Awaiting supplier",
+        "pending_buyer_review": "Pending buyer review",
+        "bid_accepted": "Bid accepted",
+        "offer_rejected": "Rejected",
+        "offer_exhausted": "Exhausted",
+        "expired": "Expired"
+      }
     }
   },
   "profile": {
