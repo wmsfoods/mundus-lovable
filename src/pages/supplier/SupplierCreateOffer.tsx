@@ -966,7 +966,6 @@ function CutPhotoCell({
   isMobile: boolean;
 }) {
   const [open, setOpen] = useState(false);
-  const inputRef = (typeof window !== "undefined") ? null : null;
   const fileInput = (
     <input
       type="file"
