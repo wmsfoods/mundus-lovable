@@ -494,8 +494,18 @@ export default function SupplierCreateOffer() {
             <div className="cov4-inco-grid">
               {INCOTERMS.map((ic) => {
                 const on = selInco.includes(ic.id);
+                const conflicted = !on && INCO_EXCLUSIVE_GROUPS.some(
+                  (grp) => grp.includes(ic.id) && grp.some((x) => x !== ic.id && selInco.includes(x))
+                );
                 return (
-                  <button key={ic.id} type="button" className={`cov4-inco-btn ${on ? "on" : ""}`} onClick={() => toggleInco(ic.id)}>
+                  <button
+                    key={ic.id}
+                    type="button"
+                    className={`cov4-inco-btn ${on ? "on" : ""} ${conflicted ? "disabled" : ""}`}
+                    onClick={() => !conflicted && toggleInco(ic.id)}
+                    disabled={conflicted}
+                    title={conflicted ? (tm("incoConflict") as string) : undefined}
+                  >
                     <span>{on ? "☑" : "☐"}</span>
                     <span>{ic.id}</span>
                   </button>
