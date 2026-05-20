@@ -62,9 +62,19 @@ Deno.serve(async (req) => {
     });
     const json = await r.json().catch(() => ({}));
     if (!r.ok) {
+      const code = json?.error_code ?? null;
+      // Return 200 with ok:false so the client always gets a parsed body
+      // (supabase.functions.invoke swallows the body on non-2xx).
+      // The UI can branch on `error_code` (e.g. API_INACCESSIBLE → upgrade Apollo plan).
       return new Response(
-        JSON.stringify({ ok: false, status: r.status, error: json?.error ?? json?.message ?? "apollo_error", apollo: json }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+        JSON.stringify({
+          ok: false,
+          status: r.status,
+          error_code: code,
+          error: json?.error ?? json?.message ?? "apollo_error",
+          apollo: json,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
       );
     }
 
