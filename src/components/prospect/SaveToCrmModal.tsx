@@ -161,20 +161,18 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     if (!open || (!email && !coDomain)) { setDupWarn(null); return; }
     let cancelled = false;
     (async () => {
-      const checks: Promise<unknown>[] = [];
       if (email) {
-        checks.push(
-          supabase.from("crm_contacts").select("id").eq("email", email.toLowerCase()).limit(1)
-            .then((r) => { if (!cancelled && r.data && r.data.length) setDupWarn(`Contact with email ${email} already exists in your CRM.`); })
-        );
+        const r = await supabase.from("crm_contacts").select("id").eq("email", email.toLowerCase()).limit(1);
+        if (!cancelled && r.data && r.data.length) {
+          setDupWarn(`Contact with email ${email} already exists in your CRM.`);
+        }
       }
       if (coDomain) {
-        checks.push(
-          supabase.from("crm_companies").select("id").eq("domain", coDomain.toLowerCase()).limit(1)
-            .then((r) => { if (!cancelled && r.data && r.data.length) setDupWarn((p) => p ?? `Company with domain ${coDomain} already exists.`); })
-        );
+        const r = await supabase.from("crm_companies").select("id").eq("domain", coDomain.toLowerCase()).limit(1);
+        if (!cancelled && r.data && r.data.length) {
+          setDupWarn((p) => p ?? `Company with domain ${coDomain} already exists.`);
+        }
       }
-      await Promise.all(checks);
     })();
     return () => { cancelled = true; };
   }, [open, email, coDomain]);
