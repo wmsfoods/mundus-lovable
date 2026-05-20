@@ -3081,12 +3081,16 @@ export type Database = {
           email: string
           id: string
           inviter_id: string | null
+          is_owner: boolean | null
           last_invite_sent_at: string | null
           name: string
+          phone: string | null
           preferred_language: string | null
           preferred_unit: string | null
           status: string | null
+          title: string | null
           updated_at: string | null
+          user_type: string | null
         }
         Insert: {
           active_company_id?: string | null
@@ -3097,12 +3101,16 @@ export type Database = {
           email: string
           id: string
           inviter_id?: string | null
+          is_owner?: boolean | null
           last_invite_sent_at?: string | null
           name: string
+          phone?: string | null
           preferred_language?: string | null
           preferred_unit?: string | null
           status?: string | null
+          title?: string | null
           updated_at?: string | null
+          user_type?: string | null
         }
         Update: {
           active_company_id?: string | null
@@ -3113,12 +3121,16 @@ export type Database = {
           email?: string
           id?: string
           inviter_id?: string | null
+          is_owner?: boolean | null
           last_invite_sent_at?: string | null
           name?: string
+          phone?: string | null
           preferred_language?: string | null
           preferred_unit?: string | null
           status?: string | null
+          title?: string | null
           updated_at?: string | null
+          user_type?: string | null
         }
         Relationships: [
           {
