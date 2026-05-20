@@ -26,7 +26,7 @@ Deno.serve(async (req) => {
   const entity = body.entity === "people" ? "people" : "companies";
   // For people, try the prospect DB (mixed_people/search) first, and fall back
   // to CRM contacts/search if the plan can't access it.
-  const path = entity === "people" ? "mixed_people/search" : "mixed_companies/search";
+  const path = entity === "people" ? "people/search" : "mixed_companies/search";
 
   // Whitelist of Apollo params we forward. Empty arrays / null / "" are stripped.
   const allow = entity === "companies"
