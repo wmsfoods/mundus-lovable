@@ -62,9 +62,19 @@ Deno.serve(async (req) => {
     });
     const json = await r.json().catch(() => ({}));
     if (!r.ok) {
+      const code = json?.error_code ?? null;
+      // Pass Apollo's status through so the client can render a meaningful message
+      // (e.g. 403 API_INACCESSIBLE → people search not enabled on this Apollo plan).
+      const status = r.status === 403 || r.status === 401 || r.status === 429 ? r.status : 502;
       return new Response(
-        JSON.stringify({ ok: false, status: r.status, error: json?.error ?? json?.message ?? "apollo_error", apollo: json }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 502 },
+        JSON.stringify({
+          ok: false,
+          status: r.status,
+          error_code: code,
+          error: json?.error ?? json?.message ?? "apollo_error",
+          apollo: json,
+        }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status },
       );
     }
 
