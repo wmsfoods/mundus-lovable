@@ -137,6 +137,62 @@ export type Database = {
         }
         Relationships: []
       }
+      company_about: {
+        Row: {
+          company_id: string
+          countries_served: number | null
+          created_at: string
+          description: string | null
+          fcls_delivered: number | null
+          id: string
+          logo_text: string | null
+          main_species: string[] | null
+          member_since: number | null
+          trade_markets: string[] | null
+          trade_name: string | null
+          updated_at: string
+          years_exporting: number | null
+        }
+        Insert: {
+          company_id: string
+          countries_served?: number | null
+          created_at?: string
+          description?: string | null
+          fcls_delivered?: number | null
+          id?: string
+          logo_text?: string | null
+          main_species?: string[] | null
+          member_since?: number | null
+          trade_markets?: string[] | null
+          trade_name?: string | null
+          updated_at?: string
+          years_exporting?: number | null
+        }
+        Update: {
+          company_id?: string
+          countries_served?: number | null
+          created_at?: string
+          description?: string | null
+          fcls_delivered?: number | null
+          id?: string
+          logo_text?: string | null
+          main_species?: string[] | null
+          member_since?: number | null
+          trade_markets?: string[] | null
+          trade_name?: string | null
+          updated_at?: string
+          years_exporting?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_about_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_buyer_ratings: {
         Row: {
           buyer_id: string
@@ -169,6 +225,250 @@ export type Database = {
           },
           {
             foreignKeyName: "company_buyer_ratings_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_certifications: {
+        Row: {
+          certificate_url: string | null
+          company_id: string
+          created_at: string
+          id: string
+          issuer: string | null
+          name: string
+          sort_order: number | null
+          updated_at: string
+          valid_until: string | null
+        }
+        Insert: {
+          certificate_url?: string | null
+          company_id: string
+          created_at?: string
+          id?: string
+          issuer?: string | null
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Update: {
+          certificate_url?: string | null
+          company_id?: string
+          created_at?: string
+          id?: string
+          issuer?: string | null
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+          valid_until?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_certifications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_documents: {
+        Row: {
+          company_id: string
+          created_at: string
+          doc_type: string
+          file_path: string | null
+          file_size: number | null
+          file_url: string | null
+          id: string
+          mime_type: string | null
+          name: string
+          updated_at: string
+          uploaded_by: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          doc_type?: string
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          mime_type?: string | null
+          name: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          doc_type?: string
+          file_path?: string | null
+          file_size?: number | null
+          file_url?: string | null
+          id?: string
+          mime_type?: string | null
+          name?: string
+          updated_at?: string
+          uploaded_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_documents_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_plants: {
+        Row: {
+          capacity: string | null
+          certifications: string[] | null
+          city: string | null
+          company_id: string
+          country: string | null
+          country_code: string | null
+          created_at: string
+          id: string
+          name: string
+          sort_order: number | null
+          updated_at: string
+          vet_registrations: string | null
+        }
+        Insert: {
+          capacity?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company_id: string
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          name: string
+          sort_order?: number | null
+          updated_at?: string
+          vet_registrations?: string | null
+        }
+        Update: {
+          capacity?: string | null
+          certifications?: string[] | null
+          city?: string | null
+          company_id?: string
+          country?: string | null
+          country_code?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+          sort_order?: number | null
+          updated_at?: string
+          vet_registrations?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_plants_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_preferences: {
+        Row: {
+          company_id: string
+          created_at: string
+          currencies: string[] | null
+          default_incoterm: string | null
+          default_payment_terms: string | null
+          fcl_size: string | null
+          id: string
+          lead_time: string | null
+          origin_ports: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          currencies?: string[] | null
+          default_incoterm?: string | null
+          default_payment_terms?: string | null
+          fcl_size?: string | null
+          id?: string
+          lead_time?: string | null
+          origin_ports?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          currencies?: string[] | null
+          default_incoterm?: string | null
+          default_payment_terms?: string | null
+          fcl_size?: string | null
+          id?: string
+          lead_time?: string | null
+          origin_ports?: string[] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_preferences_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      company_team_members: {
+        Row: {
+          company_id: string
+          created_at: string
+          email: string | null
+          id: string
+          is_primary: boolean | null
+          name: string
+          photo_url: string | null
+          sort_order: number | null
+          title: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name: string
+          photo_url?: string | null
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_primary?: boolean | null
+          name?: string
+          photo_url?: string | null
+          sort_order?: number | null
+          title?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_team_members_company_id_fkey"
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
