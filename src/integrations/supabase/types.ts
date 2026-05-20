@@ -364,6 +364,8 @@ export type Database = {
       crm_companies: {
         Row: {
           address: string | null
+          address_complement: string | null
+          address_number: string | null
           annual_revenue: number | null
           apollo_company_id: string | null
           apollo_enriched_at: string | null
@@ -374,6 +376,9 @@ export type Database = {
           country: string | null
           created_at: string | null
           created_by: string | null
+          deactivated_at: string | null
+          deactivated_by: string | null
+          deactivation_reason: string | null
           domain: string | null
           estimated_employees: number | null
           founded_year: number | null
@@ -381,8 +386,10 @@ export type Database = {
           headcount_growth_6m: number | null
           id: string
           industry: string | null
+          is_active: boolean
           is_public: boolean | null
           keywords: string[] | null
+          lead_type: string | null
           linkedin_url: string | null
           logo_url: string | null
           market_region: string | null
@@ -392,6 +399,7 @@ export type Database = {
           naics_codes: string[] | null
           name: string
           notes: string | null
+          onboarded_at: string | null
           owner_id: string | null
           phone: string | null
           postal_code: string | null
@@ -405,6 +413,7 @@ export type Database = {
           status: string | null
           stock_exchange: string | null
           stock_symbol: string | null
+          street: string | null
           tags: string[] | null
           tax_id: string | null
           technologies: Json | null
@@ -415,6 +424,8 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          address_complement?: string | null
+          address_number?: string | null
           annual_revenue?: number | null
           apollo_company_id?: string | null
           apollo_enriched_at?: string | null
@@ -425,6 +436,9 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           created_by?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivation_reason?: string | null
           domain?: string | null
           estimated_employees?: number | null
           founded_year?: number | null
@@ -432,8 +446,10 @@ export type Database = {
           headcount_growth_6m?: number | null
           id?: string
           industry?: string | null
+          is_active?: boolean
           is_public?: boolean | null
           keywords?: string[] | null
+          lead_type?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           market_region?: string | null
@@ -443,6 +459,7 @@ export type Database = {
           naics_codes?: string[] | null
           name: string
           notes?: string | null
+          onboarded_at?: string | null
           owner_id?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -456,6 +473,7 @@ export type Database = {
           status?: string | null
           stock_exchange?: string | null
           stock_symbol?: string | null
+          street?: string | null
           tags?: string[] | null
           tax_id?: string | null
           technologies?: Json | null
@@ -466,6 +484,8 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          address_complement?: string | null
+          address_number?: string | null
           annual_revenue?: number | null
           apollo_company_id?: string | null
           apollo_enriched_at?: string | null
@@ -476,6 +496,9 @@ export type Database = {
           country?: string | null
           created_at?: string | null
           created_by?: string | null
+          deactivated_at?: string | null
+          deactivated_by?: string | null
+          deactivation_reason?: string | null
           domain?: string | null
           estimated_employees?: number | null
           founded_year?: number | null
@@ -483,8 +506,10 @@ export type Database = {
           headcount_growth_6m?: number | null
           id?: string
           industry?: string | null
+          is_active?: boolean
           is_public?: boolean | null
           keywords?: string[] | null
+          lead_type?: string | null
           linkedin_url?: string | null
           logo_url?: string | null
           market_region?: string | null
@@ -494,6 +519,7 @@ export type Database = {
           naics_codes?: string[] | null
           name?: string
           notes?: string | null
+          onboarded_at?: string | null
           owner_id?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -507,6 +533,7 @@ export type Database = {
           status?: string | null
           stock_exchange?: string | null
           stock_symbol?: string | null
+          street?: string | null
           tags?: string[] | null
           tax_id?: string | null
           technologies?: Json | null
@@ -573,6 +600,8 @@ export type Database = {
           full_name: string
           headline: string | null
           id: string
+          is_active: boolean
+          is_primary: boolean
           is_registered: boolean | null
           job_title: string | null
           last_activity_at: string | null
@@ -663,6 +692,8 @@ export type Database = {
           full_name: string
           headline?: string | null
           id?: string
+          is_active?: boolean
+          is_primary?: boolean
           is_registered?: boolean | null
           job_title?: string | null
           last_activity_at?: string | null
@@ -753,6 +784,8 @@ export type Database = {
           full_name?: string
           headline?: string | null
           id?: string
+          is_active?: boolean
+          is_primary?: boolean
           is_registered?: boolean | null
           job_title?: string | null
           last_activity_at?: string | null
