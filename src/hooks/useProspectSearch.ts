@@ -75,7 +75,11 @@ export function mapPerson(p: any): MockPerson {
   const org = p.organization ?? {};
   const country = p.country ?? org.country ?? "";
   const first = p.first_name ?? "";
-  const last = p.last_name ?? "";
+  const last = p.last_name ?? p.last_name_obfuscated ?? "";
+  const hasEmail = p.has_email === true || !!p.email;
+  const emailStatus: MockPerson["emailStatus"] = (p.email_status as MockPerson["emailStatus"])
+    ?? (p.email ? "verified" : hasEmail ? "unverified" : "unavailable");
+  const hasPhone = !!(p.sanitized_phone ?? p.phone_numbers?.length ?? p.has_direct_phone === "Yes" || p.has_direct_phone === true);
   return {
     id: p.id ?? p._id ?? String(Math.random()),
     firstName: first,
@@ -86,10 +90,10 @@ export function mapPerson(p: any): MockPerson {
     companyName: org.name ?? p.organization_name ?? "—",
     companyLogo: org.logo_url ?? `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(org.name ?? "X")}&backgroundColor=791f3f`,
     email: p.email ?? null,
-    emailStatus: (p.email_status as MockPerson["emailStatus"]) ?? (p.email ? "verified" : "unavailable"),
+    emailStatus,
     emailRevealed: !!p.email,
     phone: null,
-    phoneAvailable: !!(p.sanitized_phone ?? p.phone_numbers?.length),
+    phoneAvailable: hasPhone,
     phoneRevealed: false,
     mobile: null,
     mobileAvailable: false,
