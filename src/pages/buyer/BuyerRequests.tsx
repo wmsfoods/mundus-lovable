@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { ClipboardIcon, SearchIcon, PlusIcon } from "@/components/icons";
+import NewRequestModal from "@/components/buyer/NewRequestModal";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import {
@@ -41,6 +41,7 @@ export default function BuyerRequests() {
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
   const [speciesF, setSpeciesF] = useState<"all" | Species>("all");
+  const [showNew, setShowNew] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -105,20 +106,22 @@ export default function BuyerRequests() {
             <option value="beef">{t("buyer.requests.species.beef", { defaultValue: "Beef" })}</option>
             <option value="pork">{t("buyer.requests.species.pork", { defaultValue: "Pork" })}</option>
             <option value="poultry">{t("buyer.requests.species.poultry", { defaultValue: "Poultry" })}</option>
-            <option value="lamb">{t("buyer.requests.species.lamb", { defaultValue: "Lamb" })}</option>
+            <option value="ovine">{t("buyer.requests.species.ovine", { defaultValue: "Ovine" })}</option>
           </select>
         </div>
         <div className="right">
           <button
             type="button"
             className="btn-tb is-primary"
-            onClick={() => toast(t("buyer.requests.toast.create"))}
+            onClick={() => setShowNew(true)}
           >
             <PlusIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
             {t("buyer.requests.newRequest")}
           </button>
         </div>
       </div>
+
+      <NewRequestModal open={showNew} onOpenChange={setShowNew} />
 
       <div className="nego-chips" style={{ marginTop: 12 }}>
         {statusChips.map((c) => (
