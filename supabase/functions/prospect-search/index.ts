@@ -24,7 +24,10 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { /* empty body ok */ }
 
   const entity = body.entity === "people" ? "people" : "companies";
-  const path = entity === "people" ? "mixed_people/search" : "mixed_companies/search";
+  // NOTE: This Apollo plan does not have access to the prospect database
+  // (mixed_people/search). It does have access to CRM `contacts/search`,
+  // which returns contacts that already exist in the workspace's Apollo CRM.
+  const path = entity === "people" ? "contacts/search" : "mixed_companies/search";
 
   // Whitelist of Apollo params we forward. Empty arrays / null / "" are stripped.
   const allow = entity === "companies"
@@ -36,10 +39,21 @@ Deno.serve(async (req) => {
         "page", "per_page",
       ]
     : [
-        "q_keywords", "person_titles", "person_seniorities",
-        "person_department_or_subdepartments", "contact_email_status",
-        "person_locations", "organization_locations",
-        "organization_num_employees_ranges", "q_organization_name",
+        // Apollo CRM contacts/search whitelist
+        "q_keywords",
+        "contact_label_ids",
+        "contact_stage_ids",
+        "owner_ids",
+        "email_status",
+        "person_titles",
+        "person_seniorities",
+        "person_locations",
+        "organization_locations",
+        "organization_ids",
+        "organization_num_employees_ranges",
+        "q_organization_name",
+        "sort_by_field",
+        "sort_ascending",
         "page", "per_page",
       ];
 
@@ -84,7 +98,7 @@ Deno.serve(async (req) => {
 
     const results = entity === "companies"
       ? (json.organizations ?? json.accounts ?? [])
-      : (json.people ?? json.contacts ?? []);
+      : (json.contacts ?? json.people ?? []);
     const pagination = json.pagination ?? {
       page: payload.page, per_page: payload.per_page,
       total_entries: results.length, total_pages: 1,
