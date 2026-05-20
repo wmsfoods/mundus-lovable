@@ -29,6 +29,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
   const [newLocale, setNewLocale] = useState<string>("");
   const [newLocaleName, setNewLocaleName] = useState("");
   const [trEdits, setTrEdits] = useState<Record<string, string>>({});
@@ -113,16 +114,40 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
           <div style={{ display: "grid", gap: 14, marginTop: 4 }}>
             <div style={{ display: "flex", gap: 14, alignItems: "flex-start" }}>
               <div
-                style={{
-                  width: 120, height: 120, borderRadius: 12, overflow: "hidden", background: "#F3F4F6",
-                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
-                  border: `1px solid ${c.border}`,
+                onClick={() => fileRef.current?.click()}
+                onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+                onDragLeave={() => setDragOver(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setDragOver(false);
+                  const f = e.dataTransfer.files?.[0];
+                  if (f && f.type.startsWith("image/")) handleUpload(f);
                 }}
+                style={{
+                  width: 140, height: 140, borderRadius: 12, overflow: "hidden",
+                  background: dragOver ? "#EEF2FF" : "#F3F4F6",
+                  display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+                  border: `2px dashed ${dragOver ? "#6366F1" : c.border}`,
+                  cursor: "pointer", position: "relative", transition: "all 0.15s",
+                }}
+                title={t("admin.marketplace.cuts.modal.dropHint", { defaultValue: "Click or drag an image here" })}
               >
                 {imageUrl ? (
-                  <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                  <>
+                    <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    {dragOver && (
+                      <div style={{ position: "absolute", inset: 0, background: "rgba(99,102,241,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>
+                        {t("admin.marketplace.cuts.modal.dropHere", { defaultValue: "Drop to upload" })}
+                      </div>
+                    )}
+                  </>
                 ) : (
-                  <Beef size={36} color="#9CA3AF" />
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4, padding: 8, textAlign: "center" }}>
+                    <Upload size={22} color="#9CA3AF" />
+                    <span style={{ fontSize: 10, color: "#6b7280", lineHeight: 1.2 }}>
+                      {t("admin.marketplace.cuts.modal.dropHint", { defaultValue: "Click or drag an image here" })}
+                    </span>
+                  </div>
                 )}
               </div>
               <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 8 }}>
