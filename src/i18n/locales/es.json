@@ -1163,6 +1163,38 @@
       },
       "prefill": {
         "toast": "Pre-completado desde la solicitud #{{requestId}} — revise y complete los campos faltantes"
+      },
+      "marketplace": {
+        "title": "Logística Marketplace",
+        "subtitle": "Cotizaciones de flete en tiempo real con navieras asociadas",
+        "searchBtn": "Buscar cotizaciones",
+        "from": "Origen",
+        "destination": "País de destino",
+        "port": "Puerto de destino",
+        "container": "Contenedor",
+        "readyToLoad": "Listo para embarque",
+        "loading": "Buscando navieras...",
+        "noResults": "Sin cotizaciones para esta ruta",
+        "bestPrice": "Mejor precio",
+        "fastest": "Más rápido",
+        "useRate": "Usar esta cotización",
+        "confirmTitle": "Cotización seleccionada",
+        "freight": "Flete",
+        "insurance": "Seguro (est.)",
+        "source": "Fuente",
+        "pickDifferent": "Elegir otra",
+        "confirmAdd": "Confirmar y agregar",
+        "sortBy": "Ordenar por",
+        "price": "Precio",
+        "transit": "Tránsito",
+        "departure": "Salida",
+        "transitDays": "{{days}} días",
+        "perFcl": "por FCL",
+        "via": "vía Logística Marketplace",
+        "ctaTitle": "Logística Marketplace",
+        "ctaDesc": "Cotizaciones de flete en tiempo real con navieras asociadas",
+        "ctaBtn": "Buscar cotizaciones",
+        "importedToast": "Cotización importada de {{carrier}} — US$ {{freight}} por FCL"
       }
     },
     "home": {

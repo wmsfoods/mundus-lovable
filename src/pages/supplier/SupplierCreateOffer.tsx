@@ -1,6 +1,8 @@
 import { useCallback, useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
+import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 
 /* ══════════════════════════════════════════════════════════
    DATA (mocks aligned with v4 prototype)
@@ -95,6 +97,8 @@ export default function SupplierCreateOffer() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromRequestId = searchParams.get("from");
+  const { t } = useTranslation();
+  const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
@@ -124,6 +128,9 @@ export default function SupplierCreateOffer() {
   const [aiProcessing, setAiProcessing] = useState(false);
 
   const [showPreview, setShowPreview] = useState(false);
+
+  const [mlOpen, setMlOpen] = useState(false);
+  const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
 
   useEffect(() => {
     if (fromRequestId) {
@@ -226,6 +233,40 @@ export default function SupplierCreateOffer() {
   const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
 
   const handleSaveDraft = () => toast("Draft saved");
+
+  const applyMarketplaceRate = useCallback((rate: MarketplaceRate) => {
+    const market = MARKETS.find((m) => m.id === rate.countryCode);
+    if (!market) return;
+    setSelMarkets((prev) => (prev.find((x) => x.id === market.id) ? prev : [...prev, market]));
+    setMktCfg((prev) => {
+      const existing = prev[market.id];
+      if (existing) {
+        const sp = existing.sp.includes(rate.portId) ? existing.sp : [...existing.sp, rate.portId];
+        return {
+          ...prev,
+          [market.id]: {
+            ...existing,
+            sp,
+            sm: false,
+            pf: { ...existing.pf, [rate.portId]: rate.freight },
+          },
+        };
+      }
+      return {
+        ...prev,
+        [market.id]: {
+          sp: [rate.portId],
+          sm: false,
+          gf: rate.freight,
+          pf: Object.fromEntries(market.p.map((p) => [p.id, p.id === rate.portId ? rate.freight : ""])),
+        },
+      };
+    });
+    setRouteSources((prev) => ({ ...prev, [`${rate.countryCode}-${rate.portId}`]: rate.source }));
+    toast.success(tm("importedToast", { carrier: rate.source.carrierShort, freight: Number(rate.freight).toLocaleString() }));
+    setMlOpen(false);
+  }, [tm]);
+
   const handlePublish = () => {
     if (!canPublish) return;
     toast.success("Offer ready to publish (mock)");
@@ -339,10 +380,14 @@ export default function SupplierCreateOffer() {
                         <div key={pid} className="cov4-ppf-r">
                           <span className="cov4-ppf-n">{pn?.n}</span>
                           <PriceInput value={c.pf[pid] || ""} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], pf: { ...pr[m.id].pf, [pid]: v } } }))} />
+                          <MarketplaceSourceTag src={routeSources[`${m.id}-${pid}`]} via={tm("via")} />
                         </div>
                       );
                     })}
                   </div>
+                )}
+                {(c.sm || c.sp.length <= 1) && c.sp[0] && (
+                  <MarketplaceSourceTag src={routeSources[`${m.id}-${c.sp[0]}`]} via={tm("via")} />
                 )}
               </div>
             );
@@ -353,6 +398,30 @@ export default function SupplierCreateOffer() {
               <p>Select destination markets above</p>
             </div>
           )}
+
+          {/* Marketplace Logistics CTA */}
+          <div
+            style={{
+              marginTop: 12, background: "#8B2252", color: "#fff",
+              borderRadius: 12, padding: 14, display: "flex", flexDirection: "column", gap: 8,
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 700, display: "flex", alignItems: "center", gap: 6 }}>
+              🚢 {tm("ctaTitle")}
+            </div>
+            <div style={{ fontSize: 12, opacity: 0.92, lineHeight: 1.4 }}>{tm("ctaDesc")}</div>
+            <button
+              type="button"
+              onClick={() => setMlOpen(true)}
+              style={{
+                alignSelf: "flex-start", background: "transparent", color: "#fff",
+                border: "1px solid rgba(255,255,255,0.6)", borderRadius: 8,
+                padding: "7px 12px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+              }}
+            >
+              {tm("ctaBtn")} →
+            </button>
+          </div>
 
           {/* Incoterms */}
           <div className="cov4-sec">
@@ -690,11 +759,48 @@ export default function SupplierCreateOffer() {
           </button>
         </div>
       </footer>
+
+      <MarketplaceLogisticsDrawer
+        open={mlOpen}
+        onClose={() => setMlOpen(false)}
+        markets={MARKETS}
+        csize={csize}
+        origin="Santos (BRSSZ)"
+        onApplyRate={applyMarketplaceRate}
+      />
     </div>
   );
 }
 
 /* ── helpers ── */
+function MarketplaceSourceTag({
+  src,
+  via,
+}: {
+  src?: MarketplaceRate["source"];
+  via: string;
+}) {
+  if (!src) return null;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 4 }}>
+      <span
+        style={{
+          background: src.carrierColor,
+          color: src.carrierTextColor,
+          borderRadius: 999,
+          padding: "1px 7px",
+          fontSize: 10,
+          fontWeight: 600,
+          letterSpacing: 0.2,
+        }}
+      >
+        {src.carrierShort}
+      </span>
+      <span style={{ fontSize: 10, color: "#6b7280" }}>{via}</span>
+    </div>
+  );
+}
+
 function SectionHeader({ icon, t, s }: { icon: string; t: string; s: string }) {
   return (
     <div className="cov4-sh">
