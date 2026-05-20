@@ -140,6 +140,7 @@ export default function AdminCompanies() {
                     <th>{t("admin.companies.cols.company")}</th>
                     <th>{t("admin.companies.cols.type")}</th>
                     <th>{t("admin.companies.cols.location")}</th>
+                    <th>{t("admin.companies.cols.proteins")}</th>
                     <th>{t("admin.companies.cols.verified")}</th>
                     <th>{t("admin.companies.cols.onboarded")}</th>
                     <th>{t("admin.companies.cols.status")}</th>
@@ -170,13 +171,9 @@ function Row({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string;
     <tr onClick={onOpen} style={{ cursor: "pointer" }}>
       <td>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          {row.logo_url ? (
-            <img src={row.logo_url} alt="" style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover" }} />
-          ) : (
-            <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, var(--p800, #9b2251), #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12 }}>
-              {initials(row.name)}
-            </span>
-          )}
+          <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12 }}>
+            {initials(row.name)}
+          </span>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
             <strong>{row.name}</strong>
             <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>#{row.company_number}</span>
@@ -185,6 +182,15 @@ function Row({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string;
       </td>
       <td><TypeChip type={k} t={t} /></td>
       <td>{[row.city, row.country].filter(Boolean).join(", ") || "—"}</td>
+      <td>
+        {(row.protein_profiles ?? []).length > 0 ? (
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+            {(row.protein_profiles ?? []).slice(0, 4).map((p) => (
+              <span key={p} className="adm-chip" style={{ fontSize: 11, background: "#FCE7F3", color: "#8B2252", borderColor: "#FBCFE8" }}>{p}</span>
+            ))}
+          </div>
+        ) : <span style={{ color: "var(--fg-muted, #6b7280)" }}>—</span>}
+      </td>
       <td>
         {row.is_verified ? (
           <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16a34a", fontSize: 12, fontWeight: 600 }}>
@@ -212,13 +218,9 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
   const isActive = (row.status ?? "active") === "active";
   return (
     <div className="adm-panel" onClick={onOpen} style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}>
-      {row.logo_url ? (
-        <img src={row.logo_url} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
-      ) : (
-        <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg, var(--p800, #9b2251), #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
-          {initials(row.name)}
-        </span>
-      )}
+      <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
+        {initials(row.name)}
+      </span>
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
           <strong style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis" }}>{row.name}</strong>
@@ -227,6 +229,13 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
         <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
           {[row.city, row.country].filter(Boolean).join(", ") || "—"}
         </div>
+        {(row.protein_profiles ?? []).length > 0 && (
+          <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}>
+            {(row.protein_profiles ?? []).slice(0, 4).map((p) => (
+              <span key={p} className="adm-chip" style={{ fontSize: 10, background: "#FCE7F3", color: "#8B2252", borderColor: "#FBCFE8" }}>{p}</span>
+            ))}
+          </div>
+        )}
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
           <TypeChip type={k} t={t} />
           <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
