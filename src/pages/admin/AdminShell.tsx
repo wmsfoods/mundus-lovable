@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle, Activity,
   Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag,
+  Search as SearchIcon, UserSearch, ClipboardList,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
@@ -40,6 +41,10 @@ export default function AdminShell() {
 
     { to: "/admin/crm/prospects", label: t("admin.shell.nav.prospects"), icon: Users as unknown as IconCmp, groupLabel: t("admin.shell.nav.crm") },
     { to: "/admin/crm/pipeline", label: t("admin.shell.nav.pipeline"), icon: BarChart3 as unknown as IconCmp },
+
+    { to: "/admin/prospect/companies", label: "Find Companies", icon: SearchIcon as unknown as IconCmp, groupLabel: "PROSPECT" },
+    { to: "/admin/prospect/people", label: "Find People", icon: UserSearch as unknown as IconCmp },
+    { to: "/admin/prospect/lists", label: "Lists", icon: ClipboardList as unknown as IconCmp },
 
     { to: "/admin/marketplace/products", label: t("admin.shell.nav.products"), icon: Beef as unknown as IconCmp, groupLabel: t("admin.shell.nav.marketplace") },
     { to: "/admin/marketplace/markets", label: t("admin.shell.nav.markets"), icon: Globe as unknown as IconCmp },
