@@ -74,33 +74,33 @@ const BACK_FALLBACK: Array<{ pattern: string; to: string }> = [
 ];
 
 /**
- * Default title (i18n key) per stack route. Pages may override at runtime
- * via `useStackHeader({ title })`.
+ * Default title (i18n key + literal fallback) per stack route.
+ * Pages may override at runtime via `useStackHeader({ title })`.
  */
-const STACK_TITLES: Array<{ pattern: string; titleKey: string }> = [
-  { pattern: "/buyer/offers/:id", titleKey: "buyer.offers.detail.headerTitle" },
-  { pattern: "/buyer/orders/:id", titleKey: "buyer.orders.detail.headerTitle" },
-  { pattern: "/buyer/orders", titleKey: "shell.nav.orders" },
-  { pattern: "/buyer/requests/:id", titleKey: "buyer.requests.detail.headerTitle" },
-  { pattern: "/buyer/requests/new", titleKey: "shell.nav.createRequest" },
-  { pattern: "/buyer/requests", titleKey: "shell.nav.requests" },
-  { pattern: "/buyer/negotiations/:id", titleKey: "buyer.negotiations.detail.headerTitle" },
-  { pattern: "/buyer/negotiations", titleKey: "shell.nav.negotiations" },
-  { pattern: "/buyer/chat/:conversationId", titleKey: "shell.nav.chat" },
-  { pattern: "/buyer/users", titleKey: "shell.nav.users" },
-  { pattern: "/buyer/profile", titleKey: "shell.profile" },
-  { pattern: "/supplier/offers/:id", titleKey: "supplier.offers.detail.headerTitle" },
-  { pattern: "/supplier/offers/new", titleKey: "shell.nav.createOffer" },
-  { pattern: "/supplier/requests/:id", titleKey: "supplier.requests.detail.headerTitle" },
-  { pattern: "/supplier/requests", titleKey: "shell.nav.offerRequests" },
-  { pattern: "/supplier/sales/:id", titleKey: "supplier.sales.detail.headerTitle" },
-  { pattern: "/supplier/negotiations/:id", titleKey: "supplier.negotiations.detail.headerTitle" },
-  { pattern: "/supplier/negotiations", titleKey: "shell.nav.negotiations" },
-  { pattern: "/supplier/users", titleKey: "shell.nav.users" },
-  { pattern: "/supplier/company", titleKey: "shell.nav.myCompany" },
-  { pattern: "/supplier/profile", titleKey: "shell.profile" },
-  { pattern: "/supplier/insights/price-benchmark", titleKey: "supplier.insights.nav.priceBenchmark" },
-  { pattern: "/supplier/insights/analytics", titleKey: "supplier.insights.nav.analytics" },
+const STACK_TITLES: Array<{ pattern: string; titleKey: string; fallback: string }> = [
+  { pattern: "/buyer/offers/:id", titleKey: "shell.nav.offers", fallback: "Offer" },
+  { pattern: "/buyer/orders/:id", titleKey: "shell.nav.orders", fallback: "Order" },
+  { pattern: "/buyer/orders", titleKey: "shell.nav.orders", fallback: "Orders" },
+  { pattern: "/buyer/requests/:id", titleKey: "shell.nav.requests", fallback: "Request" },
+  { pattern: "/buyer/requests/new", titleKey: "shell.nav.createRequest", fallback: "New request" },
+  { pattern: "/buyer/requests", titleKey: "shell.nav.requests", fallback: "Requests" },
+  { pattern: "/buyer/negotiations/:id", titleKey: "shell.nav.negotiations", fallback: "Negotiation" },
+  { pattern: "/buyer/negotiations", titleKey: "shell.nav.negotiations", fallback: "Negotiations" },
+  { pattern: "/buyer/chat/:conversationId", titleKey: "shell.nav.chat", fallback: "Chat" },
+  { pattern: "/buyer/users", titleKey: "shell.nav.users", fallback: "Users" },
+  { pattern: "/buyer/profile", titleKey: "shell.profile", fallback: "Profile" },
+  { pattern: "/supplier/offers/:id", titleKey: "shell.nav.myOffers", fallback: "Offer" },
+  { pattern: "/supplier/offers/new", titleKey: "shell.nav.createOffer", fallback: "New offer" },
+  { pattern: "/supplier/requests/:id", titleKey: "shell.nav.offerRequests", fallback: "Request" },
+  { pattern: "/supplier/requests", titleKey: "shell.nav.offerRequests", fallback: "Requests" },
+  { pattern: "/supplier/sales/:id", titleKey: "shell.nav.sales", fallback: "Sale" },
+  { pattern: "/supplier/negotiations/:id", titleKey: "shell.nav.negotiations", fallback: "Negotiation" },
+  { pattern: "/supplier/negotiations", titleKey: "shell.nav.negotiations", fallback: "Negotiations" },
+  { pattern: "/supplier/users", titleKey: "shell.nav.users", fallback: "Users" },
+  { pattern: "/supplier/company", titleKey: "shell.nav.myCompany", fallback: "My company" },
+  { pattern: "/supplier/profile", titleKey: "shell.profile", fallback: "Profile" },
+  { pattern: "/supplier/insights/price-benchmark", titleKey: "supplier.insights.nav.priceBenchmark", fallback: "Price benchmark" },
+  { pattern: "/supplier/insights/analytics", titleKey: "supplier.insights.nav.analytics", fallback: "Analytics" },
 ];
 
 function matchAny(pathname: string, patterns: string[]): boolean {
@@ -119,7 +119,7 @@ export function backFallbackFor(pathname: string): string {
   return "/buyer";
 }
 
-export function defaultTitleKeyFor(pathname: string): string | null {
+export function defaultTitleFor(pathname: string): { key: string; fallback: string } | null {
   const hit = STACK_TITLES.find((r) => matchPath({ path: r.pattern, end: true }, pathname));
-  return hit?.titleKey ?? null;
+  return hit ? { key: hit.titleKey, fallback: hit.fallback } : null;
 }

@@ -5,6 +5,7 @@ import { FileTextIcon, FilterIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { Pagination } from "@/components/mundus/Pagination";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { MOCK_SALES, type Sale, type SaleStatus } from "@/data/mockSales";
 
 const PAGE_SIZE = 10;
@@ -78,7 +79,7 @@ export default function SupplierSales() {
         </button>
       </div>
 
-      <div className="data-table-wrap">
+      <div className="data-table-wrap has-mobile-cards">
         <table className="data-table">
           <thead>
             <tr>
@@ -122,6 +123,29 @@ export default function SupplierSales() {
           </tbody>
         </table>
       </div>
+
+      <ListCardList>
+        {slice.length === 0 ? (
+          <div className="empty-state">{t("supplier.sales.empty")}</div>
+        ) : (
+          slice.map((s) => (
+            <ListCard
+              key={s.id}
+              onClick={() => navigate(`/supplier/sales/${s.dealId}`)}
+              title={s.dealId}
+              subtitle={s.buyer}
+              chip={{
+                label: t(`supplier.sales.status.${s.status}`),
+                className: `pill-status ${STATUS_CLASS[s.status]}`,
+              }}
+              meta={[
+                { label: t("supplier.sales.col.orderDate"), value: s.orderDate },
+                { label: t("supplier.sales.col.destination"), value: s.destination },
+              ]}
+            />
+          ))
+        )}
+      </ListCardList>
 
       <div className="table-footer">
         <Pagination page={pageSafe} totalPages={totalPages} onChange={setPage} />

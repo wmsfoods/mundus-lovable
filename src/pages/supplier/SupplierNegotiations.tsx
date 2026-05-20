@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { MessageIcon, SearchIcon, ChevronRightIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import {
   useNegotiations,
   type NegotiationBid,
@@ -161,7 +162,7 @@ export default function SupplierNegotiations() {
           <p>{t("supplier.negotiations.empty")}</p>
         </div>
       ) : (
-        <div className="data-table-wrap">
+        <div className="data-table-wrap has-mobile-cards">
           <table className="nego-table">
             <thead>
               <tr>
@@ -306,6 +307,49 @@ export default function SupplierNegotiations() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {groups.length > 0 && (
+        <ListCardList>
+          {groups.map((g) => {
+            const bids = g._bids;
+            const actionCount = bids.filter((b) => b.status === "action_required").length;
+            const finalCount = bids.filter((b) => b.status === "final_round").length;
+            const needAction = actionCount + finalCount;
+            const mostSevere = bids
+              .slice()
+              .sort((a, b) => PRIORITY[a.status] - PRIORITY[b.status])[0].status;
+            const latestUpdate = bids
+              .map((b) => new Date(b.updatedAt).getTime())
+              .reduce((a, b) => Math.max(a, b), 0);
+            const minBid = Math.min(...bids.map((b) => b.latestBidUsd));
+            const maxBid = Math.max(...bids.map((b) => b.latestBidUsd));
+            const bidRange = minBid === maxBid ? fmtUsd(minBid) : `${fmtUsd(minBid)} – ${fmtUsd(maxBid)}`;
+            return (
+              <ListCard
+                key={g.id}
+                onClick={() => navigate(`/supplier/negotiations/${bids[0].id}`)}
+                title={g.title}
+                subtitle={t("supplier.negotiations.bidsCount", { n: bids.length, defaultValue: `${bids.length} bids` })}
+                chip={
+                  needAction > 0
+                    ? {
+                        label: t("supplier.negotiations.needAction", { n: needAction, defaultValue: `${needAction} need action` }),
+                        className: "pill-status pill-action-required",
+                      }
+                    : {
+                        label: t(`supplier.negotiations.status.${mostSevere}`),
+                        className: `pill-status ${STATUS_PILL[mostSevere]}`,
+                      }
+                }
+                meta={[
+                  { label: t("supplier.negotiations.col.latestBid"), value: bidRange },
+                  { label: t("supplier.negotiations.col.updated"), value: fmtDate(new Date(latestUpdate).toISOString(), locale) },
+                ]}
+              />
+            );
+          })}
+        </ListCardList>
       )}
     </>
   );

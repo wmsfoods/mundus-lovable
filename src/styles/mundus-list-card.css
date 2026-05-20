@@ -1,0 +1,107 @@
+/* =========================================================================
+   Mundus — ListCard (mobile listings replacing data tables)
+   ========================================================================= */
+
+.lc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.lc {
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 1px 2px rgba(16, 24, 40, 0.04);
+  -webkit-tap-highlight-color: transparent;
+}
+.lc.is-interactive { cursor: pointer; }
+.lc.is-interactive:active { background: var(--g050, #fafafa); }
+
+.lc-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  justify-content: space-between;
+}
+.lc-title-wrap { min-width: 0; flex: 1; }
+.lc-title {
+  font-size: 15px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  line-height: 1.25;
+  word-break: break-word;
+}
+.lc-subtitle {
+  font-size: 13px;
+  color: var(--fg-muted);
+  margin-top: 2px;
+}
+.lc-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--g100);
+  color: var(--fg);
+  font-size: 11px;
+  font-weight: var(--weight-semibold);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+/* Inherit status-pill colors when the chip carries pill-* classes */
+.lc-chip.pill-inactive { background: #fdecec; color: #b42323; }
+.lc-chip.pill-active   { background: #e6f7ed; color: #15803d; }
+.lc-chip.pill-pending  { background: #fff4e0; color: #b45309; }
+.lc-chip.pill-info     { background: #e0effc; color: #1d4ed8; }
+.lc-chip.pill-neutral  { background: var(--g100); color: var(--g700); }
+.lc-chip.pill-action-required { background: #fef0f0; color: #b6354b; }
+
+.lc-meta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 14px;
+  margin: 0;
+  padding-top: 8px;
+  border-top: 1px solid hsl(var(--border));
+}
+.lc-meta-item { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.lc-meta-item dt {
+  font-size: 11px;
+  color: var(--fg-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: var(--weight-medium);
+}
+.lc-meta-item dd {
+  margin: 0;
+  font-size: 13px;
+  color: var(--fg);
+  font-weight: var(--weight-medium);
+  word-break: break-word;
+}
+
+.lc-cta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: var(--weight-semibold);
+  color: var(--p800);
+  padding-top: 6px;
+}
+
+/* Hide data tables on mobile; show the cards container only on mobile */
+.lc-list { display: none; }
+.data-table-wrap.has-mobile-cards { display: block; }
+
+@media (max-width: 1023px) {
+  .lc-list { display: flex; }
+  .data-table-wrap.has-mobile-cards { display: none; }
+}
