@@ -22,10 +22,11 @@ export function useCurrentCompany(): State {
     loading: true,
     error: null,
   });
+  const userId = user?.id ?? null;
 
   useEffect(() => {
     if (authLoading) return;
-    if (!user) {
+    if (!userId) {
       setState({ company: null, loading: false, error: null });
       return;
     }
@@ -37,7 +38,7 @@ export function useCurrentCompany(): State {
       const { data: userRow, error: userErr } = await supabase
         .from("users")
         .select("company_id, active_company_id")
-        .eq("id", user.id)
+        .eq("id", userId)
         .maybeSingle();
 
       if (cancelled) return;
@@ -87,7 +88,7 @@ export function useCurrentCompany(): State {
     return () => {
       cancelled = true;
     };
-  }, [user, authLoading]);
+  }, [userId, authLoading]);
 
   return state;
 }
