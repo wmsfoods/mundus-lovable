@@ -1950,7 +1950,8 @@
         "verified": "Verified",
         "onboarded": "Onboarded",
         "status": "Status",
-        "actions": "Actions"
+        "actions": "Actions",
+        "proteins": "Proteins"
       },
       "empty": {
         "title": "No companies yet",
@@ -1969,7 +1970,12 @@
         "identity": "Identity",
         "address": "Address",
         "classification": "Classification",
-        "onboarding": "Onboarding"
+        "onboarding": "Onboarding",
+        "role": "Business role",
+        "protein": "Protein profile & Preferred cuts",
+        "company": "Company information",
+        "contact": "Business contact",
+        "admin": "Admin settings"
       },
       "fields": {
         "name": "Company name",
@@ -1992,7 +1998,19 @@
         "onboardedBy": "Onboarded by",
         "onboardedFromProspect": "From prospect",
         "createdAt": "Created at",
-        "updatedAt": "Updated at"
+        "updatedAt": "Updated at",
+        "buyer": "Buyer",
+        "supplier": "Supplier",
+        "bothRoleNote": "When a company is both Buyer and Supplier, each role must use different email addresses. Only Mundus admins can switch between roles.",
+        "proteinProfile": "Protein profile",
+        "preferredCuts": "Preferred cuts",
+        "companyName": "Company name",
+        "licenses": "Business licenses or certificates",
+        "licensesHint": "Upload coming soon",
+        "verified": "Verified",
+        "status": "Status",
+        "onboarded": "Onboarded",
+        "companyNumber": "Company number"
       },
       "validation": {
         "name": "Company name is required",
@@ -2016,6 +2034,22 @@
         "deactivated": "Company deactivated",
         "activated": "Company activated",
         "error": "Something went wrong"
+      },
+      "detail": {
+        "title": "Company details",
+        "newTitle": "New company",
+        "save": "Save",
+        "saving": "Saving...",
+        "saved": "Company saved",
+        "deleteTitle": "Delete company",
+        "deleteConfirm": "This will permanently delete this company and all associated data.",
+        "deleted": "Company deleted"
+      },
+      "proteins": {
+        "beef": "Beef",
+        "pork": "Pork",
+        "poultry": "Poultry",
+        "ovine": "Ovine"
       }
     },
     "negotiations": {

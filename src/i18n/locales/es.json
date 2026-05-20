@@ -1950,7 +1950,8 @@
         "verified": "Verificada",
         "onboarded": "Ingresó el",
         "status": "Estado",
-        "actions": "Acciones"
+        "actions": "Acciones",
+        "proteins": "Proteínas"
       },
       "empty": {
         "title": "Aún no hay empresas",
@@ -1969,7 +1970,12 @@
         "identity": "Identidad",
         "address": "Dirección",
         "classification": "Clasificación",
-        "onboarding": "Onboarding"
+        "onboarding": "Onboarding",
+        "role": "Tipo de negocio",
+        "protein": "Perfil de proteína & Cortes preferidos",
+        "company": "Información de la empresa",
+        "contact": "Contacto comercial",
+        "admin": "Configuración admin"
       },
       "fields": {
         "name": "Nombre de la empresa",
@@ -1992,7 +1998,19 @@
         "onboardedBy": "Onboarded por",
         "onboardedFromProspect": "Del prospect",
         "createdAt": "Creado en",
-        "updatedAt": "Actualizado en"
+        "updatedAt": "Actualizado en",
+        "buyer": "Comprador",
+        "supplier": "Proveedor",
+        "bothRoleNote": "Cuando una empresa es Comprador y Proveedor, cada rol debe usar correos diferentes. Solo los admins de Mundus pueden alternar entre roles.",
+        "proteinProfile": "Perfil de proteína",
+        "preferredCuts": "Cortes preferidos",
+        "companyName": "Nombre de la empresa",
+        "licenses": "Licencias o certificados",
+        "licensesHint": "Carga próximamente",
+        "verified": "Verificado",
+        "status": "Estado",
+        "onboarded": "Fecha de onboarding",
+        "companyNumber": "Número de empresa"
       },
       "validation": {
         "name": "El nombre es obligatorio",
@@ -2016,6 +2034,22 @@
         "deactivated": "Empresa desactivada",
         "activated": "Empresa activada",
         "error": "Algo salió mal"
+      },
+      "detail": {
+        "title": "Detalles de la empresa",
+        "newTitle": "Nueva empresa",
+        "save": "Guardar",
+        "saving": "Guardando...",
+        "saved": "Empresa guardada",
+        "deleteTitle": "Eliminar empresa",
+        "deleteConfirm": "Esto eliminará permanentemente esta empresa y todos los datos asociados.",
+        "deleted": "Empresa eliminada"
+      },
+      "proteins": {
+        "beef": "Vacuno",
+        "pork": "Cerdo",
+        "poultry": "Aves",
+        "ovine": "Ovino"
       }
     },
     "negotiations": {
