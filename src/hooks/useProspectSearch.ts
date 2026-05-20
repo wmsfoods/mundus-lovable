@@ -132,12 +132,16 @@ export function useProspectSearch<T = MockCompany | MockPerson>(
         body: { entity, ...params },
       });
       if (myId !== reqId.current) return;
+      const rawMessage = error?.message ?? data?.error ?? "search_failed";
+      const inaccessible = rawMessage.includes("mixed_people/search is not accessible") || rawMessage.includes("API_INACCESSIBLE");
       if (error || !data?.ok) {
         setState((s) => ({
           ...s,
+          rows: [],
+          pagination: { page: Number(params.page ?? 1), per_page: Number(params.per_page ?? 25), total_entries: 0, total_pages: 0 },
           loading: false,
-          error: error?.message ?? data?.error ?? "search_failed",
-          errorCode: data?.error_code ?? null,
+          error: rawMessage,
+          errorCode: data?.error_code ?? (inaccessible ? "API_INACCESSIBLE" : null),
           hasSearched: true,
         }));
         return;

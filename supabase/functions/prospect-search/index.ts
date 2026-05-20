@@ -5,15 +5,19 @@ const APOLLO_BASE = "https://api.apollo.io/api/v1";
 
 type Body = Record<string, unknown> & { entity?: "companies" | "people" };
 
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    status,
+  });
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
   const apiKey = Deno.env.get("apollo") ?? Deno.env.get("APOLLO_API_KEY");
   if (!apiKey) {
-    return new Response(
-      JSON.stringify({ ok: false, error: "apollo_api_key_missing" }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
-    );
+    return jsonResponse({ ok: false, error: "apollo_api_key_missing", fallback: true });
   }
 
   let body: Body = {};
@@ -62,19 +66,19 @@ Deno.serve(async (req) => {
     });
     const json = await r.json().catch(() => ({}));
     if (!r.ok) {
-      const code = json?.error_code ?? null;
+      const code = json?.error_code ?? json?.apollo?.error_code ?? null;
       // Return 200 with ok:false so the client always gets a parsed body
       // (supabase.functions.invoke swallows the body on non-2xx).
       // The UI can branch on `error_code` (e.g. API_INACCESSIBLE → upgrade Apollo plan).
-      return new Response(
-        JSON.stringify({
+      return jsonResponse(
+        {
           ok: false,
           status: r.status,
           error_code: code,
+          fallback: true,
           error: json?.error ?? json?.message ?? "apollo_error",
           apollo: json,
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+        },
       );
     }
 
@@ -92,9 +96,6 @@ Deno.serve(async (req) => {
     );
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
-    return new Response(
-      JSON.stringify({ ok: false, error: msg }),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 500 },
-    );
+    return jsonResponse({ ok: false, error: msg, fallback: true });
   }
 });
