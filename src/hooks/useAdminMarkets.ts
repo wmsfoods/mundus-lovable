@@ -102,6 +102,18 @@ export function useAdminMarkets() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "markets"] }),
   });
 
+  const bulkToggleMutation = useMutation({
+    mutationFn: async ({ marketIds, isActive }: { marketIds: string[]; isActive: boolean }) => {
+      if (!marketIds.length) return;
+      const { error } = await supabase
+        .from("markets")
+        .update({ is_active: isActive })
+        .in("id", marketIds);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "markets"] }),
+  });
+
   return {
     rows: query.data?.rows ?? [],
     totalPorts: query.data?.totalPorts ?? 0,
@@ -110,9 +122,12 @@ export function useAdminMarkets() {
     error: query.error ? (query.error as Error).message : null,
     toggleMarketActive: (marketId: string, isActive: boolean) =>
       toggleMutation.mutateAsync({ marketId, isActive }),
-    isToggling: toggleMutation.isPending,
+    bulkToggleMarketsActive: (marketIds: string[], isActive: boolean) =>
+      bulkToggleMutation.mutateAsync({ marketIds, isActive }),
+    isToggling: toggleMutation.isPending || bulkToggleMutation.isPending,
   };
 }
+
 
 export const REGION_BY_ISO: Record<string, string> = (() => {
   const map: Record<string, string> = {};
