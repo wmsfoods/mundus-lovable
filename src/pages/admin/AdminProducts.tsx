@@ -300,18 +300,30 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
 function useRowDropzone(cutId: string, onUpload: (id: string, f: File) => Promise<string>) {
   const [drag, setDrag] = useState(false);
   const [busy, setBusy] = useState(false);
+  const counter = useRef(0);
   const handlers = {
+    onDragEnter: (e: React.DragEvent) => {
+      if (!Array.from(e.dataTransfer.types).includes("Files")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      counter.current += 1;
+      setDrag(true);
+    },
     onDragOver: (e: React.DragEvent) => {
-      if (Array.from(e.dataTransfer.types).includes("Files")) {
-        e.preventDefault();
-        setDrag(true);
-      }
+      if (!Array.from(e.dataTransfer.types).includes("Files")) return;
+      e.preventDefault();
+      e.stopPropagation();
+      e.dataTransfer.dropEffect = "copy";
     },
     onDragLeave: (e: React.DragEvent) => {
-      if (e.currentTarget === e.target) setDrag(false);
+      e.stopPropagation();
+      counter.current = Math.max(0, counter.current - 1);
+      if (counter.current === 0) setDrag(false);
     },
     onDrop: async (e: React.DragEvent) => {
       e.preventDefault();
+      e.stopPropagation();
+      counter.current = 0;
       setDrag(false);
       const f = e.dataTransfer.files?.[0];
       if (!f) return;
