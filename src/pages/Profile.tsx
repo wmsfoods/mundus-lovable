@@ -3,20 +3,32 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { getActiveRole, setActiveRole, type ActiveRole } from "@/lib/activeRole";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
   const { company } = useCurrentCompany();
+  const { isAdmin } = useIsMundusAdmin();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isDualRole = Boolean(company?.is_buyer && company?.is_supplier);
+  const availableRoles: ActiveRole[] = [
+    ...(company?.is_buyer ? (["buyer"] as ActiveRole[]) : []),
+    ...(company?.is_supplier ? (["supplier"] as ActiveRole[]) : []),
+    ...(isAdmin ? (["admin"] as ActiveRole[]) : []),
+  ];
+  const showSwitch = availableRoles.length >= 2;
+  const inferredRole: ActiveRole = location.pathname.startsWith("/supplier")
+    ? "supplier"
+    : location.pathname.startsWith("/admin")
+    ? "admin"
+    : "buyer";
+  const saved = getActiveRole();
   const currentRole: ActiveRole =
-    getActiveRole() ??
-    (location.pathname.startsWith("/supplier") ? "supplier" : "buyer");
+    saved && availableRoles.includes(saved) ? saved : inferredRole;
 
   const handleRoleChange = (role: ActiveRole) => {
     if (role === currentRole) return;
@@ -58,26 +70,23 @@ export default function Profile() {
         </div>
       </div>
 
-      {isDualRole && (
+      {showSwitch && (
         <div className="profile-section">
           <h3>{t("profile.activeRole", { defaultValue: "Active profile" })}</h3>
           <div className="role-switch">
-            <button
-              type="button"
-              className={`role-switch-btn ${currentRole === "buyer" ? "is-active" : ""}`}
-              onClick={() => handleRoleChange("buyer")}
-              aria-pressed={currentRole === "buyer"}
-            >
-              {t("profile.buyer", { defaultValue: "Buyer" })}
-            </button>
-            <button
-              type="button"
-              className={`role-switch-btn ${currentRole === "supplier" ? "is-active" : ""}`}
-              onClick={() => handleRoleChange("supplier")}
-              aria-pressed={currentRole === "supplier"}
-            >
-              {t("profile.supplier", { defaultValue: "Supplier" })}
-            </button>
+            {availableRoles.map((role) => (
+              <button
+                key={role}
+                type="button"
+                className={`role-switch-btn ${currentRole === role ? "is-active" : ""}`}
+                onClick={() => handleRoleChange(role)}
+                aria-pressed={currentRole === role}
+              >
+                {t(`profile.${role}`, {
+                  defaultValue: role.charAt(0).toUpperCase() + role.slice(1),
+                })}
+              </button>
+            ))}
           </div>
         </div>
       )}
