@@ -289,7 +289,7 @@ export default function AdminProspectDetail() {
           <span className="adm-panel-title">{t("admin.crm.detail.sections.mainContact")}</span>
         </div>
         {main ? (
-          <ContactBlock contact={main} editing={editing} onChange={setContactField} showRole={false} t={t} />
+          <ContactBlock contact={main} editing={editing} onChange={setContactField} showRole={false} leadType={d.leadType} t={t} />
         ) : <div style={{ color: "var(--adm-text-tertiary)", fontSize: 12 }}>—</div>}
       </div>
 
@@ -309,7 +309,7 @@ export default function AdminProspectDetail() {
           <div className="psp-contacts-list">
             {additional.map((c) => (
               <div key={c.id} className="psp-contact-card">
-                <ContactBlock contact={c} editing={editing} onChange={setContactField} showRole={true} t={t} />
+                <ContactBlock contact={c} editing={editing} onChange={setContactField} showRole={true} leadType={d.leadType} t={t} />
                 {editing && (
                   <button type="button" className="crm-btn-ghost psp-contact-del" onClick={() => removeContact(c.id)}>
                     <Trash2 size={12} />
