@@ -63,6 +63,9 @@ export type Database = {
           is_verified: boolean | null
           logo_url: string | null
           name: string
+          onboarded_at: string | null
+          onboarded_by: string | null
+          onboarded_from_prospect_id: string | null
           phone: string
           protein_profiles: string[] | null
           rating: number | null
@@ -88,6 +91,9 @@ export type Database = {
           is_verified?: boolean | null
           logo_url?: string | null
           name: string
+          onboarded_at?: string | null
+          onboarded_by?: string | null
+          onboarded_from_prospect_id?: string | null
           phone: string
           protein_profiles?: string[] | null
           rating?: number | null
@@ -113,6 +119,9 @@ export type Database = {
           is_verified?: boolean | null
           logo_url?: string | null
           name?: string
+          onboarded_at?: string | null
+          onboarded_by?: string | null
+          onboarded_from_prospect_id?: string | null
           phone?: string
           protein_profiles?: string[] | null
           rating?: number | null

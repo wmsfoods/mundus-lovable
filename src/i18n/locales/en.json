@@ -1720,17 +1720,33 @@
         "reassign": "Reassign",
         "savedToast": "Changes saved",
         "actions": {
-          "edit": "Edit", "save": "Save", "cancel": "Cancel",
-          "deactivate": "Deactivate", "reactivate": "Reactivate",
-          "delete": "Delete", "searchMorePeople": "Search more people",
+          "edit": "Edit",
+          "save": "Save",
+          "cancel": "Cancel",
+          "deactivate": "Deactivate",
+          "reactivate": "Reactivate",
+          "delete": "Delete",
+          "searchMorePeople": "Search more people",
           "addContact": "Add contact",
           "convert": "Convert to Mundus"
         },
-        "status": { "active": "Active", "inactive": "Inactive", "onboarded": "Onboarded" },
-        "leadType": { "buyer": "Buyer", "supplier": "Supplier", "buyer_supplier": "Buyer & Supplier" },
+        "status": {
+          "active": "Active",
+          "inactive": "Inactive",
+          "onboarded": "Onboarded"
+        },
+        "leadType": {
+          "buyer": "Buyer",
+          "supplier": "Supplier",
+          "buyer_supplier": "Buyer & Supplier"
+        },
         "decisionLevel": {
-          "c_level": "C-Level", "vp": "VP", "director": "Director",
-          "manager": "Manager", "specialist": "Specialist", "other": "Other"
+          "c_level": "C-Level",
+          "vp": "VP",
+          "director": "Director",
+          "manager": "Manager",
+          "specialist": "Specialist",
+          "other": "Other"
         },
         "sections": {
           "company": "Company information",
@@ -1739,16 +1755,27 @@
           "notes": "Notes"
         },
         "fields": {
-          "leadType": "Lead type", "industry": "Industry",
-          "street": "Street", "city": "City", "state": "State",
-          "zipCode": "Zip code", "country": "Country",
-          "website": "Website", "companyLinkedin": "Company LinkedIn",
-          "fullName": "Full name", "role": "Role",
-          "email": "Email", "additionalEmail": "Additional email",
-          "phone": "Phone", "mobile": "Mobile",
-          "personalLinkedin": "Personal LinkedIn", "decisionLevel": "Decision level"
+          "leadType": "Lead type",
+          "industry": "Industry",
+          "street": "Street",
+          "city": "City",
+          "state": "State",
+          "zipCode": "Zip code",
+          "country": "Country",
+          "website": "Website",
+          "companyLinkedin": "Company LinkedIn",
+          "fullName": "Full name",
+          "role": "Role",
+          "email": "Email",
+          "additionalEmail": "Additional email",
+          "phone": "Phone",
+          "mobile": "Mobile",
+          "personalLinkedin": "Personal LinkedIn",
+          "decisionLevel": "Decision level"
         },
-        "contacts": { "empty": "No additional contacts yet." },
+        "contacts": {
+          "empty": "No additional contacts yet."
+        },
         "deactivate": {
           "title": "Deactivate company",
           "body": "You are deactivating this company. Users cannot sign in anymore. Existing data is preserved.",
@@ -1757,7 +1784,9 @@
           "confirm": "Deactivate",
           "toast": "Company deactivated"
         },
-        "reactivate": { "toast": "Company reactivated" },
+        "reactivate": {
+          "toast": "Company reactivated"
+        },
         "convert": {
           "title": "Convert to Mundus Company",
           "typeLabel": "How should this company join Mundus?",
@@ -1859,6 +1888,42 @@
         "page": "Page",
         "country": "Country",
         "device": "Device"
+      }
+    },
+    "companies": {
+      "title": "Mundus companies",
+      "subtitle": "{{active}} active · {{total}} total",
+      "tiles": {
+        "total": "Total",
+        "buyers": "Buyers",
+        "suppliers": "Suppliers",
+        "both": "Buyer + Supplier",
+        "inactive": "Inactive"
+      },
+      "filters": {
+        "search": "Search by name, country, #number…",
+        "allTypes": "All types",
+        "buyer": "Buyer Mundus",
+        "supplier": "Supplier Mundus",
+        "both": "Buyer + Supplier",
+        "allStatuses": "All statuses",
+        "active": "Active",
+        "inactive": "Inactive",
+        "allCountries": "All countries"
+      },
+      "cols": {
+        "company": "Company",
+        "type": "Type",
+        "location": "Location",
+        "verified": "Verified",
+        "onboarded": "Onboarded",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "empty": {
+        "title": "No companies yet",
+        "body": "Convert a prospect into a Mundus company to see it listed here.",
+        "cta": "Open CRM"
       }
     }
   },
