@@ -38,21 +38,20 @@ Deno.serve(async (req) => {
         "page", "per_page",
       ]
     : [
-        // Apollo CRM contacts/search whitelist
+        // Apollo mixed_people/search whitelist
         "q_keywords",
-        "contact_label_ids",
-        "contact_stage_ids",
-        "owner_ids",
-        "email_status",
         "person_titles",
+        "person_not_titles",
         "person_seniorities",
+        "person_departments",
         "person_locations",
+        "person_not_locations",
         "organization_locations",
         "organization_ids",
         "organization_num_employees_ranges",
         "q_organization_name",
-        "sort_by_field",
-        "sort_ascending",
+        "q_organization_domains_list",
+        "contact_email_status",
         "page", "per_page",
       ];
 
