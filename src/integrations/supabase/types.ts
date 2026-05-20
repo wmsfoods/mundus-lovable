@@ -1081,6 +1081,71 @@ export type Database = {
           },
         ]
       }
+      crm_list_items: {
+        Row: {
+          added_at: string | null
+          apollo_org_id: string | null
+          auto_score: number | null
+          city: string | null
+          company_name: string
+          country: string | null
+          domain: string | null
+          employees: number | null
+          founded: string | null
+          id: string
+          industry: string | null
+          linkedin: string | null
+          list_id: string
+          logo_url: string | null
+          revenue: number | null
+          website: string | null
+        }
+        Insert: {
+          added_at?: string | null
+          apollo_org_id?: string | null
+          auto_score?: number | null
+          city?: string | null
+          company_name: string
+          country?: string | null
+          domain?: string | null
+          employees?: number | null
+          founded?: string | null
+          id?: string
+          industry?: string | null
+          linkedin?: string | null
+          list_id: string
+          logo_url?: string | null
+          revenue?: number | null
+          website?: string | null
+        }
+        Update: {
+          added_at?: string | null
+          apollo_org_id?: string | null
+          auto_score?: number | null
+          city?: string | null
+          company_name?: string
+          country?: string | null
+          domain?: string | null
+          employees?: number | null
+          founded?: string | null
+          id?: string
+          industry?: string | null
+          linkedin?: string | null
+          list_id?: string
+          logo_url?: string | null
+          revenue?: number | null
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_list_items_list_id_fkey"
+            columns: ["list_id"]
+            isOneToOne: false
+            referencedRelation: "crm_lists"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       crm_list_members: {
         Row: {
           added_at: string | null
