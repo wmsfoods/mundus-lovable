@@ -1743,5 +1743,10 @@
         "invited": "Convite enviado para {{email}} — prospect movido para Onboarding"
       }
     }
+  },
+  "profile": {
+    "activeRole": "Perfil ativo",
+    "buyer": "Comprador",
+    "supplier": "Fornecedor"
   }
 }
