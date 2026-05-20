@@ -1,29 +1,47 @@
-## Adicionar opção "Admin" no switch do Profile
+## Problema
 
-Hoje o switch no Profile mostra **Buyer | Supplier** apenas para empresas com `is_buyer && is_supplier`. Vou estender para incluir **Admin** quando o usuário logado tiver o papel `mundus_admin` (papel de sistema já existente em `public.roles`, vinculado via `public.company_users.role_id`).
+O `AdminShell` usa um layout próprio (`adm-sidebar` + `adm-topbar`) que não tem responsividade mobile — não há `BottomNav`, `MobileDrawer` nem `StackHeader`. Por isso, no celular o admin fica sem menu/navegação.
 
-### Comportamento
+Os shells `BuyerShell` e `SupplierShell` já seguem um padrão consistente baseado em `Sidebar`, `Topbar`, `BottomNav`, `MobileDrawer` e `StackHeader`, controlados por `useIsMobileShell()` e `isStackRoute()`.
 
-- Buscar uma vez se o usuário tem `mundus_admin` em qualquer `company_users` ativo (`deleted_at is null`).
-- Montar o switch de forma dinâmica com as opções disponíveis:
-  - Buyer — se `company.is_buyer`
-  - Supplier — se `company.is_supplier`
-  - Admin — se usuário tem `mundus_admin`
-- Mostrar o switch sempre que houver **2 ou mais** opções (hoje só aparece quando dual buyer+supplier; vai passar a aparecer também para buyer-only+admin, supplier-only+admin, etc.).
-- Trocar para Admin navega para `/admin` (e idem buyer→`/buyer`, supplier→`/supplier`).
-- Preferência salva em `localStorage` (`mundus.activeRole`) — chave passa a aceitar `"admin"`.
-- `RoleRedirect` ao entrar em `/` respeita o `activeRole` salvo, caindo em buyer→supplier→admin como fallback se o salvo não estiver mais disponível.
+## Solução
 
-### Arquivos
+Reescrever `src/pages/admin/AdminShell.tsx` para usar exatamente o mesmo padrão de shell mobile dos outros papéis, mantendo todos os itens de navegação atuais do admin (Dashboard, Companies, Deals, Negotiations, Verifications, Disputes, Prospects, Pipeline, Products, Markets, Ports, Revenue, Commissions, Team, Audit, Flags).
 
-- **editar** `src/lib/activeRole.ts` — tipo `ActiveRole = "buyer" | "supplier" | "admin"`.
-- **novo** `src/hooks/useIsMundusAdmin.ts` — query simples em `company_users` + join `roles.name = 'mundus_admin'`, retorna `{ isAdmin, loading }`.
-- **editar** `src/pages/Profile.tsx` — renderiza os botões a partir de uma lista dinâmica de roles disponíveis; layout do `.role-switch` continua um grid, agora com `grid-template-columns: repeat(N, 1fr)` baseado na quantidade.
-- **editar** `src/components/RoleRedirect.tsx` — considera admin no roteamento inicial quando o usuário tem o papel e tem preferência salva como `"admin"`.
-- **editar** `src/styles/mundus-shell.css` — ajuste do grid para N colunas.
-- **editar** `src/i18n/locales/{pt,en,es}.json` — adicionar `profile.admin`.
+### Estrutura nova do AdminShell
 
-### Fora do escopo
+- `StackHeaderProvider` na raiz.
+- `div.app-shell` com classes `is-mobile` / `is-stack` calculadas via `useIsMobileShell()` e `isStackRoute(location.pathname)`.
+- `<Sidebar items={ADMIN_NAV} rolePill={t("shell.admin")} userName userSubtitle={company?.name} />` — usado no desktop e dentro do `MobileDrawer`.
+- `<Topbar onMenuClick={() => setDrawerOpen(true)} />` no topo (ou `<StackHeader />` quando em rota de stack mobile).
+- `<main className="app-main"><Outlet /></main>`.
+- `<BottomNav items={ADMIN_BOTTOM} />` no mobile (quando não estiver em stack).
+- `<MobileDrawer items={ADMIN_NAV} rolePill={t("shell.admin")} ... />` no mobile.
 
-- Não vou implementar gating real do `/admin` (continua com o `TODO` atual no `AdminShell`). Apenas exponho a navegação para quem é admin no banco. Posso adicionar o gate em seguida se quiser.
-- Sem mudanças de schema; uso a tabela `company_users` + `roles` que já existem.
+### Itens de navegação
+
+`ADMIN_NAV` (sidebar/drawer) — mantém todos os links atuais; cada grupo vira um item com `groupLabel` (mesmo mecanismo já usado no Supplier para "Insights") para preservar a divisão visual entre Overview / Operations / CRM / Marketplace / Finance / Settings. Ícones permanecem os atuais (lucide-react).
+
+`ADMIN_BOTTOM` (5 itens) — escolha pragmática para mobile:
+1. Dashboard (`/admin/dashboard`) — `LayoutDashboard`
+2. Companies (`/admin/companies`) — `Building`
+3. Deals (`/admin/deals`) — `Package`, `accent: true`
+4. Prospects (`/admin/crm/prospects`) — `Users`
+5. Verifications (`/admin/verifications`) — `ShieldCheck`
+
+### i18n
+
+Adicionar a chave `shell.admin` em `src/i18n/locales/{en,pt,es}.json` (espelhando `shell.buyer` / `shell.supplier`) para o `rolePill`.
+
+### Limpeza
+
+Remover o uso das classes próprias `adm-app` / `adm-sidebar` / `adm-main` / `adm-topbar` etc. do JSX. Os estilos CSS antigos em `src/styles` podem ser deixados em paz por ora (sem referências quebradas, apenas não usados); não tocaremos em CSS para manter o escopo só de frontend de shell.
+
+## Arquivos alterados
+
+- `src/pages/admin/AdminShell.tsx` — reescrito no padrão Buyer/Supplier.
+- `src/i18n/locales/en.json`, `pt.json`, `es.json` — adicionar `shell.admin`.
+
+## Fora do escopo
+
+- Nenhuma mudança em rotas, páginas internas do admin, banco de dados, RLS, ou no switch de papéis (que já mostra Admin corretamente após o fix recente do `useIsMundusAdmin`).
