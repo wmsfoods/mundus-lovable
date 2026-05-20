@@ -89,6 +89,7 @@ export function mapPerson(p: any): MockPerson {
     companyId: org.id ?? "",
     companyName: org.name ?? p.organization_name ?? "—",
     companyLogo: org.logo_url ?? `https://api.dicebear.com/7.x/initials/svg?seed=${encodeURIComponent(org.name ?? "X")}&backgroundColor=791f3f`,
+    photoUrl: p.photo_url ?? null,
     email: p.email ?? null,
     emailStatus,
     emailRevealed: !!p.email,

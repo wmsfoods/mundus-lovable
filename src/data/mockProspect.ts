@@ -36,6 +36,7 @@ export type MockPerson = {
   companyId: string;
   companyName: string;
   companyLogo: string;
+  photoUrl?: string | null;
   email: string | null;
   emailStatus: "verified" | "unverified" | "unavailable";
   emailRevealed: boolean;

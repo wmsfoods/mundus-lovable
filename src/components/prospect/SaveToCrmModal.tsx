@@ -118,8 +118,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
 
   const [saving, setSaving] = useState(false);
   const [dupWarn, setDupWarn] = useState<string | null>(null);
-  const [enriching, setEnriching] = useState(false);
-  const [enrichedNote, setEnrichedNote] = useState<string | null>(null);
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   // Prefill on open
   useEffect(() => {
@@ -138,10 +137,11 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
       setCity(src.city || "");
       setProductsOfInterest(src.productsOfInterest ?? []);
       setWhatsapp(src.whatsapp ?? "");
+      setPhotoUrl(src.photoUrl ?? null);
     } else {
       setFullName(""); setEmail(""); setPhone(""); setMobile(""); setLinkedin("");
       setJobTitle(""); setDepartment(""); setSeniority(""); setProductsOfInterest([]);
-      setWhatsapp("");
+      setWhatsapp(""); setPhotoUrl(null);
     }
     if (co) {
       setCoName(co.name); setCoDomain(co.domain); setCoIndustry(co.industry);
@@ -156,62 +156,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     setDupWarn(null);
     setAdditional([]);
     setNotes(""); setTags([]); setTagInput("");
-    setEnrichedNote(null);
   }, [open, src, srcCompany]);
-
-  // Auto-enrich on open (person only) — pulls full name + email + phone + mobile from Apollo people/match
-  useEffect(() => {
-    if (!open || !src) return;
-    let cancelled = false;
-    (async () => {
-      setEnriching(true);
-      try {
-        const { data, error } = await supabase.functions.invoke("prospect-enrich", {
-          body: {
-            id: src.id,
-            first_name: src.firstName,
-            last_name: src.lastName,
-            name: src.fullName,
-            organization_name: src.companyName,
-            linkedin_url: src.linkedin || undefined,
-            reveal_phone: true,
-          },
-        });
-        if (cancelled) return;
-        if (error || !data?.ok) {
-          setEnrichedNote("Could not auto-enrich from Apollo. Fill missing fields manually.");
-          return;
-        }
-        const p = data.person ?? {};
-        const fullName = p.name || [p.first_name, p.last_name].filter(Boolean).join(" ").trim();
-        if (fullName) setFullName(fullName);
-        if (data.email) setEmail(data.email);
-        if (data.phone) setPhone(data.phone);
-        if (data.mobile) setMobile(data.mobile);
-        if (p.linkedin_url) setLinkedin(p.linkedin_url);
-        if (p.title) setJobTitle((cur) => cur || p.title);
-        if (p.city) setCity((cur) => cur || p.city);
-        if (p.country) setCountry((cur) => cur || p.country);
-        const org = p.organization ?? {};
-        if (org.name) setCoName((cur) => cur || org.name);
-        if (org.primary_domain || org.website_url) {
-          setCoDomain((cur) => cur || org.primary_domain || (org.website_url ?? "").replace(/^https?:\/\//, "").replace(/\/.*$/, ""));
-          setCoWebsite((cur) => cur || org.website_url || (org.primary_domain ? `https://${org.primary_domain}` : ""));
-        }
-        if (org.industry) setCoIndustry((cur) => cur || org.industry);
-        if (org.linkedin_url) setCoLinkedin((cur) => cur || org.linkedin_url);
-        if (org.estimated_num_employees) setCoEmployees((cur) => cur === "" ? org.estimated_num_employees : cur);
-        if (org.annual_revenue) setCoRevenue((cur) => cur === "" ? org.annual_revenue : cur);
-        if (org.founded_year) setCoFounded((cur) => cur === "" ? org.founded_year : cur);
-        setEnrichedNote("Auto-enriched via Apollo ✓");
-      } catch {
-        if (!cancelled) setEnrichedNote("Auto-enrich failed. Fill missing fields manually.");
-      } finally {
-        if (!cancelled) setEnriching(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [open, src]);
 
   // Dedup check (debounced-ish)
   useEffect(() => {
@@ -285,6 +230,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
           full_name: fullName.trim(),
           first_name: fullName.trim().split(/\s+/)[0] || null,
           last_name: fullName.trim().split(/\s+/).slice(1).join(" ") || null,
+          photo_url: photoUrl || null,
           email: email || null,
           secondary_email: secondaryEmail || null,
           phone: phone || null,
@@ -365,10 +311,8 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
           <div>
             <div className="psp-scrm-title">Save to CRM</div>
             <div className="psp-scrm-sub">{src ? src.fullName : coName || "New record"}{src ? ` · ${src.companyName}` : ""}</div>
-            {(enriching || enrichedNote) && (
-              <div className="psp-scrm-sub" style={{ marginTop: 4, color: enriching ? "var(--adm-text-tertiary)" : "var(--adm-success, #16a34a)" }}>
-                {enriching ? "Enriching from Apollo…" : enrichedNote}
-              </div>
+            {photoUrl && (
+              <img src={photoUrl} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", marginTop: 6 }} />
             )}
           </div>
           <button className="psp-drawer-close" onClick={onClose} aria-label="Close"><X size={18} /></button>

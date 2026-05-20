@@ -16,7 +16,22 @@ import { SaveToCrmModal } from "@/components/prospect/SaveToCrmModal";
 import { useProspectSearch } from "@/hooks/useProspectSearch";
 import { supabase } from "@/integrations/supabase/client";
 
-async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}) {
+export type EnrichResult = {
+  email: string | null;
+  phone: string | null;
+  mobile: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  fullName?: string | null;
+  photoUrl?: string | null;
+  linkedin?: string | null;
+  jobTitle?: string | null;
+  city?: string | null;
+  country?: string | null;
+  person?: any;
+};
+
+async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}): Promise<EnrichResult> {
   const { data, error } = await supabase.functions.invoke("prospect-enrich", {
     body: {
       id: p.id,
@@ -32,7 +47,21 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
     const msg = data?.error || error?.message || "enrich_failed";
     throw new Error(msg);
   }
-  return data as { email: string | null; phone: string | null; mobile: string | null };
+  const person = data.person ?? {};
+  return {
+    email: data.email ?? null,
+    phone: data.phone ?? null,
+    mobile: data.mobile ?? null,
+    firstName: person.first_name ?? null,
+    lastName: person.last_name ?? null,
+    fullName: person.name ?? null,
+    photoUrl: person.photo_url ?? null,
+    linkedin: person.linkedin_url ?? null,
+    jobTitle: person.title ?? null,
+    city: person.city ?? null,
+    country: person.country ?? null,
+    person,
+  };
 }
 
 const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil","United States","Japan","Denmark"];
@@ -55,7 +84,7 @@ export default function FindPeople() {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [detail, setDetail] = useState<MockPerson | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [revealedMap, setRevealedMap] = useState<Record<string, { email?: string; phone?: string; mobile?: string }>>({});
+  const [revealedMap, setRevealedMap] = useState<Record<string, Partial<EnrichResult>>>({});
   const [decisionLevels, setDecisionLevels] = useState<string[]>([]);
   const [leadTypes, setLeadTypes] = useState<string[]>([]);
   const [productsOfInterest, setProductsOfInterest] = useState<string[]>([]);
@@ -110,7 +139,24 @@ export default function FindPeople() {
     return list;
   }, [rows, tab, productsOfInterest, sort, savedIds]);
 
-  const pageItems = filtered;
+  const pageItems = useMemo(() =>
+    filtered.map((p) => {
+      const r = revealedMap[p.id];
+      if (!r) return p;
+      return {
+        ...p,
+        firstName: r.firstName || p.firstName,
+        lastName: r.lastName || p.lastName,
+        fullName: r.fullName || (r.firstName || r.lastName ? `${r.firstName ?? p.firstName} ${r.lastName ?? p.lastName}`.trim() : p.fullName),
+        photoUrl: r.photoUrl ?? p.photoUrl,
+        email: r.email ?? p.email,
+        phone: r.phone ?? p.phone,
+        mobile: r.mobile ?? p.mobile,
+        linkedin: r.linkedin || p.linkedin,
+        jobTitle: r.jobTitle || p.jobTitle,
+      } as MockPerson;
+    }),
+  [filtered, revealedMap]);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((p) => selected.has(p.id));
 
   const toggleSelect = (id: string) => {
@@ -309,6 +355,7 @@ export default function FindPeople() {
                       <td><Checkbox checked={selected.has(p.id)} onCheckedChange={() => toggleSelect(p.id)} /></td>
                       <td>
                         <div className="psp-company-cell">
+                          {p.photoUrl && <img src={p.photoUrl} alt="" style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover" }} />}
                           <div>
                             <div className="name" onClick={() => setDetail(p)}>{p.fullName}</div>
                             <div className="domain">{p.jobTitle}</div>
@@ -331,8 +378,8 @@ export default function FindPeople() {
                                     try {
                                       const r = await enrichPerson(p);
                                       const v = r.email || p.email || "";
+                                      setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, email: v || undefined } }));
                                       if (!v) { toast.error("Email not found"); return ""; }
-                                      setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], email: v } }));
                                       return v;
                                     } catch (e: any) {
                                       toast.error(`Reveal failed: ${e.message}`);
@@ -349,8 +396,8 @@ export default function FindPeople() {
                                 try {
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.phone || "";
+                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, phone: v || undefined } }));
                                   if (!v) { toast.error("Phone not found"); return ""; }
-                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], phone: v } }));
                                   return v;
                                 } catch (e: any) {
                                   toast.error(`Reveal failed: ${e.message}`);
@@ -366,8 +413,8 @@ export default function FindPeople() {
                                 try {
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.mobile || r.phone || "";
+                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, mobile: v || undefined } }));
                                   if (!v) { toast.error("Mobile not found"); return ""; }
-                                  setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], mobile: v } }));
                                   return v;
                                 } catch (e: any) {
                                   toast.error(`Reveal failed: ${e.message}`);
