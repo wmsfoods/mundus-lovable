@@ -24,11 +24,10 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { /* empty body ok */ }
 
   const entity = body.entity === "people" ? "people" : "companies";
-  // For people, try the prospect DB (mixed_people/search) first, and fall back
-  // to CRM contacts/search if the plan can't access it.
-  // Apollo plan only allows CRM contacts/search for people (mixed_people/search
-  // and people/search both return 403 API_INACCESSIBLE on this plan).
-  const path = entity === "people" ? "contacts/search" : "mixed_companies/search";
+  // For people, try Apollo's prospect DB (mixed_people/search) first; if the
+  // plan blocks it (403 API_INACCESSIBLE) we fall back to CRM contacts/search.
+  const primaryPath = entity === "people" ? "mixed_people/api_search" : "mixed_companies/search";
+  const fallbackPath = entity === "people" ? "contacts/search" : null;
 
   // Whitelist of Apollo params we forward. Empty arrays / null / "" are stripped.
   const allow = entity === "companies"
@@ -46,6 +45,7 @@ Deno.serve(async (req) => {
         "person_not_titles",
         "person_seniorities",
         "person_departments",
+        "person_department_or_subdepartments",
         "person_locations",
         "person_not_locations",
         "organization_locations",
@@ -83,7 +83,16 @@ Deno.serve(async (req) => {
   }
 
   try {
-    let { r, j: json } = await callApollo(path, payload);
+    let { r, j: json } = await callApollo(primaryPath, payload);
+    let usedPath = primaryPath;
+    // Fallback for people search if prospect DB is not accessible on this plan.
+    if (!r.ok && fallbackPath) {
+      const code = json?.error_code ?? json?.apollo?.error_code ?? null;
+      if (r.status === 403 || code === "API_INACCESSIBLE") {
+        const retry = await callApollo(fallbackPath, payload);
+        r = retry.r; json = retry.j; usedPath = fallbackPath;
+      }
+    }
     if (!r.ok) {
       const code = json?.error_code ?? json?.apollo?.error_code ?? null;
       // Return 200 with ok:false so the client always gets a parsed body
@@ -110,7 +119,7 @@ Deno.serve(async (req) => {
     };
 
     return new Response(
-      JSON.stringify({ ok: true, source: "apollo", entity, results, pagination }),
+      JSON.stringify({ ok: true, source: "apollo", entity, path: usedPath, results, pagination }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (e) {
