@@ -1,75 +1,142 @@
 ## Objetivo
 
-Criar uma página **Analytics** no painel Admin (`/admin/analytics`) inspirada no Plausible (screenshot enviado), com todas as funcionalidades equivalentes: KPIs, gráfico de tendência, breakdowns por Source / Page / Country / Device e filtro de período. Foco em desktop + experiência mobile fluida (cards verticais, sem tabelas largas).
+Transformar a página de detalhe do Prospect (`/admin/crm/prospects/:id`) em um registro completo, editável, com ações de salvar, desativar e excluir — respeitando o ciclo de vida da empresa (prospect → onboarded → buyer/supplier ativo da Mundus). Persistência real em banco (substituindo o mock `useAdminProspects` para este detalhe), 3 idiomas (en/pt/es) e mobile-first.
 
-## Funcionalidades
+> Escopo desta entrega: apenas Admin → CRM/Prospect. O painel do "user master" de cada empresa fica para um próximo passo (mas a modelagem já o suporta).
 
-1. **Header**
-   - Indicador "X current visitors" (ponto verde pulsando) — visitantes ativos nos últimos 5 min.
-   - Seletor de período: Realtime, Last 24h, Last 7 days (default), Last 30 days, Last 90 days, Custom range.
+---
 
-2. **KPI cards (5)** com valor + comparação vs período anterior (% delta colorido):
-   - Visitors (únicos)
-   - Pageviews
-   - Views per Visit
-   - Visit Duration (m s)
-   - Bounce Rate (%)
-   - Clique no card destaca a métrica no gráfico (estado ativo azul como no print).
+## 1. Modelo de dados (migration)
 
-3. **Gráfico de tendência** (área/linha) — Recharts, granularidade auto (hora p/ ≤24h, dia p/ ≤90d), tooltip com data + métrica selecionada, gradient sutil. Linha de comparação tracejada do período anterior (toggle).
+Estendemos as tabelas existentes `crm_companies` e `crm_contacts` e criamos uma tabela de vínculo com a empresa Mundus quando ela se onboarda.
 
-4. **Breakdowns (4 painéis em grid 2×2)** — cada linha com barra de progresso proporcional ao topo + valor numérico:
-   - **Source** (referrer / utm_source agrupado; "Direct" quando vazio)
-   - **Page** (path mais visitado)
-   - **Country** (com bandeira emoji)
-   - **Device** (Mobile / Desktop / Tablet com %)
-   - Cada painel: top 10 + botão "Details" abrindo modal com lista completa, busca e paginação.
+### `crm_companies` — adicionar
+- `lead_type` text — `buyer` | `supplier` | `buyer_supplier`
+- `street`, `address_number`, `address_complement` text (city/state/country/postal_code já existem)
+- `is_active` boolean default true
+- `deactivated_at` timestamptz, `deactivated_by` uuid, `deactivation_reason` text
+- `onboarded_at` timestamptz — quando virou cliente Mundus
+- `mundus_company_id` já existe → usado como "está onboarded?" (not null = onboarded)
+- Trigger `updated_at`
 
-5. **Filtros cruzados**: clicar em qualquer linha de breakdown adiciona um chip de filtro no topo (ex.: `Page = /login ×`) e refiltra todos os outros painéis e o gráfico — comportamento idêntico ao Plausible.
+### `crm_contacts` — adicionar
+- `is_primary` boolean default false (1 principal por company)
+- `additional_email` text (renomear/usar `secondary_email` existente)
+- `is_active` boolean default true
+- Campos pedidos já existem: `email`, `phone`, `mobile`, `personal_linkedin`, `decision_level`, `role`, `full_name`
+- Índice único parcial: 1 contato principal por `company_id` ativo
 
-6. **Export**: botão para baixar CSV do período/filtros atuais.
+### Regras (no banco e/ou app)
+- DELETE em `crm_companies` permitido apenas se `mundus_company_id IS NULL` (nunca foi onboarded). Caso contrário, apenas `is_active = false`.
+- Ao desativar empresa: marcar todos `crm_contacts` da empresa com `is_active = false`. Quando existir um `users.master` na `mundus_company_id`, também desativar o login (passo futuro — deixar gancho).
+- RLS: já existe `crm_*_admin_all` via `is_mundus_admin()`. Mantemos. (Quando o painel do user master existir, adicionaremos policies para `current_user_company_id() = mundus_company_id`.)
 
-7. **Auto-refresh** a cada 30s quando período = Realtime / Last 24h.
+### Apollo cache
+- Reaproveitar `apollo_cache` já existente para "Search more people" (TTL 30d).
 
-## Mobile (pocket)
+---
 
-- KPIs em carrossel horizontal scroll-snap (1.2 cards visíveis).
-- Gráfico ocupa largura total, altura reduzida.
-- Breakdowns viram acordeões empilhados (um por vez expandido), respeitando safe-area.
-- Filtros ativos viram bottom sheet.
-- Sem tabelas — só listas verticais com barras.
+## 2. Backend: edge function
 
-## Dados
+Criar `supabase/functions/prospect-apollo-people/index.ts` (verify_jwt = true, exige admin):
+- Input: `{ company_id }`
+- Lê `crm_companies` (domain, name, linkedin_url, country)
+- Chama Apollo `mixed_people/search` via secret `apollo` já configurado
+- Cache em `apollo_cache` (entity_type='people_by_company', apollo_id=domain)
+- Resposta: lista de pessoas com `name, title, seniority, department, linkedin, email_status, phone_status` (sem revelar emails/telefones — apenas status para o botão Reveal usar depois)
+- Botão "Search more people" só habilitado se `mundus_company_id IS NULL` (ainda não é cliente)
 
-**Fase 1 (entrega):** hook `useAdminAnalyticsTraffic()` retornando dados mock determinísticos (mesmo padrão do `useAdminAnalytics.ts` existente), para que a UI fique 100% funcional imediatamente.
+---
 
-**Fase 2 (fora do escopo desta tarefa, deixar TODO):** tabela `analytics_pageviews` + edge function de ingestão (pixel `/track`) + queries reais. Não criar tabelas agora.
+## 3. Frontend
 
-## Integração no shell
+### 3.1 Trocar o store mock pelo Supabase no detalhe
+Novo hook `src/hooks/useCrmCompanyDetail.ts`:
+- `useCrmCompany(id)` → busca `crm_companies` + `crm_contacts` (ordenados, principal primeiro)
+- `updateCrmCompany(id, patch)`, `deactivateCrmCompany(id, reason)`, `deleteCrmCompany(id)`
+- `upsertCrmContact(...)`, `deleteCrmContact(id)`
+- Realtime opcional (`postgres_changes`) — fica como nice-to-have.
 
-- Nova rota `/admin/analytics` em `src/App.tsx`.
-- Novo item em `ADMIN_NAV` no `AdminShell.tsx` no grupo **Overview** (ícone `BarChart3`), entre Dashboard e Companies.
-- i18n: chaves `admin.analytics.*` em en/pt/es.
+A rota `/admin/crm/prospects/:id` passa a usar este hook (mantendo `AdminProspects` listagem por enquanto, em paralelo, até a migração da lista — fora deste escopo).
 
-## Arquivos novos
+### 3.2 Página `AdminProspectDetail.tsx` — refatorada
 
-- `src/pages/admin/AdminAnalytics.tsx` — página principal.
-- `src/components/admin/analytics/KpiCard.tsx`
-- `src/components/admin/analytics/TrendChart.tsx`
-- `src/components/admin/analytics/BreakdownPanel.tsx`
-- `src/components/admin/analytics/BreakdownDetailModal.tsx`
-- `src/components/admin/analytics/PeriodPicker.tsx`
-- `src/components/admin/analytics/FilterChips.tsx`
-- `src/hooks/useAdminAnalyticsTraffic.ts` — mock determinístico.
-- `src/styles/mundus-analytics.css` — visual escuro inspirado no print (cards `bg-card`, barras azuis com gradiente sutil).
+Layout mobile-first (1 coluna < 900px, 2 colunas no desktop).
 
-## Arquivos alterados
+**Header**
+- Nome da empresa, badges: `Lead type`, `Stage`, `Active/Inactive`, `Onboarded` (se for o caso)
+- Botões: `Edit` / `Save` / `Cancel`, `Deactivate`, `Delete` (desabilitado se onboarded — tooltip), `Search more people` (oculto/desabilitado se onboarded)
 
-- `src/App.tsx` — rota.
-- `src/pages/admin/AdminShell.tsx` — item de menu + bottom nav (opcional substituir um item).
-- `src/i18n/locales/{en,pt,es}.json` — textos.
+**Seção 1: Empresa** (edit-in-place)
+- Company Name, Lead type (select: Buyer / Supplier / Buyer & Supplier)
+- Address: Street, City, State, Zip, Country
+- Industry, Website, Company LinkedIn
 
-## Fora do escopo
+**Seção 2: Main contact**
+- Full name, Email, Additional email, Phone, Mobile, Personal LinkedIn, Decision level
 
-- Ingestão real de eventos / pixel de tracking / tabelas no banco (fase 2).
-- Funis, retenção, goals (recursos Plausible Pro) — podem vir depois.
+**Seção 3: Additional contacts**
+- Mini-tabela editável (Full name, Role, Email, Additional email, Phone, Mobile, LinkedIn)
+- Botão `+ Add contact`
+- Trash por linha
+
+**Seção 4: Search more people (Apollo)** — só admin, só se não onboarded
+- Drawer/modal lista pessoas retornadas pela edge function
+- Cada linha: nome + cargo + botões `Reveal email`, `Reveal phone`, `Reveal mobile`, `Add as contact` (faz upsert em `crm_contacts` desse company)
+
+**Seção 5: Activity & Notes** (mantém visual atual)
+
+**Modal de desativação**
+Texto fixo nos 3 idiomas:
+- "Você está desativando a empresa. O usuário não poderá mais entrar. Os dados existentes são preservados."
+- Confirma com botão vermelho "Deactivate".
+
+**Modal de exclusão**
+- Só aparece se `mundus_company_id IS NULL`. Caso contrário, mostra mensagem explicando por que não pode.
+
+### 3.3 i18n
+Adicionar chaves em `src/i18n/locales/{en,pt,es}.json` em `admin.crm.detail.*`:
+- `leadType.buyer | supplier | both`
+- `decisionLevel.{c_level|vp|director|manager|specialist|other}`
+- `actions.edit | save | cancel | deactivate | delete | searchMorePeople | addContact | reveal`
+- `deactivate.title | deactivate.body | deactivate.confirm`
+- `delete.cannotOnboarded`
+- `contacts.main | contacts.additional | contacts.empty`
+- `apollo.title | apollo.empty | apollo.added`
+
+### 3.4 Componentes/arquivos
+- `src/components/prospect/CompanyEditForm.tsx`
+- `src/components/prospect/MainContactForm.tsx`
+- `src/components/prospect/AdditionalContactsTable.tsx`
+- `src/components/prospect/DeactivateCompanyModal.tsx`
+- `src/components/prospect/SearchMorePeopleDrawer.tsx`
+- Estilos em `src/styles/mundus-prospect.css` (estende; mobile-first, breakpoint 900px já existe)
+
+### 3.5 Mobile
+- Header colapsado, ações em bottom-sheet
+- Cada seção como `<details>` colapsável, padrão aberto na principal
+- Inputs full-width 44px de altura mínima
+
+---
+
+## 4. Pensando no futuro (modelagem, não implementação agora)
+
+- Quando admin clica "Onboard" (futuro): cria `companies` (já existe), seta `crm_companies.mundus_company_id`, `onboarded_at = now()`, cria `users` master + `company_users` com `role = company_master`. A partir daí o user master enxerga via futuras RLS `company_id = current_user_company_id()`.
+- Desativar empresa onboarded → desativar `company_users.status='disabled'` (gancho deixado, ação real depois).
+
+---
+
+## 5. Entregáveis nesta tarefa
+
+1. Migration estendendo `crm_companies` e `crm_contacts` + check function para impedir delete de onboarded.
+2. Edge function `prospect-apollo-people`.
+3. Hook `useCrmCompanyDetail`.
+4. Refator de `AdminProspectDetail.tsx` + 5 componentes novos.
+5. Chaves i18n nos 3 idiomas.
+6. Estilos mobile-first em `mundus-prospect.css`.
+
+Fora de escopo: migração da listagem `/admin/crm/prospects` para Supabase, painel do user master, integração Apollo real para reveal de email/phone (mantemos mock no botão Reveal por enquanto, igual ao restante do módulo).
+
+Confirma que posso seguir com essa abordagem? Em especial:
+- (a) o detalhe lê de `crm_companies` (Supabase) e a listagem segue no mock por enquanto — ok?
+- (b) ativar agora a edge function Apollo real para "Search more people" (você tem o secret `apollo`), ou deixar mock também?
