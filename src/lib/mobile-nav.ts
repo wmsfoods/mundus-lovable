@@ -16,16 +16,6 @@ import { matchPath } from "react-router-dom";
 const STACK_PATHS: string[] = [
   "/buyer/profile",
   "/supplier/profile",
-  "/buyer/requests",
-  "/buyer/negotiations",
-  "/buyer/orders",
-  "/buyer/users",
-  "/supplier/requests",
-  "/supplier/negotiations",
-  "/supplier/users",
-  "/supplier/company",
-  "/supplier/insights/price-benchmark",
-  "/supplier/insights/analytics",
 ];
 
 /** Patterns whose match is a stack screen (uses `:param`). */
@@ -33,11 +23,9 @@ const STACK_PATTERNS: string[] = [
   "/buyer/offers/:id",
   "/buyer/orders/:id",
   "/buyer/requests/:id",
-  "/buyer/requests/new",
   "/buyer/negotiations/:id",
   "/buyer/chat/:conversationId",
   "/supplier/offers/:id",
-  "/supplier/offers/new",
   "/supplier/requests/:id",
   "/supplier/sales/:id",
   "/supplier/negotiations/:id",
