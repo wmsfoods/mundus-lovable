@@ -1,13 +1,14 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Search, User, Building, Briefcase, Layers, Mail, MapPin, Filter, Linkedin, Phone, Smartphone, Save, Download, Target, UserCheck, Package } from "lucide-react";
+import { Search, User, Building, Briefcase, Layers, Mail, MapPin, Filter, Linkedin, Phone, Smartphone, Save, Download, Target, UserCheck, Package, SearchX } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import {
-  MOCK_PEOPLE, EMPLOYEE_RANGES, SENIORITIES, DEPARTMENTS, JOB_TITLES,
+  EMPLOYEE_RANGES, SENIORITIES, DEPARTMENTS, JOB_TITLES,
   DECISION_LEVELS, LEAD_TYPES, PRODUCT_INTERESTS,
+  LEAD_TYPE_TABS, type LeadTypeTab,
   fakePhone, type MockPerson,
-} from "@/data/mockProspect";
+} from "@/types/prospect";
 import { FilterAccordion } from "@/components/prospect/FilterAccordion";
 import { DetailDrawer } from "@/components/prospect/DetailDrawer";
 import { RevealButton } from "@/components/prospect/RevealButton";
@@ -18,7 +19,7 @@ const PRESET_COUNTRIES = ["China","United Arab Emirates","Saudi Arabia","Brazil"
 
 export default function FindPeople() {
   const [sp] = useSearchParams();
-  const [tab, setTab] = useState<"total" | "saved">("total");
+  const [leadTypeTab, setLeadTypeTab] = useState<LeadTypeTab>("All");
   const [search, setSearch] = useState("");
   const [titles, setTitles] = useState<string[]>([]);
   const [titleInput, setTitleInput] = useState("");
@@ -59,22 +60,8 @@ export default function FindPeople() {
     setPersonLocations([]); setCompanyFilter(""); setCompanySizes([]);
   };
 
-  const filtered = useMemo(() => {
-    let list = [...MOCK_PEOPLE];
-    if (tab === "saved") list = list.filter((p) => p.in_crm);
-    const q = search.toLowerCase().trim();
-    if (q) list = list.filter((p) => p.fullName.toLowerCase().includes(q) || p.jobTitle.toLowerCase().includes(q) || p.companyName.toLowerCase().includes(q));
-    if (titles.length) list = list.filter((p) => titles.some((t) => p.jobTitle.toLowerCase().includes(t.toLowerCase())));
-    if (seniorities.length) list = list.filter((p) => seniorities.includes(p.seniority));
-    if (departments.length) list = list.filter((p) => departments.includes(p.department));
-    if (emailStatuses.length) list = list.filter((p) => emailStatuses.includes(p.emailStatus));
-    if (personLocations.length) list = list.filter((p) => personLocations.includes(p.country));
-    if (companyFilter) list = list.filter((p) => p.companyName.toLowerCase().includes(companyFilter.toLowerCase()));
-    if (productsOfInterest.length) list = list.filter((p) => (p.productsOfInterest ?? []).some((x) => productsOfInterest.includes(x)));
-    if (sort === "name") list.sort((a, b) => a.fullName.localeCompare(b.fullName));
-    if (sort === "company") list.sort((a, b) => a.companyName.localeCompare(b.companyName));
-    return list;
-  }, [tab, search, titles, seniorities, departments, emailStatuses, personLocations, companyFilter, productsOfInterest, sort]);
+  // TODO: Connect to prospect-search edge function to fetch real data
+  const filtered: MockPerson[] = [];
 
   const pageItems = filtered.slice((page - 1) * pageSize, page * pageSize);
   const allOnPageSelected = pageItems.length > 0 && pageItems.every((p) => selected.has(p.id));
@@ -92,34 +79,14 @@ export default function FindPeople() {
   };
 
   const bulkRevealEmails = () => {
-    const n = { ...revealedMap };
-    [...selected].forEach((id) => {
-      const p = MOCK_PEOPLE.find((x) => x.id === id);
-      if (p && p.email) n[id] = { ...n[id], email: p.email };
-    });
-    setRevealedMap(n);
-    toast.success(`Revealed ${selected.size} emails`);
+    toast.info("No data to reveal yet");
   };
   const bulkRevealPhones = () => {
-    const n = { ...revealedMap };
-    [...selected].forEach((id) => {
-      const p = MOCK_PEOPLE.find((x) => x.id === id);
-      if (p && p.phoneAvailable) n[id] = { ...n[id], phone: fakePhone(id) };
-    });
-    setRevealedMap(n);
-    toast.success(`Revealed ${selected.size} phones`);
+    toast.info("No data to reveal yet");
   };
 
   const exportCsv = () => {
-    const ids = selected.size ? [...selected] : pageItems.map((c) => c.id);
-    const rows = MOCK_PEOPLE.filter((p) => ids.includes(p.id));
-    const csv = ["Name,Title,Company,Email,Country,City,Seniority,LinkedIn",
-      ...rows.map((p) => `"${p.fullName}","${p.jobTitle}","${p.companyName}","${revealedMap[p.id]?.email ?? p.email ?? ""}","${p.country}","${p.city}","${p.seniority}","${p.linkedin}"`)
-    ].join("\n");
-    const blob = new Blob([csv], { type: "text/csv" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = "people.csv"; a.click();
-    toast.success(`Exported ${rows.length} people`);
+    toast.info("No data to export yet");
   };
 
   return (
