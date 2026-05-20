@@ -715,9 +715,11 @@ export default function SupplierCreateOffer() {
             </div>
             <div className="cov4-prev-card">
               <div className="cov4-prev-img">
-                {cuts.length > 0 && cutImgs[cuts[0].id]
-                  ? <img src={cutImgs[cuts[0].id]} alt="" />
-                  : <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>}
+                {cuts.length > 0 && (cutImgs[cuts[0].id] || cuts[0].cutImage) ? (
+                  <img src={cutImgs[cuts[0].id] || (cuts[0].cutImage as string)} alt="" />
+                ) : (
+                  <span style={{ fontSize: 36, opacity: 0.3 }}>🥩</span>
+                )}
               </div>
               <h3 className="cov4-prev-title">
                 {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? "Mix FCL" : "Untitled Offer"}
