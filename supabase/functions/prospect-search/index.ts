@@ -26,8 +26,8 @@ Deno.serve(async (req) => {
   const entity = body.entity === "people" ? "people" : "companies";
   // For people, try Apollo's prospect DB (mixed_people/search) first; if the
   // plan blocks it (403 API_INACCESSIBLE) we fall back to CRM contacts/search.
-  const primaryPath = entity === "people" ? "mixed_people/search" : "mixed_companies/search";
-  const fallbackPath = entity === "people" ? "contacts/search" : null;
+  const primaryPath = entity === "people" ? "mixed_people/api_search" : "mixed_companies/api_search";
+  const fallbackPath = entity === "people" ? "contacts/search" : "mixed_companies/search";
 
   // Whitelist of Apollo params we forward. Empty arrays / null / "" are stripped.
   const allow = entity === "companies"
