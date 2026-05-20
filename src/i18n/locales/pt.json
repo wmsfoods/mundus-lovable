@@ -2178,6 +2178,41 @@
           "title": "Nenhum mercado corresponde a esses filtros",
           "body": "Tente limpar os filtros ou buscar por outro termo."
         }
+      },
+      "ports": {
+        "title": "Portos",
+        "subtitle": "Gerencie os portos disponíveis para rotas de envio",
+        "searchPlaceholder": "Buscar nome ou código do porto...",
+        "allCountries": "Todos os países",
+        "next": "Próximo",
+        "showing": "Mostrando {{from}}-{{to}} de {{total}} resultados",
+        "shared": "Compartilhado",
+        "usedBy": "Usado por {{country}}",
+        "stats": {
+          "total": "Portos totais",
+          "active": "Portos ativos",
+          "countries": "Países com portos"
+        },
+        "filters": {
+          "all": "Todos",
+          "activeOnly": "Somente ativos",
+          "inactiveOnly": "Somente inativos"
+        },
+        "cols": {
+          "name": "Nome do porto",
+          "code": "Código",
+          "country": "País",
+          "shared": "Compartilhado",
+          "active": "Ativo"
+        },
+        "toggle": {
+          "activated": "Porto {{port}} ativado",
+          "deactivated": "Porto {{port}} desativado"
+        },
+        "empty": {
+          "title": "Nenhum porto corresponde a esses filtros",
+          "body": "Tente limpar os filtros ou buscar por outro termo."
+        }
       }
     }
   },
