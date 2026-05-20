@@ -365,6 +365,11 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
           <div>
             <div className="psp-scrm-title">Save to CRM</div>
             <div className="psp-scrm-sub">{src ? src.fullName : coName || "New record"}{src ? ` · ${src.companyName}` : ""}</div>
+            {(enriching || enrichedNote) && (
+              <div className="psp-scrm-sub" style={{ marginTop: 4, color: enriching ? "var(--adm-text-tertiary)" : "var(--adm-success, #16a34a)" }}>
+                {enriching ? "Enriching from Apollo…" : enrichedNote}
+              </div>
+            )}
           </div>
           <button className="psp-drawer-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
         </div>
