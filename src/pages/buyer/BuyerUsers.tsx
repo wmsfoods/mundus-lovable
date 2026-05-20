@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { UsersIcon, SearchIcon, PlusIcon, EditIcon, XIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { useBuyerUsers, type BuyerUser } from "@/hooks/useBuyerUsers";
 import { BuyerInviteUserModal } from "@/components/buyer/BuyerInviteUserModal";
 import { toast } from "sonner";
@@ -121,7 +122,7 @@ export default function BuyerUsers() {
           <p>{t("buyer.users.empty")}</p>
         </div>
       ) : (
-        <div className="data-table-wrap">
+        <div className="data-table-wrap has-mobile-cards">
           <table className="data-table">
             <thead>
               <tr>
@@ -177,6 +178,26 @@ export default function BuyerUsers() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {filtered.length > 0 && (
+        <ListCardList>
+          {filtered.map((u) => (
+            <ListCard
+              key={u.id}
+              title={u.name}
+              subtitle={u.jobTitle ? `${u.jobTitle} · ${u.email}` : u.email}
+              chip={{
+                label: t(`buyer.users.status.${u.status}`),
+                className: u.status === "active" ? "pill-active" : "pill-inactive",
+              }}
+              meta={[
+                { label: t("buyer.users.col.profileType"), value: t(`buyer.users.profile.${u.profileType}`) },
+                { label: t("buyer.users.col.lastLogin"), value: formatDateTime(u.lastLoginAt, locale) },
+              ]}
+            />
+          ))}
+        </ListCardList>
       )}
 
       <BuyerInviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
