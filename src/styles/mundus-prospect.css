@@ -1,4 +1,4 @@
-/* Mundus Prospect — Apollo-style prospecting */
+/* Mundus Prospect — prospecting module */
 .psp-page { display: flex; flex-direction: column; height: 100%; background: var(--adm-bg); }
 
 .psp-toolbar {
