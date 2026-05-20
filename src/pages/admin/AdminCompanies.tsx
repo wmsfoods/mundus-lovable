@@ -154,7 +154,7 @@ export default function AdminCompanies() {
           </div>
 
           {/* mobile cards */}
-          <div className="adm-only-mobile" style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div className="adm-only-mobile adm-cards-stack">
             {filtered.map((r) => <CardRow key={r.id} row={r} locale={locale} t={t} onOpen={() => navigate(`/admin/companies/${r.id}`)} />)}
           </div>
         </>
