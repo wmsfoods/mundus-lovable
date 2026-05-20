@@ -83,4 +83,8 @@
     text-decoration: none;
   }
   .sh-actions :where(button, a):active { background: var(--g100); }
+
+  /* On stack screens, the StackHeader already shows the title,
+     so hide the in-page breadcrumbs to avoid duplication. */
+  .app-shell.is-stack .crumbs { display: none; }
 }
