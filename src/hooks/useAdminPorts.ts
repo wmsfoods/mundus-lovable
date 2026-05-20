@@ -97,6 +97,18 @@ export function useAdminPorts() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "ports"] }),
   });
 
+  const bulkToggleMutation = useMutation({
+    mutationFn: async ({ portIds, isActive }: { portIds: string[]; isActive: boolean }) => {
+      if (!portIds.length) return;
+      const { error } = await supabase
+        .from("ports")
+        .update({ is_active: isActive })
+        .in("id", portIds);
+      if (error) throw error;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "ports"] }),
+  });
+
   return {
     rows: query.data?.rows ?? [],
     totalPorts: query.data?.totalPorts ?? 0,
@@ -106,6 +118,8 @@ export function useAdminPorts() {
     error: query.error ? (query.error as Error).message : null,
     togglePortActive: (portId: string, isActive: boolean) =>
       toggleMutation.mutateAsync({ portId, isActive }),
-    isToggling: toggleMutation.isPending,
+    bulkTogglePortsActive: (portIds: string[], isActive: boolean) =>
+      bulkToggleMutation.mutateAsync({ portIds, isActive }),
+    isToggling: toggleMutation.isPending || bulkToggleMutation.isPending,
   };
 }
