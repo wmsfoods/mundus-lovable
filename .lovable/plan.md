@@ -1,68 +1,89 @@
-## Convert Prospect → Mundus Company
 
-Add a "Convert to Mundus" action on the Prospect detail page that turns the prospect into a real Mundus Company as **Buyer**, **Supplier**, or **Buyer + Supplier**. After conversion, the prospect is marked as onboarded (cannot be deleted, only deactivated) and a reference to the new company is stored.
+# Admin > Companies (Mundus companies)
 
-### Scope
-- Admin-only, on `/admin/crm/prospects/:id` (`AdminProspectDetail.tsx`).
-- Mock-store only for now (consistent with the rest of Prospect features). Real DB write to `companies` will plug in later when CRM ↔ Companies is wired end-to-end.
+Goal: substituir o placeholder em `/admin/companies` por uma página real de listagem das empresas que já entraram na Mundus (buyers, suppliers e buyer+supplier), restrita a admins da Mundus, com a base de dados pronta para receber novas conversões vindas do CRM de prospects.
 
-### UI
+## 1. Banco de dados (migration)
 
-1. **New header button** "Convert to Mundus" next to Edit / Deactivate / Delete.
-   - Visible only when: `p.isActive` AND `!p.isOnboarded` AND `!p.mundusCompanyId`.
-   - Style: `crm-btn-primary` with a `Building2` (or `ArrowRightCircle`) icon.
+A tabela `public.companies` já existe com os campos necessários (`name`, `tax_id`, `country`, `state`, `city`, `is_buyer`, `is_supplier`, `is_verified`, `status`, `logo_url`, `phone`, `website`, `company_number`, etc.) — porém está **sem RLS**, o que é um problema de segurança.
 
-2. **Conversion modal** (reuses existing modal pattern from Deactivate):
-   - Title: "Convert to Mundus Company".
-   - Subtitle: prospect company name + country.
-   - Choice (radio cards, single-select, required):
-     - Buyer Mundus
-     - Supplier Mundus
-     - Buyer + Supplier Mundus
-   - Read-only summary of fields that will be carried over: name, country, city/state/zip, website, phone (from main contact), industry.
-   - Master user section: pre-filled from the prospect's main contact (full name, email, phone). Editable inline. This is the company's first user (master).
-   - Warning callout: "Once converted, this prospect becomes a Mundus Company and can no longer be deleted — only deactivated."
-   - Buttons: Cancel / Confirm conversion.
+Mudanças:
 
-3. **After confirmation**:
-   - Toast success: "Converted to Mundus Company".
-   - Header gains the existing `Onboarded` pill (already rendered when `isOnboarded`).
-   - Delete button becomes disabled with the existing onboarded tooltip.
-   - A new activity entry is added: `Converted to Mundus Company (Buyer|Supplier|Both). Master user: <name>`.
-   - Stage auto-moves to `onboarded`.
+- Adicionar colunas auxiliares para rastrear a origem do onboarding:
+  - `onboarded_at timestamptz`
+  - `onboarded_from_prospect_id uuid` (referência lógica para `crm_companies.id`)
+  - `onboarded_by uuid`
+- Adicionar `index` em `(is_buyer, is_supplier, status, country)` para filtros.
+- Habilitar RLS em `companies` e criar políticas:
+  - `companies_admin_all`: ALL para `is_mundus_admin()` (admins veem/editam tudo).
+  - `companies_member_select`: SELECT quando `id = current_user_company_id()` (usuário vê a própria empresa — necessário para o `useCurrentCompany`).
+- Sem políticas de INSERT/UPDATE/DELETE para não-admins (a conversão de prospect será feita server-side mais tarde).
 
-### Data (mock store — `useAdminProspects.ts`)
+Tabelas relacionadas (`company_users`, `company_buyer_ratings`) ficam fora do escopo desta entrega — manter como estão.
 
-Add a new mutation:
+## 2. Frontend
 
-```ts
-convertProspectToMundus(id, {
-  type: "buyer" | "supplier" | "buyer_supplier",
-  master: { fullName, email, phone? }
-}): { ok: boolean; mundusCompanyId?: string }
-```
+### Rota
+- Em `src/App.tsx`, trocar `<AdminComingSoon section="companies" />` por `<AdminCompanies />`.
 
-Effects on the prospect:
-- `isOnboarded = true`
-- `mundusCompanyId = "mc-<id>-<timestamp>"`
-- `stage = "onboarded"` (+ stage_change activity)
-- `leadType` is updated to match the chosen type
-- Prepend a `system` activity describing the conversion + master user
+### Novo hook `src/hooks/useAdminCompanies.ts`
+- Carrega `companies` via Supabase (`select id, company_number, name, country, state, city, phone, website, logo_url, is_buyer, is_supplier, is_verified, status, onboarded_at, created_at`).
+- Retorna `{ rows, loading, error, refresh }`.
+- Sem mock — usa o banco real (admin já tem RLS allow).
 
-Mundus-side mock (so the rest of the app can later read it):
-- Add a tiny in-memory list `MUNDUS_COMPANIES` in the same hook file (or a new `useMundusCompanies.ts`) storing `{ id, name, country, isBuyer, isSupplier, masterUser, sourceProspectId, createdAt }`. Not consumed yet by other screens; placeholder for the future hookup to the `companies` table.
+### Nova página `src/pages/admin/AdminCompanies.tsx`
+Estrutura inspirada em `AdminProspects.tsx` para manter consistência visual (`adm-body`, `adm-page-header`, `crm-toolbar`, `adm-table`):
+
+- Header: título "Companies" + subtítulo `· {active}/{total}`.
+- Tiles resumo: Total · Buyers · Suppliers · Buyer+Supplier · Inactive (clicáveis para filtrar).
+- Toolbar: busca (nome, país, tax_id), filtro de tipo (All / Buyer Mundus / Supplier Mundus / Buyer+Supplier), filtro de status (active/inactive), filtro de país.
+- Tabela com colunas:
+  - Company (logo+nome+`#company_number`)
+  - Type (chip Buyer / Supplier / Buyer+Supplier)
+  - Country / City
+  - Verified (badge)
+  - Onboarded at
+  - Status
+  - Ações (ver detalhe — placeholder)
+- Estado vazio com call-to-action "Convert a prospect" (link para `/admin/crm`).
+- Mobile: cards verticais (lista) em vez de tabela, padrão já usado nos outros admin lists (respeita Core memory de mobile-first).
 
 ### i18n
-Add keys under `admin.crm.detail`:
-- `actions.convert`, `convert.title`, `convert.type.buyer|supplier|both`, `convert.master.title|name|email|phone`, `convert.warning`, `convert.confirm`, `convert.toast`.
-Add to `en.json`, `pt.json`, `es.json`.
+Adicionar em `en/pt/es`:
+- `admin.companies.title`, `admin.companies.subtitle`
+- `admin.companies.tiles.{total,buyers,suppliers,both,inactive}`
+- `admin.companies.filters.{search,allTypes,buyer,supplier,both,allStatuses,active,inactive,allCountries}`
+- `admin.companies.cols.{company,type,location,verified,onboarded,status,actions}`
+- `admin.companies.empty.{title,body,cta}`
 
-### Out of scope (this turn)
-- Real insert into the `companies` table — kept mock-only. When we wire the real backend, `convertProspectToMundus` becomes a Supabase insert into `companies` (+ `company_users` for the master) and the rest of the UI stays the same.
-- Creating the actual auth user / sending invite email for the master.
+### CSS
+Reaproveitar `mundus-admin.css` (classes `adm-*`, `crm-tile`, `crm-toolbar`, `crm-btn-*`, `adm-table`). Sem novo arquivo CSS necessário.
 
-### Files
-- `src/hooks/useAdminProspects.ts` — add `convertProspectToMundus` + Mundus mock list.
-- `src/pages/admin/AdminProspectDetail.tsx` — new button, new modal, wiring.
-- `src/styles/mundus-prospect.css` — small styles for the convert modal radio cards.
-- `src/i18n/locales/{en,pt,es}.json` — new keys.
+## 3. Fora do escopo (próximo passo)
+- Página de detalhe de Mundus Company (`/admin/companies/:id`).
+- Ligar o `convertProspectToMundus` para realmente inserir em `public.companies` (hoje é mock).
+- CRUD de usuários (master user) e plantas/certificações da empresa.
+
+## Detalhes técnicos
+
+```text
+DB migration
+  ALTER TABLE public.companies
+    ADD COLUMN onboarded_at        timestamptz,
+    ADD COLUMN onboarded_from_prospect_id uuid,
+    ADD COLUMN onboarded_by        uuid;
+  CREATE INDEX ON public.companies (is_buyer, is_supplier, status);
+  CREATE INDEX ON public.companies (country);
+  ALTER TABLE public.companies ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY companies_admin_all   ON public.companies FOR ALL TO authenticated
+    USING (is_mundus_admin())          WITH CHECK (is_mundus_admin());
+  CREATE POLICY companies_member_select ON public.companies FOR SELECT TO authenticated
+    USING (id = current_user_company_id());
+```
+
+Arquivos:
+- supabase migration (novo)
+- src/App.tsx (1 linha)
+- src/hooks/useAdminCompanies.ts (novo)
+- src/pages/admin/AdminCompanies.tsx (novo)
+- src/i18n/locales/{en,pt,es}.json
