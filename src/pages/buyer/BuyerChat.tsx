@@ -10,6 +10,7 @@ import {
 } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
+import { useStackHeader } from "@/contexts/StackHeaderContext";
 import {
   useBuyerChat,
   useConversation,
@@ -105,23 +106,47 @@ export default function BuyerChat() {
 
   const showThreadClass = conversation ? "show-thread" : "";
 
+  // Mobile StackHeader: avatar + supplier name + status sub-line.
+  const headerNode = useMemo(() => {
+    if (!conversation) return undefined;
+    return (
+      <span className="sh-chat-title">
+        <span className="chat-avatar-wrap">
+          <span className="chat-avatar">{conversation.supplierInitials}</span>
+          {conversation.isOnline && <span className="chat-online-dot" />}
+        </span>
+        <span className="sh-chat-text">
+          <span className="sh-chat-name">{conversation.supplierName}</span>
+          <span className="sh-chat-sub">
+            {conversation.isOnline ? t("buyer.chat.online") : t("buyer.chat.offline")}
+            {" · "}
+            {t(`buyer.chat.context.${conversation.context.type}`)} #{conversation.context.id}
+          </span>
+        </span>
+      </span>
+    );
+  }, [conversation, t]);
+  useStackHeader({ title: headerNode });
+
   return (
     <>
-      <Crumbs
-        items={[
-          { label: t("shell.nav.home"), to: "/buyer" },
-          { label: t("buyer.chat.title") },
-        ]}
-      />
-      <PageTitle
-        icon={MessageIcon}
-        title={t("buyer.chat.title")}
-        right={
-          totalUnread > 0 ? (
-            <span className="chat-page-unread">{totalUnread}</span>
-          ) : undefined
-        }
-      />
+      <div className="chat-desktop-head">
+        <Crumbs
+          items={[
+            { label: t("shell.nav.home"), to: "/buyer" },
+            { label: t("buyer.chat.title") },
+          ]}
+        />
+        <PageTitle
+          icon={MessageIcon}
+          title={t("buyer.chat.title")}
+          right={
+            totalUnread > 0 ? (
+              <span className="chat-page-unread">{totalUnread}</span>
+            ) : undefined
+          }
+        />
+      </div>
 
       <div className={`chat-layout ${showThreadClass}`.trim()}>
         {/* LEFT — conversation list */}

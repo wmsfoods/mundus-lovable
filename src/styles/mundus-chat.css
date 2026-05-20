@@ -276,3 +276,79 @@
   .chat-back-btn { display: inline-flex; }
   .chat-msg { max-width: 88%; }
 }
+
+/* =========================================================================
+   Mobile: full-bleed WhatsApp-style chat
+   ========================================================================= */
+@media (max-width: 1023px) {
+  /* Hide desktop page chrome (breadcrumb + "Chat" title + unread badge) */
+  .chat-desktop-head { display: none; }
+
+  /* Make the chat layout fill the screen edge-to-edge, no rounded card */
+  .app-main:has(.chat-layout) {
+    padding: 0 !important;
+  }
+  .chat-layout {
+    border: 0;
+    border-radius: 0;
+    height: 100%;
+    min-height: 0;
+    background: #fff;
+  }
+  /* List view (tab root): account for topbar + bottom nav */
+  .app-shell:not(.is-stack) .chat-layout {
+    height: calc(100dvh - 56px - 64px - env(safe-area-inset-bottom));
+  }
+  /* Thread view (stack): account only for StackHeader */
+  .app-shell.is-stack .chat-layout {
+    height: calc(100dvh - 52px - env(safe-area-inset-top));
+  }
+
+  /* List view: no internal scroll container border; search sits at top */
+  .chat-search { padding: 10px 12px; }
+
+  /* Thread view: StackHeader already shows back + avatar + name + status,
+     so hide the duplicate in-page thread head */
+  .app-shell.is-stack .chat-thread-head { display: none; }
+
+  /* Footer respects iOS safe area */
+  .chat-footer { padding-bottom: calc(12px + env(safe-area-inset-bottom)); }
+}
+
+/* StackHeader rich title (avatar + name + status) ----------------------- */
+.sh-chat-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  width: 100%;
+  text-align: left;
+}
+.sh .sh-title:has(.sh-chat-title) {
+  text-align: left;
+  overflow: visible;
+}
+.sh-chat-title .chat-avatar { width: 34px; height: 34px; font-size: 12px; }
+.sh-chat-title .chat-online-dot { width: 9px; height: 9px; }
+.sh-chat-text {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.15;
+}
+.sh-chat-name {
+  font-size: 14px;
+  font-weight: var(--weight-semibold);
+  color: var(--fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.sh-chat-sub {
+  font-size: 11px;
+  color: var(--fg-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 1px;
+}
