@@ -21,6 +21,8 @@ export type RealNegotiationRow = {
   expires_at: string | null;
   agreed_items: unknown;
   settled_total_value: number | null;
+  buyer_message: string | null;
+  supplier_message: string | null;
   offer: {
     id: string;
     offer_number: number;
@@ -78,7 +80,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           `
           id, offer_id, buyer_company_id, port_id, incoterm, status,
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
-          agreed_items, settled_total_value,
+          agreed_items, settled_total_value, buyer_message, supplier_message,
           offer:offers (
             id, offer_number, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
