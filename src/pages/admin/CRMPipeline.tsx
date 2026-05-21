@@ -305,7 +305,7 @@ export default function CRMPipeline() {
 /* ───────────── Pipeline (Kanban) ───────────── */
 
 function PipelineKanban({
-  grouped, typeFilter, setTypeFilter, search, setSearch, onCard, onStageChange,
+  grouped, typeFilter, setTypeFilter, search, setSearch, onCard, onStageChange, prepStatus, onPrepClick,
 }: {
   grouped: Record<string, Company[]>;
   typeFilter: "all" | "buyer" | "supplier";
@@ -314,6 +314,8 @@ function PipelineKanban({
   setSearch: (v: string) => void;
   onCard: (id: string) => void;
   onStageChange: (id: string, stage: string) => void;
+  prepStatus: Record<string, string>;
+  onPrepClick: (id: string) => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -436,6 +438,25 @@ function PipelineKanban({
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
+                    {(c.stage === "demo_scheduled" || c.stage === "demo_done") && prepStatus[c.id] && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onPrepClick(c.id); }}
+                        style={{
+                          fontSize: 10,
+                          padding: "3px 8px",
+                          borderRadius: 4,
+                          border: "1px solid #9B2251",
+                          background: "#FDF7F9",
+                          color: "#9B2251",
+                          fontWeight: 600,
+                          textAlign: "left",
+                          cursor: "pointer",
+                        }}
+                      >
+                        📋 {c.stage === "demo_done" ? "Brief" : "Prep"} · {prepStatus[c.id]}
+                      </button>
+                    )}
                   </div>
                 );
               })}
