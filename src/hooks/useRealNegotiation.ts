@@ -58,6 +58,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
   const [data, setData] = useState<RealNegotiationRow | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+  const [tick, setTick] = useState(0);
 
   useEffect(() => {
     if (!negotiationId || !isUuid(negotiationId)) {
@@ -106,9 +107,9 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
     return () => {
       cancelled = true;
     };
-  }, [negotiationId]);
+  }, [negotiationId, tick]);
 
-  return { data, isLoading, error };
+  return { data, isLoading, error, refetch: () => setTick((n) => n + 1) };
 }
 
 export function isUuid(s: string | null | undefined): boolean {
