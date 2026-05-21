@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtPrice, priceLabel } from "@/lib/units";
-import { getAgreedMap } from "@/lib/negotiationEngine";
+import { getAgreedItems } from "@/lib/negotiationEngine";
 
 /** Show when negotiation.status === 'bid_accepted'. */
 export function DealClosedBanner({
@@ -13,7 +13,7 @@ export function DealClosedBanner({
   perspective,
   settledTotal,
 }: {
-  negotiation: RealNegotiationRow & { settled_total_value?: number | null };
+  negotiation: RealNegotiationRow;
   perspective: "buyer" | "supplier";
   /** Optional override of settled total; falls back to negotiation.settled_total_value. */
   settledTotal?: number;
@@ -23,11 +23,9 @@ export function DealClosedBanner({
   const { unit } = useWeightUnit();
   const pLbl = priceLabel(unit);
   const items = negotiation.offer?.items ?? [];
-  const agreed = getAgreedMap(negotiation);
+  const agreedMap = new Map(getAgreedItems(negotiation).map((a) => [a.offer_item_id, a] as const));
 
-  const total =
-    settledTotal ??
-    Number((negotiation as { settled_total_value?: number | null }).settled_total_value ?? 0);
+  const total = settledTotal ?? Number(negotiation.settled_total_value ?? 0);
 
   return (
     <div
@@ -58,7 +56,7 @@ export function DealClosedBanner({
       {items.length > 0 && (
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
           {items.map((it) => {
-            const a = agreed.get(it.id);
+            const a = agreedMap.get(it.id);
             const price = a?.price_per_kg ?? Number(it.price);
             return (
               <div key={it.id} className="flex items-center justify-between rounded-md bg-white/60 px-3 py-1.5">

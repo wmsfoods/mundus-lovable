@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import {
   MAX_DISPLAY_ROUNDS,
-  getAgreedMap,
+  getAgreedItems,
   getMaxRaw,
   getDisplayRound,
 } from "@/lib/negotiationEngine";
@@ -11,8 +11,9 @@ import {
 export function NegotiationProgressCard({ negotiation }: { negotiation: RealNegotiationRow }) {
   const { t } = useTranslation();
   const items = negotiation.offer?.items ?? [];
-  const agreed = getAgreedMap(negotiation);
-  const agreedCount = items.filter((it) => agreed.has(it.id)).length;
+  const agreedList = getAgreedItems(negotiation);
+  const agreedIds = new Set(agreedList.map((a) => a.offer_item_id));
+  const agreedCount = items.filter((it) => agreedIds.has(it.id)).length;
   const totalItems = items.length;
 
   const usedDisplay = Math.min(MAX_DISPLAY_ROUNDS, getDisplayRound(getMaxRaw(negotiation)));
@@ -30,7 +31,7 @@ export function NegotiationProgressCard({ negotiation }: { negotiation: RealNego
           </div>
           <div className="flex flex-wrap gap-1.5">
             {items.map((it) => {
-              const ok = agreed.has(it.id);
+              const ok = agreedIds.has(it.id);
               return (
                 <span
                   key={it.id}
