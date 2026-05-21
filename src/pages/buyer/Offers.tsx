@@ -325,6 +325,18 @@ export default function BuyerOffers() {
           available={marketProteins}
           counts={proteinCounts}
         />
+        <div className="bo-filter-row" style={{ alignItems: "center" }}>
+          <button
+            type="button"
+            className={`bo-filter-pill ${auctionsOnly ? "is-active" : ""}`}
+            onClick={() => setAuctionsOnly((v) => !v)}
+            aria-pressed={auctionsOnly}
+          >
+            <Gavel size={13} /> Auctions
+            <span style={{ opacity: 0.7, marginLeft: 4 }}>{MOCK_BUYER_AUCTIONS.length}</span>
+          </button>
+          <AuctionInfoDialog />
+        </div>
         <div className="bo-filter-row">
           <div className="bo-search">
             <span className="bo-search-icon"><SearchIcon size={16} /></span>
