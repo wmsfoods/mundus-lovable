@@ -1,0 +1,1 @@
+ALTER TABLE public.negotiations ADD COLUMN IF NOT EXISTS agreed_items JSONB NOT NULL DEFAULT '[]'::jsonb;
