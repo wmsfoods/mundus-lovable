@@ -1050,9 +1050,9 @@ export default function SupplierCreateOffer() {
                     <td><span className="cov4-tag">{c.pkg}</span></td>
                     <td><span className="cov4-tag">{c.gr !== "Not Classified" ? c.gr : "—"}</span></td>
                     <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
-                    <td className="num">{Number(c.qty).toLocaleString()}</td>
-                    <td className="num">{Number(c.ask).toFixed(2)}</td>
-                    <td className="num cov4-floor">{c.floor ? Number(c.floor).toFixed(2) : "—"}</td>
+                    <td className="num">{fmtWeight(Number(c.qty) || 0, unit)}</td>
+                    <td className="num">{fmtPrice(Number(c.ask) || 0, unit)}</td>
+                    <td className="num cov4-floor">{c.floor ? fmtPrice(Number(c.floor) || 0, unit) : "—"}</td>
                     {multiInco && secondaryIncos.map((s) => {
                       const ovr = cutIncoOverrides[c.id]?.[s];
                       const adj = parseFloat(incoAdjustments[s] || "0") || 0;
