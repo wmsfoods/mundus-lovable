@@ -39,6 +39,7 @@ export default function BuyerRequests() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { data, counts } = useBuyerRequests();
+  const { unit } = useWeightUnit();
   const locale = i18n.language || "en";
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
@@ -184,7 +185,7 @@ export default function BuyerRequests() {
                     </div>
                   </td>
                   <td>${r.targetPricePerKgUsd.toFixed(2)}</td>
-                  <td>{fmtKg(r.targetVolumeKg)} kg</td>
+                  <td>{fmtWeight(r.targetVolumeKg, unit)} {weightLabel(unit)}</td>
                   <td>{fmtMonth(r.shipmentMonth, locale)}</td>
                   <td>
                     <span className={`req-offer-badge ${r.offers.length === 0 ? "is-empty" : ""}`.trim()}>
