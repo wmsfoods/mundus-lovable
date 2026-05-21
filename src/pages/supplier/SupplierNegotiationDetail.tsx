@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties } from "react";
+import { Fragment, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -15,6 +15,9 @@ import {
   type NegotiationDetail,
   type NegotiationProduct,
 } from "@/hooks/useNegotiations";
+import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
+import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
+import { acceptNegotiation, rejectNegotiation } from "@/components/supplier/CounterOfferActions";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, weightLabel } from "@/lib/units";
 
@@ -55,6 +58,9 @@ export default function SupplierNegotiationDetail() {
   const { t, i18n } = useTranslation();
   const { unit } = useWeightUnit();
   const { data } = useNegotiation(id);
+  const isReal = isUuid(id);
+  const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
+  const [counterOpen, setCounterOpen] = useState(false);
   const locale = i18n.language || "en";
 
   if (!data) {
@@ -78,16 +84,28 @@ export default function SupplierNegotiationDetail() {
   const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
 
   const handleCounter = () => {
-    console.log("counter", id);
-    toast(t("supplier.negotiations.detail.toast.counterSent"));
+    if (isReal && rawNeg) {
+      setCounterOpen(true);
+    } else {
+      toast(t("supplier.negotiations.detail.toast.counterSent"));
+    }
   };
-  const handleAccept = () => {
-    console.log("accept", id);
-    toast.success(t("supplier.negotiations.detail.toast.bidAccepted"));
+  const handleAccept = async () => {
+    if (isReal && rawNeg) {
+      const ok = await acceptNegotiation(rawNeg, "supplier");
+      if (ok) refetch();
+    } else {
+      toast.success(t("supplier.negotiations.detail.toast.bidAccepted"));
+    }
   };
-  const handleReject = () => {
-    console.log("reject", id);
-    toast(t("supplier.negotiations.detail.toast.bidRejected"));
+  const handleReject = async () => {
+    if (isReal && rawNeg) {
+      if (!window.confirm(t("supplier.counter.confirmReject"))) return;
+      const ok = await rejectNegotiation(rawNeg);
+      if (ok) refetch();
+    } else {
+      toast(t("supplier.negotiations.detail.toast.bidRejected"));
+    }
   };
 
   const showActions = d.status === "action_required" || d.status === "final_round";
@@ -351,6 +369,16 @@ export default function SupplierNegotiationDetail() {
           </div>
         </div>
       </div>
+
+      {isReal && rawNeg && (
+        <CounterOfferModal
+          open={counterOpen}
+          onOpenChange={setCounterOpen}
+          negotiation={rawNeg}
+          perspective="supplier"
+          onSubmitted={() => refetch()}
+        />
+      )}
     </>
   );
 }
