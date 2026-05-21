@@ -280,6 +280,25 @@ export default function SupplierCreateOffer() {
     r.readAsDataURL(file);
   }, []);
 
+  /* Override / reset secondary-incoterm prices for a single cut */
+  const setCutOverride = useCallback(
+    (cutId: string, inco: string, field: "ask" | "floor", value: string | undefined) => {
+      setCutIncoOverrides((prev) => {
+        const next = { ...prev };
+        const forCut = { ...(next[cutId] || {}) };
+        const forInco = { ...(forCut[inco] || {}) };
+        if (value === undefined || value === "") delete forInco[field];
+        else forInco[field] = value;
+        if (!forInco.ask && !forInco.floor) delete forCut[inco];
+        else forCut[inco] = forInco;
+        if (Object.keys(forCut).length === 0) delete next[cutId];
+        else next[cutId] = forCut;
+        return next;
+      });
+    },
+    []
+  );
+
   /* AI Import (mock) */
   const simulateAiImport = useCallback(() => {
     setAiProcessing(true);
