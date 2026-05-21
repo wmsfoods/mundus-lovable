@@ -2170,6 +2170,107 @@
         "imported": "{{n}} prospects imported",
         "stageChanged": "{{company}} moved to {{stage}}",
         "invited": "Invite sent to {{email}} — prospect moved to Onboarding"
+      },
+      "pipeline": {
+        "tabs": {
+          "pipeline": "Pipeline",
+          "buyers": "Buyers",
+          "suppliers": "Suppliers",
+          "interviews": "Interviews",
+          "learnings": "Learnings"
+        },
+        "stages": {
+          "cold": "Lead",
+          "contacted": "Contacted",
+          "demo_scheduled": "Demo Scheduled",
+          "demo_done": "Demo Done",
+          "active": "Active",
+          "lost": "Lost"
+        },
+        "filters": {
+          "all": "All",
+          "buyer": "Buyers",
+          "supplier": "Suppliers",
+          "search": "Search..."
+        },
+        "cards": {
+          "contact": "Contact",
+          "role": "Role"
+        },
+        "buyers": {
+          "title": "Buyers",
+          "add": "+ Add Buyer"
+        },
+        "suppliers": {
+          "title": "Suppliers",
+          "add": "+ Add Supplier"
+        },
+        "interviews": {
+          "title": "Interviews",
+          "add": "+ Log Interview",
+          "company": "Company",
+          "contact": "Contact",
+          "date": "Date",
+          "duration": "Duration",
+          "painPoints": "Pain Points",
+          "takeaways": "Takeaways",
+          "keyQuotes": "Key Quotes",
+          "nextSteps": "Next Steps",
+          "empty": "No interviews logged yet"
+        },
+        "learnings": {
+          "title": "Learnings",
+          "add": "+ Add Learning",
+          "week": "Week of",
+          "theme": "Theme",
+          "insight": "Insight",
+          "sources": "Source companies",
+          "category": "Category",
+          "empty": "No learnings recorded yet"
+        },
+        "modal": {
+          "addCompany": "Add Company",
+          "name": "Company name",
+          "type": "Type",
+          "country": "Country",
+          "marketRegion": "Market region",
+          "website": "Website",
+          "stage": "Stage",
+          "contactName": "Contact name",
+          "contactRole": "Role",
+          "contactPersona": "Persona",
+          "contactEmail": "Email",
+          "contactPhone": "Phone",
+          "contactLinkedin": "LinkedIn",
+          "notes": "Notes",
+          "source": "Source",
+          "cancel": "Cancel",
+          "submit": "Save",
+          "logInterview": "Log Interview",
+          "pickCompany": "Pick a company",
+          "pickContact": "Pick a contact (optional)",
+          "duration": "Duration (min)",
+          "conductedBy": "Conducted by",
+          "painPoints": "Pain points",
+          "keyQuotes": "Key quotes",
+          "takeaways": "Takeaways",
+          "nextSteps": "Next steps",
+          "recordingUrl": "Recording URL",
+          "addLearning": "Add Learning",
+          "weekStart": "Week starting"
+        },
+        "table": {
+          "company": "Company",
+          "persona": "Persona / Role",
+          "contact": "Contact",
+          "email": "Email",
+          "phone": "Phone",
+          "linkedin": "LinkedIn",
+          "country": "Country",
+          "stage": "Stage",
+          "actions": "Actions",
+          "view": "View"
+        }
       }
     },
     "analytics": {
