@@ -447,6 +447,14 @@
       "submitting": "Submitting…",
       "successToast": "Bid submitted! The supplier will review your proposal."
     },
+    "counter": {
+      "title": "Send Counter-Response",
+      "subtitle": "Adjust your prices and respond to the supplier's counter-offer.",
+      "theirCounter": "Supplier Counter",
+      "theirCounterTotal": "Supplier Counter Total",
+      "successToast": "Counter-response sent! Waiting for supplier.",
+      "confirmReject": "Are you sure you want to reject this counter-offer?"
+    },
     "orders": {
       "title": "Orders",
       "heroTitle": "Track your orders easily and quickly.",
