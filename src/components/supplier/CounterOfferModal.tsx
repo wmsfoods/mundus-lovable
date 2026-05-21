@@ -81,6 +81,27 @@ export function CounterOfferModal({
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [bulkOffset, setBulkOffset] = useState<string>("");
+
+  const setAllCounters = (priceFor: (it: typeof openItems[number]) => number) => {
+    setCounters((prev) => {
+      const next = { ...prev };
+      for (const it of openItems) {
+        if (accepted[it.id]) continue;
+        next[it.id] = +Math.max(0, priceFor(it)).toFixed(4);
+      }
+      return next;
+    });
+  };
+  const acceptAllRows = () => {
+    setAccepted(Object.fromEntries(openItems.map((it) => [it.id, true])));
+  };
+  const applyBulkOffset = () => {
+    const v = parseFloat(bulkOffset);
+    if (!Number.isFinite(v)) return;
+    const deltaKg = fromDisplay(v, "price", unit);
+    setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) + deltaKg);
+  };
 
   // Buyer's initial bid (round 1) per offer_item — used to floor buyer counter-bids.
   const buyerInitialBid = useMemo(() => {
