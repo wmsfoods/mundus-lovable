@@ -164,6 +164,12 @@
     "note": "This screen will be built in the next commits of the port."
   },
   "buyer": {
+    "procurement": {
+      "nav": "Procurement Intelligence",
+      "groupLabel": "Insights",
+      "title": "Savings & spend dashboard",
+      "subtitle": "How much Mundus saved you vs market. Where you're spending. Which suppliers are pulling their weight."
+    },
     "requests": {
       "title": "My offer requests",
       "newRequest": "New offer request",
