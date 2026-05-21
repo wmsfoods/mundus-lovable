@@ -946,24 +946,33 @@
       },
       "profile": {
         "master_supplier": "Master Supplier",
-        "sales_trader": "Sales Trader",
+        "operator": "Operator",
         "export_manager": "Export Manager",
         "quality_control": "Quality Control",
         "logistics": "Logistics"
       },
       "status": {
         "active": "Active",
+        "invited": "Invited",
         "inactive": "Inactive"
+      },
+      "deactivateSuccess": "User deactivated.",
+      "edit": {
+        "title": "Edit team member",
+        "success": "User updated."
       },
       "invite": {
         "title": "Invite new user",
         "subtitle": "Send an invitation email — they'll set their password on first login.",
+        "fullNameLabel": "Full name",
+        "fullNamePlaceholder": "Jane Doe",
         "emailLabel": "Email",
         "emailPlaceholder": "user@example.com",
         "profileLabel": "Profile type",
         "send": "Send invitation",
         "cancel": "Cancel",
-        "success": "Invitation sent"
+        "success": "Invitation sent.",
+        "successEmail": "Invitation sent to {{email}}"
       }
     },
     "requests": {
