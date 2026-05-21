@@ -500,6 +500,13 @@
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
         "summary_one": "{{count}} cut has validation errors",
         "summary_other": "{{count}} cuts have validation errors"
+      },
+      "validation": {
+        "required": "Enter a bid greater than 0",
+        "minPct": "Minimum bid is ${{min}} (90% of asking)",
+        "belowInitial": "Cannot bid below your initial bid of ${{min}}",
+        "summary_one": "{{count}} cut has validation errors",
+        "summary_other": "{{count}} cuts have validation errors"
       }
     },
     "counter": {
