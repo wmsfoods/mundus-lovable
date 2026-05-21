@@ -981,13 +981,45 @@
     font-size: 14px;
   }
 
-  /* Bulk action bar — stack and full-width buttons */
-  .adm-ports-bulkbar { padding: 12px !important; }
+  /* Bulk action bar — compact 2-row layout */
+  .adm-ports-bulkbar {
+    padding: 10px !important;
+    gap: 8px !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    align-items: center !important;
+  }
+  .adm-ports-bulkbar > strong {
+    grid-column: 1 / -1;
+    font-size: 12px !important;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .adm-ports-bulkbar > div { display: none !important; }
+  .adm-ports-bulkbar .adm-bulk-selectall {
+    grid-column: 1 / -1;
+    font-size: 12px !important;
+    min-height: 34px !important;
+    padding: 6px 10px !important;
+  }
   .adm-ports-bulkbar > button,
   .adm-ports-bulkbar > .crm-btn-outline {
-    flex: 1 1 calc(50% - 5px);
     justify-content: center;
-    min-height: 40px;
+    min-height: 38px;
+    font-size: 13px;
+    padding: 6px 8px !important;
+  }
+  .adm-ports-bulkbar .adm-bulk-clear {
+    grid-column: 1 / -1;
+    min-height: 32px !important;
+    font-size: 12px !important;
+    background: transparent !important;
+    border: none !important;
+    color: var(--fg-muted, #6b7280) !important;
+    text-decoration: underline;
+    padding: 2px !important;
   }
 
   /* Pagination — full width buttons */
