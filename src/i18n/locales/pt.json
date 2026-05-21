@@ -2704,7 +2704,18 @@
         "general": "Geral",
         "buyer": "Comprador",
         "supplier": "Fornecedor",
-        "admin": "Admin"
+        "admin": "Admin",
+        "platform": "Plataforma",
+        "buyer_main": "Comprador · Menu Principal",
+        "buyer_insights": "Comprador · Insights",
+        "buyer_future": "Comprador · Em Breve",
+        "supplier_main": "Fornecedor · Menu Principal",
+        "supplier_insights": "Fornecedor · Insights",
+        "supplier_future": "Fornecedor · Em Breve",
+        "admin_crm": "Admin · CRM",
+        "admin_ops": "Admin · Operações",
+        "admin_marketplace": "Admin · Marketplace",
+        "admin_finance": "Admin · Financeiro"
       },
       "audience": {
         "all": "Todos",
