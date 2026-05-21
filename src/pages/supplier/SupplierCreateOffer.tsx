@@ -959,8 +959,30 @@ export default function SupplierCreateOffer() {
                   <th>Grading</th>
                   <th>Aging</th>
                   <th className="num">Qty (kg)</th>
-                  <th className="num">Ask $/kg</th>
-                  <th className="num">Floor $/kg</th>
+                  <th className="num">
+                    Ask $/kg
+                    {multiInco && (
+                      <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
+                    )}
+                  </th>
+                  <th className="num">
+                    Floor $/kg
+                    {multiInco && (
+                      <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
+                    )}
+                  </th>
+                  {multiInco && secondaryIncos.map((s) => (
+                    <Fragment key={`h-${s}`}>
+                      <th className="num">
+                        Ask $/kg
+                        <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
+                      </th>
+                      <th className="num">
+                        Floor $/kg
+                        <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
+                      </th>
+                    </Fragment>
+                  ))}
                   <th>Notes</th>
                   <th style={{ width: 28 }} aria-label="actions" />
                 </tr>
@@ -984,6 +1006,36 @@ export default function SupplierCreateOffer() {
                     <td className="num">{Number(c.qty).toLocaleString()}</td>
                     <td className="num">{Number(c.ask).toFixed(2)}</td>
                     <td className="num cov4-floor">{c.floor ? Number(c.floor).toFixed(2) : "—"}</td>
+                    {multiInco && secondaryIncos.map((s) => {
+                      const ovr = cutIncoOverrides[c.id]?.[s];
+                      const adj = parseFloat(incoAdjustments[s] || "0") || 0;
+                      const askBase = parseFloat(c.ask) || 0;
+                      const floorBase = c.floor ? parseFloat(c.floor) : NaN;
+                      const calcAsk = deriveSecondary(askBase, primaryInco, s, adj, cifInsuranceNum);
+                      const calcFloor = isNaN(floorBase)
+                        ? null
+                        : deriveSecondary(floorBase, primaryInco, s, adj, cifInsuranceNum);
+                      return (
+                        <Fragment key={`${c.id}-${s}`}>
+                          <td className="num">
+                            <SecondaryPriceCell
+                              calculated={calcAsk}
+                              override={ovr?.ask}
+                              onOverride={(v) => setCutOverride(c.id, s, "ask", v)}
+                              onReset={() => setCutOverride(c.id, s, "ask", undefined)}
+                            />
+                          </td>
+                          <td className="num">
+                            <SecondaryPriceCell
+                              calculated={calcFloor}
+                              override={ovr?.floor}
+                              onOverride={(v) => setCutOverride(c.id, s, "floor", v)}
+                              onReset={() => setCutOverride(c.id, s, "floor", undefined)}
+                            />
+                          </td>
+                        </Fragment>
+                      );
+                    })}
                     <td><span className="cov4-notes-cell">{c.notes || "—"}</span></td>
                     <td>
                       <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label="Remove cut">✕</button>
