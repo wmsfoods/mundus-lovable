@@ -1323,7 +1323,7 @@ export default function SupplierCreateOffer() {
                 <PrevRow l="Destination" v={selMarkets.map((m) => m.f + " " + m.n).join(", ") || "—"} />
                 <PrevRow l="Incoterm" v={selInco.join(", ")} />
                 <PrevRow l="Temperature" v={temp} />
-                <PrevRow l="Container" v={`${csize} · ${tw.toLocaleString()} kg`} />
+                <PrevRow l="Container" v={`${csize} · ${fmtWeight(tw, unit)} ${wLbl}`} />
                 {certifications.length > 0 && <PrevRow l="Certifications" v={certifications.join(", ")} />}
               </div>
               {cuts.length > 0 && (
@@ -1332,7 +1332,7 @@ export default function SupplierCreateOffer() {
                   {cuts.map((c) => (
                     <div key={c.id} className="cov4-prev-cut-row">
                       <span>{c.cat} {c.cut}</span>
-                      <span>US$ {Number(c.ask).toFixed(2)}/kg</span>
+                      <span>US$ {fmtPrice(Number(c.ask) || 0, unit)}/{wLbl}</span>
                     </div>
                   ))}
                 </div>
@@ -1427,7 +1427,7 @@ export default function SupplierCreateOffer() {
                 ))}
               </ul>
               <div className="cov4-ready-foot">
-                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {tw.toLocaleString()} kg
+                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {fmtWeight(tw, unit)} {wLbl}
               </div>
             </PopoverContent>
           </Popover>
