@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -420,9 +420,8 @@ export default function SupplierAuctionDetail() {
                   const rc = rankColors(b.rank);
                   const isWin = b.status === "winning";
                   return (
-                    <>
+                    <Fragment key={b.id}>
                       <tr
-                        key={b.id}
                         className="border-t border-border cursor-pointer hover:bg-muted/30"
                         style={isWin ? { background: "rgba(34,197,94,0.06)" } : undefined}
                         onClick={() => setExpanded(isExp ? null : b.id)}
@@ -476,7 +475,7 @@ export default function SupplierAuctionDetail() {
                           </td>
                         </tr>
                       )}
-                    </>
+                    </Fragment>
                   );
                 })}
               </tbody>
