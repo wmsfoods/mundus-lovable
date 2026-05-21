@@ -16,6 +16,7 @@ import {
   ListIcon,
 } from "@/components/icons";
 import { MOCK_SUPPLIER_OFFERS, PAGE_SIZE, type SupplierOffer } from "@/data/mockSupplierOffers";
+import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
@@ -148,6 +149,7 @@ function SupplierOfferCard({ o, onOpen, t }: { o: SupplierOffer; onOpen: () => v
 export default function SupplierOffers() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { offers: realOffers, loading: realLoading } = useRealSupplierOffers();
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priceDesc" | "priceAsc">("newest");
@@ -156,7 +158,8 @@ export default function SupplierOffers() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
 
   const filtered = useMemo(() => {
-    let copy = [...MOCK_SUPPLIER_OFFERS];
+    // Real offers first (newest from DB), then mocks
+    let copy: SupplierOffer[] = [...realOffers, ...MOCK_SUPPLIER_OFFERS];
     if (cat !== "all") copy = copy.filter((o) => CAT_MATCH[cat].includes(o.category));
     if (statusFilter !== "all") copy = copy.filter((o) => o.status === statusFilter);
     copy.sort((a, b) => {
@@ -166,7 +169,7 @@ export default function SupplierOffers() {
       return a.pricePerFclUsd - b.pricePerFclUsd;
     });
     return copy;
-  }, [sortBy, cat, statusFilter]);
+  }, [sortBy, cat, statusFilter, realOffers]);
 
   const total = filtered.length;
   const visible = filtered.slice(0, shown);
@@ -271,8 +274,23 @@ export default function SupplierOffers() {
         </span>
       </div>
 
-      {visible.length === 0 ? (
-        <div className="empty-state"><p>{t("supplier.offers.empty")}</p></div>
+      {realLoading && realOffers.length === 0 && visible.length === 0 ? (
+        <div className="so-grid">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="oc" style={{ opacity: 0.5 }}>
+              <div style={{ height: 16, background: "#e5e7eb", borderRadius: 4, marginBottom: 12 }} />
+              <div style={{ height: 24, background: "#e5e7eb", borderRadius: 4, marginBottom: 12, width: "70%" }} />
+              <div style={{ height: 80, background: "#f3f4f6", borderRadius: 4 }} />
+            </div>
+          ))}
+        </div>
+      ) : visible.length === 0 ? (
+        <div className="empty-state" style={{ textAlign: "center", padding: "48px 16px" }}>
+          <p style={{ marginBottom: 12 }}>{t("supplier.offers.empty", "No offers yet. Create your first offer.")}</p>
+          <button type="button" className="so-new-btn" onClick={() => navigate("/supplier/offers/new")}>
+            <PlusIcon size={14} /> {t("supplier.offers.newOffer")}
+          </button>
+        </div>
       ) : (
         <>
           <div className="so-grid">
