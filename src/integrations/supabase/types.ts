@@ -3181,6 +3181,68 @@ export type Database = {
           },
         ]
       }
+      outreach_emails: {
+        Row: {
+          body_html: string | null
+          clicked_at: string | null
+          contact_company: string | null
+          contact_email: string
+          contact_name: string | null
+          country: string | null
+          created_at: string
+          id: string
+          offer_id: string
+          opened_at: string | null
+          replied_at: string | null
+          sent_at: string | null
+          sent_by_user_id: string | null
+          status: string
+          subject: string
+        }
+        Insert: {
+          body_html?: string | null
+          clicked_at?: string | null
+          contact_company?: string | null
+          contact_email: string
+          contact_name?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          offer_id: string
+          opened_at?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          sent_by_user_id?: string | null
+          status?: string
+          subject: string
+        }
+        Update: {
+          body_html?: string | null
+          clicked_at?: string | null
+          contact_company?: string | null
+          contact_email?: string
+          contact_name?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          offer_id?: string
+          opened_at?: string | null
+          replied_at?: string | null
+          sent_at?: string | null
+          sent_by_user_id?: string | null
+          status?: string
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_emails_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       permissions: {
         Row: {
           code: string
