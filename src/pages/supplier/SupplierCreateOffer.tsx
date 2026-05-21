@@ -854,7 +854,7 @@ export default function SupplierCreateOffer() {
                           onChange={(v) => setIncoAdjustments((p) => ({ ...p, [s]: v }))}
                         />
                         <span style={{ color: "var(--fg-muted)" }}>
-                          US$/kg — Applied to all cuts. You can override individual prices in the table.
+                          US{pLbl} — Applied to all cuts. You can override individual prices in the table.
                         </span>
                       </div>
                     );
