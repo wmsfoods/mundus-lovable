@@ -1028,6 +1028,9 @@ export default function SupplierCreateOffer() {
                       const calcFloor = isNaN(floorBase)
                         ? null
                         : deriveSecondary(floorBase, primaryInco, s, adj, cifInsuranceNum);
+                      const effAsk = ovr?.ask !== undefined ? parseFloat(ovr.ask) : calcAsk;
+                      const effFloor = ovr?.floor !== undefined ? parseFloat(ovr.floor) : calcFloor;
+                      const pair = validatePricePair(effAsk, effFloor);
                       return (
                         <Fragment key={`${c.id}-${s}`}>
                           <td className="num">
@@ -1036,6 +1039,8 @@ export default function SupplierCreateOffer() {
                               override={ovr?.ask}
                               onOverride={(v) => setCutOverride(c.id, s, "ask", v)}
                               onReset={() => setCutOverride(c.id, s, "ask", undefined)}
+                              invalid={!pair.ok}
+                              invalidMsg="Asking must be ≥ floor"
                             />
                           </td>
                           <td className="num">
@@ -1044,6 +1049,8 @@ export default function SupplierCreateOffer() {
                               override={ovr?.floor}
                               onOverride={(v) => setCutOverride(c.id, s, "floor", v)}
                               onReset={() => setCutOverride(c.id, s, "floor", undefined)}
+                              invalid={!pair.ok}
+                              invalidMsg="Floor must be ≤ asking"
                             />
                           </td>
                         </Fragment>
