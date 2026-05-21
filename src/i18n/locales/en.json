@@ -2922,5 +2922,31 @@
       "viewOrder": "View Order",
       "orderToast": "Order creation coming soon"
     }
+  },
+  "filters": {
+    "searchPlaceholder": "Search by deal ID, product, party, port…",
+    "searchEllipsis": "Search…",
+    "filters": "Filters",
+    "advanced": "Advanced filters",
+    "apply": "Apply",
+    "clear": "Clear",
+    "clearAll": "Clear all",
+    "all": "All",
+    "any": "Any",
+    "nSelected": "{{count}} selected",
+    "noOptions": "No options",
+    "dealId": "Deal ID",
+    "dealIdPlaceholder": "e.g. 0000045",
+    "product": "Product",
+    "buyer": "Buyer",
+    "supplier": "Supplier",
+    "origin": "Origin",
+    "destination": "Destination",
+    "originPort": "Origin port",
+    "destinationPort": "Destination port",
+    "status": "Status",
+    "dateFrom": "Date from",
+    "dateTo": "Date to",
+    "noResults": "No results match your filters"
   }
 }

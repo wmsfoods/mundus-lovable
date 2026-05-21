@@ -1,11 +1,21 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FileTextIcon, FilterIcon } from "@/components/icons";
+import { FileTextIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
-import { useBuyerOrders, type BuyerOrderStatus } from "@/hooks/useBuyerOrders";
+import {
+  useBuyerOrders,
+  type BuyerOrder,
+  type BuyerOrderStatus,
+} from "@/hooks/useBuyerOrders";
+import { DealsFilterBar } from "@/components/marketplace/DealsFilterBar";
+import {
+  EMPTY_FILTER,
+  useDealsFilter,
+  type DealsFilterState,
+} from "@/hooks/useDealsFilter";
 
 const STATUS_CLASS: Record<BuyerOrderStatus, string> = {
   awaiting_supplier_acceptance: "pill-pending",
@@ -33,9 +43,32 @@ export default function BuyerOrders() {
   const navigate = useNavigate();
   const { data: orders } = useBuyerOrders();
   const [sortBy, setSortBy] = useState<SortKey>("recent");
+  const [filter, setFilter] = useState<DealsFilterState>(EMPTY_FILTER);
+
+  const accessors = useMemo(
+    () => ({
+      dealId: (o: BuyerOrder) => o.orderNumber,
+      product: (o: BuyerOrder) => o.product,
+      party: (o: BuyerOrder) => o.supplierName,
+      origin: (o: BuyerOrder) => o.origin,
+      destination: (o: BuyerOrder) => o.destination,
+      status: (o: BuyerOrder) => o.status as string,
+      date: (o: BuyerOrder) => {
+        const d = new Date(o.orderDate);
+        return isNaN(d.getTime()) ? null : d;
+      },
+    }),
+    [],
+  );
+
+  const { filtered, statusCounts, options, totalBeforeStatus } = useDealsFilter(
+    orders,
+    filter,
+    accessors,
+  );
 
   const sorted = useMemo(() => {
-    const copy = [...orders];
+    const copy = [...filtered];
     if (sortBy === "status") {
       copy.sort((a, b) => a.status.localeCompare(b.status));
     } else {
@@ -46,11 +79,16 @@ export default function BuyerOrders() {
       });
     }
     return copy;
-  }, [orders, sortBy]);
+  }, [filtered, sortBy]);
 
   const total = sorted.length;
   const from = total === 0 ? 0 : 1;
   const to = total;
+
+  const statusOptions = options.statuses.map((s) => ({
+    value: s,
+    label: t(`buyer.orders.status.${s}`, { defaultValue: s }),
+  }));
 
   return (
     <>
@@ -67,6 +105,20 @@ export default function BuyerOrders() {
       />
 
       <PageTitle icon={FileTextIcon} title={t("buyer.orders.title")} />
+
+      <DealsFilterBar
+        value={filter}
+        onChange={setFilter}
+        options={options}
+        statusOptions={statusOptions}
+        statusCounts={statusCounts}
+        totalCount={totalBeforeStatus}
+        labels={{
+          party: t("filters.supplier"),
+          origin: t("filters.origin"),
+          destination: t("filters.destination"),
+        }}
+      />
 
       <div className="sales-toolbar">
         <span className="result-count">
@@ -91,10 +143,7 @@ export default function BuyerOrders() {
           <thead>
             <tr>
               <th>{t("buyer.orders.col.orderId")}</th>
-              <th>
-                {t("buyer.orders.col.status")}{" "}
-                <span className="filt"><FilterIcon size={12} /></span>
-              </th>
+              <th>{t("buyer.orders.col.status")}</th>
               <th>{t("buyer.orders.col.supplier")}</th>
               <th>{t("buyer.orders.col.orderDate")}</th>
               <th>{t("buyer.orders.col.origin")}</th>

@@ -1,81 +1,58 @@
-# Filtros inteligentes de proteína no Marketplace
+## Goal
 
-## Objetivo
-Modernizar a navegação por proteína (Beef, Pork, Poultry, Ovine) nos módulos onde existem ofertas, com pills visuais (ícone + nome + contador), filtros adicionais inteligentes e busca rápida.
+Add a consistent, modern filter to two pages, so users can quickly narrow down deals:
 
-## Escopo por módulo
+- **Supplier → Sales** (`/supplier/sales`): filter by destination port, origin port, buyer, date, deal ID, product, status.
+- **Buyer → Orders** (`/buyer/orders`): same pattern — destination, origin, supplier, date, deal ID, product, status.
 
-### 1. Supplier — `/supplier/offers`
-Hoje já existe uma fileira de pills básica (`all / beef / pork / poultry / ovine`) com texto puro. Vamos substituir por:
-- **Pills modernas com ícone de proteína** (🥩 Beef, 🐖 Pork, 🐓 Poultry, 🐑 Ovine) seguindo o estilo da imagem enviada.
-- **Filtrar dinamicamente as proteínas exibidas** com base no que o supplier exporta. Origem: `company_proteins`/`supplier_proteins` derivado das ofertas existentes do supplier ou do cadastro de espécies no perfil (`CompanyProfileSections` usa `SPECIES = ["Beef","Pork","Poultry","Lamb"]`). Vou ler do cadastro do supplier (production capacities/species) — se vazio, fallback para o conjunto que aparece nas próprias offers dele.
-- **Contador por proteína** na própria pill (ex.: `Beef · 12`).
-- Demais filtros existentes (status, sort, view) ficam.
+The two pages will share the same filter component and UX so the experience feels unified across the platform.
 
-### 2. Buyer — `/buyer/offers`
-Hoje **não existe nenhum filtro**. Adicionar barra de filtros nova:
-- **Pills de proteína** (Beef, Pork, Poultry, Ovine) — calculadas a partir das offers retornadas (categorias presentes no marketplace), com contador.
-- **Busca rápida** por nome de corte / origem.
-- **Filtros secundários** (collapsible "Mais filtros"): origem (país), destino, incoterm, mês de shipment, condição (Chilled/Frozen), faixa de volume.
-- **Sort**: mais recente, preço asc/desc, volume.
-- **Chips de filtros ativos** com botão "limpar tudo".
+## UX
 
-### 3. Buyer — `/buyer` (Home)
-Hoje só tem hero + stats + recent. Adicionar:
-- **Bloco "Explore by protein"** acima de "Recent Offers": 4 cards visuais (ícone + nome + contagem de ofertas ativas no marketplace daquela proteína) que navegam para `/buyer/offers?protein=beef` etc.
-- A página `/buyer/offers` lê o query param e pré-seleciona a pill correspondente.
+A single filter bar above the results table/cards, with three layers:
 
-### 4. Admin
-**Observação:** não existe página `Admin Offers` no projeto hoje (só `AdminNegotiations`, `AdminCompanies`, etc.). Confirme se deseja:
-(a) que eu crie uma nova página `Admin → Offers` listando todas as offers do marketplace com os mesmos filtros, ou
-(b) que eu aplique os filtros somente nas duas telas existentes (supplier + buyer) por enquanto.
+1. **Quick search box** — typing matches any field at once (deal ID, product, buyer/supplier, ports). Useful for the most common case ("just find it").
+2. **Quick status chips** — one chip per status (All, Awaiting acceptance, Awaiting pre-payment, In production, Shipped, Delivered, Completed, Rejected). Tap to filter; count badge per chip.
+3. **Advanced filters** (collapsible panel, opens via a "Filters" button with an active-count badge):
+   - Deal ID (text)
+   - Product (multi-select from the products present in the data)
+   - Buyer / Supplier (multi-select from existing names)
+   - Origin port / Origin country (multi-select)
+   - Destination port / Destination country (multi-select)
+   - Date range (from / to, using the shadcn date picker)
+   - Active-filter chips row showing each applied filter with an "✕" to remove it individually, plus a "Clear all" link.
 
-## Detalhes técnicos
-
-### Componente novo: `src/components/marketplace/ProteinFilter.tsx`
-- Recebe `availableProteins: ("Beef"|"Pork"|"Poultry"|"Ovine")[]`, `counts: Record<protein, number>`, `value`, `onChange`.
-- Renderiza pills com ícone emoji/svg, label, contador. Estilo arredondado, com borda suave, estado ativo com fundo escuro (como na imagem).
-- Animação de transição via CSS (sem framer-motion novo).
-- Acessível (botões com `aria-pressed`).
-
-### CSS novo: `src/styles/mundus-protein-filter.css`
-Pills modernas, responsivas (scroll horizontal em mobile).
-
-### Lógica de "proteínas do supplier"
-Função utilitária `useSupplierProteins()` (hook):
-1. Tenta ler do perfil da empresa (`company_profile` / `production_capacities` se existir).
-2. Fallback: deriva do conjunto distinto de `category` das ofertas do supplier.
-
-### Lógica de "proteínas no marketplace" (buyer)
-Hook `useMarketplaceProteins()`:
-- Agrega `count` de offers ativas por categoria a partir de `useOffers()`.
-- Memoizado.
-
-### Filtros buyer
-Refactor `BuyerOffers` para incluir estado de filtros (protein, search, origin, destination, incoterm, shipmentMonth, condition, sort) com `useMemo` sobre `offers`.
-
-### Query param na Home → Offers
-`useSearchParams` em `BuyerOffers` para pré-selecionar protein.
-
-## Arquivos a criar / editar
-
-**Criar**
-- `src/components/marketplace/ProteinFilter.tsx`
-- `src/hooks/useSupplierProteins.ts`
-- `src/hooks/useMarketplaceProteins.ts`
-- `src/styles/mundus-protein-filter.css`
-
-**Editar**
-- `src/pages/supplier/Offers.tsx` — trocar pills atuais pelo novo componente, filtrar lista de proteínas pela do supplier.
-- `src/pages/buyer/Offers.tsx` — adicionar barra de filtros completa.
-- `src/pages/buyer/Home.tsx` — adicionar seção "Explore by protein".
-- `src/i18n/locales/{en,es,pt}.json` — strings novas.
-- `src/main.tsx` (ou onde os CSS são importados) — importar o novo CSS.
+Result count + sort dropdown stay where they are today; only the filter row is new.
 
 ## Mobile
-Pills com scroll horizontal suave, snap-x, sem corte de safe-area. Filtros secundários em bottom sheet no buyer offers.
 
-## Fora de escopo
-- Criar nova página Admin Offers (depende da resposta acima).
-- Mudanças nos detalhes da oferta.
-- Backend novo — tudo é client-side a partir das queries já existentes.
+- Quick search and status chips stay visible; chips scroll horizontally.
+- "Filters" button opens a bottom-sheet (`MobileDrawer`) with the advanced filters stacked vertically — single-column, large touch targets, sticky "Apply / Clear" footer with safe-area padding.
+- Active-filter chips wrap below the toolbar so the user always sees what's applied.
+
+## Files
+
+**New**
+- `src/components/marketplace/DealsFilterBar.tsx` — shared filter component. Props: items, fields config (which filter fields to show + labels), labels for buyer-vs-supplier wording, current filter state, `onChange`. Renders the search box, status chips, "Filters" button, advanced panel/sheet, and active-filter chips.
+- `src/hooks/useDealsFilter.ts` — small helper that takes raw items + filter state and returns the filtered list plus per-status counts and the unique option lists for each dropdown (built from the data itself, so options stay in sync).
+
+**Edited**
+- `src/pages/supplier/Sales.tsx` — wire `DealsFilterBar` with field set: `dealId, product, buyer, originPort, destinationPort, status, dateRange`. Replace the local sort/filter logic with the hook's filtered list.
+- `src/pages/buyer/Orders.tsx` — wire `DealsFilterBar` with field set: `dealId (orderNumber), product, supplier, origin, destination, status, dateRange`. Buyer orders today only have `origin`/`destination` as countries (no port field) — we'll filter on country there and keep the "port" label only for supplier. Same component, different field config.
+- `src/i18n/locales/en.json` / `pt.json` / `es.json` — add a shared `filters.*` block (searchPlaceholder, filters, clearAll, apply, dateFrom, dateTo, originPort, destinationPort, buyer, supplier, product, dealId, status, noResults) plus a few page-specific strings.
+- `src/index.css` (or a new `src/styles/mundus-deals-filter.css`) — styles for the bar, chips, popovers, and the active-filter row.
+
+## Technical Notes
+
+- Reuse existing primitives: shadcn `Popover` + `Command` for multi-select dropdowns (already used in Create Offer), shadcn `Calendar` inside a `Popover` for the date range, `MobileDrawer` for the mobile filter sheet, `useIsMobile` to switch between desktop popover and mobile sheet.
+- Filtering happens fully in memory on the mock data — no backend changes. The hook recomputes via `useMemo` against the items array.
+- Status chip counts always reflect the data with the *other* filters applied, so the user can see how each option would narrow the list (a common UX nicety in modern filter bars).
+- URL sync is out of scope for this pass; filter state stays local. Easy to add later if needed.
+- Date range matches against `orderDate` parsed as a local date.
+
+## Out of scope
+
+- Saved filter presets / sharing filters via URL — can be added later.
+- Server-side filtering — current pages use mock data; this PR keeps it client-side.
+- Touching auctions, requests, negotiations — only Sales and Orders for now.
+

@@ -1,12 +1,18 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { FileTextIcon, FilterIcon } from "@/components/icons";
+import { FileTextIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { Pagination } from "@/components/mundus/Pagination";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { MOCK_SALES, type Sale, type SaleStatus } from "@/data/mockSales";
+import { DealsFilterBar } from "@/components/marketplace/DealsFilterBar";
+import {
+  EMPTY_FILTER,
+  useDealsFilter,
+  type DealsFilterState,
+} from "@/hooks/useDealsFilter";
 
 const PAGE_SIZE = 10;
 
@@ -22,15 +28,40 @@ export default function SupplierSales() {
   const [sales] = useState<Sale[]>(MOCK_SALES);
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
+  const [filter, setFilter] = useState<DealsFilterState>(EMPTY_FILTER);
+
+  const accessors = useMemo(
+    () => ({
+      dealId: (s: Sale) => s.dealId,
+      product: (s: Sale) => s.product,
+      party: (s: Sale) => s.buyer,
+      origin: (s: Sale) => s.originPort,
+      destination: (s: Sale) => s.destinationPort,
+      status: (s: Sale) => s.status as string,
+      date: (s: Sale) => {
+        // orderDate is mm/dd/yyyy
+        const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(s.orderDate);
+        if (!m) return null;
+        return new Date(Number(m[3]), Number(m[1]) - 1, Number(m[2]));
+      },
+    }),
+    [],
+  );
+
+  const { filtered, statusCounts, options, totalBeforeStatus } = useDealsFilter(
+    sales,
+    filter,
+    accessors,
+  );
 
   const sorted = useMemo(() => {
-    const copy = [...sales];
+    const copy = [...filtered];
     copy.sort((a, b) => {
       const av = a.dealId.localeCompare(b.dealId);
       return sortBy === "newest" ? -av : av;
     });
     return copy;
-  }, [sales, sortBy]);
+  }, [filtered, sortBy]);
 
   const total = sorted.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -38,6 +69,11 @@ export default function SupplierSales() {
   const from = total === 0 ? 0 : (pageSafe - 1) * PAGE_SIZE + 1;
   const to = Math.min(pageSafe * PAGE_SIZE, total);
   const slice = sorted.slice(from === 0 ? 0 : from - 1, to);
+
+  const statusOptions = options.statuses.map((s) => ({
+    value: s,
+    label: t(`supplier.sales.status.${s}`, { defaultValue: s }),
+  }));
 
   return (
     <>
@@ -54,6 +90,23 @@ export default function SupplierSales() {
       />
 
       <PageTitle icon={FileTextIcon} title={t("supplier.sales.title")} />
+
+      <DealsFilterBar
+        value={filter}
+        onChange={(next) => {
+          setFilter(next);
+          setPage(1);
+        }}
+        options={options}
+        statusOptions={statusOptions}
+        statusCounts={statusCounts}
+        totalCount={totalBeforeStatus}
+        labels={{
+          party: t("filters.buyer"),
+          origin: t("filters.originPort"),
+          destination: t("filters.destinationPort"),
+        }}
+      />
 
       <div className="sales-toolbar">
         <span className="result-count">
@@ -84,10 +137,7 @@ export default function SupplierSales() {
           <thead>
             <tr>
               <th>{t("supplier.sales.col.dealId")}</th>
-              <th>
-                {t("supplier.sales.col.status")}{" "}
-                <span className="filt"><FilterIcon size={12} /></span>
-              </th>
+              <th>{t("supplier.sales.col.status")}</th>
               <th>{t("supplier.sales.col.buyer")}</th>
               <th>{t("supplier.sales.col.orderDate")}</th>
               <th>{t("supplier.sales.col.destination")}</th>
