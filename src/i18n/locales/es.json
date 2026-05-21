@@ -447,6 +447,14 @@
       "submitting": "Enviando…",
       "successToast": "¡Oferta enviada! El proveedor revisará tu propuesta."
     },
+    "counter": {
+      "title": "Enviar contrarespuesta",
+      "subtitle": "Ajusta tus precios y responde a la contraoferta del proveedor.",
+      "theirCounter": "Contraoferta del proveedor",
+      "theirCounterTotal": "Total contraoferta",
+      "successToast": "¡Contrarespuesta enviada! Esperando al proveedor.",
+      "confirmReject": "¿Seguro que deseas rechazar esta contraoferta?"
+    },
     "orders": {
       "title": "Pedidos",
       "heroTitle": "Sigue tus pedidos fácil y rápidamente.",
