@@ -1005,15 +1005,15 @@ export default function SupplierCreateOffer() {
                   <th>Packaging</th>
                   <th>Grading</th>
                   <th>Aging</th>
-                  <th className="num">Qty (kg)</th>
+                  <th className="num">{qLbl}</th>
                   <th className="num">
-                    Ask $/kg
+                    Ask {pLbl}
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
                   </th>
                   <th className="num">
-                    Floor $/kg
+                    Floor {pLbl}
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
@@ -1021,11 +1021,11 @@ export default function SupplierCreateOffer() {
                   {multiInco && secondaryIncos.map((s) => (
                     <Fragment key={`h-${s}`}>
                       <th className="num">
-                        Ask $/kg
+                        Ask {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                       <th className="num">
-                        Floor $/kg
+                        Floor {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                     </Fragment>
