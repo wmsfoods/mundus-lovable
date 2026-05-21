@@ -17,7 +17,6 @@ import { AuctionCard } from "@/components/marketplace/AuctionCard";
 import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
 import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
 import { MOCK_BUYER_AUCTIONS, type MockAuction } from "@/data/mockAuctions";
-import { toast } from "sonner";
 import { Gavel } from "lucide-react";
 
 const MONTH_NAMES = [
