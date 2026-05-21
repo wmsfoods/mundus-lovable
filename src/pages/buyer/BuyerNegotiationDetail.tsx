@@ -378,7 +378,7 @@ export default function BuyerNegotiationDetail() {
                 <thead>
                   <tr>
                     <th>{t("buyer.negotiations.detail.col.product")}</th>
-                    <th>{t("buyer.negotiations.detail.col.qtyLb")}</th>
+                    <th>{t("buyer.negotiations.detail.col.qty", { unit: weightLabel(unit), defaultValue: "Qty ({{unit}})" })}</th>
                     <th>{t("buyer.negotiations.detail.col.asking")}</th>
                     {Array.from({ length: maxRoundShown }, (_, i) => (
                       <Fragment key={`h-${i}`}>
@@ -395,8 +395,8 @@ export default function BuyerNegotiationDetail() {
                         <span className="product-name">{p.name}</span>
                         <span className="product-pack">{p.pack}</span>
                       </td>
-                      <td>{fmtLb(p.qtyLb)}</td>
-                      <td>${p.askingUsdKg.toFixed(2)}</td>
+                      <td>{fmtWeight(p.qtyLb / LB_PER_KG, unit)}</td>
+                      <td>${fmtPrice(p.askingUsdKg, unit)}</td>
                       {Array.from({ length: maxRoundShown }, (_, i) => {
                         const round = i + 1;
                         const bidV = getPerRoundKg(p, "bid", round);
@@ -404,8 +404,8 @@ export default function BuyerNegotiationDetail() {
                       const isCurrentCounter = round === maxRoundShown;
                         return (
                           <Fragment key={`v-${i}`}>
-                          <td className="col-bid">{bidV != null ? `$${bidV.toFixed(2)}` : "—"}</td>
-                          <td className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}>{cntV != null ? `$${cntV.toFixed(2)}` : "—"}</td>
+                          <td className="col-bid">{bidV != null ? `$${fmtPrice(bidV, unit)}` : "—"}</td>
+                          <td className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}>{cntV != null ? `$${fmtPrice(cntV, unit)}` : "—"}</td>
                           </Fragment>
                         );
                       })}
