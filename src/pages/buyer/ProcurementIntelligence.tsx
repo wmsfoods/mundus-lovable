@@ -17,6 +17,7 @@ import {
   Wallet,
   AlertTriangle,
 } from "lucide-react";
+import { PreviewBanner } from "@/components/mundus/PreviewBanner";
 
 const PERIODS = ["30d", "YTD 2024", "2023"] as const;
 
@@ -165,6 +166,8 @@ export default function ProcurementIntelligence() {
           </button>
         </div>
       </div>
+
+      <PreviewBanner feature="procurement" />
 
       {/* Hero */}
       <div
