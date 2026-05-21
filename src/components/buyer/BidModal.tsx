@@ -310,6 +310,57 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           </label>
         </div>
 
+        {/* Bulk apply quick actions */}
+        <div className="flex flex-wrap items-center gap-2 mt-3">
+          <span className="text-xs uppercase font-semibold text-muted-foreground mr-1">
+            {t("buyer.bid.bulk.label", "Quick fill")}:
+          </span>
+          <button
+            type="button"
+            onClick={() => applyAllBids((a) => a)}
+            className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+            style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+          >
+            {t("buyer.bid.bulk.acceptAsking", "Accept asking")}
+          </button>
+          <button
+            type="button"
+            onClick={() => applyAllBids((a) => a * 0.95)}
+            className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+            style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+          >
+            {t("buyer.bid.bulk.minus5", "Asking -5%")}
+          </button>
+          <button
+            type="button"
+            onClick={() => applyAllBids((a) => a * 0.9)}
+            className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+            style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+          >
+            {t("buyer.bid.bulk.minus10", "Asking -10%")}
+          </button>
+          <div className="flex items-center gap-1">
+            <Input
+              type="number"
+              step="0.01"
+              value={bulkOffset}
+              onChange={(e) => setBulkOffset(e.target.value)}
+              placeholder={t("buyer.bid.bulk.customPlaceholder", { defaultValue: "±{{unit}}", unit: pLbl })}
+              className="h-7 w-20 text-right tabular-nums text-xs"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 px-3 text-xs"
+              onClick={applyBulkOffset}
+              style={{ color: "#8B2252" }}
+            >
+              {t("buyer.bid.bulk.apply", "Apply")}
+            </Button>
+          </div>
+        </div>
+
         {/* Cuts table */}
         <div className="rounded-lg border border-border overflow-hidden mt-2">
           <table className="w-full text-sm">
