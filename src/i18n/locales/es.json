@@ -946,18 +946,26 @@
       },
       "profile": {
         "master_supplier": "Proveedor Master",
-        "sales_trader": "Trader de Ventas",
+        "operator": "Operador",
         "export_manager": "Gerente de Exportación",
         "quality_control": "Control de Calidad",
         "logistics": "Logística"
       },
       "status": {
         "active": "Activo",
+        "invited": "Invitado",
         "inactive": "Inactivo"
+      },
+      "deactivateSuccess": "Usuario desactivado.",
+      "edit": {
+        "title": "Editar miembro del equipo",
+        "success": "Usuario actualizado."
       },
       "invite": {
         "title": "Invitar nuevo usuario",
         "subtitle": "Envía un email de invitación — definirán su contraseña en el primer acceso.",
+        "fullNameLabel": "Nombre completo",
+        "fullNamePlaceholder": "María García",
         "emailLabel": "Email",
         "emailPlaceholder": "usuario@ejemplo.com",
         "profileLabel": "Tipo de perfil",
