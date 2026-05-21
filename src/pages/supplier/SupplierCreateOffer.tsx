@@ -535,15 +535,14 @@ export default function SupplierCreateOffer() {
               if (catErr || !newCat) throw catErr ?? new Error("product_categories insert failed");
               categoryId = newCat.id;
             }
-            const spInsert: Record<string, unknown> = {
-              product_category_id: categoryId,
-              description: cutRow.name,
-              is_active: true,
-            };
-            if (cutRow.product_number != null) spInsert.product_number = cutRow.product_number;
             const { data: newSp, error: spErr } = await supabase
               .from("standard_products")
-              .insert(spInsert)
+              .insert({
+                product_category_id: categoryId,
+                description: cutRow.name,
+                is_active: true,
+                ...(cutRow.product_number != null ? { product_number: cutRow.product_number } : {}),
+              })
               .select("id").single();
             if (spErr || !newSp) throw spErr ?? new Error("standard_products insert failed");
             standardProductId = newSp.id;
