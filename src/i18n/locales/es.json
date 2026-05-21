@@ -2689,6 +2689,29 @@
           "confirmDeleteBody": "Esto eliminará permanentemente el corte y sus traducciones."
         }
       }
+    },
+    "flags": {
+      "title": "Feature Flags",
+      "subtitle": "Habilite o deshabilite funcionalidades por plataforma.",
+      "web": "Web",
+      "mobile": "Móvil",
+      "active": "activas",
+      "searchPlaceholder": "Buscar funcionalidades...",
+      "empty": "No se encontraron funcionalidades.",
+      "enabledToast": "{{label}} habilitada",
+      "disabledToast": "{{label}} deshabilitada",
+      "category": {
+        "general": "General",
+        "buyer": "Comprador",
+        "supplier": "Proveedor",
+        "admin": "Admin"
+      },
+      "audience": {
+        "all": "Todos",
+        "buyer": "Comprador",
+        "supplier": "Proveedor",
+        "admin": "Admin"
+      }
     }
   },
   "profile": {

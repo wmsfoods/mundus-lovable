@@ -2689,6 +2689,29 @@
           "confirmDeleteBody": "This will permanently remove the cut and its translations."
         }
       }
+    },
+    "flags": {
+      "title": "Feature Flags",
+      "subtitle": "Enable or disable program features per platform.",
+      "web": "Web",
+      "mobile": "Mobile",
+      "active": "active",
+      "searchPlaceholder": "Search features...",
+      "empty": "No features found.",
+      "enabledToast": "{{label}} enabled",
+      "disabledToast": "{{label}} disabled",
+      "category": {
+        "general": "General",
+        "buyer": "Buyer",
+        "supplier": "Supplier",
+        "admin": "Admin"
+      },
+      "audience": {
+        "all": "All",
+        "buyer": "Buyer",
+        "supplier": "Supplier",
+        "admin": "Admin"
+      }
     }
   },
   "profile": {

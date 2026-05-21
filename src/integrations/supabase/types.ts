@@ -2487,6 +2487,45 @@ export type Database = {
           },
         ]
       }
+      feature_flags: {
+        Row: {
+          audience: string
+          category: string
+          created_at: string
+          description: string | null
+          enabled: boolean
+          id: string
+          key: string
+          label: string
+          platform: string
+          updated_at: string
+        }
+        Insert: {
+          audience?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key: string
+          label: string
+          platform: string
+          updated_at?: string
+        }
+        Update: {
+          audience?: string
+          category?: string
+          created_at?: string
+          description?: string | null
+          enabled?: boolean
+          id?: string
+          key?: string
+          label?: string
+          platform?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       freight_options: {
         Row: {
           cost: number
