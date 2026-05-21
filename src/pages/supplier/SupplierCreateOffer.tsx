@@ -265,6 +265,10 @@ export default function SupplierCreateOffer() {
   /* Cuts */
   const addCut = useCallback(() => {
     if (!nf.cut || !nf.qty || !nf.ask) return;
+    if (!validatePricePair(nf.ask, nf.floor).ok) {
+      toast.error("Asking price must be ≥ floor price");
+      return;
+    }
     const id = Date.now().toString();
     setCuts((prev) => [...prev, { id, ...nf }]);
     if (newImgPrev) {
