@@ -32,6 +32,9 @@ export type ParentOffer = {
   bids: NegotiationBid[];
 };
 
+import { useRealNegotiationsList, toSupplierDetail } from "./useRealNegotiationsList";
+import { useRealNegotiation, isUuid } from "./useRealNegotiation";
+
 const MOCK: ParentOffer[] = [
   {
     id: 'po-01228',
@@ -78,9 +81,12 @@ const MOCK: ParentOffer[] = [
 ];
 
 export function useNegotiations() {
-  const offerCount = MOCK.length;
-  const bidCount = MOCK.reduce((s, p) => s + p.bids.length, 0);
-  return { data: MOCK, offerCount, bidCount, isLoading: false, error: null as null | Error };
+  const real = useRealNegotiationsList("supplier");
+  const realData = (real.data as ParentOffer[]) ?? [];
+  const data = [...realData, ...MOCK];
+  const offerCount = data.length;
+  const bidCount = data.reduce((s, p) => s + p.bids.length, 0);
+  return { data, offerCount, bidCount, isLoading: real.isLoading, error: real.error };
 }
 
 export type NegotiationProduct = {
@@ -202,6 +208,11 @@ const MOCK_DETAILS: Record<string, NegotiationDetail> = (() => {
 })();
 
 export function useNegotiation(bidId: string) {
-  const detail = MOCK_DETAILS[bidId] ?? null;
-  return { data: detail, isLoading: false, error: null as null | Error };
+  const isReal = isUuid(bidId);
+  const real = useRealNegotiation(isReal ? bidId : undefined);
+  if (isReal) {
+    const detail = real.data ? toSupplierDetail(real.data) : null;
+    return { data: detail, isLoading: real.isLoading, error: real.error };
+  }
+  return { data: MOCK_DETAILS[bidId] ?? null, isLoading: false, error: null as null | Error };
 }
