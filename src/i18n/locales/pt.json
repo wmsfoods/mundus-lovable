@@ -427,6 +427,26 @@
         "default": "Não Classificado"
       }
     },
+    "bid": {
+      "title": "Envie sua Proposta",
+      "subtitle": "Informe o preço da sua proposta por corte. O fornecedor irá analisar e responder.",
+      "incoterm": "Incoterm",
+      "destination": "Destino",
+      "freightCost": "Frete",
+      "cut": "Corte",
+      "qty": "Qtd ({{unit}})",
+      "asking": "Pedido",
+      "yourBid": "Sua Proposta",
+      "totalAsking": "Total Pedido",
+      "totalBid": "Total Proposto",
+      "difference": "Diferença",
+      "message": "Mensagem",
+      "messagePlaceholder": "Adicione uma mensagem ao fornecedor (opcional)",
+      "cancel": "Cancelar",
+      "submit": "Enviar Proposta",
+      "submitting": "Enviando…",
+      "successToast": "Proposta enviada! O fornecedor irá analisar."
+    },
     "orders": {
       "title": "Pedidos",
       "heroTitle": "Acompanhe seus pedidos com facilidade e rapidez.",
