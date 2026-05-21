@@ -82,11 +82,10 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
   // bids stored as $/kg
-  const [bids, setBids] = useState<Record<string, number>>(() =>
+  // null = empty input (user cleared it). Numbers stored as $/kg.
+  const [bids, setBids] = useState<Record<string, number | null>>(() =>
     Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])),
   );
-  // Track which inputs the user touched (empty/missing detection).
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
   const hydratedRef = useRef(false);
 
   useEffect(() => {
@@ -99,7 +98,6 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     );
     setIncoterm(draft?.incoterm ?? allowedIncoterms[0] ?? "CFR");
     setMessage(draft?.message ?? "");
-    setTouched({});
     hydratedRef.current = true;
     let cancelled = false;
     (async () => {
@@ -123,7 +121,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   // Persist draft on every change while modal is open.
   useEffect(() => {
     if (!open || !hydratedRef.current) return;
-    saveDraft(offer.id, { incoterm, portId, message, bids });
+    const cleanBids: Record<string, number> = {};
+    for (const [k, v] of Object.entries(bids)) {
+      if (typeof v === "number" && Number.isFinite(v)) cleanBids[k] = v;
+    }
+    saveDraft(offer.id, { incoterm, portId, message, bids: cleanBids });
   }, [open, offer.id, incoterm, portId, message, bids]);
 
   const selectedFreight = freight.find((f) => f.port?.id === portId);
@@ -131,7 +133,10 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const freightPerKg = selectedFreight && totalKg > 0 ? Number(selectedFreight.cost) / totalKg : 0;
 
   const askingTotal = offer.items.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
-  const bidTotal = offer.items.reduce((s, it) => s + (bids[it.id] ?? 0) * Number(it.amount), 0);
+  const bidTotal = offer.items.reduce(
+    (s, it) => s + (typeof bids[it.id] === "number" ? (bids[it.id] as number) : 0) * Number(it.amount),
+    0,
+  );
   const diff = bidTotal - askingTotal;
   const diffPct = askingTotal > 0 ? (diff / askingTotal) * 100 : 0;
 
@@ -144,9 +149,9 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       const min = asking * MIN_BID_PCT;
       const v = bids[it.id];
       if (v == null || !Number.isFinite(v) || v <= 0) {
-        out[it.id] = t("buyer.bid.errors.required", "Enter a bid greater than 0");
+        out[it.id] = t("buyer.bid.validation.required", "Enter a bid greater than 0");
       } else if (v < min) {
-        out[it.id] = t("buyer.bid.errors.minPct", {
+        out[it.id] = t("buyer.bid.validation.minPct", {
           defaultValue: "Minimum bid is ${{min}} (90% of asking)",
           min: toDisplay(min, "price", unit).toFixed(2),
         });
@@ -156,8 +161,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   }, [isRealOffer, offer.items, bids, t, unit]);
   const errorCount = Object.keys(errors).length;
 
-  const hasAnyBid = offer.items.some((it) => (bids[it.id] ?? 0) > 0);
-  const canSubmit = hasAnyBid && (!isRealOffer || errorCount === 0);
+  const allFilled = offer.items.every((it) => {
+    const v = bids[it.id];
+    return typeof v === "number" && Number.isFinite(v) && v > 0;
+  });
+  const canSubmit = allFilled && (!isRealOffer || errorCount === 0);
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return;
@@ -195,7 +203,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       const cutRows = offer.items.map((it) => ({
         round_proposal_id: rp.id,
         offer_item_id: it.id,
-        price_per_kg: bids[it.id] ?? Number(it.price),
+        price_per_kg: (typeof bids[it.id] === "number" ? (bids[it.id] as number) : Number(it.price)),
         quantity_kg: Number(it.amount),
       }));
       const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
@@ -280,13 +288,15 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             <tbody>
               {offer.items.map((it) => {
                 const asking = Number(it.price);
-                const bid = bids[it.id] ?? asking;
+                const bidVal = bids[it.id];
+                const bid = typeof bidVal === "number" ? bidVal : asking;
                 const d = bid - asking;
                 const dPct = asking > 0 ? (d / asking) * 100 : 0;
+                const isEmpty = bidVal === null || bidVal === undefined;
                 const displayBid = toDisplay(bid, "price", unit);
                 const displayDiff = toDisplay(d, "price", unit);
                 const err = errors[it.id];
-                const showErr = !!err && (touched[it.id] || bids[it.id] !== Number(it.price));
+                const showErr = !!err;
                 return (
                   <tr key={it.id} className="border-t border-border">
                     <td className="px-3 py-2">{it.customer_product?.name ?? "—"}</td>
@@ -298,12 +308,20 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                           type="number"
                           step="0.01"
                           min="0"
-                          value={Number.isFinite(displayBid) ? displayBid.toFixed(2) : ""}
+                          value={isEmpty ? "" : (Number.isFinite(displayBid) ? displayBid.toFixed(2) : "")}
                           onChange={(e) => {
-                            const v = parseFloat(e.target.value);
-                            const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
+                            const raw = e.target.value;
+                            if (raw === "") {
+                              setBids((prev) => ({ ...prev, [it.id]: null }));
+                              return;
+                            }
+                            const v = parseFloat(raw);
+                            if (!Number.isFinite(v)) {
+                              setBids((prev) => ({ ...prev, [it.id]: null }));
+                              return;
+                            }
+                            const kg = fromDisplay(v, "price", unit);
                             setBids((prev) => ({ ...prev, [it.id]: kg }));
-                            setTouched((p) => ({ ...p, [it.id]: true }));
                           }}
                           className={
                             "h-9 w-24 text-right tabular-nums focus-visible:ring-[#8B2252]" +
@@ -368,7 +386,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         <DialogFooter className="gap-2 sm:gap-2">
           {errorCount > 0 && (
             <div className="mr-auto text-xs text-destructive self-center">
-              {t("buyer.bid.errors.summary", { count: errorCount, defaultValue: "{{count}} cut(s) have validation errors" })}
+              {t("buyer.bid.validation.summary", { count: errorCount, defaultValue: "{{count}} cut(s) have validation errors" })}
             </div>
           )}
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>

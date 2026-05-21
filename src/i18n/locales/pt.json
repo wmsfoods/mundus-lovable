@@ -500,6 +500,13 @@
         "minPct": "Lance mínimo é ${{min}} (90% do pedido)",
         "summary_one": "{{count}} corte com erros de validação",
         "summary_other": "{{count}} cortes com erros de validação"
+      },
+      "validation": {
+        "required": "Informe um valor maior que 0",
+        "minPct": "Lance mínimo é ${{min}} (90% do pedido)",
+        "belowInitial": "Não é possível ofertar abaixo da sua proposta inicial de ${{min}}",
+        "summary_one": "{{count}} corte com erros de validação",
+        "summary_other": "{{count}} cortes com erros de validação"
       }
     },
     "counter": {
