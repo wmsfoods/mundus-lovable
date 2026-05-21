@@ -4,11 +4,13 @@ import { UsersIcon, SearchIcon, PlusIcon, EditIcon, XIcon } from "@/components/i
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
-import { useBuyerUsers, type BuyerUser } from "@/hooks/useBuyerUsers";
+import { useBuyerUsers, type BuyerProfileType } from "@/hooks/useBuyerUsers";
 import { BuyerInviteUserModal } from "@/components/buyer/BuyerInviteUserModal";
+import { EditUserModal, type EditableUser } from "@/components/team/EditUserModal";
+import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
-const PROFILE_OPTIONS: BuyerUser["profileType"][] = ["admin", "buyer", "viewer"];
+const PROFILE_OPTIONS: BuyerProfileType[] = ["master_buyer", "procurement", "finance", "compliance"];
 
 function pad2(n: number) {
   return n.toString().padStart(2, "0");
@@ -29,13 +31,14 @@ function formatDateTime(iso: string, locale: string) {
 
 export default function BuyerUsers() {
   const { t, i18n } = useTranslation();
-  const { data: users } = useBuyerUsers();
+  const { data: users, isLoading, refetch } = useBuyerUsers();
   const locale = i18n.language || "en";
 
   const [query, setQuery] = useState("");
   const [profileFilter, setProfileFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [editing, setEditing] = useState<EditableUser | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -48,13 +51,11 @@ export default function BuyerUsers() {
     });
   }, [users, query, profileFilter, statusFilter]);
 
-  const handleEdit = (id: string) => {
-    console.log("edit buyer user", id);
-    toast(t("buyer.users.actions.editMock"));
-  };
-  const handleDeactivate = (id: string) => {
-    console.log("deactivate buyer user", id);
-    toast(t("buyer.users.actions.deactivateMock"));
+  const handleDeactivate = async (id: string) => {
+    const { error } = await (supabase as any)
+      .from("company_users").update({ status: "inactive" }).eq("id", id);
+    if (error) toast.error(error.message);
+    else { toast.success(t("buyer.users.deactivateSuccess")); refetch(); }
   };
 
   return (
@@ -117,7 +118,9 @@ export default function BuyerUsers() {
         </div>
       </div>
 
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="detail-empty"><p>{t("common.loading")}</p></div>
+      ) : filtered.length === 0 ? (
         <div className="detail-empty">
           <p>{t("buyer.users.empty")}</p>
         </div>
@@ -141,15 +144,15 @@ export default function BuyerUsers() {
                   <td>
                     <div className="user-cell">
                       <span className="name">{u.name}</span>
-                      <span className="job">{u.jobTitle}</span>
+                      {u.jobTitle && <span className="job">{u.jobTitle}</span>}
                     </div>
                   </td>
                   <td style={{ color: "var(--fg-muted)" }}>{u.email}</td>
                   <td>{t(`buyer.users.profile.${u.profileType}`)}</td>
                   <td>{formatDate(u.createdAt, locale)}</td>
-                  <td>{formatDateTime(u.lastLoginAt, locale)}</td>
+                  <td>{u.lastLoginAt ? formatDateTime(u.lastLoginAt, locale) : "—"}</td>
                   <td>
-                    <span className={u.status === "active" ? "pill pill-active" : "pill pill-inactive"}>
+                    <span className={`pill ${u.status === "active" ? "pill-active" : u.status === "invited" ? "pill-pending" : "pill-inactive"}`}>
                       {t(`buyer.users.status.${u.status}`)}
                     </span>
                   </td>
@@ -159,7 +162,7 @@ export default function BuyerUsers() {
                         type="button"
                         className="action-icon-btn"
                         aria-label="Edit"
-                        onClick={() => handleEdit(u.id)}
+                        onClick={() => setEditing({ id: u.id, name: u.name, email: u.email, profileType: u.profileType, status: u.status })}
                       >
                         <EditIcon size={16} />
                       </button>
@@ -186,21 +189,29 @@ export default function BuyerUsers() {
             <ListCard
               key={u.id}
               title={u.name}
-              subtitle={u.jobTitle ? `${u.jobTitle} · ${u.email}` : u.email}
+              subtitle={u.email}
               chip={{
                 label: t(`buyer.users.status.${u.status}`),
-                className: u.status === "active" ? "pill-active" : "pill-inactive",
+                className: u.status === "active" ? "pill-active" : u.status === "invited" ? "pill-pending" : "pill-inactive",
               }}
               meta={[
                 { label: t("buyer.users.col.profileType"), value: t(`buyer.users.profile.${u.profileType}`) },
-                { label: t("buyer.users.col.lastLogin"), value: formatDateTime(u.lastLoginAt, locale) },
+                { label: t("buyer.users.col.lastLogin"), value: u.lastLoginAt ? formatDateTime(u.lastLoginAt, locale) : "—" },
               ]}
             />
           ))}
         </ListCardList>
       )}
 
-      <BuyerInviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} />
+      <BuyerInviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} onCreated={refetch} />
+      <EditUserModal
+        ns="buyer"
+        user={editing}
+        open={!!editing}
+        onClose={() => setEditing(null)}
+        onSaved={refetch}
+        profileOptions={PROFILE_OPTIONS}
+      />
     </>
   );
 }
