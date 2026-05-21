@@ -1019,6 +1019,12 @@
         "notice": "The buyer has 48 hours to confirm. You'll be notified.",
         "cancel": "Cancel",
         "confirm": "Award"
+      },
+      "nextSteps": {
+        "title": "Next steps",
+        "notified": "Buyer has been notified and has 48 hours to confirm.",
+        "becomesOrder": "Once confirmed, this becomes a Sales Order.",
+        "viewSales": "View in Sales"
       }
     },
     "createAuction": {
@@ -3090,5 +3096,10 @@
     "dateFrom": "Date from",
     "dateTo": "Date to",
     "noResults": "No results match your filters"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all as read",
+    "empty": "No notifications yet"
   }
 }

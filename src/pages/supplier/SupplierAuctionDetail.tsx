@@ -327,6 +327,35 @@ export default function SupplierAuctionDetail() {
         </div>
       )}
 
+      {/* Post-award Next Steps */}
+      {isAwarded && winner && (
+        <div
+          className="mt-4 rounded-xl border p-5"
+          style={{ borderColor: "#bbf7d0", background: "#f0fdf4" }}
+        >
+          <div className="font-semibold text-sm mb-3" style={{ color: "#166534" }}>
+            {t("supplier.auctionDetail.nextSteps.title", { defaultValue: "Next steps" })}
+          </div>
+          <ul className="space-y-2 text-sm text-foreground/90">
+            <li className="flex gap-2">
+              <span>✉️</span>
+              <span>{t("supplier.auctionDetail.nextSteps.notified", { defaultValue: "Buyer has been notified and has 48 hours to confirm." })}</span>
+            </li>
+            <li className="flex gap-2">
+              <span>📋</span>
+              <span>{t("supplier.auctionDetail.nextSteps.becomesOrder", { defaultValue: "Once confirmed, this becomes a Sales Order." })}</span>
+            </li>
+          </ul>
+          <button
+            type="button"
+            onClick={() => navigate("/supplier/sales")}
+            className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            {t("supplier.auctionDetail.nextSteps.viewSales", { defaultValue: "View in Sales" })} →
+          </button>
+        </div>
+      )}
+
       {/* CLOSED / AWARDED — bid results */}
       {(isClosed || isAwarded) && (
         <>

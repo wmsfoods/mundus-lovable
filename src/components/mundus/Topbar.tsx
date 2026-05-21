@@ -4,8 +4,9 @@ import { useTranslation } from "react-i18next";
 import {
   GlobeIcon,
   ChevronDownIcon,
-  BellIcon,
 } from "@/components/icons";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
+import { supplierNotifications, buyerNotifications } from "@/data/mockNotifications";
 import { Menu as MenuIcon } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -151,10 +152,10 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
           <span style={{ fontWeight: unit === "lbs" ? 700 : 400, opacity: unit === "lbs" ? 1 : 0.55 }}>lbs</span>
         </button>
       )}
-      <button className="tb-bell" type="button" aria-label={t("shell.notifications")}>
-        <BellIcon size={18} />
-        <span className="dot" />
-      </button>
+      <NotificationDropdown
+        notifications={location.pathname.startsWith("/supplier") ? supplierNotifications : buyerNotifications}
+        ariaLabel={t("shell.notifications")}
+      />
       <button
         className="tb-avatar"
         type="button"

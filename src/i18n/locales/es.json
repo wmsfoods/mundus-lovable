@@ -1034,6 +1034,12 @@
         "notice": "El comprador tiene 48 horas para confirmar. Serás notificado.",
         "cancel": "Cancelar",
         "confirm": "Adjudicar"
+      },
+      "nextSteps": {
+        "title": "Próximos pasos",
+        "notified": "El comprador ha sido notificado y tiene 48 horas para confirmar.",
+        "becomesOrder": "Una vez confirmado, esto se convierte en una Orden de Venta.",
+        "viewSales": "Ver en Ventas"
       }
     },
     "createAuction": {
@@ -3090,5 +3096,10 @@
     "dateFrom": "Fecha desde",
     "dateTo": "Fecha hasta",
     "noResults": "Ningún resultado coincide con los filtros"
+  },
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todas como leídas",
+    "empty": "Sin notificaciones aún"
   }
 }
