@@ -483,26 +483,77 @@ export default function SupplierCreateOffer() {
 
           // Fallback: resolve cutId from cut name if missing
           let cutId = c.cutId;
-          if (!cutId && c.cut) {
-            const { data: sp } = await supabase
+          let cutRow: { id: string; name: string; product_number: number | null; category: string | null } | null = null;
+          if (cutId) {
+            const { data } = await supabase
               .from("cuts")
-              .select("id")
+              .select("id, name, product_number, category")
+              .eq("id", cutId)
+              .maybeSingle();
+            cutRow = data ?? null;
+          }
+          if (!cutRow && c.cut) {
+            const { data } = await supabase
+              .from("cuts")
+              .select("id, name, product_number, category")
               .ilike("name", c.cut)
               .maybeSingle();
-            if (sp) cutId = sp.id;
-            else {
-              console.warn("[publish] could not resolve cut by name:", c.cut);
-              continue;
-            }
+            cutRow = data ?? null;
           }
-          if (!cutId) continue;
+          if (!cutRow) {
+            console.warn("[publish] could not resolve cut:", c.cut, c.cutId);
+            continue;
+          }
+          cutId = cutRow.id;
 
-          // find or create customer_product
+          // Resolve/create standard_products row for this cut (FK target for customer_products)
+          let standardProductId: string | null = null;
+          if (cutRow.product_number != null) {
+            const { data: existingSp } = await supabase
+              .from("standard_products")
+              .select("id")
+              .eq("product_number", cutRow.product_number)
+              .maybeSingle();
+            if (existingSp) standardProductId = existingSp.id;
+          }
+          if (!standardProductId) {
+            // Resolve product_category by code (beef/pork/poultry/lamb)
+            const catCode = (cutRow.category || c.cat || "beef").toString().toLowerCase();
+            let categoryId: string | null = null;
+            const { data: existingCat } = await supabase
+              .from("product_categories")
+              .select("id")
+              .eq("code", catCode)
+              .maybeSingle();
+            if (existingCat) {
+              categoryId = existingCat.id;
+            } else {
+              const { data: newCat, error: catErr } = await supabase
+                .from("product_categories")
+                .insert({ code: catCode, name_en: catCode })
+                .select("id").single();
+              if (catErr || !newCat) throw catErr ?? new Error("product_categories insert failed");
+              categoryId = newCat.id;
+            }
+            const { data: newSp, error: spErr } = await supabase
+              .from("standard_products")
+              .insert({
+                product_category_id: categoryId,
+                description: cutRow.name,
+                is_active: true,
+                ...(cutRow.product_number != null ? { product_number: cutRow.product_number } : {}),
+              })
+              .select("id").single();
+            if (spErr || !newSp) throw spErr ?? new Error("standard_products insert failed");
+            standardProductId = newSp.id;
+          }
+
+          // find or create customer_product (FK -> standard_products.id)
           const { data: existing } = await supabase
             .from("customer_products")
             .select("id")
             .eq("company_id", MOCK_SUPPLIER_ID)
-            .eq("standard_product_id", cutId)
+            .eq("standard_product_id", standardProductId)
             .maybeSingle();
           let customerProductId = existing?.id;
           if (!customerProductId) {
@@ -510,8 +561,8 @@ export default function SupplierCreateOffer() {
               .from("customer_products")
               .insert({
                 company_id: MOCK_SUPPLIER_ID,
-                standard_product_id: cutId,
-                name: c.cut,
+                standard_product_id: standardProductId,
+                name: cutRow.name,
                 is_active: true,
               })
               .select("id").single();
