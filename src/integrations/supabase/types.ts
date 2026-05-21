@@ -47,6 +47,219 @@ export type Database = {
         }
         Relationships: []
       }
+      auction_bids: {
+        Row: {
+          auction_id: string
+          bid_locked_until: string | null
+          bid_prices: Json
+          bid_rank: number | null
+          bidder_id: string | null
+          commitment_acknowledged: boolean | null
+          company_id: string | null
+          cooldown_until: string | null
+          created_at: string | null
+          id: string
+          is_winner: boolean | null
+          notes: string | null
+          payment_terms: string | null
+          status: Database["public"]["Enums"]["auction_bid_status"] | null
+          total_value_usd: number | null
+          updated_at: string | null
+          volume_containers: number | null
+          withdrawal_at: string | null
+        }
+        Insert: {
+          auction_id: string
+          bid_locked_until?: string | null
+          bid_prices: Json
+          bid_rank?: number | null
+          bidder_id?: string | null
+          commitment_acknowledged?: boolean | null
+          company_id?: string | null
+          cooldown_until?: string | null
+          created_at?: string | null
+          id?: string
+          is_winner?: boolean | null
+          notes?: string | null
+          payment_terms?: string | null
+          status?: Database["public"]["Enums"]["auction_bid_status"] | null
+          total_value_usd?: number | null
+          updated_at?: string | null
+          volume_containers?: number | null
+          withdrawal_at?: string | null
+        }
+        Update: {
+          auction_id?: string
+          bid_locked_until?: string | null
+          bid_prices?: Json
+          bid_rank?: number | null
+          bidder_id?: string | null
+          commitment_acknowledged?: boolean | null
+          company_id?: string | null
+          cooldown_until?: string | null
+          created_at?: string | null
+          id?: string
+          is_winner?: boolean | null
+          notes?: string | null
+          payment_terms?: string | null
+          status?: Database["public"]["Enums"]["auction_bid_status"] | null
+          total_value_usd?: number | null
+          updated_at?: string | null
+          volume_containers?: number | null
+          withdrawal_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auction_bids_auction_id_fkey"
+            columns: ["auction_id"]
+            isOneToOne: false
+            referencedRelation: "auctions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auction_bids_bidder_id_fkey"
+            columns: ["bidder_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auction_bids_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      auctions: {
+        Row: {
+          auction_closes_at: string
+          auction_opens_at: string
+          available_containers: number | null
+          awarded_bid_id: string | null
+          commodity: string
+          company_id: string | null
+          container_count: number | null
+          container_size: string | null
+          created_at: string | null
+          cuts: Json | null
+          decision_deadline_hours: number | null
+          destination_markets: Json | null
+          id: string
+          inco_adjustments: Json | null
+          incoterms: string[] | null
+          min_bid_per_kg: number | null
+          notes: string | null
+          opp_number: string
+          origin_country_id: string | null
+          origin_port_id: string | null
+          payment_terms: string | null
+          primary_incoterm: string | null
+          reserve_price_per_kg: number | null
+          shipment_period: string | null
+          status: Database["public"]["Enums"]["auction_status"] | null
+          supplier_id: string | null
+          temperature: string | null
+          title: string
+          updated_at: string | null
+          visibility: Database["public"]["Enums"]["auction_visibility"] | null
+        }
+        Insert: {
+          auction_closes_at: string
+          auction_opens_at: string
+          available_containers?: number | null
+          awarded_bid_id?: string | null
+          commodity: string
+          company_id?: string | null
+          container_count?: number | null
+          container_size?: string | null
+          created_at?: string | null
+          cuts?: Json | null
+          decision_deadline_hours?: number | null
+          destination_markets?: Json | null
+          id?: string
+          inco_adjustments?: Json | null
+          incoterms?: string[] | null
+          min_bid_per_kg?: number | null
+          notes?: string | null
+          opp_number: string
+          origin_country_id?: string | null
+          origin_port_id?: string | null
+          payment_terms?: string | null
+          primary_incoterm?: string | null
+          reserve_price_per_kg?: number | null
+          shipment_period?: string | null
+          status?: Database["public"]["Enums"]["auction_status"] | null
+          supplier_id?: string | null
+          temperature?: string | null
+          title: string
+          updated_at?: string | null
+          visibility?: Database["public"]["Enums"]["auction_visibility"] | null
+        }
+        Update: {
+          auction_closes_at?: string
+          auction_opens_at?: string
+          available_containers?: number | null
+          awarded_bid_id?: string | null
+          commodity?: string
+          company_id?: string | null
+          container_count?: number | null
+          container_size?: string | null
+          created_at?: string | null
+          cuts?: Json | null
+          decision_deadline_hours?: number | null
+          destination_markets?: Json | null
+          id?: string
+          inco_adjustments?: Json | null
+          incoterms?: string[] | null
+          min_bid_per_kg?: number | null
+          notes?: string | null
+          opp_number?: string
+          origin_country_id?: string | null
+          origin_port_id?: string | null
+          payment_terms?: string | null
+          primary_incoterm?: string | null
+          reserve_price_per_kg?: number | null
+          shipment_period?: string | null
+          status?: Database["public"]["Enums"]["auction_status"] | null
+          supplier_id?: string | null
+          temperature?: string | null
+          title?: string
+          updated_at?: string | null
+          visibility?: Database["public"]["Enums"]["auction_visibility"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "auctions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auctions_origin_country_id_fkey"
+            columns: ["origin_country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auctions_origin_port_id_fkey"
+            columns: ["origin_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "auctions_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string
@@ -4068,7 +4281,16 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      auction_bid_status: "submitted" | "winning" | "lost" | "withdrawn"
+      auction_status:
+        | "scheduled"
+        | "open"
+        | "closed"
+        | "awarded"
+        | "contracted"
+        | "cancelled"
+        | "expired"
+      auction_visibility: "blind" | "open"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -4195,6 +4417,18 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      auction_bid_status: ["submitted", "winning", "lost", "withdrawn"],
+      auction_status: [
+        "scheduled",
+        "open",
+        "closed",
+        "awarded",
+        "contracted",
+        "cancelled",
+        "expired",
+      ],
+      auction_visibility: ["blind", "open"],
+    },
   },
 } as const
