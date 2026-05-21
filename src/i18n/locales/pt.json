@@ -613,27 +613,37 @@
         "actions": "Ações"
       },
       "profile": {
-        "admin": "Administrador",
-        "buyer": "Comprador",
-        "viewer": "Visualizador"
+        "master_buyer": "Comprador Master",
+        "procurement": "Compras",
+        "finance": "Financeiro",
+        "compliance": "Compliance"
       },
       "status": {
         "active": "Ativo",
+        "invited": "Convidado",
         "inactive": "Inativo"
       },
       "actions": {
         "editMock": "Edição em breve (mock)",
         "deactivateMock": "Usuário desativado (mock)"
       },
+      "deactivateSuccess": "Usuário desativado.",
+      "edit": {
+        "title": "Editar membro da equipe",
+        "success": "Usuário atualizado."
+      },
       "invite": {
         "title": "Convidar para a sua equipe de compras",
         "subtitle": "Envie um email de convite — o usuário definirá a senha no primeiro login.",
+        "fullNameLabel": "Nome completo",
+        "fullNamePlaceholder": "Maria Silva",
         "emailLabel": "Email",
         "emailPlaceholder": "usuario@exemplo.com",
         "profileLabel": "Tipo de perfil",
         "send": "Enviar convite",
         "cancel": "Cancelar",
-        "success": "Convite enviado (mock)"
+        "success": "Convite enviado.",
+        "successEmail": "Convite enviado para {{email}}"
       }
     },
     "share": {
