@@ -129,6 +129,7 @@
   "shell": {
     "postingAs": "Postando como",
     "unit": "kg",
+    "unitToggle": "Alternar unidade de peso (kg / lbs)",
     "notifications": "Notificações",
     "buyer": "Comprador",
     "supplier": "Fornecedor",
