@@ -273,7 +273,15 @@ function Thumb({ url, alt, cutId, onUpload }: { url: string | null; alt: string;
         onChange={(e) => { const f = e.target.files?.[0]; if (f) upload(f); e.currentTarget.value = ""; }}
       />
       {localUrl ? (
-        <img src={localUrl} alt={alt} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        <img
+          src={transformedPublicUrl(localUrl, { width: 128, height: 128, quality: 70 })}
+          alt={alt}
+          width={64}
+          height={64}
+          loading="lazy"
+          decoding="async"
+          style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        />
       ) : (
         <Upload size={18} color="#9CA3AF" />
       )}
