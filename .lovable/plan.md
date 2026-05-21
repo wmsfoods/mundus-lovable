@@ -1,101 +1,81 @@
+# Filtros inteligentes de proteína no Marketplace
 
-# Plano — Analytics Admin que entrega valor
+## Objetivo
+Modernizar a navegação por proteína (Beef, Pork, Poultry, Ovine) nos módulos onde existem ofertas, com pills visuais (ícone + nome + contador), filtros adicionais inteligentes e busca rápida.
 
-## Diagnóstico
+## Escopo por módulo
 
-A página atual (`AdminAnalytics.tsx`) é um clone estilo "Plausible": visitantes, pageviews, bounce rate, fontes de tráfego — tudo **mock**, desconectado do negócio. Em paralelo existe `useAdminAnalytics.ts` com KPIs reais do marketplace (GMV, deals, pipeline, top buyers/suppliers, ops queue) usado só no Dashboard.
+### 1. Supplier — `/supplier/offers`
+Hoje já existe uma fileira de pills básica (`all / beef / pork / poultry / ovine`) com texto puro. Vamos substituir por:
+- **Pills modernas com ícone de proteína** (🥩 Beef, 🐖 Pork, 🐓 Poultry, 🐑 Ovine) seguindo o estilo da imagem enviada.
+- **Filtrar dinamicamente as proteínas exibidas** com base no que o supplier exporta. Origem: `company_proteins`/`supplier_proteins` derivado das ofertas existentes do supplier ou do cadastro de espécies no perfil (`CompanyProfileSections` usa `SPECIES = ["Beef","Pork","Poultry","Lamb"]`). Vou ler do cadastro do supplier (production capacities/species) — se vazio, fallback para o conjunto que aparece nas próprias offers dele.
+- **Contador por proteína** na própria pill (ex.: `Beef · 12`).
+- Demais filtros existentes (status, sort, view) ficam.
 
-Para Fernando, "valor" = entender **saúde do marketplace, gargalos e onde agir agora**, não contar pageviews.
+### 2. Buyer — `/buyer/offers`
+Hoje **não existe nenhum filtro**. Adicionar barra de filtros nova:
+- **Pills de proteína** (Beef, Pork, Poultry, Ovine) — calculadas a partir das offers retornadas (categorias presentes no marketplace), com contador.
+- **Busca rápida** por nome de corte / origem.
+- **Filtros secundários** (collapsible "Mais filtros"): origem (país), destino, incoterm, mês de shipment, condição (Chilled/Frozen), faixa de volume.
+- **Sort**: mais recente, preço asc/desc, volume.
+- **Chips de filtros ativos** com botão "limpar tudo".
 
-## Direção
+### 3. Buyer — `/buyer` (Home)
+Hoje só tem hero + stats + recent. Adicionar:
+- **Bloco "Explore by protein"** acima de "Recent Offers": 4 cards visuais (ícone + nome + contagem de ofertas ativas no marketplace daquela proteína) que navegam para `/buyer/offers?protein=beef` etc.
+- A página `/buyer/offers` lê o query param e pré-seleciona a pill correspondente.
 
-Transformar a página em um **Marketplace Intelligence Center** com 5 blocos que respondem perguntas concretas, conectados a dados reais do Supabase (com fallback para mock quando vazio).
-
-```text
-┌────────────────────────────────────────────────────┐
-│  1. Health Score + Insights (AI)                   │
-├─────────────────┬──────────────────────────────────┤
-│  2. KPI strip   │  GMV · Deals · Win% · Cycle · TR │
-├─────────────────┴──────────────────────────────────┤
-│  3. Trend chart (GMV/Deals) com período comparado  │
-├──────────────────────┬─────────────────────────────┤
-│  4. Conversion funnel│  5. Attention queue         │
-│  Offers → Neg → Won  │  (KYC, certs, stalled negs) │
-│  → Shipped → Paid    │  com botão "Resolver"       │
-└──────────────────────┴─────────────────────────────┘
-   6. Top buyers / suppliers — leaderboards
-   7. Geografia & mix de produto — origens, destinos
-```
-
-## Detalhes por bloco
-
-### 1. Health Score + Insights
-- Score 0–100 calculado a partir de: liquidez (offers/buyer ativos), taxa de conversão neg→won, ciclo médio, % deals at-risk.
-- 3 a 4 **insights gerados** (regra primeiro, AI depois) tipo:
-  - "GMV caiu 18% vs período anterior — concentrado em Brasil→China"
-  - "12 negociações paradas há +5 dias aguardando supplier"
-  - "Win rate Pampa Beef caiu para 12% (vs 34% média)"
-- Cada insight tem CTA: "Ver detalhes" → filtra a página ou abre lista.
-
-### 2. KPI strip (real, com sparkline)
-GMV · Active Deals · Win Rate · Avg Cycle (days) · Avg Deal Size · Take Rate (commission) · New Signups · Liquidity Ratio.  
-Clicar um KPI → vira métrica do gráfico de tendência.
-
-### 3. Trend chart
-- Linha atual vs período anterior (já existe).
-- Toggle de **segmento**: All / Buyer-side / Supplier-side / Product (beef, pork, poultry, lamb).
-
-### 4. Funnel de conversão
-Offers publicadas → Negociações abertas → Aceitas → Shipped → Pagas.  
-Mostra **drop-off %** em cada etapa, com cor (vermelho > 50%).
-
-### 5. Attention queue (acionável)
-Lista priorizada: KYC pendentes, certificados expirando, negs paradas, disputas, deals at-risk de SLA. Cada item → botão **Resolver** que leva ao detalhe correto (`/admin/companies/:id`, `/admin/negotiations`, etc).
-
-### 6. Leaderboards
-- Top 5 buyers por GMV (delta vs período anterior)
-- Top 5 suppliers por GMV
-- Underperformers (queda > 30%) — destaque para ação comercial.
-
-### 7. Geografia & mix
-Mapa simples de destinos (lista com flag + barra), mix por categoria (donut), top portos de origem.
-
-## Filtros globais (topo)
-Período (7d / 30d / 90d / 12m / custom) · Mercado (origem/destino) · Categoria de produto · Role (buyer/supplier).  
-Aplicam em todos os blocos.
-
-## Mobile (memória do projeto)
-- Topo vira sticky com período e Health Score compacto.
-- Blocos viram cards verticais empilhados (sem tabelas largas).
-- Funil vira lista vertical com %.
-- Attention queue prioritária no topo na versão mobile (uma mão, ação rápida).
-- Leaderboards em swipe horizontal de cards.
-
----
+### 4. Admin
+**Observação:** não existe página `Admin Offers` no projeto hoje (só `AdminNegotiations`, `AdminCompanies`, etc.). Confirme se deseja:
+(a) que eu crie uma nova página `Admin → Offers` listando todas as offers do marketplace com os mesmos filtros, ou
+(b) que eu aplique os filtros somente nas duas telas existentes (supplier + buyer) por enquanto.
 
 ## Detalhes técnicos
 
-### Arquivos
-- **Reescrever** `src/pages/admin/AdminAnalytics.tsx`.
-- **Novo** `src/hooks/useMarketplaceAnalytics.ts` — consulta Supabase (negotiations, offers, orders, companies, round_proposals, crm_companies) e devolve `{ kpis, trend, funnel, attentionQueue, leaderboards, geo, insights }`. Períodos via `gte/lte` em `created_at`.
-- **Novo** componentes em `src/components/admin/analytics/`: `HealthScoreCard`, `InsightCard`, `KpiStrip`, `TrendChart`, `ConversionFunnel`, `AttentionQueue`, `Leaderboard`, `GeoMixPanel`.
-- **Novo** edge function `generate-marketplace-insights` (opcional, fase 2) — Lovable AI Gateway (`google/gemini-2.5-flash`) recebendo o snapshot e gerando 3 insights em linguagem natural. Fase 1 usa regras locais.
-- **Manter** `useAdminAnalytics.ts` (ainda usado pelo Dashboard) sem mudanças.
-- **Remover** `useAdminAnalyticsTraffic.ts` se ficar órfão.
-- **CSS**: estender `src/styles/mundus-analytics.css`.
-- **i18n**: chaves novas em `admin.analytics.*` (en/pt/es).
+### Componente novo: `src/components/marketplace/ProteinFilter.tsx`
+- Recebe `availableProteins: ("Beef"|"Pork"|"Poultry"|"Ovine")[]`, `counts: Record<protein, number>`, `value`, `onChange`.
+- Renderiza pills com ícone emoji/svg, label, contador. Estilo arredondado, com borda suave, estado ativo com fundo escuro (como na imagem).
+- Animação de transição via CSS (sem framer-motion novo).
+- Acessível (botões com `aria-pressed`).
 
-### Queries chave
-- KPIs: `SELECT count(*), sum(settled_total_value) FROM negotiations WHERE created_at >= …`
-- Funnel: counts por status (`awaiting_supplier`, `pending_buyer_review`, `bid_accepted`) + `orders` por status.
-- Attention queue: negs com `expires_at < now()+24h`, companies com `kyc_status='pending'`, certs próximos do vencimento (se tabela existir).
-- Leaderboards: agrupar `settled_total_value` por `buyer_company_id` / `offers.supplier_id`.
-- Cache via TanStack Query, `staleTime: 60s`.
+### CSS novo: `src/styles/mundus-protein-filter.css`
+Pills modernas, responsivas (scroll horizontal em mobile).
 
-### Fora de escopo desta fase
-- Cohort retention completo (planejar fase 3).
-- Export PDF (CSV já existe e será mantido).
-- Mapa SVG mundial — usar lista com bandeira + barra por enquanto.
+### Lógica de "proteínas do supplier"
+Função utilitária `useSupplierProteins()` (hook):
+1. Tenta ler do perfil da empresa (`company_profile` / `production_capacities` se existir).
+2. Fallback: deriva do conjunto distinto de `category` das ofertas do supplier.
 
-## Entregável da fase 1
-Página `/admin/analytics` operando com dados reais para KPI strip, trend, funnel, attention queue e leaderboards. Insights via regras. Filtros de período + categoria. Versão mobile validada.
+### Lógica de "proteínas no marketplace" (buyer)
+Hook `useMarketplaceProteins()`:
+- Agrega `count` de offers ativas por categoria a partir de `useOffers()`.
+- Memoizado.
+
+### Filtros buyer
+Refactor `BuyerOffers` para incluir estado de filtros (protein, search, origin, destination, incoterm, shipmentMonth, condition, sort) com `useMemo` sobre `offers`.
+
+### Query param na Home → Offers
+`useSearchParams` em `BuyerOffers` para pré-selecionar protein.
+
+## Arquivos a criar / editar
+
+**Criar**
+- `src/components/marketplace/ProteinFilter.tsx`
+- `src/hooks/useSupplierProteins.ts`
+- `src/hooks/useMarketplaceProteins.ts`
+- `src/styles/mundus-protein-filter.css`
+
+**Editar**
+- `src/pages/supplier/Offers.tsx` — trocar pills atuais pelo novo componente, filtrar lista de proteínas pela do supplier.
+- `src/pages/buyer/Offers.tsx` — adicionar barra de filtros completa.
+- `src/pages/buyer/Home.tsx` — adicionar seção "Explore by protein".
+- `src/i18n/locales/{en,es,pt}.json` — strings novas.
+- `src/main.tsx` (ou onde os CSS são importados) — importar o novo CSS.
+
+## Mobile
+Pills com scroll horizontal suave, snap-x, sem corte de safe-area. Filtros secundários em bottom sheet no buyer offers.
+
+## Fora de escopo
+- Criar nova página Admin Offers (depende da resposta acima).
+- Mudanças nos detalhes da oferta.
+- Backend novo — tudo é client-side a partir das queries já existentes.
