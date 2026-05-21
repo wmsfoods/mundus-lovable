@@ -314,7 +314,9 @@
           "payment": "Condições de pagamento",
           "notes": "Descrição / Observações"
         },
-        "placeholders": { "title": "ex.: Ribeye 7-9 lb para Q3" },
+        "placeholders": {
+          "title": "ex.: Ribeye 7-9 lb para Q3"
+        },
         "err": {
           "title": "Título é obrigatório",
           "cuts": "Selecione ao menos um corte",
@@ -324,7 +326,9 @@
           "port": "Selecione um porto de destino",
           "shipment": "Selecione o mês de embarque"
         },
-        "toast": { "created": "Solicitação criada (mock)" }
+        "toast": {
+          "created": "Solicitação criada (mock)"
+        }
       }
     },
     "home": {
@@ -684,6 +688,10 @@
         "yesterday": "ontem",
         "daysAgo": "{{n}}d"
       }
+    },
+    "marketplace": {
+      "nav": "Marketplace",
+      "title": "Marketplace"
     }
   },
   "supplier": {

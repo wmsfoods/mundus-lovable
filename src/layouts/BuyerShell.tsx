@@ -21,7 +21,7 @@ import {
   FileTextIcon,
   MessageIcon,
 } from "@/components/icons";
-import { BarChart3 } from "lucide-react";
+import { BarChart3, ShoppingBag } from "lucide-react";
 import { InsightsUpsellProvider } from "@/contexts/InsightsUpsellContext";
 
 export default function BuyerShell() {
@@ -46,6 +46,7 @@ function BuyerShellInner() {
     { to: "/buyer", label: t("shell.nav.home"), icon: HomeIcon, end: true },
     { to: "/buyer/requests", label: t("shell.nav.requests"), icon: ClipboardIcon },
     { to: "/buyer/requests/new", label: t("shell.nav.createRequest"), icon: PlusIcon, accent: true },
+    { to: "/buyer/marketplace", label: t("buyer.marketplace.nav", { defaultValue: "Marketplace" }), icon: ShoppingBag as unknown as SidebarItem["icon"] },
     { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },
     { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
     { to: "/buyer/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },

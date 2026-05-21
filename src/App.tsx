@@ -100,6 +100,8 @@ const App = () => (
               <Route index element={<BuyerHome />} />
               <Route path="offers" element={<BuyerOffers />} />
               <Route path="offers/:id" element={<BuyerOfferDetail />} />
+              <Route path="marketplace" element={<BuyerOffers />} />
+              <Route path="marketplace/:id" element={<BuyerOfferDetail />} />
               <Route path="orders" element={<BuyerOrders />} />
               <Route path="orders/:id" element={<BuyerOrderDetail />} />
               <Route path="users" element={<BuyerUsers />} />
