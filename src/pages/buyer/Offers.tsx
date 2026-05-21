@@ -332,7 +332,7 @@ export default function BuyerOffers() {
             onClick={() => setAuctionsOnly((v) => !v)}
             aria-pressed={auctionsOnly}
           >
-            <Gavel size={13} /> Auctions
+            <Gavel size={13} /> 🔨 {t("buyer.auctions.filter")}
             <span style={{ opacity: 0.7, marginLeft: 4 }}>{MOCK_BUYER_AUCTIONS.length}</span>
           </button>
           <AuctionInfoDialog />
@@ -421,21 +421,49 @@ export default function BuyerOffers() {
         </div>
       ) : (
         <div className="card-row">
-          {MOCK_BUYER_AUCTIONS.map((a) => (
-            <AuctionCard
-              key={a.id}
-              auction={a}
-              onPlaceBid={() => toast(`Place Bid coming soon — ${a.oppNumber}`)}
-            />
-          ))}
-          {!auctionsOnly &&
-            filtered.map((offer) => (
-              <OfferCard
-                key={offer.id}
-                offer={offer}
-                onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
-              />
-            ))}
+          {(() => {
+            // Interleave auction cards into the grid at positions 0, 3, 6 (1st, 4th, 7th).
+            // When the user toggles "Auctions only", regular offer cards are hidden.
+            const nodes: React.ReactNode[] = [];
+            const auctions = MOCK_BUYER_AUCTIONS;
+            const regulars = auctionsOnly ? [] : filtered;
+            const INSERT_AT = [0, 3, 6];
+            let ai = 0;
+            let ri = 0;
+            let position = 0;
+            while (ai < auctions.length || ri < regulars.length) {
+              if (INSERT_AT.includes(position) && ai < auctions.length) {
+                const a = auctions[ai++];
+                nodes.push(
+                  <AuctionCard
+                    key={`auction-${a.id}`}
+                    auction={a}
+                    onPlaceBid={() => toast(t("buyer.auctions.placeBidToast"))}
+                  />
+                );
+              } else if (ri < regulars.length) {
+                const offer = regulars[ri++];
+                nodes.push(
+                  <OfferCard
+                    key={offer.id}
+                    offer={offer}
+                    onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+                  />
+                );
+              } else if (ai < auctions.length) {
+                const a = auctions[ai++];
+                nodes.push(
+                  <AuctionCard
+                    key={`auction-${a.id}`}
+                    auction={a}
+                    onPlaceBid={() => toast(t("buyer.auctions.placeBidToast"))}
+                  />
+                );
+              }
+              position++;
+            }
+            return nodes;
+          })()}
         </div>
       )}
     </>
