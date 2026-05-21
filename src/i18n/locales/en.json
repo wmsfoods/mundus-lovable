@@ -266,6 +266,41 @@
         }
       }
     },
+    "auctionBid": {
+      "title": "Place Sealed Bid",
+      "subtitle": "Your bid is private. The supplier sees all bids only after the auction closes.",
+      "howManyContainers": "How many containers?",
+      "bulk": {
+        "label": "Bulk apply:",
+        "acceptMin": "Accept min bid",
+        "minus5": "Min bid −5%",
+        "plus5": "Min bid +5%",
+        "apply": "Apply"
+      },
+      "col": {
+        "cut": "Cut",
+        "qty": "Qty ({{unit}})",
+        "minBid": "Min Bid",
+        "yourBid": "Your Bid"
+      },
+      "totals": {
+        "perFcl": "Total per container",
+        "containers": "Containers",
+        "grand": "Grand total"
+      },
+      "commitment": {
+        "label": "I understand this is a binding sealed bid. If awarded, I commit to completing the purchase.",
+        "hint": "You can withdraw your bid at any time, but there's a 4-hour cooldown before you can re-enter."
+      },
+      "note": {
+        "label": "Message (optional)",
+        "placeholder": "Add a note for the supplier (optional)"
+      },
+      "cancel": "Cancel",
+      "submit": "Submit Sealed Bid →",
+      "submitting": "Submitting…",
+      "successToast": "Sealed bid submitted for {{opp}}!"
+    },
     "procurement": {
       "nav": "Procurement Intelligence",
       "groupLabel": "Insights",

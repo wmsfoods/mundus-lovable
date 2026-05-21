@@ -266,6 +266,41 @@
         }
       }
     },
+    "auctionBid": {
+      "title": "Enviar Lance Selado",
+      "subtitle": "Seu lance é privado. O fornecedor só vê todos os lances após o fechamento do leilão.",
+      "howManyContainers": "Quantos contêineres?",
+      "bulk": {
+        "label": "Aplicar em massa:",
+        "acceptMin": "Aceitar lance mínimo",
+        "minus5": "Mín. −5%",
+        "plus5": "Mín. +5%",
+        "apply": "Aplicar"
+      },
+      "col": {
+        "cut": "Corte",
+        "qty": "Qtd ({{unit}})",
+        "minBid": "Lance Mín.",
+        "yourBid": "Seu Lance"
+      },
+      "totals": {
+        "perFcl": "Total por contêiner",
+        "containers": "Contêineres",
+        "grand": "Total geral"
+      },
+      "commitment": {
+        "label": "Entendo que este é um lance selado vinculante. Se vencer, comprometo-me a concluir a compra.",
+        "hint": "Você pode retirar seu lance a qualquer momento, mas há 4 horas de carência antes de reenviar."
+      },
+      "note": {
+        "label": "Mensagem (opcional)",
+        "placeholder": "Adicione uma nota para o fornecedor (opcional)"
+      },
+      "cancel": "Cancelar",
+      "submit": "Enviar Lance Selado →",
+      "submitting": "Enviando…",
+      "successToast": "Lance selado enviado para {{opp}}!"
+    },
     "procurement": {
       "nav": "Inteligência de Compras",
       "groupLabel": "Insights",

@@ -266,6 +266,41 @@
         }
       }
     },
+    "auctionBid": {
+      "title": "Enviar Oferta Sellada",
+      "subtitle": "Tu oferta es privada. El proveedor ve todas las ofertas solo después del cierre de la subasta.",
+      "howManyContainers": "¿Cuántos contenedores?",
+      "bulk": {
+        "label": "Aplicar en masa:",
+        "acceptMin": "Aceptar oferta mín.",
+        "minus5": "Mín. −5%",
+        "plus5": "Mín. +5%",
+        "apply": "Aplicar"
+      },
+      "col": {
+        "cut": "Corte",
+        "qty": "Cant. ({{unit}})",
+        "minBid": "Oferta Mín.",
+        "yourBid": "Tu Oferta"
+      },
+      "totals": {
+        "perFcl": "Total por contenedor",
+        "containers": "Contenedores",
+        "grand": "Total general"
+      },
+      "commitment": {
+        "label": "Entiendo que esta es una oferta sellada vinculante. Si gano, me comprometo a completar la compra.",
+        "hint": "Puedes retirar tu oferta en cualquier momento, pero hay un periodo de espera de 4 horas antes de volver a participar."
+      },
+      "note": {
+        "label": "Mensaje (opcional)",
+        "placeholder": "Agrega una nota para el proveedor (opcional)"
+      },
+      "cancel": "Cancelar",
+      "submit": "Enviar Oferta Sellada →",
+      "submitting": "Enviando…",
+      "successToast": "¡Oferta sellada enviada para {{opp}}!"
+    },
     "procurement": {
       "nav": "Inteligencia de Compras",
       "groupLabel": "Insights",
