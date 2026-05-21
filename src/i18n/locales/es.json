@@ -2315,9 +2315,10 @@
       "period": {
         "realtime": "Tiempo real",
         "last24h": "Últimas 24 horas",
-        "last7d": "Últimos 7 días",
-        "last30d": "Últimos 30 días",
-        "last90d": "Últimos 90 días"
+        "last7d": "7d",
+        "last30d": "30d",
+        "last90d": "90d",
+        "last12m": "12m"
       },
       "metric": {
         "visitors": "Visitantes",
@@ -2331,6 +2332,45 @@
         "page": "Página",
         "country": "País",
         "device": "Dispositivo"
+      },
+      "subtitle": "Salud del marketplace, conversión y lo que requiere atención.",
+      "healthTitle": "Salud del Marketplace",
+      "healthGood": "Saludable — mantén el ritmo.",
+      "healthOk": "Estable — atento.",
+      "healthBad": "Requiere atención.",
+      "basedOnPeriod": "Según el período seleccionado",
+      "vsPrevious": "vs período anterior",
+      "kpi": {
+        "gmv": "GMV",
+        "activeDeals": "Deals Activos",
+        "winRate": "Tasa de Cierre",
+        "avgCycle": "Ciclo Promedio",
+        "avgDealSize": "Ticket Promedio",
+        "newSignups": "Nuevos Registros"
+      },
+      "trend": {
+        "gmv": "Tendencia de GMV",
+        "deals": "Tendencia de Deals"
+      },
+      "funnel": {
+        "title": "Embudo de Conversión",
+        "steps": {
+          "offers": "Ofertas",
+          "negotiations": "Negociaciones",
+          "won": "Ganadas",
+          "shipped": "Enviadas",
+          "completed": "Completadas"
+        }
+      },
+      "attention": {
+        "title": "Requiere Atención",
+        "items": "ítems",
+        "empty": "Todo en orden — nada urgente."
+      },
+      "top": {
+        "buyers": "Top Compradores",
+        "suppliers": "Top Proveedores",
+        "empty": "Sin deals en este período."
       }
     },
     "companies": {
