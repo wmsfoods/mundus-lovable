@@ -1107,6 +1107,15 @@
         "asking": "Asking",
         "yourCounter": "Your Counter",
         "diff": "Diff"
+      },
+      "bulk": {
+        "label": "Quick fill",
+        "acceptAll": "Accept all",
+        "meetMiddle": "Meet in middle",
+        "plus3": "Their price +3%",
+        "plus5": "Their price +5%",
+        "apply": "Apply",
+        "customPlaceholder": "±{{unit}}"
       }
     },
     "share": {
