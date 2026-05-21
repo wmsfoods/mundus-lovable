@@ -803,3 +803,93 @@
   .cov4-ready-txt { max-width: 22ch; font-size: 11.5px; }
   .cov4-ready-pop { width: 92vw !important; max-width: 360px; }
 }
+
+/* ============================================================
+   Create Auction — amber accents for auction-specific sections
+   ============================================================ */
+.cov4--auction .cov4-hdr-l h1 { letter-spacing: -0.01em; }
+
+.ca-amber-sec {
+  position: relative;
+  background: linear-gradient(180deg, #FFFBEB 0%, #FFFDF7 100%);
+  border: 1px solid #FDE68A;
+  border-left: 3px solid #D97706;
+  border-radius: 10px;
+  padding: 14px 14px 12px;
+  margin-bottom: 14px;
+}
+.ca-amber-sec .cov4-sh { margin-bottom: 10px; }
+.ca-amber-sec .cov4-sh h2 { color: #7A4B00; }
+
+.ca-window-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+@media (max-width: 640px) {
+  .ca-window-grid { grid-template-columns: 1fr; }
+}
+.ca-field { display: flex; flex-direction: column; gap: 4px; }
+.ca-field-l {
+  font-size: 11px; font-weight: 600; color: #7A4B00;
+  text-transform: uppercase; letter-spacing: 0.03em;
+}
+.ca-input {
+  padding: 8px 10px;
+  border: 1.5px solid #FDE68A;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  color: #1c1917;
+  font-family: inherit;
+}
+.ca-input:focus { outline: none; border-color: #D97706; box-shadow: 0 0 0 2px rgba(217,119,6,0.15); }
+
+.ca-duration {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background: #FFF;
+  border: 1px solid #FDE68A;
+  border-radius: 999px;
+  margin-bottom: 8px;
+}
+.ca-duration-l { font-size: 11px; color: #7A4B00; font-weight: 600; }
+.ca-duration-v { font-size: 12px; color: #1c1917; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+.ca-hint {
+  font-size: 11px;
+  color: #6B7280;
+  margin: 6px 0 0;
+  line-height: 1.45;
+}
+
+.ca-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.ca-price-row-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 160px;
+}
+.ca-price-row-label > span:first-child {
+  font-size: 12px; font-weight: 600; color: #1c1917;
+}
+.ca-tone-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  width: fit-content;
+}
