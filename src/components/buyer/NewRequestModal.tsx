@@ -138,11 +138,11 @@ export default function NewRequestModal({ open, onOpenChange }: Props) {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
-              <label style={lbl}>{tk("fields.targetPrice", `Target price (USD${priceLabel(unit).replace("$", "")})`)} *</label>
+              <label style={lbl}>{`${tk("fields.targetPriceShort", "Target price")} (USD${priceLabel(unit).replace("$", "")})`} *</label>
               <input style={inp} type="number" step="0.01" min="0" value={targetPrice} onChange={(e) => setTargetPrice(e.target.value)} />
             </div>
             <div>
-              <label style={lbl}>{tk("fields.targetVolume", `Target volume (${weightLabel(unit)})`)} *</label>
+              <label style={lbl}>{`${tk("fields.targetVolumeShort", "Target volume")} (${weightLabel(unit)})`} *</label>
               <input style={inp} type="number" step="1" min="0" value={targetVolume} onChange={(e) => setTargetVolume(e.target.value)} />
             </div>
           </div>
