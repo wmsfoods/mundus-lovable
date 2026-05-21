@@ -102,16 +102,20 @@ export function useAdminCuts() {
   });
 
   const uploadImage = async (cutId: string, file: File): Promise<string> => {
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    // Resize + convert to WebP in the browser before hitting storage.
+    const { compressImage } = await import("@/lib/imageOptimization");
+    const optimized = await compressImage(file, { maxSize: 1280, quality: 0.82 });
+    const ext = (optimized.name.split(".").pop() || "webp").toLowerCase();
     const path = `${cutId}.${ext}`;
-    const { error: upErr } = await supabase.storage.from("cut-images").upload(path, file, {
+    const { error: upErr } = await supabase.storage.from("cut-images").upload(path, optimized, {
       upsert: true,
-      contentType: file.type,
-      cacheControl: "3600",
+      contentType: optimized.type,
+      cacheControl: "2592000", // 30 days
     });
     if (upErr) throw upErr;
     const { data } = supabase.storage.from("cut-images").getPublicUrl(path);
-    const url = `${data.publicUrl}?v=${Date.now()}`;
+    // Tie cache to file size so the URL only changes when the asset changes.
+    const url = `${data.publicUrl}?s=${optimized.size}`;
     const { error: updErr } = await supabase.from("cuts").update({ image_url: url }).eq("id", cutId);
     if (updErr) throw updErr;
     qc.invalidateQueries({ queryKey: ["admin", "cuts"] });
