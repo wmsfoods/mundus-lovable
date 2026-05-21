@@ -1,75 +1,66 @@
-## Diagnóstico (390×844, /buyer/negotiations/bb-01)
+# Nova tela de Create Request (Buyer)
 
-Pontos fracos observados na tela atual:
+Substituir o modal pequeno atual (`NewRequestModal.tsx`) por uma página/modal full-screen com o mesmo padrão visual da tela de criação de oferta do supplier — só que mais enxuta, refletindo que o buyer apenas pede o que precisa (o supplier completa preço final, marbling avançado etc.).
 
-1. **Header** — avatar + título + timer + pill "Action required" empilham mas com gaps grandes; o pill fica "solto" abaixo do timer numa terceira linha.
-2. **Meta chips** — rola horizontal (ok), mas sem indicação visual de scroll e com chip cortado pela direita.
-3. **Stats (Asking / Your bid / Supplier counter)** — empilhados em 3 cards full-width gastam muito scroll vertical; valores em 22px desperdiçam espaço.
-4. **Card head (Round 2 of 3 + Updated)** — quebra mal, "Updated" some pra direita.
-5. **Botões de ação (Accept / Counter / Reject)** — ocupam ~56px cada empilhados; ficam embaixo do fold e o usuário precisa rolar pra decidir.
-6. **Card "joined" (supplier info)** — `margin-top: -16px` cria sobreposição estranha no mobile.
-7. **Timeline horizontal** — pills ok, mas falta gradient/fade indicando scroll.
-8. **Price table** — sticky first column já existe, mas o wrap não tem indicação clara de scroll horizontal e o título "Price details" fica numa linha solta.
-9. **Padding geral dos `.nd-card`** — 20px é pesado no mobile (já tem 14px @640, mas pode ir mais enxuto).
+## Layout (espelho do screenshot)
 
-## O que vou mudar
+Header rosa com ícone, título "New offer request" e subtítulo "Describe what you need — suppliers will respond with offers."
 
-### 1. CSS — `src/styles/mundus-negotiations.css` (@media max-width: 640px)
+Grid principal em 2 colunas (desktop) e empilhado (mobile):
 
-- **Header (`.nd-header`)**
-  - Layout em duas linhas: linha 1 = avatar + título/sub (flex-row); linha 2 = timer + pill status (flex-wrap, justify-start).
-  - Reduzir padding pra 14px; título 17px line-height 1.25; sub em 12px com truncate de 2 linhas.
+**Coluna esquerda — "What you need"**
+- Linha de seletores: Species (Beef/Pork/Poultry/Ovine) · Destination country* · Incoterm* (CFR/CIF/FOB)
+- Card "Cuts requested" com:
+  - Header: contador de cuts + Total volume + barra de % do container
+  - Tabela inline editável (mesmo estilo da supplier): `# | Cut | Spec (opcional) | Marbling | Qty (kg) | Target $/kg | ×`
+  - Botão "+ Add cut"
+  - Botão secundário no topo do card: **"Paste / Import with AI"** (abre painel)
+  - Tip line: "target price é opcional…"
 
-- **Meta chips (`.nd-meta-chips`)**
-  - Manter scroll horizontal, adicionar fade à direita (gradient `::after`), `scroll-snap-type: x proximity` e padding-right 24px pra revelar o último chip.
-  - Chips em 11px, padding 5px 10px.
+**Coluna direita — "Logistics & terms"**
+- Container: toggle 20'FCL / 40'FCL + nº de containers
+- Shipment window (texto livre, ex.: "June 2026 / Prompt") — mais leve que o month picker atual
+- Compliance: checkboxes Halal / Kosher
+- Notes for suppliers (textarea)
 
-- **Card head (`.nd-card-head`)**
-  - `flex-wrap: wrap; gap: 6px`; em mobile o `nd-updated` cai pra linha de baixo com `width: 100%; text-align: left`.
-  - Reduzir padding do `.nd-card` pra 12px e `margin-bottom` 10px.
+**Footer fixo**
+- Esquerda: resumo "N cuts · X kg · N×40ft"
+- Direita: Cancel + Broadcast request (primário)
 
-- **Stats (`.nd-stats`)**
-  - Mudar pra `grid-template-columns: 1fr 1fr` no mobile (Asking + Your bid lado a lado em cards compactos) e **Supplier counter ocupando linha cheia** (`grid-column: 1/-1`) com destaque verde.
-  - `.nd-stat` padding 10px, label 10px, value 16px. Supplier counter destaca value em 20px.
+## Painel "Paste / Import with AI"
 
-- **Gap row / bar**
-  - Reduzir altura da bar pra 5px, knob 12px, labels 10px.
+Drawer/modal que aceita:
+1. **Colar do Excel / texto livre**: textarea grande. Detecta colunas separadas por tab/`;`/`,` e tenta mapear `cut`, `qty`, `target price`, `spec`.
+2. **Upload de .xlsx/.csv** (drag-and-drop, usando parsing client-side simples — `xlsx` já não está no projeto, então no primeiro passo só CSV/TSV nativo + colar).
+3. **"Parse with AI"**: envia o texto colado para edge function nova `parse-request-cuts` (Lovable AI / `google/gemini-2.5-flash`) com prompt estruturado retornando JSON `[{cut, spec, qty_kg, target_price_per_kg}]`. Loading spinner; preview das linhas detectadas com checkbox; "Add to request" anexa à tabela de cuts.
 
-- **Actions (`.nd-actions`)**
-  - No mobile: virar **sticky bottom bar** (`position: sticky; bottom: 0`) com `background: #fff; border-top: 1px solid var(--border); padding: 10px 14px; margin: 0 -14px -14px`; grid `1fr 1fr` com botão **Counter (primário) ocupando a linha de cima full-width** + Accept/Reject lado a lado embaixo. Tamanho dos botões 44px (touch target), font 13px.
-  - Garante safe-area: `padding-bottom: max(10px, env(safe-area-inset-bottom))`.
+Fallback sem IA: parsing local heurístico já popula a tabela; botão "Improve with AI" reorganiza/normaliza nomes de cuts contra a lista de `cutsByCategory`.
 
-- **Card joined (`.nd-card--joined`)**
-  - No mobile: remover o `margin-top: -16px` e a borda tracejada; vira card separado normal.
-  - `dl` já empilha — manter, mas reduzir `gap` pra 4px e separar pares com `border-bottom: 1px dashed #f0f0f0`.
+## Lógica / consistência com supplier
 
-- **Timeline (`.nd-timeline-flow`)**
-  - Adicionar fade `::after` à direita pra indicar scroll. Diminuir setas `→` pra 12px.
+- Mesmas estruturas de cut (`cat`, `cut`, `spec`, `qty`, target price) — assim quando a request virar offer, o supplier só precisa completar `pkg`, `grade`, `aging`, `floor` e ajustar `ask`.
+- Reusar `useSupplierOfferData` para listas de cuts/markets/ports — buyer e supplier compartilham o catálogo.
+- Mesmas classes CSS de `mundus-create-offer-v2.css` (header, cards, tabela inline, footer sticky) — adicionar apenas overrides pontuais em `mundus-requests.css`.
 
-- **Price table wrap (`.nd-price-scroll-wrap`)**
-  - Já tem fade no CSS atual; garantir altura mínima e adicionar hint textual "← deslize →" só na 1ª vez (via `:has(table)` + `::before` pequeno em 10px cinza, opcional/leve).
-  - Reduzir font da tabela pra 10.5px no 390px, padding 6px 4px.
+## Mobile
 
-### 2. TSX — `src/pages/buyer/BuyerNegotiationDetail.tsx` e `src/pages/supplier/SupplierNegotiationDetail.tsx`
+- Header colapsa em 1 coluna; cards de Logistics aparecem antes ou depois dos cuts (a definir; default: depois).
+- Tabela de cuts vira lista de cards verticais com campos empilhados (mesmo padrão já usado em supplier mobile).
+- Footer sticky bottom com botão "Broadcast" full-width.
 
-Mudanças simétricas, mínimas:
+## Arquivos
 
-- Envolver header em duas divs internas (`nd-h-main` com avatar+texto, `nd-h-meta` com timer+pill) para o CSS conseguir empilhar limpo no mobile sem `flex-wrap` confuso.
-- Adicionar classe `nd-stat--full` no card "Supplier counter" / "Your counter" pra ativar o `grid-column: 1/-1` no mobile.
-- Adicionar wrapper `<div class="nd-actions-wrap">` em volta de `.nd-actions` pra virar sticky no mobile sem afetar desktop (desktop continua inline).
-- Nenhuma mudança de lógica/negócio.
+- **Novo**: `src/pages/buyer/BuyerCreateRequest.tsx` (página full-screen, rota `/buyer/requests/new`).
+- **Novo**: `src/components/buyer/RequestPasteImport.tsx` (drawer do paste/AI).
+- **Novo**: `supabase/functions/parse-request-cuts/index.ts` (Lovable AI, sem secrets).
+- **Edit**: `src/App.tsx` adiciona rota.
+- **Edit**: `src/pages/buyer/BuyerRequests.tsx` — botão "New request" passa a navegar para `/buyer/requests/new` em vez de abrir modal.
+- **Edit**: `src/styles/mundus-requests.css` — overrides finos.
+- **Remover/aposentar**: `src/components/buyer/NewRequestModal.tsx` (deletado depois que a nova rota estiver no ar).
+- **i18n**: chaves em `buyer.requests.create.*` nos 3 idiomas.
 
-### 3. Validação
+## Pontos a confirmar (vou perguntar antes de executar)
 
-- Verificar em 390×844 (iPhone 12/13), 360×800 (Android pequeno) e 768 (tablet) que:
-  - Header não quebra estranho.
-  - Stats ficam 2+1.
-  - Botões sticky aparecem só < 640px.
-  - Price table rola e mantém primeira coluna fixa.
-  - Nada estoura a largura (overflow horizontal da página = 0).
-
-## Arquivos editados
-
-- `src/styles/mundus-negotiations.css`
-- `src/pages/buyer/BuyerNegotiationDetail.tsx`
-- `src/pages/supplier/SupplierNegotiationDetail.tsx`
+1. Rota dedicada (`/buyer/requests/new`) ou manter como modal full-screen? Recomendo rota.
+2. Para o "Paste with AI" — ok usar Lovable AI (`google/gemini-2.5-flash`, sem custo de API key)?
+3. Manter campos atuais que sumirão por padrão: payment terms, destination port (granular). Confirmo que viram opcionais escondidos atrás de "More options" ou removo de vez?

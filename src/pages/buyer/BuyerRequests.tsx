@@ -2,7 +2,6 @@ import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ClipboardIcon, SearchIcon, PlusIcon } from "@/components/icons";
-import NewRequestModal from "@/components/buyer/NewRequestModal";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, weightLabel } from "@/lib/units";
 import { Crumbs } from "@/components/mundus/Crumbs";
@@ -44,7 +43,6 @@ export default function BuyerRequests() {
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
   const [speciesF, setSpeciesF] = useState<"all" | Species>("all");
-  const [showNew, setShowNew] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -116,15 +114,13 @@ export default function BuyerRequests() {
           <button
             type="button"
             className="btn-tb is-primary"
-            onClick={() => setShowNew(true)}
+            onClick={() => navigate("/buyer/requests/new")}
           >
             <PlusIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
             {t("buyer.requests.newRequest")}
           </button>
         </div>
       </div>
-
-      <NewRequestModal open={showNew} onOpenChange={setShowNew} />
 
       <div className="nego-chips" style={{ marginTop: 12 }}>
         {statusChips.map((c) => (
