@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Gavel } from "lucide-react";
 import { PageTitle } from "@/components/mundus/PageTitle";
@@ -13,27 +14,35 @@ import {
   type AuctionStatus,
 } from "@/data/mockAuctions";
 
-const FILTERS: Array<{ key: "all" | AuctionStatus; label: string }> = [
-  { key: "all",       label: "All" },
-  { key: "scheduled", label: "Scheduled" },
-  { key: "open",      label: "Open" },
-  { key: "closed",    label: "Closed" },
-  { key: "awarded",   label: "Awarded" },
+const FILTER_KEYS: Array<"all" | AuctionStatus> = [
+  "all", "scheduled", "open", "closed", "awarded", "cancelled",
 ];
 
-function StatusBadge({ status }: { status: AuctionStatus }) {
-  const map: Record<AuctionStatus, { cls: string; label: string }> = {
-    scheduled: { cls: "auct-status--scheduled", label: "● SCHEDULED" },
-    open:      { cls: "auct-status--live",      label: "● LIVE" },
-    closed:    { cls: "auct-status--closed",    label: "● CLOSED" },
-    awarded:   { cls: "auct-status--awarded",   label: "🔒 AWARDED" },
-    cancelled: { cls: "auct-status--closed",    label: "● CANCELLED" },
+function StatusBadge({ status, t }: { status: AuctionStatus; t: (k: string) => string }) {
+  const map: Record<AuctionStatus, { cls: string; prefix: string }> = {
+    scheduled: { cls: "auct-status--scheduled",  prefix: "● " },
+    open:      { cls: "auct-status--live",       prefix: "● " },
+    closed:    { cls: "auct-status--closed",     prefix: "● " },
+    awarded:   { cls: "auct-status--awarded",    prefix: "🔒 " },
+    cancelled: { cls: "auct-status--cancelled",  prefix: "● " },
   };
   const m = map[status];
-  return <span className={`auct-status ${m.cls}`}>{m.label}</span>;
+  return (
+    <span className={`auct-status ${m.cls}`}>
+      {m.prefix}{t(`supplier.auctions.statusBadge.${status}`).toUpperCase()}
+    </span>
+  );
 }
 
-function AuctionRowCard({ a, onOpen }: { a: MockAuction; onOpen: () => void }) {
+function AuctionRowCard({
+  a,
+  onOpen,
+  t,
+}: {
+  a: MockAuction;
+  onOpen: () => void;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+}) {
   const closesAt = auctionClosesAt(a);
   const openedAt = auctionOpenedAt(a);
 
@@ -56,7 +65,7 @@ function AuctionRowCard({ a, onOpen }: { a: MockAuction; onOpen: () => void }) {
           <span className="dot-sep" />
           <span className="oc-temp">{a.temperature}</span>
         </div>
-        <StatusBadge status={a.status} />
+        <StatusBadge status={a.status} t={t} />
       </div>
 
       <div className="oc-title-block">
@@ -64,6 +73,7 @@ function AuctionRowCard({ a, onOpen }: { a: MockAuction; onOpen: () => void }) {
         <div className="oc-title">
           <span className="auct-emoji" aria-hidden>{a.emoji}</span> {a.title}
         </div>
+        <div className="auct-supplier-name">{a.supplier}</div>
         <div className="cut-chips" style={{ marginTop: 8 }}>
           <span className="cut-chip">{a.containerCount}x{a.containerSize}</span>
           <span className="cut-chip">{a.incoterm}</span>
@@ -73,13 +83,13 @@ function AuctionRowCard({ a, onOpen }: { a: MockAuction; onOpen: () => void }) {
 
       <div className="oc-meta-grid">
         <div className="cm">
-          <span className="cm-label">Origin</span>
+          <span className="cm-label">{t("supplier.auctions.card.origin")}</span>
           <span className="cm-value">
             <FlagSVG code={a.originCode} size={13} /> {a.originCountry}
           </span>
         </div>
         <div className="cm">
-          <span className="cm-label">Destination</span>
+          <span className="cm-label">{t("supplier.auctions.card.destination")}</span>
           <span className="cm-value">
             <FlagSVG code={a.destCode} size={13} /> {a.destCountry}
           </span>
@@ -91,26 +101,37 @@ function AuctionRowCard({ a, onOpen }: { a: MockAuction; onOpen: () => void }) {
           <>
             <div className="auct-footer-row">
               <AuctionCountdown closesAt={closesAt} openedAt={openedAt} showProgress />
-              <span className="auct-bids-count">{a.bidsCount} BIDS</span>
+              <span className="auct-bids-count">
+                {t("supplier.auctions.card.bids", { count: a.bidsCount }).toUpperCase()}
+              </span>
             </div>
             <span className="oc-cta">
-              View Auction <ArrowRightIcon size={12} />
+              {t("supplier.auctions.card.viewAuction")} <ArrowRightIcon size={12} />
             </span>
           </>
         )}
         {a.status === "closed" && (
           <div className="auct-footer-row">
-            <span className="auct-closed-label">Window Closed · {a.bidsCount} bids</span>
-            <span className="oc-cta">View Bids <ArrowRightIcon size={12} /></span>
+            <span className="auct-closed-label">
+              {t("supplier.auctions.card.windowClosed")} · {t("supplier.auctions.card.bids", { count: a.bidsCount })}
+            </span>
+            <span className="oc-cta">{t("supplier.auctions.card.viewBids")} <ArrowRightIcon size={12} /></span>
           </div>
         )}
         {a.status === "awarded" && (
-          <div className="auct-awarded-banner">🔒 Awarded · {a.bidsCount} bids received</div>
+          <div className="auct-awarded-banner">
+            🔒 {t("supplier.auctions.card.awardedBanner", { count: a.bidsCount })}
+          </div>
         )}
         {a.status === "scheduled" && (
           <div className="auct-footer-row">
-            <span className="auct-closed-label">Opens soon</span>
-            <span className="oc-cta">Manage <ArrowRightIcon size={12} /></span>
+            <span className="auct-closed-label">{t("supplier.auctions.card.opensSoon")}</span>
+            <span className="oc-cta">{t("supplier.auctions.card.manage")} <ArrowRightIcon size={12} /></span>
+          </div>
+        )}
+        {a.status === "cancelled" && (
+          <div className="auct-footer-row">
+            <span className="auct-closed-label">{t("supplier.auctions.card.cancelled")}</span>
           </div>
         )}
       </div>
@@ -120,7 +141,8 @@ function AuctionRowCard({ a, onOpen }: { a: MockAuction; onOpen: () => void }) {
 
 export default function SupplierAuctions() {
   const navigate = useNavigate();
-  const [filter, setFilter] = useState<(typeof FILTERS)[number]["key"]>("all");
+  const { t } = useTranslation();
+  const [filter, setFilter] = useState<(typeof FILTER_KEYS)[number]>("all");
 
   const filtered = useMemo(() => {
     if (filter === "all") return MOCK_SUPPLIER_AUCTIONS;
@@ -128,7 +150,7 @@ export default function SupplierAuctions() {
   }, [filter]);
 
   const handleCreate = () => {
-    toast("Coming soon — Create Auction flow");
+    toast(t("supplier.auctions.comingSoon"));
     navigate("/supplier/auctions");
   };
 
@@ -136,28 +158,28 @@ export default function SupplierAuctions() {
     <>
       <PageTitle
         icon={Gavel as unknown as React.ComponentType<{ size?: number }>}
-        title="My Auctions"
-        subtitle="Create sealed-bid auctions for your products"
+        title={t("supplier.auctions.title")}
+        subtitle={t("supplier.auctions.subtitle")}
         right={
           <button type="button" className="sa-create-btn" onClick={handleCreate}>
-            <PlusIcon size={14} /> Create Auction
+            <PlusIcon size={14} /> {t("supplier.auctions.createCta")}
           </button>
         }
       />
 
       <div className="sa-pill-row">
-        {FILTERS.map((f) => (
+        {FILTER_KEYS.map((key) => (
           <button
-            key={f.key}
+            key={key}
             type="button"
-            className={`sa-pill ${filter === f.key ? "is-active" : ""}`}
-            onClick={() => setFilter(f.key)}
+            className={`sa-pill ${filter === key ? "is-active" : ""}`}
+            onClick={() => setFilter(key)}
           >
-            {f.label}
+            {t(`supplier.auctions.filter.${key}`)}
             <span style={{ marginLeft: 6, opacity: 0.7, fontSize: 11 }}>
-              {f.key === "all"
+              {key === "all"
                 ? MOCK_SUPPLIER_AUCTIONS.length
-                : MOCK_SUPPLIER_AUCTIONS.filter((a) => a.status === f.key).length}
+                : MOCK_SUPPLIER_AUCTIONS.filter((a) => a.status === key).length}
             </span>
           </button>
         ))}
@@ -166,7 +188,7 @@ export default function SupplierAuctions() {
       {filtered.length === 0 ? (
         <div className="empty-state">
           <Gavel size={28} />
-          <p>No auctions in this status.</p>
+          <p>{t("supplier.auctions.emptyState")}</p>
         </div>
       ) : (
         <div className="card-row">
@@ -174,7 +196,8 @@ export default function SupplierAuctions() {
             <AuctionRowCard
               key={a.id}
               a={a}
-              onOpen={() => toast(`Auction detail coming soon — ${a.oppNumber}`)}
+              onOpen={() => toast(`${t("supplier.auctions.detailComingSoon")} — ${a.oppNumber}`)}
+              t={t}
             />
           ))}
         </div>
