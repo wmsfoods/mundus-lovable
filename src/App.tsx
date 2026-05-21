@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { WeightUnitProvider } from "@/contexts/WeightUnitContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import { RoleRedirect } from "@/components/RoleRedirect";
 import Login from "./pages/Login.tsx";
@@ -72,6 +73,7 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <AuthProvider>
+            <WeightUnitProvider>
             <Routes>
             <Route path="/" element={<RoleRedirect />} />
             <Route path="/dev" element={<DevIndex />} />
@@ -163,6 +165,7 @@ const App = () => (
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>
+            </WeightUnitProvider>
           </AuthProvider>
         </BrowserRouter>
       </TooltipProvider>
