@@ -284,6 +284,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                 const d = bid - asking;
                 const dPct = asking > 0 ? (d / asking) * 100 : 0;
                 const displayBid = toDisplay(bid, "price", unit);
+                const displayDiff = toDisplay(d, "price", unit);
                 const err = errors[it.id];
                 const showErr = !!err && (touched[it.id] || bids[it.id] !== Number(it.price));
                 return (
@@ -319,7 +320,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                             className="text-[11px] tabular-nums"
                             style={{ color: d < 0 ? "#15803d" : "#b45309" }}
                           >
-                            {d < 0 ? "↓" : "↑"} ${Math.abs(d).toFixed(2)} ({d < 0 ? "" : "+"}
+                            {d < 0 ? "↓" : "↑"} ${Math.abs(displayDiff).toFixed(2)} ({d < 0 ? "" : "+"}
                             {dPct.toFixed(1)}%)
                           </span>
                         )}
