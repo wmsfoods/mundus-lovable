@@ -795,6 +795,21 @@
         "diff": "Diff"
       }
     },
+    "share": {
+      "title": "Share this bid with the supplier",
+      "subtitle": "The supplier can review and respond using this secure link — no login required.",
+      "subtitleUsed": "This link has already been used by the supplier.",
+      "loading": "Preparing share link…",
+      "copy": "Copy link",
+      "copied": "Copied!",
+      "supplierEmail": "Supplier email (optional)",
+      "saveEmail": "Save",
+      "emailSaved": "Email saved",
+      "sendEmail": "Send email",
+      "mailSubject": "Mundus Trade — New bid awaiting your response",
+      "mailBody": "Hello,\n\nYou received a new bid from {{buyer}} on Mundus Trade.\n\nReview and respond here:\n{{link}}\n\nThanks,\nMundus Trade team",
+      "expiresAt": "Link expires on {{date}}"
+    },
     "negotiations": {
       "title": "Negotiations",
       "searchPlaceholder": "Search ID / buyer / product / destination...",
@@ -804,6 +819,8 @@
         "priority": "Sort: Status priority"
       },
       "counts": "{{offers}} offers · {{bids}} bids",
+      "emailSent": "Email sent",
+      "emailSentTooltip": "A response link has been generated for this negotiation",
       "chips": {
         "all": "All",
         "action_required": "Action required",
