@@ -20,6 +20,7 @@
 @import "./styles/mundus-insights.css";
 @import "./styles/mundus-analytics.css";
 @import "./styles/mundus-prospect.css";
+@import "./styles/mundus-protein-filter.css";
 
 @tailwind base;
 @tailwind components;
