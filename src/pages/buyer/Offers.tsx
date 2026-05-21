@@ -13,6 +13,11 @@ import {
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
 import { ProteinFilter, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProteins";
+import { AuctionCard } from "@/components/marketplace/AuctionCard";
+import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
+import { MOCK_BUYER_AUCTIONS } from "@/data/mockAuctions";
+import { toast } from "sonner";
+import { Gavel } from "lucide-react";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -233,6 +238,7 @@ export default function BuyerOffers() {
   const [protein, setProtein] = useState<ProteinKey>(initialProtein);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "priceAsc" | "priceDesc" | "volumeDesc">("newest");
+  const [auctionsOnly, setAuctionsOnly] = useState(false);
 
   // Keep URL in sync when user changes the protein pill.
   useEffect(() => {
@@ -292,6 +298,7 @@ export default function BuyerOffers() {
   const clearAll = () => {
     setProtein("all");
     setSearch("");
+    setAuctionsOnly(false);
   };
 
   return (
