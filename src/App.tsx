@@ -26,6 +26,7 @@ import BuyerNegotiations from "./pages/buyer/BuyerNegotiations.tsx";
 import BuyerNegotiationDetail from "./pages/buyer/BuyerNegotiationDetail.tsx";
 import BuyerRequests from "./pages/buyer/BuyerRequests.tsx";
 import BuyerRequestDetail from "./pages/buyer/BuyerRequestDetail.tsx";
+import BuyerCreateRequest from "./pages/buyer/BuyerCreateRequest.tsx";
 import BuyerChat from "./pages/buyer/BuyerChat.tsx";
 import ProcurementIntelligence from "./pages/buyer/ProcurementIntelligence.tsx";
 import AdminShell from "./pages/admin/AdminShell.tsx";
@@ -117,6 +118,7 @@ const App = () => (
               <Route path="negotiations" element={<BuyerNegotiations />} />
               <Route path="negotiations/:id" element={<BuyerNegotiationDetail />} />
               <Route path="requests" element={<BuyerRequests />} />
+              <Route path="requests/new" element={<BuyerCreateRequest />} />
               <Route path="requests/:id" element={<BuyerRequestDetail />} />
               <Route path="chat" element={<BuyerChat />} />
               <Route path="chat/:conversationId" element={<BuyerChat />} />
