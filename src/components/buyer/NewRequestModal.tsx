@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { weightLabel, priceLabel } from "@/lib/units";
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
 const INCOTERMS = ["CFR", "CIF", "FOB"] as const;
@@ -26,6 +28,7 @@ const WINE = "#8B2252";
 export default function NewRequestModal({ open, onOpenChange }: Props) {
   const { t } = useTranslation();
   const { markets, cutsByCategory, loading, error } = useSupplierOfferData();
+  const { unit } = useWeightUnit();
 
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Beef");
@@ -135,11 +138,11 @@ export default function NewRequestModal({ open, onOpenChange }: Props) {
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
             <div>
-              <label style={lbl}>{tk("fields.targetPrice", "Target price (USD/kg)")} *</label>
+              <label style={lbl}>{tk("fields.targetPrice", `Target price (USD${priceLabel(unit).replace("$", "")})`)} *</label>
               <input style={inp} type="number" step="0.01" min="0" value={targetPrice} onChange={(e) => setTargetPrice(e.target.value)} />
             </div>
             <div>
-              <label style={lbl}>{tk("fields.targetVolume", "Target volume (kg)")} *</label>
+              <label style={lbl}>{tk("fields.targetVolume", `Target volume (${weightLabel(unit)})`)} *</label>
               <input style={inp} type="number" step="1" min="0" value={targetVolume} onChange={(e) => setTargetVolume(e.target.value)} />
             </div>
           </div>
