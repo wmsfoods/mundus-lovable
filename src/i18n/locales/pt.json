@@ -2170,6 +2170,107 @@
         "imported": "{{n}} prospects importados",
         "stageChanged": "{{company}} movido para {{stage}}",
         "invited": "Convite enviado para {{email}} — prospect movido para Onboarding"
+      },
+      "pipeline": {
+        "tabs": {
+          "pipeline": "Pipeline",
+          "buyers": "Compradores",
+          "suppliers": "Fornecedores",
+          "interviews": "Entrevistas",
+          "learnings": "Aprendizados"
+        },
+        "stages": {
+          "cold": "Lead",
+          "contacted": "Contatado",
+          "demo_scheduled": "Demo Agendada",
+          "demo_done": "Demo Concluída",
+          "active": "Ativo",
+          "lost": "Perdido"
+        },
+        "filters": {
+          "all": "Todos",
+          "buyer": "Compradores",
+          "supplier": "Fornecedores",
+          "search": "Buscar..."
+        },
+        "cards": {
+          "contact": "Contato",
+          "role": "Função"
+        },
+        "buyers": {
+          "title": "Compradores",
+          "add": "+ Adicionar Comprador"
+        },
+        "suppliers": {
+          "title": "Fornecedores",
+          "add": "+ Adicionar Fornecedor"
+        },
+        "interviews": {
+          "title": "Entrevistas",
+          "add": "+ Registrar Entrevista",
+          "company": "Empresa",
+          "contact": "Contato",
+          "date": "Data",
+          "duration": "Duração",
+          "painPoints": "Dores",
+          "takeaways": "Conclusões",
+          "keyQuotes": "Citações",
+          "nextSteps": "Próximos Passos",
+          "empty": "Nenhuma entrevista registrada"
+        },
+        "learnings": {
+          "title": "Aprendizados",
+          "add": "+ Adicionar Aprendizado",
+          "week": "Semana de",
+          "theme": "Tema",
+          "insight": "Insight",
+          "sources": "Empresas-fonte",
+          "category": "Categoria",
+          "empty": "Sem aprendizados ainda"
+        },
+        "modal": {
+          "addCompany": "Adicionar Empresa",
+          "name": "Nome da empresa",
+          "type": "Tipo",
+          "country": "País",
+          "marketRegion": "Região",
+          "website": "Site",
+          "stage": "Estágio",
+          "contactName": "Nome do contato",
+          "contactRole": "Função",
+          "contactPersona": "Persona",
+          "contactEmail": "E-mail",
+          "contactPhone": "Telefone",
+          "contactLinkedin": "LinkedIn",
+          "notes": "Notas",
+          "source": "Origem",
+          "cancel": "Cancelar",
+          "submit": "Salvar",
+          "logInterview": "Registrar Entrevista",
+          "pickCompany": "Escolha uma empresa",
+          "pickContact": "Escolha um contato (opcional)",
+          "duration": "Duração (min)",
+          "conductedBy": "Conduzida por",
+          "painPoints": "Dores",
+          "keyQuotes": "Citações",
+          "takeaways": "Conclusões",
+          "nextSteps": "Próximos passos",
+          "recordingUrl": "URL da gravação",
+          "addLearning": "Adicionar Aprendizado",
+          "weekStart": "Semana iniciando"
+        },
+        "table": {
+          "company": "Empresa",
+          "persona": "Persona / Função",
+          "contact": "Contato",
+          "email": "E-mail",
+          "phone": "Telefone",
+          "linkedin": "LinkedIn",
+          "country": "País",
+          "stage": "Estágio",
+          "actions": "Ações",
+          "view": "Ver"
+        }
       }
     },
     "analytics": {

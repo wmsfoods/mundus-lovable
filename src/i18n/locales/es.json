@@ -2170,6 +2170,107 @@
         "imported": "{{n}} prospects importados",
         "stageChanged": "{{company}} movido a {{stage}}",
         "invited": "Invitación enviada a {{email}} — prospect movido a Onboarding"
+      },
+      "pipeline": {
+        "tabs": {
+          "pipeline": "Pipeline",
+          "buyers": "Compradores",
+          "suppliers": "Proveedores",
+          "interviews": "Entrevistas",
+          "learnings": "Aprendizajes"
+        },
+        "stages": {
+          "cold": "Lead",
+          "contacted": "Contactado",
+          "demo_scheduled": "Demo Agendada",
+          "demo_done": "Demo Realizada",
+          "active": "Activo",
+          "lost": "Perdido"
+        },
+        "filters": {
+          "all": "Todos",
+          "buyer": "Compradores",
+          "supplier": "Proveedores",
+          "search": "Buscar..."
+        },
+        "cards": {
+          "contact": "Contacto",
+          "role": "Rol"
+        },
+        "buyers": {
+          "title": "Compradores",
+          "add": "+ Agregar Comprador"
+        },
+        "suppliers": {
+          "title": "Proveedores",
+          "add": "+ Agregar Proveedor"
+        },
+        "interviews": {
+          "title": "Entrevistas",
+          "add": "+ Registrar Entrevista",
+          "company": "Empresa",
+          "contact": "Contacto",
+          "date": "Fecha",
+          "duration": "Duración",
+          "painPoints": "Dolores",
+          "takeaways": "Conclusiones",
+          "keyQuotes": "Citas",
+          "nextSteps": "Próximos Pasos",
+          "empty": "Sin entrevistas registradas"
+        },
+        "learnings": {
+          "title": "Aprendizajes",
+          "add": "+ Agregar Aprendizaje",
+          "week": "Semana de",
+          "theme": "Tema",
+          "insight": "Insight",
+          "sources": "Empresas fuente",
+          "category": "Categoría",
+          "empty": "Sin aprendizajes aún"
+        },
+        "modal": {
+          "addCompany": "Agregar Empresa",
+          "name": "Nombre",
+          "type": "Tipo",
+          "country": "País",
+          "marketRegion": "Región",
+          "website": "Sitio",
+          "stage": "Etapa",
+          "contactName": "Nombre",
+          "contactRole": "Rol",
+          "contactPersona": "Persona",
+          "contactEmail": "Email",
+          "contactPhone": "Teléfono",
+          "contactLinkedin": "LinkedIn",
+          "notes": "Notas",
+          "source": "Origen",
+          "cancel": "Cancelar",
+          "submit": "Guardar",
+          "logInterview": "Registrar Entrevista",
+          "pickCompany": "Elige una empresa",
+          "pickContact": "Elige un contacto (opcional)",
+          "duration": "Duración (min)",
+          "conductedBy": "Conducida por",
+          "painPoints": "Dolores",
+          "keyQuotes": "Citas",
+          "takeaways": "Conclusiones",
+          "nextSteps": "Próximos pasos",
+          "recordingUrl": "URL grabación",
+          "addLearning": "Agregar Aprendizaje",
+          "weekStart": "Semana iniciando"
+        },
+        "table": {
+          "company": "Empresa",
+          "persona": "Persona / Rol",
+          "contact": "Contacto",
+          "email": "Email",
+          "phone": "Teléfono",
+          "linkedin": "LinkedIn",
+          "country": "País",
+          "stage": "Etapa",
+          "actions": "Acciones",
+          "view": "Ver"
+        }
       }
     },
     "analytics": {
