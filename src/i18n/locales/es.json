@@ -1122,6 +1122,15 @@
         "asking": "Pedido",
         "yourCounter": "Tu contraoferta",
         "diff": "Dif"
+      },
+      "bulk": {
+        "label": "Relleno rápido",
+        "acceptAll": "Aceptar todos",
+        "meetMiddle": "Encontrarse en el medio",
+        "plus3": "Oferta +3%",
+        "plus5": "Oferta +5%",
+        "apply": "Aplicar",
+        "customPlaceholder": "±{{unit}}"
       }
     },
     "negotiations": {
