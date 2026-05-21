@@ -169,7 +169,35 @@
       "nav": "Procurement Intelligence",
       "groupLabel": "Insights",
       "title": "Savings & spend dashboard",
-      "subtitle": "How much Mundus saved you vs market. Where you're spending. Which suppliers are pulling their weight."
+      "subtitle": "How much Mundus saved you vs market. Where you're spending. Which suppliers are pulling their weight.",
+      "upsell": {
+        "title": "Turn procurement into a competitive edge",
+        "lede": "Stop buying blind. See exactly how much you're saving vs market, where spend is leaking, and which suppliers deserve more of your wallet — all in one place.",
+        "bullets": {
+          "spend": {
+            "title": "Live spend & budget tracking",
+            "body": "Real-time view of YTD spend by category, origin, and supplier — with budget variance alerts."
+          },
+          "savings": {
+            "title": "Verified savings vs market",
+            "body": "Every order benchmarked against the live Mundus marketplace so finance sees real, defensible savings."
+          },
+          "suppliers": {
+            "title": "Supplier scorecards",
+            "body": "Grade every supplier on price, on-time delivery, quality and response — and surface concentration risk."
+          },
+          "marketAlerts": {
+            "title": "Smart procurement alerts",
+            "body": "Get notified when prices drop on cuts you buy, when contracts expire, or when a category gets risky."
+          }
+        },
+        "perks": [
+          "Monthly CFO-ready savings report (PDF)",
+          "Unlimited CSV exports of spend, savings and supplier data",
+          "Custom budgets and variance alerts by category",
+          "Supplier concentration & risk dashboard"
+        ]
+      }
     },
     "requests": {
       "title": "My offer requests",
