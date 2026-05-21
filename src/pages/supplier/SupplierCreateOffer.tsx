@@ -1637,6 +1637,24 @@ function SecondaryPriceCell({
 function PreviewImages({ images }: { images: { id: string; src: string; label: string }[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
+  const [userPaused, setUserPaused] = useState(false);
+
+  /* Auto-advance every 3.5s while there are 2+ images and the user hasn't
+     interacted. Pauses permanently after any swipe/click on controls.
+     Respects prefers-reduced-motion. */
+  useEffect(() => {
+    if (images.length < 2 || userPaused) return;
+    const reduce = typeof window !== "undefined"
+      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    const t = window.setInterval(() => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const next = (Math.round(el.scrollLeft / el.clientWidth) + 1) % images.length;
+      el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
+    }, 3500);
+    return () => window.clearInterval(t);
+  }, [images.length, userPaused]);
 
   if (images.length === 0) {
     return (
@@ -1653,6 +1671,8 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
     el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
   };
 
+  const pause = () => { if (!userPaused) setUserPaused(true); };
+
   const onScroll = () => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -1662,7 +1682,13 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
 
   return (
     <div className="cov4-prev-img cov4-prev-img-carousel">
-      <div className="cov4-prev-img-scroller" ref={scrollerRef} onScroll={onScroll}>
+      <div
+        className="cov4-prev-img-scroller"
+        ref={scrollerRef}
+        onScroll={onScroll}
+        onPointerDown={pause}
+        onWheel={pause}
+      >
         {images.map((im) => (
           <div key={im.id} className="cov4-prev-img-slide">
             <img src={im.src} alt={im.label} />
@@ -1675,14 +1701,14 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
             type="button"
             className="cov4-prev-img-nav prev"
             aria-label="Previous"
-            onClick={() => scrollTo(idx - 1)}
+            onClick={() => { pause(); scrollTo(idx - 1); }}
             disabled={idx === 0}
           >‹</button>
           <button
             type="button"
             className="cov4-prev-img-nav next"
             aria-label="Next"
-            onClick={() => scrollTo(idx + 1)}
+            onClick={() => { pause(); scrollTo(idx + 1); }}
             disabled={idx === images.length - 1}
           >›</button>
           <div className="cov4-prev-img-dots">
@@ -1692,7 +1718,7 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
                 type="button"
                 aria-label={`Go to image ${i + 1}`}
                 className={`cov4-prev-img-dot ${i === idx ? "on" : ""}`}
-                onClick={() => scrollTo(i)}
+                onClick={() => { pause(); scrollTo(i); }}
               />
             ))}
           </div>
