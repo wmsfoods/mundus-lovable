@@ -115,6 +115,15 @@ function deriveSecondary(
   return primaryPrice + adj;
 }
 
+/* Validate ask >= floor. Returns ok=true if either is empty or ask >= floor. */
+function validatePricePair(ask: string | number | null | undefined, floor: string | number | null | undefined): { ok: boolean; msg: string } {
+  const a = typeof ask === "number" ? ask : parseFloat(String(ask ?? ""));
+  const f = typeof floor === "number" ? floor : parseFloat(String(floor ?? ""));
+  if (isNaN(a) || isNaN(f)) return { ok: true, msg: "" };
+  if (a < f) return { ok: false, msg: "Asking must be ≥ floor" };
+  return { ok: true, msg: "" };
+}
+
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
   qty: "", ask: "", floor: "", notes: "",
