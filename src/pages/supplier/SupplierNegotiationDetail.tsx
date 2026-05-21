@@ -18,6 +18,7 @@ import {
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
 import { acceptNegotiation, rejectNegotiation } from "@/components/supplier/CounterOfferActions";
+import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, weightLabel } from "@/lib/units";
 
@@ -168,6 +169,10 @@ export default function SupplierNegotiationDetail() {
           <span className="chip-value">{fmtWeight(d.totalWeightKg, unit)} {weightLabel(unit)}</span>
         </span>
       </div>
+
+      {isReal && rawNeg && (
+        <ShareWithSupplierCard negotiationId={rawNeg.id} buyerLabel={d.buyerName} />
+      )}
 
       <div className="nd-grid">
         {/* LEFT */}

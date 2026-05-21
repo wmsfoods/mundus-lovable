@@ -164,6 +164,55 @@
   "comingSoon": {
     "note": "Esta tela será construída nos próximos commits do port."
   },
+  "public": {
+    "respond": {
+      "headerTitle": "Responder à proposta",
+      "loading": "Carregando…",
+      "invalidTitle": "Link inválido",
+      "invalidBody": "Este link de resposta não é válido. Verifique a URL.",
+      "expiredTitle": "Link expirado",
+      "expiredBody": "Este link expirou. Entre em contato com a Mundus Trade.",
+      "usedTitle": "Link já utilizado",
+      "usedBody": "Esta resposta já foi registrada.",
+      "youReceived": "Você recebeu uma proposta",
+      "bidFor": "Proposta para {{supplier}}",
+      "bidGeneric": "Nova proposta",
+      "origin": "Origem",
+      "destination": "Destino",
+      "incoterm": "Incoterm",
+      "payment": "Condições de pagamento",
+      "container": "Contêiner",
+      "created": "Criado em",
+      "cutsTitle": "Cortes solicitados",
+      "col": {
+        "cut": "Corte",
+        "qty": "Qtd ({{unit}})",
+        "asking": "Pedido",
+        "buyerBid": "Proposta do comprador",
+        "yourCounter": "Sua contraoferta",
+        "diff": "Dif"
+      },
+      "actions": {
+        "accept": "Aceitar proposta",
+        "acceptDesc": "Aceite os preços do comprador como estão. O pedido prosseguirá.",
+        "counter": "Enviar contraoferta",
+        "counterDesc": "Ajuste os preços e responda com sua contraoferta.",
+        "reject": "Rejeitar",
+        "rejectDesc": "Recusar esta proposta."
+      },
+      "counterTitle": "Contraoferta — Rodada {{round}}",
+      "message": "Mensagem",
+      "messagePlaceholder": "Adicione uma observação ao comprador (opcional)",
+      "back": "Voltar",
+      "submitCounter": "Enviar contraoferta",
+      "submitting": "Enviando…",
+      "confirmReject": "Tem certeza que deseja rejeitar esta proposta?",
+      "doneTitle": "Resposta registrada",
+      "doneAccepted": "Você aceitou a proposta. O comprador será notificado.",
+      "doneRejected": "Você rejeitou a proposta. O comprador será notificado.",
+      "doneCounter": "Sua contraoferta foi enviada. O comprador será notificado."
+    }
+  },
   "buyer": {
     "procurement": {
       "nav": "Inteligência de Compras",
@@ -587,6 +636,21 @@
         "success": "Convite enviado (mock)"
       }
     },
+    "share": {
+      "title": "Compartilhe esta proposta com o fornecedor",
+      "subtitle": "O fornecedor pode revisar e responder por este link seguro — sem login.",
+      "subtitleUsed": "Este link já foi usado pelo fornecedor.",
+      "loading": "Preparando o link…",
+      "copy": "Copiar link",
+      "copied": "Copiado!",
+      "supplierEmail": "E-mail do fornecedor (opcional)",
+      "saveEmail": "Salvar",
+      "emailSaved": "E-mail salvo",
+      "sendEmail": "Enviar e-mail",
+      "mailSubject": "Mundus Trade — Nova proposta aguardando sua resposta",
+      "mailBody": "Olá,\n\nVocê recebeu uma nova proposta de {{buyer}} na Mundus Trade.\n\nRevise e responda aqui:\n{{link}}\n\nObrigado,\nEquipe Mundus Trade",
+      "expiresAt": "Link expira em {{date}}"
+    },
     "negotiations": {
       "title": "Negociações",
       "searchPlaceholder": "Buscar ID / fornecedor / produto / origem...",
@@ -596,6 +660,8 @@
         "priority": "Ordenar: Prioridade de status"
       },
       "counts": "{{offers}} ofertas · {{bids}} propostas",
+      "emailSent": "E-mail enviado",
+      "emailSentTooltip": "Um link de resposta foi gerado para esta negociação",
       "chips": {
         "all": "Todos",
         "action_required": "Ação necessária",

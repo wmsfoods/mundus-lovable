@@ -1,7 +1,9 @@
-import { Fragment, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { MessageIcon, SearchIcon, ChevronRightIcon } from "@/components/icons";
+import { Mail } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
@@ -45,6 +47,22 @@ export default function SupplierNegotiations() {
   const navigate = useNavigate();
   const { data: offers, offerCount, bidCount } = useNegotiations();
   const locale = i18n.language || "en";
+
+  // Negotiation IDs that have at least one share token (email relay enabled).
+  const [tokenSet, setTokenSet] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("negotiation_tokens")
+        .select("negotiation_id");
+      if (cancelled || !data) return;
+      setTokenSet(new Set(data.map((r) => r.negotiation_id as string)));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -293,6 +311,15 @@ export default function SupplierNegotiations() {
                             </span>
                             {b.status === "action_required" && b.expiresIn && (
                               <span className="nego-timer">⏱ {b.expiresIn}</span>
+                            )}
+                            {tokenSet.has(b.id) && (
+                              <span
+                                className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded"
+                                style={{ background: "rgba(139,34,82,0.12)", color: "#8B2252" }}
+                                title={t("supplier.negotiations.emailSentTooltip")}
+                              >
+                                <Mail size={10} /> {t("supplier.negotiations.emailSent")}
+                              </span>
                             )}
                           </div>
                         </td>
