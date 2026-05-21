@@ -971,7 +971,8 @@
         "profileLabel": "Tipo de perfil",
         "send": "Enviar invitación",
         "cancel": "Cancelar",
-        "success": "Invitación enviada"
+        "success": "Invitación enviada.",
+        "successEmail": "Invitación enviada a {{email}}"
       }
     },
     "requests": {
