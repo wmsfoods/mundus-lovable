@@ -1,61 +1,36 @@
-# Refinar criação de oferta (Supplier)
+## Mudanças em `src/pages/supplier/SupplierCreateOffer.tsx`
 
-Escopo: `src/pages/supplier/SupplierCreateOffer.tsx` + estilos `mundus-create-offer-v2.css`. Sem mudanças de schema/backend.
+### 1) Validação ask ≥ floor
 
-## 1. Mercados principais + busca global
+Regra: `ask` nunca pode ser menor que `floor`, e `floor` nunca pode ser maior que `ask`.
 
-- No `useSupplierOfferData` (ou um derive local na página), separar `markets` em dois grupos:
-  - **Principais** (ordem fixa, sempre visíveis como chips para toggle):
-    `China, Hong Kong, Vietnam, Taiwan, Thailand, South Korea, Indonesia, Egypt, Russia, Jordan, United States, Canada, Mexico`.
-    Matching pelo `english_name` do país (lista whitelist no front).
-  - **Outros** → acessíveis via botão "+ More markets" que abre um **Combobox global** (shadcn `Command` em `Popover`) com:
-    - input de busca (filtra por nome, ignora acento/caixa);
-    - bandeira + nome;
-    - multi‑select com checkmark, popover **não fecha** ao selecionar (mantém navegabilidade);
-    - mercados já escolhidos aparecem como chips na linha principal com `✕` para remover (igual hoje).
-- Mercados principais que já estão selecionados mostram estado ativo; os não-principais selecionados aparecem como chip extra ao lado dos principais.
-- Mobile: o botão "+ More markets" abre o mesmo Command dentro de um `Sheet` bottom para uso com uma mão.
+**Onde aplicar:**
 
-## 2. Incoterms: CIF desativa CFR (e vice‑versa)
+a) **Add-row** (campos de novo corte):
+- Ao digitar em `ask`: se já existe `floor` preenchido e `ask < floor`, marcar input com borda vermelha + helper text discreto abaixo ("Asking must be ≥ floor").
+- Ao digitar em `floor`: mesma regra invertida ("Floor must be ≤ asking").
+- Bloquear o botão `+` (`addCut`) enquanto houver inconsistência.
 
-- Hoje `selInco` é multi‑select livre. Regra nova:
-  - Se `CIF` está selecionado → botão `CFR` fica `disabled` (visual `cov4-inco-btn` com opacidade reduzida + `cursor-not-allowed` + tooltip "Incompatível com CIF").
-  - Se `CFR` está selecionado → `CIF` fica `disabled`.
-  - `FOB` continua livre, combinável com qualquer um.
-- Sem mudança de dados; apenas lógica no toggle e no render do botão.
+b) **Linhas já adicionadas** na tabela de cortes — hoje são read-only (`{Number(c.ask).toFixed(2)}`), então não há como digitar inválido. Sem mudança necessária aqui.
 
-## 3. Cortes — busca digitável + foto
+c) **Override de preços secundários** (`SecondaryPriceCell`): a regra vale por incoterm. Para cada secondary, comparar o `ask` (override ou calculado) com o `floor` (override ou calculado) do mesmo incoterm. Se inválido, borda vermelha no input que estiver sendo editado + tooltip explicando.
 
-### Campo "Cut" no add‑row
-- Substituir o `<select>` nativo por um **Combobox** (shadcn `Command` + `Popover`):
-  - input com busca por `displayName` (case/acento‑insensitive);
-  - cada item mostra **thumbnail** (`image_url`) + nome;
-  - ao escolher, preenche `cutId`, `cut`, `cutImage` como hoje.
-- Categoria continua como select acima (filtra a lista do combobox).
-- Mobile: mesmo Command dentro de bottom `Sheet`.
+**Implementação:** função utilitária `validatePricePair(ask, floor)` que retorna `{ ok, msg }`. Usar nos dois pontos acima. Não bloquear digitação — só sinalizar visualmente e bloquear o submit (add cut).
 
-### Foto na linha da tabela
-- Hoje a célula `.cov4-img-box` já mostra `cutImage` quando existe. Garantir:
-  - Quando o usuário escolhe um corte que tem `image_url`, a thumb aparece imediatamente na caixinha (já faz). Manter drag‑and‑drop para sobrescrever.
-- **Hover preview (desktop)**: envolver a `.cov4-img-box` em `HoverCard`:
-  - trigger = a caixinha (40×40);
-  - content = imagem ampliada ~240×240 com nome do corte abaixo;
-  - delay curto (~150ms), fecha ao sair.
-- **Mobile**: hover não existe → ao **tap** na caixinha abre um pequeno `Dialog`/`Sheet` com a imagem ampliada e botão fechar. O upload por clique passa para um botão "Trocar foto" dentro desse diálogo (drag‑and‑drop continua funcionando no desktop).
+### 2) Carrossel automático no Live Preview
 
-## Detalhes técnicos
+Componente `PreviewImages` (já existe no arquivo, com scroll-snap + dots + setas).
 
-- Whitelist de principais em constante no arquivo da página:
-  ```ts
-  const PRIMARY_MARKETS = ["China","Hong Kong","Vietnam","Taiwan","Thailand","South Korea","Indonesia","Egypt","Russia","Jordan","United States","Canada","Mexico"];
-  ```
-  Split: `primary = MARKETS.filter(m => PRIMARY_MARKETS.includes(m.n))` ordenado pela whitelist; `others = MARKETS.filter(...)`.
-- Usar componentes já no projeto: `Command`, `Popover`, `HoverCard`, `Dialog`/`Sheet`, `useIsMobile`. Sem novas deps.
-- Estilos novos isolados em `mundus-create-offer-v2.css` (chips de mercado, combobox item com thumb, hover‑card image). Preserva layout e CSS atuais.
-- i18n: adicionar strings em `supplier.createOffer.marketplace.*` (en/pt/es) para "More markets", placeholder de busca, tooltip de incoterm incompatível, "Trocar foto".
+**Adicionar:**
+- `useEffect` que dispara `setInterval` a cada ~3.5s avançando para o próximo índice (volta ao 0 no final). Só roda quando `images.length > 1`.
+- **Pausar** o auto-play quando o usuário interage: ao tocar/clicar em uma seta, dot, ou fazer swipe/scroll manual. Implementação: state `userPaused` que vira `true` no primeiro `onScroll` causado por interação ou em qualquer click dos controles. Retoma após X segundos de inatividade (resetTimeout) — ou fica pausado permanentemente (mais simples e previsível). **Vou ficar pausado permanentemente** depois que o usuário interagir, evitando "briga" entre user e timer.
+- Respeitar `prefers-reduced-motion`: se ativo, não auto-avançar.
+- Cleanup do interval no unmount.
 
-## Fora do escopo
+Sem mudanças visuais — só comportamento.
 
-- Schema do banco, RLS, ou alterar `useSupplierOfferData`.
-- Mudanças no buyer / outras telas.
-- Mudanças no fluxo de logística, AI import, ou Live Preview.
+## Arquivos tocados
+
+- `src/pages/supplier/SupplierCreateOffer.tsx` (state da validação no add-row, helper `validatePricePair`, props/lógica no `SecondaryPriceCell`, auto-play no `PreviewImages`).
+
+Nenhum CSS novo necessário — uso inline style com `borderColor` vermelho para o estado inválido, consistente com o padrão de inline styles já adotado no arquivo.

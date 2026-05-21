@@ -115,6 +115,15 @@ function deriveSecondary(
   return primaryPrice + adj;
 }
 
+/* Validate ask >= floor. Returns ok=true if either is empty or ask >= floor. */
+function validatePricePair(ask: string | number | null | undefined, floor: string | number | null | undefined): { ok: boolean; msg: string } {
+  const a = typeof ask === "number" ? ask : parseFloat(String(ask ?? ""));
+  const f = typeof floor === "number" ? floor : parseFloat(String(floor ?? ""));
+  if (isNaN(a) || isNaN(f)) return { ok: true, msg: "" };
+  if (a < f) return { ok: false, msg: "Asking must be ≥ floor" };
+  return { ok: true, msg: "" };
+}
+
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
   qty: "", ask: "", floor: "", notes: "",
@@ -256,6 +265,10 @@ export default function SupplierCreateOffer() {
   /* Cuts */
   const addCut = useCallback(() => {
     if (!nf.cut || !nf.qty || !nf.ask) return;
+    if (!validatePricePair(nf.ask, nf.floor).ok) {
+      toast.error("Asking price must be ≥ floor price");
+      return;
+    }
     const id = Date.now().toString();
     setCuts((prev) => [...prev, { id, ...nf }]);
     if (newImgPrev) {
@@ -1015,6 +1028,9 @@ export default function SupplierCreateOffer() {
                       const calcFloor = isNaN(floorBase)
                         ? null
                         : deriveSecondary(floorBase, primaryInco, s, adj, cifInsuranceNum);
+                      const effAsk = ovr?.ask !== undefined ? parseFloat(ovr.ask) : calcAsk;
+                      const effFloor = ovr?.floor !== undefined ? parseFloat(ovr.floor) : calcFloor;
+                      const pair = validatePricePair(effAsk, effFloor);
                       return (
                         <Fragment key={`${c.id}-${s}`}>
                           <td className="num">
@@ -1023,6 +1039,8 @@ export default function SupplierCreateOffer() {
                               override={ovr?.ask}
                               onOverride={(v) => setCutOverride(c.id, s, "ask", v)}
                               onReset={() => setCutOverride(c.id, s, "ask", undefined)}
+                              invalid={!pair.ok}
+                              invalidMsg="Asking must be ≥ floor"
                             />
                           </td>
                           <td className="num">
@@ -1031,6 +1049,8 @@ export default function SupplierCreateOffer() {
                               override={ovr?.floor}
                               onOverride={(v) => setCutOverride(c.id, s, "floor", v)}
                               onReset={() => setCutOverride(c.id, s, "floor", undefined)}
+                              invalid={!pair.ok}
+                              invalidMsg="Floor must be ≤ asking"
                             />
                           </td>
                         </Fragment>
@@ -1129,8 +1149,50 @@ export default function SupplierCreateOffer() {
                     <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><input type="number" placeholder="27000" value={nf.qty} onChange={(e) => setNf((p) => ({ ...p, qty: e.target.value }))} /></td>
-                    <td><input type="number" step="0.01" placeholder="6.40" value={nf.ask} onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))} /></td>
-                    <td><input type="number" step="0.01" placeholder="5.80" value={nf.floor} onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))} /></td>
+                    <td>
+                      {(() => {
+                        const v = validatePricePair(nf.ask, nf.floor);
+                        const bad = !v.ok && !!nf.ask;
+                        return (
+                          <>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="6.40"
+                              value={nf.ask}
+                              onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))}
+                              style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
+                              title={bad ? v.msg : undefined}
+                            />
+                            {bad && (
+                              <div style={{ fontSize: 10, color: "#dc2626", marginTop: 2 }}>≥ floor</div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </td>
+                    <td>
+                      {(() => {
+                        const v = validatePricePair(nf.ask, nf.floor);
+                        const bad = !v.ok && !!nf.floor;
+                        return (
+                          <>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="5.80"
+                              value={nf.floor}
+                              onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))}
+                              style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
+                              title={bad ? "Floor must be ≤ asking" : undefined}
+                            />
+                            {bad && (
+                              <div style={{ fontSize: 10, color: "#dc2626", marginTop: 2 }}>≤ asking</div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </td>
                     {multiInco && secondaryIncos.map((s) => (
                       <Fragment key={`add-${s}`}>
                         <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
@@ -1140,7 +1202,13 @@ export default function SupplierCreateOffer() {
                     <td><input type="text" placeholder="Notes..." value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <button type="button" className="cov4-add-confirm" onClick={addCut} disabled={!nf.cut || !nf.qty || !nf.ask}>+</button>
+                        <button
+                          type="button"
+                          className="cov4-add-confirm"
+                          onClick={addCut}
+                          disabled={!nf.cut || !nf.qty || !nf.ask || !validatePricePair(nf.ask, nf.floor).ok}
+                          title={!validatePricePair(nf.ask, nf.floor).ok ? validatePricePair(nf.ask, nf.floor).msg : undefined}
+                        >+</button>
                         <button type="button" className="cov4-add-cancel" onClick={() => { setAddRow(false); setNewImgPrev(null); }}>✕</button>
                       </div>
                     </td>
@@ -1466,13 +1534,19 @@ function SecondaryPriceCell({
   override,
   onOverride,
   onReset,
+  invalid,
+  invalidMsg,
 }: {
   calculated: number | null;
   override?: string;
   onOverride: (v: string) => void;
   onReset: () => void;
+  invalid?: boolean;
+  invalidMsg?: string;
 }) {
   const [editing, setEditing] = useState(false);
+  const errStyle = invalid ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : {};
+  const errTitle = invalid ? invalidMsg : undefined;
 
   if (override !== undefined) {
     return (
@@ -1482,6 +1556,7 @@ function SecondaryPriceCell({
           step="0.01"
           value={override}
           onChange={(e) => onOverride(e.target.value)}
+          title={errTitle}
           style={{
             width: 64,
             padding: "2px 4px",
@@ -1489,6 +1564,7 @@ function SecondaryPriceCell({
             borderRadius: 4,
             fontSize: 12,
             textAlign: "right",
+            ...errStyle,
           }}
         />
         <button
@@ -1523,6 +1599,7 @@ function SecondaryPriceCell({
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           if (e.key === "Escape") setEditing(false);
         }}
+        title={errTitle}
         style={{
           width: 64,
           padding: "2px 4px",
@@ -1530,14 +1607,20 @@ function SecondaryPriceCell({
           borderRadius: 4,
           fontSize: 12,
           textAlign: "right",
+          ...errStyle,
         }}
       />
     );
   }
 
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
-      <span style={{ fontStyle: "italic", color: "var(--fg-muted)" }}>{calculated.toFixed(2)}</span>
+    <span
+      style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}
+      title={errTitle}
+    >
+      <span style={{ fontStyle: "italic", color: invalid ? "#dc2626" : "var(--fg-muted)" }}>
+        {calculated.toFixed(2)}
+      </span>
       <button
         type="button"
         onClick={() => setEditing(true)}
@@ -1554,6 +1637,24 @@ function SecondaryPriceCell({
 function PreviewImages({ images }: { images: { id: string; src: string; label: string }[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
+  const [userPaused, setUserPaused] = useState(false);
+
+  /* Auto-advance every 3.5s while there are 2+ images and the user hasn't
+     interacted. Pauses permanently after any swipe/click on controls.
+     Respects prefers-reduced-motion. */
+  useEffect(() => {
+    if (images.length < 2 || userPaused) return;
+    const reduce = typeof window !== "undefined"
+      && window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) return;
+    const t = window.setInterval(() => {
+      const el = scrollerRef.current;
+      if (!el) return;
+      const next = (Math.round(el.scrollLeft / el.clientWidth) + 1) % images.length;
+      el.scrollTo({ left: next * el.clientWidth, behavior: "smooth" });
+    }, 3500);
+    return () => window.clearInterval(t);
+  }, [images.length, userPaused]);
 
   if (images.length === 0) {
     return (
@@ -1570,6 +1671,8 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
     el.scrollTo({ left: clamped * el.clientWidth, behavior: "smooth" });
   };
 
+  const pause = () => { if (!userPaused) setUserPaused(true); };
+
   const onScroll = () => {
     const el = scrollerRef.current;
     if (!el) return;
@@ -1579,7 +1682,13 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
 
   return (
     <div className="cov4-prev-img cov4-prev-img-carousel">
-      <div className="cov4-prev-img-scroller" ref={scrollerRef} onScroll={onScroll}>
+      <div
+        className="cov4-prev-img-scroller"
+        ref={scrollerRef}
+        onScroll={onScroll}
+        onPointerDown={pause}
+        onWheel={pause}
+      >
         {images.map((im) => (
           <div key={im.id} className="cov4-prev-img-slide">
             <img src={im.src} alt={im.label} />
@@ -1592,14 +1701,14 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
             type="button"
             className="cov4-prev-img-nav prev"
             aria-label="Previous"
-            onClick={() => scrollTo(idx - 1)}
+            onClick={() => { pause(); scrollTo(idx - 1); }}
             disabled={idx === 0}
           >‹</button>
           <button
             type="button"
             className="cov4-prev-img-nav next"
             aria-label="Next"
-            onClick={() => scrollTo(idx + 1)}
+            onClick={() => { pause(); scrollTo(idx + 1); }}
             disabled={idx === images.length - 1}
           >›</button>
           <div className="cov4-prev-img-dots">
@@ -1609,7 +1718,7 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
                 type="button"
                 aria-label={`Go to image ${i + 1}`}
                 className={`cov4-prev-img-dot ${i === idx ? "on" : ""}`}
-                onClick={() => scrollTo(i)}
+                onClick={() => { pause(); scrollTo(i); }}
               />
             ))}
           </div>
