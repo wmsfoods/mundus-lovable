@@ -1,5 +1,6 @@
 {
   "common": {
+    "_negotiation_block_anchor": "",
     "back": "Back",
     "cancel": "Cancel",
     "proceed": "Proceed",
