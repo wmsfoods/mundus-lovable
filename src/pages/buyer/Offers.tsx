@@ -13,6 +13,11 @@ import {
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
 import { ProteinFilter, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProteins";
+import { AuctionCard } from "@/components/marketplace/AuctionCard";
+import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
+import { MOCK_BUYER_AUCTIONS } from "@/data/mockAuctions";
+import { toast } from "sonner";
+import { Gavel } from "lucide-react";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -233,6 +238,7 @@ export default function BuyerOffers() {
   const [protein, setProtein] = useState<ProteinKey>(initialProtein);
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "priceAsc" | "priceDesc" | "volumeDesc">("newest");
+  const [auctionsOnly, setAuctionsOnly] = useState(false);
 
   // Keep URL in sync when user changes the protein pill.
   useEffect(() => {
@@ -292,6 +298,7 @@ export default function BuyerOffers() {
   const clearAll = () => {
     setProtein("all");
     setSearch("");
+    setAuctionsOnly(false);
   };
 
   return (
@@ -318,6 +325,18 @@ export default function BuyerOffers() {
           available={marketProteins}
           counts={proteinCounts}
         />
+        <div className="bo-filter-row" style={{ alignItems: "center" }}>
+          <button
+            type="button"
+            className={`bo-filter-pill ${auctionsOnly ? "is-active" : ""}`}
+            onClick={() => setAuctionsOnly((v) => !v)}
+            aria-pressed={auctionsOnly}
+          >
+            <Gavel size={13} /> Auctions
+            <span style={{ opacity: 0.7, marginLeft: 4 }}>{MOCK_BUYER_AUCTIONS.length}</span>
+          </button>
+          <AuctionInfoDialog />
+        </div>
         <div className="bo-filter-row">
           <div className="bo-search">
             <span className="bo-search-icon"><SearchIcon size={16} /></span>
@@ -402,13 +421,21 @@ export default function BuyerOffers() {
         </div>
       ) : (
         <div className="card-row">
-          {filtered.map((offer) => (
-            <OfferCard
-              key={offer.id}
-              offer={offer}
-              onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+          {MOCK_BUYER_AUCTIONS.map((a) => (
+            <AuctionCard
+              key={a.id}
+              auction={a}
+              onPlaceBid={() => toast(`Place Bid coming soon — ${a.oppNumber}`)}
             />
           ))}
+          {!auctionsOnly &&
+            filtered.map((offer) => (
+              <OfferCard
+                key={offer.id}
+                offer={offer}
+                onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+              />
+            ))}
         </div>
       )}
     </>

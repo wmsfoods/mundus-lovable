@@ -12,6 +12,7 @@ export type SidebarItem = {
   end?: boolean;
   groupLabel?: string;
   proBadge?: boolean;
+  newBadge?: boolean;
 };
 
 type SidebarProps = {
@@ -88,6 +89,7 @@ export function Sidebar({
                     title={onProBadgeClick ? "Preview premium" : undefined}
                   />
                 )}
+                {item.newBadge && <span className="nav-new-badge">NEW</span>}
                 {item.badge ? <span className="sb-item-badge">{item.badge}</span> : null}
                 </NavLink>
               </div>
