@@ -164,6 +164,12 @@
     "note": "Esta pantalla se construirá en los próximos commits del port."
   },
   "buyer": {
+    "procurement": {
+      "nav": "Inteligencia de Compras",
+      "groupLabel": "Insights",
+      "title": "Panel de ahorro y gasto",
+      "subtitle": "Cuánto te ahorró Mundus vs mercado. Dónde estás gastando. Qué proveedores están cumpliendo."
+    },
     "requests": {
       "title": "Mis solicitudes de oferta",
       "newRequest": "Nueva solicitud",
