@@ -421,13 +421,21 @@ export default function BuyerOffers() {
         </div>
       ) : (
         <div className="card-row">
-          {filtered.map((offer) => (
-            <OfferCard
-              key={offer.id}
-              offer={offer}
-              onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+          {MOCK_BUYER_AUCTIONS.map((a) => (
+            <AuctionCard
+              key={a.id}
+              auction={a}
+              onPlaceBid={() => toast(`Place Bid coming soon — ${a.oppNumber}`)}
             />
           ))}
+          {!auctionsOnly &&
+            filtered.map((offer) => (
+              <OfferCard
+                key={offer.id}
+                offer={offer}
+                onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+              />
+            ))}
         </div>
       )}
     </>
