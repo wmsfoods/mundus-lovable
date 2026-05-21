@@ -2,6 +2,8 @@ import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { ArrowLeftIcon, EditIcon } from "@/components/icons";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, priceLabel, weightLabel } from "@/lib/units";
 import {
   useBuyerRequest,
   type BuyerRequestStatus,
@@ -138,11 +140,11 @@ export default function BuyerRequestDetail() {
       <div className="nd-meta-chips">
         <span className="chip">
           <span className="chip-label">{t("buyer.requests.detail.meta.target")}:</span>
-          <span className="chip-value">${r.targetPricePerKgUsd.toFixed(2)}/kg</span>
+          <span className="chip-value">${fmtPrice(r.targetPricePerKgUsd, unit)}/{weightLabel(unit)}</span>
         </span>
         <span className="chip">
           <span className="chip-label">{t("buyer.requests.detail.meta.volume")}:</span>
-          <span className="chip-value">{fmtKg(r.targetVolumeKg)} kg</span>
+          <span className="chip-value">{fmtWeight(r.targetVolumeKg, unit)} {weightLabel(unit)}</span>
         </span>
         <span className="chip">
           <span className="chip-label">{t("buyer.requests.detail.meta.fcl")}:</span>
@@ -315,7 +317,7 @@ export default function BuyerRequestDetail() {
             </div>
             <div className="req-summary-stat">
               <span className="lbl">{t("buyer.requests.detail.stats.bestPrice")}</span>
-              <span className="val">{bestPrice != null ? `$${bestPrice.toFixed(2)}/kg` : "—"}</span>
+              <span className="val">{bestPrice != null ? `$${fmtPrice(bestPrice, unit)}/${weightLabel(unit)}` : "—"}</span>
             </div>
             <div className="req-summary-stat">
               <span className="lbl">{t("buyer.requests.detail.stats.deadline")}</span>
