@@ -985,7 +985,7 @@ export default function SupplierCreateOffer() {
             <div className="cov4-cap-h">
               <span className="cov4-cap-l">Container capacity</span>
               <span className="cov4-cap-v">
-                {tw.toLocaleString()} / {cap.toLocaleString()} kg
+                {fmtWeight(tw, unit)} / {fmtWeight(cap, unit)} {wLbl}
                 <span className="cov4-cap-p" style={{ color: fc }}>({fp.toFixed(0)}%)</span>
               </span>
             </div>
