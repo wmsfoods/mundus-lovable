@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ClipboardIcon, SearchIcon, PlusIcon } from "@/components/icons";
 import NewRequestModal from "@/components/buyer/NewRequestModal";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, weightLabel } from "@/lib/units";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import {
