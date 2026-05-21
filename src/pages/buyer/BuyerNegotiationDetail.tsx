@@ -427,6 +427,14 @@ export default function BuyerNegotiationDetail() {
           onSubmitted={() => refetch()}
         />
       )}
+      {isReal && rawNeg && (
+        <RejectNegotiationModal
+          open={rejectOpen}
+          onOpenChange={setRejectOpen}
+          negotiation={rawNeg}
+          onRejected={() => refetch()}
+        />
+      )}
     </>
   );
 }
