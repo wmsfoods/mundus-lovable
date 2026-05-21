@@ -2271,6 +2271,33 @@
           "actions": "Ações",
           "view": "Ver"
         }
+      },
+      "meetingPrep": {
+        "back": "Voltar ao Pipeline",
+        "title": "Briefing da Reunião",
+        "empty": "Sem briefing ainda. Gere um sob medida para este prospect.",
+        "generateNow": "Gerar Agora",
+        "regenerate": "Regenerar",
+        "exportPdf": "Exportar PDF",
+        "email": "Enviar p/ meu email",
+        "markDone": "Marcar Demo Concluída",
+        "generatingMsg": "A IA está pesquisando a empresa e escrevendo seu briefing…",
+        "failedMsg": "Geração falhou. Tente novamente.",
+        "toast": {
+          "generating": "Briefing sendo gerado…",
+          "autoStarted": "Demo agendada — gerando briefing da reunião…",
+          "demoDone": "Marcada como Demo Concluída"
+        },
+        "sections": {
+          "research": "Pesquisa da Empresa",
+          "contact": "Perfil do Contato",
+          "market": "Contexto de Mercado",
+          "painPoints": "Dores Prováveis",
+          "talkingPoints": "Pontos de Conversa",
+          "questions": "Perguntas Estratégicas",
+          "valueProps": "Propostas de Valor Mundus",
+          "links": "Links de Pesquisa"
+        }
       }
     },
     "analytics": {
