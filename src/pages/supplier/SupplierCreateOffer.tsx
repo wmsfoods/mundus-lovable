@@ -339,6 +339,11 @@ export default function SupplierCreateOffer() {
   }, []);
   const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
 
+  /* Secondary incoterms (everything in selInco except the primary one) */
+  const secondaryIncos = selInco.filter((i) => i !== primaryInco);
+  const multiInco = selInco.length > 1 && !!primaryInco;
+  const cifInsuranceNum = parseFloat(incoExtras.cifInsurance || "0") || 0;
+
   const handleSaveDraft = () => toast("Draft saved");
 
   const applyMarketplaceRate = useCallback((rate: MarketplaceRate) => {
