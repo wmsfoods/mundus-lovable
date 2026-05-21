@@ -1,11 +1,16 @@
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { Camera } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { getActiveRole, setActiveRole, type ActiveRole } from "@/lib/activeRole";
+import { supabase } from "@/integrations/supabase/client";
+import AvatarCropModal from "@/components/profile/AvatarCropModal";
+import { transformedPublicUrl } from "@/lib/imageOptimization";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -14,6 +19,79 @@ export default function Profile() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [pickedSrc, setPickedSrc] = useState<string | null>(null);
+  const [cropOpen, setCropOpen] = useState(false);
+  const [savingAvatar, setSavingAvatar] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!user?.id) { setAvatarUrl(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("users")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!cancelled) setAvatarUrl((data?.avatar_url as string | null) ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [user?.id]);
+
+  const onFilePicked = (file: File) => {
+    if (!file.type.startsWith("image/")) {
+      toast.error(t("profile.avatar.invalidType", { defaultValue: "Please pick an image file" }));
+      return;
+    }
+    if (file.size > 15 * 1024 * 1024) {
+      toast.error(t("profile.avatar.tooLarge", { defaultValue: "Image is too large (max 15MB)" }));
+      return;
+    }
+    const url = URL.createObjectURL(file);
+    setPickedSrc(url);
+    setCropOpen(true);
+  };
+
+  const handleConfirmCrop = async (blob: Blob) => {
+    if (!user?.id) return;
+    setSavingAvatar(true);
+    try {
+      const path = `${user.id}/avatar.webp`;
+      const { error: upErr } = await supabase.storage
+        .from("avatars")
+        .upload(path, blob, {
+          upsert: true,
+          contentType: "image/webp",
+          cacheControl: "2592000",
+        });
+      if (upErr) throw upErr;
+      const { data } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = `${data.publicUrl}?s=${blob.size}`;
+      const { error: updErr } = await supabase
+        .from("users")
+        .update({ avatar_url: url })
+        .eq("id", user.id);
+      if (updErr) throw updErr;
+      setAvatarUrl(url);
+      setCropOpen(false);
+      if (pickedSrc) URL.revokeObjectURL(pickedSrc);
+      setPickedSrc(null);
+      toast.success(t("profile.avatar.updated", { defaultValue: "Photo updated" }));
+    } catch (e: any) {
+      toast.error(e?.message || "Upload failed");
+    } finally {
+      setSavingAvatar(false);
+    }
+  };
+
+  const handleCancelCrop = () => {
+    setCropOpen(false);
+    if (pickedSrc) URL.revokeObjectURL(pickedSrc);
+    setPickedSrc(null);
+    if (fileRef.current) fileRef.current.value = "";
+  };
 
   const availableRoles: ActiveRole[] = [
     ...(company?.is_buyer ? (["buyer"] as ActiveRole[]) : []),
@@ -48,7 +126,42 @@ export default function Profile() {
   return (
     <div className="profile-page">
       <div className="profile-card">
-        <span className="profile-avatar">{initials}</span>
+        <div className="profile-avatar-wrap">
+          <span className="profile-avatar">
+            {avatarUrl ? (
+              <img
+                src={transformedPublicUrl(avatarUrl, { width: 144, height: 144, quality: 80 })}
+                alt={displayName}
+                width={72}
+                height={72}
+                loading="lazy"
+                decoding="async"
+                className="profile-avatar-img"
+              />
+            ) : (
+              initials
+            )}
+          </span>
+          <button
+            type="button"
+            className="profile-avatar-edit"
+            onClick={() => fileRef.current?.click()}
+            aria-label={t("profile.avatar.change", { defaultValue: "Change profile photo" })}
+          >
+            <Camera size={14} />
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              if (f) onFilePicked(f);
+              e.currentTarget.value = "";
+            }}
+          />
+        </div>
         <span className="profile-name">{displayName}</span>
         {user?.email && <span className="profile-sub">{user.email}</span>}
         {company?.name && <span className="profile-sub">{company.name}</span>}
@@ -96,6 +209,14 @@ export default function Profile() {
       <button type="button" className="profile-logout" onClick={handleLogout}>
         {t("common.signOut")}
       </button>
+
+      <AvatarCropModal
+        open={cropOpen}
+        imageSrc={pickedSrc}
+        onCancel={handleCancelCrop}
+        onConfirm={handleConfirmCrop}
+        busy={savingAvatar}
+      />
     </div>
   );
 }
