@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -17,10 +17,13 @@ import { supabase } from "@/integrations/supabase/client";
 import type { OfferDetailed } from "@/hooks/useOffer";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
+import { isUuid } from "@/hooks/useRealNegotiation";
 
 // Mock buyer identity until auth wiring is connected to the marketplace flow.
 const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 const MOCK_BUYER_USER_ID = "c3000001-0000-0000-0000-000000000001";
+
+const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
 
 type FreightOption = {
   id: string;
@@ -34,12 +37,39 @@ interface BidModalProps {
   offer: OfferDetailed;
 }
 
+type DraftShape = {
+  incoterm?: string;
+  portId?: string;
+  message?: string;
+  bids?: Record<string, number>;
+};
+
+function draftKey(offerId: string) {
+  return `bid-draft-${offerId}`;
+}
+function loadDraft(offerId: string): DraftShape | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.sessionStorage.getItem(draftKey(offerId));
+    return raw ? (JSON.parse(raw) as DraftShape) : null;
+  } catch { return null; }
+}
+function saveDraft(offerId: string, d: DraftShape) {
+  if (typeof window === "undefined") return;
+  try { window.sessionStorage.setItem(draftKey(offerId), JSON.stringify(d)); } catch { /* ignore */ }
+}
+function clearDraft(offerId: string) {
+  if (typeof window === "undefined") return;
+  try { window.sessionStorage.removeItem(draftKey(offerId)); } catch { /* ignore */ }
+}
+
 export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { unit } = useWeightUnit();
   const pLbl = priceLabel(unit);
   const wLbl = weightLabel(unit);
+  const isRealOffer = isUuid(offer.id);
 
   const allowedIncoterms = useMemo(
     () => (offer.incoterms ?? []).map((i) => i.incoterm_type).filter(Boolean),
@@ -55,12 +85,22 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const [bids, setBids] = useState<Record<string, number>>(() =>
     Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])),
   );
+  // Track which inputs the user touched (empty/missing detection).
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const hydratedRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
-    setBids(Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])));
-    setIncoterm(allowedIncoterms[0] ?? "CFR");
-    setMessage("");
+    const draft = loadDraft(offer.id);
+    setBids(
+      Object.fromEntries(
+        offer.items.map((it) => [it.id, draft?.bids?.[it.id] ?? Number(it.price)]),
+      ),
+    );
+    setIncoterm(draft?.incoterm ?? allowedIncoterms[0] ?? "CFR");
+    setMessage(draft?.message ?? "");
+    setTouched({});
+    hydratedRef.current = true;
     let cancelled = false;
     (async () => {
       const { data } = await supabase
@@ -70,12 +110,21 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       if (cancelled) return;
       const list = (data ?? []) as unknown as FreightOption[];
       setFreight(list);
-      setPortId(list[0]?.port?.id ?? "");
+      const draftedPort = draft?.portId;
+      const hasDrafted = draftedPort && list.some((f) => f.port?.id === draftedPort);
+      setPortId(hasDrafted ? draftedPort! : (list[0]?.port?.id ?? ""));
     })();
     return () => {
       cancelled = true;
+      hydratedRef.current = false;
     };
   }, [open, offer.id, offer.items, allowedIncoterms]);
+
+  // Persist draft on every change while modal is open.
+  useEffect(() => {
+    if (!open || !hydratedRef.current) return;
+    saveDraft(offer.id, { incoterm, portId, message, bids });
+  }, [open, offer.id, incoterm, portId, message, bids]);
 
   const selectedFreight = freight.find((f) => f.port?.id === portId);
   const totalKg = offer.items.reduce((s, it) => s + Number(it.amount), 0);
@@ -86,10 +135,32 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const diff = bidTotal - askingTotal;
   const diffPct = askingTotal > 0 ? (diff / askingTotal) * 100 : 0;
 
+  // ── Validation (only enforced for real offers) ──────────────────────────
+  const errors = useMemo(() => {
+    if (!isRealOffer) return {} as Record<string, string>;
+    const out: Record<string, string> = {};
+    for (const it of offer.items) {
+      const asking = Number(it.price);
+      const min = asking * MIN_BID_PCT;
+      const v = bids[it.id];
+      if (v == null || !Number.isFinite(v) || v <= 0) {
+        out[it.id] = t("buyer.bid.errors.required", "Enter a bid greater than 0");
+      } else if (v < min) {
+        out[it.id] = t("buyer.bid.errors.minPct", {
+          defaultValue: "Minimum bid is ${{min}} (90% of asking)",
+          min: toDisplay(min, "price", unit).toFixed(2),
+        });
+      }
+    }
+    return out;
+  }, [isRealOffer, offer.items, bids, t, unit]);
+  const errorCount = Object.keys(errors).length;
+
   const hasAnyBid = offer.items.some((it) => (bids[it.id] ?? 0) > 0);
+  const canSubmit = hasAnyBid && (!isRealOffer || errorCount === 0);
 
   async function handleSubmit() {
-    if (!hasAnyBid || submitting) return;
+    if (!canSubmit || submitting) return;
     setSubmitting(true);
     try {
       const { data: neg, error: negErr } = await supabase
@@ -104,6 +175,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           incoterm,
           status: "awaiting_supplier",
           expires_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
+          buyer_message: message.trim() ? message.trim() : null,
         })
         .select("id")
         .single();
@@ -125,7 +197,6 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         offer_item_id: it.id,
         price_per_kg: bids[it.id] ?? Number(it.price),
         quantity_kg: Number(it.amount),
-        total_value: (bids[it.id] ?? Number(it.price)) * Number(it.amount),
       }));
       const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
       if (crErr) throw crErr;
@@ -138,6 +209,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       if (tokErr) console.warn("token insert failed", tokErr.message);
 
       toast.success(t("buyer.bid.successToast"));
+      clearDraft(offer.id);
       onOpenChange(false);
       navigate("/buyer/negotiations");
     } catch (e: any) {
@@ -212,6 +284,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                 const d = bid - asking;
                 const dPct = asking > 0 ? (d / asking) * 100 : 0;
                 const displayBid = toDisplay(bid, "price", unit);
+                const err = errors[it.id];
+                const showErr = !!err && (touched[it.id] || bids[it.id] !== Number(it.price));
                 return (
                   <tr key={it.id} className="border-t border-border">
                     <td className="px-3 py-2">{it.customer_product?.name ?? "—"}</td>
@@ -228,9 +302,18 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                             const v = parseFloat(e.target.value);
                             const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
                             setBids((prev) => ({ ...prev, [it.id]: kg }));
+                            setTouched((p) => ({ ...p, [it.id]: true }));
                           }}
-                          className="h-9 w-24 text-right tabular-nums focus-visible:ring-[#8B2252]"
+                          className={
+                            "h-9 w-24 text-right tabular-nums focus-visible:ring-[#8B2252]" +
+                            (showErr ? " border-destructive focus-visible:ring-destructive" : "")
+                          }
                         />
+                        {showErr && (
+                          <span className="text-[11px] text-destructive max-w-[200px] text-right">
+                            {err}
+                          </span>
+                        )}
                         {Math.abs(d) > 0.001 && (
                           <span
                             className="text-[11px] tabular-nums"
@@ -282,12 +365,17 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
+          {errorCount > 0 && (
+            <div className="mr-auto text-xs text-destructive self-center">
+              {t("buyer.bid.errors.summary", { count: errorCount, defaultValue: "{{count}} cut(s) have validation errors" })}
+            </div>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             {t("buyer.bid.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!hasAnyBid || submitting}
+            disabled={!canSubmit || submitting}
             style={{ background: "#8B2252", color: "#fff" }}
             className="hover:opacity-90"
           >
