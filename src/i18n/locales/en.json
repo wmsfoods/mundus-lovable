@@ -427,6 +427,26 @@
         "default": "Not Classified"
       }
     },
+    "bid": {
+      "title": "Submit Your Bid",
+      "subtitle": "Enter your bid price per cut. The supplier will review and respond.",
+      "incoterm": "Incoterm",
+      "destination": "Destination",
+      "freightCost": "Freight",
+      "cut": "Cut",
+      "qty": "Qty ({{unit}})",
+      "asking": "Asking",
+      "yourBid": "Your Bid",
+      "totalAsking": "Asking Total",
+      "totalBid": "Your Bid Total",
+      "difference": "Difference",
+      "message": "Message",
+      "messagePlaceholder": "Add a message to the supplier (optional)",
+      "cancel": "Cancel",
+      "submit": "Submit Bid",
+      "submitting": "Submitting…",
+      "successToast": "Bid submitted! The supplier will review your proposal."
+    },
     "orders": {
       "title": "Orders",
       "heroTitle": "Track your orders easily and quickly.",
