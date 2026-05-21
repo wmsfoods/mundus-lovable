@@ -302,6 +302,95 @@ export function CounterOfferModal({
           </div>
         )}
 
+        {/* Bulk apply quick actions */}
+        {openItems.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 mt-3">
+            <span className="text-xs uppercase font-semibold text-muted-foreground mr-1">
+              {t(`${perspective}.counter.bulk.label`, "Quick fill")}:
+            </span>
+            <button
+              type="button"
+              onClick={acceptAllRows}
+              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+            >
+              {t(`${perspective}.counter.bulk.acceptAll`, "Accept all")}
+            </button>
+            <button
+              type="button"
+              onClick={() =>
+                setAllCounters(
+                  (it) =>
+                    ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2,
+                )
+              }
+              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+            >
+              {t(`${perspective}.counter.bulk.meetMiddle`, "Meet in middle")}
+            </button>
+            {perspective === "supplier" ? (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 1.03)}
+                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                >
+                  {t("supplier.counter.bulk.plus3", "Their price +3%")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 1.05)}
+                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                >
+                  {t("supplier.counter.bulk.plus5", "Their price +5%")}
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 0.97)}
+                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                >
+                  {t("buyer.counter.bulk.minus3pct", "Their counter -3%")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 0.95)}
+                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                >
+                  {t("buyer.counter.bulk.minus5pct", "Their counter -5%")}
+                </button>
+              </>
+            )}
+            <div className="flex items-center gap-1">
+              <Input
+                type="number"
+                step="0.01"
+                value={bulkOffset}
+                onChange={(e) => setBulkOffset(e.target.value)}
+                placeholder={t(`${perspective}.counter.bulk.customPlaceholder`, { defaultValue: "±{{unit}}", unit: pLbl })}
+                className="h-7 w-20 text-right tabular-nums text-xs"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 px-3 text-xs"
+                onClick={applyBulkOffset}
+                style={{ color: "#8B2252" }}
+              >
+                {t(`${perspective}.counter.bulk.apply`, "Apply")}
+              </Button>
+            </div>
+          </div>
+        )}
+
         {/* Cuts table */}
         <div className="rounded-lg border border-border overflow-hidden mt-2">
           <table className="w-full text-sm">
