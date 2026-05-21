@@ -262,7 +262,7 @@ export default function BuyerNegotiationDetail() {
                 <span className="nd-stat-label">{t("buyer.negotiations.detail.stats.yourBid")}</span>
                 <span className="nd-stat-value">{fmtUsd(d.yourBidUsd)}</span>
               </div>
-              <div className="nd-stat highlight">
+              <div className="nd-stat highlight nd-stat--full">
                 <span className="nd-stat-label">{t("buyer.negotiations.detail.stats.supplierCounter")}</span>
                 <span className="nd-stat-value">{fmtUsd(d.supplierCounterUsd)}</span>
               </div>
