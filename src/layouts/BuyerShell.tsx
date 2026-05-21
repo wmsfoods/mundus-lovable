@@ -22,8 +22,17 @@ import {
   MessageIcon,
 } from "@/components/icons";
 import { BarChart3 } from "lucide-react";
+import { InsightsUpsellProvider } from "@/contexts/InsightsUpsellContext";
 
 export default function BuyerShell() {
+  return (
+    <InsightsUpsellProvider>
+      <BuyerShellInner />
+    </InsightsUpsellProvider>
+  );
+}
+
+function BuyerShellInner() {
   const { user } = useAuth();
   const { company } = useCurrentCompany();
   const { t } = useTranslation();
