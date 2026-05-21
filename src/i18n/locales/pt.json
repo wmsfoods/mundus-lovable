@@ -169,7 +169,35 @@
       "nav": "Inteligência de Compras",
       "groupLabel": "Insights",
       "title": "Painel de economia e gastos",
-      "subtitle": "Quanto a Mundus economizou para você vs mercado. Onde você está gastando. Quais fornecedores estão entregando."
+      "subtitle": "Quanto a Mundus economizou para você vs mercado. Onde você está gastando. Quais fornecedores estão entregando.",
+      "upsell": {
+        "title": "Transforme compras em vantagem competitiva",
+        "lede": "Pare de comprar no escuro. Veja exatamente quanto está economizando vs mercado, onde o gasto está vazando e quais fornecedores merecem mais da sua carteira — tudo em um só lugar.",
+        "bullets": {
+          "spend": {
+            "title": "Gastos e orçamento ao vivo",
+            "body": "Visão em tempo real do gasto YTD por categoria, origem e fornecedor — com alertas de variação de orçamento."
+          },
+          "savings": {
+            "title": "Economia comprovada vs mercado",
+            "body": "Cada pedido comparado ao marketplace Mundus ao vivo para que o financeiro veja economia real e defensável."
+          },
+          "suppliers": {
+            "title": "Scorecards de fornecedor",
+            "body": "Classifique cada fornecedor por preço, pontualidade, qualidade e resposta — e veja risco de concentração."
+          },
+          "marketAlerts": {
+            "title": "Alertas inteligentes de compras",
+            "body": "Receba avisos quando preços caírem nos cortes que você compra, contratos vencerem ou uma categoria ficar arriscada."
+          }
+        },
+        "perks": [
+          "Relatório mensal de economia pronto para o CFO (PDF)",
+          "Exportações ilimitadas em CSV de gastos, economia e fornecedores",
+          "Orçamentos personalizados e alertas de variação por categoria",
+          "Painel de concentração e risco de fornecedores"
+        ]
+      }
     },
     "requests": {
       "title": "Minhas solicitações de oferta",
