@@ -1,22 +1,63 @@
+import { useCallback, useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+export const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
+
+export type BuyerProfileType =
+  | "master_buyer"
+  | "procurement"
+  | "finance"
+  | "compliance";
+
 export type BuyerUser = {
   id: string;
   name: string;
   jobTitle: string;
   email: string;
-  profileType: "admin" | "buyer" | "viewer";
+  profileType: BuyerProfileType;
   createdAt: string;
-  lastLoginAt: string;
-  status: "active" | "inactive";
+  lastLoginAt: string | null;
+  status: "active" | "invited" | "inactive";
 };
 
-const MOCK_USERS: BuyerUser[] = [
-  { id: "b1", name: "Min-Jun Park", jobTitle: "Head of Imports", email: "minjun@seoulwagyu.kr", profileType: "admin", createdAt: "2025-01-12", lastLoginAt: "2026-05-17T09:30:00Z", status: "active" },
-  { id: "b2", name: "Hiroshi Tanaka", jobTitle: "Senior Buyer", email: "hiroshi@tokyopremium.jp", profileType: "buyer", createdAt: "2025-02-04", lastLoginAt: "2026-05-17T07:12:00Z", status: "active" },
-  { id: "b3", name: "Mei Wong", jobTitle: "Procurement Manager", email: "mei@hkfoods.hk", profileType: "buyer", createdAt: "2025-02-22", lastLoginAt: "2026-05-16T19:48:00Z", status: "active" },
-  { id: "b4", name: "Sarah Chen", jobTitle: "Trade Analyst", email: "sarah@hkfoods.hk", profileType: "viewer", createdAt: "2025-03-10", lastLoginAt: "2026-05-15T11:20:00Z", status: "active" },
-  { id: "b5", name: "Ahmed Al-Rashid", jobTitle: "Imports Director", email: "ahmed@almadina.sa", profileType: "admin", createdAt: "2025-03-28", lastLoginAt: "2026-05-17T06:05:00Z", status: "active" },
-];
-
 export function useBuyerUsers() {
-  return { data: MOCK_USERS, isLoading: false, error: null as null | Error };
+  const [data, setData] = useState<BuyerUser[]>([]);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const { data: rows, error: err } = await (supabase as any)
+      .from("company_users")
+      .select("id, full_name, email, role, status, created_at, accepted_at")
+      .eq("company_id", MOCK_BUYER_COMPANY_ID)
+      .order("created_at", { ascending: true });
+    if (err) {
+      setError(err as unknown as Error);
+      setData([]);
+    } else {
+      setData(
+        (rows || [])
+          .filter((r: any) => r.full_name || r.email)
+          .map((r: any) => ({
+            id: r.id,
+            name: r.full_name || r.email || "—",
+            jobTitle: "",
+            email: r.email || "",
+            profileType: (r.role || "procurement") as BuyerProfileType,
+            createdAt: r.created_at,
+            lastLoginAt: r.accepted_at,
+            status: (r.status === "pending" ? "invited" : r.status) as BuyerUser["status"],
+          })),
+      );
+      setError(null);
+    }
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { data, isLoading, error, refetch: load };
 }

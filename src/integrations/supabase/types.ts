@@ -478,34 +478,49 @@ export type Database = {
       }
       company_users: {
         Row: {
+          accepted_at: string | null
           company_id: string
           created_at: string | null
+          email: string | null
+          full_name: string | null
           id: string
           invited_at: string | null
           joined_at: string | null
+          role: string | null
           role_id: string | null
           status: string | null
-          user_id: string
+          updated_at: string | null
+          user_id: string | null
         }
         Insert: {
+          accepted_at?: string | null
           company_id: string
           created_at?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
           invited_at?: string | null
           joined_at?: string | null
+          role?: string | null
           role_id?: string | null
           status?: string | null
-          user_id: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
+          accepted_at?: string | null
           company_id?: string
           created_at?: string | null
+          email?: string | null
+          full_name?: string | null
           id?: string
           invited_at?: string | null
           joined_at?: string | null
+          role?: string | null
           role_id?: string | null
           status?: string | null
-          user_id?: string
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
