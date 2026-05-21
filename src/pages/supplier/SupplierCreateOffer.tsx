@@ -438,25 +438,32 @@ export default function SupplierCreateOffer() {
       if (supplierRow?.name) supplierName = supplierRow.name;
 
       // 1. Create offer
-      const { data: offer, error: offerErr } = await supabase
-        .from("offers")
-        .insert({
-          supplier_id: MOCK_SUPPLIER_ID,
-          supplier_name: supplierName,
-          status: "active",
-          origin_country: "Brazil",
-          origin_port: "Santos (BRSSZ)",
-          shipment_month,
-          shipment_year,
-          payment_terms: payTerm,
-          container_size: csize,
-          total_fcl: totalFcl,
-          is_halal: certifications.includes("Halal"),
-          is_kosher: certifications.includes("Kosher"),
-        })
-        .select("id, offer_number")
-        .single();
-      if (offerErr || !offer) throw offerErr ?? new Error("offer insert failed");
+      let offer: { id: string; offer_number: number };
+      try {
+        const { data, error } = await supabase
+          .from("offers")
+          .insert({
+            supplier_id: MOCK_SUPPLIER_ID,
+            supplier_name: supplierName,
+            status: "active",
+            origin_country: "Brazil",
+            origin_port: "Santos (BRSSZ)",
+            shipment_month,
+            shipment_year,
+            payment_terms: payTerm,
+            container_size: csize,
+            total_fcl: totalFcl,
+            is_halal: certifications.includes("Halal"),
+            is_kosher: certifications.includes("Kosher"),
+          })
+          .select("id, offer_number")
+          .single();
+        if (error || !data) throw error ?? new Error("no data returned");
+        offer = data;
+      } catch (e) {
+        const m = e instanceof Error ? e.message : String(e);
+        throw new Error(`Step 1 failed: offer insert — ${m}`);
+      }
 
       // 2. Resolve/create customer_products per cut, then insert offer_items
       type OfferItemInsert = {
@@ -466,96 +473,141 @@ export default function SupplierCreateOffer() {
         condition: string; aging_method: string | null;
       };
       const itemsRows: OfferItemInsert[] = [];
-      for (const c of cuts) {
-        if (!c.cutId) continue;
-        const qty = parseFloat(c.qty) || 0;
-        const ask = parseFloat(c.ask) || 0;
-        const floor = parseFloat(c.floor);
-        const floorVal = Number.isFinite(floor) && floor > 0 ? floor : ask;
-        if (qty <= 0 || ask <= 0) continue;
+      try {
+        for (const c of cuts) {
+          const qty = parseFloat(c.qty) || 0;
+          const ask = parseFloat(c.ask) || 0;
+          const floor = parseFloat(c.floor);
+          const floorVal = Number.isFinite(floor) && floor > 0 ? floor : ask;
+          if (qty <= 0 || ask <= 0) continue;
 
-        // find or create customer_product
-        const { data: existing } = await supabase
-          .from("customer_products")
-          .select("id")
-          .eq("company_id", MOCK_SUPPLIER_ID)
-          .eq("standard_product_id", c.cutId)
-          .maybeSingle();
-        let customerProductId = existing?.id;
-        if (!customerProductId) {
-          const { data: created, error: cpErr } = await supabase
+          // Fallback: resolve cutId from cut name if missing
+          let cutId = c.cutId;
+          if (!cutId && c.cut) {
+            const { data: sp } = await supabase
+              .from("cuts")
+              .select("id")
+              .ilike("name", c.cut)
+              .maybeSingle();
+            if (sp) cutId = sp.id;
+            else {
+              console.warn("[publish] could not resolve cut by name:", c.cut);
+              continue;
+            }
+          }
+          if (!cutId) continue;
+
+          // find or create customer_product
+          const { data: existing } = await supabase
             .from("customer_products")
-            .insert({
-              company_id: MOCK_SUPPLIER_ID,
-              standard_product_id: c.cutId,
-              name: c.cut,
-              is_active: true,
-            })
-            .select("id").single();
-          if (cpErr || !created) throw cpErr ?? new Error("customer_products insert failed");
-          customerProductId = created.id;
+            .select("id")
+            .eq("company_id", MOCK_SUPPLIER_ID)
+            .eq("standard_product_id", cutId)
+            .maybeSingle();
+          let customerProductId = existing?.id;
+          if (!customerProductId) {
+            const { data: created, error: cpErr } = await supabase
+              .from("customer_products")
+              .insert({
+                company_id: MOCK_SUPPLIER_ID,
+                standard_product_id: cutId,
+                name: c.cut,
+                is_active: true,
+              })
+              .select("id").single();
+            if (cpErr || !created) throw cpErr ?? new Error("customer_products insert returned no data");
+            customerProductId = created.id;
+          }
+          itemsRows.push({
+            offer_id: offer.id,
+            customer_product_id: customerProductId,
+            amount: qty,
+            price: ask,
+            minimum_price: floorVal,
+            minimum_amount: qty,
+            maximum_amount: qty,
+            condition: temp,
+            aging_method: c.ag === "None" ? null : c.ag,
+          });
         }
-        itemsRows.push({
-          offer_id: offer.id,
-          customer_product_id: customerProductId,
-          amount: qty,
-          price: ask,
-          minimum_price: floorVal,
-          minimum_amount: qty,
-          maximum_amount: qty,
-          condition: temp,
-          aging_method: c.ag === "None" ? null : c.ag,
-        });
+      } catch (e) {
+        const m = e instanceof Error ? e.message : String(e);
+        throw new Error(`Step 2 failed: customer_products — ${m}`);
       }
-      if (itemsRows.length === 0) throw new Error("Add at least one cut with quantity and price");
-      const { error: itemsErr } = await supabase.from("offer_items").insert(itemsRows);
-      if (itemsErr) throw itemsErr;
 
-      // 3. offer_allowed_incoterms
+      if (itemsRows.length === 0) throw new Error("Step 3 failed: offer_items — no valid cuts (qty, price, and a matchable cut name are required)");
+      try {
+        const { error } = await supabase.from("offer_items").insert(itemsRows);
+        if (error) throw error;
+      } catch (e) {
+        const m = e instanceof Error ? e.message : String(e);
+        throw new Error(`Step 3 failed: offer_items — ${m}`);
+      }
+
+      // 4. offer_allowed_incoterms
+      const VALID_INCO = ["CIF", "CFR", "FOB", "EXW", "DDP", "DAP", "FAS", "DPU"];
       const allowed = (selInco.length ? selInco : (primaryInco ? [primaryInco] : []))
-        .filter((x) => ["CIF", "CFR", "FOB", "EXW", "FDB"].includes(x));
+        .filter((x) => VALID_INCO.includes(x));
       if (allowed.length > 0) {
-        const { error: incErr } = await supabase.from("offer_allowed_incoterms")
-          .insert(allowed.map((it) => ({ offer_id: offer.id, incoterm_type: it })));
-        if (incErr) throw incErr;
+        try {
+          const { error } = await supabase.from("offer_allowed_incoterms")
+            .insert(allowed.map((it) => ({ offer_id: offer.id, incoterm_type: it })));
+          if (error) throw error;
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Step 4 failed: offer_allowed_incoterms — ${m}`);
+        }
       }
 
-      // 4. offer_markets — need markets.id (lookup by country_id == selMarkets[i].id)
+      // 5. offer_markets
       if (selMarkets.length > 0) {
-        const countryIds = selMarkets.map((m) => m.id);
-        const { data: mktRows, error: mktErr } = await supabase
-          .from("markets")
-          .select("id, country_id")
-          .in("country_id", countryIds);
-        if (mktErr) throw mktErr;
-        const byCountry = new Map((mktRows ?? []).map((r) => [r.country_id, r.id]));
-        const mktInserts = countryIds
-          .map((cid) => byCountry.get(cid))
-          .filter((v): v is string => !!v)
-          .map((market_id) => ({ offer_id: offer.id, market_id }));
-        if (mktInserts.length > 0) {
-          const { error: omErr } = await supabase.from("offer_markets").insert(mktInserts);
-          if (omErr) throw omErr;
+        try {
+          const countryIds = selMarkets.map((m) => m.id);
+          const { data: mktRows, error: mktErr } = await supabase
+            .from("markets")
+            .select("id, country_id")
+            .in("country_id", countryIds);
+          if (mktErr) throw mktErr;
+          console.log("[publish] markets lookup", { countryIds, found: mktRows });
+          const byCountry = new Map((mktRows ?? []).map((r) => [r.country_id, r.id]));
+          const missing = countryIds.filter((cid) => !byCountry.has(cid));
+          if (missing.length) console.warn("[publish] no market row for country_ids:", missing);
+          const mktInserts = countryIds
+            .map((cid) => byCountry.get(cid))
+            .filter((v): v is string => !!v)
+            .map((market_id) => ({ offer_id: offer.id, market_id }));
+          if (mktInserts.length > 0) {
+            const { error: omErr } = await supabase.from("offer_markets").insert(mktInserts);
+            if (omErr) throw omErr;
+          }
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Step 5 failed: offer_markets — ${m}`);
         }
       }
 
-      // 5. freight_options per port
-      const freightInserts: Array<{ offer_id: string; port_id: string; cost: number; insurance: number }> = [];
-      const insuranceVal = parseFloat(incoExtras.cifInsurance ?? "") || 0;
-      for (const m of selMarkets) {
-        const cfg = mktCfg[m.id];
-        if (!cfg) continue;
-        for (const pid of cfg.sp) {
-          const rawFreight = uniformFreight
-            ? uniformFreightValue
-            : (cfg.sm || cfg.sp.length <= 1) ? cfg.gf : (cfg.pf[pid] ?? "");
-          const cost = parseFloat(rawFreight) || 0;
-          freightInserts.push({ offer_id: offer.id, port_id: pid, cost, insurance: insuranceVal });
+      // 6. freight_options per port
+      try {
+        const freightInserts: Array<{ offer_id: string; port_id: string; cost: number; insurance: number }> = [];
+        const insuranceVal = parseFloat(incoExtras.cifInsurance ?? "") || 0;
+        for (const m of selMarkets) {
+          const cfg = mktCfg[m.id];
+          if (!cfg) continue;
+          for (const pid of cfg.sp) {
+            const rawFreight = uniformFreight
+              ? uniformFreightValue
+              : (cfg.sm || cfg.sp.length <= 1) ? cfg.gf : (cfg.pf[pid] ?? "");
+            const cost = parseFloat(rawFreight) || 0;
+            freightInserts.push({ offer_id: offer.id, port_id: pid, cost, insurance: insuranceVal });
+          }
         }
-      }
-      if (freightInserts.length > 0) {
-        const { error: frErr } = await supabase.from("freight_options").insert(freightInserts);
-        if (frErr) throw frErr;
+        if (freightInserts.length > 0) {
+          const { error } = await supabase.from("freight_options").insert(freightInserts);
+          if (error) throw error;
+        }
+      } catch (e) {
+        const m = e instanceof Error ? e.message : String(e);
+        throw new Error(`Step 6 failed: freight_options — ${m}`);
       }
 
       toast.success(`Offer #${offer.offer_number} published successfully!`);
