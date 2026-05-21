@@ -332,7 +332,7 @@ export default function BuyerOffers() {
             onClick={() => setAuctionsOnly((v) => !v)}
             aria-pressed={auctionsOnly}
           >
-            <Gavel size={13} /> Auctions
+            <Gavel size={13} /> 🔨 {t("buyer.auctions.filter")}
             <span style={{ opacity: 0.7, marginLeft: 4 }}>{MOCK_BUYER_AUCTIONS.length}</span>
           </button>
           <AuctionInfoDialog />
