@@ -1036,6 +1036,12 @@
         "notice": "O comprador tem 48 horas para confirmar. Você será notificado.",
         "cancel": "Cancelar",
         "confirm": "Adjudicar"
+      },
+      "nextSteps": {
+        "title": "Próximos passos",
+        "notified": "O comprador foi notificado e tem 48 horas para confirmar.",
+        "becomesOrder": "Uma vez confirmado, isto vira um Pedido de Venda.",
+        "viewSales": "Ver em Vendas"
       }
     },
     "createAuction": {
@@ -1144,8 +1150,7 @@
         "asking": "Pedido",
         "yourCounter": "Sua contraoferta",
         "diff": "Dif"
-      }
-      ,
+      },
       "bulk": {
         "label": "Preenchimento rápido",
         "acceptAll": "Aceitar todos",
@@ -3091,5 +3096,10 @@
     "dateFrom": "Data de",
     "dateTo": "Data até",
     "noResults": "Nenhum resultado corresponde aos filtros"
+  },
+  "notifications": {
+    "title": "Notificações",
+    "markAllRead": "Marcar todas como lidas",
+    "empty": "Nenhuma notificação ainda"
   }
 }
