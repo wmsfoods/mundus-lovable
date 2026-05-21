@@ -35,12 +35,13 @@ const MONTHLY = [
   { m: "Dec", v: 20 },
 ];
 
-const KPIS = [
+type Kpi = { label: string; value: string; sub: string; pill?: "ok" };
+const KPIS: Kpi[] = [
   { label: "YTD SPEND", value: "$ 4.2M", sub: "128 orders" },
-  { label: "AVG SAVING / ORDER", value: "$ 1,440", sub: "+$ 320 vs 2023", trend: "up" as const },
+  { label: "AVG SAVING / ORDER", value: "$ 1,440", sub: "+$ 320 vs 2023" },
   { label: "BEST SINGLE DEAL", value: "12.4%", sub: "MDS-00792 · ribeye prime" },
   { label: "SUPPLIERS USED", value: "18", sub: "concentration: top 3 = 54%" },
-  { label: "BUDGET VS ACTUAL", value: "94%", sub: "$ 265k under budget", pill: "ok" as const },
+  { label: "BUDGET VS ACTUAL", value: "94%", sub: "$ 265k under budget", pill: "ok" },
 ];
 
 type Cat = {
