@@ -5,6 +5,7 @@ import { Beef, Search, Check, Languages, Tag, Pencil, Upload, ImagePlus } from "
 import { Switch } from "@/components/ui/switch";
 import { useAdminCuts, CATEGORY_COLORS, type AdminCutRow, type CutCategory } from "@/hooks/useAdminCuts";
 import EditCutModal from "@/components/admin/EditCutModal";
+import { transformedPublicUrl } from "@/lib/imageOptimization";
 
 const PAGE_SIZE = 25;
 const CATS: ("all" | CutCategory)[] = ["all", "Beef", "Pork", "Poultry", "Ovine"];
