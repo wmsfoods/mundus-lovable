@@ -1125,6 +1125,16 @@
         "yourCounter": "Sua contraoferta",
         "diff": "Dif"
       }
+      ,
+      "bulk": {
+        "label": "Preenchimento rápido",
+        "acceptAll": "Aceitar todos",
+        "meetMiddle": "Encontrar no meio",
+        "plus3": "Lance +3%",
+        "plus5": "Lance +5%",
+        "apply": "Aplicar",
+        "customPlaceholder": "±{{unit}}"
+      }
     },
     "negotiations": {
       "title": "Negociações",
