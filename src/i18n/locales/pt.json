@@ -940,6 +940,67 @@
         "cancelled": "Leilão cancelado"
       }
     },
+    "auctionDetail": {
+      "back": "← Voltar aos leilões",
+      "notFound": "Leilão não encontrado.",
+      "cancelAuction": "Cancelar Leilão",
+      "cancelledToast": "Leilão cancelado",
+      "award": "Adjudicar",
+      "winner": "Vencedor",
+      "viewCuts": "Ver detalhamento dos cortes",
+      "hideCuts": "Ocultar detalhamento",
+      "awardToast": "Leilão adjudicado a {{buyer}}!",
+      "awardedBanner": "Adjudicado a {{buyer}}",
+      "contractIssued": "Contrato emitido — comprador notificado",
+      "inProgress": {
+        "title": "Leilão em andamento",
+        "message": "Este leilão ainda está aberto. Você poderá revisar os lances após o fechamento.",
+        "bidsReceived": "Lances selados recebidos"
+      },
+      "summary": {
+        "totalBids": "Total de lances",
+        "highest": "Maior lance",
+        "lowest": "Menor lance",
+        "reserve": "Preço de reserva",
+        "perFcl": "por FCL"
+      },
+      "col": {
+        "rank": "Pos.",
+        "buyer": "Comprador",
+        "containers": "Contêineres",
+        "totalPerFcl": "Total / FCL",
+        "avgPerKg": "Méd.",
+        "submittedAt": "Enviado",
+        "status": "Status",
+        "action": "Ação",
+        "cut": "Corte",
+        "qty": "Qtd",
+        "bidPerKg": "Lance",
+        "total": "Total"
+      },
+      "bidStatus": {
+        "submitted": "Enviado",
+        "withdrawn": "Retirado",
+        "winning": "Vencedor",
+        "lost": "Perdeu"
+      },
+      "reserveNotMet": {
+        "title": "Nenhum lance atingiu seu preço de reserva",
+        "body": "Reserva: US$ {{reserve}} {{unit}}. Maior lance: US$ {{highest}} {{unit}} ({{gap}}% abaixo).",
+        "awardAnyway": "Adjudicar mesmo assim",
+        "extend": "Estender +24h",
+        "extendedToast": "Leilão estendido por 24 horas",
+        "closeWithout": "Fechar sem adjudicar"
+      },
+      "awardDialog": {
+        "title": "Adjudicar leilão a {{buyer}}?",
+        "subtitle": "Confirme o resumo do lance abaixo antes de adjudicar.",
+        "grandTotal": "Total geral",
+        "notice": "O comprador tem 48 horas para confirmar. Você será notificado.",
+        "cancel": "Cancelar",
+        "confirm": "Adjudicar"
+      }
+    },
     "createAuction": {
       "title": "Criar novo leilão",
       "subtitle": "Lance lacrado · Mercados · Produtos · Preços",
