@@ -1534,13 +1534,19 @@ function SecondaryPriceCell({
   override,
   onOverride,
   onReset,
+  invalid,
+  invalidMsg,
 }: {
   calculated: number | null;
   override?: string;
   onOverride: (v: string) => void;
   onReset: () => void;
+  invalid?: boolean;
+  invalidMsg?: string;
 }) {
   const [editing, setEditing] = useState(false);
+  const errStyle = invalid ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : {};
+  const errTitle = invalid ? invalidMsg : undefined;
 
   if (override !== undefined) {
     return (
@@ -1550,6 +1556,7 @@ function SecondaryPriceCell({
           step="0.01"
           value={override}
           onChange={(e) => onOverride(e.target.value)}
+          title={errTitle}
           style={{
             width: 64,
             padding: "2px 4px",
@@ -1557,6 +1564,7 @@ function SecondaryPriceCell({
             borderRadius: 4,
             fontSize: 12,
             textAlign: "right",
+            ...errStyle,
           }}
         />
         <button
@@ -1591,6 +1599,7 @@ function SecondaryPriceCell({
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           if (e.key === "Escape") setEditing(false);
         }}
+        title={errTitle}
         style={{
           width: 64,
           padding: "2px 4px",
@@ -1598,14 +1607,20 @@ function SecondaryPriceCell({
           borderRadius: 4,
           fontSize: 12,
           textAlign: "right",
+          ...errStyle,
         }}
       />
     );
   }
 
   return (
-    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
-      <span style={{ fontStyle: "italic", color: "var(--fg-muted)" }}>{calculated.toFixed(2)}</span>
+    <span
+      style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}
+      title={errTitle}
+    >
+      <span style={{ fontStyle: "italic", color: invalid ? "#dc2626" : "var(--fg-muted)" }}>
+        {calculated.toFixed(2)}
+      </span>
       <button
         type="button"
         onClick={() => setEditing(true)}
