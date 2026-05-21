@@ -2489,5 +2489,26 @@
     "buyer": "Comprador",
     "supplier": "Fornecedor",
     "admin": "Admin"
+  },
+  "engine": {
+    "expired": "Expirado",
+    "expiresIn": "Expira em",
+    "expiredBanner": "Esta negociação expirou e não pode mais receber respostas.",
+    "finalRound": {
+      "banner": "Rodada Final — esta é a última chance de chegar a um acordo. Itens não resolvidos serão cancelados após esta rodada."
+    },
+    "acceptThisPrice": "Aceitar este preço",
+    "allLocked": "Todos os itens já foram acordados.",
+    "progress": {
+      "itemsAgreed": "Itens acordados",
+      "round": "Rodada",
+      "of": "de"
+    },
+    "deal": {
+      "title": "Negócio fechado! O pedido será criado.",
+      "subtitle": "Total final acordado",
+      "viewOrder": "Ver Pedido",
+      "orderToast": "Criação de pedido em breve"
+    }
   }
 }
