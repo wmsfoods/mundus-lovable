@@ -293,6 +293,7 @@
   grid-template-columns: 1fr 1.3fr;
   gap: 16px;
 }
+.nd-grid > * { min-width: 0; }
 @media (max-width: 1024px) {
   .nd-grid { grid-template-columns: 1fr; }
 }
