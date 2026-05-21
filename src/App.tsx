@@ -62,6 +62,7 @@ import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
+import SupplierRespond from "./pages/public/SupplierRespond.tsx";
 
 const queryClient = new QueryClient();
 
@@ -81,6 +82,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/success" element={<SignupSuccess />} />
             <Route path="/signup/partner" element={<PartnerSignup />} />
+            <Route path="/respond/:token" element={<SupplierRespond />} />
             <Route
               path="/dashboard"
               element={
