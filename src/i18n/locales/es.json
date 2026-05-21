@@ -813,6 +813,44 @@
     }
   },
   "supplier": {
+    "auctions": {
+      "nav": "Subastas",
+      "title": "Mis Subastas",
+      "subtitle": "Cree subastas selladas (sealed-bid) para sus productos",
+      "createCta": "Crear Subasta",
+      "comingSoon": "Próximamente — flujo de creación de subasta",
+      "detailComingSoon": "Detalle de la subasta próximamente",
+      "emptyState": "No hay subastas en este estado.",
+      "filter": {
+        "all": "Todas",
+        "scheduled": "Programadas",
+        "open": "Abiertas",
+        "closed": "Cerradas",
+        "awarded": "Adjudicadas",
+        "cancelled": "Canceladas"
+      },
+      "statusBadge": {
+        "scheduled": "Programada",
+        "open": "En Vivo",
+        "closed": "Cerrada",
+        "awarded": "Adjudicada",
+        "cancelled": "Cancelada"
+      },
+      "card": {
+        "origin": "Origen",
+        "destination": "Destino",
+        "bids_one": "{{count}} oferta",
+        "bids_other": "{{count}} ofertas",
+        "bids": "{{count}} ofertas",
+        "viewAuction": "Ver Subasta",
+        "viewBids": "Ver Ofertas",
+        "windowClosed": "Ventana Cerrada",
+        "awardedBanner": "Adjudicada · {{count}} ofertas recibidas",
+        "opensSoon": "Abre pronto",
+        "manage": "Gestionar",
+        "cancelled": "Subasta cancelada"
+      }
+    },
     "outreach": {
       "navLabel": "Outreach",
       "title": "Outreach por Email",
