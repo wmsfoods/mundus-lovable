@@ -594,6 +594,14 @@
         "belowInitial": "No puedes ofertar por debajo de tu oferta inicial de ${{min}}",
         "summary_one": "{{count}} corte con errores de validación",
         "summary_other": "{{count}} cortes con errores de validación"
+      },
+      "bulk": {
+        "label": "Relleno rápido",
+        "acceptAsking": "Aceptar pedido",
+        "minus5": "Pedido -5%",
+        "minus10": "Pedido -10%",
+        "apply": "Aplicar",
+        "customPlaceholder": "±{{unit}}"
       }
     },
     "counter": {
@@ -605,6 +613,15 @@
       "confirmReject": "¿Seguro que deseas rechazar esta contraoferta?",
       "errors": {
         "belowInitial": "No puedes ofertar por debajo de tu oferta inicial de ${{min}}"
+      },
+      "bulk": {
+        "label": "Relleno rápido",
+        "acceptAll": "Aceptar todos",
+        "meetMiddle": "Encontrarse en el medio",
+        "minus3pct": "Contraoferta -3%",
+        "minus5pct": "Contraoferta -5%",
+        "apply": "Aplicar",
+        "customPlaceholder": "±{{unit}}"
       }
     },
     "orders": {
