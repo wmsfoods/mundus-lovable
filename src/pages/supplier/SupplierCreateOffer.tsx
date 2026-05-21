@@ -10,6 +10,18 @@ import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/h
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Check, Plus, Search as SearchIcon } from "lucide-react";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import {
+  toDisplay,
+  fromDisplay,
+  priceLabel,
+  qtyLabel,
+  weightLabel,
+  containerCapacityKg,
+  fmtWeight,
+  fmtPrice,
+  type WeightUnit,
+} from "@/lib/units";
 
 /* ══════════════════════════════════════════════════════════
    DATA — markets & cuts come from Supabase via useSupplierOfferData
@@ -139,6 +151,16 @@ export default function SupplierCreateOffer() {
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
+  /* Display unit (kg vs lbs). All `cuts`/`nf` state is stored in kg; we only
+     convert at the I/O boundary. */
+  const { unit, setUnit } = useWeightUnit();
+  const wLbl = weightLabel(unit);
+  const pLbl = priceLabel(unit);
+  const qLbl = qtyLabel(unit);
+  const qtyPh = unit === "kg" ? "27000" : "59524";
+  const askPh = unit === "kg" ? "6.40" : "2.90";
+  const floorPh = unit === "kg" ? "5.80" : "2.63";
+
   const { markets: MARKETS, cutsByCategory, loading: dataLoading, error: dataError } = useSupplierOfferData();
   const isMobile = useIsMobile();
   const [moreMktsOpen, setMoreMktsOpen] = useState(false);
@@ -212,7 +234,7 @@ export default function SupplierCreateOffer() {
     }
   }, [selInco, primaryInco]);
 
-  const cap = csize === "40ft" ? 28000 : 13000;
+  const cap = containerCapacityKg(csize);
   const tw = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
   const fp = Math.min((tw / cap) * 100, 100);
   const fc = fp > 95 ? "#16a34a" : fp > 70 ? "#ca8a04" : "var(--p800)";
