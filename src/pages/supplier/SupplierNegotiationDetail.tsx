@@ -53,6 +53,7 @@ function getPerRoundKg(p: NegotiationProduct, type: "bid" | "counter", round: nu
 export default function SupplierNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
+  const { unit } = useWeightUnit();
   const { data } = useNegotiation(id);
   const locale = i18n.language || "en";
 
