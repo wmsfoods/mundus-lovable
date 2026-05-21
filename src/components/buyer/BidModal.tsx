@@ -129,6 +129,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
       if (crErr) throw crErr;
 
+      // Generate a public response token so the supplier can reply via email link
+      // without logging in. Failure here is non-fatal — log but don't break the bid.
+      const { error: tokErr } = await supabase
+        .from("negotiation_tokens")
+        .insert({ negotiation_id: neg.id });
+      if (tokErr) console.warn("token insert failed", tokErr.message);
+
       toast.success(t("buyer.bid.successToast"));
       onOpenChange(false);
       navigate("/buyer/negotiations");
