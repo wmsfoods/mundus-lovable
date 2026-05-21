@@ -1438,6 +1438,99 @@ function PrevRow({ l, v }: { l: string; v: string }) {
   );
 }
 
+/* Cell used for secondary-incoterm Ask/Floor prices in the cuts table.
+   Shows the calculated value in italic + a pencil to override. Once the
+   user overrides, shows an editable input + a reset (↺) button. */
+function SecondaryPriceCell({
+  calculated,
+  override,
+  onOverride,
+  onReset,
+}: {
+  calculated: number | null;
+  override?: string;
+  onOverride: (v: string) => void;
+  onReset: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  if (override !== undefined) {
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
+        <input
+          type="number"
+          step="0.01"
+          value={override}
+          onChange={(e) => onOverride(e.target.value)}
+          style={{
+            width: 64,
+            padding: "2px 4px",
+            border: "1px solid var(--border)",
+            borderRadius: 4,
+            fontSize: 12,
+            textAlign: "right",
+          }}
+        />
+        <button
+          type="button"
+          onClick={onReset}
+          title="Reset to calculated value"
+          aria-label="Reset"
+          style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, color: "var(--fg-muted)", padding: 0 }}
+        >
+          ↺
+        </button>
+      </span>
+    );
+  }
+
+  if (calculated === null) {
+    return <span style={{ color: "#bbb" }}>—</span>;
+  }
+
+  if (editing) {
+    return (
+      <input
+        type="number"
+        step="0.01"
+        autoFocus
+        defaultValue={calculated.toFixed(2)}
+        onBlur={(e) => {
+          setEditing(false);
+          if (e.target.value && parseFloat(e.target.value) !== calculated) onOverride(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+          if (e.key === "Escape") setEditing(false);
+        }}
+        style={{
+          width: 64,
+          padding: "2px 4px",
+          border: "1px solid var(--border)",
+          borderRadius: 4,
+          fontSize: 12,
+          textAlign: "right",
+        }}
+      />
+    );
+  }
+
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
+      <span style={{ fontStyle: "italic", color: "var(--fg-muted)" }}>{calculated.toFixed(2)}</span>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        title="Override price"
+        aria-label="Override"
+        style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 11, color: "var(--fg-muted)", padding: 0 }}
+      >
+        ✎
+      </button>
+    </span>
+  );
+}
+
 function PreviewImages({ images }: { images: { id: string; src: string; label: string }[] }) {
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
