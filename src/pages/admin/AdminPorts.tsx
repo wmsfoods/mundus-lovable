@@ -136,7 +136,7 @@ export default function AdminPorts() {
 
   return (
     <div className="adm-body">
-      <div className="adm-page-header" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+      <div className="adm-page-header adm-ports-header" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <span style={{ width: 36, height: 36, borderRadius: 10, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
             <Ship size={18} />
@@ -149,7 +149,7 @@ export default function AdminPorts() {
         <div style={{ flex: 1 }} />
         <button
           type="button"
-          className="crm-btn-primary"
+          className="crm-btn-primary adm-ports-add-btn"
           onClick={() => setAddOpen(true)}
           style={{ display: "inline-flex", alignItems: "center", gap: 6 }}
         >
@@ -159,14 +159,14 @@ export default function AdminPorts() {
       </div>
 
       {/* stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 12 }}>
+      <div className="adm-ports-stats" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 12 }}>
         <StatCard icon={<Ship size={16} />} label={t("admin.marketplace.ports.stats.total")} value={totalPorts} />
         <StatCard icon={<Check size={16} />} label={t("admin.marketplace.ports.stats.active")} value={activePorts} accent="#16a34a" />
         <StatCard icon={<Globe size={16} />} label={t("admin.marketplace.ports.stats.countries")} value={countriesWithPorts} accent="#8B2252" />
       </div>
 
       {/* toolbar */}
-      <div className="crm-toolbar" style={{ marginTop: 12 }}>
+      <div className="crm-toolbar adm-ports-toolbar" style={{ marginTop: 12 }}>
         <div className="adm-search" style={{ flex: 1 }}>
           <Search size={14} />
           <input
@@ -207,7 +207,7 @@ export default function AdminPorts() {
           {/* bulk action bar */}
           {selectedIds.size > 0 && (
             <div
-              className="adm-panel"
+              className="adm-panel adm-ports-bulkbar"
               style={{
                 marginTop: 12, padding: "10px 12px", display: "flex", alignItems: "center",
                 gap: 10, flexWrap: "wrap", background: "#FFF7ED", borderColor: "#FED7AA",
@@ -313,16 +313,19 @@ export default function AdminPorts() {
 
           {/* mobile cards */}
           <div className="adm-only-mobile adm-cards-stack" style={{ marginTop: 12 }}>
-            <div className="adm-panel" style={{ padding: 10, display: "flex", alignItems: "center", gap: 10 }}>
+            <div className="adm-panel" style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 10 }}>
               <Checkbox
                 checked={pageAllSelected ? true : pageSomeSelected ? "indeterminate" : false}
                 onCheckedChange={togglePageAll}
                 aria-label="Select page"
               />
-              <span style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
+              <span style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)", flex: 1 }}>
                 {pageAllSelected
                   ? t("admin.marketplace.ports.bulk.deselectPage", { defaultValue: "Deselect page" })
                   : t("admin.marketplace.ports.bulk.selectPage", { defaultValue: "Select all on page" })}
+              </span>
+              <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>
+                {showingFrom}–{showingTo} / {filtered.length}
               </span>
             </div>
             {pageRows.map((r) => {
@@ -330,35 +333,45 @@ export default function AdminPorts() {
               return (
                 <div
                   key={r.port_id}
-                  className="adm-panel"
-                  style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", background: isSel ? "#FFF7ED" : undefined }}
+                  className="adm-panel adm-port-card"
+                  style={{ background: isSel ? "#FFF7ED" : undefined }}
                 >
-                  <Checkbox checked={isSel} onCheckedChange={() => toggleSelect(r.port_id)} aria-label={`Select ${r.name}`} />
-                  <span style={{ fontSize: 28, lineHeight: 1 }}>{r.flag_emoji ?? "🏳️"}</span>
-                  <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 6 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8 }}>
-                      <strong style={{ fontSize: 14 }}>{r.name}</strong>
-                      <span className="adm-chip" style={{ fontSize: 11 }}>{r.code ?? "—"}</span>
+                  <div className="adm-port-card__top">
+                    <Checkbox
+                      checked={isSel}
+                      onCheckedChange={() => toggleSelect(r.port_id)}
+                      aria-label={`Select ${r.name}`}
+                    />
+                    <span className="adm-port-card__flag" aria-hidden>{r.flag_emoji ?? "🏳️"}</span>
+                    <div className="adm-port-card__title">
+                      <strong>{r.name}</strong>
+                      <span className="adm-port-card__country">{pickCountry(r, locale)}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>{pickCountry(r, locale)}</div>
+                    <Switch
+                      checked={r.is_active}
+                      disabled={pendingId === r.port_id}
+                      onCheckedChange={(v) => handleToggle(r, !!v)}
+                      aria-label={r.is_active ? "Deactivate" : "Activate"}
+                    />
+                  </div>
+                  <div className="adm-port-card__meta">
+                    <span className="adm-chip">{r.code ?? "—"}</span>
+                    <span
+                      className="adm-chip"
+                      style={
+                        r.is_active
+                          ? { background: "rgba(22,163,74,0.10)", color: "#15803d", borderColor: "rgba(22,163,74,0.25)" }
+                          : { background: "rgba(107,114,128,0.10)", color: "#6b7280", borderColor: "rgba(107,114,128,0.25)" }
+                      }
+                    >
+                      {r.is_active ? t("admin.marketplace.ports.filters.activeOnly") : t("admin.marketplace.ports.filters.inactiveOnly")}
+                    </span>
                     {r.shared_with_country && (
-                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-                        <span className="adm-chip" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D", fontSize: 11 }}>
-                          <Anchor size={10} style={{ marginRight: 3 }} />
-                          {t("admin.marketplace.ports.usedBy", { country: r.shared_with_country })}
-                        </span>
-                      </div>
-                    )}
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 4 }}>
-                      <span style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
-                        {r.is_active ? t("admin.marketplace.ports.filters.activeOnly") : t("admin.marketplace.ports.filters.inactiveOnly")}
+                      <span className="adm-chip" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D" }}>
+                        <Anchor size={10} style={{ marginRight: 3 }} />
+                        {t("admin.marketplace.ports.shared")}
                       </span>
-                      <Switch
-                        checked={r.is_active}
-                        disabled={pendingId === r.port_id}
-                        onCheckedChange={(v) => handleToggle(r, !!v)}
-                      />
-                    </div>
+                    )}
                   </div>
                 </div>
               );
@@ -366,7 +379,7 @@ export default function AdminPorts() {
           </div>
 
           {/* pagination */}
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, fontSize: 12, color: "var(--fg-muted, #6b7280)", flexWrap: "wrap", gap: 8 }}>
+          <div className="adm-ports-pagination" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 12, fontSize: 12, color: "var(--fg-muted, #6b7280)", flexWrap: "wrap", gap: 8 }}>
             <span>{t("admin.marketplace.ports.showing", { from: showingFrom, to: showingTo, total: filtered.length })}</span>
             <div style={{ display: "flex", gap: 6 }}>
               <button type="button" className="crm-btn-outline" disabled={safePage <= 1} onClick={() => setPage((p) => Math.max(1, p - 1))}>
