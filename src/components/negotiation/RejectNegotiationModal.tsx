@@ -73,7 +73,7 @@ export function RejectNegotiationModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[480px]">
+      <DialogContent className="max-w-[480px] sm:rounded-lg max-sm:!max-w-full max-sm:!max-h-[100dvh] max-sm:!h-auto max-sm:!rounded-none max-sm:!m-0">
         <DialogHeader>
           <DialogTitle>{t("negotiation.reject.title", "Reject Negotiation")}</DialogTitle>
         </DialogHeader>
