@@ -9,6 +9,7 @@ import {
 } from "@/components/icons";
 import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
 import { useState } from "react";
+import { BidModal } from "@/components/buyer/BidModal";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -58,6 +59,7 @@ export default function BuyerOfferDetail() {
   const { t } = useTranslation();
   const { offer, loading, error, notFound } = useOffer(id);
   const [moreOpen, setMoreOpen] = useState(false);
+  const [bidOpen, setBidOpen] = useState(false);
 
   if (loading) {
     return (
@@ -91,7 +93,18 @@ export default function BuyerOfferDetail() {
     );
   }
 
-  return <OfferDetailContent offer={offer} navigate={navigate} moreOpen={moreOpen} setMoreOpen={setMoreOpen} />;
+  return (
+    <>
+      <OfferDetailContent
+        offer={offer}
+        navigate={navigate}
+        moreOpen={moreOpen}
+        setMoreOpen={setMoreOpen}
+        onNegotiate={() => setBidOpen(true)}
+      />
+      <BidModal open={bidOpen} onOpenChange={setBidOpen} offer={offer} />
+    </>
+  );
 }
 
 function CrumbsHeader({ title, navigate }: { title: string; navigate: (path: string) => void }) {
@@ -116,11 +129,13 @@ function OfferDetailContent({
   navigate,
   moreOpen,
   setMoreOpen,
+  onNegotiate,
 }: {
   offer: OfferDetailed;
   navigate: (path: string) => void;
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
+  onNegotiate: () => void;
 }) {
   const { t } = useTranslation();
   const marblingLabel = (code: number | null | undefined): string => {
@@ -323,7 +338,7 @@ function OfferDetailContent({
             <button
               type="button"
               className="btn-od btn-od-outline"
-              onClick={() => alert(t("buyer.offerDetail.comingSoonFlow", { action: t("buyer.offerDetail.negotiate") }))}
+              onClick={onNegotiate}
             >
               {t("buyer.offerDetail.negotiate")}
             </button>
