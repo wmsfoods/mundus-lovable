@@ -37,6 +37,7 @@ function fmtMonth(ym: string, locale: string) {
 export default function BuyerRequestDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
+  const { unit } = useWeightUnit();
   const { data } = useBuyerRequest(id);
   const locale = i18n.language || "en";
 
