@@ -714,6 +714,7 @@
     grid-column: 1 / -1;
     min-height: 44px;
     font-size: 14px;
+    order: 1;
   }
   .nd-actions .btn-accept,
   .nd-actions .btn-reject {
@@ -721,6 +722,8 @@
     font-size: 13px;
     padding: 8px 12px;
   }
+  .nd-actions .btn-accept { order: 2; }
+  .nd-actions .btn-reject { order: 3; }
 
   /* Joined supplier card: become normal card on mobile */
   .nd-card--joined {
