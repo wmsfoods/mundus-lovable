@@ -217,7 +217,7 @@ export default function AdminPorts() {
                 {t("admin.marketplace.ports.bulk.selected", { count: selectedIds.size, defaultValue: "{{count}} selected" })}
               </strong>
               {selectedIds.size < filtered.length && (
-                <button type="button" className="crm-btn-outline" onClick={selectAllFiltered}>
+                <button type="button" className="crm-btn-outline adm-bulk-selectall" onClick={selectAllFiltered}>
                   {t("admin.marketplace.ports.bulk.selectAllFiltered", { count: filtered.length, defaultValue: "Select all {{count}} filtered" })}
                 </button>
               )}
@@ -242,7 +242,7 @@ export default function AdminPorts() {
                 <X size={14} style={{ marginRight: 4 }} />
                 {t("admin.marketplace.ports.bulk.deactivate", { defaultValue: "Deactivate" })}
               </button>
-              <button type="button" className="crm-btn-outline" onClick={clearSelection}>
+              <button type="button" className="crm-btn-outline adm-bulk-clear" onClick={clearSelection}>
                 {t("admin.marketplace.ports.bulk.clear", { defaultValue: "Clear" })}
               </button>
             </div>
