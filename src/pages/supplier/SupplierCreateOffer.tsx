@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useRef } from "react";
+import { Fragment, useCallback, useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -86,6 +86,35 @@ type IncoExtras = {
   dapCity?: string;
 };
 
+/* Visual badge tokens for each incoterm pill in tables/pricing UI */
+const INCO_BADGE: Record<string, { bg: string; fg: string }> = {
+  FOB: { bg: "#FAEEDA", fg: "#633806" },
+  CFR: { bg: "#E6F1FB", fg: "#0C447C" },
+  CIF: { bg: "#FBEAF0", fg: "#72243E" },
+  EXW: { bg: "#EEF2FF", fg: "#3730A3" },
+  DDP: { bg: "#ECFDF5", fg: "#065F46" },
+  DAP: { bg: "#FEF3C7", fg: "#92400E" },
+};
+
+/* Convert a price expressed in the primary incoterm into the secondary one.
+   `adj` is the per-secondary delta the supplier provides; `insurance` is
+   the CIF insurance cost (US$/kg) supplied via incoExtras.cifInsurance. */
+function deriveSecondary(
+  primaryPrice: number,
+  primary: string,
+  secondary: string,
+  adj: number,
+  insurance: number
+): number {
+  if (primary === secondary) return primaryPrice;
+  if (primary === "CIF" && secondary === "CFR") return primaryPrice - insurance;
+  if (primary === "CFR" && secondary === "CIF") return primaryPrice + insurance;
+  if ((primary === "CFR" || primary === "CIF") && secondary === "FOB") return primaryPrice - adj;
+  if (primary === "FOB" && secondary === "CFR") return primaryPrice + adj;
+  if (primary === "FOB" && secondary === "CIF") return primaryPrice + adj + insurance;
+  return primaryPrice + adj;
+}
+
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
   qty: "", ask: "", floor: "", notes: "",
@@ -113,6 +142,17 @@ export default function SupplierCreateOffer() {
 
   const [selInco, setSelInco] = useState<string[]>([]);
   const [incoExtras, setIncoExtras] = useState<IncoExtras>({});
+
+  /* Multi-incoterm pricing */
+  const [primaryInco, setPrimaryInco] = useState<string>("");
+  const [incoAdjustments, setIncoAdjustments] = useState<Record<string, string>>({});
+  const [cutIncoOverrides, setCutIncoOverrides] = useState<
+    Record<string, Record<string, { ask?: string; floor?: string }>>
+  >({});
+
+  /* Uniform freight across markets */
+  const [uniformFreight, setUniformFreight] = useState(false);
+  const [uniformFreightValue, setUniformFreightValue] = useState("");
 
   const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
   const [certifications, setCertifications] = useState<string[]>([]);
@@ -147,6 +187,21 @@ export default function SupplierCreateOffer() {
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
   }, [dataError]);
+
+  /* Auto-pick the primary pricing incoterm: prefer CFR, then CIF, else first */
+  useEffect(() => {
+    if (selInco.length === 0) {
+      if (primaryInco) setPrimaryInco("");
+      return;
+    }
+    if (!selInco.includes(primaryInco)) {
+      const preferred =
+        selInco.find((i) => i === "CFR") ||
+        selInco.find((i) => i === "CIF") ||
+        selInco[0];
+      setPrimaryInco(preferred);
+    }
+  }, [selInco, primaryInco]);
 
   const cap = csize === "40ft" ? 28000 : 13000;
   const tw = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
@@ -225,6 +280,25 @@ export default function SupplierCreateOffer() {
     r.readAsDataURL(file);
   }, []);
 
+  /* Override / reset secondary-incoterm prices for a single cut */
+  const setCutOverride = useCallback(
+    (cutId: string, inco: string, field: "ask" | "floor", value: string | undefined) => {
+      setCutIncoOverrides((prev) => {
+        const next = { ...prev };
+        const forCut = { ...(next[cutId] || {}) };
+        const forInco = { ...(forCut[inco] || {}) };
+        if (value === undefined || value === "") delete forInco[field];
+        else forInco[field] = value;
+        if (!forInco.ask && !forInco.floor) delete forCut[inco];
+        else forCut[inco] = forInco;
+        if (Object.keys(forCut).length === 0) delete next[cutId];
+        else next[cutId] = forCut;
+        return next;
+      });
+    },
+    []
+  );
+
   /* AI Import (mock) */
   const simulateAiImport = useCallback(() => {
     setAiProcessing(true);
@@ -264,6 +338,11 @@ export default function SupplierCreateOffer() {
     window.setTimeout(() => el.classList.remove("cov4-pulse"), 1400);
   }, []);
   const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
+
+  /* Secondary incoterms (everything in selInco except the primary one) */
+  const secondaryIncos = selInco.filter((i) => i !== primaryInco);
+  const multiInco = selInco.length > 1 && !!primaryInco;
+  const cifInsuranceNum = parseFloat(incoExtras.cifInsurance || "0") || 0;
 
   const handleSaveDraft = () => toast("Draft saved");
 
@@ -415,6 +494,82 @@ export default function SupplierCreateOffer() {
             })()}
           </div>
 
+          {/* ── Uniform freight toggle (only meaningful with 2+ markets) ── */}
+          {selMarkets.length >= 2 && (
+            <div
+              style={{
+                margin: "8px 0 4px",
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: uniformFreight ? "#E6F1FB" : "#F9FAFB",
+                border: `1px solid ${uniformFreight ? "#BDD7F0" : "#E5E7EB"}`,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+                transition: "background .15s, border-color .15s",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1, minWidth: 220 }}
+                onClick={() => setUniformFreight((v) => !v)}
+              >
+                <span style={{ fontSize: 12, fontWeight: 600 }}>
+                  🌐 Same freight for all markets and ports
+                </span>
+                <span
+                  role="switch"
+                  aria-checked={uniformFreight}
+                  style={{
+                    width: 36,
+                    height: 20,
+                    background: uniformFreight ? "var(--p800)" : "#d1d5db",
+                    borderRadius: 999,
+                    position: "relative",
+                    transition: "background .15s",
+                    flexShrink: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 2,
+                      left: uniformFreight ? 18 : 2,
+                      width: 16,
+                      height: 16,
+                      background: "#fff",
+                      borderRadius: "50%",
+                      transition: "left .15s",
+                      boxShadow: "0 1px 2px rgba(0,0,0,.2)",
+                    }}
+                  />
+                </span>
+              </div>
+              {uniformFreight && (
+                <>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {selMarkets.map((m) => (
+                      <span
+                        key={m.id}
+                        style={{
+                          padding: "2px 8px",
+                          borderRadius: 999,
+                          background: "#fff",
+                          border: "1px solid #BDD7F0",
+                          fontSize: 11,
+                          color: "#0C447C",
+                        }}
+                      >
+                        {m.f} {m.n}
+                      </span>
+                    ))}
+                  </div>
+                  <PriceInput value={uniformFreightValue} onChange={setUniformFreightValue} />
+                </>
+              )}
+            </div>
+          )}
+
           {/* Market cards */}
           {selMarkets.map((m) => {
             const c = mktCfg[m.id];
@@ -437,7 +592,7 @@ export default function SupplierCreateOffer() {
                     );
                   })}
                 </div>
-                {c.sp.length > 1 && (
+                {!uniformFreight && c.sp.length > 1 && (
                   <div className="cov4-ftgl">
                     <span>Same freight all ports?</span>
                     <div className="cov4-tgl cov4-tgl-sm">
@@ -448,7 +603,7 @@ export default function SupplierCreateOffer() {
                     </div>
                   </div>
                 )}
-                {(c.sm || c.sp.length <= 1) ? (
+                {uniformFreight ? null : (c.sm || c.sp.length <= 1) ? (
                   <div className="cov4-fr-row">
                     <label className="cov4-fr-lbl">Freight</label>
                     <PriceInput value={c.gf} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], gf: v } }))} />
@@ -467,7 +622,7 @@ export default function SupplierCreateOffer() {
                     })}
                   </div>
                 )}
-                {(c.sm || c.sp.length <= 1) && c.sp[0] && (
+                {!uniformFreight && (c.sm || c.sp.length <= 1) && c.sp[0] && (
                   <MarketplaceSourceTag src={routeSources[`${m.id}-${c.sp[0]}`]} via={tm("via")} />
                 )}
               </div>
@@ -551,6 +706,112 @@ export default function SupplierCreateOffer() {
               <div className="cov4-inco-extra">
                 <span className="cov4-inco-ex-lbl">📦 DAP Delivery place</span>
                 <input className="cov4-text-in" placeholder="Delivery address or terminal..." value={incoExtras.dapCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, dapCity: e.target.value }))} />
+              </div>
+            )}
+
+            {/* ── Multi-incoterm pricing: primary selector + per-secondary adjustment ── */}
+            {selInco.length > 1 && (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: 12,
+                  border: "1px solid #E5E7EB",
+                  background: "#F9FAFB",
+                  borderRadius: 8,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 600 }}>
+                  Primary pricing incoterm
+                  <span style={{ marginLeft: 6, color: "var(--fg-muted)", fontWeight: 400 }}>
+                    — Your prices are based on which incoterm?
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+                  {selInco.map((ic) => {
+                    const desc =
+                      ic === "FOB" ? "my price is at origin, no freight"
+                      : ic === "CFR" ? "my price already includes freight"
+                      : ic === "CIF" ? "my price includes freight + insurance"
+                      : ic;
+                    return (
+                      <label
+                        key={ic}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}
+                      >
+                        <input
+                          type="radio"
+                          name="primaryInco"
+                          checked={primaryInco === ic}
+                          onChange={() => setPrimaryInco(ic)}
+                        />
+                        <span
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            background: INCO_BADGE[ic]?.bg ?? "#eee",
+                            color: INCO_BADGE[ic]?.fg ?? "#333",
+                            fontWeight: 600,
+                            fontSize: 11,
+                          }}
+                        >
+                          {ic}
+                        </span>
+                        <span style={{ color: "var(--fg-muted)" }}>({desc})</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {selInco
+                  .filter((s) => s !== primaryInco)
+                  .map((s) => {
+                    const primaryIsFreight = primaryInco === "CFR" || primaryInco === "CIF";
+                    const op =
+                      primaryIsFreight && s === "FOB" ? "minus"
+                      : primaryInco === "FOB" && (s === "CFR" || s === "CIF") ? "plus"
+                      : "delta";
+                    const icon = s === "FOB" ? "📦" : s === "CFR" || s === "CIF" ? "🚢" : "🔁";
+                    const opLabel = op === "minus" ? "minus" : op === "plus" ? "plus" : "±";
+                    return (
+                      <div
+                        key={s}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontSize: 12,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span>{icon}</span>
+                        <span
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            background: INCO_BADGE[s]?.bg ?? "#eee",
+                            color: INCO_BADGE[s]?.fg ?? "#333",
+                            fontWeight: 600,
+                            fontSize: 11,
+                          }}
+                        >
+                          {s}
+                        </span>
+                        <span style={{ fontWeight: 600 }}>pricing</span>
+                        <span>
+                          — {s} = {primaryInco} {opLabel}
+                        </span>
+                        <PriceInput
+                          value={incoAdjustments[s] || ""}
+                          onChange={(v) => setIncoAdjustments((p) => ({ ...p, [s]: v }))}
+                        />
+                        <span style={{ color: "var(--fg-muted)" }}>
+                          US$/kg — Applied to all cuts. You can override individual prices in the table.
+                        </span>
+                      </div>
+                    );
+                  })}
               </div>
             )}
           </div>
@@ -698,8 +959,30 @@ export default function SupplierCreateOffer() {
                   <th>Grading</th>
                   <th>Aging</th>
                   <th className="num">Qty (kg)</th>
-                  <th className="num">Ask $/kg</th>
-                  <th className="num">Floor $/kg</th>
+                  <th className="num">
+                    Ask $/kg
+                    {multiInco && (
+                      <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
+                    )}
+                  </th>
+                  <th className="num">
+                    Floor $/kg
+                    {multiInco && (
+                      <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
+                    )}
+                  </th>
+                  {multiInco && secondaryIncos.map((s) => (
+                    <Fragment key={`h-${s}`}>
+                      <th className="num">
+                        Ask $/kg
+                        <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
+                      </th>
+                      <th className="num">
+                        Floor $/kg
+                        <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
+                      </th>
+                    </Fragment>
+                  ))}
                   <th>Notes</th>
                   <th style={{ width: 28 }} aria-label="actions" />
                 </tr>
@@ -723,6 +1006,36 @@ export default function SupplierCreateOffer() {
                     <td className="num">{Number(c.qty).toLocaleString()}</td>
                     <td className="num">{Number(c.ask).toFixed(2)}</td>
                     <td className="num cov4-floor">{c.floor ? Number(c.floor).toFixed(2) : "—"}</td>
+                    {multiInco && secondaryIncos.map((s) => {
+                      const ovr = cutIncoOverrides[c.id]?.[s];
+                      const adj = parseFloat(incoAdjustments[s] || "0") || 0;
+                      const askBase = parseFloat(c.ask) || 0;
+                      const floorBase = c.floor ? parseFloat(c.floor) : NaN;
+                      const calcAsk = deriveSecondary(askBase, primaryInco, s, adj, cifInsuranceNum);
+                      const calcFloor = isNaN(floorBase)
+                        ? null
+                        : deriveSecondary(floorBase, primaryInco, s, adj, cifInsuranceNum);
+                      return (
+                        <Fragment key={`${c.id}-${s}`}>
+                          <td className="num">
+                            <SecondaryPriceCell
+                              calculated={calcAsk}
+                              override={ovr?.ask}
+                              onOverride={(v) => setCutOverride(c.id, s, "ask", v)}
+                              onReset={() => setCutOverride(c.id, s, "ask", undefined)}
+                            />
+                          </td>
+                          <td className="num">
+                            <SecondaryPriceCell
+                              calculated={calcFloor}
+                              override={ovr?.floor}
+                              onOverride={(v) => setCutOverride(c.id, s, "floor", v)}
+                              onReset={() => setCutOverride(c.id, s, "floor", undefined)}
+                            />
+                          </td>
+                        </Fragment>
+                      );
+                    })}
                     <td><span className="cov4-notes-cell">{c.notes || "—"}</span></td>
                     <td>
                       <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label="Remove cut">✕</button>
@@ -818,6 +1131,12 @@ export default function SupplierCreateOffer() {
                     <td><input type="number" placeholder="27000" value={nf.qty} onChange={(e) => setNf((p) => ({ ...p, qty: e.target.value }))} /></td>
                     <td><input type="number" step="0.01" placeholder="6.40" value={nf.ask} onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))} /></td>
                     <td><input type="number" step="0.01" placeholder="5.80" value={nf.floor} onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))} /></td>
+                    {multiInco && secondaryIncos.map((s) => (
+                      <Fragment key={`add-${s}`}>
+                        <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
+                        <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
+                      </Fragment>
+                    ))}
                     <td><input type="text" placeholder="Notes..." value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
@@ -880,6 +1199,26 @@ export default function SupplierCreateOffer() {
                   US$ {totalPriceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <span className="cov4-prev-price-sub">per FCL</span>
+                {primaryInco && (
+                  <span
+                    style={{
+                      marginLeft: 6,
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      background: INCO_BADGE[primaryInco]?.bg ?? "#eee",
+                      color: INCO_BADGE[primaryInco]?.fg ?? "#333",
+                      fontSize: 10,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {primaryInco}
+                  </span>
+                )}
+                {multiInco && (
+                  <span style={{ display: "block", marginTop: 4, fontSize: 11, color: "var(--fg-muted)" }}>
+                    Also available as {secondaryIncos.join(", ")}
+                  </span>
+                )}
               </div>
               <div className="cov4-prev-dist">
                 <div className="cov4-prev-dist-t">Distribution</div>
@@ -1116,6 +1455,99 @@ function PrevRow({ l, v }: { l: string; v: string }) {
       <span className="cov4-prev-row-l">{l}</span>
       <span className="cov4-prev-row-v">{v}</span>
     </div>
+  );
+}
+
+/* Cell used for secondary-incoterm Ask/Floor prices in the cuts table.
+   Shows the calculated value in italic + a pencil to override. Once the
+   user overrides, shows an editable input + a reset (↺) button. */
+function SecondaryPriceCell({
+  calculated,
+  override,
+  onOverride,
+  onReset,
+}: {
+  calculated: number | null;
+  override?: string;
+  onOverride: (v: string) => void;
+  onReset: () => void;
+}) {
+  const [editing, setEditing] = useState(false);
+
+  if (override !== undefined) {
+    return (
+      <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
+        <input
+          type="number"
+          step="0.01"
+          value={override}
+          onChange={(e) => onOverride(e.target.value)}
+          style={{
+            width: 64,
+            padding: "2px 4px",
+            border: "1px solid var(--border)",
+            borderRadius: 4,
+            fontSize: 12,
+            textAlign: "right",
+          }}
+        />
+        <button
+          type="button"
+          onClick={onReset}
+          title="Reset to calculated value"
+          aria-label="Reset"
+          style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, color: "var(--fg-muted)", padding: 0 }}
+        >
+          ↺
+        </button>
+      </span>
+    );
+  }
+
+  if (calculated === null) {
+    return <span style={{ color: "#bbb" }}>—</span>;
+  }
+
+  if (editing) {
+    return (
+      <input
+        type="number"
+        step="0.01"
+        autoFocus
+        defaultValue={calculated.toFixed(2)}
+        onBlur={(e) => {
+          setEditing(false);
+          if (e.target.value && parseFloat(e.target.value) !== calculated) onOverride(e.target.value);
+        }}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+          if (e.key === "Escape") setEditing(false);
+        }}
+        style={{
+          width: 64,
+          padding: "2px 4px",
+          border: "1px solid var(--border)",
+          borderRadius: 4,
+          fontSize: 12,
+          textAlign: "right",
+        }}
+      />
+    );
+  }
+
+  return (
+    <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
+      <span style={{ fontStyle: "italic", color: "var(--fg-muted)" }}>{calculated.toFixed(2)}</span>
+      <button
+        type="button"
+        onClick={() => setEditing(true)}
+        title="Override price"
+        aria-label="Override"
+        style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 11, color: "var(--fg-muted)", padding: 0 }}
+      >
+        ✎
+      </button>
+    </span>
   );
 }
 
