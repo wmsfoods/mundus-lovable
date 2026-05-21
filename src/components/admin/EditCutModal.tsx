@@ -6,6 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { CATEGORY_COLORS, LOCALE_OPTIONS, type AdminCutRow, type CutCategory } from "@/hooks/useAdminCuts";
+import { transformedPublicUrl } from "@/lib/imageOptimization";
 
 const CATS: CutCategory[] = ["Beef", "Pork", "Poultry", "Ovine"];
 
@@ -134,7 +135,15 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
               >
                 {imageUrl ? (
                   <>
-                    <img src={imageUrl} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <img
+                      src={transformedPublicUrl(imageUrl, { width: 320, height: 320, quality: 80 })}
+                      alt={name}
+                      width={140}
+                      height={140}
+                      loading="lazy"
+                      decoding="async"
+                      style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                    />
                     {dragOver && (
                       <div style={{ position: "absolute", inset: 0, background: "rgba(99,102,241,0.25)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 12, fontWeight: 600 }}>
                         {t("admin.marketplace.cuts.modal.dropHere", { defaultValue: "Drop to upload" })}
