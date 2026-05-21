@@ -17,7 +17,10 @@ import {
 } from "@/hooks/useBuyerNegotiations";
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
-import { acceptNegotiation, rejectNegotiation } from "@/components/supplier/CounterOfferActions";
+import { acceptNegotiation } from "@/components/supplier/CounterOfferActions";
+import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiationModal";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
@@ -52,9 +55,6 @@ function fmtDateShort(iso: string, locale: string) {
 function fmtKg(v: number) {
   return new Intl.NumberFormat("de-DE").format(v);
 }
-function fmtLb(v: number) {
-  return new Intl.NumberFormat("en-US").format(v);
-}
 
 function getPerRoundKg(p: BuyerNegotiationProduct, type: "bid" | "counter", round: number): number | undefined {
   const key = `${type}R${round}UsdKg` as keyof BuyerNegotiationProduct;
@@ -68,6 +68,8 @@ export default function BuyerNegotiationDetail() {
   const isReal = isUuid(id);
   const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
   const [counterOpen, setCounterOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const { unit } = useWeightUnit();
   const locale = i18n.language || "en";
 
   if (!data) {
@@ -104,11 +106,9 @@ export default function BuyerNegotiationDetail() {
       toast.success(t("buyer.negotiations.detail.toast.accepted"));
     }
   };
-  const handleReject = async () => {
+  const handleReject = () => {
     if (isReal && rawNeg) {
-      if (!window.confirm(t("buyer.counter.confirmReject"))) return;
-      const ok = await rejectNegotiation(rawNeg);
-      if (ok) refetch();
+      setRejectOpen(true);
     } else {
       toast(t("buyer.negotiations.detail.toast.rejected"));
     }
@@ -375,7 +375,7 @@ export default function BuyerNegotiationDetail() {
                 <thead>
                   <tr>
                     <th>{t("buyer.negotiations.detail.col.product")}</th>
-                    <th>{t("buyer.negotiations.detail.col.qtyLb")}</th>
+                    <th>{t("buyer.negotiations.detail.col.qty", { unit: weightLabel(unit), defaultValue: "Qty ({{unit}})" })}</th>
                     <th>{t("buyer.negotiations.detail.col.asking")}</th>
                     {Array.from({ length: maxRoundShown }, (_, i) => (
                       <Fragment key={`h-${i}`}>
@@ -392,8 +392,8 @@ export default function BuyerNegotiationDetail() {
                         <span className="product-name">{p.name}</span>
                         <span className="product-pack">{p.pack}</span>
                       </td>
-                      <td>{fmtLb(p.qtyLb)}</td>
-                      <td>${p.askingUsdKg.toFixed(2)}</td>
+                      <td>{fmtWeight(p.qtyLb / LB_PER_KG, unit)}</td>
+                      <td>${fmtPrice(p.askingUsdKg, unit)}</td>
                       {Array.from({ length: maxRoundShown }, (_, i) => {
                         const round = i + 1;
                         const bidV = getPerRoundKg(p, "bid", round);
@@ -401,8 +401,8 @@ export default function BuyerNegotiationDetail() {
                       const isCurrentCounter = round === maxRoundShown;
                         return (
                           <Fragment key={`v-${i}`}>
-                          <td className="col-bid">{bidV != null ? `$${bidV.toFixed(2)}` : "—"}</td>
-                          <td className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}>{cntV != null ? `$${cntV.toFixed(2)}` : "—"}</td>
+                          <td className="col-bid">{bidV != null ? `$${fmtPrice(bidV, unit)}` : "—"}</td>
+                          <td className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}>{cntV != null ? `$${fmtPrice(cntV, unit)}` : "—"}</td>
                           </Fragment>
                         );
                       })}
@@ -422,6 +422,14 @@ export default function BuyerNegotiationDetail() {
           negotiation={rawNeg}
           perspective="buyer"
           onSubmitted={() => refetch()}
+        />
+      )}
+      {isReal && rawNeg && (
+        <RejectNegotiationModal
+          open={rejectOpen}
+          onOpenChange={setRejectOpen}
+          negotiation={rawNeg}
+          onRejected={() => refetch()}
         />
       )}
     </>

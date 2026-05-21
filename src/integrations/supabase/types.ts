@@ -2892,6 +2892,8 @@ export type Database = {
           offer_id: string
           order_id: string | null
           port_id: string | null
+          rejection_notes: string | null
+          rejection_reason: string | null
           settled_round_proposal_id: string | null
           settled_total_value: number | null
           status: string
@@ -2914,6 +2916,8 @@ export type Database = {
           offer_id: string
           order_id?: string | null
           port_id?: string | null
+          rejection_notes?: string | null
+          rejection_reason?: string | null
           settled_round_proposal_id?: string | null
           settled_total_value?: number | null
           status?: string
@@ -2936,6 +2940,8 @@ export type Database = {
           offer_id?: string
           order_id?: string | null
           port_id?: string | null
+          rejection_notes?: string | null
+          rejection_reason?: string | null
           settled_round_proposal_id?: string | null
           settled_total_value?: number | null
           status?: string
