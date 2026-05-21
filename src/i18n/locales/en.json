@@ -799,6 +799,47 @@
   },
   "supplier": {
     "outreach": {
+      "_placeholder": false
+    },
+    "auctions": {
+      "nav": "Auctions",
+      "title": "My Auctions",
+      "subtitle": "Create sealed-bid auctions for your products",
+      "createCta": "Create Auction",
+      "comingSoon": "Coming soon — Create Auction flow",
+      "detailComingSoon": "Auction detail coming soon",
+      "emptyState": "No auctions in this status.",
+      "filter": {
+        "all": "All",
+        "scheduled": "Scheduled",
+        "open": "Open",
+        "closed": "Closed",
+        "awarded": "Awarded",
+        "cancelled": "Cancelled"
+      },
+      "statusBadge": {
+        "scheduled": "Scheduled",
+        "open": "Live",
+        "closed": "Closed",
+        "awarded": "Awarded",
+        "cancelled": "Cancelled"
+      },
+      "card": {
+        "origin": "Origin",
+        "destination": "Destination",
+        "bids_one": "{{count}} bid",
+        "bids_other": "{{count}} bids",
+        "bids": "{{count}} bids",
+        "viewAuction": "View Auction",
+        "viewBids": "View Bids",
+        "windowClosed": "Window Closed",
+        "awardedBanner": "Awarded · {{count}} bids received",
+        "opensSoon": "Opens soon",
+        "manage": "Manage",
+        "cancelled": "Auction cancelled"
+      }
+    },
+    "_outreachShim": {
       "navLabel": "Outreach",
       "title": "Email Outreach",
       "subtitle": "Send your active offers to matching contacts.",
