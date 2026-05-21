@@ -636,6 +636,21 @@
         "success": "Invitación enviada (mock)"
       }
     },
+    "share": {
+      "title": "Comparte esta oferta con el proveedor",
+      "subtitle": "El proveedor puede revisar y responder con este enlace seguro — sin iniciar sesión.",
+      "subtitleUsed": "Este enlace ya fue usado por el proveedor.",
+      "loading": "Preparando el enlace…",
+      "copy": "Copiar enlace",
+      "copied": "¡Copiado!",
+      "supplierEmail": "Correo del proveedor (opcional)",
+      "saveEmail": "Guardar",
+      "emailSaved": "Correo guardado",
+      "sendEmail": "Enviar correo",
+      "mailSubject": "Mundus Trade — Nueva oferta esperando tu respuesta",
+      "mailBody": "Hola,\n\nHas recibido una nueva oferta de {{buyer}} en Mundus Trade.\n\nRevisa y responde aquí:\n{{link}}\n\nGracias,\nEquipo Mundus Trade",
+      "expiresAt": "El enlace expira el {{date}}"
+    },
     "negotiations": {
       "title": "Negociaciones",
       "searchPlaceholder": "Buscar ID / proveedor / producto / origen...",
@@ -804,6 +819,8 @@
         "priority": "Ordenar: Prioridad de estado"
       },
       "counts": "{{offers}} ofertas · {{bids}} pujas",
+      "emailSent": "Correo enviado",
+      "emailSentTooltip": "Se generó un enlace de respuesta para esta negociación",
       "chips": {
         "all": "Todas",
         "action_required": "Acción requerida",
