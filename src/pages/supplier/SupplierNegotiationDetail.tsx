@@ -15,6 +15,8 @@ import {
   type NegotiationDetail,
   type NegotiationProduct,
 } from "@/hooks/useNegotiations";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, weightLabel } from "@/lib/units";
 
 function fmtUsd(v: number, fractionDigits = 0) {
   return `$${new Intl.NumberFormat("en-US", {
