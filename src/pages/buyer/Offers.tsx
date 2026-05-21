@@ -15,7 +15,8 @@ import { ProteinFilter, type ProteinKey } from "@/components/marketplace/Protein
 import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProteins";
 import { AuctionCard } from "@/components/marketplace/AuctionCard";
 import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
-import { MOCK_BUYER_AUCTIONS } from "@/data/mockAuctions";
+import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
+import { MOCK_BUYER_AUCTIONS, type MockAuction } from "@/data/mockAuctions";
 import { toast } from "sonner";
 import { Gavel } from "lucide-react";
 
@@ -239,6 +240,7 @@ export default function BuyerOffers() {
   const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "priceAsc" | "priceDesc" | "volumeDesc">("newest");
   const [auctionsOnly, setAuctionsOnly] = useState(false);
+  const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
 
   // Keep URL in sync when user changes the protein pill.
   useEffect(() => {
@@ -438,7 +440,7 @@ export default function BuyerOffers() {
                   <AuctionCard
                     key={`auction-${a.id}`}
                     auction={a}
-                    onPlaceBid={() => toast(t("buyer.auctions.placeBidToast"))}
+                    onPlaceBid={() => setBidAuction(a)}
                   />
                 );
               } else if (ri < regulars.length) {
@@ -456,7 +458,7 @@ export default function BuyerOffers() {
                   <AuctionCard
                     key={`auction-${a.id}`}
                     auction={a}
-                    onPlaceBid={() => toast(t("buyer.auctions.placeBidToast"))}
+                    onPlaceBid={() => setBidAuction(a)}
                   />
                 );
               }
@@ -465,6 +467,13 @@ export default function BuyerOffers() {
             return nodes;
           })()}
         </div>
+      )}
+      {bidAuction && (
+        <AuctionBidModal
+          open={!!bidAuction}
+          onOpenChange={(o) => { if (!o) setBidAuction(null); }}
+          auction={bidAuction}
+        />
       )}
     </>
   );
