@@ -214,6 +214,58 @@
     }
   },
   "buyer": {
+    "auctions": {
+      "filter": "Subastas",
+      "badge": "SUBASTA",
+      "placeBid": "Hacer Oferta",
+      "placeBidToast": "Flujo de oferta próximamente",
+      "windowClosed": "Ventana Cerrada",
+      "awardedBanner": "Adjudicada · contrato emitido",
+      "statusBadge": {
+        "live": "EN VIVO",
+        "closed": "CERRADA",
+        "awarded": "ADJUDICADA",
+        "scheduled": "PROGRAMADA"
+      },
+      "card": {
+        "origin": "Origen",
+        "destination": "Destino",
+        "incoterm": "Incoterm",
+        "shipment": "Embarque",
+        "closesIn": "Cierra en",
+        "bids_one": "{{count}} oferta",
+        "bids_other": "{{count}} ofertas",
+        "bids": "{{count}} ofertas"
+      },
+      "howItWorks": {
+        "link": "¿Cómo funcionan las subastas?",
+        "title": "Cómo funcionan las Subastas Selladas",
+        "whatIs": {
+          "title": "¿Qué es una subasta?",
+          "body": "Los proveedores publican productos con una ventana de pujas. Usted hace una oferta sellada — nadie ve su precio."
+        },
+        "sealed": {
+          "title": "Oferta sellada",
+          "body": "Su oferta es privada. Otros compradores no la pueden ver. El proveedor ve todas las ofertas solo después de que se cierre la ventana."
+        },
+        "timing": {
+          "title": "Tiempo",
+          "body": "Cada subasta tiene una ventana fija (p. ej., abre lunes, cierra miércoles). Haga su oferta antes de que termine el tiempo."
+        },
+        "oneBid": {
+          "title": "Una oferta, una oportunidad",
+          "body": "No puede modificar su oferta una vez enviada. Si hubo un error, puede retirarla — pero hay un cooldown de 4 horas antes de poder reingresar."
+        },
+        "award": {
+          "title": "Adjudicación",
+          "body": "Después del cierre, el proveedor revisa todas las ofertas y elige un ganador. Será notificado del resultado."
+        },
+        "results": {
+          "title": "Resultados",
+          "body": "Después de la adjudicación, podrá ver cómo se comparó su oferta con la ganadora (en $/kg y %)."
+        }
+      }
+    },
     "procurement": {
       "nav": "Inteligencia de Compras",
       "groupLabel": "Insights",
