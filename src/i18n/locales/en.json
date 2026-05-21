@@ -314,7 +314,9 @@
           "payment": "Payment terms",
           "notes": "Description / Notes"
         },
-        "placeholders": { "title": "e.g. Ribeye 7-9 lb for Q3" },
+        "placeholders": {
+          "title": "e.g. Ribeye 7-9 lb for Q3"
+        },
         "err": {
           "title": "Title is required",
           "cuts": "Select at least one cut",
@@ -324,7 +326,9 @@
           "port": "Select a destination port",
           "shipment": "Select a shipment month"
         },
-        "toast": { "created": "Request created (mock)" }
+        "toast": {
+          "created": "Request created (mock)"
+        }
       }
     },
     "home": {
@@ -684,6 +688,10 @@
         "yesterday": "yesterday",
         "daysAgo": "{{n}}d"
       }
+    },
+    "marketplace": {
+      "nav": "Marketplace",
+      "title": "Marketplace"
     }
   },
   "supplier": {
