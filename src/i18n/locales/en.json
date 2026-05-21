@@ -923,6 +923,67 @@
         "cancelled": "Auction cancelled"
       }
     },
+    "auctionDetail": {
+      "back": "← Back to auctions",
+      "notFound": "Auction not found.",
+      "cancelAuction": "Cancel Auction",
+      "cancelledToast": "Auction cancelled",
+      "award": "Award",
+      "winner": "Winner",
+      "viewCuts": "View cut breakdown",
+      "hideCuts": "Hide cut breakdown",
+      "awardToast": "Auction awarded to {{buyer}}!",
+      "awardedBanner": "Awarded to {{buyer}}",
+      "contractIssued": "Contract issued — buyer notified",
+      "inProgress": {
+        "title": "Auction in progress",
+        "message": "This auction is still open. You'll be able to review bids after it closes.",
+        "bidsReceived": "Sealed bids received"
+      },
+      "summary": {
+        "totalBids": "Total bids",
+        "highest": "Highest bid",
+        "lowest": "Lowest bid",
+        "reserve": "Reserve price",
+        "perFcl": "per FCL"
+      },
+      "col": {
+        "rank": "Rank",
+        "buyer": "Buyer",
+        "containers": "Containers",
+        "totalPerFcl": "Total / FCL",
+        "avgPerKg": "Avg",
+        "submittedAt": "Submitted",
+        "status": "Status",
+        "action": "Action",
+        "cut": "Cut",
+        "qty": "Qty",
+        "bidPerKg": "Bid",
+        "total": "Total"
+      },
+      "bidStatus": {
+        "submitted": "Submitted",
+        "withdrawn": "Withdrawn",
+        "winning": "Winning",
+        "lost": "Lost"
+      },
+      "reserveNotMet": {
+        "title": "No bid met your reserve price",
+        "body": "Reserve: US$ {{reserve}} {{unit}}. Highest bid: US$ {{highest}} {{unit}} ({{gap}}% below).",
+        "awardAnyway": "Award anyway",
+        "extend": "Extend +24h",
+        "extendedToast": "Auction extended by 24 hours",
+        "closeWithout": "Close without awarding"
+      },
+      "awardDialog": {
+        "title": "Award auction to {{buyer}}?",
+        "subtitle": "Confirm the bid summary below before awarding.",
+        "grandTotal": "Grand total",
+        "notice": "The buyer has 48 hours to confirm. You'll be notified.",
+        "cancel": "Cancel",
+        "confirm": "Award"
+      }
+    },
     "createAuction": {
       "title": "Create new auction",
       "subtitle": "Sealed-bid · Markets · Products · Pricing",
