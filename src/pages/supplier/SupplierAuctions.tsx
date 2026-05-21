@@ -1,8 +1,7 @@
 import { useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { toast } from "sonner";
 import { Gavel } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { PlusIcon, FlagSVG, ArrowRightIcon } from "@/components/icons";
 import { AuctionCountdown } from "@/components/marketplace/AuctionCountdown";
@@ -195,7 +194,7 @@ export default function SupplierAuctions() {
             <AuctionRowCard
               key={a.id}
               a={a}
-              onOpen={() => toast(`${t("supplier.auctions.detailComingSoon")} — ${a.oppNumber}`)}
+              onOpen={() => navigate(`/supplier/auctions/${a.id}`)}
               t={t}
             />
           ))}

@@ -938,6 +938,67 @@
         "cancelled": "Subasta cancelada"
       }
     },
+    "auctionDetail": {
+      "back": "← Volver a subastas",
+      "notFound": "Subasta no encontrada.",
+      "cancelAuction": "Cancelar Subasta",
+      "cancelledToast": "Subasta cancelada",
+      "award": "Adjudicar",
+      "winner": "Ganador",
+      "viewCuts": "Ver desglose de cortes",
+      "hideCuts": "Ocultar desglose",
+      "awardToast": "¡Subasta adjudicada a {{buyer}}!",
+      "awardedBanner": "Adjudicada a {{buyer}}",
+      "contractIssued": "Contrato emitido — comprador notificado",
+      "inProgress": {
+        "title": "Subasta en curso",
+        "message": "Esta subasta sigue abierta. Podrás revisar las ofertas después del cierre.",
+        "bidsReceived": "Ofertas selladas recibidas"
+      },
+      "summary": {
+        "totalBids": "Total de ofertas",
+        "highest": "Oferta más alta",
+        "lowest": "Oferta más baja",
+        "reserve": "Precio de reserva",
+        "perFcl": "por FCL"
+      },
+      "col": {
+        "rank": "Pos.",
+        "buyer": "Comprador",
+        "containers": "Contenedores",
+        "totalPerFcl": "Total / FCL",
+        "avgPerKg": "Prom.",
+        "submittedAt": "Enviado",
+        "status": "Estado",
+        "action": "Acción",
+        "cut": "Corte",
+        "qty": "Cant.",
+        "bidPerKg": "Oferta",
+        "total": "Total"
+      },
+      "bidStatus": {
+        "submitted": "Enviada",
+        "withdrawn": "Retirada",
+        "winning": "Ganadora",
+        "lost": "Perdida"
+      },
+      "reserveNotMet": {
+        "title": "Ninguna oferta alcanzó tu precio de reserva",
+        "body": "Reserva: US$ {{reserve}} {{unit}}. Oferta más alta: US$ {{highest}} {{unit}} ({{gap}}% por debajo).",
+        "awardAnyway": "Adjudicar de todos modos",
+        "extend": "Extender +24h",
+        "extendedToast": "Subasta extendida por 24 horas",
+        "closeWithout": "Cerrar sin adjudicar"
+      },
+      "awardDialog": {
+        "title": "¿Adjudicar subasta a {{buyer}}?",
+        "subtitle": "Confirma el resumen de la oferta antes de adjudicar.",
+        "grandTotal": "Total general",
+        "notice": "El comprador tiene 48 horas para confirmar. Serás notificado.",
+        "cancel": "Cancelar",
+        "confirm": "Adjudicar"
+      }
+    },
     "createAuction": {
       "title": "Crear nueva subasta",
       "subtitle": "Oferta sellada · Mercados · Productos · Precios",
