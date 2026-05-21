@@ -293,6 +293,7 @@
   grid-template-columns: 1fr 1.3fr;
   gap: 16px;
 }
+.nd-grid > * { min-width: 0; }
 @media (max-width: 1024px) {
   .nd-grid { grid-template-columns: 1fr; }
 }
@@ -626,28 +627,48 @@
 
 @media (max-width: 640px) {
   .nd-header {
-    flex-direction: column;
-    gap: 12px;
-    padding: 16px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 14px;
+    align-items: center;
   }
-  .nd-header .nd-avatar { width: 36px; height: 36px; font-size: 16px; }
-  .nd-header h1 { font-size: 16px; }
-  .nd-header .nd-h-right { width: 100%; justify-content: flex-start; }
+  .nd-header .nd-avatar { width: 36px; height: 36px; font-size: 16px; border-radius: 8px; }
+  .nd-header .nd-h-text { flex: 1 1 0; min-width: 0; }
+  .nd-header h1 { font-size: 16px; line-height: 1.25; }
+  .nd-header .nd-sub { font-size: 11.5px; }
+  .nd-header .nd-h-right {
+    flex: 1 0 100%;
+    justify-content: flex-start;
+    gap: 6px;
+  }
 
   .nd-meta-chips {
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
-    padding-bottom: 4px;
+    padding: 0 24px 4px 0;
     scrollbar-width: thin;
+    position: relative;
+    scroll-snap-type: x proximity;
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
   }
-  .nd-meta-chips .chip { flex-shrink: 0; white-space: nowrap; }
+  .nd-meta-chips .chip {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 5px 10px;
+    scroll-snap-align: start;
+  }
 
   .nd-timeline-flow {
     overflow-x: auto;
     flex-wrap: nowrap;
     -webkit-overflow-scrolling: touch;
     padding-bottom: 4px;
+    mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
+    -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 24px), transparent);
   }
   .nd-timeline-flow .tl-pill {
     flex-shrink: 0;
@@ -655,10 +676,77 @@
     font-size: 11px;
     padding: 5px 10px;
   }
+  .nd-timeline-flow .tl-sep { font-size: 12px; }
 
-  .nd-card { padding: 14px; margin-bottom: 12px; }
-  .nd-stat-value { font-size: 18px; }
+  .nd-card { padding: 12px; margin-bottom: 10px; }
 
-  .nd-buyer-info dl { grid-template-columns: 1fr; gap: 6px; }
-  .nd-buyer-info dd { text-align: left; margin-bottom: 8px; }
+  .nd-card-head { flex-wrap: wrap; gap: 6px; }
+  .nd-card-head .nd-updated { width: 100%; text-align: left; }
+
+  /* Stats: 2 cols + supplier counter full-width */
+  .nd-stats { grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .nd-stat { padding: 10px; }
+  .nd-stat-label { font-size: 10px; margin-bottom: 4px; }
+  .nd-stat-value { font-size: 16px; }
+  .nd-stat--full { grid-column: 1 / -1; }
+  .nd-stat--full .nd-stat-value { font-size: 20px; }
+
+  /* Gap bar slimmer */
+  .nd-gap-bar { height: 5px; }
+  .nd-gap-bar::after { width: 12px; height: 12px; }
+  .nd-gap-labels { font-size: 10px; margin-bottom: 12px; }
+
+  /* Sticky action bar inside the card */
+  .nd-actions {
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+    padding: 10px 0;
+    padding-bottom: max(10px, env(safe-area-inset-bottom));
+    background: #fff;
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.04);
+  }
+  .nd-actions .btn-counter {
+    grid-column: 1 / -1;
+    min-height: 44px;
+    font-size: 14px;
+    order: 1;
+  }
+  .nd-actions .btn-accept,
+  .nd-actions .btn-reject {
+    min-height: 42px;
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+  .nd-actions .btn-accept { order: 2; }
+  .nd-actions .btn-reject { order: 3; }
+
+  /* Joined supplier card: become normal card on mobile */
+  .nd-card--joined {
+    margin-top: 0;
+    border-top-left-radius: var(--radius-md);
+    border-top-right-radius: var(--radius-md);
+    border-top: 1px solid var(--border);
+  }
+
+  .nd-buyer-info dl { grid-template-columns: 1fr 1fr; gap: 6px 10px; }
+  .nd-buyer-info dt { font-size: 11px; }
+  .nd-buyer-info dd { text-align: right; font-size: 12px; }
+  .nd-buyer-info dt,
+  .nd-buyer-info dd {
+    padding-bottom: 6px;
+    border-bottom: 1px dashed #f1f1f4;
+  }
+  .nd-buyer-info dl > :nth-last-child(-n+2) { border-bottom: none; padding-bottom: 0; }
+
+  /* Price table tighter */
+  .nd-price-table { font-size: 10.5px; }
+  .nd-price-table th,
+  .nd-price-table td { padding: 6px 4px; min-width: 60px; }
+  .nd-price-table th:first-child,
+  .nd-price-table td:first-child { min-width: 110px; }
 }
