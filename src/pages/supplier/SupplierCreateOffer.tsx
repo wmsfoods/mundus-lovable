@@ -415,9 +415,151 @@ export default function SupplierCreateOffer() {
     setMlOpen(false);
   }, [tm, MARKETS]);
 
-  const handlePublish = () => {
-    if (!canPublish) return;
-    toast.success("Offer ready to publish (mock)");
+  const [publishing, setPublishing] = useState(false);
+  const handlePublish = async () => {
+    if (!canPublish || publishing) return;
+    setPublishing(true);
+    const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
+    try {
+      // Derive shipment month/year (next calendar month if not specified)
+      const now = new Date();
+      const shipDate = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+      const shipment_month = shipDate.getMonth() + 1;
+      const shipment_year = shipDate.getFullYear();
+
+      // Total FCL from kg / container capacity
+      const totalKg = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
+      const totalFcl = Math.max(1, Math.ceil(totalKg / cap));
+
+      // Supplier name (fallback)
+      let supplierName = "Mundus Supplier";
+      const { data: supplierRow } = await supabase
+        .from("companies").select("name").eq("id", MOCK_SUPPLIER_ID).maybeSingle();
+      if (supplierRow?.name) supplierName = supplierRow.name;
+
+      // 1. Create offer
+      const { data: offer, error: offerErr } = await supabase
+        .from("offers")
+        .insert({
+          supplier_id: MOCK_SUPPLIER_ID,
+          supplier_name: supplierName,
+          status: "active",
+          origin_country: "Brazil",
+          origin_port: "Santos (BRSSZ)",
+          shipment_month,
+          shipment_year,
+          payment_terms: payTerm,
+          container_size: csize,
+          total_fcl: totalFcl,
+          is_halal: certifications.includes("Halal"),
+          is_kosher: certifications.includes("Kosher"),
+        })
+        .select("id, offer_number")
+        .single();
+      if (offerErr || !offer) throw offerErr ?? new Error("offer insert failed");
+
+      // 2. Resolve/create customer_products per cut, then insert offer_items
+      const itemsRows: Array<Record<string, unknown>> = [];
+      for (const c of cuts) {
+        if (!c.cutId) continue;
+        const qty = parseFloat(c.qty) || 0;
+        const ask = parseFloat(c.ask) || 0;
+        const floor = parseFloat(c.floor);
+        const floorVal = Number.isFinite(floor) && floor > 0 ? floor : ask;
+        if (qty <= 0 || ask <= 0) continue;
+
+        // find or create customer_product
+        const { data: existing } = await supabase
+          .from("customer_products")
+          .select("id")
+          .eq("company_id", MOCK_SUPPLIER_ID)
+          .eq("standard_product_id", c.cutId)
+          .maybeSingle();
+        let customerProductId = existing?.id;
+        if (!customerProductId) {
+          const { data: created, error: cpErr } = await supabase
+            .from("customer_products")
+            .insert({
+              company_id: MOCK_SUPPLIER_ID,
+              standard_product_id: c.cutId,
+              name: c.cut,
+              is_active: true,
+            })
+            .select("id").single();
+          if (cpErr || !created) throw cpErr ?? new Error("customer_products insert failed");
+          customerProductId = created.id;
+        }
+        itemsRows.push({
+          offer_id: offer.id,
+          customer_product_id: customerProductId,
+          amount: qty,
+          price: ask,
+          minimum_price: floorVal,
+          minimum_amount: qty,
+          maximum_amount: qty,
+          condition: temp,
+          aging_method: c.ag === "None" ? null : c.ag,
+        });
+      }
+      if (itemsRows.length === 0) throw new Error("Add at least one cut with quantity and price");
+      const { error: itemsErr } = await supabase.from("offer_items").insert(itemsRows);
+      if (itemsErr) throw itemsErr;
+
+      // 3. offer_allowed_incoterms
+      const allowed = (selInco.length ? selInco : (primaryInco ? [primaryInco] : []))
+        .filter((x) => ["CIF", "CFR", "FOB", "EXW", "FDB"].includes(x));
+      if (allowed.length > 0) {
+        const { error: incErr } = await supabase.from("offer_allowed_incoterms")
+          .insert(allowed.map((it) => ({ offer_id: offer.id, incoterm_type: it })));
+        if (incErr) throw incErr;
+      }
+
+      // 4. offer_markets — need markets.id (lookup by country_id == selMarkets[i].id)
+      if (selMarkets.length > 0) {
+        const countryIds = selMarkets.map((m) => m.id);
+        const { data: mktRows, error: mktErr } = await supabase
+          .from("markets")
+          .select("id, country_id")
+          .in("country_id", countryIds);
+        if (mktErr) throw mktErr;
+        const byCountry = new Map((mktRows ?? []).map((r) => [r.country_id, r.id]));
+        const mktInserts = countryIds
+          .map((cid) => byCountry.get(cid))
+          .filter((v): v is string => !!v)
+          .map((market_id) => ({ offer_id: offer.id, market_id }));
+        if (mktInserts.length > 0) {
+          const { error: omErr } = await supabase.from("offer_markets").insert(mktInserts);
+          if (omErr) throw omErr;
+        }
+      }
+
+      // 5. freight_options per port
+      const freightInserts: Array<{ offer_id: string; port_id: string; cost: number; insurance: number }> = [];
+      const insuranceVal = parseFloat(incoExtras.cifInsurance ?? "") || 0;
+      for (const m of selMarkets) {
+        const cfg = mktCfg[m.id];
+        if (!cfg) continue;
+        for (const pid of cfg.sp) {
+          const rawFreight = uniformFreight
+            ? uniformFreightValue
+            : (cfg.sm || cfg.sp.length <= 1) ? cfg.gf : (cfg.pf[pid] ?? "");
+          const cost = parseFloat(rawFreight) || 0;
+          freightInserts.push({ offer_id: offer.id, port_id: pid, cost, insurance: insuranceVal });
+        }
+      }
+      if (freightInserts.length > 0) {
+        const { error: frErr } = await supabase.from("freight_options").insert(freightInserts);
+        if (frErr) throw frErr;
+      }
+
+      toast.success(`Offer #${offer.offer_number} published successfully!`);
+      navigate("/supplier/offers");
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed to publish offer";
+      toast.error(msg);
+    } finally {
+      setPublishing(false);
+    }
   };
   const handleCancel = () => {
     if (confirm("Discard this offer?")) navigate("/supplier/offers");
