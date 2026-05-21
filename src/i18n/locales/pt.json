@@ -214,6 +214,58 @@
     }
   },
   "buyer": {
+    "auctions": {
+      "filter": "Leilões",
+      "badge": "LEILÃO",
+      "placeBid": "Dar Lance",
+      "placeBidToast": "Fluxo de lance em breve",
+      "windowClosed": "Janela Encerrada",
+      "awardedBanner": "Adjudicado · contrato emitido",
+      "statusBadge": {
+        "live": "AO VIVO",
+        "closed": "ENCERRADO",
+        "awarded": "ADJUDICADO",
+        "scheduled": "AGENDADO"
+      },
+      "card": {
+        "origin": "Origem",
+        "destination": "Destino",
+        "incoterm": "Incoterm",
+        "shipment": "Embarque",
+        "closesIn": "Encerra em",
+        "bids_one": "{{count}} lance",
+        "bids_other": "{{count}} lances",
+        "bids": "{{count}} lances"
+      },
+      "howItWorks": {
+        "link": "Como funcionam os leilões?",
+        "title": "Como funcionam os Leilões Selados",
+        "whatIs": {
+          "title": "O que é um leilão?",
+          "body": "Fornecedores publicam produtos com uma janela de lances. Você dá um lance selado — ninguém vê seu preço."
+        },
+        "sealed": {
+          "title": "Lance selado",
+          "body": "Seu lance é privado. Outros compradores não o veem. O fornecedor vê todos os lances apenas depois que a janela encerra."
+        },
+        "timing": {
+          "title": "Tempo",
+          "body": "Cada leilão tem uma janela fixa (ex.: abre segunda, encerra quarta). Dê seu lance antes do tempo acabar."
+        },
+        "oneBid": {
+          "title": "Um lance, uma chance",
+          "body": "Você não pode modificar seu lance após enviado. Se houve erro, você pode retirá-lo — mas há um cooldown de 4 horas antes de reentrar."
+        },
+        "award": {
+          "title": "Adjudicação",
+          "body": "Após o encerramento, o fornecedor revisa todos os lances e escolhe um vencedor. Você será notificado do resultado."
+        },
+        "results": {
+          "title": "Resultados",
+          "body": "Após a adjudicação, você verá como seu lance se comparou ao vencedor (em $/kg e %)."
+        }
+      }
+    },
     "procurement": {
       "nav": "Inteligência de Compras",
       "groupLabel": "Insights",
