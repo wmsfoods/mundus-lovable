@@ -54,6 +54,7 @@ import SupplierOffers from "./pages/supplier/Offers.tsx";
 import SupplierAuctions from "./pages/supplier/SupplierAuctions.tsx";
 import SupplierCreateOffer from "./pages/supplier/SupplierCreateOffer.tsx";
 import SupplierCreateAuction from "./pages/supplier/SupplierCreateAuction.tsx";
+import SupplierAuctionDetail from "./pages/supplier/SupplierAuctionDetail.tsx";
 import SupplierOfferDetail from "./pages/supplier/OfferDetail.tsx";
 import SupplierRequests from "./pages/supplier/Requests.tsx";
 import SupplierRequestDetail from "./pages/supplier/RequestDetail.tsx";
@@ -134,6 +135,7 @@ const App = () => (
               <Route path="offers" element={<SupplierOffers />} />
               <Route path="auctions" element={<SupplierAuctions />} />
               <Route path="auctions/create" element={<SupplierCreateAuction />} />
+              <Route path="auctions/:id" element={<SupplierAuctionDetail />} />
               <Route path="offers/new" element={<SupplierCreateOffer />} />
               <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="requests" element={<SupplierRequests />} />
