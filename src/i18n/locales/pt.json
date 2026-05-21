@@ -2922,5 +2922,31 @@
       "viewOrder": "Ver Pedido",
       "orderToast": "Criação de pedido em breve"
     }
+  },
+  "filters": {
+    "searchPlaceholder": "Buscar por ID, produto, empresa, porto…",
+    "searchEllipsis": "Buscar…",
+    "filters": "Filtros",
+    "advanced": "Filtros avançados",
+    "apply": "Aplicar",
+    "clear": "Limpar",
+    "clearAll": "Limpar tudo",
+    "all": "Todos",
+    "any": "Qualquer",
+    "nSelected": "{{count}} selecionados",
+    "noOptions": "Nenhuma opção",
+    "dealId": "ID do Deal",
+    "dealIdPlaceholder": "ex. 0000045",
+    "product": "Produto",
+    "buyer": "Comprador",
+    "supplier": "Fornecedor",
+    "origin": "Origem",
+    "destination": "Destino",
+    "originPort": "Porto de origem",
+    "destinationPort": "Porto de destino",
+    "status": "Status",
+    "dateFrom": "Data de",
+    "dateTo": "Data até",
+    "noResults": "Nenhum resultado corresponde aos filtros"
   }
 }
