@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ClipboardIcon, SearchIcon, PlusIcon } from "@/components/icons";
 import NewRequestModal from "@/components/buyer/NewRequestModal";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, weightLabel } from "@/lib/units";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import {
@@ -37,6 +39,7 @@ export default function BuyerRequests() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { data, counts } = useBuyerRequests();
+  const { unit } = useWeightUnit();
   const locale = i18n.language || "en";
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
@@ -182,7 +185,7 @@ export default function BuyerRequests() {
                     </div>
                   </td>
                   <td>${r.targetPricePerKgUsd.toFixed(2)}</td>
-                  <td>{fmtKg(r.targetVolumeKg)} kg</td>
+                  <td>{fmtWeight(r.targetVolumeKg, unit)} {weightLabel(unit)}</td>
                   <td>{fmtMonth(r.shipmentMonth, locale)}</td>
                   <td>
                     <span className={`req-offer-badge ${r.offers.length === 0 ? "is-empty" : ""}`.trim()}>

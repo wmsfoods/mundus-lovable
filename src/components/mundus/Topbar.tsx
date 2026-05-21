@@ -12,6 +12,7 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { Logo } from "@/components/Logo";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
 
 type TopbarProps = {
   onMenuClick?: () => void;
@@ -26,6 +27,7 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
   const isMobile = useIsMobileShell();
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement | null>(null);
+  const { unit, toggle: toggleUnit } = useWeightUnit();
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -136,9 +138,17 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
       </div>}
       {!isMobile && <div className="tb-divider" />}
       {!isMobile && (
-        <button className="tb-item" type="button">
-          {t("shell.unit")}
-          <ChevronDownIcon size={14} />
+        <button
+          className="tb-item"
+          type="button"
+          onClick={toggleUnit}
+          aria-label={t("shell.unitToggle", { defaultValue: "Toggle weight unit" })}
+          title={t("shell.unitToggle", { defaultValue: "Toggle weight unit" })}
+          style={{ gap: 6 }}
+        >
+          <span style={{ fontWeight: unit === "kg" ? 700 : 400, opacity: unit === "kg" ? 1 : 0.55 }}>kg</span>
+          <span style={{ opacity: 0.4 }}>↔</span>
+          <span style={{ fontWeight: unit === "lbs" ? 700 : 400, opacity: unit === "lbs" ? 1 : 0.55 }}>lbs</span>
         </button>
       )}
       <button className="tb-bell" type="button" aria-label={t("shell.notifications")}>

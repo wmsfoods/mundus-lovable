@@ -15,6 +15,8 @@ import {
   type NegotiationDetail,
   type NegotiationProduct,
 } from "@/hooks/useNegotiations";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, weightLabel } from "@/lib/units";
 
 function fmtUsd(v: number, fractionDigits = 0) {
   return `$${new Intl.NumberFormat("en-US", {
@@ -51,6 +53,7 @@ function getPerRoundKg(p: NegotiationProduct, type: "bid" | "counter", round: nu
 export default function SupplierNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
+  const { unit } = useWeightUnit();
   const { data } = useNegotiation(id);
   const locale = i18n.language || "en";
 
@@ -144,7 +147,7 @@ export default function SupplierNegotiationDetail() {
         </span>
         <span className="chip">
           <span className="chip-label">{t("supplier.negotiations.detail.meta.weight")}:</span>
-          <span className="chip-value">{fmtKg(d.totalWeightKg)} kg</span>
+          <span className="chip-value">{fmtWeight(d.totalWeightKg, unit)} {weightLabel(unit)}</span>
         </span>
       </div>
 
@@ -248,7 +251,7 @@ export default function SupplierNegotiationDetail() {
               <dt>{t("supplier.negotiations.detail.buyer.avgReplyTime")}</dt>
               <dd>{t("supplier.negotiations.detail.buyer.avgReplyDays", { days: d.avgReplyDays })}</dd>
               <dt>{t("supplier.negotiations.detail.buyer.fclsWeight")}</dt>
-              <dd>{d.fclCount} · {fmtKg(d.totalWeightKg)} kg</dd>
+              <dd>{d.fclCount} · {fmtWeight(d.totalWeightKg, unit)} {weightLabel(unit)}</dd>
               <dt>{t("supplier.negotiations.detail.buyer.valuePerFcl")}</dt>
               <dd>${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(d.valuePerFclUsd)}</dd>
               <dt>{t("supplier.negotiations.detail.buyer.movement")}</dt>

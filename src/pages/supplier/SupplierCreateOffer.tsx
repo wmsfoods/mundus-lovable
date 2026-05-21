@@ -10,6 +10,18 @@ import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/h
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { Check, Plus, Search as SearchIcon } from "lucide-react";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import {
+  toDisplay,
+  fromDisplay,
+  priceLabel,
+  qtyLabel,
+  weightLabel,
+  containerCapacityKg,
+  fmtWeight,
+  fmtPrice,
+  type WeightUnit,
+} from "@/lib/units";
 
 /* ══════════════════════════════════════════════════════════
    DATA — markets & cuts come from Supabase via useSupplierOfferData
@@ -139,6 +151,16 @@ export default function SupplierCreateOffer() {
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
+  /* Display unit (kg vs lbs). All `cuts`/`nf` state is stored in kg; we only
+     convert at the I/O boundary. */
+  const { unit, setUnit } = useWeightUnit();
+  const wLbl = weightLabel(unit);
+  const pLbl = priceLabel(unit);
+  const qLbl = qtyLabel(unit);
+  const qtyPh = unit === "kg" ? "27000" : "59524";
+  const askPh = unit === "kg" ? "6.40" : "2.90";
+  const floorPh = unit === "kg" ? "5.80" : "2.63";
+
   const { markets: MARKETS, cutsByCategory, loading: dataLoading, error: dataError } = useSupplierOfferData();
   const isMobile = useIsMobile();
   const [moreMktsOpen, setMoreMktsOpen] = useState(false);
@@ -212,7 +234,7 @@ export default function SupplierCreateOffer() {
     }
   }, [selInco, primaryInco]);
 
-  const cap = csize === "40ft" ? 28000 : 13000;
+  const cap = containerCapacityKg(csize);
   const tw = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
   const fp = Math.min((tw / cap) * 100, 100);
   const fc = fp > 95 ? "#16a34a" : fp > 70 ? "#ca8a04" : "var(--p800)";
@@ -412,6 +434,18 @@ export default function SupplierCreateOffer() {
         </div>
         <div className="cov4-hdr-r">
           <span className="cov4-orig-badge">🇧🇷 Brazil · Santos (BRSSZ)</span>
+          <div className="cov4-tgl" role="group" aria-label="Unit">
+            {(["kg", "lbs"] as const).map((u) => (
+              <button
+                key={u}
+                type="button"
+                className={unit === u ? "on" : ""}
+                onClick={() => setUnit(u)}
+              >
+                {u}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             className={`cov4-preview-btn ${showPreview ? "on" : ""}`}
@@ -820,7 +854,7 @@ export default function SupplierCreateOffer() {
                           onChange={(v) => setIncoAdjustments((p) => ({ ...p, [s]: v }))}
                         />
                         <span style={{ color: "var(--fg-muted)" }}>
-                          US$/kg — Applied to all cuts. You can override individual prices in the table.
+                          US{pLbl} — Applied to all cuts. You can override individual prices in the table.
                         </span>
                       </div>
                     );
@@ -951,7 +985,7 @@ export default function SupplierCreateOffer() {
             <div className="cov4-cap-h">
               <span className="cov4-cap-l">Container capacity</span>
               <span className="cov4-cap-v">
-                {tw.toLocaleString()} / {cap.toLocaleString()} kg
+                {fmtWeight(tw, unit)} / {fmtWeight(cap, unit)} {wLbl}
                 <span className="cov4-cap-p" style={{ color: fc }}>({fp.toFixed(0)}%)</span>
               </span>
             </div>
@@ -971,15 +1005,15 @@ export default function SupplierCreateOffer() {
                   <th>Packaging</th>
                   <th>Grading</th>
                   <th>Aging</th>
-                  <th className="num">Qty (kg)</th>
+                  <th className="num">{qLbl}</th>
                   <th className="num">
-                    Ask $/kg
+                    Ask {pLbl}
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
                   </th>
                   <th className="num">
-                    Floor $/kg
+                    Floor {pLbl}
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
@@ -987,11 +1021,11 @@ export default function SupplierCreateOffer() {
                   {multiInco && secondaryIncos.map((s) => (
                     <Fragment key={`h-${s}`}>
                       <th className="num">
-                        Ask $/kg
+                        Ask {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                       <th className="num">
-                        Floor $/kg
+                        Floor {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                     </Fragment>
@@ -1016,9 +1050,9 @@ export default function SupplierCreateOffer() {
                     <td><span className="cov4-tag">{c.pkg}</span></td>
                     <td><span className="cov4-tag">{c.gr !== "Not Classified" ? c.gr : "—"}</span></td>
                     <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
-                    <td className="num">{Number(c.qty).toLocaleString()}</td>
-                    <td className="num">{Number(c.ask).toFixed(2)}</td>
-                    <td className="num cov4-floor">{c.floor ? Number(c.floor).toFixed(2) : "—"}</td>
+                    <td className="num">{fmtWeight(Number(c.qty) || 0, unit)}</td>
+                    <td className="num">{fmtPrice(Number(c.ask) || 0, unit)}</td>
+                    <td className="num cov4-floor">{c.floor ? fmtPrice(Number(c.floor) || 0, unit) : "—"}</td>
                     {multiInco && secondaryIncos.map((s) => {
                       const ovr = cutIncoOverrides[c.id]?.[s];
                       const adj = parseFloat(incoAdjustments[s] || "0") || 0;
@@ -1041,6 +1075,7 @@ export default function SupplierCreateOffer() {
                               onReset={() => setCutOverride(c.id, s, "ask", undefined)}
                               invalid={!pair.ok}
                               invalidMsg="Asking must be ≥ floor"
+                              unit={unit}
                             />
                           </td>
                           <td className="num">
@@ -1051,6 +1086,7 @@ export default function SupplierCreateOffer() {
                               onReset={() => setCutOverride(c.id, s, "floor", undefined)}
                               invalid={!pair.ok}
                               invalidMsg="Floor must be ≤ asking"
+                              unit={unit}
                             />
                           </td>
                         </Fragment>
@@ -1148,7 +1184,25 @@ export default function SupplierCreateOffer() {
                     <td><select value={nf.pkg} onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}>{PKGS.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><input type="number" placeholder="27000" value={nf.qty} onChange={(e) => setNf((p) => ({ ...p, qty: e.target.value }))} /></td>
+                    <td>
+                      <input
+                        type="number"
+                        placeholder={qtyPh}
+                        value={
+                          nf.qty === ""
+                            ? ""
+                            : unit === "kg"
+                              ? nf.qty
+                              : toDisplay(parseFloat(nf.qty) || 0, "weight", unit).toFixed(0)
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v === "") return setNf((p) => ({ ...p, qty: "" }));
+                          const kg = fromDisplay(parseFloat(v) || 0, "weight", unit);
+                          setNf((p) => ({ ...p, qty: String(kg) }));
+                        }}
+                      />
+                    </td>
                     <td>
                       {(() => {
                         const v = validatePricePair(nf.ask, nf.floor);
@@ -1158,9 +1212,20 @@ export default function SupplierCreateOffer() {
                             <input
                               type="number"
                               step="0.01"
-                              placeholder="6.40"
-                              value={nf.ask}
-                              onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))}
+                              placeholder={askPh}
+                              value={
+                                nf.ask === ""
+                                  ? ""
+                                  : unit === "kg"
+                                    ? nf.ask
+                                    : toDisplay(parseFloat(nf.ask) || 0, "price", unit).toFixed(2)
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") return setNf((p) => ({ ...p, ask: "" }));
+                                const kg = fromDisplay(parseFloat(val) || 0, "price", unit);
+                                setNf((p) => ({ ...p, ask: String(kg) }));
+                              }}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
                               title={bad ? v.msg : undefined}
                             />
@@ -1180,9 +1245,20 @@ export default function SupplierCreateOffer() {
                             <input
                               type="number"
                               step="0.01"
-                              placeholder="5.80"
-                              value={nf.floor}
-                              onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))}
+                              placeholder={floorPh}
+                              value={
+                                nf.floor === ""
+                                  ? ""
+                                  : unit === "kg"
+                                    ? nf.floor
+                                    : toDisplay(parseFloat(nf.floor) || 0, "price", unit).toFixed(2)
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") return setNf((p) => ({ ...p, floor: "" }));
+                                const kg = fromDisplay(parseFloat(val) || 0, "price", unit);
+                                setNf((p) => ({ ...p, floor: String(kg) }));
+                              }}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
                               title={bad ? "Floor must be ≤ asking" : undefined}
                             />
@@ -1247,7 +1323,7 @@ export default function SupplierCreateOffer() {
                 <PrevRow l="Destination" v={selMarkets.map((m) => m.f + " " + m.n).join(", ") || "—"} />
                 <PrevRow l="Incoterm" v={selInco.join(", ")} />
                 <PrevRow l="Temperature" v={temp} />
-                <PrevRow l="Container" v={`${csize} · ${tw.toLocaleString()} kg`} />
+                <PrevRow l="Container" v={`${csize} · ${fmtWeight(tw, unit)} ${wLbl}`} />
                 {certifications.length > 0 && <PrevRow l="Certifications" v={certifications.join(", ")} />}
               </div>
               {cuts.length > 0 && (
@@ -1256,7 +1332,7 @@ export default function SupplierCreateOffer() {
                   {cuts.map((c) => (
                     <div key={c.id} className="cov4-prev-cut-row">
                       <span>{c.cat} {c.cut}</span>
-                      <span>US$ {Number(c.ask).toFixed(2)}/kg</span>
+                      <span>US$ {fmtPrice(Number(c.ask) || 0, unit)}/{wLbl}</span>
                     </div>
                   ))}
                 </div>
@@ -1351,7 +1427,7 @@ export default function SupplierCreateOffer() {
                 ))}
               </ul>
               <div className="cov4-ready-foot">
-                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {tw.toLocaleString()} kg
+                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {fmtWeight(tw, unit)} {wLbl}
               </div>
             </PopoverContent>
           </Popover>
@@ -1536,6 +1612,7 @@ function SecondaryPriceCell({
   onReset,
   invalid,
   invalidMsg,
+  unit = "kg",
 }: {
   calculated: number | null;
   override?: string;
@@ -1543,19 +1620,28 @@ function SecondaryPriceCell({
   onReset: () => void;
   invalid?: boolean;
   invalidMsg?: string;
+  unit?: WeightUnit;
 }) {
   const [editing, setEditing] = useState(false);
   const errStyle = invalid ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : {};
   const errTitle = invalid ? invalidMsg : undefined;
 
   if (override !== undefined) {
+    // `override` is stored in kg (raw). Show it in display unit and convert back on edit.
+    const overrideDisplay =
+      override === "" ? "" : toDisplay(parseFloat(override) || 0, "price", unit).toFixed(2);
     return (
       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
         <input
           type="number"
           step="0.01"
-          value={override}
-          onChange={(e) => onOverride(e.target.value)}
+          value={overrideDisplay}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "") return onOverride("");
+            const kg = fromDisplay(parseFloat(v) || 0, "price", unit);
+            onOverride(String(kg));
+          }}
           title={errTitle}
           style={{
             width: 64,
@@ -1585,15 +1671,19 @@ function SecondaryPriceCell({
   }
 
   if (editing) {
+    const initial = toDisplay(calculated, "price", unit).toFixed(2);
     return (
       <input
         type="number"
         step="0.01"
         autoFocus
-        defaultValue={calculated.toFixed(2)}
+        defaultValue={initial}
         onBlur={(e) => {
           setEditing(false);
-          if (e.target.value && parseFloat(e.target.value) !== calculated) onOverride(e.target.value);
+          if (e.target.value) {
+            const kg = fromDisplay(parseFloat(e.target.value) || 0, "price", unit);
+            if (kg !== calculated) onOverride(String(kg));
+          }
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();
@@ -1619,7 +1709,7 @@ function SecondaryPriceCell({
       title={errTitle}
     >
       <span style={{ fontStyle: "italic", color: invalid ? "#dc2626" : "var(--fg-muted)" }}>
-        {calculated.toFixed(2)}
+        {toDisplay(calculated, "price", unit).toFixed(2)}
       </span>
       <button
         type="button"
