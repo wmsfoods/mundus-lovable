@@ -1,4 +1,24 @@
 {
+  "negotiation": {
+    "agreedBadge": "Acordado a ${{price}}/{{unit}}",
+    "reject": {
+      "title": "Rejeitar negociação",
+      "reasonLabel": "Motivo",
+      "notesLabel": "Observações (opcional)",
+      "notesPlaceholder": "Adicione contexto para a outra parte…",
+      "cancel": "Cancelar",
+      "confirm": "Rejeitar",
+      "submitting": "Rejeitando…",
+      "successToast": "Negociação rejeitada",
+      "reasons": {
+        "price_too_low": "Preço muito baixo",
+        "terms_unacceptable": "Termos inaceitáveis",
+        "product_unavailable": "Produto indisponível",
+        "timeline_conflict": "Conflito de prazo",
+        "other": "Outro"
+      }
+    }
+  },
   "common": {
     "back": "Voltar",
     "cancel": "Cancelar",
