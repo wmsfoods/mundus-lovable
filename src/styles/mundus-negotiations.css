@@ -582,3 +582,83 @@
 .nd-banner.danger  { background: rgba(192,57,43,0.06); color: #c0392b; border: 1px solid rgba(192,57,43,0.3); }
 .nd-banner.muted   { background: var(--bg-subtle, #f7f7f8); color: var(--fg-muted); border: 1px solid var(--border); }
 .nd-banner.final-round { background: rgba(182,71,105,0.06); color: var(--p800); border: 1px solid rgba(182,71,105,0.3); }
+
+/* =========================================================================
+   MOBILE responsive
+   ========================================================================= */
+.nd-price-scroll-wrap { position: relative; }
+
+@media (max-width: 768px) {
+  .nd-price-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 11px;
+  }
+  .nd-price-table th:first-child,
+  .nd-price-table td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    background: #fff;
+    min-width: 120px;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.06);
+  }
+  .nd-price-table th:first-child { background: var(--g050); }
+  .nd-price-table th,
+  .nd-price-table td {
+    white-space: nowrap;
+    min-width: 70px;
+    padding: 8px 6px;
+  }
+  .nd-price-scroll-wrap::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 24px;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.8));
+    pointer-events: none;
+    z-index: 2;
+  }
+}
+
+@media (max-width: 640px) {
+  .nd-header {
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px;
+  }
+  .nd-header .nd-avatar { width: 36px; height: 36px; font-size: 16px; }
+  .nd-header h1 { font-size: 16px; }
+  .nd-header .nd-h-right { width: 100%; justify-content: flex-start; }
+
+  .nd-meta-chips {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+    scrollbar-width: thin;
+  }
+  .nd-meta-chips .chip { flex-shrink: 0; white-space: nowrap; }
+
+  .nd-timeline-flow {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 4px;
+  }
+  .nd-timeline-flow .tl-pill {
+    flex-shrink: 0;
+    white-space: nowrap;
+    font-size: 11px;
+    padding: 5px 10px;
+  }
+
+  .nd-card { padding: 14px; margin-bottom: 12px; }
+  .nd-stat-value { font-size: 18px; }
+
+  .nd-buyer-info dl { grid-template-columns: 1fr; gap: 6px; }
+  .nd-buyer-info dd { text-align: left; margin-bottom: 8px; }
+}
