@@ -151,7 +151,6 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
           <span style={{ fontWeight: unit === "lbs" ? 700 : 400, opacity: unit === "lbs" ? 1 : 0.55 }}>lbs</span>
         </button>
       )}
-      )}
       <button className="tb-bell" type="button" aria-label={t("shell.notifications")}>
         <BellIcon size={18} />
         <span className="dot" />
