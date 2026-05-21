@@ -218,6 +218,8 @@
       "filter": "Auctions",
       "badge": "AUCTION",
       "placeBid": "Place Bid",
+      "_auctionBidPlaceholder": "",
+    "auctionBid_": "",
       "placeBidToast": "Place Bid flow coming soon",
       "windowClosed": "Window Closed",
       "awardedBanner": "Awarded · contract issued",
