@@ -1199,6 +1199,26 @@ export default function SupplierCreateOffer() {
                   US$ {totalPriceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
                 <span className="cov4-prev-price-sub">per FCL</span>
+                {primaryInco && (
+                  <span
+                    style={{
+                      marginLeft: 6,
+                      padding: "2px 8px",
+                      borderRadius: 999,
+                      background: INCO_BADGE[primaryInco]?.bg ?? "#eee",
+                      color: INCO_BADGE[primaryInco]?.fg ?? "#333",
+                      fontSize: 10,
+                      fontWeight: 700,
+                    }}
+                  >
+                    {primaryInco}
+                  </span>
+                )}
+                {multiInco && (
+                  <span style={{ display: "block", marginTop: 4, fontSize: 11, color: "var(--fg-muted)" }}>
+                    Also available as {secondaryIncos.join(", ")}
+                  </span>
+                )}
               </div>
               <div className="cov4-prev-dist">
                 <div className="cov4-prev-dist-t">Distribution</div>
