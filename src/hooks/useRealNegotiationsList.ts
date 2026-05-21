@@ -296,7 +296,7 @@ export function toSupplierDetail(r: RealNegotiationRow): NegotiationDetail {
     avgReplyDays: buyer.avgReplyDays,
     valuePerFclUsd: buyer.valuePerFclUsd,
     movementVsAskingUsd: buyer.movementVsAskingUsd,
-    rounds: buyer.rounds as NegotiationProduct extends never ? never : NegotiationRound[],
+    rounds: buyer.rounds as unknown as NegotiationRound[],
     products: buyer.products as unknown as NegotiationProduct[],
   };
 }
