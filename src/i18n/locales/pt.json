@@ -164,6 +164,55 @@
   "comingSoon": {
     "note": "Esta tela será construída nos próximos commits do port."
   },
+  "public": {
+    "respond": {
+      "headerTitle": "Responder à proposta",
+      "loading": "Carregando…",
+      "invalidTitle": "Link inválido",
+      "invalidBody": "Este link de resposta não é válido. Verifique a URL.",
+      "expiredTitle": "Link expirado",
+      "expiredBody": "Este link expirou. Entre em contato com a Mundus Trade.",
+      "usedTitle": "Link já utilizado",
+      "usedBody": "Esta resposta já foi registrada.",
+      "youReceived": "Você recebeu uma proposta",
+      "bidFor": "Proposta para {{supplier}}",
+      "bidGeneric": "Nova proposta",
+      "origin": "Origem",
+      "destination": "Destino",
+      "incoterm": "Incoterm",
+      "payment": "Condições de pagamento",
+      "container": "Contêiner",
+      "created": "Criado em",
+      "cutsTitle": "Cortes solicitados",
+      "col": {
+        "cut": "Corte",
+        "qty": "Qtd ({{unit}})",
+        "asking": "Pedido",
+        "buyerBid": "Proposta do comprador",
+        "yourCounter": "Sua contraoferta",
+        "diff": "Dif"
+      },
+      "actions": {
+        "accept": "Aceitar proposta",
+        "acceptDesc": "Aceite os preços do comprador como estão. O pedido prosseguirá.",
+        "counter": "Enviar contraoferta",
+        "counterDesc": "Ajuste os preços e responda com sua contraoferta.",
+        "reject": "Rejeitar",
+        "rejectDesc": "Recusar esta proposta."
+      },
+      "counterTitle": "Contraoferta — Rodada {{round}}",
+      "message": "Mensagem",
+      "messagePlaceholder": "Adicione uma observação ao comprador (opcional)",
+      "back": "Voltar",
+      "submitCounter": "Enviar contraoferta",
+      "submitting": "Enviando…",
+      "confirmReject": "Tem certeza que deseja rejeitar esta proposta?",
+      "doneTitle": "Resposta registrada",
+      "doneAccepted": "Você aceitou a proposta. O comprador será notificado.",
+      "doneRejected": "Você rejeitou a proposta. O comprador será notificado.",
+      "doneCounter": "Sua contraoferta foi enviada. O comprador será notificado."
+    }
+  },
   "buyer": {
     "procurement": {
       "nav": "Inteligência de Compras",
