@@ -459,7 +459,13 @@ export default function SupplierCreateOffer() {
       if (offerErr || !offer) throw offerErr ?? new Error("offer insert failed");
 
       // 2. Resolve/create customer_products per cut, then insert offer_items
-      const itemsRows: Array<Record<string, unknown>> = [];
+      type OfferItemInsert = {
+        offer_id: string; customer_product_id: string;
+        amount: number; price: number; minimum_price: number;
+        minimum_amount: number; maximum_amount: number;
+        condition: string; aging_method: string | null;
+      };
+      const itemsRows: OfferItemInsert[] = [];
       for (const c of cuts) {
         if (!c.cutId) continue;
         const qty = parseFloat(c.qty) || 0;
