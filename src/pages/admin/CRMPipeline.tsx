@@ -94,6 +94,7 @@ export default function CRMPipeline() {
   const [companies, setCompanies] = useState<Company[]>([]);
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [learnings, setLearnings] = useState<Learning[]>([]);
+  const [prepStatusByCompany, setPrepStatusByCompany] = useState<Record<string, string>>({});
   const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier">("all");
   const [search, setSearch] = useState("");
 
@@ -118,6 +119,16 @@ export default function CRMPipeline() {
       setCompanies((c as any) ?? []);
       setInterviews((i as any) ?? []);
       setLearnings((l as any) ?? []);
+      const { data: preps } = await supabase
+        .from("crm_meeting_preps")
+        .select("crm_company_id,status,created_at")
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      const latest: Record<string, string> = {};
+      (preps ?? []).forEach((p: any) => {
+        if (!latest[p.crm_company_id]) latest[p.crm_company_id] = p.status;
+      });
+      setPrepStatusByCompany(latest);
     })();
     return () => { cancelled = true; };
   }, [refresh]);
@@ -150,6 +161,37 @@ export default function CRMPipeline() {
     if (error) { toast.error(error.message); return; }
     setCompanies((prev) => prev.map((c) => (c.id === companyId ? { ...c, stage } : c)));
     toast.success("Stage updated");
+
+    if (stage === "demo_scheduled") {
+      try {
+        const { data: existing } = await supabase
+          .from("crm_meeting_preps")
+          .select("id,status")
+          .eq("crm_company_id", companyId)
+          .in("status", ["pending", "generating", "ready"])
+          .limit(1);
+        if (!existing || existing.length === 0) {
+          const { data: created, error: insErr } = await supabase
+            .from("crm_meeting_preps")
+            .insert({
+              crm_company_id: companyId,
+              status: "pending",
+              scheduled_for: new Date(Date.now() + 3 * 86400_000).toISOString(),
+            })
+            .select("id")
+            .single();
+          if (insErr || !created) throw insErr ?? new Error("Insert failed");
+          setPrepStatusByCompany((p) => ({ ...p, [companyId]: "pending" }));
+          toast.info(t("admin.crm.meetingPrep.toast.autoStarted"));
+          supabase.functions
+            .invoke("generate-meeting-prep", { body: { meeting_prep_id: created.id } })
+            .then(() => setPrepStatusByCompany((p) => ({ ...p, [companyId]: "generating" })))
+            .catch((e) => toast.error(e?.message ?? "Prep generation failed"));
+        }
+      } catch (e: any) {
+        toast.error(e?.message ?? "Could not start meeting prep");
+      }
+    }
   }
 
   const TABS: Array<{ k: Tab; l: string }> = [
@@ -205,6 +247,8 @@ export default function CRMPipeline() {
           search={search}
           setSearch={setSearch}
           onCard={(id) => nav(`/admin/crm/prospects/${id}`)}
+          prepStatus={prepStatusByCompany}
+          onPrepClick={(id) => nav(`/admin/crm/meeting-prep/${id}`)}
           onStageChange={updateStage}
         />
       )}
@@ -261,7 +305,7 @@ export default function CRMPipeline() {
 /* ───────────── Pipeline (Kanban) ───────────── */
 
 function PipelineKanban({
-  grouped, typeFilter, setTypeFilter, search, setSearch, onCard, onStageChange,
+  grouped, typeFilter, setTypeFilter, search, setSearch, onCard, onStageChange, prepStatus, onPrepClick,
 }: {
   grouped: Record<string, Company[]>;
   typeFilter: "all" | "buyer" | "supplier";
@@ -270,6 +314,8 @@ function PipelineKanban({
   setSearch: (v: string) => void;
   onCard: (id: string) => void;
   onStageChange: (id: string, stage: string) => void;
+  prepStatus: Record<string, string>;
+  onPrepClick: (id: string) => void;
 }) {
   const { t } = useTranslation();
   return (
@@ -392,6 +438,25 @@ function PipelineKanban({
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
+                    {(c.stage === "demo_scheduled" || c.stage === "demo_done") && prepStatus[c.id] && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); onPrepClick(c.id); }}
+                        style={{
+                          fontSize: 10,
+                          padding: "3px 8px",
+                          borderRadius: 4,
+                          border: "1px solid #9B2251",
+                          background: "#FDF7F9",
+                          color: "#9B2251",
+                          fontWeight: 600,
+                          textAlign: "left",
+                          cursor: "pointer",
+                        }}
+                      >
+                        📋 {c.stage === "demo_done" ? "Brief" : "Prep"} · {prepStatus[c.id]}
+                      </button>
+                    )}
                   </div>
                 );
               })}

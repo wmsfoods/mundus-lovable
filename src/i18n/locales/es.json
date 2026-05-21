@@ -2271,6 +2271,33 @@
           "actions": "Acciones",
           "view": "Ver"
         }
+      },
+      "meetingPrep": {
+        "back": "Volver al Pipeline",
+        "title": "Brief de Reunión",
+        "empty": "Sin brief aún. Genera uno hecho a medida.",
+        "generateNow": "Generar Ahora",
+        "regenerate": "Regenerar",
+        "exportPdf": "Exportar PDF",
+        "email": "Enviar a mi email",
+        "markDone": "Marcar Demo Realizada",
+        "generatingMsg": "La IA está investigando la empresa y escribiendo el brief…",
+        "failedMsg": "La generación falló. Reintenta.",
+        "toast": {
+          "generating": "Brief en generación…",
+          "autoStarted": "Demo agendada — generando brief…",
+          "demoDone": "Marcada como Demo Realizada"
+        },
+        "sections": {
+          "research": "Investigación de Empresa",
+          "contact": "Perfil del Contacto",
+          "market": "Contexto de Mercado",
+          "painPoints": "Dolores Probables",
+          "talkingPoints": "Puntos de Conversación",
+          "questions": "Preguntas Estratégicas",
+          "valueProps": "Propuestas de Valor Mundus",
+          "links": "Enlaces de Investigación"
+        }
       }
     },
     "analytics": {

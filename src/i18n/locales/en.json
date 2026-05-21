@@ -2271,6 +2271,33 @@
           "actions": "Actions",
           "view": "View"
         }
+      },
+      "meetingPrep": {
+        "back": "Back to Pipeline",
+        "title": "Meeting Prep",
+        "empty": "No meeting prep yet. Generate one tailored to this prospect.",
+        "generateNow": "Generate Now",
+        "regenerate": "Regenerate",
+        "exportPdf": "Export PDF",
+        "email": "Email me",
+        "markDone": "Mark Demo Done",
+        "generatingMsg": "AI is researching the company and writing your brief…",
+        "failedMsg": "Generation failed. Try again.",
+        "toast": {
+          "generating": "Meeting prep is being generated…",
+          "autoStarted": "Demo scheduled — generating meeting prep…",
+          "demoDone": "Marked as Demo Done"
+        },
+        "sections": {
+          "research": "Company Research",
+          "contact": "Contact Profile",
+          "market": "Market Context",
+          "painPoints": "Likely Pain Points",
+          "talkingPoints": "Talking Points",
+          "questions": "Strategic Questions",
+          "valueProps": "Mundus Value Props",
+          "links": "Research Links"
+        }
       }
     },
     "analytics": {
