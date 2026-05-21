@@ -265,7 +265,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[720px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[720px] max-h-[90vh] overflow-y-auto sm:rounded-lg max-sm:!max-w-full max-sm:!max-h-[100dvh] max-sm:!h-[100dvh] max-sm:!rounded-none max-sm:!m-0">
         <DialogHeader>
           <DialogTitle>{t("buyer.bid.title")}</DialogTitle>
           <DialogDescription>{t("buyer.bid.subtitle")}</DialogDescription>
@@ -310,8 +310,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           </label>
         </div>
 
-        {/* Bulk apply quick actions */}
-        <div className="flex flex-wrap items-center gap-2 mt-3">
+        {/* Bulk apply — desktop */}
+        <div className="hidden sm:flex flex-wrap items-center gap-2 mt-3">
           <span className="text-xs uppercase font-semibold text-muted-foreground mr-1">
             {t("buyer.bid.bulk.label", "Quick fill")}:
           </span>
@@ -361,8 +361,62 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           </div>
         </div>
 
-        {/* Cuts table */}
-        <div className="rounded-lg border border-border overflow-hidden mt-2">
+        {/* Bulk apply — mobile collapsible */}
+        <details className="sm:hidden mt-3">
+          <summary className="text-xs font-semibold cursor-pointer py-2" style={{ color: "#8B2252" }}>
+            ⚡ {t("buyer.bid.bulk.label", "Quick fill")}
+          </summary>
+          <div className="flex flex-wrap gap-2 pt-2 pb-1">
+            <button
+              type="button"
+              onClick={() => applyAllBids((a) => a)}
+              className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+            >
+              {t("buyer.bid.bulk.acceptAsking", "Accept asking")}
+            </button>
+            <button
+              type="button"
+              onClick={() => applyAllBids((a) => a * 0.95)}
+              className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+            >
+              {t("buyer.bid.bulk.minus5", "Asking -5%")}
+            </button>
+            <button
+              type="button"
+              onClick={() => applyAllBids((a) => a * 0.9)}
+              className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+            >
+              {t("buyer.bid.bulk.minus10", "Asking -10%")}
+            </button>
+            <div className="flex items-center gap-1 w-full">
+              <Input
+                type="number"
+                step="0.01"
+                inputMode="decimal"
+                value={bulkOffset}
+                onChange={(e) => setBulkOffset(e.target.value)}
+                placeholder={t("buyer.bid.bulk.customPlaceholder", { defaultValue: "±{{unit}}", unit: pLbl })}
+                className="h-11 flex-1 text-right tabular-nums"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-11 px-4 text-xs"
+                onClick={applyBulkOffset}
+                style={{ color: "#8B2252" }}
+              >
+                {t("buyer.bid.bulk.apply", "Apply")}
+              </Button>
+            </div>
+          </div>
+        </details>
+
+        {/* Cuts — desktop table */}
+        <div className="rounded-lg border border-border overflow-hidden mt-2 hidden sm:block">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left text-xs uppercase text-muted-foreground">
@@ -438,8 +492,72 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           </table>
         </div>
 
+        {/* Cuts — mobile cards */}
+        <div className="flex flex-col gap-3 mt-2 sm:hidden">
+          {offer.items.map((it) => {
+            const asking = Number(it.price);
+            const bidVal = bids[it.id];
+            const bid = typeof bidVal === "number" ? bidVal : asking;
+            const d = bid - asking;
+            const dPct = asking > 0 ? (d / asking) * 100 : 0;
+            const isEmpty = bidVal === null || bidVal === undefined;
+            const displayBid = toDisplay(bid, "price", unit);
+            const displayDiff = toDisplay(d, "price", unit);
+            const err = errors[it.id];
+            const showErr = !!err;
+            return (
+              <div key={it.id} className="rounded-lg border border-border p-3">
+                <div className="font-medium text-sm mb-2">{it.customer_product?.name ?? "—"}</div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <div className="text-muted-foreground">{t("buyer.bid.qty", { unit: wLbl })}</div>
+                    <div className="font-semibold tabular-nums">{fmtWeight(Number(it.amount), unit)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">{t("buyer.bid.asking")} ({pLbl})</div>
+                    <div className="font-semibold tabular-nums">{fmtPrice(asking, unit)}</div>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <div className="text-xs text-muted-foreground mb-1">{t("buyer.bid.yourBid")} ({pLbl})</div>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    inputMode="decimal"
+                    value={isEmpty ? "" : (Number.isFinite(displayBid) ? displayBid.toFixed(2) : "")}
+                    onChange={(e) => {
+                      const raw = e.target.value;
+                      if (raw === "") { setBids((prev) => ({ ...prev, [it.id]: null })); return; }
+                      const v = parseFloat(raw);
+                      if (!Number.isFinite(v)) { setBids((prev) => ({ ...prev, [it.id]: null })); return; }
+                      setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
+                    }}
+                    className={
+                      "h-11 w-full text-right tabular-nums focus-visible:ring-[#8B2252]" +
+                      (showErr ? " border-destructive focus-visible:ring-destructive" : "")
+                    }
+                  />
+                  {showErr && (
+                    <div className="text-[11px] text-destructive mt-1">{err}</div>
+                  )}
+                  {Math.abs(d) > 0.001 && (
+                    <div
+                      className="text-[11px] tabular-nums mt-1"
+                      style={{ color: d < 0 ? "#15803d" : "#b45309" }}
+                    >
+                      {d < 0 ? "↓" : "↑"} ${Math.abs(displayDiff).toFixed(2)} ({d < 0 ? "" : "+"}
+                      {dPct.toFixed(1)}%)
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Totals */}
-        <div className="rounded-lg bg-muted/40 border border-border p-3 grid grid-cols-3 gap-3 text-sm">
+        <div className="rounded-lg bg-muted/40 border border-border p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm mt-3">
           <div>
             <div className="text-xs text-muted-foreground">{t("buyer.bid.totalAsking")}</div>
             <div className="font-semibold tabular-nums">US$ {askingTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
@@ -470,20 +588,20 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
+        <DialogFooter className="gap-2 sm:gap-2 max-sm:flex-col">
           {errorCount > 0 && (
             <div className="mr-auto text-xs text-destructive self-center">
               {t("buyer.bid.validation.summary", { count: errorCount, defaultValue: "{{count}} cut(s) have validation errors" })}
             </div>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting} className="max-sm:w-full max-sm:h-11">
             {t("buyer.bid.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={!canSubmit || submitting}
             style={{ background: "#8B2252", color: "#fff" }}
-            className="hover:opacity-90"
+            className="hover:opacity-90 max-sm:w-full max-sm:h-11"
           >
             {submitting ? t("buyer.bid.submitting") : t("buyer.bid.submit")}
           </Button>

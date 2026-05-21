@@ -257,7 +257,7 @@ export function CounterOfferModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[760px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[760px] max-h-[90vh] overflow-y-auto sm:rounded-lg max-sm:!max-w-full max-sm:!max-h-[100dvh] max-sm:!h-[100dvh] max-sm:!rounded-none max-sm:!m-0">
         <DialogHeader>
           <DialogTitle>
             {t(titleKey)} — {t("supplier.counter.roundOf", { round: displayRound, max: MAX_DISPLAY_ROUNDS })}
@@ -302,9 +302,9 @@ export function CounterOfferModal({
           </div>
         )}
 
-        {/* Bulk apply quick actions */}
+        {/* Bulk apply — desktop */}
         {openItems.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2 mt-3">
+          <div className="hidden sm:flex flex-wrap items-center gap-2 mt-3">
             <span className="text-xs uppercase font-semibold text-muted-foreground mr-1">
               {t(`${perspective}.counter.bulk.label`, "Quick fill")}:
             </span>
@@ -391,8 +391,58 @@ export function CounterOfferModal({
           </div>
         )}
 
-        {/* Cuts table */}
-        <div className="rounded-lg border border-border overflow-hidden mt-2">
+        {/* Bulk apply — mobile collapsible */}
+        {openItems.length > 0 && (
+          <details className="sm:hidden mt-3">
+            <summary className="text-xs font-semibold cursor-pointer py-2" style={{ color: "#8B2252" }}>
+              ⚡ {t(`${perspective}.counter.bulk.label`, "Quick fill")}
+            </summary>
+            <div className="flex flex-wrap gap-2 pt-2 pb-1">
+              <button
+                type="button"
+                onClick={acceptAllRows}
+                className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+              >
+                {t(`${perspective}.counter.bulk.acceptAll`, "Accept all")}
+              </button>
+              <button
+                type="button"
+                onClick={() =>
+                  setAllCounters((it) => ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2)
+                }
+                className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+              >
+                {t(`${perspective}.counter.bulk.meetMiddle`, "Meet in middle")}
+              </button>
+              <div className="flex items-center gap-1 w-full">
+                <Input
+                  type="number"
+                  step="0.01"
+                  inputMode="decimal"
+                  value={bulkOffset}
+                  onChange={(e) => setBulkOffset(e.target.value)}
+                  placeholder={t(`${perspective}.counter.bulk.customPlaceholder`, { defaultValue: "±{{unit}}", unit: pLbl })}
+                  className="h-11 flex-1 text-right tabular-nums"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  className="h-11 px-4 text-xs"
+                  onClick={applyBulkOffset}
+                  style={{ color: "#8B2252" }}
+                >
+                  {t(`${perspective}.counter.bulk.apply`, "Apply")}
+                </Button>
+              </div>
+            </div>
+          </details>
+        )}
+
+        {/* Cuts — desktop table */}
+        <div className="rounded-lg border border-border overflow-hidden mt-2 hidden sm:block">
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left text-xs uppercase text-muted-foreground">
@@ -489,8 +539,91 @@ export function CounterOfferModal({
           </table>
         </div>
 
+        {/* Cuts — mobile cards */}
+        <div className="flex flex-col gap-3 mt-2 sm:hidden">
+          {openItems.length === 0 && (
+            <div className="rounded-lg border border-border p-4 text-center text-sm text-muted-foreground">
+              {t("engine.allLocked", "All items already agreed.")}
+            </div>
+          )}
+          {openItems.map((it) => {
+            const asking = Number(it.price);
+            const their = theirPrices.get(it.id) ?? asking;
+            const isAccepted = !!accepted[it.id];
+            const yours = isAccepted ? their : counters[it.id] ?? asking;
+            const d = yours - their;
+            const dPct = their > 0 ? (d / their) * 100 : 0;
+            const displayCounter = toDisplay(yours, "price", unit);
+            return (
+              <div
+                key={it.id}
+                className="rounded-lg border border-border p-3"
+                style={isAccepted ? { background: "rgba(21,128,61,0.06)" } : undefined}
+              >
+                <label className="flex items-center gap-2 mb-2 cursor-pointer">
+                  <Checkbox
+                    checked={isAccepted}
+                    onCheckedChange={(c) =>
+                      setAccepted((p) => ({ ...p, [it.id]: c === true }))
+                    }
+                    aria-label={t("engine.acceptThisPrice", "Accept this price")}
+                  />
+                  <span className="font-medium text-sm flex-1">{it.customer_product?.name ?? "—"}</span>
+                  {isAccepted && <span style={{ color: "#15803d" }}>🔒</span>}
+                </label>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <div className="text-muted-foreground">{t("supplier.counter.col.qty", { unit: wLbl })}</div>
+                    <div className="font-semibold tabular-nums">{fmtWeight(Number(it.amount), unit)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">{t("supplier.counter.col.asking")} ({pLbl})</div>
+                    <div className="font-semibold tabular-nums">{fmtPrice(asking, unit)}</div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">{t(theirLabelKey)} ({pLbl})</div>
+                    <div className="font-semibold tabular-nums" style={{ color: "#1e3a8a" }}>{fmtPrice(their, unit)}</div>
+                  </div>
+                </div>
+                <div className="mt-2">
+                  <div className="text-xs text-muted-foreground mb-1">
+                    {t("supplier.counter.col.yourCounter")} ({pLbl})
+                  </div>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    inputMode="decimal"
+                    readOnly={isAccepted}
+                    value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
+                    onChange={(e) => {
+                      if (isAccepted) return;
+                      const v = parseFloat(e.target.value);
+                      const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
+                      setCounters((prev) => ({ ...prev, [it.id]: kg }));
+                    }}
+                    className={
+                      "h-11 w-full text-right tabular-nums focus-visible:ring-[#8B2252]" +
+                      (isAccepted ? " bg-green-50 text-green-800 border-green-300" : "") +
+                      (errors[it.id] ? " border-destructive focus-visible:ring-destructive" : "")
+                    }
+                  />
+                  {errors[it.id] && (
+                    <div className="text-[11px] text-destructive mt-1">{errors[it.id]}</div>
+                  )}
+                  {!isAccepted && Math.abs(d) > 0.001 && (
+                    <div className="text-[11px] tabular-nums mt-1" style={{ color: d > 0 ? "#15803d" : "#b45309" }}>
+                      {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(2)} ({d >= 0 ? "+" : ""}{dPct.toFixed(1)}%)
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         {/* Totals */}
-        <div className="rounded-lg bg-muted/40 border border-border p-3 grid grid-cols-3 gap-3 text-sm">
+        <div className="rounded-lg bg-muted/40 border border-border p-3 grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm mt-3">
           <div>
             <div className="text-xs text-muted-foreground">{t("supplier.counter.totalAsking")}</div>
             <div className="font-semibold tabular-nums">US$ {askingTotal.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
@@ -520,20 +653,20 @@ export function CounterOfferModal({
           />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2">
+        <DialogFooter className="gap-2 sm:gap-2 max-sm:flex-col">
           {errorCount > 0 && (
             <div className="mr-auto text-xs text-destructive self-center">
               {t("buyer.bid.errors.summary", { count: errorCount, defaultValue: "{{count}} cut(s) have validation errors" })}
             </div>
           )}
-          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting} className="max-sm:w-full max-sm:h-11">
             {t("supplier.counter.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
             disabled={submitting || openItems.length === 0 || errorCount > 0}
             style={{ background: "#8B2252", color: "#fff" }}
-            className="hover:opacity-90"
+            className="hover:opacity-90 max-sm:w-full max-sm:h-11"
           >
             {submitting
               ? t("supplier.counter.submitting")
