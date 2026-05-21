@@ -594,6 +594,14 @@
         "belowInitial": "Cannot bid below your initial bid of ${{min}}",
         "summary_one": "{{count}} cut has validation errors",
         "summary_other": "{{count}} cuts have validation errors"
+      },
+      "bulk": {
+        "label": "Quick fill",
+        "acceptAsking": "Accept asking",
+        "minus5": "Asking -5%",
+        "minus10": "Asking -10%",
+        "apply": "Apply",
+        "customPlaceholder": "±{{unit}}"
       }
     },
     "counter": {
@@ -605,6 +613,15 @@
       "confirmReject": "Are you sure you want to reject this counter-offer?",
       "errors": {
         "belowInitial": "Cannot bid below your initial bid of ${{min}}"
+      },
+      "bulk": {
+        "label": "Quick fill",
+        "acceptAll": "Accept all",
+        "meetMiddle": "Meet in middle",
+        "minus3pct": "Their counter -3%",
+        "minus5pct": "Their counter -5%",
+        "apply": "Apply",
+        "customPlaceholder": "±{{unit}}"
       }
     },
     "orders": {
