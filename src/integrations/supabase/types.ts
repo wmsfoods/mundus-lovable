@@ -1411,6 +1411,96 @@ export type Database = {
           },
         ]
       }
+      crm_interviews: {
+        Row: {
+          conducted_by: string | null
+          created_at: string
+          crm_company_id: string
+          crm_contact_id: string | null
+          duration_minutes: number | null
+          id: string
+          interview_date: string | null
+          key_quotes: string | null
+          next_steps: string | null
+          pain_points: string | null
+          recording_url: string | null
+          takeaways: string | null
+        }
+        Insert: {
+          conducted_by?: string | null
+          created_at?: string
+          crm_company_id: string
+          crm_contact_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          interview_date?: string | null
+          key_quotes?: string | null
+          next_steps?: string | null
+          pain_points?: string | null
+          recording_url?: string | null
+          takeaways?: string | null
+        }
+        Update: {
+          conducted_by?: string | null
+          created_at?: string
+          crm_company_id?: string
+          crm_contact_id?: string | null
+          duration_minutes?: number | null
+          id?: string
+          interview_date?: string | null
+          key_quotes?: string | null
+          next_steps?: string | null
+          pain_points?: string | null
+          recording_url?: string | null
+          takeaways?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_interviews_crm_company_id_fkey"
+            columns: ["crm_company_id"]
+            isOneToOne: false
+            referencedRelation: "crm_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_interviews_crm_contact_id_fkey"
+            columns: ["crm_contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_learnings: {
+        Row: {
+          category: string | null
+          created_at: string
+          id: string
+          insight: string
+          source_company_ids: string[]
+          theme: string
+          week_start: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          insight: string
+          source_company_ids?: string[]
+          theme: string
+          week_start: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          id?: string
+          insight?: string
+          source_company_ids?: string[]
+          theme?: string
+          week_start?: string
+        }
+        Relationships: []
+      }
       crm_list_items: {
         Row: {
           added_at: string | null
@@ -1578,6 +1668,78 @@ export type Database = {
             columns: ["created_by"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      crm_meeting_preps: {
+        Row: {
+          company_research: string | null
+          contact_profile: string | null
+          created_at: string
+          crm_company_id: string
+          crm_contact_id: string | null
+          full_brief_md: string | null
+          generated_at: string | null
+          id: string
+          likely_pain_points: string | null
+          market_context: string | null
+          mundus_value_props: string | null
+          research_links: Json
+          scheduled_for: string | null
+          status: string
+          strategic_questions: string | null
+          talking_points: string | null
+        }
+        Insert: {
+          company_research?: string | null
+          contact_profile?: string | null
+          created_at?: string
+          crm_company_id: string
+          crm_contact_id?: string | null
+          full_brief_md?: string | null
+          generated_at?: string | null
+          id?: string
+          likely_pain_points?: string | null
+          market_context?: string | null
+          mundus_value_props?: string | null
+          research_links?: Json
+          scheduled_for?: string | null
+          status?: string
+          strategic_questions?: string | null
+          talking_points?: string | null
+        }
+        Update: {
+          company_research?: string | null
+          contact_profile?: string | null
+          created_at?: string
+          crm_company_id?: string
+          crm_contact_id?: string | null
+          full_brief_md?: string | null
+          generated_at?: string | null
+          id?: string
+          likely_pain_points?: string | null
+          market_context?: string | null
+          mundus_value_props?: string | null
+          research_links?: Json
+          scheduled_for?: string | null
+          status?: string
+          strategic_questions?: string | null
+          talking_points?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "crm_meeting_preps_crm_company_id_fkey"
+            columns: ["crm_company_id"]
+            isOneToOne: false
+            referencedRelation: "crm_companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_meeting_preps_crm_contact_id_fkey"
+            columns: ["crm_contact_id"]
+            isOneToOne: false
+            referencedRelation: "crm_contacts"
             referencedColumns: ["id"]
           },
         ]
