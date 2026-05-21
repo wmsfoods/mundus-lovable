@@ -214,6 +214,58 @@
     }
   },
   "buyer": {
+    "auctions": {
+      "filter": "Auctions",
+      "badge": "AUCTION",
+      "placeBid": "Place Bid",
+      "placeBidToast": "Place Bid flow coming soon",
+      "windowClosed": "Window Closed",
+      "awardedBanner": "Awarded · contract issued",
+      "statusBadge": {
+        "live": "LIVE",
+        "closed": "CLOSED",
+        "awarded": "AWARDED",
+        "scheduled": "SCHEDULED"
+      },
+      "card": {
+        "origin": "Origin",
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Shipment",
+        "closesIn": "Closes in",
+        "bids_one": "{{count}} bid",
+        "bids_other": "{{count}} bids",
+        "bids": "{{count}} bids"
+      },
+      "howItWorks": {
+        "link": "How do auctions work?",
+        "title": "How Sealed-Bid Auctions Work",
+        "whatIs": {
+          "title": "What is an auction?",
+          "body": "Suppliers post products with a bidding window. You place one sealed bid — no one sees your price."
+        },
+        "sealed": {
+          "title": "Sealed bidding",
+          "body": "Your bid is private. Other buyers can't see it. The supplier sees all bids only after the window closes."
+        },
+        "timing": {
+          "title": "Timing",
+          "body": "Each auction has a fixed window (e.g., opens Monday, closes Wednesday). Place your bid before time runs out."
+        },
+        "oneBid": {
+          "title": "One bid, one chance",
+          "body": "You can't modify your bid once placed. If you made an error, you can withdraw — but there's a 4-hour cooldown before you can re-enter."
+        },
+        "award": {
+          "title": "Award",
+          "body": "After the window closes, the supplier reviews all bids and picks a winner. You'll be notified of the result."
+        },
+        "results": {
+          "title": "Results",
+          "body": "After award, you can see how your bid compared to the winner (in $/kg and %)."
+        }
+      }
+    },
     "procurement": {
       "nav": "Procurement Intelligence",
       "groupLabel": "Insights",
