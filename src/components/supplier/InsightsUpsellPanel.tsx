@@ -14,10 +14,12 @@ import {
   Timer,
   Mail,
   ArrowRight,
+  Wallet,
+  Truck,
   type LucideIcon,
 } from "lucide-react";
 
-export type UpsellFeature = "price-benchmark" | "analytics";
+export type UpsellFeature = "price-benchmark" | "analytics" | "procurement";
 
 type Props = {
   open: boolean;
@@ -33,11 +35,15 @@ type BulletKey =
   | "funnel"
   | "cohort"
   | "geo"
-  | "sla";
+  | "sla"
+  | "spend"
+  | "savings"
+  | "suppliers"
+  | "marketAlerts";
 
 const FEATURES: Record<
   UpsellFeature,
-  { bullets: { key: BulletKey; icon: LucideIcon }[]; perks: number; salesSubject: string }
+  { bullets: { key: BulletKey; icon: LucideIcon }[]; perks: number; salesSubject: string; i18nRoot: string }
 > = {
   "price-benchmark": {
     bullets: [
@@ -48,6 +54,7 @@ const FEATURES: Record<
     ],
     perks: 3,
     salesSubject: "Mundus Insights – Price benchmark",
+    i18nRoot: "supplier.insights.upsell.priceBenchmark",
   },
   analytics: {
     bullets: [
@@ -58,6 +65,18 @@ const FEATURES: Record<
     ],
     perks: 4,
     salesSubject: "Mundus Insights – Supplier analytics",
+    i18nRoot: "supplier.insights.upsell.analytics",
+  },
+  procurement: {
+    bullets: [
+      { key: "spend", icon: Wallet },
+      { key: "savings", icon: TrendingDown },
+      { key: "suppliers", icon: Truck },
+      { key: "marketAlerts", icon: Bell },
+    ],
+    perks: 4,
+    salesSubject: "Mundus Insights – Procurement intelligence",
+    i18nRoot: "buyer.procurement.upsell",
   },
 };
 
@@ -81,7 +100,7 @@ export function InsightsUpsellPanel({ open, feature, onClose }: Props) {
   if (typeof document === "undefined") return null;
 
   const cfg = FEATURES[feature];
-  const root = `supplier.insights.upsell.${feature === "price-benchmark" ? "priceBenchmark" : "analytics"}` as const;
+  const root = cfg.i18nRoot;
 
   const handleEarlyAccess = () => {
     toast.success(t("supplier.insights.upsell.earlyAccessToast"));
