@@ -627,6 +627,112 @@ export default function SupplierCreateOffer() {
                 <input className="cov4-text-in" placeholder="Delivery address or terminal..." value={incoExtras.dapCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, dapCity: e.target.value }))} />
               </div>
             )}
+
+            {/* ── Multi-incoterm pricing: primary selector + per-secondary adjustment ── */}
+            {selInco.length > 1 && (
+              <div
+                style={{
+                  marginTop: 10,
+                  padding: 12,
+                  border: "1px solid #E5E7EB",
+                  background: "#F9FAFB",
+                  borderRadius: 8,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 10,
+                }}
+              >
+                <div style={{ fontSize: 12, fontWeight: 600 }}>
+                  Primary pricing incoterm
+                  <span style={{ marginLeft: 6, color: "var(--fg-muted)", fontWeight: 400 }}>
+                    — Your prices are based on which incoterm?
+                  </span>
+                </div>
+                <div style={{ display: "flex", gap: 14, flexWrap: "wrap" }}>
+                  {selInco.map((ic) => {
+                    const desc =
+                      ic === "FOB" ? "my price is at origin, no freight"
+                      : ic === "CFR" ? "my price already includes freight"
+                      : ic === "CIF" ? "my price includes freight + insurance"
+                      : ic;
+                    return (
+                      <label
+                        key={ic}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12, cursor: "pointer" }}
+                      >
+                        <input
+                          type="radio"
+                          name="primaryInco"
+                          checked={primaryInco === ic}
+                          onChange={() => setPrimaryInco(ic)}
+                        />
+                        <span
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            background: INCO_BADGE[ic]?.bg ?? "#eee",
+                            color: INCO_BADGE[ic]?.fg ?? "#333",
+                            fontWeight: 600,
+                            fontSize: 11,
+                          }}
+                        >
+                          {ic}
+                        </span>
+                        <span style={{ color: "var(--fg-muted)" }}>({desc})</span>
+                      </label>
+                    );
+                  })}
+                </div>
+                {selInco
+                  .filter((s) => s !== primaryInco)
+                  .map((s) => {
+                    const primaryIsFreight = primaryInco === "CFR" || primaryInco === "CIF";
+                    const op =
+                      primaryIsFreight && s === "FOB" ? "minus"
+                      : primaryInco === "FOB" && (s === "CFR" || s === "CIF") ? "plus"
+                      : "delta";
+                    const icon = s === "FOB" ? "📦" : s === "CFR" || s === "CIF" ? "🚢" : "🔁";
+                    const opLabel = op === "minus" ? "minus" : op === "plus" ? "plus" : "±";
+                    return (
+                      <div
+                        key={s}
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          fontSize: 12,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        <span>{icon}</span>
+                        <span
+                          style={{
+                            padding: "2px 8px",
+                            borderRadius: 999,
+                            background: INCO_BADGE[s]?.bg ?? "#eee",
+                            color: INCO_BADGE[s]?.fg ?? "#333",
+                            fontWeight: 600,
+                            fontSize: 11,
+                          }}
+                        >
+                          {s}
+                        </span>
+                        <span style={{ fontWeight: 600 }}>pricing</span>
+                        <span>
+                          — {s} = {primaryInco} {opLabel}
+                        </span>
+                        <PriceInput
+                          value={incoAdjustments[s] || ""}
+                          onChange={(v) => setIncoAdjustments((p) => ({ ...p, [s]: v }))}
+                        />
+                        <span style={{ color: "var(--fg-muted)" }}>
+                          US$/kg — Applied to all cuts. You can override individual prices in the table.
+                        </span>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
           </div>
 
           {/* Certifications (preserved) */}
