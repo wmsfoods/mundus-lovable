@@ -782,6 +782,50 @@
     }
   },
   "supplier": {
+    "outreach": {
+      "navLabel": "Outreach",
+      "title": "Email Outreach",
+      "subtitle": "Send your active offers to matching contacts.",
+      "activeOffers": "Active offers ready for outreach",
+      "recentActivity": "Recent outreach activity",
+      "noOffers": "No active offers ready for outreach.",
+      "noActivity": "No outreach has been sent yet.",
+      "matched": "matched",
+      "sent": "sent",
+      "sendOutreach": "Send outreach",
+      "stats": {
+        "sent7d": "Emails sent (7d)",
+        "openRate": "Open rate",
+        "pendingOffers": "Offers pending outreach",
+        "reached": "Contacts reached"
+      },
+      "col": {
+        "offer": "Offer",
+        "contact": "Contact",
+        "email": "Email",
+        "country": "Country",
+        "status": "Status",
+        "sentAt": "Sent at"
+      },
+      "modal": {
+        "title": "Send Offer Outreach — {{offer}}",
+        "origin": "Origin",
+        "markets": "Target markets",
+        "incoterm": "Incoterm",
+        "price": "Price",
+        "matchingContacts": "Matching contacts ({{count}})",
+        "selectAll": "Select all",
+        "deselectAll": "Deselect all",
+        "noMatches": "No contacts match the destination markets of this offer.",
+        "sentBadge": "Sent",
+        "subject": "Subject",
+        "body": "Email body (HTML)",
+        "preview": "Preview",
+        "editBody": "Edit",
+        "sendButton": "Send to {{count}} selected contacts",
+        "sentSuccess": "{{count}} email(s) queued for sending"
+      }
+    },
     "counter": {
       "title": "Send Counter-Offer",
       "subtitle": "Adjust your prices and respond to the buyer's bid.",
