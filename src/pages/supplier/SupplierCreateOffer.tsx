@@ -1131,6 +1131,12 @@ export default function SupplierCreateOffer() {
                     <td><input type="number" placeholder="27000" value={nf.qty} onChange={(e) => setNf((p) => ({ ...p, qty: e.target.value }))} /></td>
                     <td><input type="number" step="0.01" placeholder="6.40" value={nf.ask} onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))} /></td>
                     <td><input type="number" step="0.01" placeholder="5.80" value={nf.floor} onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))} /></td>
+                    {multiInco && secondaryIncos.map((s) => (
+                      <Fragment key={`add-${s}`}>
+                        <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
+                        <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
+                      </Fragment>
+                    ))}
                     <td><input type="text" placeholder="Notes..." value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
