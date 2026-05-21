@@ -1,4 +1,4 @@
-import { useCallback, useState, useEffect, useRef } from "react";
+import { Fragment, useCallback, useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -85,6 +85,35 @@ type IncoExtras = {
   ddpCity?: string;
   dapCity?: string;
 };
+
+/* Visual badge tokens for each incoterm pill in tables/pricing UI */
+const INCO_BADGE: Record<string, { bg: string; fg: string }> = {
+  FOB: { bg: "#FAEEDA", fg: "#633806" },
+  CFR: { bg: "#E6F1FB", fg: "#0C447C" },
+  CIF: { bg: "#FBEAF0", fg: "#72243E" },
+  EXW: { bg: "#EEF2FF", fg: "#3730A3" },
+  DDP: { bg: "#ECFDF5", fg: "#065F46" },
+  DAP: { bg: "#FEF3C7", fg: "#92400E" },
+};
+
+/* Convert a price expressed in the primary incoterm into the secondary one.
+   `adj` is the per-secondary delta the supplier provides; `insurance` is
+   the CIF insurance cost (US$/kg) supplied via incoExtras.cifInsurance. */
+function deriveSecondary(
+  primaryPrice: number,
+  primary: string,
+  secondary: string,
+  adj: number,
+  insurance: number
+): number {
+  if (primary === secondary) return primaryPrice;
+  if (primary === "CIF" && secondary === "CFR") return primaryPrice - insurance;
+  if (primary === "CFR" && secondary === "CIF") return primaryPrice + insurance;
+  if ((primary === "CFR" || primary === "CIF") && secondary === "FOB") return primaryPrice - adj;
+  if (primary === "FOB" && secondary === "CFR") return primaryPrice + adj;
+  if (primary === "FOB" && secondary === "CIF") return primaryPrice + adj + insurance;
+  return primaryPrice + adj;
+}
 
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
