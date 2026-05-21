@@ -82,6 +82,17 @@ export function CounterOfferModal({
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  // Buyer's initial bid (round 1) per offer_item — used to floor buyer counter-bids.
+  const buyerInitialBid = useMemo(() => {
+    const map = new Map<string, number>();
+    if (perspective !== "buyer") return map;
+    const firstRound = rounds.find((r) => r.round === 1);
+    for (const c of firstRound?.cut_rounds ?? []) {
+      map.set(c.offer_item_id, Number(c.price_per_kg));
+    }
+    return map;
+  }, [rounds, perspective]);
+
   useEffect(() => {
     if (!open) return;
     // Prefill with asking price (supplier) or their latest counter (buyer).
@@ -94,7 +105,11 @@ export function CounterOfferModal({
     }
     setCounters(initial);
     setAccepted({});
-    setMessage("");
+    setMessage(
+      (perspective === "buyer"
+        ? negotiation.buyer_message
+        : negotiation.supplier_message) ?? "",
+    );
   }, [open, openItems, perspective, theirPrices]);
 
   const askingTotal = openItems.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
@@ -116,8 +131,27 @@ export function CounterOfferModal({
   const theirLabelKey = perspective === "supplier" ? "supplier.counter.theirBid" : "buyer.counter.theirCounter";
   const theirTotalKey = perspective === "supplier" ? "supplier.counter.theirBidTotal" : "buyer.counter.theirCounterTotal";
 
+  // Buyer-side validation: counter cannot drop below your round-1 bid.
+  const errors = useMemo(() => {
+    if (perspective !== "buyer") return {} as Record<string, string>;
+    const out: Record<string, string> = {};
+    for (const it of openItems) {
+      if (accepted[it.id]) continue;
+      const floor = buyerInitialBid.get(it.id);
+      const v = counters[it.id];
+      if (floor != null && v != null && v < floor - 1e-9) {
+        out[it.id] = t("buyer.counter.errors.belowInitial", {
+          defaultValue: "Cannot bid below your initial bid of ${{min}}",
+          min: toDisplay(floor, "price", unit).toFixed(2),
+        });
+      }
+    }
+    return out;
+  }, [perspective, openItems, accepted, buyerInitialBid, counters, t, unit]);
+  const errorCount = Object.keys(errors).length;
+
   async function handleSubmit() {
-    if (submitting) return;
+    if (submitting || errorCount > 0) return;
     setSubmitting(true);
     try {
       const userId = perspective === "supplier" ? MOCK_SUPPLIER_USER_ID : MOCK_BUYER_USER_ID;
@@ -152,7 +186,6 @@ export function CounterOfferModal({
           offer_item_id: it.id,
           price_per_kg: counters[it.id] ?? Number(it.price),
           quantity_kg: Number(it.amount),
-          total_value: (counters[it.id] ?? Number(it.price)) * Number(it.amount),
         }));
         const { error: crErr } = await supabase.from("cut_rounds").insert(rows);
         if (crErr) throw crErr;
@@ -163,6 +196,12 @@ export function CounterOfferModal({
         agreed_items: mergedAgreed,
         updated_at: new Date().toISOString(),
       };
+      const trimmed = message.trim();
+      if (perspective === "buyer") {
+        update.buyer_message = trimmed ? trimmed : null;
+      } else {
+        update.supplier_message = trimmed ? trimmed : null;
+      }
       if (allLockedNow) {
         // All items locked — deal closed
         const settled =
@@ -304,9 +343,15 @@ export function CounterOfferModal({
                         }}
                         className={
                           "h-9 w-24 ml-auto text-right tabular-nums focus-visible:ring-[#8B2252]" +
-                          (isAccepted ? " bg-green-50 text-green-800 border-green-300" : "")
+                          (isAccepted ? " bg-green-50 text-green-800 border-green-300" : "") +
+                          (errors[it.id] ? " border-destructive focus-visible:ring-destructive" : "")
                         }
                       />
+                      {errors[it.id] && (
+                        <div className="text-[11px] text-destructive mt-1 max-w-[200px] ml-auto">
+                          {errors[it.id]}
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right text-xs tabular-nums">
                       {isAccepted ? (
@@ -366,12 +411,17 @@ export function CounterOfferModal({
         </div>
 
         <DialogFooter className="gap-2 sm:gap-2">
+          {errorCount > 0 && (
+            <div className="mr-auto text-xs text-destructive self-center">
+              {t("buyer.bid.errors.summary", { count: errorCount, defaultValue: "{{count}} cut(s) have validation errors" })}
+            </div>
+          )}
           <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             {t("supplier.counter.cancel")}
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={submitting || openItems.length === 0}
+            disabled={submitting || openItems.length === 0 || errorCount > 0}
             style={{ background: "#8B2252", color: "#fff" }}
             className="hover:opacity-90"
           >
