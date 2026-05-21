@@ -55,9 +55,6 @@ function fmtDateShort(iso: string, locale: string) {
 function fmtKg(v: number) {
   return new Intl.NumberFormat("de-DE").format(v);
 }
-function fmtLb(v: number) {
-  return new Intl.NumberFormat("en-US").format(v);
-}
 
 function getPerRoundKg(p: BuyerNegotiationProduct, type: "bid" | "counter", round: number): number | undefined {
   const key = `${type}R${round}UsdKg` as keyof BuyerNegotiationProduct;
