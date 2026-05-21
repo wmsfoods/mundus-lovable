@@ -143,6 +143,17 @@ export default function SupplierCreateOffer() {
   const [selInco, setSelInco] = useState<string[]>([]);
   const [incoExtras, setIncoExtras] = useState<IncoExtras>({});
 
+  /* Multi-incoterm pricing */
+  const [primaryInco, setPrimaryInco] = useState<string>("");
+  const [incoAdjustments, setIncoAdjustments] = useState<Record<string, string>>({});
+  const [cutIncoOverrides, setCutIncoOverrides] = useState<
+    Record<string, Record<string, { ask?: string; floor?: string }>>
+  >({});
+
+  /* Uniform freight across markets */
+  const [uniformFreight, setUniformFreight] = useState(false);
+  const [uniformFreightValue, setUniformFreightValue] = useState("");
+
   const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
   const [certifications, setCertifications] = useState<string[]>([]);
 
@@ -176,6 +187,21 @@ export default function SupplierCreateOffer() {
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
   }, [dataError]);
+
+  /* Auto-pick the primary pricing incoterm: prefer CFR, then CIF, else first */
+  useEffect(() => {
+    if (selInco.length === 0) {
+      if (primaryInco) setPrimaryInco("");
+      return;
+    }
+    if (!selInco.includes(primaryInco)) {
+      const preferred =
+        selInco.find((i) => i === "CFR") ||
+        selInco.find((i) => i === "CIF") ||
+        selInco[0];
+      setPrimaryInco(preferred);
+    }
+  }, [selInco, primaryInco]);
 
   const cap = csize === "40ft" ? 28000 : 13000;
   const tw = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
