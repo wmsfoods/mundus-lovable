@@ -2402,6 +2402,50 @@ export type Database = {
           },
         ]
       }
+      negotiation_tokens: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          is_used: boolean
+          negotiation_id: string
+          supplier_email: string | null
+          supplier_name: string | null
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          negotiation_id: string
+          supplier_email?: string | null
+          supplier_name?: string | null
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          is_used?: boolean
+          negotiation_id?: string
+          supplier_email?: string | null
+          supplier_name?: string | null
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negotiation_tokens_negotiation_id_fkey"
+            columns: ["negotiation_id"]
+            isOneToOne: false
+            referencedRelation: "negotiations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       negotiations: {
         Row: {
           buyer_company_id: string
