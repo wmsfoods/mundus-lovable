@@ -1138,8 +1138,50 @@ export default function SupplierCreateOffer() {
                     <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><input type="number" placeholder="27000" value={nf.qty} onChange={(e) => setNf((p) => ({ ...p, qty: e.target.value }))} /></td>
-                    <td><input type="number" step="0.01" placeholder="6.40" value={nf.ask} onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))} /></td>
-                    <td><input type="number" step="0.01" placeholder="5.80" value={nf.floor} onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))} /></td>
+                    <td>
+                      {(() => {
+                        const v = validatePricePair(nf.ask, nf.floor);
+                        const bad = !v.ok && !!nf.ask;
+                        return (
+                          <>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="6.40"
+                              value={nf.ask}
+                              onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))}
+                              style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
+                              title={bad ? v.msg : undefined}
+                            />
+                            {bad && (
+                              <div style={{ fontSize: 10, color: "#dc2626", marginTop: 2 }}>≥ floor</div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </td>
+                    <td>
+                      {(() => {
+                        const v = validatePricePair(nf.ask, nf.floor);
+                        const bad = !v.ok && !!nf.floor;
+                        return (
+                          <>
+                            <input
+                              type="number"
+                              step="0.01"
+                              placeholder="5.80"
+                              value={nf.floor}
+                              onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))}
+                              style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
+                              title={bad ? "Floor must be ≤ asking" : undefined}
+                            />
+                            {bad && (
+                              <div style={{ fontSize: 10, color: "#dc2626", marginTop: 2 }}>≤ asking</div>
+                            )}
+                          </>
+                        );
+                      })()}
+                    </td>
                     {multiInco && secondaryIncos.map((s) => (
                       <Fragment key={`add-${s}`}>
                         <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
@@ -1149,7 +1191,13 @@ export default function SupplierCreateOffer() {
                     <td><input type="text" placeholder="Notes..." value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
-                        <button type="button" className="cov4-add-confirm" onClick={addCut} disabled={!nf.cut || !nf.qty || !nf.ask}>+</button>
+                        <button
+                          type="button"
+                          className="cov4-add-confirm"
+                          onClick={addCut}
+                          disabled={!nf.cut || !nf.qty || !nf.ask || !validatePricePair(nf.ask, nf.floor).ok}
+                          title={!validatePricePair(nf.ask, nf.floor).ok ? validatePricePair(nf.ask, nf.floor).msg : undefined}
+                        >+</button>
                         <button type="button" className="cov4-add-cancel" onClick={() => { setAddRow(false); setNewImgPrev(null); }}>✕</button>
                       </div>
                     </td>
