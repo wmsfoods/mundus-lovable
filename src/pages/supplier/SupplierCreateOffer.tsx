@@ -1572,6 +1572,7 @@ function SecondaryPriceCell({
   onReset,
   invalid,
   invalidMsg,
+  unit = "kg",
 }: {
   calculated: number | null;
   override?: string;
@@ -1579,19 +1580,28 @@ function SecondaryPriceCell({
   onReset: () => void;
   invalid?: boolean;
   invalidMsg?: string;
+  unit?: WeightUnit;
 }) {
   const [editing, setEditing] = useState(false);
   const errStyle = invalid ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : {};
   const errTitle = invalid ? invalidMsg : undefined;
 
   if (override !== undefined) {
+    // `override` is stored in kg (raw). Show it in display unit and convert back on edit.
+    const overrideDisplay =
+      override === "" ? "" : toDisplay(parseFloat(override) || 0, "price", unit).toFixed(2);
     return (
       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
         <input
           type="number"
           step="0.01"
-          value={override}
-          onChange={(e) => onOverride(e.target.value)}
+          value={overrideDisplay}
+          onChange={(e) => {
+            const v = e.target.value;
+            if (v === "") return onOverride("");
+            const kg = fromDisplay(parseFloat(v) || 0, "price", unit);
+            onOverride(String(kg));
+          }}
           title={errTitle}
           style={{
             width: 64,
@@ -1621,15 +1631,19 @@ function SecondaryPriceCell({
   }
 
   if (editing) {
+    const initial = toDisplay(calculated, "price", unit).toFixed(2);
     return (
       <input
         type="number"
         step="0.01"
         autoFocus
-        defaultValue={calculated.toFixed(2)}
+        defaultValue={initial}
         onBlur={(e) => {
           setEditing(false);
-          if (e.target.value && parseFloat(e.target.value) !== calculated) onOverride(e.target.value);
+          if (e.target.value) {
+            const kg = fromDisplay(parseFloat(e.target.value) || 0, "price", unit);
+            if (kg !== calculated) onOverride(String(kg));
+          }
         }}
         onKeyDown={(e) => {
           if (e.key === "Enter") (e.target as HTMLInputElement).blur();
@@ -1655,7 +1669,7 @@ function SecondaryPriceCell({
       title={errTitle}
     >
       <span style={{ fontStyle: "italic", color: invalid ? "#dc2626" : "var(--fg-muted)" }}>
-        {calculated.toFixed(2)}
+        {toDisplay(calculated, "price", unit).toFixed(2)}
       </span>
       <button
         type="button"
