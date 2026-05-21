@@ -447,6 +447,14 @@
       "submitting": "Submitting…",
       "successToast": "Bid submitted! The supplier will review your proposal."
     },
+    "counter": {
+      "title": "Send Counter-Response",
+      "subtitle": "Adjust your prices and respond to the supplier's counter-offer.",
+      "theirCounter": "Supplier Counter",
+      "theirCounterTotal": "Supplier Counter Total",
+      "successToast": "Counter-response sent! Waiting for supplier.",
+      "confirmReject": "Are you sure you want to reject this counter-offer?"
+    },
     "orders": {
       "title": "Orders",
       "heroTitle": "Track your orders easily and quickly.",
@@ -715,6 +723,29 @@
     }
   },
   "supplier": {
+    "counter": {
+      "title": "Send Counter-Offer",
+      "subtitle": "Adjust your prices and respond to the buyer's bid.",
+      "roundOf": "Round {{round}} of {{max}}",
+      "theirBid": "Their Bid",
+      "theirBidTotal": "Their Bid Total",
+      "totalAsking": "Asking Total",
+      "yourCounterTotal": "Your Counter Total",
+      "message": "Message",
+      "messagePlaceholder": "Add a message to the buyer (optional)",
+      "cancel": "Cancel",
+      "submit": "Send Counter-Offer (Round {{round}})",
+      "submitting": "Sending…",
+      "successToast": "Counter-offer sent! Waiting for buyer response.",
+      "confirmReject": "Are you sure you want to reject this bid?",
+      "col": {
+        "product": "Product",
+        "qty": "Qty ({{unit}})",
+        "asking": "Asking",
+        "yourCounter": "Your Counter",
+        "diff": "Diff"
+      }
+    },
     "negotiations": {
       "title": "Negotiations",
       "searchPlaceholder": "Search ID / buyer / product / destination...",

@@ -447,6 +447,14 @@
       "submitting": "Enviando…",
       "successToast": "Proposta enviada! O fornecedor irá analisar."
     },
+    "counter": {
+      "title": "Enviar contraproposta",
+      "subtitle": "Ajuste seus preços e responda à contraproposta do fornecedor.",
+      "theirCounter": "Contraproposta do fornecedor",
+      "theirCounterTotal": "Total da contraproposta",
+      "successToast": "Contraproposta enviada! Aguardando o fornecedor.",
+      "confirmReject": "Tem certeza que deseja rejeitar esta contraproposta?"
+    },
     "orders": {
       "title": "Pedidos",
       "heroTitle": "Acompanhe seus pedidos com facilidade e rapidez.",
@@ -715,6 +723,29 @@
     }
   },
   "supplier": {
+    "counter": {
+      "title": "Enviar contraoferta",
+      "subtitle": "Ajuste seus preços e responda ao lance do comprador.",
+      "roundOf": "Rodada {{round}} de {{max}}",
+      "theirBid": "Lance do comprador",
+      "theirBidTotal": "Total do lance",
+      "totalAsking": "Total pedido",
+      "yourCounterTotal": "Total da sua contraoferta",
+      "message": "Mensagem",
+      "messagePlaceholder": "Adicione uma mensagem ao comprador (opcional)",
+      "cancel": "Cancelar",
+      "submit": "Enviar contraoferta (Rodada {{round}})",
+      "submitting": "Enviando…",
+      "successToast": "Contraoferta enviada! Aguardando resposta do comprador.",
+      "confirmReject": "Tem certeza que deseja rejeitar este lance?",
+      "col": {
+        "product": "Produto",
+        "qty": "Qtd ({{unit}})",
+        "asking": "Pedido",
+        "yourCounter": "Sua contraoferta",
+        "diff": "Dif"
+      }
+    },
     "negotiations": {
       "title": "Negociações",
       "searchPlaceholder": "Buscar ID / comprador / produto / destino...",
