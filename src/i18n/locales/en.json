@@ -798,9 +798,6 @@
     }
   },
   "supplier": {
-    "outreach": {
-      "_placeholder": false
-    },
     "auctions": {
       "nav": "Auctions",
       "title": "My Auctions",
@@ -839,7 +836,7 @@
         "cancelled": "Auction cancelled"
       }
     },
-    "_outreachShim": {
+    "outreach": {
       "navLabel": "Outreach",
       "title": "Email Outreach",
       "subtitle": "Send your active offers to matching contacts.",
