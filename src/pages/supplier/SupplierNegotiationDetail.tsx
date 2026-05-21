@@ -17,10 +17,11 @@ import {
 } from "@/hooks/useNegotiations";
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
-import { acceptNegotiation, rejectNegotiation } from "@/components/supplier/CounterOfferActions";
+import { acceptNegotiation } from "@/components/supplier/CounterOfferActions";
+import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiationModal";
 import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, weightLabel } from "@/lib/units";
+import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
@@ -30,6 +31,7 @@ import {
   isNegotiationExpired,
   getDisplayRound,
   getMaxRaw,
+  getAgreedItems,
 } from "@/lib/negotiationEngine";
 
 function fmtUsd(v: number, fractionDigits = 0) {
@@ -72,6 +74,7 @@ export default function SupplierNegotiationDetail() {
   const isReal = isUuid(id);
   const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
   const [counterOpen, setCounterOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
   const locale = i18n.language || "en";
 
   if (!data) {
@@ -109,15 +112,27 @@ export default function SupplierNegotiationDetail() {
       toast.success(t("supplier.negotiations.detail.toast.bidAccepted"));
     }
   };
-  const handleReject = async () => {
+  const handleReject = () => {
     if (isReal && rawNeg) {
-      if (!window.confirm(t("supplier.counter.confirmReject"))) return;
-      const ok = await rejectNegotiation(rawNeg);
-      if (ok) refetch();
+      setRejectOpen(true);
     } else {
       toast(t("supplier.negotiations.detail.toast.bidRejected"));
     }
   };
+
+  // Map agreed items by product name (mock products lack offer_item_id; match
+  // via the real negotiation's offer items when available).
+  const agreedByName = (() => {
+    const map = new Map<string, { price: number; round: number }>();
+    if (!rawNeg) return map;
+    const items = rawNeg.offer?.items ?? [];
+    const byId = new Map(items.map((it) => [it.id, it.customer_product?.name ?? ""]));
+    for (const a of getAgreedItems(rawNeg)) {
+      const name = byId.get(a.offer_item_id);
+      if (name) map.set(name, { price: a.price_per_kg, round: a.agreed_round });
+    }
+    return map;
+  })();
 
   const showActions = d.status === "action_required" || d.status === "final_round";
   // Engine state (real negotiations only)
