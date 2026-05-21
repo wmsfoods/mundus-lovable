@@ -87,6 +87,21 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])),
   );
   const hydratedRef = useRef(false);
+  const [bulkOffset, setBulkOffset] = useState<string>("");
+
+  const applyAllBids = (priceFor: (askingKg: number) => number) => {
+    setBids(
+      Object.fromEntries(
+        offer.items.map((it) => [it.id, +priceFor(Number(it.price)).toFixed(4)]),
+      ),
+    );
+  };
+  const applyBulkOffset = () => {
+    const v = parseFloat(bulkOffset);
+    if (!Number.isFinite(v)) return;
+    const deltaKg = fromDisplay(v, "price", unit);
+    applyAllBids((asking) => Math.max(0, asking + deltaKg));
+  };
 
   useEffect(() => {
     if (!open) return;
