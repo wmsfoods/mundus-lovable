@@ -1075,6 +1075,7 @@ export default function SupplierCreateOffer() {
                               onReset={() => setCutOverride(c.id, s, "ask", undefined)}
                               invalid={!pair.ok}
                               invalidMsg="Asking must be ≥ floor"
+                              unit={unit}
                             />
                           </td>
                           <td className="num">
@@ -1085,6 +1086,7 @@ export default function SupplierCreateOffer() {
                               onReset={() => setCutOverride(c.id, s, "floor", undefined)}
                               invalid={!pair.ok}
                               invalidMsg="Floor must be ≤ asking"
+                              unit={unit}
                             />
                           </td>
                         </Fragment>
