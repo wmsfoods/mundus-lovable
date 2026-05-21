@@ -2448,6 +2448,7 @@ export type Database = {
       }
       negotiations: {
         Row: {
+          agreed_items: Json
           buyer_company_id: string
           created_at: string
           created_by_user_id: string
@@ -2467,6 +2468,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          agreed_items?: Json
           buyer_company_id: string
           created_at?: string
           created_by_user_id: string
@@ -2486,6 +2488,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          agreed_items?: Json
           buyer_company_id?: string
           created_at?: string
           created_by_user_id?: string

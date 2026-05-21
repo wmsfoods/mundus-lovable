@@ -103,6 +103,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           fcl_count: offer.total_fcl ?? 1,
           incoterm,
           status: "awaiting_supplier",
+          expires_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
         })
         .select("id")
         .single();

@@ -21,6 +21,16 @@ import { acceptNegotiation, rejectNegotiation } from "@/components/supplier/Coun
 import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, weightLabel } from "@/lib/units";
+import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
+import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
+import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
+import {
+  isCounterExhausted,
+  isFinalDisplayRound,
+  isNegotiationExpired,
+  getDisplayRound,
+  getMaxRaw,
+} from "@/lib/negotiationEngine";
 
 function fmtUsd(v: number, fractionDigits = 0) {
   return `$${new Intl.NumberFormat("en-US", {
@@ -110,6 +120,14 @@ export default function SupplierNegotiationDetail() {
   };
 
   const showActions = d.status === "action_required" || d.status === "final_round";
+  // Engine state (real negotiations only)
+  const realDisplayRound = rawNeg ? getDisplayRound(getMaxRaw(rawNeg)) : 0;
+  const realIsFinal = !!rawNeg && isFinalDisplayRound(realDisplayRound);
+  const realExhausted = !!rawNeg && isCounterExhausted(rawNeg);
+  const realExpired = !!rawNeg && isNegotiationExpired(rawNeg);
+  const realAccepted = !!rawNeg && rawNeg.status === "bid_accepted";
+  // Suppress counter button when no more rounds possible or expired
+  const counterAllowed = !isReal || (!realExhausted && !realExpired && !realAccepted);
 
   // Compute max round index present in products for the price table columns
   const maxRoundShown = Math.min(3, Math.max(...d.rounds.map((r) => r.round), 1));
@@ -133,7 +151,11 @@ export default function SupplierNegotiationDetail() {
           </div>
         </div>
         <div className="nd-h-right">
-          {d.expiresIn && <span className="nd-timer">⏱ {d.expiresIn}</span>}
+          {isReal && rawNeg?.expires_at ? (
+            <ExpirationTimer expiresAt={rawNeg.expires_at} />
+          ) : d.expiresIn ? (
+            <span className="nd-timer">⏱ {d.expiresIn}</span>
+          ) : null}
           {d.status === "action_required" && (
             <span className="pill pill-action-required">
               {t("supplier.negotiations.detail.banner.actionRequired")}
@@ -172,6 +194,27 @@ export default function SupplierNegotiationDetail() {
 
       {isReal && rawNeg && (
         <ShareWithSupplierCard negotiationId={rawNeg.id} buyerLabel={d.buyerName} />
+      )}
+
+      {isReal && rawNeg && <NegotiationProgressCard negotiation={rawNeg} />}
+      {isReal && rawNeg && realAccepted && (
+        <DealClosedBanner negotiation={rawNeg} perspective="supplier" />
+      )}
+      {isReal && realIsFinal && !realAccepted && !realExpired && (
+        <div
+          className="rounded-md px-3 py-2 mb-3 text-sm font-medium border"
+          style={{ background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" }}
+        >
+          ⚠️ {t("engine.finalRound.banner", "Final Round — This is the last chance to reach agreement. Unresolved items will be cancelled after this round.")}
+        </div>
+      )}
+      {isReal && realExpired && !realAccepted && (
+        <div
+          className="rounded-md px-3 py-2 mb-3 text-sm font-medium border"
+          style={{ background: "#fee2e2", color: "#b91c1c", borderColor: "#fecaca" }}
+        >
+          {t("engine.expiredBanner", "This negotiation has expired and can no longer receive responses.")}
+        </div>
       )}
 
       <div className="nd-grid">
@@ -246,15 +289,17 @@ export default function SupplierNegotiationDetail() {
 
             {showActions ? (
               <div className="nd-actions">
-                <button type="button" className="btn-counter" onClick={handleCounter}>
-                  <ArrowsLeftRightIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
-                  {t("supplier.negotiations.detail.actions.sendCounter")}
-                </button>
-                <button type="button" className="btn-accept" onClick={handleAccept}>
+                {counterAllowed && (
+                  <button type="button" className="btn-counter" onClick={handleCounter} disabled={realExpired}>
+                    <ArrowsLeftRightIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
+                    {t("supplier.negotiations.detail.actions.sendCounter")}
+                  </button>
+                )}
+                <button type="button" className="btn-accept" onClick={handleAccept} disabled={isReal && realExpired}>
                   <CheckIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("supplier.negotiations.detail.actions.acceptBid")}
                 </button>
-                <button type="button" className="btn-reject" onClick={handleReject}>
+                <button type="button" className="btn-reject" onClick={handleReject} disabled={isReal && realExpired}>
                   <XIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("supplier.negotiations.detail.actions.reject")}
                 </button>

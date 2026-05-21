@@ -144,6 +144,7 @@ export default function SupplierRespond() {
         .update({
           status: "bid_accepted",
           settled_total_value: settled,
+          expires_at: null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", neg.id);

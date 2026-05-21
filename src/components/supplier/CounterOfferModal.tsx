@@ -16,6 +16,15 @@ import { supabase } from "@/integrations/supabase/client";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
+import {
+  MAX_DISPLAY_ROUNDS,
+  getAgreedItems,
+  isCounterExhausted,
+  isFinalDisplayRound,
+  nextExpirationIso,
+  type AgreedItem,
+} from "@/lib/negotiationEngine";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const MOCK_SUPPLIER_USER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
 const MOCK_BUYER_USER_ID = "c3000001-0000-0000-0000-000000000001";
@@ -43,10 +52,17 @@ export function CounterOfferModal({
   const items = negotiation.offer?.items ?? [];
   const rounds = negotiation.rounds ?? [];
 
+  // Already-agreed items (locked) — exclude from this round
+  const existingAgreed: AgreedItem[] = getAgreedItems(negotiation);
+  const agreedIds = new Set(existingAgreed.map((a) => a.offer_item_id));
+  const openItems = items.filter((it) => !agreedIds.has(it.id));
+
   // Next raw round number; display round = ceil/2.
   const maxRaw = rounds.reduce((m, r) => Math.max(m, r.round), 0);
   const nextRaw = maxRaw + 1;
   const displayRound = Math.ceil(nextRaw / 2);
+  const isFinal = isFinalDisplayRound(displayRound);
+  const exhausted = isCounterExhausted(negotiation); // nextRaw would exceed MAX_RAW_ROUNDS
 
   // Latest "other side" prices per offer_item — what we're responding to.
   // Supplier responds to latest bid (odd round); buyer responds to latest counter (even round).
@@ -61,6 +77,8 @@ export function CounterOfferModal({
 
   // counters keyed by offer_item_id, stored as $/kg
   const [counters, setCounters] = useState<Record<string, number>>({});
+  // Per-row "Accept this price" lock-in selection
+  const [accepted, setAccepted] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -68,23 +86,29 @@ export function CounterOfferModal({
     if (!open) return;
     // Prefill with asking price (supplier) or their latest counter (buyer).
     const initial: Record<string, number> = {};
-    for (const it of items) {
+    for (const it of openItems) {
       initial[it.id] =
         perspective === "supplier"
           ? Number(it.price)
           : theirPrices.get(it.id) ?? Number(it.price);
     }
     setCounters(initial);
+    setAccepted({});
     setMessage("");
-  }, [open, items, perspective, theirPrices]);
+  }, [open, openItems, perspective, theirPrices]);
 
-  const askingTotal = items.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
-  const theirTotal = items.reduce(
+  const askingTotal = openItems.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
+  const theirTotal = openItems.reduce(
     (s, it) => s + (theirPrices.get(it.id) ?? Number(it.price)) * Number(it.amount),
     0,
   );
-  const counterTotal = items.reduce(
-    (s, it) => s + (counters[it.id] ?? 0) * Number(it.amount),
+  const counterTotal = openItems.reduce(
+    (s, it) => {
+      const price = accepted[it.id]
+        ? theirPrices.get(it.id) ?? Number(it.price)
+        : counters[it.id] ?? 0;
+      return s + price * Number(it.amount);
+    },
     0,
   );
 
@@ -97,32 +121,66 @@ export function CounterOfferModal({
     setSubmitting(true);
     try {
       const userId = perspective === "supplier" ? MOCK_SUPPLIER_USER_ID : MOCK_BUYER_USER_ID;
-      const { data: rp, error: rpErr } = await supabase
-        .from("round_proposals")
-        .insert({
-          negotiation_id: negotiation.id,
-          round: nextRaw,
-          created_by_user_id: userId,
-        })
-        .select("id")
-        .single();
-      if (rpErr || !rp) throw rpErr ?? new Error("round_proposals insert failed");
 
-      const rows = items.map((it) => ({
-        round_proposal_id: rp.id,
-        offer_item_id: it.id,
-        price_per_kg: counters[it.id] ?? Number(it.price),
-        quantity_kg: Number(it.amount),
-        total_value: (counters[it.id] ?? Number(it.price)) * Number(it.amount),
-      }));
-      const { error: crErr } = await supabase.from("cut_rounds").insert(rows);
-      if (crErr) throw crErr;
+      // Newly-agreed items in this round (lock at the other side's price)
+      const newlyAgreed: AgreedItem[] = openItems
+        .filter((it) => accepted[it.id])
+        .map((it) => ({
+          offer_item_id: it.id,
+          price_per_kg: theirPrices.get(it.id) ?? Number(it.price),
+          agreed_at: new Date().toISOString(),
+          agreed_round: displayRound,
+        }));
+      const remaining = openItems.filter((it) => !accepted[it.id]);
+      const allLockedNow = remaining.length === 0;
 
-      // Toggle status to the other party.
-      const nextStatus = perspective === "supplier" ? "pending_buyer_review" : "awaiting_supplier";
+      // Only insert a round if at least one item is still being negotiated
+      if (!allLockedNow) {
+        const { data: rp, error: rpErr } = await supabase
+          .from("round_proposals")
+          .insert({
+            negotiation_id: negotiation.id,
+            round: nextRaw,
+            created_by_user_id: userId,
+          })
+          .select("id")
+          .single();
+        if (rpErr || !rp) throw rpErr ?? new Error("round_proposals insert failed");
+
+        const rows = remaining.map((it) => ({
+          round_proposal_id: rp.id,
+          offer_item_id: it.id,
+          price_per_kg: counters[it.id] ?? Number(it.price),
+          quantity_kg: Number(it.amount),
+          total_value: (counters[it.id] ?? Number(it.price)) * Number(it.amount),
+        }));
+        const { error: crErr } = await supabase.from("cut_rounds").insert(rows);
+        if (crErr) throw crErr;
+      }
+
+      const mergedAgreed = [...existingAgreed, ...newlyAgreed];
+      const update: Record<string, unknown> = {
+        agreed_items: mergedAgreed,
+        updated_at: new Date().toISOString(),
+      };
+      if (allLockedNow) {
+        // All items locked — deal closed
+        const settled =
+          mergedAgreed.reduce((s, a) => {
+            const it = items.find((x) => x.id === a.offer_item_id);
+            return s + a.price_per_kg * Number(it?.amount ?? 0);
+          }, 0);
+        update.status = "bid_accepted";
+        update.settled_total_value = settled;
+        update.expires_at = null;
+      } else {
+        update.status = perspective === "supplier" ? "pending_buyer_review" : "awaiting_supplier";
+        update.expires_at = nextExpirationIso();
+      }
       const { error: nErr } = await supabase
         .from("negotiations")
-        .update({ status: nextStatus, updated_at: new Date().toISOString() })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update(update as any)
         .eq("id", negotiation.id);
       if (nErr) throw nErr;
 
@@ -142,10 +200,20 @@ export function CounterOfferModal({
       <DialogContent className="max-w-[760px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {t(titleKey)} — {t("supplier.counter.roundOf", { round: displayRound, max: 3 })}
+            {t(titleKey)} — {t("supplier.counter.roundOf", { round: displayRound, max: MAX_DISPLAY_ROUNDS })}
           </DialogTitle>
           <DialogDescription>{t(`${perspective}.counter.subtitle`)}</DialogDescription>
         </DialogHeader>
+
+        {isFinal && !exhausted && (
+          <div
+            className="rounded-md px-3 py-2 text-xs font-medium border"
+            style={{ background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" }}
+          >
+            ⚠️ {t("engine.finalRound.banner",
+              "Final Round — This is the last chance to reach agreement. Unresolved items will be cancelled after this round.")}
+          </div>
+        )}
 
         {/* Timeline pills (compact) */}
         {rounds.length > 0 && (
@@ -179,6 +247,7 @@ export function CounterOfferModal({
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left text-xs uppercase text-muted-foreground">
+                <th className="px-3 py-2 font-medium w-10"></th>
                 <th className="px-3 py-2 font-medium">{t("supplier.counter.col.product")}</th>
                 <th className="px-3 py-2 font-medium text-right">{t("supplier.counter.col.qty", { unit: wLbl })}</th>
                 <th className="px-3 py-2 font-medium text-right">{t("supplier.counter.col.asking")} ({pLbl})</th>
@@ -188,15 +257,29 @@ export function CounterOfferModal({
               </tr>
             </thead>
             <tbody>
-              {items.map((it) => {
+              {openItems.map((it) => {
                 const asking = Number(it.price);
                 const their = theirPrices.get(it.id) ?? asking;
-                const yours = counters[it.id] ?? asking;
+                const isAccepted = !!accepted[it.id];
+                const yours = isAccepted ? their : counters[it.id] ?? asking;
                 const d = yours - their;
                 const dPct = their > 0 ? (d / their) * 100 : 0;
                 const displayCounter = toDisplay(yours, "price", unit);
                 return (
-                  <tr key={it.id} className="border-t border-border">
+                  <tr
+                    key={it.id}
+                    className="border-t border-border"
+                    style={isAccepted ? { background: "rgba(21,128,61,0.06)" } : undefined}
+                  >
+                    <td className="px-3 py-2 align-middle">
+                      <Checkbox
+                        checked={isAccepted}
+                        onCheckedChange={(c) =>
+                          setAccepted((p) => ({ ...p, [it.id]: c === true }))
+                        }
+                        aria-label={t("engine.acceptThisPrice", "Accept this price")}
+                      />
+                    </td>
                     <td className="px-3 py-2">{it.customer_product?.name ?? "—"}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{fmtWeight(Number(it.amount), unit)}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{fmtPrice(asking, unit)}</td>
@@ -211,17 +294,24 @@ export function CounterOfferModal({
                         type="number"
                         step="0.01"
                         min="0"
+                        readOnly={isAccepted}
                         value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
                         onChange={(e) => {
+                          if (isAccepted) return;
                           const v = parseFloat(e.target.value);
                           const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
                           setCounters((prev) => ({ ...prev, [it.id]: kg }));
                         }}
-                        className="h-9 w-24 ml-auto text-right tabular-nums focus-visible:ring-[#8B2252]"
+                        className={
+                          "h-9 w-24 ml-auto text-right tabular-nums focus-visible:ring-[#8B2252]" +
+                          (isAccepted ? " bg-green-50 text-green-800 border-green-300" : "")
+                        }
                       />
                     </td>
                     <td className="px-3 py-2 text-right text-xs tabular-nums">
-                      {Math.abs(d) > 0.001 ? (
+                      {isAccepted ? (
+                        <span style={{ color: "#15803d" }}>🔒</span>
+                      ) : Math.abs(d) > 0.001 ? (
                         <span style={{ color: d > 0 ? "#15803d" : "#b45309" }}>
                           {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(2)} ({d >= 0 ? "+" : ""}
                           {dPct.toFixed(1)}%)
@@ -233,6 +323,13 @@ export function CounterOfferModal({
                   </tr>
                 );
               })}
+              {openItems.length === 0 && (
+                <tr>
+                  <td colSpan={7} className="px-3 py-6 text-center text-sm text-muted-foreground">
+                    {t("engine.allLocked", "All items already agreed.")}
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -274,7 +371,7 @@ export function CounterOfferModal({
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={submitting}
+            disabled={submitting || openItems.length === 0}
             style={{ background: "#8B2252", color: "#fff" }}
             className="hover:opacity-90"
           >
