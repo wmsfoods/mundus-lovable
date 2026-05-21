@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties } from "react";
+import { Fragment, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -15,6 +15,9 @@ import {
   type BuyerNegotiationDetail,
   type BuyerNegotiationProduct,
 } from "@/hooks/useBuyerNegotiations";
+import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
+import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
+import { acceptNegotiation, rejectNegotiation } from "@/components/supplier/CounterOfferActions";
 
 function fmtUsd(v: number, fractionDigits = 0) {
   return `$${new Intl.NumberFormat("en-US", {
@@ -52,6 +55,9 @@ export default function BuyerNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const { data } = useBuyerNegotiation(id);
+  const isReal = isUuid(id);
+  const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
+  const [counterOpen, setCounterOpen] = useState(false);
   const locale = i18n.language || "en";
 
   if (!data) {
@@ -74,16 +80,28 @@ export default function BuyerNegotiationDetail() {
   const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
 
   const handleCounter = () => {
-    console.log("buyer counter", id);
-    toast(t("buyer.negotiations.detail.toast.counter"));
+    if (isReal && rawNeg) {
+      setCounterOpen(true);
+    } else {
+      toast(t("buyer.negotiations.detail.toast.counter"));
+    }
   };
-  const handleAccept = () => {
-    console.log("buyer accept", id);
-    toast.success(t("buyer.negotiations.detail.toast.accepted"));
+  const handleAccept = async () => {
+    if (isReal && rawNeg) {
+      const ok = await acceptNegotiation(rawNeg, "buyer");
+      if (ok) refetch();
+    } else {
+      toast.success(t("buyer.negotiations.detail.toast.accepted"));
+    }
   };
-  const handleReject = () => {
-    console.log("buyer reject", id);
-    toast(t("buyer.negotiations.detail.toast.rejected"));
+  const handleReject = async () => {
+    if (isReal && rawNeg) {
+      if (!window.confirm(t("buyer.counter.confirmReject"))) return;
+      const ok = await rejectNegotiation(rawNeg);
+      if (ok) refetch();
+    } else {
+      toast(t("buyer.negotiations.detail.toast.rejected"));
+    }
   };
 
   const showActions = d.status === "action_required" || d.status === "final_round";
@@ -342,6 +360,16 @@ export default function BuyerNegotiationDetail() {
           </div>
         </div>
       </div>
+
+      {isReal && rawNeg && (
+        <CounterOfferModal
+          open={counterOpen}
+          onOpenChange={setCounterOpen}
+          negotiation={rawNeg}
+          perspective="buyer"
+          onSubmitted={() => refetch()}
+        />
+      )}
     </>
   );
 }
