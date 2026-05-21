@@ -164,6 +164,12 @@
     "note": "Esta tela será construída nos próximos commits do port."
   },
   "buyer": {
+    "procurement": {
+      "nav": "Inteligência de Compras",
+      "groupLabel": "Insights",
+      "title": "Painel de economia e gastos",
+      "subtitle": "Quanto a Mundus economizou para você vs mercado. Onde você está gastando. Quais fornecedores estão entregando."
+    },
     "requests": {
       "title": "Minhas solicitações de oferta",
       "newRequest": "Nova solicitação",

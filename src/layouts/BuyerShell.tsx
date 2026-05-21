@@ -21,6 +21,7 @@ import {
   FileTextIcon,
   MessageIcon,
 } from "@/components/icons";
+import { BarChart3 } from "lucide-react";
 
 export default function BuyerShell() {
   const { user } = useAuth();
@@ -41,6 +42,13 @@ export default function BuyerShell() {
     { to: "/buyer/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
     { to: "/buyer/chat", label: t("shell.nav.chat"), icon: MessageIcon, badge: BUYER_CHAT_TOTAL_UNREAD || undefined },
     { to: "/buyer/users", label: t("shell.nav.users"), icon: UsersIcon },
+    {
+      to: "/buyer/procurement-intelligence",
+      label: t("buyer.procurement.nav", { defaultValue: "Procurement Intelligence" }),
+      icon: BarChart3 as unknown as SidebarItem["icon"],
+      proBadge: true,
+      groupLabel: t("buyer.procurement.groupLabel", { defaultValue: "Insights" }),
+    },
   ];
 
   const BUYER_BOTTOM: BottomNavItem[] = [
