@@ -183,6 +183,14 @@ function OfferDetailContent({
 
   return (
     <>
+      <button
+        type="button"
+        className="btn-back"
+        onClick={() => navigate("/buyer/offers")}
+        style={{ marginBottom: 12 }}
+      >
+        <ArrowLeftIcon size={14} /> {t("buyer.offerDetail.backToOffers")}
+      </button>
       <div className="crumbs">
         <a onClick={(e) => { e.preventDefault(); navigate("/buyer"); }} href="/buyer">
           {t("buyer.offerDetail.crumbHome")}

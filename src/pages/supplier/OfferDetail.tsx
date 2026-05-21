@@ -61,6 +61,14 @@ export default function SupplierOfferDetail() {
 
   return (
     <>
+      <button
+        type="button"
+        className="btn-back"
+        onClick={() => navigate("/supplier/offers")}
+        style={{ marginBottom: 12 }}
+      >
+        <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
+      </button>
       <div className="crumbs">
         <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
           {t("supplier.offers.crumbHome")}
