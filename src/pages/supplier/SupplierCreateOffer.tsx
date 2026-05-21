@@ -489,6 +489,82 @@ export default function SupplierCreateOffer() {
             })()}
           </div>
 
+          {/* ── Uniform freight toggle (only meaningful with 2+ markets) ── */}
+          {selMarkets.length >= 2 && (
+            <div
+              style={{
+                margin: "8px 0 4px",
+                padding: "10px 12px",
+                borderRadius: 8,
+                background: uniformFreight ? "#E6F1FB" : "#F9FAFB",
+                border: `1px solid ${uniformFreight ? "#BDD7F0" : "#E5E7EB"}`,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+                transition: "background .15s, border-color .15s",
+              }}
+            >
+              <div
+                style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer", flex: 1, minWidth: 220 }}
+                onClick={() => setUniformFreight((v) => !v)}
+              >
+                <span style={{ fontSize: 12, fontWeight: 600 }}>
+                  🌐 Same freight for all markets and ports
+                </span>
+                <span
+                  role="switch"
+                  aria-checked={uniformFreight}
+                  style={{
+                    width: 36,
+                    height: 20,
+                    background: uniformFreight ? "var(--p800)" : "#d1d5db",
+                    borderRadius: 999,
+                    position: "relative",
+                    transition: "background .15s",
+                    flexShrink: 0,
+                  }}
+                >
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 2,
+                      left: uniformFreight ? 18 : 2,
+                      width: 16,
+                      height: 16,
+                      background: "#fff",
+                      borderRadius: "50%",
+                      transition: "left .15s",
+                      boxShadow: "0 1px 2px rgba(0,0,0,.2)",
+                    }}
+                  />
+                </span>
+              </div>
+              {uniformFreight && (
+                <>
+                  <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                    {selMarkets.map((m) => (
+                      <span
+                        key={m.id}
+                        style={{
+                          padding: "2px 8px",
+                          borderRadius: 999,
+                          background: "#fff",
+                          border: "1px solid #BDD7F0",
+                          fontSize: 11,
+                          color: "#0C447C",
+                        }}
+                      >
+                        {m.f} {m.n}
+                      </span>
+                    ))}
+                  </div>
+                  <PriceInput value={uniformFreightValue} onChange={setUniformFreightValue} />
+                </>
+              )}
+            </div>
+          )}
+
           {/* Market cards */}
           {selMarkets.map((m) => {
             const c = mktCfg[m.id];
@@ -511,7 +587,7 @@ export default function SupplierCreateOffer() {
                     );
                   })}
                 </div>
-                {c.sp.length > 1 && (
+                {!uniformFreight && c.sp.length > 1 && (
                   <div className="cov4-ftgl">
                     <span>Same freight all ports?</span>
                     <div className="cov4-tgl cov4-tgl-sm">
@@ -522,7 +598,7 @@ export default function SupplierCreateOffer() {
                     </div>
                   </div>
                 )}
-                {(c.sm || c.sp.length <= 1) ? (
+                {uniformFreight ? null : (c.sm || c.sp.length <= 1) ? (
                   <div className="cov4-fr-row">
                     <label className="cov4-fr-lbl">Freight</label>
                     <PriceInput value={c.gf} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], gf: v } }))} />
@@ -541,7 +617,7 @@ export default function SupplierCreateOffer() {
                     })}
                   </div>
                 )}
-                {(c.sm || c.sp.length <= 1) && c.sp[0] && (
+                {!uniformFreight && (c.sm || c.sp.length <= 1) && c.sp[0] && (
                   <MarketplaceSourceTag src={routeSources[`${m.id}-${c.sp[0]}`]} via={tm("via")} />
                 )}
               </div>
