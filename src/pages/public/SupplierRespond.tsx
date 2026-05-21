@@ -197,7 +197,6 @@ export default function SupplierRespond() {
         offer_item_id: it.id,
         price_per_kg: counters[it.id] ?? Number(it.price),
         quantity_kg: Number(it.amount),
-        total_value: (counters[it.id] ?? Number(it.price)) * Number(it.amount),
       }));
       const { error: crErr } = await supabase.from("cut_rounds").insert(rows);
       if (crErr) throw crErr;

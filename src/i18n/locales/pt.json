@@ -494,7 +494,13 @@
       "cancel": "Cancelar",
       "submit": "Enviar Proposta",
       "submitting": "Enviando…",
-      "successToast": "Proposta enviada! O fornecedor irá analisar."
+      "successToast": "Proposta enviada! O fornecedor irá analisar.",
+      "errors": {
+        "required": "Informe um valor maior que 0",
+        "minPct": "Lance mínimo é ${{min}} (90% do pedido)",
+        "summary_one": "{{count}} corte com erros de validação",
+        "summary_other": "{{count}} cortes com erros de validação"
+      }
     },
     "counter": {
       "title": "Enviar contraproposta",
@@ -502,7 +508,10 @@
       "theirCounter": "Contraproposta do fornecedor",
       "theirCounterTotal": "Total da contraproposta",
       "successToast": "Contraproposta enviada! Aguardando o fornecedor.",
-      "confirmReject": "Tem certeza que deseja rejeitar esta contraproposta?"
+      "confirmReject": "Tem certeza que deseja rejeitar esta contraproposta?",
+      "errors": {
+        "belowInitial": "Não é possível ofertar abaixo da sua proposta inicial de ${{min}}"
+      }
     },
     "orders": {
       "title": "Pedidos",

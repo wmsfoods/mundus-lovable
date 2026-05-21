@@ -494,7 +494,13 @@
       "cancel": "Cancelar",
       "submit": "Enviar Oferta",
       "submitting": "Enviando…",
-      "successToast": "¡Oferta enviada! El proveedor revisará tu propuesta."
+      "successToast": "¡Oferta enviada! El proveedor revisará tu propuesta.",
+      "errors": {
+        "required": "Ingresa un valor mayor a 0",
+        "minPct": "La oferta mínima es ${{min}} (90% del pedido)",
+        "summary_one": "{{count}} corte con errores de validación",
+        "summary_other": "{{count}} cortes con errores de validación"
+      }
     },
     "counter": {
       "title": "Enviar contrarespuesta",
@@ -502,7 +508,10 @@
       "theirCounter": "Contraoferta del proveedor",
       "theirCounterTotal": "Total contraoferta",
       "successToast": "¡Contrarespuesta enviada! Esperando al proveedor.",
-      "confirmReject": "¿Seguro que deseas rechazar esta contraoferta?"
+      "confirmReject": "¿Seguro que deseas rechazar esta contraoferta?",
+      "errors": {
+        "belowInitial": "No puedes ofertar por debajo de tu oferta inicial de ${{min}}"
+      }
     },
     "orders": {
       "title": "Pedidos",

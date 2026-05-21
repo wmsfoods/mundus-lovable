@@ -197,6 +197,17 @@ export default function SupplierNegotiationDetail() {
       )}
 
       {isReal && rawNeg && <NegotiationProgressCard negotiation={rawNeg} />}
+      {isReal && rawNeg?.buyer_message && (
+        <div
+          className="rounded-md border px-3 py-2 mb-3 text-sm"
+          style={{ background: "#f5f3ff", borderColor: "#ddd6fe", color: "#4c1d95" }}
+        >
+          <div className="text-xs font-semibold uppercase mb-1 opacity-70">
+            {t("supplier.negotiations.detail.noteFromBuyer", "Note from buyer")}
+          </div>
+          <div className="whitespace-pre-wrap">{rawNeg.buyer_message}</div>
+        </div>
+      )}
       {isReal && rawNeg && realAccepted && (
         <DealClosedBanner negotiation={rawNeg} perspective="supplier" />
       )}

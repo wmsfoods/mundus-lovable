@@ -2465,6 +2465,7 @@ export type Database = {
         Row: {
           agreed_items: Json
           buyer_company_id: string
+          buyer_message: string | null
           created_at: string
           created_by_user_id: string
           deleted_at: string | null
@@ -2480,11 +2481,13 @@ export type Database = {
           settled_round_proposal_id: string | null
           settled_total_value: number | null
           status: string
+          supplier_message: string | null
           updated_at: string
         }
         Insert: {
           agreed_items?: Json
           buyer_company_id: string
+          buyer_message?: string | null
           created_at?: string
           created_by_user_id: string
           deleted_at?: string | null
@@ -2500,11 +2503,13 @@ export type Database = {
           settled_round_proposal_id?: string | null
           settled_total_value?: number | null
           status?: string
+          supplier_message?: string | null
           updated_at?: string
         }
         Update: {
           agreed_items?: Json
           buyer_company_id?: string
+          buyer_message?: string | null
           created_at?: string
           created_by_user_id?: string
           deleted_at?: string | null
@@ -2520,6 +2525,7 @@ export type Database = {
           settled_round_proposal_id?: string | null
           settled_total_value?: number | null
           status?: string
+          supplier_message?: string | null
           updated_at?: string
         }
         Relationships: [

@@ -494,7 +494,13 @@
       "cancel": "Cancel",
       "submit": "Submit Bid",
       "submitting": "Submitting…",
-      "successToast": "Bid submitted! The supplier will review your proposal."
+      "successToast": "Bid submitted! The supplier will review your proposal.",
+      "errors": {
+        "required": "Enter a bid greater than 0",
+        "minPct": "Minimum bid is ${{min}} (90% of asking)",
+        "summary_one": "{{count}} cut has validation errors",
+        "summary_other": "{{count}} cuts have validation errors"
+      }
     },
     "counter": {
       "title": "Send Counter-Response",
@@ -502,7 +508,10 @@
       "theirCounter": "Supplier Counter",
       "theirCounterTotal": "Supplier Counter Total",
       "successToast": "Counter-response sent! Waiting for supplier.",
-      "confirmReject": "Are you sure you want to reject this counter-offer?"
+      "confirmReject": "Are you sure you want to reject this counter-offer?",
+      "errors": {
+        "belowInitial": "Cannot bid below your initial bid of ${{min}}"
+      }
     },
     "orders": {
       "title": "Orders",
