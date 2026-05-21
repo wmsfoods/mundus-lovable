@@ -169,7 +169,35 @@
       "nav": "Inteligencia de Compras",
       "groupLabel": "Insights",
       "title": "Panel de ahorro y gasto",
-      "subtitle": "Cuánto te ahorró Mundus vs mercado. Dónde estás gastando. Qué proveedores están cumpliendo."
+      "subtitle": "Cuánto te ahorró Mundus vs mercado. Dónde estás gastando. Qué proveedores están cumpliendo.",
+      "upsell": {
+        "title": "Convierte las compras en ventaja competitiva",
+        "lede": "Deja de comprar a ciegas. Mira exactamente cuánto ahorras vs mercado, dónde se fuga el gasto y qué proveedores merecen más de tu cartera — todo en un solo lugar.",
+        "bullets": {
+          "spend": {
+            "title": "Gasto y presupuesto en vivo",
+            "body": "Vista en tiempo real del gasto YTD por categoría, origen y proveedor — con alertas de desvío de presupuesto."
+          },
+          "savings": {
+            "title": "Ahorro verificado vs mercado",
+            "body": "Cada pedido comparado con el marketplace Mundus en vivo para que finanzas vea ahorros reales y defendibles."
+          },
+          "suppliers": {
+            "title": "Scorecards de proveedor",
+            "body": "Califica a cada proveedor por precio, puntualidad, calidad y respuesta — y detecta riesgo de concentración."
+          },
+          "marketAlerts": {
+            "title": "Alertas inteligentes de compras",
+            "body": "Recibe avisos cuando bajen los precios de los cortes que compras, venzan contratos o una categoría se vuelva riesgosa."
+          }
+        },
+        "perks": [
+          "Reporte mensual de ahorro listo para el CFO (PDF)",
+          "Exportaciones ilimitadas en CSV de gasto, ahorro y proveedores",
+          "Presupuestos personalizados y alertas de desvío por categoría",
+          "Panel de concentración y riesgo de proveedores"
+        ]
+      }
     },
     "requests": {
       "title": "Mis solicitudes de oferta",
