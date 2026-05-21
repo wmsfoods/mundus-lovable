@@ -171,6 +171,22 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     if (!canSubmit || submitting) return;
     setSubmitting(true);
     try {
+      // Check if buyer already has an active negotiation for this offer
+      const { data: existing } = await supabase
+        .from("negotiations")
+        .select("id, status")
+        .eq("offer_id", offer.id)
+        .eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
+        .in("status", ["awaiting_supplier", "pending_buyer_review"])
+        .maybeSingle();
+      if (existing?.id) {
+        toast.info(t("buyer.bid.alreadyActive", "You already have an active negotiation for this offer."));
+        clearDraft(offer.id);
+        onOpenChange(false);
+        navigate(`/buyer/negotiations/${existing.id}`);
+        return;
+      }
+
       const { data: neg, error: negErr } = await supabase
         .from("negotiations")
         .insert({
@@ -221,7 +237,12 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       onOpenChange(false);
       navigate("/buyer/negotiations");
     } catch (e: any) {
-      toast.error(e?.message ?? "Failed to submit bid");
+      const msg = String(e?.message ?? "");
+      if (msg.includes("negotiations_unique_active_per_buyer_offer")) {
+        toast.error(t("buyer.bid.alreadyActive", "You already have an active negotiation for this offer."));
+      } else {
+        toast.error(msg || "Failed to submit bid");
+      }
     } finally {
       setSubmitting(false);
     }
