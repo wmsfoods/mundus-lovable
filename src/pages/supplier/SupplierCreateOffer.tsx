@@ -1184,7 +1184,25 @@ export default function SupplierCreateOffer() {
                     <td><select value={nf.pkg} onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}>{PKGS.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><input type="number" placeholder="27000" value={nf.qty} onChange={(e) => setNf((p) => ({ ...p, qty: e.target.value }))} /></td>
+                    <td>
+                      <input
+                        type="number"
+                        placeholder={qtyPh}
+                        value={
+                          nf.qty === ""
+                            ? ""
+                            : unit === "kg"
+                              ? nf.qty
+                              : toDisplay(parseFloat(nf.qty) || 0, "weight", unit).toFixed(0)
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (v === "") return setNf((p) => ({ ...p, qty: "" }));
+                          const kg = fromDisplay(parseFloat(v) || 0, "weight", unit);
+                          setNf((p) => ({ ...p, qty: String(kg) }));
+                        }}
+                      />
+                    </td>
                     <td>
                       {(() => {
                         const v = validatePricePair(nf.ask, nf.floor);
@@ -1194,9 +1212,20 @@ export default function SupplierCreateOffer() {
                             <input
                               type="number"
                               step="0.01"
-                              placeholder="6.40"
-                              value={nf.ask}
-                              onChange={(e) => setNf((p) => ({ ...p, ask: e.target.value }))}
+                              placeholder={askPh}
+                              value={
+                                nf.ask === ""
+                                  ? ""
+                                  : unit === "kg"
+                                    ? nf.ask
+                                    : toDisplay(parseFloat(nf.ask) || 0, "price", unit).toFixed(2)
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") return setNf((p) => ({ ...p, ask: "" }));
+                                const kg = fromDisplay(parseFloat(val) || 0, "price", unit);
+                                setNf((p) => ({ ...p, ask: String(kg) }));
+                              }}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
                               title={bad ? v.msg : undefined}
                             />
@@ -1216,9 +1245,20 @@ export default function SupplierCreateOffer() {
                             <input
                               type="number"
                               step="0.01"
-                              placeholder="5.80"
-                              value={nf.floor}
-                              onChange={(e) => setNf((p) => ({ ...p, floor: e.target.value }))}
+                              placeholder={floorPh}
+                              value={
+                                nf.floor === ""
+                                  ? ""
+                                  : unit === "kg"
+                                    ? nf.floor
+                                    : toDisplay(parseFloat(nf.floor) || 0, "price", unit).toFixed(2)
+                              }
+                              onChange={(e) => {
+                                const val = e.target.value;
+                                if (val === "") return setNf((p) => ({ ...p, floor: "" }));
+                                const kg = fromDisplay(parseFloat(val) || 0, "price", unit);
+                                setNf((p) => ({ ...p, floor: String(kg) }));
+                              }}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
                               title={bad ? "Floor must be ≤ asking" : undefined}
                             />
