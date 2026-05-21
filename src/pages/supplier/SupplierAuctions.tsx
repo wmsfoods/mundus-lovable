@@ -150,8 +150,7 @@ export default function SupplierAuctions() {
   }, [filter]);
 
   const handleCreate = () => {
-    toast(t("supplier.auctions.comingSoon"));
-    navigate("/supplier/auctions");
+    navigate("/supplier/auctions/create");
   };
 
   return (
