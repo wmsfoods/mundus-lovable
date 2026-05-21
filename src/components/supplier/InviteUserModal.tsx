@@ -4,31 +4,49 @@ import { toast } from "sonner";
 import { Modal } from "@/components/mundus/Modal";
 import { TextField } from "@/components/mundus/TextField";
 import { SelectField } from "@/components/mundus/SelectField";
-import type { SupplierUser } from "@/hooks/useSupplierUsers";
+import { supabase } from "@/integrations/supabase/client";
+import { MOCK_SUPPLIER_COMPANY_ID, type SupplierProfileType } from "@/hooks/useSupplierUsers";
 
 type Props = {
   open: boolean;
   onClose: () => void;
+  onCreated?: () => void;
 };
 
-const PROFILES: SupplierUser["profileType"][] = [
+const PROFILES: SupplierProfileType[] = [
   "master_supplier",
-  "sales_trader",
+  "operator",
   "export_manager",
   "quality_control",
   "logistics",
 ];
 
-export function InviteUserModal({ open, onClose }: Props) {
+export function InviteUserModal({ open, onClose, onCreated }: Props) {
   const { t } = useTranslation();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [profile, setProfile] = useState<SupplierUser["profileType"]>("sales_trader");
+  const [profile, setProfile] = useState<SupplierProfileType>("operator");
+  const [busy, setBusy] = useState(false);
 
-  const handleSend = () => {
-    console.log("invite", { email, profile });
-    toast.success(t("supplier.users.invite.success"));
+  const handleSend = async () => {
+    setBusy(true);
+    const { error } = await (supabase as any).from("company_users").insert({
+      company_id: MOCK_SUPPLIER_COMPANY_ID,
+      full_name: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      role: profile,
+      status: "invited",
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(t("supplier.users.invite.successEmail", { email: email.trim() }));
+    setFullName("");
     setEmail("");
-    setProfile("sales_trader");
+    setProfile("operator");
+    onCreated?.();
     onClose();
   };
 
@@ -39,6 +57,13 @@ export function InviteUserModal({ open, onClose }: Props) {
         <p style={{ margin: "0 0 16px", fontSize: "var(--fs-sm)", color: "var(--fg-muted)" }}>
           {t("supplier.users.invite.subtitle")}
         </p>
+        <TextField
+          label={t("supplier.users.invite.fullNameLabel")}
+          required
+          value={fullName}
+          onChange={setFullName}
+          placeholder={t("supplier.users.invite.fullNamePlaceholder")}
+        />
         <TextField
           label={t("supplier.users.invite.emailLabel")}
           required
@@ -51,7 +76,7 @@ export function InviteUserModal({ open, onClose }: Props) {
           label={t("supplier.users.invite.profileLabel")}
           required
           value={profile}
-          onChange={(v) => setProfile(v as SupplierUser["profileType"])}
+          onChange={(v) => setProfile(v as SupplierProfileType)}
           options={PROFILES.map((p) => ({ value: p, label: t(`supplier.users.profile.${p}`) }))}
         />
       </div>
@@ -63,7 +88,7 @@ export function InviteUserModal({ open, onClose }: Props) {
           type="button"
           className="btn btn-primary"
           onClick={handleSend}
-          disabled={!email.trim()}
+          disabled={!email.trim() || !fullName.trim() || busy}
         >
           {t("supplier.users.invite.send")}
         </button>
