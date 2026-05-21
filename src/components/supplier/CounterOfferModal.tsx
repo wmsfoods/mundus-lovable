@@ -179,7 +179,8 @@ export function CounterOfferModal({
       }
       const { error: nErr } = await supabase
         .from("negotiations")
-        .update(update)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .update(update as any)
         .eq("id", negotiation.id);
       if (nErr) throw nErr;
 
