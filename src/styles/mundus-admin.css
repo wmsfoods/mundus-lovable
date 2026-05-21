@@ -900,3 +900,102 @@
 @media (max-width: 760px) {
   .adm-form-grid { grid-template-columns: 1fr; }
 }
+
+/* =========================================================================
+   Admin Ports — mobile polish
+   ========================================================================= */
+.adm-port-card {
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.adm-port-card__top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.adm-port-card__flag {
+  font-size: 26px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.adm-port-card__title {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.adm-port-card__title strong {
+  font-size: 14px;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-port-card__country {
+  font-size: 12px;
+  color: var(--fg-muted, #6b7280);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.adm-port-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding-left: 36px; /* align with title under the checkbox */
+}
+
+@media (max-width: 640px) {
+  /* Header — keep on one line but allow add btn to shrink */
+  .adm-ports-header .adm-page-title { font-size: 18px; }
+  .adm-ports-header .adm-page-subtle { font-size: 12px; }
+  .adm-ports-add-btn { padding: 8px 12px; font-size: 13px; }
+
+  /* Stats — compact 3-column */
+  .adm-ports-stats {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px !important;
+  }
+  .adm-ports-stats .adm-panel { padding: 10px 8px !important; }
+  .adm-ports-stats .adm-panel > span { font-size: 10px !important; letter-spacing: 0.3px; }
+  .adm-ports-stats .adm-panel strong { font-size: 18px !important; }
+
+  /* Toolbar — search full width, filters in 2-col grid */
+  .adm-ports-toolbar {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .adm-ports-toolbar .adm-search {
+    grid-column: 1 / -1;
+    max-width: none;
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+  .adm-ports-toolbar .crm-select {
+    width: 100%;
+    min-height: 40px;
+    font-size: 14px;
+  }
+
+  /* Bulk action bar — stack and full-width buttons */
+  .adm-ports-bulkbar { padding: 12px !important; }
+  .adm-ports-bulkbar > button,
+  .adm-ports-bulkbar > .crm-btn-outline {
+    flex: 1 1 calc(50% - 5px);
+    justify-content: center;
+    min-height: 40px;
+  }
+
+  /* Pagination — full width buttons */
+  .adm-ports-pagination { flex-direction: column; align-items: stretch; }
+  .adm-ports-pagination > div { justify-content: space-between; }
+  .adm-ports-pagination .crm-btn-outline {
+    flex: 1;
+    min-height: 40px;
+    justify-content: center;
+  }
+}
