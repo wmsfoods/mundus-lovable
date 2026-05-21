@@ -815,6 +815,44 @@
     }
   },
   "supplier": {
+    "auctions": {
+      "nav": "Leilões",
+      "title": "Meus Leilões",
+      "subtitle": "Crie leilões fechados (sealed-bid) para seus produtos",
+      "createCta": "Criar Leilão",
+      "comingSoon": "Em breve — fluxo de criação de leilão",
+      "detailComingSoon": "Detalhe do leilão em breve",
+      "emptyState": "Nenhum leilão neste status.",
+      "filter": {
+        "all": "Todos",
+        "scheduled": "Agendados",
+        "open": "Abertos",
+        "closed": "Encerrados",
+        "awarded": "Adjudicados",
+        "cancelled": "Cancelados"
+      },
+      "statusBadge": {
+        "scheduled": "Agendado",
+        "open": "Ao Vivo",
+        "closed": "Encerrado",
+        "awarded": "Adjudicado",
+        "cancelled": "Cancelado"
+      },
+      "card": {
+        "origin": "Origem",
+        "destination": "Destino",
+        "bids_one": "{{count}} lance",
+        "bids_other": "{{count}} lances",
+        "bids": "{{count}} lances",
+        "viewAuction": "Ver Leilão",
+        "viewBids": "Ver Lances",
+        "windowClosed": "Janela Encerrada",
+        "awardedBanner": "Adjudicado · {{count}} lances recebidos",
+        "opensSoon": "Abre em breve",
+        "manage": "Gerenciar",
+        "cancelled": "Leilão cancelado"
+      }
+    },
     "outreach": {
       "navLabel": "Outreach",
       "title": "Outreach por Email",
