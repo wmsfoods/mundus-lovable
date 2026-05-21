@@ -4,25 +4,43 @@ import { toast } from "sonner";
 import { Modal } from "@/components/mundus/Modal";
 import { TextField } from "@/components/mundus/TextField";
 import { SelectField } from "@/components/mundus/SelectField";
-import type { BuyerUser } from "@/hooks/useBuyerUsers";
+import { supabase } from "@/integrations/supabase/client";
+import { MOCK_BUYER_COMPANY_ID, type BuyerProfileType } from "@/hooks/useBuyerUsers";
 
 type Props = {
   open: boolean;
   onClose: () => void;
+  onCreated?: () => void;
 };
 
-const PROFILES: BuyerUser["profileType"][] = ["admin", "buyer", "viewer"];
+const PROFILES: BuyerProfileType[] = ["master_buyer", "procurement", "finance", "compliance"];
 
-export function BuyerInviteUserModal({ open, onClose }: Props) {
+export function BuyerInviteUserModal({ open, onClose, onCreated }: Props) {
   const { t } = useTranslation();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
-  const [profile, setProfile] = useState<BuyerUser["profileType"]>("buyer");
+  const [profile, setProfile] = useState<BuyerProfileType>("procurement");
+  const [busy, setBusy] = useState(false);
 
-  const handleSend = () => {
-    console.log("invite buyer user", { email, profile });
-    toast.success(t("buyer.users.invite.success"));
+  const handleSend = async () => {
+    setBusy(true);
+    const { error } = await (supabase as any).from("company_users").insert({
+      company_id: MOCK_BUYER_COMPANY_ID,
+      full_name: fullName.trim(),
+      email: email.trim().toLowerCase(),
+      role: profile,
+      status: "invited",
+    });
+    setBusy(false);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    toast.success(t("buyer.users.invite.successEmail", { email: email.trim() }));
+    setFullName("");
     setEmail("");
-    setProfile("buyer");
+    setProfile("procurement");
+    onCreated?.();
     onClose();
   };
 
@@ -33,6 +51,13 @@ export function BuyerInviteUserModal({ open, onClose }: Props) {
         <p style={{ margin: "0 0 16px", fontSize: "var(--fs-sm)", color: "var(--fg-muted)" }}>
           {t("buyer.users.invite.subtitle")}
         </p>
+        <TextField
+          label={t("buyer.users.invite.fullNameLabel")}
+          required
+          value={fullName}
+          onChange={setFullName}
+          placeholder={t("buyer.users.invite.fullNamePlaceholder")}
+        />
         <TextField
           label={t("buyer.users.invite.emailLabel")}
           required
@@ -45,7 +70,7 @@ export function BuyerInviteUserModal({ open, onClose }: Props) {
           label={t("buyer.users.invite.profileLabel")}
           required
           value={profile}
-          onChange={(v) => setProfile(v as BuyerUser["profileType"])}
+          onChange={(v) => setProfile(v as BuyerProfileType)}
           options={PROFILES.map((p) => ({ value: p, label: t(`buyer.users.profile.${p}`) }))}
         />
       </div>
@@ -57,7 +82,7 @@ export function BuyerInviteUserModal({ open, onClose }: Props) {
           type="button"
           className="btn btn-primary"
           onClick={handleSend}
-          disabled={!email.trim()}
+          disabled={!email.trim() || !fullName.trim() || busy}
         >
           {t("buyer.users.invite.send")}
         </button>
