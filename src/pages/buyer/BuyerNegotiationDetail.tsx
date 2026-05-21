@@ -17,7 +17,10 @@ import {
 } from "@/hooks/useBuyerNegotiations";
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
-import { acceptNegotiation, rejectNegotiation } from "@/components/supplier/CounterOfferActions";
+import { acceptNegotiation } from "@/components/supplier/CounterOfferActions";
+import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiationModal";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
@@ -68,6 +71,8 @@ export default function BuyerNegotiationDetail() {
   const isReal = isUuid(id);
   const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
   const [counterOpen, setCounterOpen] = useState(false);
+  const [rejectOpen, setRejectOpen] = useState(false);
+  const { unit } = useWeightUnit();
   const locale = i18n.language || "en";
 
   if (!data) {
@@ -104,11 +109,9 @@ export default function BuyerNegotiationDetail() {
       toast.success(t("buyer.negotiations.detail.toast.accepted"));
     }
   };
-  const handleReject = async () => {
+  const handleReject = () => {
     if (isReal && rawNeg) {
-      if (!window.confirm(t("buyer.counter.confirmReject"))) return;
-      const ok = await rejectNegotiation(rawNeg);
-      if (ok) refetch();
+      setRejectOpen(true);
     } else {
       toast(t("buyer.negotiations.detail.toast.rejected"));
     }
