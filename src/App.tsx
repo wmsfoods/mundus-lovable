@@ -31,6 +31,7 @@ import ProcurementIntelligence from "./pages/buyer/ProcurementIntelligence.tsx";
 import AdminShell from "./pages/admin/AdminShell.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
+import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags.tsx";
 import AdminProspects from "./pages/admin/AdminProspects.tsx";
 import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
 import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
@@ -171,7 +172,7 @@ const App = () => (
               <Route path="finance/commissions" element={<AdminComingSoon section="finance/commissions" />} />
               <Route path="settings/team" element={<AdminComingSoon section="settings/team" />} />
               <Route path="settings/audit" element={<AdminComingSoon section="settings/audit" />} />
-              <Route path="settings/flags" element={<AdminComingSoon section="settings/flags" />} />
+              <Route path="settings/flags" element={<AdminFeatureFlags />} />
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>
