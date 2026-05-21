@@ -1,4 +1,5 @@
-import { useNavigate } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   TagIcon,
@@ -7,8 +8,11 @@ import {
   SearchIcon,
   GridIcon,
   FlagSVG,
+  XIcon,
 } from "@/components/icons";
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
+import { ProteinFilter, type ProteinKey } from "@/components/marketplace/ProteinFilter";
+import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProteins";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -222,12 +226,73 @@ export default function BuyerOffers() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { offers, loading, error } = useOffers();
+  const { available: marketProteins, counts: proteinCounts } = useMarketplaceProteins();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const total = offers.length;
-  const totalMT = offers.reduce(
+  const initialProtein = (searchParams.get("protein") as ProteinKey | null) ?? "all";
+  const [protein, setProtein] = useState<ProteinKey>(initialProtein);
+  const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState<"newest" | "priceAsc" | "priceDesc" | "volumeDesc">("newest");
+
+  // Keep URL in sync when user changes the protein pill.
+  useEffect(() => {
+    const current = searchParams.get("protein");
+    if (protein === "all" && current) {
+      searchParams.delete("protein");
+      setSearchParams(searchParams, { replace: true });
+    } else if (protein !== "all" && current !== protein) {
+      searchParams.set("protein", protein);
+      setSearchParams(searchParams, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [protein]);
+
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    let copy = [...offers];
+    if (protein !== "all") {
+      copy = copy.filter((o) => offerProtein(o) === protein);
+    }
+    if (q) {
+      copy = copy.filter((o) => {
+        const inOrigin = (o.origin_country ?? "").toLowerCase().includes(q);
+        const inSupplier = (o.supplier_name ?? "").toLowerCase().includes(q);
+        const inItems = (o.items ?? []).some((it) =>
+          (it.customer_product?.name ?? "").toLowerCase().includes(q)
+        );
+        return inOrigin || inSupplier || inItems;
+      });
+    }
+    copy.sort((a, b) => {
+      if (sortBy === "newest") {
+        return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      }
+      const totalKg = (o: OfferWithDetails) =>
+        (o.items ?? []).reduce((s, it) => s + Number(it.amount ?? 0), 0);
+      const avgPrice = (o: OfferWithDetails) => {
+        const items = o.items ?? [];
+        if (!items.length) return 0;
+        const sum = items.reduce((s, it) => s + Number(it.price ?? 0), 0);
+        return sum / items.length;
+      };
+      if (sortBy === "priceAsc") return avgPrice(a) - avgPrice(b);
+      if (sortBy === "priceDesc") return avgPrice(b) - avgPrice(a);
+      return totalKg(b) - totalKg(a);
+    });
+    return copy;
+  }, [offers, protein, search, sortBy]);
+
+  const total = filtered.length;
+  const totalMT = filtered.reduce(
     (sum, o) => sum + (o.items ?? []).reduce((s, it) => s + Number(it.amount ?? 0), 0),
     0
   ) / 1000;
+
+  const hasActiveFilters = protein !== "all" || search.trim().length > 0;
+  const clearAll = () => {
+    setProtein("all");
+    setSearch("");
+  };
 
   return (
     <>
@@ -244,6 +309,63 @@ export default function BuyerOffers() {
           <TagIcon size={20} />
         </span>
         <h1>{t("buyer.offers.title")}</h1>
+      </div>
+
+      <div className="bo-filterbar">
+        <ProteinFilter
+          value={protein}
+          onChange={setProtein}
+          available={marketProteins}
+          counts={proteinCounts}
+        />
+        <div className="bo-filter-row">
+          <div className="bo-search">
+            <span className="bo-search-icon"><SearchIcon size={16} /></span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder={t("buyer.offers.searchPlaceholder", "Search by cut, origin, supplier…")}
+              aria-label="Search offers"
+            />
+          </div>
+          <div className="mini-select-wrap">
+            <select
+              className="mini-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+              aria-label="Sort offers"
+            >
+              <option value="newest">{t("buyer.offers.sort.newest", "Newest first")}</option>
+              <option value="priceAsc">{t("buyer.offers.sort.priceAsc", "Price: low to high")}</option>
+              <option value="priceDesc">{t("buyer.offers.sort.priceDesc", "Price: high to low")}</option>
+              <option value="volumeDesc">{t("buyer.offers.sort.volumeDesc", "Largest volume")}</option>
+            </select>
+          </div>
+          {hasActiveFilters && (
+            <div className="bo-active-chips">
+              {protein !== "all" && (
+                <span className="bo-chip">
+                  {protein.charAt(0).toUpperCase() + protein.slice(1)}
+                  <button type="button" onClick={() => setProtein("all")} aria-label="Clear protein">
+                    <XIcon size={12} />
+                  </button>
+                </span>
+              )}
+              {search.trim() && (
+                <span className="bo-chip">
+                  “{search.trim()}”
+                  <button type="button" onClick={() => setSearch("")} aria-label="Clear search">
+                    <XIcon size={12} />
+                  </button>
+                </span>
+              )}
+              <button type="button" className="bo-chip-clear" onClick={clearAll}>
+                {t("buyer.offers.clearAll", "Clear all")}
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="result-bar">
@@ -268,14 +390,19 @@ export default function BuyerOffers() {
         <div className="offers-error">{t("buyer.offers.loadError", { error })}</div>
       ) : loading ? (
         <div className="offers-loading">{t("buyer.offers.loadingShort")}</div>
-      ) : offers.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="empty-state">
           <SearchIcon size={28} stroke="var(--g300)" />
-          <p>{t("buyer.offers.empty")}</p>
+          <p>{hasActiveFilters ? t("buyer.offers.noResults", "No offers match your filters.") : t("buyer.offers.empty")}</p>
+          {hasActiveFilters && (
+            <button type="button" className="bo-chip-clear" onClick={clearAll}>
+              {t("buyer.offers.clearAll", "Clear all")}
+            </button>
+          )}
         </div>
       ) : (
         <div className="card-row">
-          {offers.map((offer) => (
+          {filtered.map((offer) => (
             <OfferCard
               key={offer.id}
               offer={offer}

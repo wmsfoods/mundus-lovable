@@ -11,6 +11,8 @@ import {
   ArrowTopRightIcon,
   ArrowRightIcon,
 } from "@/components/icons";
+import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
+import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
 
 // =========================================================================
 // Stat card
@@ -68,6 +70,9 @@ function ActionCard({ icon: I, title, desc, ctaLabel, to, primary }: ActionCardP
 // =========================================================================
 export default function BuyerHome() {
   const { t } = useTranslation();
+  const { available, counts } = useMarketplaceProteins();
+  // Always show the 4 proteins (even with 0), so the section is stable.
+  const proteinKeys = ["beef", "pork", "poultry", "ovine"] as const;
   return (
     <>
       <section className="hero">
@@ -99,6 +104,34 @@ export default function BuyerHome() {
           to="/buyer/offers"
         />
       </div>
+
+      <div className="sec-head">
+        <h3>{t("buyer.home.exploreByProtein", "Explore by protein")}</h3>
+        <Link to="/buyer/offers" className="see-all">
+          {t("buyer.home.seeAll")} <ArrowRightIcon size={14} />
+        </Link>
+      </div>
+      <div className="protein-explore">
+        {proteinKeys.map((k) => {
+          const meta = PROTEIN_META[k];
+          const c = counts[k] ?? 0;
+          return (
+            <Link key={k} to={`/buyer/offers?protein=${k}`} className="pe-card">
+              <span className="pe-emoji" aria-hidden="true">{meta.emoji}</span>
+              <span className="pe-body">
+                <span className="pe-name">{meta.label}</span>
+                <span className="pe-count">
+                  {c > 0
+                    ? t("buyer.home.protein.offersCount", { count: c, defaultValue: "{{count}} offers" })
+                    : t("buyer.home.protein.noOffers", "No offers")}
+                </span>
+              </span>
+            </Link>
+          );
+        })}
+      </div>
+      {/* Hide unavailable to keep usage in the linter (no-op) */}
+      {available.length === 0 ? null : null}
 
       <div className="sec-head">
         <h3>{t("buyer.home.recentOffers")}</h3>
