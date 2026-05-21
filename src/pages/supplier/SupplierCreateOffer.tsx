@@ -434,6 +434,18 @@ export default function SupplierCreateOffer() {
         </div>
         <div className="cov4-hdr-r">
           <span className="cov4-orig-badge">🇧🇷 Brazil · Santos (BRSSZ)</span>
+          <div className="cov4-tgl" role="group" aria-label="Unit">
+            {(["kg", "lbs"] as const).map((u) => (
+              <button
+                key={u}
+                type="button"
+                className={unit === u ? "on" : ""}
+                onClick={() => setUnit(u)}
+              >
+                {u}
+              </button>
+            ))}
+          </div>
           <button
             type="button"
             className={`cov4-preview-btn ${showPreview ? "on" : ""}`}
