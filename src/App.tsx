@@ -60,6 +60,7 @@ import SupplierNegotiationDetail from "./pages/supplier/SupplierNegotiationDetai
 import SupplierCompany from "./pages/supplier/SupplierCompany.tsx";
 import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
+import SupplierOutreach from "./pages/supplier/Outreach.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
 import SupplierRespond from "./pages/public/SupplierRespond.tsx";
@@ -138,6 +139,7 @@ const App = () => (
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
               <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
               <Route path="insights/analytics" element={<SupplierAnalytics />} />
+              <Route path="outreach" element={<SupplierOutreach />} />
               <Route path="profile" element={<Profile />} />
             </Route>
             <Route path="/admin" element={<AdminShell />}>

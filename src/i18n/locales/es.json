@@ -797,6 +797,50 @@
     }
   },
   "supplier": {
+    "outreach": {
+      "navLabel": "Outreach",
+      "title": "Outreach por Email",
+      "subtitle": "Envíe sus ofertas activas a contactos compatibles.",
+      "activeOffers": "Ofertas activas listas para outreach",
+      "recentActivity": "Actividad reciente de outreach",
+      "noOffers": "Ninguna oferta activa lista para outreach.",
+      "noActivity": "Aún no se ha enviado outreach.",
+      "matched": "compatibles",
+      "sent": "enviados",
+      "sendOutreach": "Enviar outreach",
+      "stats": {
+        "sent7d": "Emails enviados (7d)",
+        "openRate": "Tasa de apertura",
+        "pendingOffers": "Ofertas pendientes",
+        "reached": "Contactos alcanzados"
+      },
+      "col": {
+        "offer": "Oferta",
+        "contact": "Contacto",
+        "email": "Email",
+        "country": "País",
+        "status": "Estado",
+        "sentAt": "Enviado el"
+      },
+      "modal": {
+        "title": "Enviar Outreach — {{offer}}",
+        "origin": "Origen",
+        "markets": "Mercados destino",
+        "incoterm": "Incoterm",
+        "price": "Precio",
+        "matchingContacts": "Contactos compatibles ({{count}})",
+        "selectAll": "Seleccionar todos",
+        "deselectAll": "Deseleccionar todos",
+        "noMatches": "Ningún contacto coincide con los mercados destino de esta oferta.",
+        "sentBadge": "Enviado",
+        "subject": "Asunto",
+        "body": "Cuerpo del email (HTML)",
+        "preview": "Vista previa",
+        "editBody": "Editar",
+        "sendButton": "Enviar a {{count}} contactos seleccionados",
+        "sentSuccess": "{{count}} email(s) enviado(s) con éxito"
+      }
+    },
     "counter": {
       "title": "Enviar contraoferta",
       "subtitle": "Ajusta tus precios y responde a la oferta del comprador.",
