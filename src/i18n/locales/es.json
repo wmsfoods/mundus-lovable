@@ -723,6 +723,29 @@
     }
   },
   "supplier": {
+    "counter": {
+      "title": "Enviar contraoferta",
+      "subtitle": "Ajusta tus precios y responde a la oferta del comprador.",
+      "roundOf": "Ronda {{round}} de {{max}}",
+      "theirBid": "Oferta del comprador",
+      "theirBidTotal": "Total de la oferta",
+      "totalAsking": "Total pedido",
+      "yourCounterTotal": "Total de tu contraoferta",
+      "message": "Mensaje",
+      "messagePlaceholder": "Añade un mensaje al comprador (opcional)",
+      "cancel": "Cancelar",
+      "submit": "Enviar contraoferta (Ronda {{round}})",
+      "submitting": "Enviando…",
+      "successToast": "¡Contraoferta enviada! Esperando respuesta del comprador.",
+      "confirmReject": "¿Seguro que deseas rechazar esta oferta?",
+      "col": {
+        "product": "Producto",
+        "qty": "Cant ({{unit}})",
+        "asking": "Pedido",
+        "yourCounter": "Tu contraoferta",
+        "diff": "Dif"
+      }
+    },
     "negotiations": {
       "title": "Negociaciones",
       "searchPlaceholder": "Buscar ID / comprador / producto / destino...",
