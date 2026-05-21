@@ -406,7 +406,7 @@ export default function SupplierNegotiationDetail() {
                 <thead>
                   <tr>
                     <th>{t("supplier.negotiations.detail.col.product")}</th>
-                    <th>{t("supplier.negotiations.detail.col.qtyLb")}</th>
+                    <th>{t("supplier.negotiations.detail.col.qty", { unit: weightLabel(unit), defaultValue: "Qty ({{unit}})" })}</th>
                     <th>{t("supplier.negotiations.detail.col.asking")}</th>
                     {Array.from({ length: maxRoundShown }, (_, i) => (
                       <Fragment key={`h-${i}`}>
@@ -417,28 +417,60 @@ export default function SupplierNegotiationDetail() {
                   </tr>
                 </thead>
                 <tbody>
-                  {d.products.map((p) => (
-                    <tr key={p.name}>
-                      <td>
-                        <span className="product-name">{p.name}</span>
-                        <span className="product-pack">{p.pack}</span>
-                      </td>
-                      <td>{fmtLb(p.qtyLb)}</td>
-                      <td>${p.askingUsdKg.toFixed(2)}</td>
-                      {Array.from({ length: maxRoundShown }, (_, i) => {
-                        const round = i + 1;
-                        const bidV = getPerRoundKg(p, "bid", round);
-                        const cntV = getPerRoundKg(p, "counter", round);
-                      const isCurrentCounter = round === maxRoundShown;
-                        return (
-                          <Fragment key={`v-${i}`}>
-                          <td className="col-bid">{bidV != null ? `$${bidV.toFixed(2)}` : "—"}</td>
-                          <td className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}>{cntV != null ? `$${cntV.toFixed(2)}` : "—"}</td>
-                          </Fragment>
-                        );
-                      })}
-                    </tr>
-                  ))}
+                  {d.products.map((p) => {
+                    const qtyKg = p.qtyLb / LB_PER_KG;
+                    const agreed = agreedByName.get(p.name);
+                    const rowStyle = agreed
+                      ? { background: "rgba(34,197,94,0.06)" }
+                      : undefined;
+                    return (
+                      <tr key={p.name} style={rowStyle}>
+                        <td>
+                          <span className="product-name">
+                            {agreed && <span aria-hidden style={{ marginRight: 4 }}>🔒</span>}
+                            {p.name}
+                          </span>
+                          <span className="product-pack">{p.pack}</span>
+                          {agreed && (
+                            <span
+                              className="inline-block ml-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                              style={{ background: "rgba(34,197,94,0.15)", color: "#15803d" }}
+                            >
+                              {t("negotiation.agreedBadge", {
+                                defaultValue: "Agreed at ${{price}}/{{unit}}",
+                                price: fmtPrice(agreed.price, unit),
+                                unit: weightLabel(unit),
+                              })}
+                            </span>
+                          )}
+                        </td>
+                        <td>{fmtWeight(qtyKg, unit)}</td>
+                        <td>${fmtPrice(p.askingUsdKg, unit)}</td>
+                        {Array.from({ length: maxRoundShown }, (_, i) => {
+                          const round = i + 1;
+                          const bidV = getPerRoundKg(p, "bid", round);
+                          const cntV = getPerRoundKg(p, "counter", round);
+                          const isCurrentCounter = round === maxRoundShown;
+                          const showAgreedInLast = agreed && isCurrentCounter;
+                          return (
+                            <Fragment key={`v-${i}`}>
+                              <td className="col-bid">{bidV != null ? `$${fmtPrice(bidV, unit)}` : "—"}</td>
+                              <td
+                                className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}
+                                style={showAgreedInLast ? { color: "#15803d", fontWeight: 600 } : undefined}
+                              >
+                                {showAgreedInLast
+                                  ? `$${fmtPrice(agreed!.price, unit)} 🔒`
+                                  : cntV != null
+                                    ? `$${fmtPrice(cntV, unit)}`
+                                    : "—"}
+                              </td>
+                            </Fragment>
+                          );
+                        })}
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -453,6 +485,14 @@ export default function SupplierNegotiationDetail() {
           negotiation={rawNeg}
           perspective="supplier"
           onSubmitted={() => refetch()}
+        />
+      )}
+      {isReal && rawNeg && (
+        <RejectNegotiationModal
+          open={rejectOpen}
+          onOpenChange={setRejectOpen}
+          negotiation={rawNeg}
+          onRejected={() => refetch()}
         />
       )}
     </>
