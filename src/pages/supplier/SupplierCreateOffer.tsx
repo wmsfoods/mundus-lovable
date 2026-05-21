@@ -825,37 +825,85 @@ export default function SupplierCreateOffer() {
                       <div
                         key={s}
                         style={{
+                          background: "#fff",
+                          border: "1px solid #E5E7EB",
+                          borderRadius: 10,
+                          padding: "10px 12px",
                           display: "flex",
-                          alignItems: "center",
+                          flexDirection: "column",
                           gap: 8,
-                          fontSize: 12,
-                          flexWrap: "wrap",
                         }}
                       >
-                        <span>{icon}</span>
-                        <span
-                          style={{
-                            padding: "2px 8px",
-                            borderRadius: 999,
-                            background: INCO_BADGE[s]?.bg ?? "#eee",
-                            color: INCO_BADGE[s]?.fg ?? "#333",
-                            fontWeight: 600,
-                            fontSize: 11,
-                          }}
-                        >
-                          {s}
-                        </span>
-                        <span style={{ fontWeight: 600 }}>pricing</span>
-                        <span>
-                          — {s} = {primaryInco} {opLabel}
-                        </span>
-                        <PriceInput
-                          value={incoAdjustments[s] || ""}
-                          onChange={(v) => setIncoAdjustments((p) => ({ ...p, [s]: v }))}
-                        />
-                        <span style={{ color: "var(--fg-muted)" }}>
-                          US{pLbl} — Applied to all cuts. You can override individual prices in the table.
-                        </span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: 12 }}>
+                          <span style={{ fontSize: 14 }}>{icon}</span>
+                          <span
+                            style={{
+                              padding: "2px 8px",
+                              borderRadius: 999,
+                              background: INCO_BADGE[s]?.bg ?? "#eee",
+                              color: INCO_BADGE[s]?.fg ?? "#333",
+                              fontWeight: 700,
+                              fontSize: 11,
+                            }}
+                          >
+                            {s}
+                          </span>
+                          <span style={{ fontWeight: 600 }}>pricing</span>
+                          <span style={{ color: "var(--fg-muted)" }}>
+                            — {s} = {primaryInco} {opLabel}
+                          </span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                          <label
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "stretch",
+                              border: "1.5px solid #D1D5DB",
+                              borderRadius: 8,
+                              overflow: "hidden",
+                              background: "#fff",
+                              minWidth: 180,
+                            }}
+                          >
+                            <span
+                              style={{
+                                background: "#F3F4F6",
+                                padding: "8px 10px",
+                                fontSize: 12,
+                                fontWeight: 600,
+                                color: "#374151",
+                                borderRight: "1px solid #E5E7EB",
+                                display: "inline-flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              US{pLbl}
+                            </span>
+                            <input
+                              type="number"
+                              inputMode="decimal"
+                              step="0.01"
+                              placeholder="0.00"
+                              value={incoAdjustments[s] || ""}
+                              onChange={(e) =>
+                                setIncoAdjustments((p) => ({ ...p, [s]: e.target.value }))
+                              }
+                              style={{
+                                border: 0,
+                                outline: "none",
+                                padding: "8px 10px",
+                                fontSize: 14,
+                                fontWeight: 600,
+                                width: 110,
+                                background: "transparent",
+                                color: "#111827",
+                              }}
+                            />
+                          </label>
+                          <span style={{ fontSize: 12, color: "var(--fg-muted)", flex: 1, minWidth: 200 }}>
+                            Applied to all cuts. You can override individual prices in the table.
+                          </span>
+                        </div>
                       </div>
                     );
                   })}
