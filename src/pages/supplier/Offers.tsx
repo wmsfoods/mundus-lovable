@@ -17,6 +17,8 @@ import {
 } from "@/components/icons";
 import { MOCK_SUPPLIER_OFFERS, PAGE_SIZE, type SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+import { ProteinFilter, categoryToProtein, type ProteinKey } from "@/components/marketplace/ProteinFilter";
+import { useSupplierProteins } from "@/hooks/useSupplierProteins";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
@@ -40,16 +42,6 @@ function derive(o: SupplierOffer) {
     volumeMt: Math.round(o.totalKg / 1000),
   };
 }
-
-const CAT_KEYS = ["all", "beef", "pork", "poultry", "ovine"] as const;
-type CatKey = typeof CAT_KEYS[number];
-const CAT_MATCH: Record<CatKey, SupplierOffer["category"][]> = {
-  all: [],
-  beef: ["Beef"],
-  pork: ["Pork"],
-  poultry: ["Poultry"],
-  ovine: ["Lamb"],
-};
 
 function SupplierOfferCard({ o, onOpen, t }: { o: SupplierOffer; onOpen: () => void; t: (k: string, opts?: Record<string, unknown>) => string }) {
   const status = STATUS_COLORS[o.status] ?? STATUS_COLORS.active;
@@ -153,14 +145,15 @@ export default function SupplierOffers() {
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priceDesc" | "priceAsc">("newest");
-  const [cat, setCat] = useState<CatKey>("all");
+  const [cat, setCat] = useState<ProteinKey>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | SupplierOffer["status"]>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const { available: supplierProteins, counts: proteinCounts } = useSupplierProteins();
 
   const filtered = useMemo(() => {
     // Real offers first (newest from DB), then mocks
     let copy: SupplierOffer[] = [...realOffers, ...MOCK_SUPPLIER_OFFERS];
-    if (cat !== "all") copy = copy.filter((o) => CAT_MATCH[cat].includes(o.category));
+    if (cat !== "all") copy = copy.filter((o) => categoryToProtein(o.category) === cat);
     if (statusFilter !== "all") copy = copy.filter((o) => o.status === statusFilter);
     copy.sort((a, b) => {
       if (sortBy === "newest") return b.id.localeCompare(a.id);
@@ -221,18 +214,13 @@ export default function SupplierOffers() {
       </div>
 
       <div className="so-filterbar">
-        <div className="so-cat-pills">
-          {CAT_KEYS.map((k) => (
-            <button
-              key={k}
-              type="button"
-              className={`so-cat-pill ${cat === k ? "is-active" : ""}`}
-              onClick={() => setCat(k)}
-            >
-              {t(`supplier.offers.cat.${k}`)}
-            </button>
-          ))}
-        </div>
+        <ProteinFilter
+          value={cat}
+          onChange={setCat}
+          available={supplierProteins}
+          counts={proteinCounts}
+          allLabel={t("supplier.offers.cat.all")}
+        />
         <div className="so-toolbar-r">
           <div className="mini-select-wrap">
             <select
