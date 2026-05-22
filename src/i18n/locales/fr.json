@@ -1,0 +1,3091 @@
+{
+  "negotiation": {
+    "agreedBadge": "Accepté à {{price}}/{{unit}}",
+    "reject": {
+      "title": "Rejeter la négociation",
+      "reasonLabel": "Raison",
+      "notesLabel": "Notes (facultatif)",
+      "notesPlaceholder": "Ajouter du contexte pour l'autre partie…",
+      "cancel": "Annuler",
+      "confirm": "Rejeter",
+      "submitting": "Rejet en cours…",
+      "successToast": "Négociation rejetée",
+      "reasons": {
+        "price_too_low": "Prix ​​trop bas",
+        "terms_unacceptable": "Conditions inacceptables",
+        "product_unavailable": "Produit indisponible",
+        "timeline_conflict": "Conflit de calendrier",
+        "other": "Autre"
+      }
+    }
+  },
+  "common": {
+    "back": "Retour",
+    "cancel": "Annuler",
+    "proceed": "Continuer",
+    "finish": "Terminer",
+    "submitting": "Envoi en cours...",
+    "complete": "Terminé",
+    "signOut": "Se déconnecter",
+    "signedOut": "Déconnecté",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "save": "Enregistrer",
+    "close": "Fermer",
+    "more": "Plus",
+    "of": "de",
+    "yes": "Oui",
+    "no": "Non",
+    "optional": "facultatif",
+    "copyright": "© Copyright 2025 – Tous droits réservés.",
+    "termsLink": "Conditions générales",
+    "privacyLink": "Politique de confidentialité",
+    "language": "Langue",
+    "english": "Anglais",
+    "portuguese": "Portugais",
+    "spanish": "Espagnol"
+  },
+  "auth": {
+    "login": "Se connecter",
+    "email": "E-mail",
+    "emailPlaceholder": "Saisissez votre e-mail",
+    "password": "Mot de passe",
+    "passwordPlaceholder": "Saisissez votre mot de passe",
+    "rememberMe": "Se souvenir de moi",
+    "signIn": "Se connecter",
+    "signingIn": "Connexion en cours...",
+    "welcomeBack": "Bienvenue",
+    "noAccount": "Vous n'avez pas de compte ?",
+    "signUp": "S'inscrire",
+    "togglePassword": "Afficher/Masquer le mot de passe",
+    "slide": "Faire glisser"
+  },
+  "signup": {
+    "title": "Inscription",
+    "stepOf": "Étape {{current}} sur {{total}}",
+    "steps": {
+      "basic": "Informations de base",
+      "company": "Entreprise",
+      "review": "Vérifier"
+    },
+    "fields": {
+      "fullName": "Nom complet",
+      "fullNamePlaceholder": "Saisissez votre nom complet",
+      "email": "E-mail",
+      "emailPlaceholder": "Saisissez votre e-mail",
+      "password": "Mot de passe",
+      "passwordPlaceholder": "Saisissez votre mot de passe",
+      "repeatPassword": "Confirmer le mot de passe",
+      "repeatPasswordPlaceholder": "Confirmer le mot de passe",
+      "companyName": "Nom de l'entreprise",
+      "cnpj": "CNPJ ou numéro d'enregistrement",
+      "role": "Rôle",
+      "buyer": "Acheteur",
+      "supplier": "Fournisseur",
+      "licenses": "Licences ou certificats",
+      "uploadHint": "Glisser ou télécharger le fichier",
+      "uploadFormat": "Format : .PNG ou .JPG ou .PDF (jusqu'à 5 Mo)",
+      "countryOp": "Pays d'opération",
+      "countryOpPlaceholder": "Rechercher un pays",
+      "state": "État / Région",
+      "statePlaceholder": "Rechercher un état",
+      "address": "Adresse",
+      "addressLine2": "Ligne d'adresse 2 (facultatif)",
+      "country": "Pays",
+      "businessPhone": "Téléphone professionnel",
+      "phonePlaceholder": "Numéro de téléphone"
+    },
+    "passwordsMismatch": "Les mots de passe ne correspondent pas.",
+    "agreeTerms": "Je déclare avoir lu et accepté les",
+    "termsLink": "Conditions Générales",
+    "confirmInfo": "Je confirme que toutes les informations fournies sont vraies, exactes et complètes au meilleur de mes connaissances. Je comprends que la fourniture d'informations fausses ou trompeuses peut entraîner la suspension ou la résiliation du compte.",
+    "fileTooLarge": "Le fichier doit être de 5 Mo ou moins",
+    "reviewSections": {
+      "basic": "Informations de base",
+      "company": "Entreprise"
+    },
+    "reviewLabels": {
+      "fullName": "Nom complet",
+      "email": "E-mail",
+      "companyName": "Nom de l'entreprise",
+      "cnpj": "CNPJ ou Numéro d'enregistrement",
+      "role": "Rôle",
+      "licenses": "Licences ou Certificats",
+      "countryOp": "Pays d'opération",
+      "state": "État / Région",
+      "address": "Adresse",
+      "addressLine2": "Complément d'adresse",
+      "country": "Pays",
+      "businessPhone": "Téléphone professionnel"
+    },
+    "roles": {
+      "both": "Acheteur et Fournisseur",
+      "buyer": "Acheteur",
+      "supplier": "Fournisseur",
+      "none": "—"
+    },
+    "passwordRules": {
+      "title": "Le mot de passe doit contenir :",
+      "length": "8 caractères ou plus ;",
+      "lower": "Une lettre minuscule ;",
+      "upper": "Une lettre majuscule ;",
+      "special": "Un caractère spécial."
+    },
+    "success": {
+      "navTitle": "Confirmer l'e-mail",
+      "title": "Inscription effectuée avec succès !",
+      "body": "Pour activer votre compte, un code de vérification a été envoyé à l'adresse e-mail {{email}}.",
+      "resend": "Renvoyer le code",
+      "enterCode": "Saisir le code",
+      "resent": "Code de vérification renvoyé",
+      "missingEmail": "E-mail manquant"
+    },
+    "partner": {
+      "navTitle": "Inscription partenaire",
+      "titlePrefix": "Inscription via",
+      "titleSuffix": "Partenaire"
+    }
+  },
+  "shell": {
+    "postingAs": "Publier en tant que",
+    "unit": "kg",
+    "unitToggle": "Basculer l'unité de poids (kg / lbs)",
+    "notifications": "Notifications",
+    "buyer": "Acheteur",
+    "supplier": "Fournisseur",
+    "admin": "Admin",
+    "more": "Plus",
+    "nav": {
+      "home": "Accueil",
+      "customers": "Mes Clients",
+      "requests": "Mes demandes d'Offre",
+      "createRequest": "Créer une demande",
+      "offers": "Offres",
+      "orders": "Commandes",
+      "negotiations": "Négociations",
+      "users": "Utilisateurs",
+      "myOffers": "Mes Offres",
+      "createOffer": "Créer une Offre",
+      "sales": "Ventes",
+      "offerRequests": "Demandes d'Offre",
+      "myCompany": "Ma Société",
+      "messages": "Messages",
+      "chat": "Chat"
+    },
+    "bottom": {
+      "create": "Créer",
+      "negotiations": "Chat"
+    }
+  },
+  "dashboard": {
+    "title": "Tableau de bord — Bientôt disponible",
+    "signedInAs": "Connecté en tant que {{email}}"
+  },
+  "comingSoon": {
+    "note": "Cet écran sera développé dans les prochains commits du port."
+  },
+  "public": {
+    "respond": {
+      "headerTitle": "Répondre à l'Enchère",
+      "loading": "Chargement...",
+      "invalidTitle": "Lien invalide",
+      "invalidBody": "Ce lien de réponse n'est pas valide. Veuillez vérifier l'URL.",
+      "expiredTitle": "Lien expiré",
+      "expiredBody": "Ce lien de réponse a expiré. Veuillez contacter Mundus Trade.",
+      "usedTitle": "Lien déjà utilisé",
+      "usedBody": "Cette réponse a déjà été enregistrée.",
+      "youReceived": "Vous avez reçu une Enchère",
+      "bidFor": "Enchère pour {{supplier}}",
+      "bidGeneric": "Nouvelle Enchère",
+      "origin": "Origine",
+      "destination": "Destination",
+      "incoterm": "Incoterm",
+      "payment": "Conditions de paiement",
+      "container": "Conteneur",
+      "created": "Créé",
+      "cutsTitle": "Découpes demandées",
+      "col": {
+        "cut": "Découpe",
+        "qty": "Qté ({{unit}})",
+        "asking": "Demande",
+        "buyerBid": "Enchère Acheteur",
+        "yourCounter": "Votre Contre-offre",
+        "diff": "Diff"
+      },
+      "actions": {
+        "accept": "Accepter l'enchère",
+        "acceptDesc": "Accepter les prix de l'acheteur tels quels. La transaction passera à la commande.",
+        "counter": "Envoyer une contre-offre",
+        "counterDesc": "Ajustez les prix et répondez avec votre contre-offre.",
+        "reject": "Refuser",
+        "rejectDesc": "Refuser cette enchère."
+      },
+      "counterTitle": "Contre-offre — Round {{round}}",
+      "message": "Message",
+      "messagePlaceholder": "Ajouter une note pour l'acheteur (facultatif)",
+      "back": "Retour",
+      "submitCounter": "Envoyer la contre-offre",
+      "submitting": "Envoi en cours…",
+      "confirmReject": "Voulez-vous vraiment refuser cette enchère ?",
+      "doneTitle": "Réponse enregistrée",
+      "doneAccepted": "Vous avez accepté l'enchère. L'acheteur sera notifié.",
+      "doneRejected": "Vous avez refusé l'enchère. L'acheteur sera notifié.",
+      "doneCounter": "Votre contre-offre a été envoyée. L'acheteur sera notifié."
+    }
+  },
+  "buyer": {
+    "auctions": {
+      "filter": "Ventes aux enchères",
+      "badge": "VENTE AUX ENCHÈRES",
+      "placeBid": "Placer une enchère",
+      "placeBidToast": "La fonctionnalité de placement d'enchère sera bientôt disponible",
+      "windowClosed": "Fenêtre fermée",
+      "awardedBanner": "Adjugé · contrat émis",
+      "statusBadge": {
+        "live": "EN COURS",
+        "closed": "FERMÉE",
+        "awarded": "ADJUGÉE",
+        "scheduled": "PROGRAMMÉE"
+      },
+      "card": {
+        "origin": "Origine",
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Expédition",
+        "closesIn": "Se termine dans",
+        "bids_one": "{{count}} enchère",
+        "bids_other": "{{count}} enchères",
+        "bids": "{{count}} enchères"
+      },
+      "howItWorks": {
+        "link": "Comment fonctionnent les ventes aux enchères ?",
+        "title": "Fonctionnement des ventes aux enchères à offres scellées",
+        "whatIs": {
+          "title": "Qu'est-ce qu'une vente aux enchères ?",
+          "body": "Les fournisseurs publient des produits avec une fenêtre d'enchères. Vous placez une offre scellée — personne ne voit votre prix."
+        },
+        "sealed": {
+          "title": "Enchères scellées",
+          "body": "Votre enchère est privée. Les autres acheteurs ne peuvent pas la voir. Le fournisseur ne voit toutes les enchères qu'après la clôture de la fenêtre."
+        },
+        "timing": {
+          "title": "Calendrier",
+          "body": "Chaque vente aux enchères a une fenêtre fixe (par exemple, ouverture le lundi, clôture le mercredi). Placez votre enchère avant la fin du temps imparti."
+        },
+        "oneBid": {
+          "title": "Une enchère, une chance",
+          "body": "Vous ne pouvez pas modifier votre enchère une fois qu'elle est placée. Si vous avez fait une erreur, vous pouvez retirer votre offre — mais il y a un délai de 4 heures avant de pouvoir participer à nouveau."
+        },
+        "award": {
+          "title": "Attribution",
+          "body": "Après la clôture de la fenêtre, le fournisseur examine toutes les offres et choisit un gagnant. Vous serez informé du résultat."
+        },
+        "results": {
+          "title": "Résultats",
+          "body": "Après l'attribution, vous pouvez voir comment votre enchère se compare à celle du gagnant (en $/kg et en %)."
+        }
+      }
+    },
+    "auctionBid": {
+      "title": "Placer une offre scellée",
+      "subtitle": "Votre offre est privée. Le fournisseur ne voit toutes les offres qu'après la clôture de la vente aux enchères.",
+      "howManyContainers": "Combien de conteneurs ?",
+      "bulk": {
+        "label": "Appliquer en masse :",
+        "acceptMin": "Accepter l'offre minimale",
+        "minus5": "Offre minimale -5%",
+        "plus5": "Offre minimale +5%",
+        "apply": "Appliquer"
+      },
+      "col": {
+        "cut": "Découpe",
+        "qty": "Qté ({{unit}})",
+        "minBid": "Offre Min.",
+        "yourBid": "Votre Offre"
+      },
+      "totals": {
+        "perFcl": "Total par conteneur FCL",
+        "containers": "Conteneurs",
+        "grand": "Total général"
+      },
+      "commitment": {
+        "label": "Je comprends qu'il s'agit d'une offre scellée contraignante. Si elle est acceptée, je m'engage à finaliser l'achat.",
+        "hint": "Vous pouvez retirer votre offre à tout moment, mais il y a un délai de 4 heures avant de pouvoir participer à nouveau."
+      },
+      "note": {
+        "label": "Message (facultatif)",
+        "placeholder": "Ajouter une note pour le fournisseur (facultatif)"
+      },
+      "cancel": "Annuler",
+      "submit": "Soumettre l'enchère cachetée →",
+      "submitting": "Soumission en cours…",
+      "successToast": "Enchère cachetée soumise pour {{opp}} !"
+    },
+    "procurement": {
+      "nav": "Intelligence d'approvisionnement",
+      "groupLabel": "Statistiques",
+      "title": "Tableau de bord des économies et des dépenses",
+      "subtitle": "Combien Mundus vous a fait économiser par rapport au marché. Où vous dépensez. Quels fournisseurs sont performants.",
+      "upsell": {
+        "title": "Faites de l'approvisionnement un avantage concurrentiel",
+        "lede": "Cessez d'acheter à l'aveugle. Voyez exactement combien vous économisez par rapport au marché, où les dépenses s'échappent et quels fournisseurs méritent une plus grande part de votre budget — le tout en un seul endroit.",
+        "bullets": {
+          "spend": {
+            "title": "Suivi en temps réel des dépenses et du budget",
+            "body": "Vue en temps réel des dépenses depuis le début de l'année par catégorie, origine et fournisseur — avec des alertes d'écart budgétaire."
+          },
+          "savings": {
+            "title": "Économies vérifiées par rapport au marché",
+            "body": "Chaque commande est comparée au marché Mundus en direct afin que les finances constatent des économies réelles et défendables."
+          },
+          "suppliers": {
+            "title": "Fiches d'évaluation des fournisseurs",
+            "body": "Évaluez chaque fournisseur sur le prix, la livraison à temps, la qualité et la réactivité — et mettez en évidence les risques de concentration."
+          },
+          "marketAlerts": {
+            "title": "Alertes d'approvisionnement intelligentes",
+            "body": "Soyez averti lorsque les prix des découpes que vous achetez baissent, lorsque les contrats expirent ou lorsqu'une catégorie devient risquée."
+          }
+        },
+        "perks": "[\"Rapport d'économies mensuel prêt pour le CFO (PDF)\",\"Exportations CSV illimitées des données de dépenses, d'économies et de fournisseurs\",\"Budgets personnalisés et alertes de variance par catégorie\",\"Tableau de bord de la concentration et des risques des fournisseurs\"]"
+      }
+    },
+    "requests": {
+      "title": "Mes demandes d'offre",
+      "newRequest": "Nouvelle demande d'offre",
+      "searchPlaceholder": "Rechercher des demandes…",
+      "speciesAll": "Toutes les espèces",
+      "statusAll": "Tout",
+      "offersCount": "{{n}} offres",
+      "empty": "Aucune demande ne correspond à vos filtres.",
+      "status": {
+        "draft": "Brouillon",
+        "active": "Active",
+        "closed_won": "Fermée (Acceptée)",
+        "closed_no_winner": "Fermée (Pas de gagnant)",
+        "expired": "Expirée"
+      },
+      "species": {
+        "beef": "Bœuf",
+        "pork": "Porc",
+        "poultry": "Volaille",
+        "lamb": "Agneau",
+        "ovine": "Ovin"
+      },
+      "col": {
+        "title": "Titre",
+        "species": "Espèce",
+        "destination": "Destination",
+        "target": "Cible $/kg",
+        "volume": "Volume",
+        "shipment": "Expédition",
+        "offers": "Offres",
+        "status": "Statut",
+        "updated": "Mis à jour"
+      },
+      "detail": {
+        "back": "Retour aux demandes",
+        "edit": "Modifier",
+        "publish": "Publier",
+        "close": "Fermer la demande",
+        "noOffers": "Aucune offre reçue pour le moment.",
+        "section": {
+          "requirements": "Exigences",
+          "offersReceived": "Offres reçues",
+          "requestStatus": "Statut de la demande",
+          "quickStats": "Statistiques rapides"
+        },
+        "banner": {
+          "draft": "Cette demande est un brouillon — publiez-la pour recevoir des offres.",
+          "active": "Active — reçoit des offres jusqu'au {{deadline}}.",
+          "closedWon": "Fermée avec gagnant : {{supplier}}",
+          "closedNoWinner": "Fermée sans gagnant.",
+          "expired": "Expirée — n'accepte plus les offres."
+        },
+        "meta": {
+          "target": "Cible",
+          "volume": "Volume",
+          "fcl": "FCL",
+          "shipment": "Expédition",
+          "incoterm": "Incoterm",
+          "payment": "Paiement"
+        },
+        "offer": {
+          "viewBtn": "Voir",
+          "acceptBtn": "Accepter",
+          "declineBtn": "Refuser",
+          "winnerBadge": "Gagnant",
+          "leadTime": "Délai",
+          "perKg": "$/kg",
+          "origin": "Origine",
+          "total": "Total"
+        },
+        "stats": {
+          "offersReceived": "Offres reçues",
+          "bestPrice": "Meilleur prix/kg",
+          "deadline": "Date limite"
+        },
+        "timeline": {
+          "created": "Créée",
+          "published": "Publiée",
+          "firstOffer": "Première offre",
+          "closed": "Fermée"
+        }
+      },
+      "toast": {
+        "create": "La création de nouvelles demandes arrive bientôt",
+        "edit": "Modification de la demande à venir",
+        "publish": "Demande publiée (simulation)",
+        "closeRequest": "Demande fermée (simulation)",
+        "acceptOffer": "Offre acceptée de {{name}} (simulation)",
+        "declineOffer": "Offre refusée de {{name}} (simulation)",
+        "viewOffer": "Détails de l'offre à venir"
+      },
+      "newModal": {
+        "title": "Nouvelle demande d'offre",
+        "cancel": "Annuler",
+        "submit": "Créer la demande",
+        "selectAll": "Tout sélectionner",
+        "clearAll": "Tout effacer",
+        "loading": "Chargement…",
+        "noCuts": "Aucune découpe disponible",
+        "selectMarket": "Sélectionner un marché…",
+        "selectPort": "Sélectionner un port…",
+        "noPorts": "Ce marché n'a aucun port configuré.",
+        "fields": {
+          "title": "Titre",
+          "category": "Catégorie",
+          "cuts": "Découpes",
+          "targetPrice": "Prix cible (USD/kg)",
+          "targetVolume": "Volume cible (kg)",
+          "market": "Marché de destination",
+          "port": "Port de destination",
+          "incoterm": "Incoterm",
+          "shipment": "Mois d'expédition",
+          "payment": "Conditions de paiement",
+          "notes": "Description / Notes"
+        },
+        "placeholders": {
+          "title": "ex. Faux-filet 7-9 lb pour T3"
+        },
+        "err": {
+          "title": "Le titre est requis",
+          "cuts": "Sélectionnez au moins une découpe",
+          "price": "Le prix cible est requis",
+          "volume": "Le volume cible est requis",
+          "market": "Sélectionnez un marché de destination",
+          "port": "Sélectionnez un port de destination",
+          "shipment": "Sélectionnez un mois d'expédition"
+        },
+        "toast": {
+          "created": "Demande créée (simulation)"
+        }
+      }
+    },
+    "home": {
+      "hero": "Vendez plus intelligemment, négociez plus vite, gardez le contrôle.",
+      "stats": {
+        "activeOffers": "Offres actives",
+        "totalOffers": "Total des offres",
+        "closedDeals": "Transactions conclues",
+        "inNegotiation": "En négociation",
+        "avgClosing": "Délai moyen de clôture des commandes"
+      },
+      "actions": {
+        "ordersTitle": "Commandes",
+        "ordersDesc": "Consultez et gérez vos commandes.",
+        "ordersCta": "Voir les commandes",
+        "offersTitle": "Offres",
+        "offersDesc": "Parcourir et gérer les offres.",
+        "offersCta": "Voir les produits"
+      },
+      "recentOffers": "Offres récentes",
+      "recentOrders": "Commandes récentes",
+      "seeAll": "Voir tout",
+      "emptyOffers": "Les offres récentes apparaîtront ici une fois que le marché sera rempli.",
+      "emptyOrders": "Les commandes récentes apparaîtront ici une fois que vous aurez acheté des offres."
+    },
+    "offers": {
+      "title": "Offres",
+      "crumbHome": "Accueil",
+      "loading": "Chargement des offres…",
+      "loadingShort": "Chargement…",
+      "showing_one": "Affichage de <1>{{count}}</1> offre · {{mt}} TM",
+      "showing_other": "Affichage de <1>{{count}}</1> offres · {{mt}} TM",
+      "loadError": "Impossible de charger les offres : {{error}}",
+      "empty": "Aucune offre pour l'instant. Les fournisseurs n'ont publié aucune offre correspondante.",
+      "card": {
+        "cuts": "{{count}} découpes",
+        "mixedTitle": "Mixte ({{count}} découpes)",
+        "moreCuts": "+{{count}} supplémentaires",
+        "origin": "Origine",
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Expédition",
+        "qty": "QTE",
+        "viewDetails": "Voir les détails",
+        "viewBreakdown": "Voir la répartition",
+        "defaultCategory": "Viande"
+      },
+      "status": {
+        "active": "Disponible",
+        "new": "Nouveau",
+        "negotiating": "En négociation",
+        "closed": "Fermé"
+      }
+    },
+    "offerDetail": {
+      "loading": "Chargement de l'offre…",
+      "loadingTitle": "Chargement…",
+      "errorTitle": "Erreur",
+      "loadError": "Impossible de charger cette offre : {{error}}",
+      "notFoundTitle": "Offre non trouvée",
+      "notFoundBody": "Cette offre n'existe pas ou n'est plus disponible.",
+      "backToOffers": "Retour aux offres",
+      "crumbHome": "Accueil",
+      "crumbOffers": "Offres",
+      "illustrative": "IMAGE ILLUSTRATIVE",
+      "perFcl": "Valeur totale (prix de départ) par FCL",
+      "cutsHead": {
+        "cut": "DÉCOUPE",
+        "marbling": "MARBRURE",
+        "qty": "QTÉ PAR DÉCOUPE",
+        "price": "PRIX AU KG"
+      },
+      "totalWeight": "Poids total",
+      "fields": {
+        "marbling": "Marbrure",
+        "originPortCountry": "Origine (port / pays)",
+        "condition": "Condition",
+        "destination": "Destination",
+        "terms": "Conditions",
+        "shipment": "Expédition"
+      },
+      "fcl_one": "{{count}} FCL disponible",
+      "fcl_other": "{{count}} FCLs disponibles",
+      "size": "Taille : {{size}}",
+      "moreInfo": "Plus d'informations",
+      "noMoreInfo": "Rien à afficher ici.",
+      "negotiate": "Négocier",
+      "placeOrder": "Passer la commande",
+      "comingSoonFlow": "Flux {{action}} — bientôt disponible",
+      "marbling": {
+        "0": "Non classifié",
+        "1": "Faible",
+        "2": "Moyenne",
+        "3": "Élevée",
+        "4": "Premium",
+        "default": "Non classifié"
+      }
+    },
+    "bid": {
+      "title": "Soumettez votre enchère",
+      "subtitle": "Indiquez votre prix d'enchère par découpe. Le fournisseur examinera et répondra.",
+      "incoterm": "Incoterm",
+      "destination": "Destination",
+      "freightCost": "Fret",
+      "cut": "Découpe",
+      "qty": "Qté ({{unit}})",
+      "asking": "Prix demandé",
+      "yourBid": "Votre enchère",
+      "totalAsking": "Total demandé",
+      "totalBid": "Total de votre enchère",
+      "difference": "Différence",
+      "message": "Message",
+      "messagePlaceholder": "Ajouter un message au fournisseur (facultatif)",
+      "cancel": "Annuler",
+      "submit": "Soumettre l'enchère",
+      "submitting": "Soumission en cours…",
+      "successToast": "Enchère soumise ! Le fournisseur examinera votre proposition.",
+      "errors": {
+        "required": "Saisir une enchère supérieure à 0",
+        "minPct": "L'enchère minimale est de ${{min}} (90% du prix demandé)",
+        "summary_one": "{{count}} découpe présente des erreurs de validation",
+        "summary_other": "{{count}} découpes présentent des erreurs de validation"
+      },
+      "validation": {
+        "required": "Saisir une enchère supérieure à 0",
+        "minPct": "L'enchère minimale est de ${{min}} (90% du prix demandé)",
+        "belowInitial": "Impossible d'enchérir en dessous de votre enchère initiale de ${{min}}",
+        "summary_one": "{{count}} découpe présente des erreurs de validation",
+        "summary_other": "{{count}} découpes présentent des erreurs de validation"
+      },
+      "bulk": {
+        "label": "Remplissage rapide",
+        "acceptAsking": "Accepter le prix demandé",
+        "minus5": "Prix demandé -5%",
+        "minus10": "Prix demandé -10%",
+        "apply": "Appliquer",
+        "customPlaceholder": "±{{unit}}"
+      }
+    },
+    "counter": {
+      "title": "Envoyer une contre-réponse",
+      "subtitle": "Ajustez vos prix et répondez à la contre-offre du fournisseur.",
+      "theirCounter": "Contre-offre du fournisseur",
+      "theirCounterTotal": "Total de la contre-offre du fournisseur",
+      "successToast": "Contre-réponse envoyée ! En attente du fournisseur.",
+      "confirmReject": "Êtes-vous sûr de vouloir rejeter cette contre-offre ?",
+      "errors": {
+        "belowInitial": "Impossible d'enchérir en dessous de votre enchère initiale de ${{min}}"
+      },
+      "bulk": {
+        "label": "Remplissage rapide",
+        "acceptAll": "Tout accepter",
+        "meetMiddle": "Rencontrer à mi-chemin",
+        "minus3pct": "Contre-offre -3%",
+        "minus5pct": "Contre-offre -5%",
+        "apply": "Appliquer",
+        "customPlaceholder": "±{{unit}}"
+      }
+    },
+    "orders": {
+      "title": "Commandes",
+      "heroTitle": "Suivez vos Commandes facilement et rapidement.",
+      "sortBy": "Trier par",
+      "sort": {
+        "recent": "Plus récent en premier",
+        "oldest": "Plus ancien en premier",
+        "status": "Statut"
+      },
+      "showing": "Affichage de {{from}} à {{to}} éléments sur {{total}} résultats",
+      "empty": "Vous n'avez pas encore de commandes.",
+      "col": {
+        "orderId": "ID de Commande",
+        "status": "Statut",
+        "supplier": "Fournisseur",
+        "orderDate": "Date de commande",
+        "origin": "Origine"
+      },
+      "status": {
+        "awaiting_supplier_acceptance": "En attente de l'acceptation du fournisseur",
+        "awaiting_pre_payment": "En attente du pré-paiement",
+        "pre_payment_confirmed": "Pré-paiement confirmé",
+        "in_production": "En production",
+        "awaiting_balance_payment": "En attente du paiement du solde",
+        "shipped": "Expédié",
+        "delivered": "Livré",
+        "completed": "Terminé",
+        "rejected": "Rejeté"
+      }
+    },
+    "orderDetail": {
+      "title": "Détails de la Commande",
+      "orderNumber": "Numéro de Commande #{{n}}",
+      "specifications": "Spécifications",
+      "tabs": {
+        "overview": "Aperçu",
+        "documents": "Documents",
+        "shipment": "Informations de l'Expédition"
+      },
+      "orderData": "Données de la commande",
+      "fields": {
+        "paymentTerms": "Conditions de Paiement",
+        "advancePayment": "Paiement anticipé",
+        "balancePayment": "Paiement du solde",
+        "incoterm": "Incoterm",
+        "originCountry": "Pays d'Origine",
+        "originPort": "Port d'Origine",
+        "quantity": "Quantité",
+        "oceanFreight": "Fret Maritime",
+        "fcls": "Conteneur(s) FCL",
+        "destination": "Destination",
+        "origin": "Origine",
+        "shipment": "Expédition",
+        "supplier": "Fournisseur",
+        "buyer": "Acheteur",
+        "valuePerFcl": "Valeur par FCL",
+        "totalValue": "Valeur Totale"
+      },
+      "cuts": {
+        "header": "Découpes",
+        "weight": "Poids",
+        "pricePerKg": "Prix au kg",
+        "totalPrice": "Prix total"
+      },
+      "ctas": {
+        "makePayment": "Effectuer le paiement",
+        "cancelOrder": "Annuler la commande",
+        "trackShipment": "Suivre l'expédition",
+        "viewInvoice": "Voir la Facture"
+      },
+      "messages": {
+        "awaiting_supplier_acceptance": "Nous attendons que le fournisseur accepte votre commande.",
+        "awaiting_pre_payment": "Votre commande a été acceptée. Veuillez effectuer le pré-paiement pour continuer.",
+        "pre_payment_confirmed": "Pré-paiement confirmé. Le fournisseur prépare votre commande.",
+        "in_production": "Votre commande est en cours de production.",
+        "awaiting_balance_payment": "Production terminée. Veuillez effectuer le paiement du solde pour l'expédition.",
+        "shipped": "Votre commande a été expédiée.",
+        "delivered": "Votre commande a été livrée.",
+        "completed": "Commande terminée avec succès.",
+        "rejected": "Cette commande a été rejetée."
+      },
+      "documentsEmpty": "Les documents apparaîtront ici au fur et à mesure de l'avancement de votre commande.",
+      "shipmentWarning": "Les informations de livraison sont mises à jour au fur et à mesure de l'avancement de la commande. Vous serez informé de toute modification.",
+      "notFound": "Commande introuvable.",
+      "faq": {
+        "q1": "Comment fonctionne la négociation de prix ?",
+        "q2": "Y a-t-il un montant minimum pour les transactions ?"
+      }
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "searchPlaceholder": "Rechercher par nom, email ou titre de poste...",
+      "profileFilter": "Profil",
+      "statusFilter": "Statut",
+      "all": "Tous",
+      "allProfiles": "Tous les profils",
+      "inviteUser": "Inviter un utilisateur",
+      "userCount": "{{count}} sur {{total}} utilisateurs",
+      "empty": "Aucun utilisateur ne correspond à vos filtres.",
+      "col": {
+        "user": "Utilisateur",
+        "email": "Email",
+        "profileType": "Type de profil",
+        "created": "Créé",
+        "lastLogin": "Dernière connexion",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "profile": {
+        "master_buyer": "Acheteur principal",
+        "procurement": "Approvisionnement",
+        "finance": "Finance",
+        "compliance": "Conformité"
+      },
+      "status": {
+        "active": "Actif",
+        "invited": "Invité",
+        "inactive": "Inactif"
+      },
+      "actions": {
+        "editMock": "Modification à venir (maquette)",
+        "deactivateMock": "Utilisateur désactivé (maquette)"
+      },
+      "deactivateSuccess": "Utilisateur désactivé.",
+      "edit": {
+        "title": "Modifier le membre de l'équipe",
+        "success": "Utilisateur mis à jour."
+      },
+      "invite": {
+        "title": "Invitez à votre équipe d'achat",
+        "subtitle": "Envoyez un e-mail d'invitation — ils définiront leur mot de passe lors de la première connexion.",
+        "fullNameLabel": "Nom complet",
+        "fullNamePlaceholder": "Jane Doe",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "utilisateur@exemple.com",
+        "profileLabel": "Type de profil",
+        "send": "Envoyer l'invitation",
+        "cancel": "Annuler",
+        "success": "Invitation envoyée.",
+        "successEmail": "Invitation envoyée à {{email}}"
+      }
+    },
+    "negotiations": {
+      "title": "Négociations",
+      "searchPlaceholder": "Rechercher ID / fournisseur / produit / origine...",
+      "sort": {
+        "recent": "Trier: Récemment mis à jour",
+        "oldest": "Trier: Les plus anciens en premier",
+        "priority": "Trier: Priorité du statut"
+      },
+      "counts": "{{offers}} Offres · {{bids}} Enchères",
+      "chips": {
+        "all": "Tout",
+        "action_required": "Action requise",
+        "awaiting_supplier": "En attente du fournisseur",
+        "final_round": "Dernière étape",
+        "accepted": "Accepté",
+        "rejected": "Rejeté",
+        "expired": "Expiré"
+      },
+      "col": {
+        "offerSupplier": "Offre / Fournisseur",
+        "round": "Tours",
+        "yourBid": "Votre enchère",
+        "supplierCounter": "Contre-offre du fournisseur",
+        "origin": "Origine",
+        "status": "Statut",
+        "updated": "Mis à jour"
+      },
+      "status": {
+        "action_required": "ACTION REQUISE",
+        "awaiting_supplier": "EN ATTENTE DU FOURNISSEUR",
+        "final_round": "DERNIÈRE ÉTAPE",
+        "accepted": "TRANSACTION CONCLUE",
+        "rejected": "REJETÉ",
+        "expired": "EXPIRÉ"
+      },
+      "bidsCount": "{{n}} ENCHÈRES",
+      "needAction": "{{n}} action(s) requise(s)",
+      "empty": "Aucune négociation ne correspond aux filtres actuels.",
+      "detail": {
+        "back": "Retour aux négociations",
+        "roundOf": "Tour {{round}} sur {{max}}",
+        "updated": "Mis à jour le {{date}}",
+        "summary": "{{supplier}} a répondu au tour {{round}}. Acceptez, contre-offrez ou rejetez.",
+        "stats": {
+          "asking": "Prix demandé",
+          "yourBid": "Votre enchère",
+          "supplierCounter": "Contre-offre du fournisseur"
+        },
+        "gap": "Écart Enchère vs Contre-offre",
+        "gapLabel": {
+          "bid": "ENCHÈRE",
+          "counter": "CONTRE"
+        },
+        "actions": {
+          "acceptCounter": "Accepter la contre-offre du fournisseur",
+          "counterBack": "Contre-offrir",
+          "reject": "Rejeter"
+        },
+        "supplier": {
+          "title": "Fournisseur",
+          "avgReplyTime": "Temps de réponse moyen",
+          "avgReplyDays": "{{days}}j",
+          "fclsWeight": "FCLs · Poids",
+          "valuePerFcl": "Valeur par FCL",
+          "movement": "Évolution (demande → enchère)"
+        },
+        "timeline": "Chronologie du tour",
+        "timelineLabel": {
+          "bid": "Votre enchère {{n}}",
+          "counter": "Contre-offre du fournisseur {{n}}",
+          "counterCurrent": "Contre-offre du fournisseur {{n}} · actuelle"
+        },
+        "priceDetails": "Détails du prix",
+        "col": {
+          "product": "Produit",
+          "qtyLb": "Qté (lb)",
+          "asking": "Demande",
+          "bidR": "Enchère R{{n}}",
+          "counterR": "Contre-offre R{{n}}"
+        },
+        "meta": {
+          "incoterm": "Incoterm",
+          "origin": "Origine",
+          "port": "Port",
+          "payment": "Paiement",
+          "fcls": "Nbr. FCL",
+          "weight": "Poids"
+        },
+        "banner": {
+          "awaitingSupplier": "En attente de la réponse du fournisseur pour le tour {{round}}",
+          "finalRound": "DERNIER TOUR — ceci est le dernier tour.",
+          "accepted": "Transaction conclue à {{price}}",
+          "rejected": "Négociation rejetée.",
+          "expired": "Négociation expirée sans accord.",
+          "actionRequired": "Action requise"
+        },
+        "toast": {
+          "counter": "Contre-offre envoyée (maquette)",
+          "accepted": "Contre-offre du fournisseur acceptée (maquette)",
+          "rejected": "Négociation rejetée (maquette)"
+        }
+      }
+    },
+    "chat": {
+      "title": "Chat",
+      "searchPlaceholder": "Rechercher des conversations…",
+      "emptyState": "Sélectionnez une conversation pour commencer",
+      "emptyList": "Aucune conversation ne correspond à votre recherche",
+      "sendButton": "Envoyer",
+      "sendPlaceholder": "Saisissez un message…",
+      "online": "En ligne",
+      "offline": "Hors ligne",
+      "context": {
+        "negotiation": "Négociation",
+        "offer": "Offre",
+        "request": "Demande",
+        "order": "Commande"
+      },
+      "toast": {
+        "messageSent": "Message envoyé (maquette)",
+        "contextOpen": "Ouvrir les détails du contexte (maquette)"
+      },
+      "relative": {
+        "justNow": "à l'instant",
+        "minutesAgo": "il y a {{n}} min",
+        "hoursAgo": "il y a {{n}} h",
+        "yesterday": "hier",
+        "daysAgo": "il y a {{n}} j"
+      }
+    },
+    "marketplace": {
+      "nav": "Marché",
+      "title": "Marché"
+    }
+  },
+  "supplier": {
+    "auctions": {
+      "nav": "Ventes aux enchères",
+      "title": "Mes ventes aux enchères",
+      "subtitle": "Créez des ventes aux enchères à offres scellées pour vos produits",
+      "createCta": "Créer une vente aux enchères",
+      "comingSoon": "Bientôt disponible — Flux de création de ventes aux enchères",
+      "detailComingSoon": "Détails de la vente aux enchères bientôt disponibles",
+      "emptyState": "Aucune vente aux enchères dans cet état.",
+      "filter": {
+        "all": "Tout",
+        "scheduled": "Planifié",
+        "open": "Ouvert",
+        "closed": "Fermé",
+        "awarded": "Adjugé",
+        "cancelled": "Annulé"
+      },
+      "statusBadge": {
+        "scheduled": "Planifié",
+        "open": "En direct",
+        "closed": "Fermé",
+        "awarded": "Adjugé",
+        "cancelled": "Annulé"
+      },
+      "card": {
+        "origin": "Origine",
+        "destination": "Destination",
+        "bids_one": "{{count}} enchère",
+        "bids_other": "{{count}} enchères",
+        "bids": "{{count}} enchères",
+        "viewAuction": "Voir la vente aux enchères",
+        "viewBids": "Voir les enchères",
+        "windowClosed": "Fenêtre fermée",
+        "awardedBanner": "Adjugé · {{count}} enchères reçues",
+        "opensSoon": "Ouvre bientôt",
+        "manage": "Gérer",
+        "cancelled": "Vente aux enchères annulée"
+      }
+    },
+    "auctionDetail": {
+      "back": "← Retour aux ventes aux enchères",
+      "notFound": "Vente aux enchères introuvable.",
+      "cancelAuction": "Annuler la vente aux enchères",
+      "cancelledToast": "Vente aux enchères annulée",
+      "award": "Adjuger",
+      "winner": "Gagnant",
+      "viewCuts": "Voir la ventilation des découpes",
+      "hideCuts": "Masquer la ventilation des découpes",
+      "awardToast": "Vente aux enchères adjugée à {{buyer}} !",
+      "awardedBanner": "Adjugé à {{buyer}}",
+      "contractIssued": "Contrat émis — acheteur notifié",
+      "inProgress": {
+        "title": "Vente aux enchères en cours",
+        "message": "Cette vente aux enchères est toujours ouverte. Vous pourrez consulter les enchères après sa clôture.",
+        "bidsReceived": "Enchères sous pli reçues"
+      },
+      "summary": {
+        "totalBids": "Total des enchères",
+        "highest": "Enchère la plus élevée",
+        "lowest": "Enchère la plus basse",
+        "reserve": "Prix de réserve",
+        "perFcl": "par FCL"
+      },
+      "col": {
+        "rank": "Classement",
+        "buyer": "Acheteur",
+        "containers": "Conteneurs",
+        "totalPerFcl": "Total / FCL",
+        "avgPerKg": "Moyenne",
+        "submittedAt": "Soumis le",
+        "status": "Statut",
+        "action": "Action",
+        "cut": "Découpe",
+        "qty": "Quantité",
+        "bidPerKg": "Enchère",
+        "total": "Total"
+      },
+      "bidStatus": {
+        "submitted": "Soumis",
+        "withdrawn": "Retiré",
+        "winning": "Gagnant",
+        "lost": "Perdu"
+      },
+      "reserveNotMet": {
+        "title": "Aucune enchère n'a atteint votre prix de réserve",
+        "body": "Réserve : US$ {{reserve}} {{unit}}. Enchère la plus élevée : US$ {{highest}} {{unit}} ({{gap}}% en dessous).",
+        "awardAnyway": "Attribuer quand même",
+        "extend": "Prolonger de +24h",
+        "extendedToast": "Vente aux enchères prolongée de 24 heures",
+        "closeWithout": "Fermer sans attribuer"
+      },
+      "awardDialog": {
+        "title": "Attribuer la vente aux enchères à {{buyer}} ?",
+        "subtitle": "Confirmez le récapitulatif de l'enchère ci-dessous avant d'attribuer.",
+        "grandTotal": "Total général",
+        "notice": "L'acheteur dispose de 48 heures pour confirmer. Vous serez informé.",
+        "cancel": "Annuler",
+        "confirm": "Attribuer"
+      },
+      "nextSteps": {
+        "title": "Prochaines étapes",
+        "notified": "L'acheteur a été informé et dispose de 48 heures pour confirmer.",
+        "becomesOrder": "Une fois confirmée, cela devient une commande client.",
+        "viewSales": "Voir dans les ventes"
+      }
+    },
+    "createAuction": {
+      "title": "Créer une nouvelle vente aux enchères",
+      "subtitle": "Enchères sous pli · Marchés · Produits · Prix",
+      "auctionWindow": "Fenêtre d'enchères",
+      "auctionWindowSub": "Moment où les acheteurs peuvent soumettre des enchères sous pli",
+      "opensAt": "Ouvre le",
+      "closesAt": "Ferme le",
+      "duration": "Durée",
+      "windowHint": "Les acheteurs ne peuvent placer d'enchères que pendant cette fenêtre. Après la clôture, vous examinez les enchères et attribuez.",
+      "pricingControls": "Contrôles de prix",
+      "pricingControlsSub": "Réserve et prix minimum",
+      "reservePrice": "Prix de réserve",
+      "reservePriceHint": "Caché aux acheteurs",
+      "minBid": "Enchère min.",
+      "minBidHint": "Visible aux acheteurs",
+      "reserveExplain": "Le prix de réserve est votre prix minimum acceptable. Si aucune enchère ne l'atteint, vous pouvez toujours attribuer à votre discrétion.",
+      "marketsTitle": "Marchés et fret",
+      "marketsSub": "Pays, ports, coûts de fret",
+      "visibility": "Visibilité de l'enchère",
+      "visibilitySub": "Qui peut voir et enchérir sur cette vente aux enchères",
+      "visMarketplace": "Publier sur la place de marché",
+      "visMarketplaceDesc": "Tous les acheteurs peuvent voir et enchérir",
+      "visInvite": "Sur invitation seulement",
+      "visInviteDesc": "Seuls les acheteurs sélectionnés peuvent voir cette vente aux enchères",
+      "reserveHidden": "Réserve",
+      "hidden": "Caché",
+      "bids": "enchères",
+      "placeBid": "Placer une enchère",
+      "scheduleCta": "Programmer la vente aux enchères",
+      "publishedToast": "Vente aux enchères MDS-A#{{seq}} programmée !",
+      "discardConfirm": "Annuler cette vente aux enchères ?",
+      "readyToSchedule": "Prêt à programmer",
+      "readyTitle": "Tout est prêt — vous pouvez programmer 🎉",
+      "remainingTitle": "Quelques points restants",
+      "step": {
+        "window": "Définir la fenêtre d'enchères (ouverture et fermeture)",
+        "markets": "Sélectionner au moins un marché de destination",
+        "cuts": "Ajouter au moins une découpe de produit",
+        "inco": "Choisir un incoterm"
+      }
+    },
+    "outreach": {
+      "navLabel": "Prospection",
+      "title": "Prospection par e-mail",
+      "subtitle": "Envoyez vos offres actives aux contacts correspondants.",
+      "activeOffers": "Offres actives prêtes pour la prospection",
+      "recentActivity": "Activité de prospection récente",
+      "noOffers": "Aucune offre active prête pour la prospection.",
+      "noActivity": "Aucune prospection n'a été envoyée à ce jour.",
+      "matched": "correspondant",
+      "sent": "envoyé",
+      "sendOutreach": "Envoyer la prospection",
+      "stats": {
+        "sent7d": "Emails envoyés (7j)",
+        "openRate": "Taux d'ouverture",
+        "pendingOffers": "Offres en attente de prospection",
+        "reached": "Contacts atteints"
+      },
+      "col": {
+        "offer": "Offre",
+        "contact": "Contact",
+        "email": "Email",
+        "country": "Pays",
+        "status": "Statut",
+        "sentAt": "Envoyé le"
+      },
+      "modal": {
+        "title": "Envoyer la prospection de l'offre — {{offer}}",
+        "origin": "Origine",
+        "markets": "Marchés cibles",
+        "incoterm": "Incoterm",
+        "price": "Prix",
+        "matchingContacts": "Contacts correspondants ({{count}})",
+        "selectAll": "Tout sélectionner",
+        "deselectAll": "Tout désélectionner",
+        "noMatches": "Aucun contact ne correspond aux marchés de destination de cette offre.",
+        "sentBadge": "Envoyé",
+        "subject": "Objet",
+        "body": "Corps de l'email (HTML)",
+        "preview": "Aperçu",
+        "editBody": "Modifier",
+        "sendButton": "Envoyer à {{count}} contacts sélectionnés",
+        "sentSuccess": "{{count}} email(s) mis en file d'attente pour l'envoi"
+      }
+    },
+    "counter": {
+      "title": "Envoyer une contre-offre",
+      "subtitle": "Ajustez vos prix et répondez à l'enchère de l'acheteur.",
+      "roundOf": "Tour {{round}} sur {{max}}",
+      "theirBid": "Leur enchère",
+      "theirBidTotal": "Total de leur enchère",
+      "totalAsking": "Total demandé",
+      "yourCounterTotal": "Total de votre contre-offre",
+      "message": "Message",
+      "messagePlaceholder": "Ajouter un message à l'acheteur (facultatif)",
+      "cancel": "Annuler",
+      "submit": "Envoyer une contre-offre (Tour {{round}})",
+      "submitting": "Envoi en cours…",
+      "successToast": "Contre-offre envoyée ! En attente de la réponse de l'acheteur.",
+      "confirmReject": "Êtes-vous sûr de vouloir rejeter cette enchère ?",
+      "col": {
+        "product": "Produit",
+        "qty": "Qté ({{unit}})",
+        "asking": "Demandé",
+        "yourCounter": "Votre contre-offre",
+        "diff": "Diff."
+      },
+      "bulk": {
+        "label": "Remplissage rapide",
+        "acceptAll": "Accepter tout",
+        "meetMiddle": "Entre les deux",
+        "plus3": "Leur prix +3%",
+        "plus5": "Leur prix +5%",
+        "apply": "Appliquer",
+        "customPlaceholder": "±{{unit}}"
+      }
+    },
+    "share": {
+      "title": "Partager cette enchère avec le fournisseur",
+      "subtitle": "Le fournisseur peut consulter et répondre via ce lien sécurisé — aucune connexion requise.",
+      "subtitleUsed": "Ce lien a déjà été utilisé par le fournisseur.",
+      "loading": "Préparation du lien de partage…",
+      "copy": "Copier le lien",
+      "copied": "Copié !",
+      "supplierEmail": "Email du fournisseur (facultatif)",
+      "saveEmail": "Enregistrer",
+      "emailSaved": "Email enregistré",
+      "sendEmail": "Envoyer l'email",
+      "mailSubject": "Mundus Trade — Nouvelle enchère en attente de votre réponse",
+      "mailBody": "Bonjour,\n\nVous avez reçu une nouvelle enchère de {{buyer}} sur Mundus Trade.\n\nConsultez et répondez ici :\n{{link}}\n\nCordialement,\nL'équipe Mundus Trade",
+      "expiresAt": "Le lien expire le {{date}}"
+    },
+    "negotiations": {
+      "title": "Négociations",
+      "searchPlaceholder": "Rechercher ID / acheteur / produit / destination...",
+      "sort": {
+        "recent": "Trier : Dernière mise à jour",
+        "oldest": "Trier : Plus ancien en premier",
+        "priority": "Trier : Priorité du statut"
+      },
+      "counts": "{{offers}} offres · {{bids}} enchères",
+      "emailSent": "Email envoyé",
+      "emailSentTooltip": "Un lien de réponse a été généré pour cette négociation",
+      "chips": {
+        "all": "Tout",
+        "action_required": "Action requise",
+        "awaiting_buyer": "En attente de l'acheteur",
+        "final_round": "Dernière ronde",
+        "accepted": "Accepté",
+        "rejected": "Rejeté",
+        "expired": "Expiré"
+      },
+      "col": {
+        "offerBuyer": "Offre / Acheteur",
+        "round": "Tour",
+        "latestBid": "Dernière enchère",
+        "yourCounter": "Votre contre-proposition",
+        "destination": "Destination",
+        "status": "Statut",
+        "updated": "Mis à jour"
+      },
+      "status": {
+        "action_required": "ACTION REQUISE",
+        "awaiting_buyer": "EN ATTENTE DE L'ACHETEUR",
+        "final_round": "DERNIÈRE RONDE",
+        "accepted": "TRANSACTION CONCLUE",
+        "rejected": "REJETÉE",
+        "expired": "EXPIRÉE"
+      },
+      "bidsCount": "{{n}} ENCHÈRES",
+      "needAction": "{{n}} action requise",
+      "empty": "Aucune négociation ne correspond aux filtres actuels.",
+      "detail": {
+        "back": "Retour aux négociations",
+        "roundOf": "Tour {{round}} sur {{max}}",
+        "updated": "Mis à jour le {{date}}",
+        "summary": "{{buyer}} a placé une enchère au tour {{round}}. Répondez par une contre-proposition, acceptez ou rejetez.",
+        "stats": {
+          "asking": "Demande",
+          "buyerBid": "Enchère de l'acheteur",
+          "yourCounter": "Votre contre-proposition"
+        },
+        "gap": "Écart Enchère vs Contre-proposition",
+        "gapLabel": {
+          "bid": "ENCHÈRE",
+          "counter": "CONTRE-PROPOSITION"
+        },
+        "actions": {
+          "sendCounter": "Envoyer une contre-réponse",
+          "acceptBid": "Accepter l'enchère",
+          "reject": "Rejeter"
+        },
+        "buyer": {
+          "title": "Acheteur",
+          "avgReplyTime": "Temps de réponse moyen",
+          "avgReplyDays": "{{days}}j",
+          "fclsWeight": "FCLs · Poids",
+          "valuePerFcl": "Valeur par FCL",
+          "movement": "Mouvement (demande → enchère)"
+        },
+        "timeline": "Chronologie des tours",
+        "timelineLabel": {
+          "bid": "Enchère {{n}}",
+          "counter": "Contre-proposition {{n}}",
+          "counterCurrent": "Contre-proposition {{n}} · actuelle"
+        },
+        "priceDetails": "Détails du prix",
+        "col": {
+          "product": "Produit",
+          "qtyLb": "Quantité (lb)",
+          "asking": "Demande",
+          "bidR": "Enchère R{{n}}",
+          "counterR": "Contre-proposition R{{n}}"
+        },
+        "meta": {
+          "incoterm": "Incoterm",
+          "destination": "Destination",
+          "port": "Port",
+          "payment": "Paiement",
+          "fcls": "FCLs",
+          "weight": "Poids"
+        },
+        "banner": {
+          "awaitingBuyer": "En attente de la réponse de l'acheteur au tour {{round}}",
+          "finalRound": "DERNIÈRE RONDE — ceci est le dernier tour.",
+          "accepted": "Transaction conclue à {{price}}",
+          "rejected": "Négociation rejetée par l'acheteur.",
+          "expired": "Négociation expirée sans accord.",
+          "actionRequired": "Action requise"
+        },
+        "toast": {
+          "counterSent": "Contre-proposition envoyée (simulation)",
+          "bidAccepted": "Enchère acceptée (simulation)",
+          "bidRejected": "Enchère rejetée (simulation)"
+        }
+      }
+    },
+    "users": {
+      "title": "Utilisateurs",
+      "searchPlaceholder": "Rechercher par nom, e-mail ou titre de poste...",
+      "profileFilter": "Profil",
+      "statusFilter": "Statut",
+      "all": "Tous",
+      "allProfiles": "Tous les profils",
+      "inviteUser": "Inviter un utilisateur",
+      "userCount": "{{count}} sur {{total}} utilisateurs",
+      "empty": "Aucun utilisateur ne correspond à vos filtres.",
+      "col": {
+        "user": "Utilisateur",
+        "email": "E-mail",
+        "profileType": "Type de profil",
+        "created": "Créé",
+        "lastLogin": "Dernière connexion",
+        "status": "Statut",
+        "actions": "Actions"
+      },
+      "profile": {
+        "master_supplier": "Fournisseur principal",
+        "operator": "Opérateur",
+        "export_manager": "Responsable export",
+        "quality_control": "Contrôle qualité",
+        "logistics": "Logistique"
+      },
+      "status": {
+        "active": "Actif",
+        "invited": "Invité",
+        "inactive": "Inactif"
+      },
+      "deactivateSuccess": "Utilisateur désactivé.",
+      "edit": {
+        "title": "Modifier le membre de l'équipe",
+        "success": "Utilisateur mis à jour."
+      },
+      "invite": {
+        "title": "Inviter un nouvel utilisateur",
+        "subtitle": "Envoyez un e-mail d'invitation — l'utilisateur définira son mot de passe lors de sa première connexion.",
+        "fullNameLabel": "Nom complet",
+        "fullNamePlaceholder": "Jane Doe",
+        "emailLabel": "E-mail",
+        "emailPlaceholder": "utilisateur@exemple.com",
+        "profileLabel": "Type de profil",
+        "send": "Envoyer l'invitation",
+        "cancel": "Annuler",
+        "success": "Invitation envoyée.",
+        "successEmail": "Invitation envoyée à {{email}}"
+      }
+    },
+    "requests": {
+      "title": "Mes demandes d'Offre",
+      "subtitle": "Suivez les demandes d'offre que vous avez envoyées à la place de marché ou aux fournisseurs.",
+      "crumbHome": "Accueil",
+      "searchPlaceholder": "Rechercher",
+      "showing": "Affichage de {{from}} - {{to}} éléments sur {{total}} résultats",
+      "empty": "Aucune demande ne correspond à vos filtres.",
+      "col": {
+        "requestNumber": "Numéro de demande",
+        "client": "Client",
+        "product": "Produit",
+        "destinationCountry": "Pays de destination",
+        "incoterms": "Incoterms",
+        "quantity": "Quantité",
+        "container": "Conteneur",
+        "status": "Statut",
+        "createdAt": "Créé le",
+        "actions": "Actions"
+      },
+      "status": {
+        "new": "Nouveau",
+        "with_responses": "Avec réponses",
+        "offer_sent": "Offre envoyée",
+        "not_interested": "Non intéressé"
+      },
+      "actions": {
+        "createOffer": "Créer une Offre",
+        "view": "Voir",
+        "notInterested": "Non intéressé"
+      },
+      "notInterestedModal": {
+        "title": "Marquer comme non intéressé ?",
+        "body": "La demande {{requestNumber}} sera marquée comme non intéressée et retirée de votre liste active.",
+        "confirm": "Confirmer",
+        "cancel": "Annuler"
+      },
+      "detail": {
+        "crumb": "Demande d'offre {{requestNumber}}",
+        "title": "Détails de la demande d'offre",
+        "subtitle": "Consultez les informations de la demande d'offre {{requestNumber}}.",
+        "createdAt": "Créé le",
+        "productsHeading": "Produits",
+        "logisticsHeading": "Logistique & Détails",
+        "additionalHeading": "Informations supplémentaires",
+        "fields": {
+          "category": "Catégorie",
+          "quantity": "Quantité",
+          "targetPrice": "Prix cible",
+          "specification": "Spécification",
+          "destinationCountry": "Pays de destination",
+          "destinationPort": "Port de destination",
+          "incoterms": "Incoterms",
+          "containerSize": "Dimension du conteneur",
+          "productTemperature": "Température du produit",
+          "numberOfContainers": "Nombre de conteneurs",
+          "shipmentDate": "Date d'expédition"
+        },
+        "noAdditionalInfo": "Aucune information supplémentaire fournie.",
+        "createOfferCta": "Créer une offre à partir de cette demande",
+        "notInterestedCta": "Non intéressé",
+        "createOfferComingSoon": "Flux de création d'offre — bientôt disponible",
+        "notFoundTitle": "Demande introuvable",
+        "notFoundBody": "Cette demande d'offre n'existe pas ou a été supprimée.",
+        "back": "Retour aux demandes"
+      }
+    },
+    "sales": {
+      "heroTitle": "Suivez vos Commandes facilement et rapidement.",
+      "crumbHome": "Accueil",
+      "title": "Ventes",
+      "showing": "Affichage de {{from}} à {{to}} articles sur {{total}} résultats",
+      "sortBy": "Trier par",
+      "createOffer": "Créer une Offre +",
+      "createOfferComingSoon": "Flux de création d'Offre — bientôt disponible",
+      "empty": "Aucune vente pour le moment.",
+      "sort": {
+        "newest": "Les plus récents en premier",
+        "oldest": "Les plus anciens en premier"
+      },
+      "col": {
+        "dealId": "ID de Transaction",
+        "status": "Statut",
+        "buyer": "Acheteur",
+        "orderDate": "Date de Commande",
+        "destination": "Destination"
+      },
+      "status": {
+        "AWAITING_SUPPLIER_ACCEPTANCE": "En attente d'acceptation Fournisseur",
+        "AWAITING_PRE_PAYMENT": "En attente de pré-paiement"
+      },
+      "detail": {
+        "crumb": "Détails de la Vente",
+        "back": "Retour aux ventes",
+        "notFoundTitle": "Vente introuvable",
+        "notFoundBody": "Cette vente n'existe pas ou a été supprimée.",
+        "orderNumberLabel": "Numéro de Commande : {{id}} |",
+        "specifications": "Spécifications",
+        "tabs": {
+          "overview": "Aperçu",
+          "documents": "Documents",
+          "shipment": "Informations d'Expédition",
+          "ariaLabel": "Sections de vente"
+        },
+        "banner": {
+          "newOrderReceived": "NOUVELLE COMMANDE REÇUE"
+        },
+        "overview": {
+          "title": "Une nouvelle commande a été reçue.",
+          "subtitle": "Commande reçue ! Veuillez examiner la commande et l'approuver pour poursuivre le processus.",
+          "orderData": "Données de la commande"
+        },
+        "fields": {
+          "paymentTerms": "Conditions de paiement",
+          "advance": "Paiement anticipé ({{pct}}%)",
+          "balance": "Paiement du solde ({{pct}}%)",
+          "incoterm": "Incoterm",
+          "originCountry": "Pays d'origine",
+          "originPort": "Port d'origine"
+        },
+        "cuts": {
+          "cut": "Découpes",
+          "weight": "Poids",
+          "pricePerKg": "Prix par kg",
+          "totalPrice": "Prix total"
+        },
+        "faq": {
+          "howNegotiation": "Comment fonctionne la Négociation des prix ?",
+          "howNegotiationAnswer": "Les Acheteurs et les Fournisseurs peuvent négocier jusqu'à 3 tours d'Enchères et de contre-Enchères avant qu'une Transaction ne soit conclue.",
+          "minAmount": "Y a-t-il un montant minimum pour les transactions ?",
+          "minAmountAnswer": "Oui. Les quantités minimales dépendent de la taille du Conteneur — généralement 13 MT pour 20 pieds et 27 MT pour 40 pieds."
+        },
+        "documents": {
+          "empty": "Aucun document disponible pour le moment. Les documents apparaîtront ici au fur et à mesure de l'avancement du process."
+        },
+        "shipment": {
+          "warning": "Veuillez noter que les informations de livraison seront progressivement mises à jour par l'équipe Mundus au fur et à mesure de l'avancement du processus. Vous recevrez des notifications concernant toute mise à jour.",
+          "fclLabel": "FCL {{n}}",
+          "shippingDetails": "Détails de l'Expédition",
+          "shippingLine": "Ligne maritime",
+          "vessel": "Navire",
+          "etd": "Heure d'arrivée prévue",
+          "eta": "Heure d'arrivée estimée",
+          "cargoInfo": "Informations sur le fret",
+          "booking": "Réservation",
+          "container": "Conteneur",
+          "containerSize": "Taille du Conteneur",
+          "availableContainer": "Conteneur disponible",
+          "unit": "unité",
+          "portOfOrigin": "Port d'Origine",
+          "portOfDestination": "Port de Destination",
+          "freightCost": "Coût du fret"
+        },
+        "side": {
+          "title": "Détails de la Vente",
+          "orderNumber": "Numéro de Commande #{{id}}",
+          "quantity": "Quantité",
+          "oceanFreight": "Fret maritime",
+          "fclCount": "FCL(s)",
+          "destination": "Destination",
+          "origin": "Origine",
+          "shipment": "Expédition",
+          "companyName": "Nom de l'entreprise",
+          "buyer": "Acheteur",
+          "valuePerFcl": "Valeur par FCL",
+          "totalValue": "Valeur totale",
+          "accept": "Accepter la Commande",
+          "reject": "Rejeter la Commande",
+          "acceptComingSoon": "Accepter la Commande — bientôt disponible",
+          "rejectComingSoon": "Rejeter la Commande — bientôt disponible"
+        }
+      }
+    },
+    "offers": {
+      "createOffer": "Créer Offre +",
+      "loadMore": "Charger plus d'éléments",
+      "empty": "Vous n'avez pas encore d'offres.",
+      "showingShort": "Affichage de {{shown}} sur {{total}} offres",
+      "newOffer": "Nouvelle offre",
+      "openOffer": "Offre ouverte",
+      "statusFilter": "Statut",
+      "allStatuses": "Tous les statuts",
+      "kpi": {
+        "total": "Total des offres",
+        "available": "Disponible",
+        "negotiating": "En négociation",
+        "expiring": "Expire ≤ 7j",
+        "views": "Vues totales",
+        "proposals": "Propositions totales"
+      },
+      "cat": {
+        "all": "Tout",
+        "beef": "Bœuf",
+        "pork": "Porc",
+        "poultry": "Volaille",
+        "ovine": "Ovin"
+      },
+      "sort": {
+        "newest": "Les plus récents",
+        "oldest": "Les plus anciens",
+        "priceDesc": "Prix : du plus élevé au plus bas",
+        "priceAsc": "Prix : du plus bas au plus élevé"
+      },
+      "status": {
+        "active": "Disponible",
+        "new": "Nouveau",
+        "negotiating": "En négociation",
+        "closed": "Fermé",
+        "inactive": "Inactif"
+      },
+      "card": {
+        "cuts": "{{count}} DÉCOUPES",
+        "moreCuts": "+{{count}} autres",
+        "origin": "Origine",
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Expédition",
+        "volume": "Volume",
+        "views": "vues",
+        "proposals": "propositions",
+        "daysLeft": "encore {{n}}j",
+        "priceStartingFrom": "Prix à partir de",
+        "perFcl": "par FCL",
+        "viewDetails": "Voir les détails"
+      },
+      "detail": {
+        "notFoundTitle": "Offre introuvable",
+        "notFoundBody": "Cette offre n'existe pas ou a été supprimée.",
+        "backToOffers": "Retour aux offres",
+        "illustrative": "IMAGE ILLUSTRATIVE",
+        "specifications": "Spécifications ({{count}})",
+        "totalValuePerFcl": "Valeur totale (Prix de départ) par FCL",
+        "askingPrice": "Prix demandé",
+        "floorPrice": "Prix plancher",
+        "totalWeight": "Poids total",
+        "noMoreInfo": "Rien à afficher ici.",
+        "moreInfo": "Plus d'informations",
+        "fcl_one": "{{count}} FCL disponible",
+        "fcl_other": "{{count}} FCL disponibles",
+        "size": "Taille : {{size}}",
+        "deactivate": "Désactiver l'offre",
+        "activate": "Activer l'offre",
+        "inactiveBanner": "Cette offre est actuellement inactive et non visible pour les acheteurs.",
+        "clone": "Cloner l'offre",
+        "share": "Partager cette offre",
+        "cloneComingSoon": "Cloner l'offre — bientôt disponible",
+        "shareComingSoon": "Partager cette offre — bientôt disponible",
+        "cutsHead": {
+          "cut": "DÉCOUPE",
+          "marbling": "MARBRAGE",
+          "qty": "QTÉ PAR DÉCOUPE",
+          "price": "PRIX PAR KG",
+          "asking": "DEMANDÉ / KG",
+          "floor": "PLANCHER / KG"
+        },
+        "fields": {
+          "marbling": "Marbrage",
+          "originPortCountry": "Origine (port / pays)",
+          "condition": "Condition",
+          "destination": "Destination",
+          "terms": "Conditions",
+          "shipment": "Expédition"
+        }
+      },
+      "heroTitle": "Suivez vos commandes facilement et rapidement.",
+      "crumbHome": "Accueil",
+      "title": "Offres",
+      "showing": "Affichage de {{from}} à {{to}} articles sur {{total}} résultats",
+      "sortBy": "Trier par"
+    },
+    "createOffer": {
+      "title": "Nouvelle offre",
+      "subtitle": "Créez-la en un seul écran — l'IA remplit le formulaire à partir d'un fichier ou d'un texte.",
+      "unitToggle": "Unité",
+      "inProgress": "En cours",
+      "ai": {
+        "title": "Remplissage rapide par l'IA",
+        "subtitle": "Déposez une liste de prix, collez un message ou dictez — nous remplirons le formulaire en quelques secondes.",
+        "minimize": "Minimiser",
+        "tryIt": "Essayer le remplissage rapide par IA",
+        "tab": {
+          "pdf": "PDF",
+          "excel": "Excel",
+          "image": "Image",
+          "voice": "Voix",
+          "text": "Texte"
+        },
+        "pasteLabel": "Coller depuis WhatsApp / e-mail",
+        "placeholder": "Collez un e-mail, un message WhatsApp, ou décrivez simplement l'offre :\n\n\"Bonjour, j'ai 2 FCL de faux-filet de première qualité de 7-9 lb à 7,20 $/kg, prix plancher 6,95 $. Également 1 FCL de striploin de 8-10 lb à 6,80 $. Destination Hong Kong, CFR, paiement 50% d'avance solde TT, expédition juin.\"",
+        "dropzone": {
+          "pdf": "Déposez une liste de prix PDF ou cliquez pour télécharger",
+          "excel": "Déposez un fichier Excel/CSV ou cliquez pour télécharger",
+          "image": "Déposez une image (par exemple une photo d'une liste manuscrite) ou cliquez pour télécharger"
+        },
+        "voicePrompt": "Cliquez et enregistrez votre offre — nous la transcrirons et l'extrairons.",
+        "stubNote": "(l'extraction est une ébauche pour l'instant — le véritable câblage de l'API Claude arrive bientôt)",
+        "poweredBy": "Optimisé par Claude — extrait automatiquement les découpes, les prix, les termes",
+        "extract": "Extraire avec l'IA",
+        "extracting": "Extraction en cours…",
+        "extractedMock": "Extrait (maquette) — le pré-remplissage de formulaire sera disponible lors de la prochaine itération",
+        "emptyError": "Veuillez d'abord coller du texte."
+      },
+      "placeholder": "Les champs du formulaire (nom de l'offre, espèce, découpes, routes et fret) arrivent ensuite.",
+      "cancel": "Annuler",
+      "saveDraft": "Enregistrer le brouillon",
+      "publish": "Publier l'offre",
+      "complete": "compléter",
+      "missingCutsRoutes": "manque encore : découpes, routes et fret",
+      "confirmCancel": "Annuler cette offre ? Toutes les modifications non enregistrées seront perdues.",
+      "draftSaved": "Brouillon enregistré (maquette)",
+      "notReadyToPublish": "Complétez le formulaire avant de publier",
+      "form": {
+        "basicInfo": {
+          "title": "Informations de base",
+          "subtitle": "Nommez votre offre et choisissez l'espèce."
+        },
+        "offerName": {
+          "label": "Nom de l'offre",
+          "placeholder": "ex. Découpes de bœuf premium — Asie FCL #1"
+        },
+        "species": {
+          "label": "Espèce",
+          "beef": "Bœuf",
+          "pork": "Porc",
+          "poultry": "Volaille",
+          "lamb": "Agneau"
+        },
+        "cuts": {
+          "title": "Conteneur & découpes",
+          "subtitle": "Définissez le contenu du conteneur.",
+          "loadType": "Type de chargement",
+          "fullContainer": "Conteneur complet (une seule découpe)",
+          "mixedLoad": "Chargement mixte (plusieurs découpes)",
+          "capacity": "Capacité du conteneur (FCL de 25 t)",
+          "overCapacity": "Surcapacité",
+          "remaining": "restant",
+          "addCut": "Ajouter une découpe",
+          "removeRow": "Supprimer cette découpe",
+          "col": {
+            "product": "Produit",
+            "pack": "Emballage",
+            "weightPerCut": "Poids/découpe (kg)",
+            "qty": "Qté (ctn)",
+            "totalWeight": "Poids total",
+            "pricePerKg": "Prix $/kg"
+          },
+          "placeholder": {
+            "product": "ex. Faux-filet 7-9 lb"
+          }
+        },
+        "routes": {
+          "title": "Routes & fret",
+          "subtitle": "Où vous pouvez livrer et à quel coût.",
+          "originPort": "Port d'origine",
+          "destinations": "Destinations",
+          "selectPort": "Sélectionner le port de destination…",
+          "freightPlaceholder": "Fret",
+          "perFcl": "/ FCL",
+          "addMarket": "Ajouter un marché",
+          "applyFreightAll": "Appliquer le premier fret à toutes les routes",
+          "removeRow": "Supprimer cette route"
+        }
+      },
+      "routes": {
+        "applyAllError": "Définissez le fret de la première route avant de l'appliquer à toutes.",
+        "applyAllSuccess": "Fret appliqué à toutes les routes."
+      },
+      "sidebar": {
+        "title": "Logistique & Termes",
+        "subtitle": "Définissez les conditions de cette offre.",
+        "containerSize": "Taille du conteneur",
+        "temperature": "Température",
+        "frozen": "Congelé",
+        "chilled": "Réfrigéré",
+        "certifications": "Certifications",
+        "incoterms": "Incoterms acceptés",
+        "paymentTerms": "Conditions de paiement",
+        "paymentTermsPlaceholder": "ex. 30% d'avance, solde par virement bancaire",
+        "shipment": "Expédition",
+        "distribution": "Distribution",
+        "dist": {
+          "marketplace": "Marché",
+          "marketplaceHint": "Visible par tous les acheteurs qualifiés",
+          "all_customers": "Tous mes clients",
+          "all_customersHint": "Uniquement les clients de votre liste de traders",
+          "specific": "Clients spécifiques",
+          "specificHint": "Choisir les acheteurs un par un"
+        },
+        "attachments": "Pièces jointes",
+        "attachmentsHint": "Déposez les fiches techniques, certificats, photos",
+        "attachmentsStub": "(le téléchargement de fichiers sera bientôt disponible)"
+      },
+      "preview": {
+        "title": "Aperçu en direct",
+        "hint": "Comment les acheteurs verront votre Offre",
+        "cuts": "découpes",
+        "destinations": "Destinations",
+        "incoterm": "Incoterm",
+        "shipment": "Expédition",
+        "volume": "Volume",
+        "from": "De",
+        "placeholderTitle": "Le titre de votre Offre apparaîtra ici"
+      },
+      "prefill": {
+        "toast": "Pré-rempli à partir de la demande #{{requestId}} — vérifiez et complétez les champs manquants"
+      },
+      "marketplace": {
+        "title": "Logistique Marketplace",
+        "subtitle": "Obtenez des devis de fret en temps réel auprès de transporteurs partenaires",
+        "searchBtn": "Rechercher des devis de fret",
+        "from": "De",
+        "destination": "Pays de destination",
+        "port": "Port de destination",
+        "container": "Conteneur",
+        "readyToLoad": "Prêt à charger",
+        "loading": "Recherche de transporteurs...",
+        "noResults": "Aucun devis disponible pour cette route",
+        "bestPrice": "Meilleur prix",
+        "fastest": "Le plus rapide",
+        "useRate": "Utiliser ce tarif",
+        "confirmTitle": "Tarif sélectionné",
+        "freight": "Fret",
+        "insurance": "Assurance (est.)",
+        "source": "Source",
+        "pickDifferent": "Choisir PRIX/DATE différente",
+        "confirmAdd": "Confirmer et ajouter à l'Offre",
+        "sortBy": "Trier par",
+        "price": "Prix",
+        "transit": "Transit",
+        "departure": "Départ",
+        "transitDays": "{{days}} jours",
+        "perFcl": "par FCL",
+        "via": "via Logistique Marketplace",
+        "ctaTitle": "Accéder à la Logistique Marketplace",
+        "ctaDesc": "Obtenez des devis de fret en temps réel pour vos routes auprès de nos transporteurs partenaires",
+        "ctaBtn": "Rechercher des devis de fret",
+        "importedToast": "Tarif importé de {{carrier}} — US$ {{freight}} par FCL",
+        "moreMarkets": "Rechercher d'autres Marchés/Destinations",
+        "searchMarketsPh": "Rechercher des pays…",
+        "noMarkets": "Aucun Marché trouvé",
+        "incoConflict": "Non compatible avec l'incoterm sélectionné",
+        "pickCut": "Choisir une découpe…",
+        "searchCutsPh": "Rechercher des découpes…",
+        "noCuts": "Aucune découpe trouvée"
+      }
+    },
+    "home": {
+      "heroTitle": "Vendez plus intelligemment, négociez plus vite, gardez le contrôle.",
+      "heroSubtitle": "Gérez vos Offres actives, examinez les propositions de l'Acheteur et expédiez les Transactions depuis un seul endroit.",
+      "greeting": {
+        "morning": "Bonjour, {{name}}",
+        "afternoon": "Bon après-midi, {{name}}",
+        "evening": "Bonsoir, {{name}}"
+      },
+      "cta": {
+        "newOffer": "Nouvelle Offre",
+        "viewMyOffers": "Voir mes Offres"
+      },
+      "attention": {
+        "title": "Nécessite votre attention",
+        "proposalsWaiting": {
+          "title": "Propositions en attente de réponse",
+          "subtitle": "Vous avez des propositions d'Acheteurs qui nécessitent votre examen",
+          "cta": "Examiner les propositions →"
+        },
+        "offerExpiring": {
+          "title": "Offres expirant bientôt",
+          "subtitle": "Certaines de vos Offres sont sur le point d'expirer",
+          "cta": "Examiner les Offres →"
+        },
+        "salesAction": {
+          "title": "Ventes nécessitant une action",
+          "subtitle": "Les Commandes nécessitent votre confirmation ou le téléchargement de documents",
+          "cta": "Voir les Ventes →"
+        }
+      },
+      "stats": {
+        "activeOffers": "Offres Actives",
+        "totalOffers": "Nombre Total d'Offres",
+        "closedDeals": "Transactions Conclues",
+        "inNegotiation": "En Négociation",
+        "avgClosing": "Clôture de commande moyenne",
+        "days": "jours"
+      },
+      "vsLastWeek": "vs la semaine dernière",
+      "actions": {
+        "salesTitle": "Ventes",
+        "salesDesc": "Suivez chaque Commande — du pré-paiement à la livraison.",
+        "salesCta": "Voir les ventes",
+        "offersTitle": "Mes Offres",
+        "offersDesc": "Gérez vos offres actives, vos prix et leur visibilité.",
+        "offersCta": "Voir les offres",
+        "newOfferTitle": "Nouvelle offre",
+        "newOfferDesc": "Publier une nouvelle offre — manuellement ou extraire d'un PDF, Excel, image ou audio.",
+        "newOfferCta": "Créer maintenant"
+      },
+      "recentOffers": "Offres récentes",
+      "recentSales": "Ventes récentes",
+      "seeAll": "Tout voir",
+      "cuts": "découpes",
+      "more": "plus",
+      "mt": "MT",
+      "statusAvailable": "Disponible",
+      "statusNew": "Nouveau",
+      "saleStatus": {
+        "AwaitingPrePayment": "En attente de paiement anticipé",
+        "PrePaidLoading": "Prépayé · Chargement",
+        "InTransit": "En transit",
+        "BalanceDue": "Solde dû"
+      },
+      "card": {
+        "destination": "Destination",
+        "incoterm": "Incoterm",
+        "shipment": "Expédition",
+        "volume": "Volume",
+        "buyer": "Acheteur",
+        "qty": "Qté",
+        "views": "vues",
+        "proposals": "propositions",
+        "daysLeft": "j restants",
+        "openOffer": "Ouvrir l'offre",
+        "order": "Commande {{id}}",
+        "sendInvoiceDraft": "Envoyer le brouillon de facture",
+        "viewSale": "Voir la vente",
+        "issueBalanceInvoice": "Émettre la facture de solde"
+      }
+    },
+    "company": {
+      "title": "Mon entreprise",
+      "editProfile": "Modifier le profil",
+      "verified": "Vérifié",
+      "memberSince": "Membre depuis {{year}}",
+      "toasts": {
+        "editComing": "Modification prochainement disponible",
+        "viewComing": "Affichage du document prochainement disponible",
+        "uploadComing": "Téléchargement prochainement disponible"
+      },
+      "about": {
+        "title": "À propos",
+        "description": "WMS Foods est un exportateur brésilien de premier plan de découpes de bœuf de première qualité, desservant 28 pays en Asie, au Moyen-Orient, en Afrique et dans les Amériques. Nous exploitons trois usines avec une capacité combinée de 4 600 MT/mois, toutes approuvées par l'USDA, les autorités Halal et les principaux marchés asiatiques.",
+        "tradeMarkets": "Marchés commerciaux",
+        "mainSpecies": "Principales espèces",
+        "yearsExporting": "Années d'exportation",
+        "fclsDelivered": "FCL livrés",
+        "countriesServed": "Pays desservis"
+      },
+      "plants": {
+        "title": "Usines & Capacité de production",
+        "addPlant": "Ajouter une usine",
+        "capacity": "Capacité",
+        "certifications": "Certifications",
+        "vetRegistrations": "Enregistrements vétérinaires"
+      },
+      "preferences": {
+        "title": "Préférences commerciales",
+        "defaultIncoterm": "Incoterm par défaut",
+        "defaultPaymentTerms": "Conditions de paiement par défaut",
+        "currencies": "Devises acceptées",
+        "leadTime": "Délai de livraison",
+        "fclSize": "Taille FCL typique",
+        "originPorts": "Ports d'origine"
+      },
+      "compliance": {
+        "title": "Conformité & Certifications",
+        "validUntil": "Valide jusqu'au",
+        "viewCertificate": "Voir le certificat"
+      },
+      "documents": {
+        "title": "Documents",
+        "uploadDocument": "Télécharger un document",
+        "type": "Type",
+        "name": "Nom",
+        "lastUpdated": "Mis à jour",
+        "view": "Voir"
+      },
+      "team": {
+        "title": "Contacts de l'équipe"
+      }
+    },
+    "insights": {
+      "groupLabel": "Analyses",
+      "nav": {
+        "priceBenchmark": "Comparaison de prix",
+        "analytics": "Analytique"
+      },
+      "previewBanner": {
+        "title": "Aperçu · Module premium bientôt disponible",
+        "body": "Les chiffres affichés sont illustratifs. La version en direct utilisera les données réelles de vos offres comparées à celles du marché."
+      },
+      "priceBenchmark": {
+        "eyebrow": "PREMIUM · INTELLIGENCE DE MARCHÉ",
+        "title": "Comparaison de prix · {{cut}}",
+        "subtitle": "Voyez comment votre offre se compare aux {{count}} offres anonymisées de la même découpe + origine. Les concurrents ne sont jamais nommés.",
+        "yourPrice": "Votre prix",
+        "hero": {
+          "before": "Votre offre est fixée",
+          "after": "médiane du marché",
+          "body": "Votre ${{price}}/kg représente le {{percentile}} percentile des {{total}} offres concurrentes de filet de bœuf brésilien expédiées au Moyen-Orient. Une baisse à ${{suggested}}/kg vous placerait à la médiane — là où 73 % des vues d'acheteurs se produisent."
+        },
+        "distribution": {
+          "title": "Distribution des prix",
+          "subtitle": "{{count}} offres anonymes de filet de bœuf brésilien · 7 derniers jours"
+        }
+      },
+      "analytics": {
+        "title": "Analyses Fournisseur",
+        "subtitle": "Performance de vos opérations — 30 derniers jours vs. période précédente"
+      },
+      "upsell": {
+        "eyebrow": "Prochainement",
+        "learnMore": "En savoir plus",
+        "earlyAccess": "Demander un accès anticipé",
+        "earlyAccessToast": "Merci — nous vous contacterons sous peu.",
+        "contactSales": "Contacter le service commercial",
+        "salesBody": "Chère équipe Mundus,\n\nJe souhaiterais en savoir plus sur le module Insights à venir pour mon compte.\n\nMerci !",
+        "perksLabel": "Ce que vous obtenez",
+        "launching": "Lancement T3 2026",
+        "pricing": "Prix annoncés au lancement",
+        "priceBenchmark": {
+          "title": "Sachez exactement où se situe votre offre",
+          "lede": "Arrêtez de fixer vos prix à l'aveugle. Voyez comment chaque offre que vous publiez se compare au marché en temps réel — sans jamais révéler l'identité de vos concurrents.",
+          "bullets": {
+            "distribution": {
+              "title": "Distribution du marché en direct",
+              "body": "Histogramme de chaque offre concurrente pour votre découpe + origine, mis à jour toutes les 24h."
+            },
+            "ranking": {
+              "title": "Classement anonymisé des concurrents",
+              "body": "Voyez qui vous affrontez en termes de vues, de discussions et de prix — les noms sont toujours masqués."
+            },
+            "alerts": {
+              "title": "Alertes de baisse de prix et de demande",
+              "body": "Soyez averti dès qu'un concurrent vous sous-cotise ou que la demande augmente dans une région."
+            },
+            "suggested": {
+              "title": "Prix cible suggéré par l'IA",
+              "body": "Une recommandation hebdomadaire calibrée en fonction de votre seuil de marge et de vos objectifs de conversion."
+            }
+          },
+          "perks": "[\"Rapport de marché hebdomadaire (PDF) pour chacune de vos découpes actives\",\"Alertes Slack et email sur les changements de prix des concurrents\",\"Tendance historique des prix sur 12 mois par découpe et origine\"]"
+        },
+        "analytics": {
+          "title": "Transformez chaque offre en boucle d'apprentissage",
+          "lede": "Allez au-delà des mesures de vanité. Comprenez quels acheteurs convertissent, quelles régions sont en plein essor et où votre entonnoir perd des revenus.",
+          "bullets": {
+            "funnel": {
+              "title": "Entonnoir de conversion complet",
+              "body": "Vue → discussion → contre-offre → Commande, avec les taux d'abandon par étape et par découpe."
+            },
+            "cohort": {
+              "title": "Rétention de la cohorte d'acheteurs",
+              "body": "Voyez quels acheteurs reviennent, à quelle fréquence et comment leurs commandes augmentent."
+            },
+            "geo": {
+              "title": "Carte thermique de la demande géographique",
+              "body": "Identifiez rapidement les destinations émergentes — par port, pays et préférence d'incoterm."
+            },
+            "sla": {
+              "title": "Suivi des SLA de temps de réponse",
+              "body": "Surveillez la rapidité de réponse de votre équipe et sa corrélation avec le taux de réussite."
+            }
+          },
+          "perks": "[\"Bilan de performance mensuel livré dans votre boîte de réception\",\"Exportations CSV illimitées de toute métrique ou graphique\",\"Plages de dates personnalisées et vues enregistrées par membre de l'équipe\",\"Analyse approfondie au niveau de l'acheteur avec historique complet des Négociations\"]"
+        }
+      }
+    }
+  },
+  "dealDetail": {
+    "negotiation": {
+      "buyerBid": "Enchère de l'Acheteur",
+      "supplierCounter": "Contre-offre du Fournisseur",
+      "yourCounter": "Votre contre-offre",
+      "finalPerCut": "PRIX FINAL PAR DÉCOUPE",
+      "totals": "TOTAUX",
+      "initialAsking": "Demande initiale",
+      "firstBuyerBid": "Première enchère de l'acheteur",
+      "discountGiven": "Remise accordée",
+      "finalTotal": "Total final",
+      "openFull": "Ouvrir la négociation complète",
+      "none": "Aucune étape de négociation enregistrée.",
+      "howClosed": "COMMENT CETTE TRANSACTION A ÉTÉ CONCLUE",
+      "closedAfter": "Conclue après {{n}} rondes",
+      "round": "Ronde",
+      "accepted": "ACCEPTÉ"
+    },
+    "shipment": {
+      "info": "INFORMATIONS SUR L'EXPÉDITION",
+      "containerNo": "Numéro de conteneur",
+      "sealNo": "Numéro de plomb",
+      "booking": "Réservation #",
+      "bl": "Numéro B/L",
+      "vessel": "Navire",
+      "voyage": "Voyage",
+      "portLoading": "Port de chargement",
+      "portDischarge": "Port de déchargement",
+      "etd": "ETD",
+      "eta": "ETA",
+      "grossWeight": "Poids brut",
+      "netWeight": "Poids net",
+      "temperature": "Température",
+      "journey": "PARCOURS DE L'EXPÉDITION",
+      "route": "ITINÉRAIRE",
+      "trackCarrier": "Suivre auprès du transporteur"
+    },
+    "journey": {
+      "booked": "Réservé",
+      "loading": "Chargement",
+      "departed": "Parti",
+      "inTransit": "En transit",
+      "arrived": "Arrivé au port",
+      "discharged": "Déchargé",
+      "delivered": "Livré"
+    },
+    "docs": {
+      "autoGenerated": "DOCUMENTS DE COMMANDE — GÉNÉRÉS AUTOMATIQUEMENT",
+      "issuedClose": "Émis à la clôture de la transaction",
+      "so": "Bon de commande (SO)",
+      "po": "Bon de commande (PO)",
+      "completion": "Achèvement de la documentation",
+      "trade": "Commercial",
+      "shipping": "Expédition",
+      "quality": "Qualité",
+      "compliance": "Conformité",
+      "required": "REQUIS",
+      "of": "de",
+      "notUploaded": "Pas encore téléchargé",
+      "view": "Afficher",
+      "download": "Télécharger",
+      "upload": "Charger"
+    },
+    "toast": {
+      "download": "Télécharger (maquette)",
+      "view": "Afficher le document (maquette)",
+      "upload": "Charger (maquette)",
+      "track": "Suivi (maquette)",
+      "message": "Ouvrir le chat (maquette)"
+    },
+    "back": {
+      "orders": "Retour aux Commandes",
+      "sales": "Retour aux Ventes"
+    },
+    "record": {
+      "order": "Commande",
+      "sale": "Vente"
+    },
+    "party": {
+      "buyer": "Acheteur",
+      "supplier": "Fournisseur",
+      "messageBuyer": "Contacter l'acheteur",
+      "messageSupplier": "Contacter le Fournisseur"
+    },
+    "tabs": {
+      "overview": "Aperçu",
+      "negotiation": "Négociation",
+      "shipment": "Expédition",
+      "documents": "Documents"
+    },
+    "section": {
+      "details": "DÉTAILS",
+      "cutsIncluded": "DÉCOUPES INCLUSES"
+    },
+    "fields": {
+      "date": "Date",
+      "totalValue": "Valeur totale",
+      "origin": "Origine",
+      "destination": "Destination",
+      "incoterm": "Incoterm",
+      "container": "Conteneur",
+      "totalVolume": "Volume total",
+      "shipmentMonth": "Mois d'Expédition",
+      "speciesTemp": "Espèce · Température"
+    },
+    "cuts": {
+      "cut": "Découpe",
+      "qty": "Qté",
+      "asking": "Demande",
+      "finalKg": "Prix final $/kg",
+      "total": "Total"
+    },
+    "timeline": {
+      "title": "CHRONOLOGIE RAPIDE",
+      "created": "Créé",
+      "prePayment": "Pré-paiement",
+      "production": "Production",
+      "shipment": "Expédition",
+      "delivery": "Livraison",
+      "received": "Reçu",
+      "pending": "En attente",
+      "inProgress": "En cours",
+      "inTransit": "En transit",
+      "done": "Terminé",
+      "delivered": "Livré"
+    }
+  },
+  "admin": {
+    "shell": {
+      "brand": "\n",
+      "search": "Rechercher des entreprises, des transactions, des utilisateurs…",
+      "user": {
+        "name": "Fernando N.",
+        "role": "Admin"
+      },
+      "nav": {
+        "overview": "Vue d'ensemble",
+        "dashboard": "Tableau de bord",
+        "analytics": "Analyses",
+        "operations": "Opérations",
+        "companies": "Entreprises",
+        "deals": "Transactions",
+        "negotiations": "Négociations",
+        "verifications": "Vérifications",
+        "disputes": "Litiges",
+        "crm": "CRM",
+        "prospects": "Prospects",
+        "pipeline": "Pipeline",
+        "prospecting": "RECHERCHE DE PROSPECTS",
+        "find_companies": "Trouver des entreprises",
+        "find_people": "Trouver des personnes",
+        "lists": "Listes",
+        "marketplace": "Marché",
+        "products": "Produits & découpes",
+        "markets": "Marchés",
+        "ports": "Ports",
+        "finance": "Finance",
+        "revenue": "Revenus",
+        "commissions": "Commissions",
+        "settings": "Paramètres",
+        "team": "Équipe",
+        "audit": "Journal d'audit",
+        "flags": "Fonctionnalités"
+      },
+      "theme": {
+        "light": "Mode clair",
+        "dark": "Mode foncé"
+      }
+    },
+    "comingSoon": {
+      "title": "Bientôt disponible",
+      "body": "Cette section fait partie de la construction du panneau d'administration — pas encore implémentée."
+    },
+    "dashboard": {
+      "title": "Tableau de bord des opérations",
+      "subtitle": "30 derniers jours",
+      "rangeLast30": "30 derniers jours",
+      "kpi": {
+        "gmv": "GMV",
+        "activeDeals": "Transactions actives",
+        "verifications": "Vérifications",
+        "verificationsQueue": "en attente",
+        "winRate": "Taux de réussite",
+        "newSignups": "Nouvelles inscriptions",
+        "avgCycle": "Cycle moyen des transactions",
+        "avgCycleSuffix": "jours",
+        "avgDealSize": "Taille moyenne des transactions",
+        "liquidity": "Liquidité du Marché",
+        "liquidityHint": "offres par Acheteur actif"
+      },
+      "trend": {
+        "title": "Tendance GMV",
+        "subtitle": "quotidien, 30 derniers jours",
+        "thirtyDaysAgo": "il y a 30 jours",
+        "today": "aujourd'hui"
+      },
+      "pipeline": {
+        "title": "Pipeline des transactions",
+        "viewAll": "Voir tout →",
+        "offers": "Offres en ligne",
+        "negotiating": "En Négociation",
+        "ordered": "Commandé",
+        "shipped": "Expédié",
+        "delivered": "Livré"
+      },
+      "topBuyers": "Meilleurs Acheteurs",
+      "topSuppliers": "Meilleurs Fournisseurs",
+      "productsMix": {
+        "title": "Mix produits",
+        "beef": "Bœuf",
+        "pork": "Porc",
+        "poultry": "Volaille",
+        "lamb": "Agneau"
+      },
+      "destinations": "Principales destinations",
+      "negotiationRounds": {
+        "title": "Cycles de Négociation",
+        "subtitle": "où les transactions se concluent"
+      },
+      "originPorts": {
+        "title": "Ports d'origine",
+        "subtitle": "volume expédié"
+      },
+      "activity": "Activité",
+      "sla": {
+        "title": "SLA des vérifications",
+        "onTime": "À temps",
+        "atRisk": "À risque",
+        "overdue": "En retard",
+        "review": "File d'attente de vérification →"
+      },
+      "tta": {
+        "title": "Délai d'acceptation",
+        "subtitle": "Offre → première Commande"
+      },
+      "avgByProduct": "Taille moyenne des transactions par produit",
+      "opsQueue": {
+        "title": "File d'attente des opérations · entreprises nécessitant une attention",
+        "viewAll": "12 éléments →",
+        "company": "Entreprise",
+        "role": "Rôle",
+        "issue": "Problème",
+        "age": "Ancienneté",
+        "owner": "Propriétaire",
+        "roleBuyer": "Acheteur",
+        "roleSupplier": "Fournisseur",
+        "issueKyc": "Vérification KYC",
+        "issueCert": "Certificat expiré",
+        "issuePayment": "Retard de paiement",
+        "issueDocs": "Documents incomplets",
+        "issueOnboarding": "Intégration ✓"
+      }
+    },
+    "crm": {
+      "title": "Prospects",
+      "subtitle": "{{active}} actifs · {{total}} au total",
+      "addProspect": "Ajouter un prospect",
+      "importCsv": "Importer CSV",
+      "viewTable": "Tableau",
+      "viewKanban": "Kanban",
+      "filters": {
+        "search": "Rechercher par entreprise, contact, pays…",
+        "allStages": "Tous les statuts",
+        "allRoles": "Tous",
+        "buyers": "Acheteurs",
+        "suppliers": "Fournisseurs",
+        "allOwners": "Tous les propriétaires"
+      },
+      "stages": {
+        "new": "Nouveau",
+        "researching": "Recherche",
+        "contacted": "Contacté",
+        "qualified": "Qualifié",
+        "onboarding": "Intégration",
+        "onboarded": "Intégré",
+        "lost": "Perdu"
+      },
+      "roles": {
+        "potential_buyer": "Acheteur",
+        "potential_supplier": "Fournisseur"
+      },
+      "sources": {
+        "linkedin": "LinkedIn",
+        "trade_show": "Salon professionnel",
+        "referral": "Parrainage",
+        "web_scrape": "Extraction web",
+        "apollo": "Mundus Intelligence",
+        "manual": "Manuel",
+        "inbound": "Entrant"
+      },
+      "table": {
+        "company": "Entreprise",
+        "role": "Rôle",
+        "stage": "Étape",
+        "source": "Source",
+        "country": "Pays",
+        "estGmv": "GMV estimé",
+        "owner": "Propriétaire",
+        "lastActivity": "Dernière activité"
+      },
+      "empty": "Aucun prospect ne correspond à ces filtres.",
+      "kanban": {
+        "funnelConversion": "Conversion de l'entonnoir",
+        "ownerLeaderboard": "Classement des propriétaires",
+        "sources": "Sources",
+        "qualifiedCount": "{{n}} qualifiés",
+        "onboardedCount": "{{n}} intégrés"
+      },
+      "detail": {
+        "back": "Prospects",
+        "invite": "Inviter sur la plateforme",
+        "inviteDisabled": "Passer à « Qualifié » pour activer l'invitation",
+        "addNote": "Ajouter une note",
+        "edit": "Modifier",
+        "created": "Créé",
+        "lastContact": "Dernier contact",
+        "activity": "Activité",
+        "noActivity": "Pas encore d'activité",
+        "contact": "Contact",
+        "linkedinSearch": "Recherche LinkedIn →",
+        "companyInfo": "Informations sur l'entreprise",
+        "owner": "Propriétaire",
+        "reassign": "Réaffecter",
+        "savedToast": "Modifications enregistrées",
+        "actions": {
+          "edit": "Modifier",
+          "save": "Enregistrer",
+          "cancel": "Annuler",
+          "deactivate": "Désactiver",
+          "reactivate": "Réactiver",
+          "delete": "Supprimer",
+          "searchMorePeople": "Rechercher plus de personnes",
+          "addContact": "Ajouter un contact",
+          "convert": "Convertir en Mundus"
+        },
+        "status": {
+          "active": "Actif",
+          "inactive": "Inactif",
+          "onboarded": "Intégré"
+        },
+        "leadType": {
+          "buyer": "Acheteur",
+          "supplier": "Fournisseur",
+          "buyer_supplier": "Acheteur et Fournisseur"
+        },
+        "decisionLevel": {
+          "c_level": "Direction générale",
+          "vp": "Vice-Président",
+          "director": "Directeur",
+          "manager": "Manager",
+          "specialist": "Spécialiste",
+          "other": "Autre"
+        },
+        "sections": {
+          "company": "Informations sur l'entreprise",
+          "mainContact": "Contact principal",
+          "additionalContacts": "Contacts supplémentaires",
+          "notes": "Notes"
+        },
+        "fields": {
+          "leadType": "Type de prospect",
+          "industry": "Secteur d'activité",
+          "street": "Rue",
+          "city": "Ville",
+          "state": "État",
+          "zipCode": "Code postal",
+          "country": "Pays",
+          "website": "Site web",
+          "companyLinkedin": "LinkedIn de l'entreprise",
+          "fullName": "Nom complet",
+          "role": "Rôle",
+          "email": "E-mail",
+          "additionalEmail": "E-mail additionnel",
+          "phone": "Téléphone",
+          "mobile": "Mobile",
+          "personalLinkedin": "LinkedIn personnel",
+          "decisionLevel": "Niveau de décision"
+        },
+        "contacts": {
+          "empty": "Aucun contact additionnel pour le moment."
+        },
+        "deactivate": {
+          "title": "Désactiver l'entreprise",
+          "body": "Vous êtes sur le point de désactiver cette entreprise. Les utilisateurs ne pourront plus se connecter. Les données existantes sont préservées.",
+          "reason": "Raison (facultatif)",
+          "reasonPlaceholder": "Pourquoi désactivez-vous cette entreprise?",
+          "confirm": "Désactiver",
+          "toast": "Entreprise désactivée"
+        },
+        "reactivate": {
+          "toast": "Entreprise réactivée"
+        },
+        "convert": {
+          "title": "Convertir en entreprise Mundus",
+          "typeLabel": "Comment cette entreprise doit-elle rejoindre Mundus?",
+          "type": {
+            "buyer": "Acheteur Mundus",
+            "buyerDesc": "Peut consulter les Offres, négocier et passer les Commandes.",
+            "supplier": "Fournisseur Mundus",
+            "supplierDesc": "Peut publier des Offres et recevoir des Commandes.",
+            "both": "Acheteur & Fournisseur Mundus",
+            "bothDesc": "Agit en tant qu'acheteur et Fournisseur sur la plateforme."
+          },
+          "master": {
+            "title": "Utilisateur principal (premier utilisateur de l'entreprise)",
+            "name": "Nom complet",
+            "email": "E-mail",
+            "phone": "Téléphone (facultatif)"
+          },
+          "warning": "Une fois converti, ce prospect devient une entreprise Mundus et ne peut plus être supprimé — seulement désactivé.",
+          "confirm": "Convertir",
+          "toast": "Converti en entreprise Mundus",
+          "invalidMaster": "Veuillez fournir un nom complet et un e-mail valides pour l'utilisateur principal.",
+          "failed": "Impossible de convertir ce prospect."
+        },
+        "delete": {
+          "title": "Supprimer le prospect",
+          "body": "Cette action est irréversible. L'entreprise et tous ses contacts seront définitivement supprimés.",
+          "cannotOnboarded": "Les entreprises intégrées ne peuvent pas être supprimées — désactivez-les plutôt.",
+          "toast": "Prospect supprimé"
+        },
+        "apollo": {
+          "title": "Rechercher plus de personnes",
+          "empty": "Aucune personne additionnelle trouvée pour cette entreprise.",
+          "revealed": "Information révélée",
+          "added": "Contact ajouté au prospect",
+          "add": "Ajouter",
+          "revealEmail": "Révéler l'e-mail",
+          "revealPhone": "Révéler le téléphone",
+          "revealMobile": "Révéler le mobile"
+        }
+      },
+      "add": {
+        "title": "Ajouter un prospect",
+        "companyName": "Nom de l'entreprise",
+        "country": "Pays",
+        "role": "Rôle",
+        "source": "Source",
+        "contactName": "Nom du contact",
+        "contactEmail": "E-mail du contact",
+        "contactPhone": "Téléphone du contact",
+        "estGmv": "GMV annuel estimé (USD)",
+        "owner": "Propriétaire",
+        "notes": "Notes initiales",
+        "submit": "Ajouter un prospect",
+        "cancel": "Annuler"
+      },
+      "import": {
+        "title": "Importer un CSV",
+        "dropzone": "Glissez le CSV ici ou cliquez pour télécharger",
+        "template": "Télécharger le modèle",
+        "preview": "Aperçu · {{n}} premières lignes sur {{total}}",
+        "submit": "Importer {{n}} prospects",
+        "invalidFormat": "Format CSV invalide"
+      },
+      "toast": {
+        "added": "{{company}} ajouté aux prospects",
+        "imported": "{{n}} prospects importés",
+        "stageChanged": "{{company}} est passé à {{stage}}",
+        "invited": "Invitation envoyée à {{email}} — prospect déplacé vers Intégration"
+      },
+      "pipeline": {
+        "tabs": {
+          "pipeline": "Pipeline",
+          "buyers": "Acheteurs",
+          "suppliers": "Fournisseurs",
+          "interviews": "Entretiens",
+          "learnings": "Apprentissages"
+        },
+        "stages": {
+          "cold": "Prospect Froid",
+          "contacted": "Contacté",
+          "demo_scheduled": "Démo Planifiée",
+          "demo_done": "Démo Réalisée",
+          "active": "Actif",
+          "lost": "Perdu"
+        },
+        "filters": {
+          "all": "Tout",
+          "buyer": "Acheteurs",
+          "supplier": "Fournisseurs",
+          "search": "Rechercher..."
+        },
+        "cards": {
+          "contact": "Contact",
+          "role": "Rôle"
+        },
+        "buyers": {
+          "title": "Acheteurs",
+          "add": "+ Ajouter un Acheteur"
+        },
+        "suppliers": {
+          "title": "Fournisseurs",
+          "add": "+ Ajouter un Fournisseur"
+        },
+        "interviews": {
+          "title": "Entretiens",
+          "add": "+ Enregistrer un entretien",
+          "company": "Entreprise",
+          "contact": "Contact",
+          "date": "Date",
+          "duration": "Durée",
+          "painPoints": "Points Douleur",
+          "takeaways": "Points Clés",
+          "keyQuotes": "Citations Clés",
+          "nextSteps": "Prochaines Étapes",
+          "empty": "Aucun entretien enregistré pour le moment"
+        },
+        "learnings": {
+          "title": "Apprentissages",
+          "add": "+ Ajouter un Apprentissage",
+          "week": "Semaine du",
+          "theme": "Thème",
+          "insight": "Insight",
+          "sources": "Entreprises sources",
+          "category": "Catégorie",
+          "empty": "Aucun apprentissage enregistré pour le moment"
+        },
+        "modal": {
+          "addCompany": "Ajouter une Entreprise",
+          "name": "Nom de l'entreprise",
+          "type": "Type",
+          "country": "Pays",
+          "marketRegion": "Région de marché",
+          "website": "Site web",
+          "stage": "Étape",
+          "contactName": "Nom du contact",
+          "contactRole": "Rôle",
+          "contactPersona": "Persona",
+          "contactEmail": "Email",
+          "contactPhone": "Téléphone",
+          "contactLinkedin": "LinkedIn",
+          "notes": "Notes",
+          "source": "Source",
+          "cancel": "Annuler",
+          "submit": "Enregistrer",
+          "logInterview": "Enregistrer un Entretien",
+          "pickCompany": "Sélectionner une entreprise",
+          "pickContact": "Sélectionner un contact (facultatif)",
+          "duration": "Durée (min)",
+          "conductedBy": "Réalisé par",
+          "painPoints": "Points Douleur",
+          "keyQuotes": "Citations Clés",
+          "takeaways": "Points Clés",
+          "nextSteps": "Prochaines Étapes",
+          "recordingUrl": "URL de l'enregistrement",
+          "addLearning": "Ajouter un Apprentissage",
+          "weekStart": "Début de semaine"
+        },
+        "table": {
+          "company": "Entreprise",
+          "persona": "Persona / Rôle",
+          "contact": "Contact",
+          "email": "Email",
+          "phone": "Téléphone",
+          "linkedin": "LinkedIn",
+          "country": "Pays",
+          "stage": "Étape",
+          "actions": "Actions",
+          "view": "Voir"
+        }
+      },
+      "meetingPrep": {
+        "back": "Retour au pipeline",
+        "title": "Préparation de Réunion",
+        "empty": "Aucune préparation de réunion pour le moment. Générez-en une adaptée à ce prospect.",
+        "generateNow": "Générer Maintenant",
+        "regenerate": "Régénérer",
+        "exportPdf": "Exporter en PDF",
+        "email": "Envoyez-moi un email",
+        "markDone": "Marquer la Démo comme Effectuée",
+        "generatingMsg": "L'IA recherche des informations sur l'entreprise et rédige votre résumé…",
+        "failedMsg": "Échec de la génération. Veuillez réessayer.",
+        "toast": {
+          "generating": "La préparation de la réunion est en cours de création…",
+          "autoStarted": "Démo planifiée — préparation de la réunion en cours de création…",
+          "demoDone": "Marqué comme Démo terminée"
+        },
+        "sections": {
+          "research": "Recherche d'entreprise",
+          "contact": "Profil du contact",
+          "market": "Contexte du marché",
+          "painPoints": "Points douloureux probables",
+          "talkingPoints": "Points de discussion",
+          "questions": "Questions stratégiques",
+          "valueProps": "Propositions de valeur Mundus",
+          "links": "Liens de recherche"
+        }
+      }
+    },
+    "analytics": {
+      "title": "Analyses",
+      "currentVisitors_one": "{{count}} visiteur actuel",
+      "currentVisitors_other": "{{count}} visiteurs actuels",
+      "export": "Exporter en CSV",
+      "details": "Détails",
+      "search": "Rechercher…",
+      "empty": "Aucune donnée",
+      "clearAll": "Tout effacer",
+      "visitorsLabel": "Visiteurs",
+      "current": "Actuel",
+      "previous": "Précédent",
+      "period": {
+        "realtime": "Temps réel",
+        "last24h": "Dernières 24 heures",
+        "last7d": "7j",
+        "last30d": "30j",
+        "last90d": "90j",
+        "last12m": "12m"
+      },
+      "metric": {
+        "visitors": "Visiteurs",
+        "pageviews": "Vues de pages",
+        "viewsPerVisit": "Vues par visite",
+        "duration": "Durée de la visite",
+        "bounceRate": "Taux de rebond"
+      },
+      "dim": {
+        "source": "Source",
+        "page": "Page",
+        "country": "Pays",
+        "device": "Appareil"
+      },
+      "subtitle": "Santé de la place de marché, conversion et ce qui nécessite votre attention.",
+      "healthTitle": "Santé de la place de marché",
+      "healthGood": "Sain — maintenir l'élan.",
+      "healthOk": "Stable — surveiller attentivement.",
+      "healthBad": "Nécessite une attention.",
+      "basedOnPeriod": "Basé sur la période sélectionnée",
+      "vsPrevious": "vs période précédente",
+      "kpi": {
+        "gmv": "GMV",
+        "activeDeals": "Transactions actives",
+        "winRate": "Taux de réussite",
+        "avgCycle": "Cycle moyen",
+        "avgDealSize": "Taille moyenne de la transaction",
+        "newSignups": "Nouvelles inscriptions"
+      },
+      "trend": {
+        "gmv": "Tendance GMV",
+        "deals": "Tendance des transactions"
+      },
+      "funnel": {
+        "title": "Entonnoir de conversion",
+        "steps": {
+          "offers": "Offres",
+          "negotiations": "Négociations",
+          "won": "Gagnées",
+          "shipped": "Expédiées",
+          "completed": "Terminées"
+        }
+      },
+      "attention": {
+        "title": "Nécessite une attention",
+        "items": "éléments",
+        "empty": "Tout est clair — rien d'urgent."
+      },
+      "top": {
+        "buyers": "Meilleurs acheteurs",
+        "suppliers": "Meilleurs fournisseurs",
+        "empty": "Aucune transaction pour cette période."
+      }
+    },
+    "companies": {
+      "title": "Entreprises Mundus",
+      "subtitle": "{{active}} actifs · {{total}} au total",
+      "tiles": {
+        "total": "Total",
+        "buyers": "Acheteurs",
+        "suppliers": "Fournisseurs",
+        "both": "Acheteur + Fournisseur",
+        "inactive": "Inactif"
+      },
+      "filters": {
+        "search": "Rechercher par nom, pays, #numéro…",
+        "allTypes": "Tous types",
+        "buyer": "Acheteur Mundus",
+        "supplier": "Fournisseur Mundus",
+        "both": "Acheteur + Fournisseur",
+        "allStatuses": "Tous statuts",
+        "active": "Actif",
+        "inactive": "Inactif",
+        "allCountries": "Tous les pays"
+      },
+      "cols": {
+        "company": "Entreprise",
+        "type": "Type",
+        "location": "Localisation",
+        "verified": "Vérifié",
+        "onboarded": "Intégré",
+        "status": "Statut",
+        "actions": "Actions",
+        "proteins": "Protéines"
+      },
+      "empty": {
+        "title": "Aucune entreprise pour le moment",
+        "body": "Convertissez un prospect en une entreprise Mundus pour la voir apparaître ici.",
+        "cta": "Ouvrir le CRM"
+      },
+      "actions": {
+        "new": "Nouvelle entreprise",
+        "edit": "Modifier",
+        "save": "Enregistrer",
+        "cancel": "Annuler",
+        "deactivate": "Désactiver",
+        "activate": "Activer"
+      },
+      "sections": {
+        "identity": "Identité",
+        "address": "Adresse",
+        "classification": "Classification",
+        "onboarding": "Intégration",
+        "role": "Rôle commercial",
+        "protein": "Profil des protéines et découpes préférées",
+        "company": "Informations sur l'entreprise",
+        "contact": "Contact commercial",
+        "admin": "Paramètres administrateur"
+      },
+      "fields": {
+        "name": "Nom de l'entreprise",
+        "taxId": "ID fiscal",
+        "website": "Site web",
+        "phone": "Téléphone",
+        "logoUrl": "URL du logo",
+        "rating": "Évaluation",
+        "address": "Adresse",
+        "city": "Ville",
+        "state": "État/Province",
+        "country": "Pays",
+        "zipCode": "Code postal",
+        "isBuyer": "Est acheteur",
+        "isSupplier": "Est fournisseur",
+        "isVerified": "Vérifié",
+        "businessTypes": "Types d'activité",
+        "proteinProfiles": "Profils de protéines",
+        "onboardedAt": "Intégré le",
+        "onboardedBy": "Intégré par",
+        "onboardedFromProspect": "Depuis prospect",
+        "createdAt": "Créé le",
+        "updatedAt": "Mis à jour le",
+        "buyer": "Acheteur",
+        "supplier": "Fournisseur",
+        "bothRoleNote": "Lorsqu'une entreprise est à la fois Acheteur et Fournisseur, chaque rôle doit utiliser des adresses e-mail différentes. Seuls les administrateurs Mundus peuvent basculer entre les rôles.",
+        "proteinProfile": "Profil de protéines",
+        "preferredCuts": "Découpes préférées",
+        "companyName": "Nom de l'entreprise",
+        "licenses": "Licences ou certificats commerciaux",
+        "licensesHint": "Téléchargement bientôt disponible",
+        "verified": "Vérifié",
+        "status": "Statut",
+        "onboarded": "Intégré",
+        "companyNumber": "Numéro d'entreprise"
+      },
+      "validation": {
+        "name": "Le nom de l'entreprise est requis",
+        "taxId": "L'ID fiscal est requis",
+        "country": "Le pays est requis",
+        "state": "L'état/province est requis",
+        "address": "L'adresse est requise",
+        "phone": "Le téléphone est requis"
+      },
+      "confirmDeactivate": {
+        "title": "Désactiver cette entreprise ?",
+        "body": "L'entreprise sera marquée comme inactive. Vous pourrez la réactiver à tout moment."
+      },
+      "confirmActivate": {
+        "title": "Activer cette entreprise ?",
+        "body": "L'entreprise sera de nouveau marquée comme active."
+      },
+      "toast": {
+        "created": "Entreprise créée",
+        "saved": "Modifications enregistrées",
+        "deactivated": "Entreprise désactivée",
+        "activated": "Entreprise activée",
+        "error": "Une erreur est survenue"
+      },
+      "detail": {
+        "title": "Détails de l'entreprise",
+        "newTitle": "Nouvelle entreprise",
+        "save": "Enregistrer",
+        "saving": "Enregistrement...",
+        "saved": "Entreprise enregistrée",
+        "deleteTitle": "Supprimer l'entreprise",
+        "deleteConfirm": "Ceci supprimera définitivement cette entreprise et toutes les données associées.",
+        "deleted": "Entreprise supprimée"
+      },
+      "proteins": {
+        "beef": "Bœuf",
+        "pork": "Porc",
+        "poultry": "Volaille",
+        "ovine": "Ovin"
+      }
+    },
+    "negotiations": {
+      "title": "Négociations",
+      "subtitle": "Toutes les négociations sur la plateforme",
+      "stats": {
+        "active": "Négociations actives",
+        "total_value": "Valeur totale",
+        "avg_gap": "Écart moyen",
+        "avg_rounds": "Rondes moyennes",
+        "win_rate": "Taux de réussite"
+      },
+      "filter": {
+        "all": "Tout",
+        "awaiting_supplier": "En attente du fournisseur",
+        "pending_buyer": "En attente de la vérification de l'acheteur",
+        "accepted": "Enchère acceptée",
+        "rejected": "Rejeté",
+        "expired": "Expiré"
+      },
+      "table": {
+        "id": "ID",
+        "product": "Produit",
+        "supplier": "Fournisseur",
+        "buyer": "Acheteur",
+        "route": "Route",
+        "status": "Statut",
+        "round": "Ronde",
+        "original": "Original",
+        "latest_bid": "Dernière enchère",
+        "our_counter": "Notre contre-offre",
+        "gap": "Écart",
+        "last_activity": "Dernière activité"
+      },
+      "empty": {
+        "title": "Aucune négociation pour le moment",
+        "description": "Les négociations apparaîtront ici lorsque les acheteurs commenceront à enchérir sur les offres."
+      },
+      "status": {
+        "awaiting_supplier": "En attente du fournisseur",
+        "pending_buyer_review": "En attente de la vérification de l'acheteur",
+        "bid_accepted": "Enchère acceptée",
+        "offer_rejected": "Rejeté",
+        "offer_exhausted": "Épuisé",
+        "expired": "Expiré"
+      }
+    },
+    "prospect": {
+      "lists": {
+        "title": "Listes",
+        "newList": "Nouvelle liste",
+        "createList": "Créer",
+        "listName": "Nom de la liste",
+        "companies": "Entreprises",
+        "noLists": "Aucune liste pour le moment",
+        "noListsDesc": "Créez une liste pour organiser vos entreprises prospectées",
+        "itemCount": "{{count}} entreprises",
+        "created": "Créé le {{date}}",
+        "deleteList": "Supprimer la liste",
+        "deleteConfirm": "Supprimer cette liste et tous les éléments ?",
+        "deleted": "Liste supprimée",
+        "emptyList": "Aucun enregistrement",
+        "emptyListDesc": "Aucune entreprise sauvegardée pour le moment ! Ajoutez des entreprises à cette liste pour commencer.",
+        "findCompanies": "Trouver des entreprises",
+        "findCompaniesDesc": "Rechercher des entreprises à ajouter à cette liste",
+        "importCsv": "Importer par CSV",
+        "importCsvDesc": "Importer des enregistrements dans cette liste à partir d'un fichier CSV",
+        "createWorkflow": "Créer un flux de travail",
+        "createWorkflowDesc": "Créer un flux de travail pour ajouter automatiquement les entreprises sauvegardées à cette liste",
+        "addToList": "Ajouter à la liste",
+        "addedToList": "{{count}} entreprises ajoutées à {{list}}",
+        "selectList": "Sélectionner une liste",
+        "removeFromList": "Supprimer",
+        "removed": "Supprimé de la liste",
+        "export": "Exporter CSV",
+        "cancel": "Annuler",
+        "back": "Retour",
+        "searchPlaceholder": "Rechercher une entreprise..."
+      }
+    },
+    "marketplace": {
+      "markets": {
+        "title": "Marchés",
+        "subtitle": "Gérer les pays de destination disponibles sur la marketplace",
+        "searchPlaceholder": "Rechercher pays, ISO...",
+        "next": "Suivant",
+        "showing": "Affichage de {{from}}-{{to}} sur {{total}} résultats",
+        "shared": "Partagé",
+        "portsShort": "ports",
+        "usesPortsFrom": "Utilise les ports de {{country}}",
+        "stats": {
+          "total": "Marchés totaux",
+          "active": "Marchés actifs",
+          "ports": "Ports totaux",
+          "origins": "Pays d'origine"
+        },
+        "regions": {
+          "all": "Toutes les régions",
+          "americas": "Amériques",
+          "europe": "Europe",
+          "asia": "Asie",
+          "middleEast": "Moyen-Orient",
+          "africa": "Afrique",
+          "oceania": "Océanie",
+          "other": "Autre"
+        },
+        "filters": {
+          "all": "Tous",
+          "activeOnly": "Actif uniquement",
+          "inactiveOnly": "Inactif uniquement"
+        },
+        "cols": {
+          "country": "Pays",
+          "iso": "ISO",
+          "ports": "Ports",
+          "origin": "Origine",
+          "destination": "Destination",
+          "active": "Actif",
+          "special": "Spécial"
+        },
+        "toggle": {
+          "activated": "Marché {{country}} activé",
+          "deactivated": "Marché {{country}} désactivé"
+        },
+        "empty": {
+          "title": "Aucun marché ne correspond à ces filtres",
+          "body": "Essayez d'effacer les filtres ou de rechercher avec un autre terme."
+        }
+      },
+      "ports": {
+        "title": "Ports",
+        "subtitle": "Gérer les ports disponibles pour les routes d'expédition",
+        "searchPlaceholder": "Rechercher un nom ou un code de port...",
+        "allCountries": "Tous les pays",
+        "next": "Suivant",
+        "showing": "Affichage de {{from}}-{{to}} sur {{total}} résultats",
+        "shared": "Partagé",
+        "usedBy": "Utilisé par {{country}}",
+        "stats": {
+          "total": "Total des ports",
+          "active": "Ports actifs",
+          "countries": "Pays avec des ports"
+        },
+        "filters": {
+          "all": "Tous",
+          "activeOnly": "Actif uniquement",
+          "inactiveOnly": "Inactif uniquement"
+        },
+        "cols": {
+          "name": "Nom du port",
+          "code": "Code",
+          "country": "Pays",
+          "shared": "Partagé",
+          "active": "Actif"
+        },
+        "toggle": {
+          "activated": "Port {{port}} activé",
+          "deactivated": "Port {{port}} désactivé"
+        },
+        "empty": {
+          "title": "Aucun port ne correspond à ces filtres",
+          "body": "Essayez d'effacer les filtres ou de rechercher avec un autre terme."
+        }
+      },
+      "cuts": {
+        "title": "Produits & Découpes",
+        "subtitle": "Gérer le catalogue des découpes de viande pour la plateforme",
+        "searchPlaceholder": "Rechercher un nom de découpe ou un numéro de produit...",
+        "allCategories": "Toutes les catégories",
+        "next": "Suivant",
+        "showing": "Affichage de {{from}}-{{to}} sur {{total}} résultats",
+        "langsCount": "{{count}} langues",
+        "stats": {
+          "total": "Total des découpes",
+          "active": "Découpes actives",
+          "categories": "Catégories",
+          "translations": "Traductions"
+        },
+        "filters": {
+          "all": "Tous",
+          "activeOnly": "Actif uniquement",
+          "inactiveOnly": "Inactif uniquement"
+        },
+        "categories": {
+          "Beef": "Bœuf",
+          "Pork": "Porc",
+          "Poultry": "Volaille",
+          "Ovine": "Ovin"
+        },
+        "cols": {
+          "name": "Nom de la découpe",
+          "pn": "CP",
+          "category": "Catégorie",
+          "translations": "Traductions",
+          "active": "Actif",
+          "actions": "Actions"
+        },
+        "toggle": {
+          "activated": "Découpe {{name}} activée",
+          "deactivated": "Découpe {{name}} désactivée"
+        },
+        "empty": {
+          "title": "Aucune découpe ne correspond à ces filtres",
+          "body": "Essayez d'effacer les filtres ou de rechercher avec un autre terme."
+        },
+        "modal": {
+          "title": "Modifier la découpe",
+          "name": "Nom de la découpe",
+          "productNumber": "Numéro de produit",
+          "category": "Catégorie",
+          "uploadImage": "Télécharger une image",
+          "replaceImage": "Remplacer l'image",
+          "uploading": "Téléchargement...",
+          "noImage": "Pas encore d'image",
+          "imageUploaded": "Image téléchargée",
+          "translations": "Traductions",
+          "noTranslations": "Aucune traduction pour l'instant",
+          "selectLocale": "Sélectionner la langue",
+          "translatedName": "Nom traduit",
+          "translationAdded": "Traduction ajoutée",
+          "translationRemoved": "Traduction supprimée",
+          "saved": "Découpe enregistrée",
+          "delete": "Supprimer",
+          "deleted": "Découpe supprimée",
+          "confirmDeleteTitle": "Supprimer cette découpe ?",
+          "confirmDeleteBody": "Ceci supprimera définitivement la découpe et ses traductions."
+        }
+      }
+    },
+    "flags": {
+      "title": "Fonctionnalités",
+      "subtitle": "Activer ou désactiver les fonctionnalités du programme par plateforme.",
+      "web": "Web",
+      "mobile": "Mobile",
+      "active": "actif",
+      "searchPlaceholder": "Rechercher des fonctionnalités...",
+      "empty": "Aucune fonctionnalité trouvée.",
+      "enabledToast": "{{label}} activé",
+      "disabledToast": "{{label}} désactivé",
+      "category": {
+        "general": "Général",
+        "buyer": "Acheteur",
+        "supplier": "Fournisseur",
+        "admin": "Admin",
+        "platform": "Plateforme",
+        "buyer_main": "Acheteur · Menu principal",
+        "buyer_insights": "Acheteur · Statistiques",
+        "buyer_future": "Acheteur · Prochainement",
+        "supplier_main": "Fournisseur · Menu principal",
+        "supplier_insights": "Fournisseur · Statistiques",
+        "supplier_future": "Fournisseur · Prochainement",
+        "admin_crm": "Admin · CRM",
+        "admin_ops": "Admin · Opérations",
+        "admin_marketplace": "Admin · Marketplace",
+        "admin_finance": "Admin · Finance"
+      },
+      "audience": {
+        "all": "Tous",
+        "buyer": "Acheteur",
+        "supplier": "Fournisseur",
+        "admin": "Admin"
+      }
+    }
+  },
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Marquer tout comme lu",
+    "empty": "Aucune notification pour le moment"
+  },
+  "profile": {
+    "activeRole": "Rôle actif",
+    "buyer": "Acheteur",
+    "supplier": "Fournisseur",
+    "admin": "Admin"
+  },
+  "engine": {
+    "expired": "Expiré",
+    "expiresIn": "Expire dans",
+    "expiredBanner": "Cette négociation a expiré et ne peut plus recevoir de réponses.",
+    "finalRound": {
+      "banner": "Dernière ronde — C'est la dernière chance de parvenir à un accord. Les éléments non résolus seront annulés après cette ronde."
+    },
+    "acceptThisPrice": "Accepter ce prix",
+    "allLocked": "Tous les articles sont déjà acceptés.",
+    "progress": {
+      "itemsAgreed": "Articles acceptés",
+      "round": "Ronde",
+      "of": "de"
+    },
+    "deal": {
+      "title": "Transaction conclue ! La commande va être créée.",
+      "subtitle": "Total final négocié",
+      "viewOrder": "Voir la commande",
+      "orderToast": "Création de commande bientôt disponible"
+    }
+  },
+  "filters": {
+    "searchPlaceholder": "Rechercher par ID de transaction, produit, partie, port...",
+    "searchEllipsis": "Rechercher...",
+    "filters": "Filtres",
+    "advanced": "Filtres avancés",
+    "apply": "Appliquer",
+    "clear": "Effacer",
+    "clearAll": "Tout effacer",
+    "all": "Tous",
+    "any": "N'importe quel",
+    "nSelected": "{{count}} sélectionnés",
+    "noOptions": "Aucune option",
+    "dealId": "ID de transaction",
+    "dealIdPlaceholder": "ex. 0000045",
+    "product": "Produit",
+    "buyer": "Acheteur",
+    "supplier": "Fournisseur",
+    "origin": "Origine",
+    "destination": "Destination",
+    "originPort": "Port d'origine",
+    "destinationPort": "Port de destination",
+    "status": "Statut",
+    "dateFrom": "Date de début",
+    "dateTo": "Date de fin",
+    "noResults": "Aucun résultat ne correspond à vos filtres"
+  }
+}
