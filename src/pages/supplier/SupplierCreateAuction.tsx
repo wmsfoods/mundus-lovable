@@ -665,7 +665,7 @@ export default function SupplierCreateAuction() {
                   <tr style={{ background: "var(--bg-brand-soft)" }}>
                     <td>
                       <div style={{ display: "flex", gap: 4 }}>
-                        <select value={nf.cat} onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined }))}>
+                        <select value={nf.cat} onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}>
                           {Object.keys(cutsByCategory).map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
                         <Popover open={cutPickerOpen} onOpenChange={setCutPickerOpen}>
