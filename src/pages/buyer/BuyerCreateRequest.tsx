@@ -273,7 +273,22 @@ export default function BuyerCreateRequest() {
                     <button type="button" className="bcr-rm" onClick={() => remove(r.id)} aria-label="Remove"><XIcon size={14} /></button>
                   </div>
                   <label>Cut</label>
-                  <input className="bcr-input" value={r.cut} onChange={(e) => update(r.id, { cut: e.target.value })} placeholder="Pick or type cut…" list={`cuts-${category}`} />
+                  <div className="bcr-cut-row-m">
+                    <span className="bcr-thumb">
+                      {r.cutImage ? <img src={r.cutImage} alt="" /> : <span>📷</span>}
+                    </span>
+                    <input
+                      className="bcr-input"
+                      value={r.cut}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const match = cuts.find((c) => c.displayName.toLowerCase() === v.toLowerCase());
+                        update(r.id, { cut: v, cutImage: match?.image_url ?? null });
+                      }}
+                      placeholder="Pick or type cut…"
+                      list={`cuts-${category}`}
+                    />
+                  </div>
                   <datalist id={`cuts-${category}`}>
                     {cuts.map((c) => <option key={c.id} value={c.displayName} />)}
                   </datalist>
