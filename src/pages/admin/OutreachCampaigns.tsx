@@ -1,6 +1,8 @@
 import "@/styles/mundus-outreach.css";
 import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 
 const FILTERS = ["All", "Initial", "Follow-up 24h", "Follow-up 3d", "Auction"];
 
@@ -44,9 +46,12 @@ export default function OutreachCampaigns() {
   const rows = filter === "All" ? CAMPAIGNS : CAMPAIGNS.filter((c) => c.type === filter);
   return (
     <div className="out-page">
-      <div>
-        <h1 className="out-h1">Campaigns</h1>
-        <p className="out-sub">All outreach campaigns sent from Mundus</p>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, flexWrap: "wrap" }}>
+        <div>
+          <h1 className="out-h1">Campaigns</h1>
+          <p className="out-sub">All outreach campaigns sent from Mundus</p>
+        </div>
+        <Button className="out-btn-wine" onClick={() => toast.info("New campaign builder coming soon")}>+ New Campaign</Button>
       </div>
       <div className="out-filter-pills">
         {FILTERS.map((f) => (

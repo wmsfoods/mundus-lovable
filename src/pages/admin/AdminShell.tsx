@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle, Activity,
-  Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag, Send, Mail, FileText, Settings,
+  Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag, Mail, Megaphone, FileText, AtSign,
   Search as SearchIcon, UserSearch, ClipboardList,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
@@ -50,10 +50,10 @@ export default function AdminShell() {
     { to: "/admin/marketplace/markets", label: t("admin.shell.nav.markets"), icon: Globe as unknown as IconCmp },
     { to: "/admin/marketplace/ports", label: t("admin.shell.nav.ports"), icon: Ship as unknown as IconCmp },
 
-    { to: "/admin/outreach", label: t("admin.outreach.nav.center", "Outreach Center"), icon: Send as unknown as IconCmp, groupLabel: t("admin.outreach.nav.group", "Outreach") },
-    { to: "/admin/outreach/campaigns", label: t("admin.outreach.nav.campaigns", "Campaigns"), icon: Mail as unknown as IconCmp },
+    { to: "/admin/outreach", label: t("admin.outreach.nav.center", "Outreach Center"), icon: Mail as unknown as IconCmp, groupLabel: t("admin.outreach.nav.group", "Outreach") },
+    { to: "/admin/outreach/campaigns", label: t("admin.outreach.nav.campaigns", "Campaigns"), icon: Megaphone as unknown as IconCmp },
     { to: "/admin/outreach/templates", label: t("admin.outreach.nav.templates", "Templates"), icon: FileText as unknown as IconCmp },
-    { to: "/admin/settings/email", label: t("admin.outreach.nav.email_settings", "Email Settings"), icon: Settings as unknown as IconCmp },
+    { to: "/admin/settings/email", label: t("admin.outreach.nav.email_settings", "Email Settings"), icon: AtSign as unknown as IconCmp },
 
     { to: "/admin/finance/revenue", label: t("admin.shell.nav.revenue"), icon: Coins as unknown as IconCmp, groupLabel: t("admin.shell.nav.finance") },
     { to: "/admin/finance/commissions", label: t("admin.shell.nav.commissions"), icon: Percent as unknown as IconCmp },

@@ -28,6 +28,11 @@
 .out-badge { display: inline-flex; padding: 2px 8px; border-radius: 6px; font-size: 11px; background: hsl(var(--muted)); color: hsl(var(--foreground)); font-weight: 500; }
 .out-badge.cat { background: #fce7f3; color: #831843; }
 .out-badge.lang { background: hsl(var(--muted)); }
+.out-badge.type-initial { background: #fce7f3; color: #831843; }
+.out-badge.type-followup { background: #dbeafe; color: #1e40af; }
+.out-badge.type-auction { background: #fef3c7; color: #92400e; }
+.out-btn-wine { background: #8B2252; color: #fff; }
+.out-btn-wine:hover { background: #7a1d48; }
 .out-bar { display: inline-block; height: 6px; background: hsl(var(--muted)); border-radius: 3px; overflow: hidden; min-width: 60px; vertical-align: middle; }
 .out-bar > span { display: block; height: 100%; background: #8B2252; }
 .out-filter-pills { display: flex; flex-wrap: wrap; gap: 8px; }
