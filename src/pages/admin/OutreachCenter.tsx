@@ -69,7 +69,7 @@ export default function OutreachCenter() {
       <div className="out-grid-2">
         <div className="out-card">
           <h3 className="out-card-title">Recent campaigns</h3>
-          <div style={{ overflowX: "auto" }}>
+          <div className="out-desktop-only" style={{ overflowX: "auto" }}>
             <table className="out-table">
               <thead><tr><th>Subject</th><th>Type</th><th>Sent</th><th>Recip</th><th>Deliv</th><th>Open</th><th>Click</th><th>Engagement</th><th>Status</th></tr></thead>
               <tbody>
@@ -92,19 +92,66 @@ export default function OutreachCenter() {
               </tbody>
             </table>
           </div>
+          <div className="out-mobile-only out-list">
+            {RECENT.map((r) => {
+              const pct = Math.round((r.opened / r.recipients) * 100);
+              return (
+                <div key={r.id} className="out-item">
+                  <div className="out-item-head">
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="out-item-title">{r.subject}</div>
+                      <div className="out-item-meta" style={{ marginTop: 4 }}>
+                        <span className={`out-badge ${typeClass(r.type)}`}>{r.type}</span>
+                        <span className={`out-pill ${r.status}`}>{r.status}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="out-item-meta">📅 {r.sent_at}</div>
+                  <div className="out-item-stats">
+                    <div className="out-item-stat"><span className="out-item-stat-label">Recip</span><span className="out-item-stat-value">{r.recipients}</span></div>
+                    <div className="out-item-stat"><span className="out-item-stat-label">Opened</span><span className="out-item-stat-value">{r.opened}</span></div>
+                    <div className="out-item-stat"><span className="out-item-stat-label">Clicked</span><span className="out-item-stat-value">{r.clicked}</span></div>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="out-bar" style={{ flex: 1 }}><span style={{ width: `${pct}%` }} /></span>
+                    <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{pct}%</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
         <div className="out-card">
           <h3 className="out-card-title">Top contacts by engagement</h3>
-          <table className="out-table">
-            <thead><tr><th>Contact</th><th>Company</th><th>Country</th><th>Opens</th><th>Clicks</th><th>Last open</th></tr></thead>
-            <tbody>
-              {CONTACTS.map((c) => (
-                <tr key={c.name}>
-                  <td>{c.name}</td><td>{c.company}</td><td>{c.country}</td><td>{c.opens}</td><td>{c.clicks}</td><td>{c.last}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="out-desktop-only" style={{ overflowX: "auto" }}>
+            <table className="out-table">
+              <thead><tr><th>Contact</th><th>Company</th><th>Country</th><th>Opens</th><th>Clicks</th><th>Last open</th></tr></thead>
+              <tbody>
+                {CONTACTS.map((c) => (
+                  <tr key={c.name}>
+                    <td>{c.name}</td><td>{c.company}</td><td>{c.country}</td><td>{c.opens}</td><td>{c.clicks}</td><td>{c.last}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="out-mobile-only out-list">
+            {CONTACTS.map((c) => (
+              <div key={c.name} className="out-item">
+                <div className="out-item-row">
+                  <div className="out-rec-mini-info">
+                    <div className="out-rec-mini-name">{c.name} <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontWeight: 400 }}>· {c.country}</span></div>
+                    <div className="out-rec-mini-sub">{c.company}</div>
+                  </div>
+                </div>
+                <div className="out-item-stats">
+                  <div className="out-item-stat"><span className="out-item-stat-label">Opens</span><span className="out-item-stat-value">{c.opens}</span></div>
+                  <div className="out-item-stat"><span className="out-item-stat-label">Clicks</span><span className="out-item-stat-value">{c.clicks}</span></div>
+                  <div className="out-item-stat"><span className="out-item-stat-label">Last</span><span className="out-item-stat-value" style={{ fontSize: 12 }}>{c.last}</span></div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>
