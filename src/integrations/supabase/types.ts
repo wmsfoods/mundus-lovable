@@ -2467,6 +2467,51 @@ export type Database = {
           },
         ]
       }
+      email_providers: {
+        Row: {
+          configured_by: string | null
+          created_at: string
+          credentials: Json
+          display_name: string
+          from_address: string
+          id: string
+          is_active: boolean
+          is_default: boolean
+          provider: string
+          reply_to: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          configured_by?: string | null
+          created_at?: string
+          credentials?: Json
+          display_name: string
+          from_address: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          provider: string
+          reply_to?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          configured_by?: string | null
+          created_at?: string
+          credentials?: Json
+          display_name?: string
+          from_address?: string
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          provider?: string
+          reply_to?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       email_sends: {
         Row: {
           ai_generated: boolean | null
@@ -3607,6 +3652,87 @@ export type Database = {
           },
         ]
       }
+      outreach_campaigns: {
+        Row: {
+          auction_id: string | null
+          body_html: string
+          bounced_count: number
+          campaign_type: string
+          clicked_count: number
+          created_at: string
+          delivered_count: number
+          id: string
+          offer_id: string | null
+          opened_count: number
+          provider_id: string | null
+          recipients_count: number
+          sent_at: string | null
+          sent_by: string | null
+          sent_count: number
+          status: string
+          subject: string
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          auction_id?: string | null
+          body_html: string
+          bounced_count?: number
+          campaign_type: string
+          clicked_count?: number
+          created_at?: string
+          delivered_count?: number
+          id?: string
+          offer_id?: string | null
+          opened_count?: number
+          provider_id?: string | null
+          recipients_count?: number
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_count?: number
+          status?: string
+          subject: string
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          auction_id?: string | null
+          body_html?: string
+          bounced_count?: number
+          campaign_type?: string
+          clicked_count?: number
+          created_at?: string
+          delivered_count?: number
+          id?: string
+          offer_id?: string | null
+          opened_count?: number
+          provider_id?: string | null
+          recipients_count?: number
+          sent_at?: string | null
+          sent_by?: string | null
+          sent_count?: number
+          status?: string
+          subject?: string
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_campaigns_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "email_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "outreach_campaigns_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_templates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outreach_emails: {
         Row: {
           body_html: string | null
@@ -3668,6 +3794,128 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      outreach_recipients: {
+        Row: {
+          bounced_at: string | null
+          campaign_id: string
+          clicked_at: string | null
+          clicks_count: number
+          company_name: string | null
+          contact_email: string
+          contact_id: string | null
+          contact_name: string | null
+          country: string | null
+          created_at: string
+          delivered_at: string | null
+          error_message: string | null
+          id: string
+          opened_at: string | null
+          opens_count: number
+          sent_at: string | null
+          status: string
+          tracking_id: string
+          updated_at: string
+        }
+        Insert: {
+          bounced_at?: string | null
+          campaign_id: string
+          clicked_at?: string | null
+          clicks_count?: number
+          company_name?: string | null
+          contact_email: string
+          contact_id?: string | null
+          contact_name?: string | null
+          country?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          opens_count?: number
+          sent_at?: string | null
+          status?: string
+          tracking_id?: string
+          updated_at?: string
+        }
+        Update: {
+          bounced_at?: string | null
+          campaign_id?: string
+          clicked_at?: string | null
+          clicks_count?: number
+          company_name?: string | null
+          contact_email?: string
+          contact_id?: string | null
+          contact_name?: string | null
+          country?: string | null
+          created_at?: string
+          delivered_at?: string | null
+          error_message?: string | null
+          id?: string
+          opened_at?: string | null
+          opens_count?: number
+          sent_at?: string | null
+          status?: string
+          tracking_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "outreach_recipients_campaign_id_fkey"
+            columns: ["campaign_id"]
+            isOneToOne: false
+            referencedRelation: "outreach_campaigns"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      outreach_templates: {
+        Row: {
+          body_html: string
+          body_text: string | null
+          category: string
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          language: string
+          name: string
+          subject: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          body_html: string
+          body_text?: string | null
+          category: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          language?: string
+          name: string
+          subject: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          body_html?: string
+          body_text?: string | null
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          language?: string
+          name?: string
+          subject?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: []
       }
       permissions: {
         Row: {

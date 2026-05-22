@@ -45,6 +45,10 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 import AdminMarkets from "./pages/admin/AdminMarkets.tsx";
 import AdminPorts from "./pages/admin/AdminPorts.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
+import OutreachCenter from "./pages/admin/OutreachCenter.tsx";
+import OutreachCampaigns from "./pages/admin/OutreachCampaigns.tsx";
+import OutreachTemplates from "./pages/admin/OutreachTemplates.tsx";
+import EmailSettings from "./pages/admin/EmailSettings.tsx";
 import FindCompanies from "./pages/admin/prospect/FindCompanies.tsx";
 import FindPeople from "./pages/admin/prospect/FindPeople.tsx";
 import ProspectLists from "./pages/admin/prospect/Lists.tsx";
@@ -181,6 +185,10 @@ const App = () => (
               <Route path="settings/team" element={<AdminComingSoon section="settings/team" />} />
               <Route path="settings/audit" element={<AdminComingSoon section="settings/audit" />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
+              <Route path="outreach" element={<OutreachCenter />} />
+              <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
+              <Route path="outreach/templates" element={<OutreachTemplates />} />
+              <Route path="settings/email" element={<EmailSettings />} />
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>
