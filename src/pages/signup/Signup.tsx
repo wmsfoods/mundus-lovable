@@ -8,6 +8,7 @@ import { PasswordRequirements } from "./PasswordRequirements";
 import { allRulesMet, checkPassword } from "./passwordRules";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 
 const MUNDUS_TRADE_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
@@ -401,10 +402,16 @@ function Step2({
           </div>
         </Field>
         <Field label={t("signup.fields.address")}>
-          <input
+          <AddressAutocomplete
             className={inputCls}
             value={data.address}
-            onChange={(e) => set("address", e.target.value)}
+            onChange={(v) => set("address", v)}
+            onAddressSelect={(addr) => {
+              set("address", addr.street || addr.formatted);
+              if (addr.state) set("state", addr.state);
+              if (addr.country) set("country", addr.country);
+              if (addr.countryCode) set("countryOp", addr.countryCode);
+            }}
           />
         </Field>
         <Field label={t("signup.fields.addressLine2")}>
