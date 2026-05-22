@@ -161,6 +161,7 @@ export default function BuyerCreateRequest() {
                 <thead>
                   <tr>
                     <th style={{ width: 28 }}>#</th>
+                    <th style={{ width: 44 }} aria-label="img"></th>
                     <th>Cut</th>
                     <th>Spec (optional)</th>
                     <th>Marbling</th>
@@ -173,6 +174,11 @@ export default function BuyerCreateRequest() {
                   {rows.map((r, i) => (
                     <tr key={r.id}>
                       <td className="bcr-td-num">{i + 1}</td>
+                      <td>
+                        <span className="bcr-thumb">
+                          {r.cutImage ? <img src={r.cutImage} alt="" /> : <span>📷</span>}
+                        </span>
+                      </td>
                       <td>
                         <Popover open={openCutFor === r.id} onOpenChange={(o) => setOpenCutFor(o ? r.id : null)}>
                           <PopoverTrigger asChild>
@@ -198,9 +204,12 @@ export default function BuyerCreateRequest() {
                                     <CommandItem
                                       key={c.id}
                                       value={c.displayName}
-                                      onSelect={() => { update(r.id, { cut: c.displayName }); setOpenCutFor(null); }}
+                                      onSelect={() => { update(r.id, { cut: c.displayName, cutImage: c.image_url ?? null }); setOpenCutFor(null); }}
                                     >
-                                      {c.displayName}
+                                      <span className="bcr-pick-thumb">
+                                        {c.image_url ? <img src={c.image_url} alt="" /> : <span>📷</span>}
+                                      </span>
+                                      <span style={{ flex: 1 }}>{c.displayName}</span>
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
