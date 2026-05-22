@@ -1,16 +1,20 @@
-.out-page { display: flex; flex-direction: column; gap: 16px; padding: 16px; }
+.out-page { display: flex; flex-direction: column; gap: 16px; padding: 16px; padding-bottom: max(16px, env(safe-area-inset-bottom)); }
 .out-h1 { font-size: 22px; font-weight: 700; margin: 0; color: hsl(var(--foreground)); }
 .out-sub { color: hsl(var(--muted-foreground)); font-size: 13px; margin: 0; }
 .out-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-@media (max-width: 768px) { .out-kpis { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) { .out-kpis { grid-template-columns: repeat(2, 1fr); gap: 8px; } }
 .out-kpi { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 16px; }
+@media (max-width: 768px) { .out-kpi { padding: 12px; border-radius: 10px; } }
 .out-kpi-label { font-size: 12px; color: hsl(var(--muted-foreground)); text-transform: uppercase; letter-spacing: 0.04em; }
-.out-kpi-value { font-size: 26px; font-weight: 700; margin-top: 6px; color: hsl(var(--foreground)); }
+.out-kpi-value { font-size: 26px; font-weight: 700; margin-top: 6px; color: hsl(var(--foreground)); line-height: 1.1; }
+@media (max-width: 768px) { .out-kpi-value { font-size: 20px; } .out-kpi-label { font-size: 10px; } .out-kpi-delta { font-size: 11px; } }
 .out-kpi-delta { font-size: 12px; color: #16a34a; margin-top: 4px; }
 .out-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 16px; }
+@media (max-width: 768px) { .out-card { padding: 12px; border-radius: 10px; } }
 .out-card-title { font-size: 15px; font-weight: 600; margin: 0 0 12px; color: hsl(var(--foreground)); }
 .out-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 @media (max-width: 1023px) { .out-grid-2 { grid-template-columns: 1fr; } }
+.out-table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin: 0 -4px; }
 .out-table { width: 100%; border-collapse: collapse; font-size: 13px; }
 .out-table th { text-align: left; padding: 8px; color: hsl(var(--muted-foreground)); font-weight: 500; border-bottom: 1px solid hsl(var(--border)); }
 .out-table td { padding: 10px 8px; border-bottom: 1px solid hsl(var(--border)); color: hsl(var(--foreground)); }
@@ -39,6 +43,7 @@
 .out-pill-btn { padding: 6px 14px; border-radius: 999px; border: 1px solid hsl(var(--border)); background: hsl(var(--card)); color: hsl(var(--foreground)); font-size: 13px; cursor: pointer; }
 .out-pill-btn.active { background: #8B2252; color: #fff; border-color: #8B2252; }
 .out-tpl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+@media (max-width: 480px) { .out-tpl-grid { grid-template-columns: 1fr; } }
 .out-tpl-card { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
 .out-tpl-name { font-size: 15px; font-weight: 600; color: hsl(var(--foreground)); }
 .out-tpl-subj { font-size: 12px; color: hsl(var(--muted-foreground)); margin-top: 4px; }
@@ -46,3 +51,44 @@
 .out-expand-row { background: hsl(var(--muted) / 0.3); }
 .out-rec-table { width: 100%; font-size: 12px; }
 .out-rec-table th, .out-rec-table td { padding: 6px 8px; }
+
+/* =========================================================================
+   MOBILE — card lists replace tables (per project mobile guidelines)
+   ========================================================================= */
+.out-list { display: flex; flex-direction: column; gap: 10px; }
+.out-item { background: hsl(var(--card)); border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+.out-item-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.out-item-title { font-size: 14px; font-weight: 600; color: hsl(var(--foreground)); line-height: 1.3; }
+.out-item-meta { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 12px; color: hsl(var(--muted-foreground)); }
+.out-item-meta strong { color: hsl(var(--foreground)); font-weight: 600; }
+.out-item-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.out-item-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding-top: 8px; border-top: 1px solid hsl(var(--border)); }
+.out-item-stat { display: flex; flex-direction: column; gap: 2px; }
+.out-item-stat-label { font-size: 10px; color: hsl(var(--muted-foreground)); text-transform: uppercase; letter-spacing: 0.04em; }
+.out-item-stat-value { font-size: 14px; font-weight: 600; color: hsl(var(--foreground)); }
+.out-item-expand { padding-top: 8px; border-top: 1px solid hsl(var(--border)); display: flex; flex-direction: column; gap: 8px; }
+.out-rec-mini { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px; background: hsl(var(--muted) / 0.4); border-radius: 8px; }
+.out-rec-mini-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.out-rec-mini-name { font-size: 13px; font-weight: 500; color: hsl(var(--foreground)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.out-rec-mini-sub { font-size: 11px; color: hsl(var(--muted-foreground)); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Hide table on mobile, show list on desktop */
+.out-mobile-only { display: none; }
+.out-desktop-only { display: block; }
+@media (max-width: 768px) {
+  .out-mobile-only { display: block; }
+  .out-desktop-only { display: none; }
+  .out-page { padding: 12px; gap: 12px; }
+  .out-h1 { font-size: 18px; }
+  .out-sub { font-size: 12px; }
+  .out-card-title { font-size: 14px; margin-bottom: 10px; }
+  .out-filter-pills { overflow-x: auto; flex-wrap: nowrap; margin: 0 -12px; padding: 0 12px 4px; -webkit-overflow-scrolling: touch; }
+  .out-filter-pills::-webkit-scrollbar { display: none; }
+  .out-pill-btn { white-space: nowrap; flex-shrink: 0; padding: 8px 14px; font-size: 12px; min-height: 36px; }
+}
+
+/* Touch-friendly tap targets */
+@media (max-width: 768px) {
+  .out-item, .out-tpl-card { min-height: 44px; }
+  .out-tpl-actions button { flex: 1; min-height: 40px; }
+}
