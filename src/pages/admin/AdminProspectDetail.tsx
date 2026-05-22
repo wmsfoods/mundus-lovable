@@ -17,6 +17,7 @@ import {
   type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel, type MundusType,
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
+import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 
 const STAGE_TO_DB: Record<ProspectStage, string> = {
   new: "cold", researching: "warm", contacted: "contacted",
@@ -432,7 +433,22 @@ export default function AdminProspectDetail() {
             <input className="psp-input" value={d.industry ?? ""} onChange={(e) => setDraftField("industry", e.target.value)} />
           </Field>
           <Field label={t("admin.crm.detail.fields.street")} editing={editing} value={d.street ?? "—"}>
-            <input className="psp-input" value={d.street ?? ""} onChange={(e) => setDraftField("street", e.target.value)} />
+            <AddressAutocomplete
+              className="psp-input"
+              value={d.street ?? ""}
+              onChange={(v) => setDraftField("street", v)}
+              onAddressSelect={(addr) => {
+                if (!draft) return;
+                setDraft({
+                  ...draft,
+                  street: addr.street || addr.formatted,
+                  city: addr.city || draft.city,
+                  state: addr.state || draft.state,
+                  zipCode: addr.zip || draft.zipCode,
+                  country: addr.countryCode || draft.country,
+                });
+              }}
+            />
           </Field>
           <Field label={t("admin.crm.detail.fields.city")} editing={editing} value={d.city ?? "—"}>
             <input className="psp-input" value={d.city ?? ""} onChange={(e) => setDraftField("city", e.target.value)} />

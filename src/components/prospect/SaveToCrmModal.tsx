@@ -3,6 +3,7 @@ import { X, ChevronDown, Plus, Trash2, Sparkles } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { MockPerson, MockCompany } from "@/data/mockProspect";
+import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 
 const DEPARTMENTS = ["Operations","Purchasing","Sales","Marketing","Logistics","Finance","Executive","Other"];
 const SENIORITIES = ["C-Level","VP","Director","Manager","Senior","Staff","Entry"];
@@ -392,7 +393,20 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
               <Field label="Industry" auto={!!srcCompany?.industry}><input className="psp-input" value={coIndustry} onChange={(e) => setCoIndustry(e.target.value)} /></Field>
               <Field label="Company Category"><select className="psp-input" value={coCategory} onChange={(e) => setCoCategory(e.target.value)}><option value="">—</option>{COMPANY_CATEGORIES.map((d) => <option key={d}>{d}</option>)}</select></Field>
               <Field label="Company Type"><select className="psp-input" value={coType} onChange={(e) => setCoType(e.target.value)}>{COMPANY_TYPES.map((d) => <option key={d}>{d}</option>)}</select></Field>
-              <Field label="Street Address"><input className="psp-input" value={coStreet} onChange={(e) => setCoStreet(e.target.value)} /></Field>
+              <Field label="Street Address">
+                <AddressAutocomplete
+                  className="psp-input"
+                  value={coStreet}
+                  onChange={setCoStreet}
+                  onAddressSelect={(addr) => {
+                    setCoStreet(addr.street || addr.formatted);
+                    if (addr.city) setCoCity(addr.city);
+                    if (addr.state) setCoState(addr.state);
+                    if (addr.zip) setCoZip(addr.zip);
+                    if (addr.country) setCoCountry(addr.country);
+                  }}
+                />
+              </Field>
               <Field label="City" auto={!!srcCompany?.city}><input className="psp-input" value={coCity} onChange={(e) => setCoCity(e.target.value)} /></Field>
               <Field label="State"><input className="psp-input" value={coState} onChange={(e) => setCoState(e.target.value)} /></Field>
               <Field label="Zip Code"><input className="psp-input" value={coZip} onChange={(e) => setCoZip(e.target.value)} /></Field>
