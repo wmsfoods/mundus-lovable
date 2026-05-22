@@ -21,6 +21,8 @@ function pickName(r: AdminMarketRow, locale: string): string {
   const lang = (locale || "en").slice(0, 2);
   if (lang === "pt") return r.portuguese_name;
   if (lang === "es") return r.spanish_name;
+  if (lang === "fr") return r.french_name || r.english_name;
+  if (lang === "zh") return r.chinese_name || r.english_name;
   return r.english_name;
 }
 

@@ -22,7 +22,7 @@ export function useSupplierOfferData() {
     queryFn: async () => {
       const [marketsRes, countriesRes, portsRes, sharingRes, cutsRes, trRes] = await Promise.all([
         supabase.from("markets").select("id, country_id, is_active").eq("is_active", true),
-        supabase.from("countries").select("id, english_name, flag_emoji, iso_code"),
+        supabase.from("countries").select("id, english_name, portuguese_name, spanish_name, french_name, chinese_name, flag_emoji, iso_code"),
         supabase.from("ports").select("id, name, code, country_id, is_active").eq("is_active", true).order("name"),
         supabase.from("port_sharing").select("country_id, uses_ports_from_country_id"),
         supabase.from("cuts").select("id, name, category, image_url, is_active").eq("is_active", true).order("name"),
@@ -55,9 +55,15 @@ export function useSupplierOfferData() {
         if (!country) continue;
         const sourceCountryId = sharingByCountry.get(country.id) ?? country.id;
         const ports = portsByCountry.get(sourceCountryId) ?? [];
+        const lang = locale.slice(0, 2);
+        let name: string = country.english_name;
+        if (lang === "pt") name = country.portuguese_name || name;
+        else if (lang === "es") name = country.spanish_name || name;
+        else if (lang === "fr") name = country.french_name || name;
+        else if (lang === "zh") name = country.chinese_name || name;
         markets.push({
           id: country.id,
-          n: country.english_name,
+          n: name,
           f: country.flag_emoji ?? "",
           p: ports,
         });

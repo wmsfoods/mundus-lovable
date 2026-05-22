@@ -10,6 +10,8 @@ export type AdminMarketRow = {
   english_name: string;
   portuguese_name: string;
   spanish_name: string;
+  french_name: string;
+  chinese_name: string;
   iso_code: string | null;
   flag_emoji: string | null;
   is_origin: boolean;
@@ -25,6 +27,8 @@ type CountryRow = {
   english_name: string;
   portuguese_name: string;
   spanish_name: string;
+  french_name: string | null;
+  chinese_name: string | null;
   iso_code: string | null;
   flag_emoji: string | null;
   is_origin: boolean;
@@ -44,7 +48,7 @@ export function useAdminMarkets() {
       const [countriesRes, marketsRes, portsRes, sharingRes] = await Promise.all([
         supabase
           .from("countries")
-          .select("id, english_name, portuguese_name, spanish_name, iso_code, flag_emoji, is_origin, is_destination"),
+          .select("id, english_name, portuguese_name, spanish_name, french_name, chinese_name, iso_code, flag_emoji, is_origin, is_destination"),
         supabase.from("markets").select("id, country_id, is_active"),
         supabase.from("ports").select("id, country_id, name, code").order("name"),
         supabase.from("port_sharing").select("country_id, uses_ports_from_country_id"),
@@ -86,6 +90,8 @@ export function useAdminMarkets() {
           english_name: c?.english_name ?? "—",
           portuguese_name: c?.portuguese_name ?? c?.english_name ?? "—",
           spanish_name: c?.spanish_name ?? c?.english_name ?? "—",
+          french_name: c?.french_name ?? c?.english_name ?? "—",
+          chinese_name: c?.chinese_name ?? c?.english_name ?? "—",
           iso_code: c?.iso_code ?? null,
           flag_emoji: c?.flag_emoji ?? null,
           is_origin: !!c?.is_origin,
