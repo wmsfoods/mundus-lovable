@@ -639,9 +639,16 @@ export default function SupplierCreateAuction() {
                 </tr>
               </thead>
               <tbody>
-                {cuts.map((c, i) => (
-                  <tr key={c.id}>
-                    <td><span className="cov4-cut-nm">{c.cat} {c.cut}</span></td>
+                 {cuts.map((c, i) => (
+                   <tr key={c.id}>
+                     <td>
+                       <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                         <span className="cov4-cut-opt-thumb" style={{ width: 28, height: 28, margin: 0 }}>
+                           {c.cutImage ? <img src={c.cutImage} alt="" /> : <span style={{ fontSize: 12, opacity: .5 }}>📷</span>}
+                         </span>
+                         <span className="cov4-cut-nm">{c.cat} {c.cut}</span>
+                       </span>
+                     </td>
                     <td><span className="cov4-tag">{c.spec}</span></td>
                     <td><span className="cov4-tag">{c.pkg}</span></td>
                     <td><span className="cov4-tag">{c.gr !== "Not Classified" ? c.gr : "—"}</span></td>
@@ -681,11 +688,14 @@ export default function SupplierCreateAuction() {
                                       key={cu.id}
                                       value={cu.displayName}
                                       onSelect={() => {
-                                        setNf((p) => ({ ...p, cut: cu.displayName, cutId: cu.id }));
+                                        setNf((p) => ({ ...p, cut: cu.displayName, cutId: cu.id, cutImage: cu.image_url ?? null }));
                                         setCutPickerOpen(false);
                                       }}
                                     >
-                                      {cu.displayName}
+                                      <span className="cov4-cut-opt-thumb">
+                                        {cu.image_url ? <img src={cu.image_url} alt="" /> : <span style={{ fontSize: 11, opacity: .5 }}>📷</span>}
+                                      </span>
+                                      <span style={{ flex: 1 }}>{cu.displayName}</span>
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
