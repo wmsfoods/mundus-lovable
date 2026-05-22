@@ -15,6 +15,7 @@ const CONTAINER_KG = { "20": 14000, "40": 28000 } as const;
 type Row = {
   id: string;
   cut: string;
+  cutImage?: string | null;
   spec: string;
   marbling: string;
   qty: string;
@@ -23,7 +24,7 @@ type Row = {
 
 const newRow = (): Row => ({
   id: Math.random().toString(36).slice(2, 9),
-  cut: "", spec: "", marbling: "Not specified", qty: "", target: "",
+  cut: "", cutImage: null, spec: "", marbling: "Not specified", qty: "", target: "",
 });
 
 export default function BuyerCreateRequest() {
@@ -62,14 +63,18 @@ export default function BuyerCreateRequest() {
   const add = () => setRows((rs) => [...rs, newRow()]);
 
   const applyImport = (imported: ParsedRow[]) => {
-    const mapped: Row[] = imported.map((p) => ({
-      id: Math.random().toString(36).slice(2, 9),
-      cut: p.cut,
-      spec: p.spec ?? "",
-      marbling: p.marbling ?? "Not specified",
-      qty: String(p.qty_kg ?? ""),
-      target: p.target_price_per_kg != null ? String(p.target_price_per_kg) : "",
-    }));
+    const mapped: Row[] = imported.map((p) => {
+      const match = cuts.find((c) => c.displayName.toLowerCase() === p.cut.toLowerCase());
+      return {
+        id: Math.random().toString(36).slice(2, 9),
+        cut: p.cut,
+        cutImage: match?.image_url ?? null,
+        spec: p.spec ?? "",
+        marbling: p.marbling ?? "Not specified",
+        qty: String(p.qty_kg ?? ""),
+        target: p.target_price_per_kg != null ? String(p.target_price_per_kg) : "",
+      };
+    });
     setRows((rs) => {
       const keep = rs.filter((r) => r.cut.trim() || r.qty.trim());
       return [...keep, ...mapped];
@@ -156,6 +161,7 @@ export default function BuyerCreateRequest() {
                 <thead>
                   <tr>
                     <th style={{ width: 28 }}>#</th>
+                    <th style={{ width: 44 }} aria-label="img"></th>
                     <th>Cut</th>
                     <th>Spec (optional)</th>
                     <th>Marbling</th>
@@ -168,6 +174,11 @@ export default function BuyerCreateRequest() {
                   {rows.map((r, i) => (
                     <tr key={r.id}>
                       <td className="bcr-td-num">{i + 1}</td>
+                      <td>
+                        <span className="bcr-thumb">
+                          {r.cutImage ? <img src={r.cutImage} alt="" /> : <span>📷</span>}
+                        </span>
+                      </td>
                       <td>
                         <Popover open={openCutFor === r.id} onOpenChange={(o) => setOpenCutFor(o ? r.id : null)}>
                           <PopoverTrigger asChild>
@@ -193,9 +204,12 @@ export default function BuyerCreateRequest() {
                                     <CommandItem
                                       key={c.id}
                                       value={c.displayName}
-                                      onSelect={() => { update(r.id, { cut: c.displayName }); setOpenCutFor(null); }}
+                                      onSelect={() => { update(r.id, { cut: c.displayName, cutImage: c.image_url ?? null }); setOpenCutFor(null); }}
                                     >
-                                      {c.displayName}
+                                      <span className="bcr-pick-thumb">
+                                        {c.image_url ? <img src={c.image_url} alt="" /> : <span>📷</span>}
+                                      </span>
+                                      <span style={{ flex: 1 }}>{c.displayName}</span>
                                     </CommandItem>
                                   ))}
                                 </CommandGroup>
@@ -259,7 +273,22 @@ export default function BuyerCreateRequest() {
                     <button type="button" className="bcr-rm" onClick={() => remove(r.id)} aria-label="Remove"><XIcon size={14} /></button>
                   </div>
                   <label>Cut</label>
-                  <input className="bcr-input" value={r.cut} onChange={(e) => update(r.id, { cut: e.target.value })} placeholder="Pick or type cut…" list={`cuts-${category}`} />
+                  <div className="bcr-cut-row-m">
+                    <span className="bcr-thumb">
+                      {r.cutImage ? <img src={r.cutImage} alt="" /> : <span>📷</span>}
+                    </span>
+                    <input
+                      className="bcr-input"
+                      value={r.cut}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        const match = cuts.find((c) => c.displayName.toLowerCase() === v.toLowerCase());
+                        update(r.id, { cut: v, cutImage: match?.image_url ?? null });
+                      }}
+                      placeholder="Pick or type cut…"
+                      list={`cuts-${category}`}
+                    />
+                  </div>
                   <datalist id={`cuts-${category}`}>
                     {cuts.map((c) => <option key={c.id} value={c.displayName} />)}
                   </datalist>

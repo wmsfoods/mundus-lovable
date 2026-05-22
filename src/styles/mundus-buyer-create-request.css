@@ -39,6 +39,40 @@
 }
 .bcr-close:hover { background: var(--g050, #fafaf9); color: var(--fg); }
 
+/* Cut thumbnail (table cell + mobile) */
+.bcr-thumb {
+  width: 36px; height: 36px;
+  border-radius: 6px;
+  background: var(--g100, #f5f4f3);
+  border: 1px dashed #d4d1cd;
+  display: inline-flex; align-items: center; justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-size: 14px;
+  color: var(--fg-muted);
+}
+.bcr-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Thumbnail inside cut picker dropdown */
+.bcr-pick-thumb {
+  width: 28px; height: 28px;
+  border-radius: 4px;
+  background: var(--g100, #f5f4f3);
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-right: 8px;
+  overflow: hidden;
+  flex-shrink: 0;
+  font-size: 12px;
+  color: var(--fg-muted);
+}
+.bcr-pick-thumb img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Mobile: thumb + cut input side by side */
+.bcr-cut-row-m {
+  display: flex; align-items: center; gap: 8px;
+}
+.bcr-cut-row-m .bcr-input { flex: 1; min-width: 0; }
+
 /* GRID */
 .bcr-grid {
   display: grid;
