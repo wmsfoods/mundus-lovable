@@ -15,6 +15,7 @@ const CONTAINER_KG = { "20": 14000, "40": 28000 } as const;
 type Row = {
   id: string;
   cut: string;
+  cutImage?: string | null;
   spec: string;
   marbling: string;
   qty: string;
@@ -23,7 +24,7 @@ type Row = {
 
 const newRow = (): Row => ({
   id: Math.random().toString(36).slice(2, 9),
-  cut: "", spec: "", marbling: "Not specified", qty: "", target: "",
+  cut: "", cutImage: null, spec: "", marbling: "Not specified", qty: "", target: "",
 });
 
 export default function BuyerCreateRequest() {
@@ -62,14 +63,18 @@ export default function BuyerCreateRequest() {
   const add = () => setRows((rs) => [...rs, newRow()]);
 
   const applyImport = (imported: ParsedRow[]) => {
-    const mapped: Row[] = imported.map((p) => ({
-      id: Math.random().toString(36).slice(2, 9),
-      cut: p.cut,
-      spec: p.spec ?? "",
-      marbling: p.marbling ?? "Not specified",
-      qty: String(p.qty_kg ?? ""),
-      target: p.target_price_per_kg != null ? String(p.target_price_per_kg) : "",
-    }));
+    const mapped: Row[] = imported.map((p) => {
+      const match = cuts.find((c) => c.displayName.toLowerCase() === p.cut.toLowerCase());
+      return {
+        id: Math.random().toString(36).slice(2, 9),
+        cut: p.cut,
+        cutImage: match?.image_url ?? null,
+        spec: p.spec ?? "",
+        marbling: p.marbling ?? "Not specified",
+        qty: String(p.qty_kg ?? ""),
+        target: p.target_price_per_kg != null ? String(p.target_price_per_kg) : "",
+      };
+    });
     setRows((rs) => {
       const keep = rs.filter((r) => r.cut.trim() || r.qty.trim());
       return [...keep, ...mapped];
