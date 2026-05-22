@@ -92,3 +92,14 @@
   .out-item, .out-tpl-card { min-height: 44px; }
   .out-tpl-actions button { flex: 1; min-height: 40px; }
 }
+
+/* System Default block */
+.out-sysdef { display: grid; grid-template-columns: auto 1fr auto; gap: 16px; align-items: center; }
+.out-sysdef-logo { width: 44px; height: 44px; border-radius: 10px; background: #fce7f3; display: grid; place-items: center; font-weight: 700; color: #831843; font-size: 18px; }
+.out-sysdef-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.out-sysdef-actions { display: flex; gap: 8px; flex-shrink: 0; }
+@media (max-width: 768px) {
+  .out-sysdef { grid-template-columns: auto 1fr; }
+  .out-sysdef-actions { grid-column: 1 / -1; }
+  .out-sysdef-actions button { flex: 1; }
+}
