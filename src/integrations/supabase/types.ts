@@ -812,9 +812,11 @@ export type Database = {
       }
       countries: {
         Row: {
+          chinese_name: string | null
           created_at: string | null
           english_name: string
           flag_emoji: string | null
+          french_name: string | null
           id: string
           is_destination: boolean | null
           is_origin: boolean | null
@@ -823,9 +825,11 @@ export type Database = {
           spanish_name: string
         }
         Insert: {
+          chinese_name?: string | null
           created_at?: string | null
           english_name: string
           flag_emoji?: string | null
+          french_name?: string | null
           id?: string
           is_destination?: boolean | null
           is_origin?: boolean | null
@@ -834,9 +838,11 @@ export type Database = {
           spanish_name: string
         }
         Update: {
+          chinese_name?: string | null
           created_at?: string | null
           english_name?: string
           flag_emoji?: string | null
+          french_name?: string | null
           id?: string
           is_destination?: boolean | null
           is_origin?: boolean | null
