@@ -1,5 +1,5 @@
 import "@/styles/mundus-outreach.css";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { ChevronDown, ChevronRight } from "lucide-react";
 
 const FILTERS = ["All", "Initial", "Follow-up 24h", "Follow-up 3d", "Auction"];
@@ -58,8 +58,8 @@ export default function OutreachCampaigns() {
           <thead><tr><th></th><th>Campaign</th><th>Type</th><th>Recipients</th><th>Opened</th><th>Clicked</th><th>Status</th><th>Sent</th></tr></thead>
           <tbody>
             {rows.map((c) => (
-              <>
-                <tr key={c.id} onClick={() => setExpanded(expanded === c.id ? null : c.id)} style={{ cursor: "pointer" }}>
+              <Fragment key={c.id}>
+                <tr onClick={() => setExpanded(expanded === c.id ? null : c.id)} style={{ cursor: "pointer" }}>
                   <td>{expanded === c.id ? <ChevronDown size={14} /> : <ChevronRight size={14} />}</td>
                   <td>{c.name}</td>
                   <td><span className="out-badge cat">{c.type}</span></td>
@@ -70,7 +70,7 @@ export default function OutreachCampaigns() {
                   <td>{c.sent_at}</td>
                 </tr>
                 {expanded === c.id && (
-                  <tr className="out-expand-row" key={`${c.id}-x`}>
+                  <tr className="out-expand-row">
                     <td colSpan={8}>
                       <table className="out-rec-table">
                         <thead><tr><th>Email</th><th>Name</th><th>Company</th><th>Status</th></tr></thead>
@@ -86,7 +86,7 @@ export default function OutreachCampaigns() {
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>
