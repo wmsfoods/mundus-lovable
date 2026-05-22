@@ -451,3 +451,43 @@ function StatCard({ icon, label, value, accent }: { icon: React.ReactNode; label
     </div>
   );
 }
+
+function PortsPopover({ row, locale, t, children }: { row: AdminMarketRow; locale: string; t: (k: string, o?: any) => string; children: React.ReactNode }) {
+  const name = pickName(row, locale);
+  const isShared = !!row.shared_with_country;
+  const headerSuffix = isShared
+    ? t("admin.marketplace.markets.usesPortsFrom", { country: row.shared_with_country })
+    : t("admin.marketplace.markets.portsCount", { count: row.ports.length, defaultValue: "{{count}} ports" });
+  return (
+    <Popover>
+      <PopoverTrigger asChild>{children}</PopoverTrigger>
+      <PopoverContent align="start" side="bottom" style={{ width: 280, padding: 0 }}>
+        <div style={{ padding: "10px 12px", borderBottom: "1px solid hsl(var(--border))", fontSize: 13, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>
+          <span style={{ fontSize: 16 }}>{row.flag_emoji ?? "🏳️"}</span>
+          <span style={{ flex: 1, minWidth: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{name}</span>
+          <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontWeight: 400 }}>— {headerSuffix}</span>
+        </div>
+        <div style={{ maxHeight: 200, overflowY: "auto", padding: 4 }}>
+          {row.ports.length === 0 ? (
+            <div style={{ padding: "12px", fontSize: 12, color: "hsl(var(--muted-foreground))", textAlign: "center" }}>
+              {t("admin.marketplace.markets.noPorts", { defaultValue: "No ports registered" })}
+            </div>
+          ) : (
+            row.ports.map((p) => (
+              <div key={p.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, padding: "6px 10px", fontSize: 13, borderRadius: 6 }}>
+                <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.name}</span>
+                <code style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 11, color: "hsl(var(--muted-foreground))", background: "hsl(var(--muted))", padding: "1px 6px", borderRadius: 4 }}>{p.code}</code>
+              </div>
+            ))
+          )}
+        </div>
+        {isShared && (
+          <div style={{ padding: "8px 12px", borderTop: "1px solid hsl(var(--border))", fontSize: 11, color: "hsl(var(--muted-foreground))", display: "flex", alignItems: "center", gap: 4 }}>
+            <Anchor size={11} />
+            {t("admin.marketplace.markets.sharedFrom", { country: row.shared_with_country, defaultValue: "Shared from {{country}}" })} {row.shared_with_country_flag ?? ""}
+          </div>
+        )}
+      </PopoverContent>
+    </Popover>
+  );
+}
