@@ -28,10 +28,14 @@ export default function EmailSettings() {
       <div className="out-card">
         <h3 className="out-card-title">System Default</h3>
         <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center" }}>
+          <div style={{ width: 40, height: 40, borderRadius: 8, background: "#fce7f3", display: "grid", placeItems: "center", fontWeight: 700, color: "#831843" }}>Z</div>
           <div><strong>Provider:</strong> Zoho</div>
           <div><strong>From:</strong> contact@mundustrade.com</div>
-          <span className="out-pill sent">active</span>
-          <Button size="sm" variant="outline" onClick={() => toast.success("Connection OK")}>Test Connection</Button>
+          <span className="out-pill sent">Active</span>
+          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+            <Button size="sm" variant="outline" onClick={() => toast.success("Connection OK")}>Test Connection</Button>
+            <Button size="sm" variant="outline" onClick={() => toast.info("Editor coming soon")}>Edit</Button>
+          </div>
         </div>
       </div>
       <div className="out-card">
