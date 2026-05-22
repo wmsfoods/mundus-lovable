@@ -1,6 +1,8 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+export type PortInfo = { id: string; name: string; code: string };
+
 export type AdminMarketRow = {
   market_id: string;
   is_active: boolean;
@@ -14,6 +16,8 @@ export type AdminMarketRow = {
   is_destination: boolean;
   port_count: number;
   shared_with_country: string | null; // english_name of the country whose ports are used
+  shared_with_country_flag: string | null;
+  ports: PortInfo[]; // effective ports — own, or shared source's
 };
 
 type CountryRow = {
@@ -28,7 +32,7 @@ type CountryRow = {
 };
 
 type MarketRow = { id: string; country_id: string; is_active: boolean };
-type PortRow = { id: string; country_id: string };
+type PortRow = { id: string; country_id: string; name: string; code: string };
 type PortSharingRow = { country_id: string; uses_ports_from_country_id: string };
 
 export function useAdminMarkets() {
@@ -42,7 +46,7 @@ export function useAdminMarkets() {
           .from("countries")
           .select("id, english_name, portuguese_name, spanish_name, iso_code, flag_emoji, is_origin, is_destination"),
         supabase.from("markets").select("id, country_id, is_active"),
-        supabase.from("ports").select("id, country_id"),
+        supabase.from("ports").select("id, country_id, name, code").order("name"),
         supabase.from("port_sharing").select("country_id, uses_ports_from_country_id"),
       ]);
       if (countriesRes.error) throw countriesRes.error;
@@ -55,19 +59,26 @@ export function useAdminMarkets() {
       const ports = (portsRes.data ?? []) as PortRow[];
       const sharing = (sharingRes.data ?? []) as PortSharingRow[];
 
-      const portCountByCountry = new Map<string, number>();
+      const portsByCountry = new Map<string, PortInfo[]>();
       for (const p of ports) {
-        portCountByCountry.set(p.country_id, (portCountByCountry.get(p.country_id) ?? 0) + 1);
+        const arr = portsByCountry.get(p.country_id) ?? [];
+        arr.push({ id: p.id, name: p.name, code: p.code });
+        portsByCountry.set(p.country_id, arr);
       }
       const countryById = new Map(countries.map((c) => [c.id, c]));
-      const sharingByCountry = new Map<string, string>();
+      const sharingByCountry = new Map<string, CountryRow>();
       for (const s of sharing) {
         const other = countryById.get(s.uses_ports_from_country_id);
-        if (other) sharingByCountry.set(s.country_id, other.english_name);
+        if (other) sharingByCountry.set(s.country_id, other);
       }
 
       const rows: AdminMarketRow[] = markets.map((m) => {
         const c = countryById.get(m.country_id);
+        const sharedCountry = sharingByCountry.get(m.country_id) ?? null;
+        const ownPorts = portsByCountry.get(m.country_id) ?? [];
+        const effectivePorts = sharedCountry
+          ? portsByCountry.get(sharedCountry.id) ?? []
+          : ownPorts;
         return {
           market_id: m.id,
           is_active: !!m.is_active,
@@ -79,8 +90,10 @@ export function useAdminMarkets() {
           flag_emoji: c?.flag_emoji ?? null,
           is_origin: !!c?.is_origin,
           is_destination: !!c?.is_destination,
-          port_count: portCountByCountry.get(m.country_id) ?? 0,
-          shared_with_country: sharingByCountry.get(m.country_id) ?? null,
+          port_count: ownPorts.length,
+          shared_with_country: sharedCountry?.english_name ?? null,
+          shared_with_country_flag: sharedCountry?.flag_emoji ?? null,
+          ports: effectivePorts,
         };
       });
 
