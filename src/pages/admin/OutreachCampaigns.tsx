@@ -58,7 +58,9 @@ export default function OutreachCampaigns() {
           <button key={f} className={`out-pill-btn ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>{f}</button>
         ))}
       </div>
-      <div className="out-card">
+      {/* Desktop table */}
+      <div className="out-card out-desktop-only">
+        <div className="out-table-wrap">
         <table className="out-table">
           <thead><tr><th></th><th>Campaign</th><th>Type</th><th>Recipients</th><th>Opened</th><th>Clicked</th><th>Status</th><th>Sent</th></tr></thead>
           <tbody>
@@ -95,6 +97,50 @@ export default function OutreachCampaigns() {
             ))}
           </tbody>
         </table>
+        </div>
+      </div>
+
+      {/* Mobile card list */}
+      <div className="out-mobile-only out-list">
+        {rows.map((c) => {
+          const openPct = Math.round((c.opened_count / c.recipients_count) * 100);
+          const isOpen = expanded === c.id;
+          return (
+            <div key={c.id} className="out-item">
+              <div className="out-item-head" onClick={() => setExpanded(isOpen ? null : c.id)} style={{ cursor: "pointer" }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="out-item-title">{c.name}</div>
+                  <div className="out-item-meta" style={{ marginTop: 4 }}>
+                    <span className="out-badge cat">{c.type}</span>
+                    <span className={`out-pill ${c.status}`}>{c.status}</span>
+                  </div>
+                </div>
+                {isOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+              </div>
+              <div className="out-item-meta">
+                <span>📅 {c.sent_at}</span>
+              </div>
+              <div className="out-item-stats">
+                <div className="out-item-stat"><span className="out-item-stat-label">Recipients</span><span className="out-item-stat-value">{c.recipients_count}</span></div>
+                <div className="out-item-stat"><span className="out-item-stat-label">Opened</span><span className="out-item-stat-value">{c.opened_count} <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontWeight: 400 }}>({openPct}%)</span></span></div>
+                <div className="out-item-stat"><span className="out-item-stat-label">Clicked</span><span className="out-item-stat-value">{c.clicked_count}</span></div>
+              </div>
+              {isOpen && (
+                <div className="out-item-expand">
+                  {c.recipients.map((r) => (
+                    <div key={r.id} className="out-rec-mini">
+                      <div className="out-rec-mini-info">
+                        <div className="out-rec-mini-name">{r.name}</div>
+                        <div className="out-rec-mini-sub">{r.company} · {r.email}</div>
+                      </div>
+                      <span className={`out-pill ${r.status}`}>{r.status}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
     </div>
   );
