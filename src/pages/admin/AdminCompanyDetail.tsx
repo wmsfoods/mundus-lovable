@@ -5,6 +5,7 @@ import { ArrowLeft, Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-r
 import { toast } from "sonner";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
+import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -335,7 +336,21 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
             <input value={form.city ?? ""} onChange={(e) => setField("city", e.target.value)} />
           </Field>
           <Field label={t("admin.companies.fields.address") + " *"}>
-            <input value={form.address ?? ""} onChange={(e) => setField("address", e.target.value)} />
+            <AddressAutocomplete
+              value={form.address ?? ""}
+              onChange={(v) => setField("address", v)}
+              onAddressSelect={(addr) => {
+                setForm((f) => ({
+                  ...f,
+                  address: addr.street || addr.formatted,
+                  city: addr.city || f.city,
+                  state: addr.state || f.state,
+                  zip_code: addr.zip || f.zip_code,
+                  country: addr.country || f.country,
+                }));
+                setDirty(true);
+              }}
+            />
           </Field>
           <Field label={t("admin.companies.fields.zipCode")}>
             <input value={form.zip_code ?? ""} onChange={(e) => setField("zip_code", e.target.value)} />
