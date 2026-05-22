@@ -13,20 +13,27 @@ const CHART = Array.from({ length: 14 }, (_, i) => ({
   sent: 30 + Math.round(Math.sin(i) * 15 + Math.random() * 40 + 20),
 }));
 
+function typeClass(t: string) {
+  if (t.startsWith("initial")) return "type-initial";
+  if (t.startsWith("followup")) return "type-followup";
+  if (t.startsWith("auction")) return "type-auction";
+  return "cat";
+}
+
 const RECENT = [
-  { id: 1, name: "Brazil Beef — Initial", type: "Initial", recipients: 124, opens: 0.42, status: "sent" },
-  { id: 2, name: "Auction MDS-A#00021 invite", type: "Auction", recipients: 38, opens: 0.55, status: "sent" },
-  { id: 3, name: "Lamb NZ — Follow-up", type: "Follow-up 24h", recipients: 87, opens: 0.31, status: "partial" },
-  { id: 4, name: "Pork EU — Follow-up", type: "Follow-up 3d", recipients: 52, opens: 0.27, status: "sent" },
-  { id: 5, name: "Auction MDS-A#00019 — Results", type: "Auction", recipients: 16, opens: 0.62, status: "sent" },
+  { id: 1, subject: "New offer — Brazil Beef Q2", type: "initial_offer", sent_at: "2026-05-20 10:14", recipients: 124, delivered: 121, opened: 52, clicked: 11, status: "sent" },
+  { id: 2, subject: "Auction MDS-A#00021 invite", type: "auction_invite", sent_at: "2026-05-19 16:02", recipients: 38, delivered: 38, opened: 21, clicked: 12, status: "sent" },
+  { id: 3, subject: "Following up — Lamb NZ", type: "followup_24h", sent_at: "2026-05-19 09:30", recipients: 87, delivered: 85, opened: 27, clicked: 6, status: "partial" },
+  { id: 4, subject: "Still available — Pork EU", type: "followup_3d", sent_at: "2026-05-18 11:45", recipients: 52, delivered: 52, opened: 14, clicked: 3, status: "sent" },
+  { id: 5, subject: "Auction MDS-A#00019 — Results", type: "auction_result", sent_at: "2026-05-17 18:20", recipients: 16, delivered: 16, opened: 10, clicked: 4, status: "sent" },
 ];
 
 const CONTACTS = [
-  { name: "Yuki Tanaka", company: "Tokyo Foods", country: "JP", opens: 24, clicks: 9 },
-  { name: "Mei Chen", company: "Shanghai Premium", country: "CN", opens: 19, clicks: 7 },
-  { name: "Carlos Ruiz", company: "Madrid Cárnicas", country: "ES", opens: 17, clicks: 6 },
-  { name: "Ahmed Al-Farsi", company: "Gulf Meat Co.", country: "AE", opens: 14, clicks: 5 },
-  { name: "Pierre Dubois", company: "Paris Boucherie", country: "FR", opens: 12, clicks: 4 },
+  { name: "Yuki Tanaka", company: "Tokyo Foods", country: "JP", opens: 24, clicks: 9, last: "2h ago" },
+  { name: "Mei Chen", company: "Shanghai Premium", country: "CN", opens: 19, clicks: 7, last: "5h ago" },
+  { name: "Carlos Ruiz", company: "Madrid Cárnicas", country: "ES", opens: 17, clicks: 6, last: "1d ago" },
+  { name: "Ahmed Al-Farsi", company: "Gulf Meat Co.", country: "AE", opens: 14, clicks: 5, last: "1d ago" },
+  { name: "Pierre Dubois", company: "Paris Boucherie", country: "FR", opens: 12, clicks: 4, last: "2d ago" },
 ];
 
 export default function OutreachCenter() {
@@ -62,29 +69,38 @@ export default function OutreachCenter() {
       <div className="out-grid-2">
         <div className="out-card">
           <h3 className="out-card-title">Recent campaigns</h3>
-          <table className="out-table">
-            <thead><tr><th>Name</th><th>Type</th><th>Recipients</th><th>Opens</th><th>Status</th></tr></thead>
-            <tbody>
-              {RECENT.map((r) => (
-                <tr key={r.id}>
-                  <td>{r.name}</td>
-                  <td><span className="out-badge cat">{r.type}</span></td>
-                  <td>{r.recipients}</td>
-                  <td><span className="out-bar"><span style={{ width: `${Math.round(r.opens * 100)}%` }} /></span> {Math.round(r.opens * 100)}%</td>
-                  <td><span className={`out-pill ${r.status}`}>{r.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div style={{ overflowX: "auto" }}>
+            <table className="out-table">
+              <thead><tr><th>Subject</th><th>Type</th><th>Sent</th><th>Recip</th><th>Deliv</th><th>Open</th><th>Click</th><th>Engagement</th><th>Status</th></tr></thead>
+              <tbody>
+                {RECENT.map((r) => {
+                  const pct = Math.round((r.opened / r.recipients) * 100);
+                  return (
+                    <tr key={r.id}>
+                      <td>{r.subject}</td>
+                      <td><span className={`out-badge ${typeClass(r.type)}`}>{r.type}</span></td>
+                      <td>{r.sent_at}</td>
+                      <td>{r.recipients}</td>
+                      <td>{r.delivered}</td>
+                      <td>{r.opened}</td>
+                      <td>{r.clicked}</td>
+                      <td><span className="out-bar"><span style={{ width: `${pct}%` }} /></span> {pct}%</td>
+                      <td><span className={`out-pill ${r.status}`}>{r.status}</span></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
         <div className="out-card">
           <h3 className="out-card-title">Top contacts by engagement</h3>
           <table className="out-table">
-            <thead><tr><th>Contact</th><th>Company</th><th>Country</th><th>Opens</th><th>Clicks</th></tr></thead>
+            <thead><tr><th>Contact</th><th>Company</th><th>Country</th><th>Opens</th><th>Clicks</th><th>Last open</th></tr></thead>
             <tbody>
               {CONTACTS.map((c) => (
                 <tr key={c.name}>
-                  <td>{c.name}</td><td>{c.company}</td><td>{c.country}</td><td>{c.opens}</td><td>{c.clicks}</td>
+                  <td>{c.name}</td><td>{c.company}</td><td>{c.country}</td><td>{c.opens}</td><td>{c.clicks}</td><td>{c.last}</td>
                 </tr>
               ))}
             </tbody>
