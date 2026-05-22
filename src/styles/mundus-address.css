@@ -1,0 +1,54 @@
+/* Google Places Autocomplete — themed to Mundus */
+.pac-container {
+  border-radius: 8px;
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: inherit;
+  z-index: 9999;
+  margin-top: 4px;
+  background: hsl(var(--popover));
+  overflow: hidden;
+}
+
+.pac-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  line-height: 1.4;
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  color: hsl(var(--foreground));
+}
+
+.pac-item:first-child { border-top: none; }
+
+.pac-item:hover,
+.pac-item-selected {
+  background: hsl(var(--accent));
+}
+
+.pac-item-query {
+  font-weight: 600;
+  color: hsl(var(--foreground));
+  font-size: 13px;
+}
+
+.pac-matched { font-weight: 700; color: #8B2252; }
+
+.pac-icon {
+  opacity: 0.5;
+  margin-right: 8px;
+}
+
+.maa-attr {
+  display: block;
+  font-size: 10px;
+  color: hsl(var(--muted-foreground));
+  margin-top: 4px;
+  letter-spacing: 0.02em;
+}
+
+/* Touch-friendly on mobile */
+@media (max-width: 640px) {
+  .pac-item { padding: 12px 14px; font-size: 14px; min-height: 44px; }
+  .pac-item-query { font-size: 14px; }
+}
