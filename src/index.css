@@ -24,6 +24,7 @@
 @import "./styles/mundus-protein-filter.css";
 @import "./styles/mundus-auctions.css";
 @import "./styles/mundus-buyer-create-request.css";
+@import "./styles/mundus-address.css";
 
 @tailwind base;
 @tailwind components;

@@ -11,3 +11,4 @@ export { PhoneField } from "./PhoneField";
 export { UrlField } from "./UrlField";
 export { Dropzone, type DropzoneFile } from "./Dropzone";
 export { Toast } from "./Toast";
+export { AddressAutocomplete, type AddressAutocompleteProps } from "./AddressAutocomplete";
