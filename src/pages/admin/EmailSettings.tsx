@@ -27,12 +27,14 @@ export default function EmailSettings() {
       </div>
       <div className="out-card">
         <h3 className="out-card-title">System Default</h3>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, alignItems: "center" }}>
-          <div style={{ width: 40, height: 40, borderRadius: 8, background: "#fce7f3", display: "grid", placeItems: "center", fontWeight: 700, color: "#831843" }}>Z</div>
-          <div><strong>Provider:</strong> Zoho</div>
-          <div><strong>From:</strong> contact@mundustrade.com</div>
-          <span className="out-pill sent">Active</span>
-          <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
+        <div className="out-sysdef">
+          <div className="out-sysdef-logo">Z</div>
+          <div className="out-sysdef-info">
+            <div className="out-item-meta"><strong>Provider:</strong> Zoho</div>
+            <div className="out-item-meta"><strong>From:</strong> contact@mundustrade.com</div>
+            <span className="out-pill sent" style={{ width: "fit-content" }}>Active</span>
+          </div>
+          <div className="out-sysdef-actions">
             <Button size="sm" variant="outline" onClick={() => toast.success("Connection OK")}>Test Connection</Button>
             <Button size="sm" variant="outline" onClick={() => toast.info("Editor coming soon")}>Edit</Button>
           </div>
@@ -42,7 +44,7 @@ export default function EmailSettings() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
           <h3 className="out-card-title" style={{ margin: 0 }}>User Accounts</h3>
           <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild><Button size="sm" style={{ background: "#8B2252", color: "#fff" }}>+ Connect Email</Button></DialogTrigger>
+            <DialogTrigger asChild><Button size="sm" className="out-btn-wine">+ Connect</Button></DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Connect Email Account</DialogTitle></DialogHeader>
               <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
@@ -83,19 +85,37 @@ export default function EmailSettings() {
             </DialogContent>
           </Dialog>
         </div>
-        <table className="out-table">
-          <thead><tr><th>User</th><th>Provider</th><th>From</th><th>Status</th></tr></thead>
-          <tbody>
-            {ACCOUNTS.map((a) => (
-              <tr key={a.user}>
-                <td>{a.user}</td>
-                <td><span className="out-badge cat">{a.provider}</span></td>
-                <td>{a.from}</td>
-                <td><span className="out-pill sent">{a.status}</span></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="out-desktop-only out-table-wrap">
+          <table className="out-table">
+            <thead><tr><th>User</th><th>Provider</th><th>From</th><th>Status</th></tr></thead>
+            <tbody>
+              {ACCOUNTS.map((a) => (
+                <tr key={a.user}>
+                  <td>{a.user}</td>
+                  <td><span className="out-badge cat">{a.provider}</span></td>
+                  <td>{a.from}</td>
+                  <td><span className="out-pill sent">{a.status}</span></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <div className="out-mobile-only out-list">
+          {ACCOUNTS.map((a) => (
+            <div key={a.user} className="out-item">
+              <div className="out-item-head">
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="out-item-title">{a.user}</div>
+                  <div className="out-rec-mini-sub">{a.from}</div>
+                </div>
+                <span className="out-pill sent">{a.status}</span>
+              </div>
+              <div className="out-item-meta">
+                <span className="out-badge cat">{a.provider}</span>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );
