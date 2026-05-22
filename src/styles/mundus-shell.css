@@ -389,7 +389,7 @@
   .app-main {
     grid-row: 2;
     grid-column: 1;
-    padding: 16px 16px calc(72px + env(safe-area-inset-bottom));
+    padding: 12px 12px calc(72px + env(safe-area-inset-bottom));
   }
   body { overflow-x: hidden; }
 }
