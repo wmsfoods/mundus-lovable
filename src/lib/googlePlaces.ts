@@ -44,9 +44,17 @@ export interface ParsedAddress {
   formatted: string;
 }
 
-export function parseGooglePlace(
-  place: google.maps.places.PlaceResult,
-): ParsedAddress {
+export interface GooglePlaceResult {
+  address_components?: Array<{
+    long_name: string;
+    short_name: string;
+    types: string[];
+  }>;
+  geometry?: { location?: { lat: () => number; lng: () => number } };
+  formatted_address?: string;
+}
+
+export function parseGooglePlace(place: GooglePlaceResult): ParsedAddress {
   const get = (type: string, short = false) => {
     const comp = place.address_components?.find((c) => c.types.includes(type));
     return comp ? (short ? comp.short_name : comp.long_name) : "";
