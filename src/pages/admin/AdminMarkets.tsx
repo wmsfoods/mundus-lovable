@@ -8,6 +8,7 @@ import { useAdminMarkets, regionFromIso, type AdminMarketRow } from "@/hooks/use
 import AddMarketModal from "@/components/admin/AddMarketModal";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 
 type RegionKey = "all" | "americas" | "europe" | "asia" | "middleEast" | "africa" | "oceania" | "other";
@@ -306,11 +307,21 @@ export default function AdminMarkets() {
                       <td><span className="adm-chip">{r.iso_code ?? "—"}</span></td>
                       <td>
                         {r.shared_with_country ? (
-                          <span className="adm-chip" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D" }}>
-                            <Anchor size={11} style={{ marginRight: 4 }} />{t("admin.marketplace.markets.shared")}
-                          </span>
+                          <PortsPopover row={r} locale={locale} t={t}>
+                            <button type="button" className="adm-chip adm-ports-trigger" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D", cursor: "pointer" }}>
+                              <Anchor size={11} style={{ marginRight: 4 }} />{t("admin.marketplace.markets.shared")}
+                            </button>
+                          </PortsPopover>
                         ) : (
-                          <span style={{ fontVariantNumeric: "tabular-nums" }}>{r.port_count}</span>
+                          r.port_count > 0 ? (
+                            <PortsPopover row={r} locale={locale} t={t}>
+                              <button type="button" className="adm-ports-link" style={{ fontVariantNumeric: "tabular-nums" }}>
+                                {r.port_count}
+                              </button>
+                            </PortsPopover>
+                          ) : (
+                            <span style={{ fontVariantNumeric: "tabular-nums", color: "var(--fg-muted, #6b7280)" }}>0</span>
+                          )
                         )}
                       </td>
                       <td>{r.is_origin ? <Check size={16} color="#16a34a" /> : <span style={{ color: "var(--fg-muted, #6b7280)" }}>—</span>}</td>
@@ -364,11 +375,21 @@ export default function AdminMarkets() {
                     </div>
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap", fontSize: 11 }}>
                       {r.shared_with_country ? (
-                        <span className="adm-chip" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D" }}>
-                          <Anchor size={10} style={{ marginRight: 3 }} />{t("admin.marketplace.markets.shared")}
-                        </span>
+                        <PortsPopover row={r} locale={locale} t={t}>
+                          <button type="button" className="adm-chip adm-ports-trigger" style={{ background: "#FEF3C7", color: "#92400E", borderColor: "#FCD34D", cursor: "pointer" }}>
+                            <Anchor size={10} style={{ marginRight: 3 }} />{t("admin.marketplace.markets.shared")}
+                          </button>
+                        </PortsPopover>
                       ) : (
-                        <span className="adm-chip"><Ship size={10} style={{ marginRight: 3 }} />{r.port_count} {t("admin.marketplace.markets.portsShort")}</span>
+                        r.port_count > 0 ? (
+                          <PortsPopover row={r} locale={locale} t={t}>
+                            <button type="button" className="adm-chip adm-ports-trigger" style={{ cursor: "pointer" }}>
+                              <Ship size={10} style={{ marginRight: 3 }} />{r.port_count} {t("admin.marketplace.markets.portsShort")}
+                            </button>
+                          </PortsPopover>
+                        ) : (
+                          <span className="adm-chip"><Ship size={10} style={{ marginRight: 3 }} />0 {t("admin.marketplace.markets.portsShort")}</span>
+                        )
                       )}
                       {r.is_origin && <span className="adm-chip" style={{ background: "#DCFCE7", color: "#166534", borderColor: "#86EFAC" }}>{t("admin.marketplace.markets.cols.origin")}</span>}
                       {r.is_destination && <span className="adm-chip" style={{ background: "#DBEAFE", color: "#1E40AF", borderColor: "#93C5FD" }}>{t("admin.marketplace.markets.cols.destination")}</span>}
