@@ -77,6 +77,7 @@ type Cut = {
   cat: string;
   cut: string;
   cutId?: string;
+  cutImage?: string | null;
   spec: string;
   pkg: string;
   gr: string;
@@ -89,7 +90,7 @@ type Cut = {
 
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
-  qty: "", ask: "", floor: "", notes: "",
+  qty: "", ask: "", floor: "", notes: "", cutImage: null,
 };
 
 /* ──────────────────────────────────────────────────────────
