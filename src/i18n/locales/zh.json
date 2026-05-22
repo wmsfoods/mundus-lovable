@@ -1,0 +1,3091 @@
+{
+  "negotiation": {
+    "agreedBadge": "已同意 ${{price}}/{{unit}}",
+    "reject": {
+      "title": "拒绝谈判",
+      "reasonLabel": "原因",
+      "notesLabel": "备注（可选）",
+      "notesPlaceholder": "为另一方添加背景信息…",
+      "cancel": "取消",
+      "confirm": "拒绝",
+      "submitting": "正在拒绝…",
+      "successToast": "谈判已拒绝",
+      "reasons": {
+        "price_too_low": "价格过低",
+        "terms_unacceptable": "条款不可接受",
+        "product_unavailable": "产品不可用",
+        "timeline_conflict": "时间线冲突",
+        "other": "其他"
+      }
+    }
+  },
+  "common": {
+    "back": "返回",
+    "cancel": "取消",
+    "proceed": "继续",
+    "finish": "完成",
+    "submitting": "正在提交...",
+    "complete": "完成",
+    "signOut": "退出",
+    "signedOut": "已退出",
+    "loading": "正在加载...",
+    "search": "搜索",
+    "save": "保存",
+    "close": "关闭",
+    "more": "更多",
+    "of": "的",
+    "yes": "是",
+    "no": "否",
+    "optional": "可选",
+    "copyright": "© 版权所有 2025 – 保留所有权利。",
+    "termsLink": "条款和条件",
+    "privacyLink": "隐私政策",
+    "language": "语言",
+    "english": "英语",
+    "portuguese": "葡萄牙语",
+    "spanish": "西班牙语"
+  },
+  "auth": {
+    "login": "登录",
+    "email": "电子邮件",
+    "emailPlaceholder": "输入您的电子邮件",
+    "password": "密码",
+    "passwordPlaceholder": "输入您的密码",
+    "rememberMe": "记住我",
+    "signIn": "登录",
+    "signingIn": "正在登录...",
+    "welcomeBack": "欢迎回来",
+    "noAccount": "没有账号？",
+    "signUp": "注册",
+    "togglePassword": "切换密码可见性",
+    "slide": "滑动"
+  },
+  "signup": {
+    "title": "注册",
+    "stepOf": "第 {{current}} 步，共 {{total}} 步",
+    "steps": {
+      "basic": "基本信息",
+      "company": "公司",
+      "review": "审核"
+    },
+    "fields": {
+      "fullName": "全名",
+      "fullNamePlaceholder": "输入您的全名",
+      "email": "电子邮件",
+      "emailPlaceholder": "输入您的电子邮件",
+      "password": "密码",
+      "passwordPlaceholder": "输入您的密码",
+      "repeatPassword": "重复密码",
+      "repeatPasswordPlaceholder": "重复密码",
+      "companyName": "公司名称",
+      "cnpj": "CNPJ或注册号",
+      "role": "角色",
+      "buyer": "买家",
+      "supplier": "供应商",
+      "licenses": "许可证或证书",
+      "uploadHint": "拖动或上传文件",
+      "uploadFormat": "格式：.PNG或.JPG或.PDF（最大5MB）",
+      "countryOp": "运营国家",
+      "countryOpPlaceholder": "搜索国家",
+      "state": "州/省",
+      "statePlaceholder": "搜索州/省",
+      "address": "地址",
+      "addressLine2": "地址行2（可选）",
+      "country": "国家",
+      "businessPhone": "商务电话",
+      "phonePlaceholder": "电话号码"
+    },
+    "passwordsMismatch": "密码不匹配。",
+    "agreeTerms": "我声明我已阅读并同意",
+    "termsLink": "条款和条件",
+    "confirmInfo": "我确认所提供的所有信息均为真实、准确和完整的，据我所知。我理解提供虚假或误导性信息可能导致账户暂停或终止。",
+    "fileTooLarge": "文件必须小于或等于5MB",
+    "reviewSections": {
+      "basic": "基本信息",
+      "company": "公司"
+    },
+    "reviewLabels": {
+      "fullName": "全名",
+      "email": "电子邮件",
+      "companyName": "公司名称",
+      "cnpj": "CNPJ或注册号",
+      "role": "角色",
+      "licenses": "许可证或证书",
+      "countryOp": "运营国家",
+      "state": "省/地区",
+      "address": "地址",
+      "addressLine2": "地址行2",
+      "country": "国家",
+      "businessPhone": "公司电话"
+    },
+    "roles": {
+      "both": "买家和供应商",
+      "buyer": "买家",
+      "supplier": "供应商",
+      "none": "—"
+    },
+    "passwordRules": {
+      "title": "密码必须包含：",
+      "length": "8个或更多字符；",
+      "lower": "一个或多个小写字母；",
+      "upper": "一个或多个大写字母；",
+      "special": "一个或多个特殊字符。"
+    },
+    "success": {
+      "navTitle": "确认电子邮件",
+      "title": "注册成功！",
+      "body": "为激活您的账户，一个验证码已发送至邮箱 {{email}}。",
+      "resend": "重新发送验证码",
+      "enterCode": "输入验证码",
+      "resent": "验证码已重新发送",
+      "missingEmail": "缺少电子邮件"
+    },
+    "partner": {
+      "navTitle": "合作伙伴注册",
+      "titlePrefix": "通过",
+      "titleSuffix": "合作伙伴注册"
+    }
+  },
+  "shell": {
+    "postingAs": "发布者",
+    "unit": "公斤",
+    "unitToggle": "切换重量单位 (kg / lbs)",
+    "notifications": "通知",
+    "buyer": "买家",
+    "supplier": "供应商",
+    "admin": "管理员",
+    "more": "更多",
+    "nav": {
+      "home": "主页",
+      "customers": "我的客户",
+      "requests": "我的报价请求",
+      "createRequest": "创建请求",
+      "offers": "报价",
+      "orders": "订单",
+      "negotiations": "谈判",
+      "users": "用户",
+      "myOffers": "我的报价",
+      "createOffer": "创建报价",
+      "sales": "销售",
+      "offerRequests": "报价请求",
+      "myCompany": "我的公司",
+      "messages": "消息",
+      "chat": "聊天"
+    },
+    "bottom": {
+      "create": "创建",
+      "negotiations": "聊天"
+    }
+  },
+  "dashboard": {
+    "title": "仪表板 — 即将推出",
+    "signedInAs": "已登录为 {{email}}"
+  },
+  "comingSoon": {
+    "note": "此屏幕将在端口的下一次提交中构建。"
+  },
+  "public": {
+    "respond": {
+      "headerTitle": "回复投标",
+      "loading": "加载中…",
+      "invalidTitle": "链接无效",
+      "invalidBody": "此回复链接无效。请检查URL。",
+      "expiredTitle": "链接已过期",
+      "expiredBody": "此回复链接已过期。请联系Mundus Trade。",
+      "usedTitle": "链接已使用",
+      "usedBody": "此回复已记录。",
+      "youReceived": "您收到一个投标",
+      "bidFor": "{{supplier}}的投标",
+      "bidGeneric": "新投标",
+      "origin": "原产地",
+      "destination": "目的地",
+      "incoterm": "Incoterm",
+      "payment": "付款条款",
+      "container": "集装箱",
+      "created": "创建日期",
+      "cutsTitle": "要求部位",
+      "col": {
+        "cut": "部位",
+        "qty": "数量 ({{unit}})",
+        "asking": "询价",
+        "buyerBid": "买家投标",
+        "yourCounter": "您的反报价",
+        "diff": "差异"
+      },
+      "actions": {
+        "accept": "接受投标",
+        "acceptDesc": "按原价接受买家报价。交易将进入订单阶段。",
+        "counter": "发送反报价",
+        "counterDesc": "调整价格并回复您的反报价。",
+        "reject": "拒绝",
+        "rejectDesc": "拒绝此投标。"
+      },
+      "counterTitle": "反报价—第{{round}}轮",
+      "message": "消息",
+      "messagePlaceholder": "添加给买家的备注（可选）",
+      "back": "返回",
+      "submitCounter": "发送反报价",
+      "submitting": "正在发送…",
+      "confirmReject": "您确定要拒绝此投标吗？",
+      "doneTitle": "回复已记录",
+      "doneAccepted": "您已接受投标。买家将收到通知。",
+      "doneRejected": "您已拒绝投标。买家将收到通知。",
+      "doneCounter": "您的反报价已发送。买家将收到通知。"
+    }
+  },
+  "buyer": {
+    "auctions": {
+      "filter": "拍卖",
+      "badge": "拍卖",
+      "placeBid": "投标",
+      "placeBidToast": "投标流程即将推出",
+      "windowClosed": "窗口已关闭",
+      "awardedBanner": "已授标 · 合同已签发",
+      "statusBadge": {
+        "live": "进行中",
+        "closed": "已关闭",
+        "awarded": "已授标",
+        "scheduled": "已排期"
+      },
+      "card": {
+        "origin": "原产地",
+        "destination": "目的地",
+        "incoterm": "Incoterm",
+        "shipment": "装运",
+        "closesIn": "剩余时间",
+        "bids_one": "{{count}}次投标",
+        "bids_other": "{{count}}次投标",
+        "bids": "{{count}}次投标"
+      },
+      "howItWorks": {
+        "link": "拍卖如何运作？",
+        "title": "密封式投标拍卖如何运作",
+        "whatIs": {
+          "title": "什么是拍卖？",
+          "body": "供应商在设定的投标窗口期内发布产品。您提交一次密封式投标—无人可见您的价格。"
+        },
+        "sealed": {
+          "title": "密封式投标",
+          "body": "您的投标是私密的。其他买家无法看到。供应商只在窗口关闭后才能查看所有投标。"
+        },
+        "timing": {
+          "title": "时间",
+          "body": "每次拍卖都有固定的窗口期（例如：周一开放，周三关闭）。请在时间结束前提交您的投标。"
+        },
+        "oneBid": {
+          "title": "一次投标，一次机会",
+          "body": "投标一旦提交便无法修改。如果您有误操作，可以撤回—但重新进入前有4小时的冷却期。"
+        },
+        "award": {
+          "title": "授标",
+          "body": "窗口关闭后，供应商将审查所有投标并选择获胜者。您将收到结果通知。"
+        },
+        "results": {
+          "title": "结果",
+          "body": "授标后，您可以看到您的投标与获胜者的比较（按$/kg和%）。"
+        }
+      }
+    },
+    "auctionBid": {
+      "title": "提交密封式投标",
+      "subtitle": "您的投标是私密的。供应商只在拍卖关闭后才能查看所有投标。",
+      "howManyContainers": "多少个集装箱？",
+      "bulk": {
+        "label": "批量应用：",
+        "acceptMin": "接受最低投标",
+        "minus5": "最低投标-5%",
+        "plus5": "最低投标+5%",
+        "apply": "应用"
+      },
+      "col": {
+        "cut": "部位",
+        "qty": "数量 ({{unit}})",
+        "minBid": "最低投标",
+        "yourBid": "您的投标"
+      },
+      "totals": {
+        "perFcl": "每个集装箱总计",
+        "containers": "集装箱",
+        "grand": "总计"
+      },
+      "commitment": {
+        "label": "我了解这是一份具有约束力的密封式投标。如果授标，我承诺完成采购。",
+        "hint": "您可以随时撤回您的投标，但重新进入前有4小时的冷却期。"
+      },
+      "note": {
+        "label": "消息（可选）",
+        "placeholder": "添加给供应商的备注（可选）"
+      },
+      "cancel": "取消",
+      "submit": "提交密封投标 →",
+      "submitting": "正在提交…",
+      "successToast": "密封投标已提交，来自 {{opp}}！"
+    },
+    "procurement": {
+      "nav": "采购情报",
+      "groupLabel": "洞察",
+      "title": "节省与支出仪表板",
+      "subtitle": "Mundus 为您节省了多少成本与市场价格的对比。您的支出在哪里。哪些供应商正在全力以赴。",
+      "upsell": {
+        "title": "将采购转化为竞争优势",
+        "lede": "停止盲目采购。在一个地方就能清楚了解您相对于市场节省了多少成本，哪些地方支出过高，以及哪些供应商值得更多合作。",
+        "bullets": {
+          "spend": {
+            "title": "实时支出和预算跟踪",
+            "body": "按类别、来源和供应商实时查看年初至今的支出 — 并提供预算差异警报。"
+          },
+          "savings": {
+            "title": "经核实的市场节省",
+            "body": "每笔订单都与实时 Mundus 市场进行基准比较，以便财务部门看到真实、可辩护的节省。"
+          },
+          "suppliers": {
+            "title": "供应商记分卡",
+            "body": "根据价格、准时交付、质量和响应对每个供应商进行评级 — 并揭示集中度风险。"
+          },
+          "marketAlerts": {
+            "title": "智能采购警报",
+            "body": "当您购买的部位价格下降、合同到期或某个类别面临风险时，都会收到通知。"
+          }
+        },
+        "perks": "[\"按月提供 CFO 就绪的节省报告 (PDF)\",\"无限量导出支出、节省和供应商数据的 CSV 文件\",\"按类别定制预算和差异警报\",\"供应商集中度与风险仪表板\"]"
+      }
+    },
+    "requests": {
+      "title": "我的报价请求",
+      "newRequest": "新报价请求",
+      "searchPlaceholder": "搜索请求…",
+      "speciesAll": "所有品类",
+      "statusAll": "所有",
+      "offersCount": "{{n}} 报价",
+      "empty": "没有请求符合您的筛选条件。",
+      "status": {
+        "draft": "草稿",
+        "active": "活跃",
+        "closed_won": "已中标",
+        "closed_no_winner": "已结束（无中标者）",
+        "expired": "已过期"
+      },
+      "species": {
+        "beef": "牛肉",
+        "pork": "猪肉",
+        "poultry": "禽肉",
+        "lamb": "羊肉",
+        "ovine": "羊肉"
+      },
+      "col": {
+        "title": "标题",
+        "species": "品类",
+        "destination": "目的地",
+        "target": "目标 $/kg",
+        "volume": "数量",
+        "shipment": "装运",
+        "offers": "报价",
+        "status": "状态",
+        "updated": "已更新"
+      },
+      "detail": {
+        "back": "返回请求",
+        "edit": "编辑",
+        "publish": "发布",
+        "close": "结束请求",
+        "noOffers": "尚未收到报价。",
+        "section": {
+          "requirements": "要求",
+          "offersReceived": "收到的报价",
+          "requestStatus": "请求状态",
+          "quickStats": "快速统计"
+        },
+        "banner": {
+          "draft": "此请求为草稿 — 发布以接收报价。",
+          "active": "活跃 — 正在接收报价，截止日期为 {{deadline}}。",
+          "closedWon": "已中标：{{supplier}}",
+          "closedNoWinner": "已结束，无中标者。",
+          "expired": "已过期 — 不再接受报价。"
+        },
+        "meta": {
+          "target": "目标",
+          "volume": "数量",
+          "fcl": "满载集装箱",
+          "shipment": "装运",
+          "incoterm": "贸易术语",
+          "payment": "支付方式"
+        },
+        "offer": {
+          "viewBtn": "查看",
+          "acceptBtn": "接受",
+          "declineBtn": "拒绝",
+          "winnerBadge": "中标者",
+          "leadTime": "交货时间",
+          "perKg": "$/kg",
+          "origin": "原产地",
+          "total": "总计"
+        },
+        "stats": {
+          "offersReceived": "收到的报价",
+          "bestPrice": "最佳价格/kg",
+          "deadline": "截止日期"
+        },
+        "timeline": {
+          "created": "已创建",
+          "published": "已发布",
+          "firstOffer": "首次报价",
+          "closed": "已结束"
+        }
+      },
+      "toast": {
+        "create": "创建新请求即将推出",
+        "edit": "编辑请求即将推出",
+        "publish": "请求已发布 (模拟)",
+        "closeRequest": "请求已关闭 (模拟)",
+        "acceptOffer": "接受了来自 {{name}} 的报价 (模拟)",
+        "declineOffer": "拒绝了来自 {{name}} 的报价 (模拟)",
+        "viewOffer": "报价详情即将推出"
+      },
+      "newModal": {
+        "title": "新报价请求",
+        "cancel": "取消",
+        "submit": "创建请求",
+        "selectAll": "全选",
+        "clearAll": "清除所有",
+        "loading": "正在加载…",
+        "noCuts": "无可用部位",
+        "selectMarket": "选择市场…",
+        "selectPort": "选择港口…",
+        "noPorts": "此市场未配置港口。",
+        "fields": {
+          "title": "标题",
+          "category": "类别",
+          "cuts": "部位",
+          "targetPrice": "目标价格 (美元/公斤)",
+          "targetVolume": "目标销量 (公斤)",
+          "market": "目的地市场",
+          "port": "目的港口",
+          "incoterm": "贸易术语",
+          "shipment": "装运月份",
+          "payment": "付款条件",
+          "notes": "描述/备注"
+        },
+        "placeholders": {
+          "title": "例如：第三季度带骨牛小排 7-9 磅"
+        },
+        "err": {
+          "title": "标题是必填项",
+          "cuts": "请至少选择一个部位",
+          "price": "目标价格是必填项",
+          "volume": "目标销量是必填项",
+          "market": "请选择目的地市场",
+          "port": "请选择目的港口",
+          "shipment": "请选择装运月份"
+        },
+        "toast": {
+          "created": "请求已创建 (模拟)"
+        }
+      }
+    },
+    "home": {
+      "hero": "更智能地销售，更快速地谈判，尽在掌控。",
+      "stats": {
+        "activeOffers": "活跃报价",
+        "totalOffers": "总报价数",
+        "closedDeals": "已完成 Deal",
+        "inNegotiation": "谈判中",
+        "avgClosing": "平均订单完成时间"
+      },
+      "actions": {
+        "ordersTitle": "订单",
+        "ordersDesc": "查看和管理您的订单。",
+        "ordersCta": "查看订单",
+        "offersTitle": "报价",
+        "offersDesc": "浏览和管理报价。",
+        "offersCta": "查看产品"
+      },
+      "recentOffers": "最新报价",
+      "recentOrders": "最新订单",
+      "seeAll": "查看所有",
+      "emptyOffers": "一旦市场中有匹配的报价，最新报价将在此处显示。",
+      "emptyOrders": "一旦您购买了报价，最新订单将在此处显示。"
+    },
+    "offers": {
+      "title": "报价",
+      "crumbHome": "首页",
+      "loading": "正在加载报价…",
+      "loadingShort": "正在加载…",
+      "showing_one": "显示 <1>{{count}}</1> 项报价 · {{mt}} 公吨",
+      "showing_other": "显示 <1>{{count}}</1> 项报价 · {{mt}} 公吨",
+      "loadError": "无法加载报价: {{error}}",
+      "empty": "暂无报价。供应商尚未发布任何匹配的报价。",
+      "card": {
+        "cuts": "{{count}} 个部位",
+        "mixedTitle": "混合 ({{count}} 个部位)",
+        "moreCuts": "+ {{count}} 更多",
+        "origin": "产地",
+        "destination": "目的地",
+        "incoterm": "贸易术语",
+        "shipment": "装运",
+        "qty": "数量",
+        "viewDetails": "查看详情",
+        "viewBreakdown": "查看明细",
+        "defaultCategory": "肉类"
+      },
+      "status": {
+        "active": "有货",
+        "new": "新",
+        "negotiating": "谈判中",
+        "closed": "已关闭"
+      }
+    },
+    "offerDetail": {
+      "loading": "正在加载报价…",
+      "loadingTitle": "正在加载…",
+      "errorTitle": "错误",
+      "loadError": "无法加载此报价: {{error}}",
+      "notFoundTitle": "未找到报价",
+      "notFoundBody": "此报价不存在或不再可用。",
+      "backToOffers": "返回报价",
+      "crumbHome": "主页",
+      "crumbOffers": "报价",
+      "illustrative": "示意图",
+      "perFcl": "每个集装箱（FCL）的总价值（起拍价）",
+      "cutsHead": {
+        "cut": "部位",
+        "marbling": "脂肪纹",
+        "qty": "每个部位数量",
+        "price": "每公斤价格"
+      },
+      "totalWeight": "总重量",
+      "fields": {
+        "marbling": "脂肪纹",
+        "originPortCountry": "原产地（港口/国家）",
+        "condition": "条件",
+        "destination": "目的地",
+        "terms": "条款",
+        "shipment": "装运"
+      },
+      "fcl_one": "{{count}} 个可用集装箱",
+      "fcl_other": "{{count}} 个可用集装箱",
+      "size": "尺寸：{{size}}",
+      "moreInfo": "更多信息",
+      "noMoreInfo": "无内容可显示。",
+      "negotiate": "谈判",
+      "placeOrder": "下订单",
+      "comingSoonFlow": "{{action}} 流程 — 即将推出",
+      "marbling": {
+        "0": "未分类",
+        "1": "低",
+        "2": "中",
+        "3": "高",
+        "4": "优",
+        "default": "未分类"
+      }
+    },
+    "bid": {
+      "title": "提交您的投标",
+      "subtitle": "输入您每个部位的投标价格。供应商将审核并回复。",
+      "incoterm": "Incoterm",
+      "destination": "目的地",
+      "freightCost": "运费",
+      "cut": "部位",
+      "qty": "数量 ({{unit}})",
+      "asking": "询价",
+      "yourBid": "您的投标",
+      "totalAsking": "询价总额",
+      "totalBid": "您的投标总额",
+      "difference": "差额",
+      "message": "消息",
+      "messagePlaceholder": "添加给供应商的消息（可选）",
+      "cancel": "取消",
+      "submit": "提交投标",
+      "submitting": "正在提交…",
+      "successToast": "投标已提交！供应商将审核您的方案。",
+      "errors": {
+        "required": "请输入大于 0 的投标",
+        "minPct": "最低投标价格为 ${{min}}（询价的 90%）",
+        "summary_one": "{{count}} 个部位存在验证错误",
+        "summary_other": "{{count}} 个部位存在验证错误"
+      },
+      "validation": {
+        "required": "请输入大于 0 的投标",
+        "minPct": "最低投标价格为 ${{min}}（询价的 90%）",
+        "belowInitial": "不能低于您最初的投标 ${{min}}",
+        "summary_one": "{{count}} 个部位存在验证错误",
+        "summary_other": "{{count}} 个部位存在验证错误"
+      },
+      "bulk": {
+        "label": "快速填写",
+        "acceptAsking": "接受询价",
+        "minus5": "询价 -5%",
+        "minus10": "询价 -10%",
+        "apply": "应用",
+        "customPlaceholder": "±{{unit}}"
+      }
+    },
+    "counter": {
+      "title": "发送反报价",
+      "subtitle": "调整您的价格并回复供应商的反报价。",
+      "theirCounter": "供应商反报价",
+      "theirCounterTotal": "供应商反报价总额",
+      "successToast": "反报价已发送！等待供应商回复。",
+      "confirmReject": "您确定要拒绝此反报价吗？",
+      "errors": {
+        "belowInitial": "不能低于您最初的投标 ${{min}}"
+      },
+      "bulk": {
+        "label": "快速填写",
+        "acceptAll": "全部接受",
+        "meetMiddle": "折衷",
+        "minus3pct": "对方反报价 -3%",
+        "minus5pct": "对方反报价 -5%",
+        "apply": "应用",
+        "customPlaceholder": "±{{unit}}"
+      }
+    },
+    "orders": {
+      "title": "订单",
+      "heroTitle": "轻松快速地追踪您的订单。",
+      "sortBy": "排序方式",
+      "sort": {
+        "recent": "最新优先",
+        "oldest": "最早优先",
+        "status": "状态"
+      },
+      "showing": "显示 {{from}} - {{to}} 条，共 {{total}} 个结果",
+      "empty": "您还没有订单。",
+      "col": {
+        "orderId": "订单ID",
+        "status": "状态",
+        "supplier": "供应商",
+        "orderDate": "订单日期",
+        "origin": "原产地"
+      },
+      "status": {
+        "awaiting_supplier_acceptance": "待供应商接受",
+        "awaiting_pre_payment": "待预付款",
+        "pre_payment_confirmed": "预付款已确认",
+        "in_production": "生产中",
+        "awaiting_balance_payment": "待付尾款",
+        "shipped": "已装运",
+        "delivered": "已送达",
+        "completed": "已完成",
+        "rejected": "已拒绝"
+      }
+    },
+    "orderDetail": {
+      "title": "订单详情",
+      "orderNumber": "订单编号 #{{n}}",
+      "specifications": "规格",
+      "tabs": {
+        "overview": "概览",
+        "documents": "文件",
+        "shipment": "装运信息"
+      },
+      "orderData": "订单数据",
+      "fields": {
+        "paymentTerms": "付款条款",
+        "advancePayment": "预付款",
+        "balancePayment": "尾款",
+        "incoterm": "国际贸易术语",
+        "originCountry": "原产国",
+        "originPort": "起运港",
+        "quantity": "数量",
+        "oceanFreight": "海运费",
+        "fcls": "集装箱",
+        "destination": "目的地",
+        "origin": "原产地",
+        "shipment": "装运",
+        "supplier": "供应商",
+        "buyer": "买家",
+        "valuePerFcl": "每个集装箱的价值",
+        "totalValue": "总价值"
+      },
+      "cuts": {
+        "header": "部位",
+        "weight": "重量",
+        "pricePerKg": "每公斤价格",
+        "totalPrice": "总价"
+      },
+      "ctas": {
+        "makePayment": "付款",
+        "cancelOrder": "取消订单",
+        "trackShipment": "追踪装运",
+        "viewInvoice": "查看发票"
+      },
+      "messages": {
+        "awaiting_supplier_acceptance": "我们正在等待供应商接受您的订单。",
+        "awaiting_pre_payment": "您的订单已接受。请支付预付款以继续。",
+        "pre_payment_confirmed": "预付款已确认。供应商正在准备您的订单。",
+        "in_production": "您的订单正在生产中。",
+        "awaiting_balance_payment": "生产完成。请支付尾款以安排装运。",
+        "shipped": "您的订单已装运。",
+        "delivered": "您的订单已送达。",
+        "completed": "订单成功完成。",
+        "rejected": "此订单已被拒绝。"
+      },
+      "documentsEmpty": "文件将在您的订单进展过程中显示在这里。",
+      "shipmentWarning": "交货信息将随订单进展而更新。任何更改都将通知您。",
+      "notFound": "未找到订单。",
+      "faq": {
+        "q1": "价格谈判如何进行？",
+        "q2": "是否有最低交易量？"
+      }
+    },
+    "users": {
+      "title": "用户",
+      "searchPlaceholder": "按姓名、电子邮件或职位搜索...",
+      "profileFilter": "个人资料",
+      "statusFilter": "状态",
+      "all": "所有",
+      "allProfiles": "所有个人资料",
+      "inviteUser": "邀请用户",
+      "userCount": "{{total}} 位用户中的 {{count}} 位",
+      "empty": "没有用户符合您的筛选条件。",
+      "col": {
+        "user": "用户",
+        "email": "电子邮件",
+        "profileType": "个人资料类型",
+        "created": "创建日期",
+        "lastLogin": "上次登录",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "profile": {
+        "master_buyer": "主买家",
+        "procurement": "采购",
+        "finance": "财务",
+        "compliance": "合规"
+      },
+      "status": {
+        "active": "活跃",
+        "invited": "已邀请",
+        "inactive": "不活跃"
+      },
+      "actions": {
+        "editMock": "编辑即将推出（模拟）",
+        "deactivateMock": "用户已停用（模拟）"
+      },
+      "deactivateSuccess": "用户已停用。",
+      "edit": {
+        "title": "编辑团队成员",
+        "success": "用户已更新。"
+      },
+      "invite": {
+        "title": "邀请加入您的采购团队",
+        "subtitle": "发送邀请邮件 — 他们将在首次登录时设置密码。",
+        "fullNameLabel": "全名",
+        "fullNamePlaceholder": "张三",
+        "emailLabel": "电子邮件",
+        "emailPlaceholder": "user@example.com",
+        "profileLabel": "个人资料类型",
+        "send": "发送邀请",
+        "cancel": "取消",
+        "success": "邀请已发送。",
+        "successEmail": "邀请已发送至 {{email}}"
+      }
+    },
+    "negotiations": {
+      "title": "谈判",
+      "searchPlaceholder": "搜索ID / 供应商 / 产品 / 原产地...",
+      "sort": {
+        "recent": "排序：最近更新",
+        "oldest": "排序：最早",
+        "priority": "排序：状态优先级"
+      },
+      "counts": "{{offers}} 报价 · {{bids}} 投标",
+      "chips": {
+        "all": "全部",
+        "action_required": "需要处理",
+        "awaiting_supplier": "等待供应商",
+        "final_round": "最后一轮",
+        "accepted": "已接受",
+        "rejected": "已拒绝",
+        "expired": "已过期"
+      },
+      "col": {
+        "offerSupplier": "报价 / 供应商",
+        "round": "轮次",
+        "yourBid": "您的投标",
+        "supplierCounter": "供应商反报价",
+        "origin": "原产地",
+        "status": "状态",
+        "updated": "已更新"
+      },
+      "status": {
+        "action_required": "需要处理",
+        "awaiting_supplier": "等待供应商",
+        "final_round": "最后一轮",
+        "accepted": "交易已完成",
+        "rejected": "已拒绝",
+        "expired": "已过期"
+      },
+      "bidsCount": "{{n}} 投标",
+      "needAction": "{{n}} 需要处理",
+      "empty": "没有与当前筛选条件匹配的谈判。",
+      "detail": {
+        "back": "返回谈判",
+        "roundOf": "第 {{round}} 轮，共 {{max}} 轮",
+        "updated": "更新于 {{date}}",
+        "summary": "{{supplier}} 在第 {{round}} 轮回应。接受、反报价或拒绝。",
+        "stats": {
+          "asking": "询价",
+          "yourBid": "您的投标",
+          "supplierCounter": "供应商反报价"
+        },
+        "gap": "投标与反报价差距",
+        "gapLabel": {
+          "bid": "投标",
+          "counter": "反报价"
+        },
+        "actions": {
+          "acceptCounter": "接受供应商反报价",
+          "counterBack": "反报价",
+          "reject": "拒绝"
+        },
+        "supplier": {
+          "title": "供应商",
+          "avgReplyTime": "平均回复时间",
+          "avgReplyDays": "{{days}}天",
+          "fclsWeight": "整箱货运 · 重量",
+          "valuePerFcl": "每整箱货运价值",
+          "movement": "变动（询价 → 投标）"
+        },
+        "timeline": "轮次时间线",
+        "timelineLabel": {
+          "bid": "您的投标 {{n}}",
+          "counter": "供应商反报价 {{n}}",
+          "counterCurrent": "供应商反报价 {{n}} · 当前"
+        },
+        "priceDetails": "价格详情",
+        "col": {
+          "product": "产品",
+          "qtyLb": "数量 (磅)",
+          "asking": "询价",
+          "bidR": "投标R{{n}}",
+          "counterR": "还价R{{n}}"
+        },
+        "meta": {
+          "incoterm": "贸易术语",
+          "origin": "原产地",
+          "port": "港口",
+          "payment": "付款",
+          "fcls": "集装箱",
+          "weight": "重量"
+        },
+        "banner": {
+          "awaitingSupplier": "等待供应商在第{{round}}轮回应",
+          "finalRound": "最后一轮 – 这是最后一轮。",
+          "accepted": "交易已在{{price}}完成",
+          "rejected": "谈判已拒绝。",
+          "expired": "谈判已过期，未达成协议。",
+          "actionRequired": "需要采取行动"
+        },
+        "toast": {
+          "counter": "还价已发送 (模拟)",
+          "accepted": "供应商还价已接受 (模拟)",
+          "rejected": "谈判已拒绝 (模拟)"
+        }
+      }
+    },
+    "chat": {
+      "title": "聊天",
+      "searchPlaceholder": "搜索对话…",
+      "emptyState": "选择一个对话开始",
+      "emptyList": "没有对话符合您的搜索",
+      "sendButton": "发送",
+      "sendPlaceholder": "输入消息…",
+      "online": "在线",
+      "offline": "离线",
+      "context": {
+        "negotiation": "谈判",
+        "offer": "报价",
+        "request": "请求",
+        "order": "订单"
+      },
+      "toast": {
+        "messageSent": "消息已发送 (模拟)",
+        "contextOpen": "打开上下文详情 (模拟)"
+      },
+      "relative": {
+        "justNow": "刚刚",
+        "minutesAgo": "{{n}}分钟前",
+        "hoursAgo": "{{n}}小时前",
+        "yesterday": "昨天",
+        "daysAgo": "{{n}}天前"
+      }
+    },
+    "marketplace": {
+      "nav": "市场",
+      "title": "市场"
+    }
+  },
+  "supplier": {
+    "auctions": {
+      "nav": "拍卖",
+      "title": "我的拍卖",
+      "subtitle": "为您的产品创建密封投标拍卖",
+      "createCta": "创建拍卖",
+      "comingSoon": "即将推出 – 创建拍卖流程",
+      "detailComingSoon": "拍卖详情即将推出",
+      "emptyState": "此状态下没有拍卖。",
+      "filter": {
+        "all": "全部",
+        "scheduled": "已排期",
+        "open": "开放中",
+        "closed": "已结束",
+        "awarded": "已中标",
+        "cancelled": "已取消"
+      },
+      "statusBadge": {
+        "scheduled": "已排期",
+        "open": "进行中",
+        "closed": "已结束",
+        "awarded": "已中标",
+        "cancelled": "已取消"
+      },
+      "card": {
+        "origin": "原产地",
+        "destination": "目的地",
+        "bids_one": "{{count}}次投标",
+        "bids_other": "{{count}}次投标",
+        "bids": "{{count}}次投标",
+        "viewAuction": "查看拍卖",
+        "viewBids": "查看投标",
+        "windowClosed": "窗口已关闭",
+        "awardedBanner": "已中标 · 收到{{count}}个投标",
+        "opensSoon": "即将开始",
+        "manage": "管理",
+        "cancelled": "拍卖已取消"
+      }
+    },
+    "auctionDetail": {
+      "back": "← 返回拍卖",
+      "notFound": "未找到拍卖。",
+      "cancelAuction": "取消拍卖",
+      "cancelledToast": "拍卖已取消",
+      "award": "授予",
+      "winner": "中标者",
+      "viewCuts": "查看部位明细",
+      "hideCuts": "隐藏部位明细",
+      "awardToast": "拍卖已授予{{buyer}}!",
+      "awardedBanner": "已授予{{buyer}}",
+      "contractIssued": "合同已签发 – 买家已收到通知",
+      "inProgress": {
+        "title": "拍卖进行中",
+        "message": "本次拍卖仍在进行中。拍卖结束后，您将能够审核投标。",
+        "bidsReceived": "收到的密封投标"
+      },
+      "summary": {
+        "totalBids": "投标总数",
+        "highest": "最高投标",
+        "lowest": "最低投标",
+        "reserve": "底价",
+        "perFcl": "每集装箱"
+      },
+      "col": {
+        "rank": "排名",
+        "buyer": "买家",
+        "containers": "集装箱",
+        "totalPerFcl": "总价/集装箱",
+        "avgPerKg": "平均",
+        "submittedAt": "提交时间",
+        "status": "状态",
+        "action": "操作",
+        "cut": "部位",
+        "qty": "数量",
+        "bidPerKg": "投标",
+        "total": "总计"
+      },
+      "bidStatus": {
+        "submitted": "已提交",
+        "withdrawn": "已撤回",
+        "winning": "中标",
+        "lost": "未中标"
+      },
+      "reserveNotMet": {
+        "title": "没有投标达到您的底价",
+        "body": "底价：US$ {{reserve}} {{unit}}。最高投标：US$ {{highest}} {{unit}}（低于 {{gap}}%）。",
+        "awardAnyway": "仍授予",
+        "extend": "延长 +24小时",
+        "extendedToast": "拍卖已延长24小时",
+        "closeWithout": "不授予而关闭"
+      },
+      "awardDialog": {
+        "title": "授予拍卖给{{buyer}}吗？",
+        "subtitle": "授予前请确认以下投标摘要。",
+        "grandTotal": "总计",
+        "notice": "买家有48小时确认。您将收到通知。",
+        "cancel": "取消",
+        "confirm": "授予"
+      },
+      "nextSteps": {
+        "title": "后续步骤",
+        "notified": "买家已收到通知，并有48小时确认。",
+        "becomesOrder": "一旦确认，这将成为销售订单。",
+        "viewSales": "在销售中查看"
+      }
+    },
+    "negotiations": {
+      "chips": {
+        "all": "全部",
+        "action_required": "需要操作",
+        "awaiting_buyer": "等待买家",
+        "final_round": "最后一轮",
+        "accepted": "已接受",
+        "rejected": "已拒绝",
+        "expired": "已过期"
+      },
+      "col": {
+        "offerBuyer": "报价 / 买家",
+        "round": "轮次",
+        "latestBid": "最新投标",
+        "yourCounter": "您的回复",
+        "destination": "目的地",
+        "status": "状态",
+        "updated": "更新于"
+      },
+      "status": {
+        "action_required": "需要操作",
+        "awaiting_buyer": "等待买家",
+        "final_round": "最后一轮",
+        "accepted": "交易已完成",
+        "rejected": "已拒绝",
+        "expired": "已过期"
+      },
+      "bidsCount": "{{n}} 投标",
+      "needAction": "{{n}} 项需要操作",
+      "empty": "没有谈判符合当前筛选条件。",
+      "detail": {
+        "back": "返回谈判",
+        "roundOf": "第 {{round}} 轮，共 {{max}} 轮",
+        "updated": "更新于 {{date}}",
+        "summary": "{{buyer}} 在第 {{round}} 轮发出了投标。请回复反报价、接受或拒绝。",
+        "stats": {
+          "asking": "询价",
+          "buyerBid": "买家投标",
+          "yourCounter": "您的反报价"
+        },
+        "gap": "投标与反报价之间的差距",
+        "gapLabel": {
+          "bid": "投标",
+          "counter": "反报价"
+        },
+        "actions": {
+          "sendCounter": "发送反报价",
+          "acceptBid": "接受投标",
+          "reject": "拒绝"
+        },
+        "buyer": {
+          "title": "买家",
+          "avgReplyTime": "平均回复时间",
+          "avgReplyDays": "{{days}}天",
+          "fclsWeight": "集装箱 · 重量",
+          "valuePerFcl": "每个集装箱的价值",
+          "movement": "波动 (询价 → 投标)"
+        },
+        "timeline": "轮次时间线",
+        "timelineLabel": {
+          "bid": "投标 {{n}}",
+          "counter": "反报价 {{n}}",
+          "counterCurrent": "反报价 {{n}} · 当前"
+        },
+        "priceDetails": "价格详情",
+        "col": {
+          "product": "产品",
+          "qtyLb": "数量 (磅)",
+          "asking": "询价",
+          "bidR": "投标 R{{n}}",
+          "counterR": "反报价 R{{n}}"
+        },
+        "meta": {
+          "incoterm": "国际贸易术语",
+          "destination": "目的地",
+          "port": "港口",
+          "payment": "支付",
+          "fcls": "集装箱",
+          "weight": "重量"
+        },
+        "banner": {
+          "awaitingBuyer": "正在等待买家在第 {{round}} 轮的回复",
+          "finalRound": "最后一轮 — 这是最后一轮了。",
+          "accepted": "交易已在 {{price}} 完成",
+          "rejected": "谈判已被买家拒绝。",
+          "expired": "谈判在未达成协议的情况下已过期。",
+          "actionRequired": "需要操作"
+        },
+        "toast": {
+          "counterSent": "反报价已发送 (模拟)",
+          "bidAccepted": "投标已接受 (模拟)",
+          "bidRejected": "投标已拒绝 (模拟)"
+        }
+      },
+      "title": "谈判",
+      "searchPlaceholder": "搜索ID / 买家 / 产品 / 目的地...",
+      "sort": {
+        "recent": "排序：最近更新",
+        "oldest": "排序：最旧优先",
+        "priority": "排序：状态优先级"
+      },
+      "counts": "{{offers}} 份报价 · {{bids}} 份投标",
+      "emailSent": "电子邮件已发送",
+      "emailSentTooltip": "已为此谈判生成回复链接"
+    },
+    "users": {
+      "title": "用户",
+      "searchPlaceholder": "按姓名、电子邮件或职位搜索...",
+      "profileFilter": "个人资料",
+      "statusFilter": "状态",
+      "all": "全部",
+      "allProfiles": "所有个人资料",
+      "inviteUser": "邀请用户",
+      "userCount": "{{total}} 用户中的 {{count}} 个",
+      "empty": "没有用户符合您的筛选条件。",
+      "col": {
+        "user": "用户",
+        "email": "电子邮件",
+        "profileType": "个人资料类型",
+        "created": "创建日期",
+        "lastLogin": "上次登录",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "profile": {
+        "master_supplier": "主供应商",
+        "operator": "操作员",
+        "export_manager": "出口经理",
+        "quality_control": "质量控制",
+        "logistics": "物流"
+      },
+      "status": {
+        "active": "活跃",
+        "invited": "已邀请",
+        "inactive": "不活跃"
+      },
+      "deactivateSuccess": "用户已停用。",
+      "edit": {
+        "title": "编辑团队成员",
+        "success": "用户已更新。"
+      },
+      "invite": {
+        "title": "邀请新用户",
+        "subtitle": "发送邀请邮件 — 他们将在首次登录时设置密码。",
+        "fullNameLabel": "全名",
+        "fullNamePlaceholder": "张三",
+        "emailLabel": "电子邮件",
+        "emailPlaceholder": "user@example.com",
+        "profileLabel": "个人资料类型",
+        "send": "发送邀请",
+        "cancel": "取消",
+        "success": "邀请已发送。",
+        "successEmail": "邀请已发送至 {{email}}"
+      }
+    },
+    "createAuction": {
+      "title": "创建新拍卖",
+      "subtitle": "密封投标 · 市场 · 产品 · 定价",
+      "auctionWindow": "拍卖窗口",
+      "auctionWindowSub": "买家可以提交密封投标的时间",
+      "opensAt": "开始于",
+      "closesAt": "结束于",
+      "duration": "持续时间",
+      "windowHint": "买家只能在此窗口期内出价。关闭后，您将审核投标并授予。",
+      "pricingControls": "定价控制",
+      "pricingControlsSub": "底价和最低投标",
+      "reservePrice": "底价",
+      "reservePriceHint": "对买家隐藏",
+      "minBid": "最低投标",
+      "minBidHint": "对买家可见",
+      "reserveExplain": "底价是您的最低可接受价格。如果没有投标达到底价，您仍然可以自行决定是否授予。",
+      "marketsTitle": "市场和运费",
+      "marketsSub": "国家、港口、运费",
+      "visibility": "拍卖可见性",
+      "visibilitySub": "谁可以查看和投标此拍卖",
+      "visMarketplace": "发布到市场",
+      "visMarketplaceDesc": "所有买家均可查看和投标",
+      "visInvite": "仅限邀请",
+      "visInviteDesc": "只有选定的买家才能查看此拍卖",
+      "reserveHidden": "底价",
+      "hidden": "隐藏",
+      "bids": "投标",
+      "placeBid": "提交投标",
+      "scheduleCta": "安排拍卖",
+      "publishedToast": "拍卖 MDS-A#{{seq}} 已安排！",
+      "discardConfirm": "放弃此拍卖？",
+      "readyToSchedule": "准备安排",
+      "readyTitle": "一切就绪 — 您可以安排了 🎉",
+      "remainingTitle": "还剩下几项",
+      "step": {
+        "window": "设置拍卖窗口（开始和结束）",
+        "markets": "选择至少一个目标市场",
+        "cuts": "添加至少一个产品部位",
+        "inco": "选择一个贸易术语"
+      }
+    },
+    "outreach": {
+      "navLabel": "推广",
+      "title": "电子邮件推广",
+      "subtitle": "将您的有效报价发送给匹配的联系人。",
+      "activeOffers": "准备好进行推广的有效报价",
+      "recentActivity": "近期推广活动",
+      "noOffers": "没有准备好进行推广的有效报价。",
+      "noActivity": "尚未发送任何推广。",
+      "matched": "已匹配",
+      "sent": "已发送",
+      "sendOutreach": "发送推广",
+      "stats": {
+        "sent7d": "已发送邮件 (7天)",
+        "openRate": "打开率",
+        "pendingOffers": "待推广报价",
+        "reached": "已触达联系人"
+      },
+      "col": {
+        "offer": "报价",
+        "contact": "联系人",
+        "email": "电子邮件",
+        "country": "国家",
+        "status": "状态",
+        "sentAt": "发送时间"
+      },
+      "modal": {
+        "title": "发送报价推广 — {{offer}}",
+        "origin": "原产地",
+        "markets": "目标市场",
+        "incoterm": "贸易术语",
+        "price": "价格",
+        "matchingContacts": "匹配联系人 ({{count}})",
+        "selectAll": "全选",
+        "deselectAll": "取消全选",
+        "noMatches": "没有联系人与此报价的目标市场匹配。",
+        "sentBadge": "已发送",
+        "subject": "主题",
+        "body": "邮件正文 (HTML)",
+        "preview": "预览",
+        "editBody": "编辑",
+        "sendButton": "发送给 {{count}} 个选定联系人",
+        "sentSuccess": "{{count}} 封邮件已加入发送队列"
+      }
+    },
+    "counter": {
+      "title": "发送还价",
+      "subtitle": "调整您的价格并回复买家的投标。",
+      "roundOf": "第 {{round}} 轮，共 {{max}} 轮",
+      "theirBid": "他们的投标",
+      "theirBidTotal": "他们的投标总额",
+      "totalAsking": "要价总额",
+      "yourCounterTotal": "您的还价总额",
+      "message": "留言",
+      "messagePlaceholder": "添加给买家的留言 (可选)",
+      "cancel": "取消",
+      "submit": "发送还价 (第 {{round}} 轮)",
+      "submitting": "正在发送…",
+      "successToast": "还价已发送！等待买家回复。",
+      "confirmReject": "您确定要拒绝此投标吗？",
+      "col": {
+        "product": "产品",
+        "qty": "数量 ({{unit}})",
+        "asking": "要价",
+        "yourCounter": "您的还价",
+        "diff": "差异"
+      },
+      "bulk": {
+        "label": "快速填充",
+        "acceptAll": "全部接受",
+        "meetMiddle": "折衷",
+        "plus3": "他们的价格 +3%",
+        "plus5": "他们的价格 +5%",
+        "apply": "应用",
+        "customPlaceholder": "±{{unit}}"
+      }
+    },
+    "share": {
+      "title": "与供应商分享此投标",
+      "subtitle": "供应商可以使用此安全链接查看和回复 — 无需登录。",
+      "subtitleUsed": "此链接已被供应商使用。",
+      "loading": "正在准备分享链接…",
+      "copy": "复制链接",
+      "copied": "已复制！",
+      "supplierEmail": "供应商电子邮件 (可选)",
+      "saveEmail": "保存",
+      "emailSaved": "电子邮件已保存",
+      "sendEmail": "发送电子邮件",
+      "mailSubject": "Mundus Trade — 新投标待您回复",
+      "mailBody": "您好，\n\n您在 Mundus Trade 上收到了来自 {{buyer}} 的新投标。\n\n请在此处查看并回复：\n{{link}}\n\n谢谢，\nMundus Trade 团队",
+      "expiresAt": "链接将于 {{date}} 过期"
+    },
+    "requests": {
+      "title": "我的报价请求",
+      "subtitle": "跟踪您已发送到市场或供应商的报价请求。",
+      "crumbHome": "首页",
+      "searchPlaceholder": "搜索",
+      "showing": "显示 {{from}} - {{to}} 条，共 {{total}} 个结果",
+      "empty": "没有请求符合您的筛选条件。",
+      "col": {
+        "requestNumber": "请求编号",
+        "client": "客户",
+        "product": "产品",
+        "destinationCountry": "目的国家",
+        "incoterms": "国际贸易术语",
+        "quantity": "数量",
+        "container": "集装箱",
+        "status": "状态",
+        "createdAt": "创建时间",
+        "actions": "操作"
+      },
+      "status": {
+        "new": "新建",
+        "with_responses": "有回复",
+        "offer_sent": "已发送报价",
+        "not_interested": "不感兴趣"
+      },
+      "actions": {
+        "createOffer": "创建报价",
+        "view": "查看",
+        "notInterested": "不感兴趣"
+      },
+      "notInterestedModal": {
+        "title": "标记为不感兴趣？",
+        "body": "请求 {{requestNumber}} 将被标记为不感兴趣并从您的活跃列表中移除。",
+        "confirm": "确认",
+        "cancel": "取消"
+      },
+      "detail": {
+        "crumb": "报价请求 {{requestNumber}}",
+        "title": "报价请求详情",
+        "subtitle": "查看报价请求 {{requestNumber}} 的信息。",
+        "createdAt": "创建于",
+        "productsHeading": "产品",
+        "logisticsHeading": "物流与详情",
+        "additionalHeading": "附加信息",
+        "fields": {
+          "category": "分类",
+          "quantity": "数量",
+          "targetPrice": "目标价",
+          "specification": "规格",
+          "destinationCountry": "目的国家",
+          "destinationPort": "目的港",
+          "incoterms": "国际贸易术语",
+          "containerSize": "集装箱尺寸",
+          "productTemperature": "产品温度",
+          "numberOfContainers": "集装箱数量",
+          "shipmentDate": "装运日期"
+        },
+        "noAdditionalInfo": "未提供附加信息。",
+        "createOfferCta": "从此请求创建报价",
+        "notInterestedCta": "不感兴趣",
+        "createOfferComingSoon": "创建报价流程 — 即将推出",
+        "notFoundTitle": "请求未找到",
+        "notFoundBody": "此报价请求不存在或已被删除。",
+        "back": "返回请求"
+      }
+    },
+    "sales": {
+      "heroTitle": "轻松快速地跟踪您的订单。",
+      "crumbHome": "首页",
+      "title": "销售",
+      "showing": "显示 {{from}} - {{to}} 条，共 {{total}} 条结果",
+      "sortBy": "排序方式",
+      "createOffer": "创建报价 +",
+      "createOfferComingSoon": "报价流程 — 即将推出",
+      "empty": "暂无销售记录。",
+      "sort": {
+        "newest": "最新优先",
+        "oldest": "最旧优先"
+      },
+      "col": {
+        "dealId": "交易ID",
+        "status": "状态",
+        "buyer": "买家",
+        "orderDate": "订单日期",
+        "destination": "目的地"
+      },
+      "status": {
+        "AWAITING_SUPPLIER_ACCEPTANCE": "待供应商接受",
+        "AWAITING_PRE_PAYMENT": "待预付款"
+      },
+      "detail": {
+        "crumb": "销售详情",
+        "back": "返回销售列表",
+        "notFoundTitle": "未找到销售记录",
+        "notFoundBody": "此销售记录不存在或已被删除。",
+        "orderNumberLabel": "订单编号: {{id}} |",
+        "specifications": "规格",
+        "tabs": {
+          "overview": "概览",
+          "documents": "文件",
+          "shipment": "装运信息",
+          "ariaLabel": "销售部分"
+        },
+        "banner": {
+          "newOrderReceived": "收到新订单"
+        },
+        "overview": {
+          "title": "收到新订单。",
+          "subtitle": "订单已收到！请审核订单并批准以继续处理。",
+          "orderData": "订单数据"
+        },
+        "fields": {
+          "paymentTerms": "付款条款",
+          "advance": "预付款 ({{pct}}%)",
+          "balance": "尾款 ({{pct}}%)",
+          "incoterm": "贸易术语",
+          "originCountry": "原产国",
+          "originPort": "起运港"
+        },
+        "cuts": {
+          "cut": "部位",
+          "weight": "重量",
+          "pricePerKg": "每公斤价格",
+          "totalPrice": "总价"
+        },
+        "faq": {
+          "howNegotiation": "价格谈判如何进行？",
+          "howNegotiationAnswer": "买卖双方在交易完成前，最多可进行3轮投标和反投标的谈判。",
+          "minAmount": "是否有最低交易量？",
+          "minAmountAnswer": "是的。最低数量取决于集装箱尺寸——20英尺集装箱通常为13公吨，40英尺集装箱为27公吨。"
+        },
+        "documents": {
+          "empty": "暂无可用文件。文件将随着流程的推进而在此处显示。"
+        },
+        "shipment": {
+          "warning": "请注意，运输信息将由Mundus团队随着流程的推进逐步更新。您将收到任何更新通知。",
+          "fclLabel": "整箱货运 {{n}}",
+          "shippingDetails": "装运详情",
+          "shippingLine": "船运公司",
+          "vessel": "船只",
+          "etd": "预计离港时间",
+          "eta": "预计抵达时间",
+          "cargoInfo": "货物信息",
+          "booking": "预订",
+          "container": "集装箱",
+          "containerSize": "集装箱尺寸",
+          "availableContainer": "可用集装箱",
+          "unit": "单位",
+          "portOfOrigin": "起运港",
+          "portOfDestination": "目的港",
+          "freightCost": "运费"
+        },
+        "side": {
+          "title": "销售详情",
+          "orderNumber": "订单编号 #{{id}}",
+          "quantity": "数量",
+          "oceanFreight": "海运费",
+          "fclCount": "整箱货运（数量）",
+          "destination": "目的地",
+          "origin": "原产地",
+          "shipment": "装运",
+          "companyName": "公司名称",
+          "buyer": "买家",
+          "valuePerFcl": "每个整箱货运的价值",
+          "totalValue": "总价值",
+          "accept": "接受订单",
+          "reject": "拒绝订单",
+          "acceptComingSoon": "接受订单 — 即将推出",
+          "rejectComingSoon": "拒绝订单 — 即将推出"
+        }
+      }
+    },
+    "offers": {
+      "createOffer": "创建报价 +",
+      "loadMore": "加载更多项目",
+      "empty": "您还没有任何报价。",
+      "showingShort": "显示 {{shown}} 条，共 {{total}} 条报价",
+      "newOffer": "新报价",
+      "openOffer": "打开报价",
+      "statusFilter": "状态",
+      "allStatuses": "所有状态",
+      "kpi": {
+        "total": "总报价",
+        "available": "可用",
+        "negotiating": "谈判中",
+        "expiring": "即将过期 ≤ 7天",
+        "views": "总浏览量",
+        "proposals": "总投标数"
+      },
+      "cat": {
+        "all": "所有",
+        "beef": "牛肉",
+        "pork": "猪肉",
+        "poultry": "禽肉",
+        "ovine": "羊肉"
+      },
+      "sort": {
+        "newest": "最新优先",
+        "oldest": "最旧优先",
+        "priceDesc": "价格：从高到低",
+        "priceAsc": "价格：从低到高"
+      },
+      "status": {
+        "active": "可用",
+        "new": "新建",
+        "negotiating": "谈判中",
+        "closed": "已关闭",
+        "inactive": "已停用"
+      },
+      "card": {
+        "cuts": "{{count}} 部位",
+        "moreCuts": "+{{count}} 更多",
+        "origin": "原产地",
+        "destination": "目的地",
+        "incoterm": "贸易术语",
+        "shipment": "装运",
+        "volume": "容量",
+        "views": "浏览量",
+        "proposals": "投标数",
+        "daysLeft": "剩余 {{n}}天",
+        "priceStartingFrom": "起价",
+        "perFcl": "每集装箱",
+        "viewDetails": "查看详情"
+      },
+      "detail": {
+        "notFoundTitle": "报价未找到",
+        "notFoundBody": "此报价不存在或已被删除。",
+        "backToOffers": "返回报价列表",
+        "illustrative": "示意图",
+        "specifications": "规格 ({{count}})",
+        "totalValuePerFcl": "总价值（起价）每集装箱",
+        "askingPrice": "要价",
+        "floorPrice": "底价",
+        "totalWeight": "总重量",
+        "noMoreInfo": "无更多信息可显示。",
+        "moreInfo": "更多信息",
+        "fcl_one": "{{count}} 可用集装箱",
+        "fcl_other": "{{count}} 可用集装箱",
+        "size": "尺寸：{{size}}",
+        "deactivate": "停用报价",
+        "activate": "激活报价",
+        "inactiveBanner": "此报价当前处于非活动状态，买家不可见。",
+        "clone": "复制报价",
+        "share": "分享此报价",
+        "cloneComingSoon": "复制报价 — 即将推出",
+        "shareComingSoon": "分享此报价 — 即将推出",
+        "cutsHead": {
+          "cut": "部位",
+          "marbling": "脂肪纹理",
+          "qty": "每部位数量",
+          "price": "每公斤价格",
+          "asking": "要价/公斤",
+          "floor": "底价/公斤"
+        },
+        "fields": {
+          "marbling": "脂肪纹理",
+          "originPortCountry": "原产地（港口/国家）",
+          "condition": "条件",
+          "destination": "目的地",
+          "terms": "条款",
+          "shipment": "装运"
+        }
+      },
+      "heroTitle": "轻松快速跟踪您的订单。",
+      "crumbHome": "首页",
+      "title": "报价",
+      "showing": "显示 {{from}} - {{to}} 条，共 {{total}} 条结果",
+      "sortBy": "排序方式"
+    },
+    "createOffer": {
+      "title": "新报价",
+      "subtitle": "在一个屏幕上构建 — AI通过文件或文本填充表格。",
+      "unitToggle": "单位",
+      "inProgress": "进行中",
+      "ai": {
+        "title": "AI快速填充",
+        "subtitle": "拖放价格列表，粘贴消息或口述 — 我们将在几秒钟内填写表格。",
+        "minimize": "最小化",
+        "tryIt": "尝试AI快速填写",
+        "tab": {
+          "pdf": "PDF",
+          "excel": "Excel",
+          "image": "图片",
+          "voice": "语音",
+          "text": "文本"
+        },
+        "pasteLabel": "从WhatsApp/电子邮件粘贴",
+        "placeholder": "粘贴电子邮件、WhatsApp消息，或仅描述报价：\n\n“您好，我有2个集装箱的优质带骨牛排7-9磅，价格为7.20美元/公斤，底价6.95美元。另有1个集装箱西冷牛排8-10磅，价格为6.80美元。发往香港，CFR，付款方式50%预付款，余额电汇，6月装运。”",
+        "dropzone": {
+          "pdf": "拖放PDF价格表或点击上传",
+          "excel": "拖放Excel/CSV文件或点击上传",
+          "image": "拖放图片（例如手写清单照片）或点击上传"
+        },
+        "voicePrompt": "点击并录制您的报价——我们将进行转录和提取。",
+        "stubNote": "（目前提取功能为存根——真实的Claude API连接即将推出）",
+        "poweredBy": "由Claude提供支持——自动提取部位、价格、条款",
+        "extract": "使用AI提取",
+        "extracting": "正在提取…",
+        "extractedMock": "已提取（模拟）——表单预填写将在下一版本推出",
+        "emptyError": "请先粘贴一些文本。"
+      },
+      "placeholder": "表单字段（报价名称、物种、部位、路线和运费）即将推出。",
+      "cancel": "取消",
+      "saveDraft": "保存草稿",
+      "publish": "发布报价",
+      "complete": "完成",
+      "missingCutsRoutes": "仍缺少：部位、路线和运费",
+      "confirmCancel": "废弃此报价？所有未保存的更改将丢失。",
+      "draftSaved": "草稿已保存（模拟）",
+      "notReadyToPublish": "发布前请完成表单",
+      "form": {
+        "basicInfo": {
+          "title": "基本信息",
+          "subtitle": "命名您的报价并选择物种。"
+        },
+        "offerName": {
+          "label": "报价名称",
+          "placeholder": "例如：优质牛肉部位 — 亚洲FCL #1"
+        },
+        "species": {
+          "label": "物种",
+          "beef": "牛肉",
+          "pork": "猪肉",
+          "poultry": "禽肉",
+          "lamb": "羊肉"
+        },
+        "cuts": {
+          "title": "集装箱与部位",
+          "subtitle": "定义集装箱内部的货物。",
+          "loadType": "装载类型",
+          "fullContainer": "整箱（单一品类）",
+          "mixedLoad": "混装（多种品类）",
+          "capacity": "集装箱容量（25吨FCL）",
+          "overCapacity": "超容量",
+          "remaining": "剩余",
+          "addCut": "添加部位",
+          "removeRow": "删除此行",
+          "col": {
+            "product": "产品",
+            "pack": "包装",
+            "weightPerCut": "每件重量（公斤）",
+            "qty": "数量（箱）",
+            "totalWeight": "总重量",
+            "pricePerKg": "价格 $/公斤"
+          },
+          "placeholder": {
+            "product": "例如：带骨牛排 7-9 磅"
+          }
+        },
+        "routes": {
+          "title": "路线与运费",
+          "subtitle": "您可以交付的地点和成本。",
+          "originPort": "起运港",
+          "destinations": "目的地",
+          "selectPort": "选择目的港…",
+          "freightPlaceholder": "运费",
+          "perFcl": "/ FCL",
+          "addMarket": "添加市场",
+          "applyFreightAll": "将首个运费应用于所有路线",
+          "removeRow": "删除此路线"
+        }
+      },
+      "routes": {
+        "applyAllError": "在应用于所有路线之前，请先设置首条路线的运费。",
+        "applyAllSuccess": "运费已应用于所有路线。"
+      },
+      "sidebar": {
+        "title": "物流与条款",
+        "subtitle": "设置此报价的条件。",
+        "containerSize": "集装箱尺寸",
+        "temperature": "温度",
+        "frozen": "冷冻",
+        "chilled": "冷藏",
+        "certifications": "认证",
+        "incoterms": "接受的贸易术语",
+        "paymentTerms": "付款条款",
+        "paymentTermsPlaceholder": "例如：30% 预付款，余额电汇",
+        "shipment": "装运",
+        "distribution": "分销",
+        "dist": {
+          "marketplace": "市场",
+          "marketplaceHint": "所有合格买家可见",
+          "all_customers": "我的所有买家",
+          "all_customersHint": "仅限您交易商列表中的买家",
+          "specific": "指定买家",
+          "specificHint": "逐一选择买家"
+        },
+        "attachments": "附件",
+        "attachmentsHint": "拖放规格表、证书、照片",
+        "attachmentsStub": "（文件上传即将推出）"
+      },
+      "preview": {
+        "title": "实时预览",
+        "hint": "买家将如何看到您的报价",
+        "cuts": "部位",
+        "destinations": "目的地",
+        "incoterm": "贸易术语",
+        "shipment": "装运",
+        "volume": "数量",
+        "from": "从",
+        "placeholderTitle": "您的报价标题将显示在此处"
+      },
+      "prefill": {
+        "toast": "已从请求 #{{requestId}} 预填写 — 请审核并填写缺失字段"
+      },
+      "marketplace": {
+        "title": "市场物流",
+        "subtitle": "从合作承运商获取实时运费报价",
+        "searchBtn": "搜索运费报价",
+        "from": "从",
+        "destination": "目的国",
+        "port": "目的港",
+        "container": "集装箱",
+        "readyToLoad": "准备装运",
+        "loading": "正在搜索承运商...",
+        "noResults": "此航线无可用报价",
+        "bestPrice": "最优价格",
+        "fastest": "最快",
+        "useRate": "使用此费率",
+        "confirmTitle": "费率已选定",
+        "freight": "运费",
+        "insurance": "保险（估算）",
+        "source": "来源",
+        "pickDifferent": "选择不同",
+        "confirmAdd": "确认并添加到报价",
+        "sortBy": "排序方式",
+        "price": "价格",
+        "transit": "运输",
+        "departure": "出发",
+        "transitDays": "{{days}} 天",
+        "perFcl": "每 FCL",
+        "via": "通过市场物流",
+        "ctaTitle": "访问市场物流",
+        "ctaDesc": "从我们的合作承运商获取您的航线实时运费报价",
+        "ctaBtn": "搜索运费报价",
+        "importedToast": "已从 {{carrier}} 导入费率 — 每 FCL US$ {{freight}}",
+        "moreMarkets": "搜索更多市场/目的地",
+        "searchMarketsPh": "搜索国家...",
+        "noMarkets": "未找到市场",
+        "incoConflict": "与所选贸易术语不兼容",
+        "pickCut": "选择一个部位...",
+        "searchCutsPh": "搜索部位...",
+        "noCuts": "未找到部位"
+      }
+    },
+    "home": {
+      "heroTitle": "更智能地销售，更快地谈判，掌控全局。",
+      "heroSubtitle": "在一个地方管理您的有效报价，审核买家提案，并完成交易。",
+      "greeting": {
+        "morning": "早上好，{{name}}",
+        "afternoon": "下午好，{{name}}",
+        "evening": "晚上好，{{name}}"
+      },
+      "cta": {
+        "newOffer": "新报价",
+        "viewMyOffers": "查看我的报价"
+      },
+      "attention": {
+        "title": "需要您的关注",
+        "proposalsWaiting": {
+          "title": "提案待回复",
+          "subtitle": "您有买家提案需要审核",
+          "cta": "审核提案 →"
+        },
+        "offerExpiring": {
+          "title": "报价即将到期",
+          "subtitle": "您的某些报价即将到期",
+          "cta": "审核报价 →"
+        },
+        "salesAction": {
+          "title": "销售待处理",
+          "subtitle": "订单需要您的确认或文件上传",
+          "cta": "查看销售 →"
+        }
+      },
+      "stats": {
+        "activeOffers": "有效报价",
+        "totalOffers": "总报价",
+        "closedDeals": "已完成交易",
+        "inNegotiation": "谈判中",
+        "avgClosing": "平均订单完成时间",
+        "days": "天"
+      },
+      "vsLastWeek": "与上周相比",
+      "actions": {
+        "salesTitle": "销售",
+        "salesDesc": "跟踪每个订单 — 从预付款到交货。",
+        "salesCta": "查看销售",
+        "offersTitle": "我的报价",
+        "offersDesc": "管理您的有效报价、价格和可见性。",
+        "offersCta": "查看报价",
+        "newOfferTitle": "新建报价",
+        "newOfferDesc": "发布新报价 — 手动或从PDF、Excel、图片或音频中提取。",
+        "newOfferCta": "立即创建"
+      },
+      "recentOffers": "最新报价",
+      "recentSales": "最新销售",
+      "seeAll": "查看全部",
+      "cuts": "部位",
+      "more": "更多",
+      "mt": "公吨",
+      "statusAvailable": "有货",
+      "statusNew": "新建",
+      "saleStatus": {
+        "AwaitingPrePayment": "待预付款",
+        "PrePaidLoading": "已预付 · 装运中",
+        "InTransit": "运输中",
+        "BalanceDue": "待付余额"
+      },
+      "card": {
+        "destination": "目的地",
+        "incoterm": "贸易术语",
+        "shipment": "装运",
+        "volume": "交易量",
+        "buyer": "买家",
+        "qty": "数量",
+        "views": "浏览量",
+        "proposals": "提案",
+        "daysLeft": "剩余天数",
+        "openOffer": "公开报价",
+        "order": "订单 {{id}}",
+        "sendInvoiceDraft": "发送发票草稿",
+        "viewSale": "查看销售详情",
+        "issueBalanceInvoice": "开具余额发票"
+      }
+    },
+    "company": {
+      "title": "我的公司",
+      "editProfile": "编辑个人资料",
+      "verified": "已验证",
+      "memberSince": "{{year}}年入驻",
+      "toasts": {
+        "editComing": "编辑功能即将推出",
+        "viewComing": "文档查看功能即将推出",
+        "uploadComing": "上传功能即将推出"
+      },
+      "about": {
+        "title": "关于",
+        "description": "WMS Foods是巴西领先的优质牛肉部位出口商，业务覆盖亚洲、中东、非洲和美洲等28个国家。我们拥有三家工厂，总产能达4,600公吨/月，均通过USDA、Halal认证以及亚洲主要市场认可。",
+        "tradeMarkets": "贸易市场",
+        "mainSpecies": "主要品种",
+        "yearsExporting": "出口年限",
+        "fclsDelivered": "已交付的集装箱",
+        "countriesServed": "服务国家"
+      },
+      "plants": {
+        "title": "工厂和生产能力",
+        "addPlant": "添加工厂",
+        "capacity": "产能",
+        "certifications": "认证",
+        "vetRegistrations": "兽医注册"
+      },
+      "preferences": {
+        "title": "贸易偏好",
+        "defaultIncoterm": "默认贸易术语",
+        "defaultPaymentTerms": "默认付款条款",
+        "currencies": "接受的货币",
+        "leadTime": "交货时间",
+        "fclSize": "典型整箱尺寸",
+        "originPorts": "起运港"
+      },
+      "compliance": {
+        "title": "合规与认证",
+        "validUntil": "有效期至",
+        "viewCertificate": "查看证书"
+      },
+      "documents": {
+        "title": "文件",
+        "uploadDocument": "上传文件",
+        "type": "类型",
+        "name": "名称",
+        "lastUpdated": "更新时间",
+        "view": "查看"
+      },
+      "team": {
+        "title": "团队联系方式"
+      }
+    },
+    "insights": {
+      "groupLabel": "数据洞察",
+      "nav": {
+        "priceBenchmark": "价格基准",
+        "analytics": "分析"
+      },
+      "previewBanner": {
+        "title": "预览 · 高级附加功能即将推出",
+        "body": "所示数字为示意性数据。正式版本将使用您的真实报价数据与市场进行基准测试。"
+      },
+      "priceBenchmark": {
+        "eyebrow": "高级 · 市场情报",
+        "title": "价格基准 · {{cut}}",
+        "subtitle": "查看您的报价与来自相同部位+原产地的所有{{count}}份匿名报价相比如何。竞争对手的名称将严格保密。",
+        "yourPrice": "您的价格",
+        "hero": {
+          "before": "您的报价价格",
+          "after": "市场中位数",
+          "body": "您的 ${{price}}/kg 报价在中东地区 {{total}} 个巴西牛肉里脊竞争报价中处于 {{percentile}} 百分位。降至 ${{suggested}}/kg 可使您处于中位数水平 — 买家浏览量的73%发生在此。"
+        },
+        "distribution": {
+          "title": "价格分布",
+          "subtitle": "{{count}} 个匿名巴西牛肉里脊报价 · 最近7天"
+        }
+      },
+      "analytics": {
+        "title": "供应商分析",
+        "subtitle": "您的运营表现 — 最近30天与前期对比"
+      },
+      "upsell": {
+        "eyebrow": "即将推出",
+        "learnMore": "了解更多",
+        "earlyAccess": "请求提早使用",
+        "earlyAccessToast": "感谢 — 我们会尽快与您联系。",
+        "contactSales": "联系销售",
+        "salesBody": "您好，Mundus 团队，\n\n我想了解更多关于即将为我的账户推出的“洞察”附加功能。\n\n谢谢！",
+        "perksLabel": "您将获得什么",
+        "launching": "2026年第三季度推出",
+        "pricing": "价格在发布时公布",
+        "priceBenchmark": {
+          "title": "精准了解您的报价所处位置",
+          "lede": "告别盲目定价。实时查看您发布的每一个报价与实时市场的对比 — 绝不泄露竞争对手身份。",
+          "bullets": {
+            "distribution": {
+              "title": "实时市场分布",
+              "body": "您的部位+原产地的所有竞争报价柱状图，每24小时更新一次。"
+            },
+            "ranking": {
+              "title": "匿名竞争对手排名",
+              "body": "查看您在浏览量、聊天次数和价格方面与谁竞争 — 姓名始终模糊处理。"
+            },
+            "alerts": {
+              "title": "降价和需求警报",
+              "body": "当竞争对手降价或某个地区需求激增时，立即收到通知。"
+            },
+            "suggested": {
+              "title": "AI建议目标价格",
+              "body": "根据您的利润底线和转化目标，每周提供校准建议。"
+            }
+          },
+          "perks": "[\"针对您每个活跃部位的每周市场报告（PDF）\",\"竞争对手价格变动的Slack和电子邮件警报\",\"每个部位和原产地的12个月历史价格趋势\"]"
+        },
+        "analytics": {
+          "title": "将每个报价转化为学习循环",
+          "lede": "超越表面数据。了解哪些买家转化，哪些地区市场升温，以及您的销售漏斗在哪里流失收入。",
+          "bullets": {
+            "funnel": {
+              "title": "完整的转化漏斗",
+              "body": "浏览 → 聊天 → 还盘 → 订单，显示每个阶段和每个部位的流失率。"
+            },
+            "cohort": {
+              "title": "买家群体留存",
+              "body": "查看哪些买家回购、回购频率以及他们的订单量如何增长。"
+            },
+            "geo": {
+              "title": "地理需求热图",
+              "body": "通过港口、国家和国际贸易术语偏好，提前发现新兴目的地。"
+            },
+            "sla": {
+              "title": "响应时间服务水平协议跟踪",
+              "body": "监控您的团队回复速度，以及它与成交率的相关性。"
+            }
+          },
+          "perks": "[\"每月绩效报告发送至您的收件箱\",\"任何指标或图表的无限CSV导出\",\"每个团队成员的自定义日期范围和保存视图\",\"买家级别钻取和完整的谈判历史\"]"
+        }
+      }
+    }
+  },
+  "dealDetail": {
+    "negotiation": {
+      "buyerBid": "买家投标",
+      "supplierCounter": "供应商报价",
+      "yourCounter": "您的报价",
+      "finalPerCut": "每部位最终价格",
+      "totals": "总计",
+      "initialAsking": "初步询价",
+      "firstBuyerBid": "买家首次投标",
+      "discountGiven": "已给予折扣",
+      "finalTotal": "最终总计",
+      "openFull": "开启全部谈判",
+      "none": "无谈判轮次记录。",
+      "howClosed": "此交易如何结束",
+      "closedAfter": "经过 {{n}} 轮谈判后结束",
+      "round": "轮次",
+      "accepted": "已接受"
+    },
+    "shipment": {
+      "info": "装运信息",
+      "containerNo": "集装箱号",
+      "sealNo": "封条号",
+      "booking": "订舱号",
+      "bl": "提单号",
+      "vessel": "船名",
+      "voyage": "航次",
+      "portLoading": "装运港",
+      "portDischarge": "卸货港",
+      "etd": "预计离港日期",
+      "eta": "预计到达日期",
+      "grossWeight": "毛重",
+      "netWeight": "净重",
+      "temperature": "温度",
+      "journey": "装运里程",
+      "route": "路线",
+      "trackCarrier": "承运商追踪"
+    },
+    "journey": {
+      "booked": "已预订",
+      "loading": "正在装货",
+      "departed": "已离港",
+      "inTransit": "运输中",
+      "arrived": "已抵达港口",
+      "discharged": "已卸货",
+      "delivered": "已交付"
+    },
+    "docs": {
+      "autoGenerated": "订单文件 — 自动生成",
+      "issuedClose": "交易关闭时签发",
+      "so": "销售订单 (SO)",
+      "po": "采购订单 (PO)",
+      "completion": "文件完成情况",
+      "trade": "交易",
+      "shipping": "装运",
+      "quality": "质量",
+      "compliance": "合规性",
+      "required": "必需",
+      "of": "的",
+      "notUploaded": "尚未上传",
+      "view": "查看",
+      "download": "下载",
+      "upload": "上传"
+    },
+    "toast": {
+      "download": "下载 (模拟)",
+      "view": "查看文件 (模拟)",
+      "upload": "上传 (模拟)",
+      "track": "追踪 (模拟)",
+      "message": "开启聊天 (模拟)"
+    },
+    "back": {
+      "orders": "返回订单",
+      "sales": "返回销售"
+    },
+    "record": {
+      "order": "订单",
+      "sale": "销售"
+    },
+    "party": {
+      "buyer": "买家",
+      "supplier": "供应商",
+      "messageBuyer": "给买家留言",
+      "messageSupplier": "给供应商留言"
+    },
+    "tabs": {
+      "overview": "概览",
+      "negotiation": "谈判",
+      "shipment": "装运",
+      "documents": "文件"
+    },
+    "section": {
+      "details": "详情",
+      "cutsIncluded": "包含的部位"
+    },
+    "fields": {
+      "date": "日期",
+      "totalValue": "总价值",
+      "origin": "原产地",
+      "destination": "目的地",
+      "incoterm": "贸易术语",
+      "container": "集装箱",
+      "totalVolume": "总量",
+      "shipmentMonth": "装运月份",
+      "speciesTemp": "物种 · 温度"
+    },
+    "cuts": {
+      "cut": "部位",
+      "qty": "数量",
+      "asking": "询价",
+      "finalKg": "最终 $/kg",
+      "total": "总计"
+    },
+    "timeline": {
+      "title": "快速时间轴",
+      "created": "已创建",
+      "prePayment": "预付款",
+      "production": "生产",
+      "shipment": "装运",
+      "delivery": "交付",
+      "received": "已接收",
+      "pending": "待处理",
+      "inProgress": "进行中",
+      "inTransit": "运输中",
+      "done": "完成",
+      "delivered": "已交付"
+    }
+  },
+  "admin": {
+    "shell": {
+      "brand": "\n",
+      "search": "搜索公司、交易、用户…",
+      "user": {
+        "name": "Fernando N.",
+        "role": "管理员"
+      },
+      "nav": {
+        "overview": "概览",
+        "dashboard": "仪表板",
+        "analytics": "分析",
+        "operations": "运营",
+        "companies": "公司",
+        "deals": "交易",
+        "negotiations": "谈判",
+        "verifications": "验证",
+        "disputes": "争议",
+        "crm": "CRM",
+        "prospects": "潜在客户",
+        "pipeline": "销售渠道",
+        "prospecting": "寻找潜在客户",
+        "find_companies": "发现公司",
+        "find_people": "发现个人",
+        "lists": "列表",
+        "marketplace": "市场",
+        "products": "产品与切割",
+        "markets": "市场",
+        "ports": "港口",
+        "finance": "财务",
+        "revenue": "收入",
+        "commissions": "佣金",
+        "settings": "设置",
+        "team": "团队",
+        "audit": "审计日志",
+        "flags": "功能标志"
+      },
+      "theme": {
+        "light": "浅色模式",
+        "dark": "深色模式"
+      }
+    },
+    "crm": {
+      "filters": {
+        "suppliers": "供应商",
+        "allOwners": "所有者",
+        "search": "按公司、联系人、国家/地区搜索…",
+        "allStages": "所有阶段",
+        "allRoles": "全部",
+        "buyers": "买家"
+      },
+      "stages": {
+        "new": "新建",
+        "researching": "研究中",
+        "contacted": "已联系",
+        "qualified": "合格",
+        "onboarding": "入职中",
+        "onboarded": "已入职",
+        "lost": "丢失"
+      },
+      "roles": {
+        "potential_buyer": "买家",
+        "potential_supplier": "供应商"
+      },
+      "sources": {
+        "linkedin": "领英",
+        "trade_show": "展会",
+        "referral": "推荐",
+        "web_scrape": "网络抓取",
+        "apollo": "Mundus Intelligence",
+        "manual": "手动",
+        "inbound": "入站"
+      },
+      "table": {
+        "company": "公司",
+        "role": "角色",
+        "stage": "阶段",
+        "source": "来源",
+        "country": "国家",
+        "estGmv": "预计GMV",
+        "owner": "所有者",
+        "lastActivity": "最后活动"
+      },
+      "empty": "没有符合这些筛选条件的潜在客户。",
+      "kanban": {
+        "funnelConversion": "漏斗转化",
+        "ownerLeaderboard": "所有者排行榜",
+        "sources": "来源",
+        "qualifiedCount": "合格 {{n}}",
+        "onboardedCount": "已入职 {{n}}"
+      },
+      "detail": {
+        "back": "潜在客户",
+        "invite": "邀请至平台",
+        "inviteDisabled": "移至“合格”以启用邀请",
+        "addNote": "添加备注",
+        "edit": "编辑",
+        "created": "已创建",
+        "lastContact": "上次联系",
+        "activity": "活动",
+        "noActivity": "暂无活动",
+        "contact": "联系人",
+        "linkedinSearch": "领英搜索 →",
+        "companyInfo": "公司信息",
+        "owner": "所有者",
+        "reassign": "重新分配",
+        "savedToast": "更改已保存",
+        "actions": {
+          "edit": "编辑",
+          "save": "保存",
+          "cancel": "取消",
+          "deactivate": "停用",
+          "reactivate": "重新激活",
+          "delete": "删除",
+          "searchMorePeople": "搜索更多人",
+          "addContact": "添加联系人",
+          "convert": "转换为Mundus"
+        },
+        "status": {
+          "active": "启用",
+          "inactive": "停用",
+          "onboarded": "已入职"
+        },
+        "leadType": {
+          "buyer": "买家",
+          "supplier": "供应商",
+          "buyer_supplier": "买家 & 供应商"
+        },
+        "decisionLevel": {
+          "c_level": "C级",
+          "vp": "副总裁",
+          "director": "总监",
+          "manager": "经理",
+          "specialist": "专员",
+          "other": "其他"
+        },
+        "sections": {
+          "company": "公司信息",
+          "mainContact": "主要联系人",
+          "additionalContacts": "其他联系人",
+          "notes": "备注"
+        },
+        "fields": {
+          "leadType": "潜在客户类型",
+          "industry": "行业",
+          "street": "街道",
+          "city": "城市",
+          "state": "省份",
+          "zipCode": "邮政编码",
+          "country": "国家",
+          "website": "网站",
+          "companyLinkedin": "公司领英",
+          "fullName": "全名",
+          "role": "角色",
+          "email": "电子邮件",
+          "additionalEmail": "其他电子邮件",
+          "phone": "电话",
+          "mobile": "手机",
+          "personalLinkedin": "个人领英",
+          "decisionLevel": "决策级别"
+        },
+        "contacts": {
+          "empty": "暂无其他联系人。"
+        },
+        "deactivate": {
+          "title": "停用公司",
+          "body": "您正在停用此公司。用户将无法再登录。现有数据将保留。",
+          "reason": "原因（可选）",
+          "reasonPlaceholder": "您为何停用此公司？",
+          "confirm": "停用",
+          "toast": "公司已停用"
+        },
+        "reactivate": {
+          "toast": "公司已重新激活"
+        },
+        "convert": {
+          "title": "转换为 Mundus 公司",
+          "typeLabel": "此公司应如何加入 Mundus？",
+          "type": {
+            "buyer": "Mundus 买家",
+            "buyerDesc": "可以浏览报价、谈判和下订单。",
+            "supplier": "Mundus 供应商",
+            "supplierDesc": "可以发布报价和接收订单。",
+            "both": "Mundus 买家和供应商",
+            "bothDesc": "在平台上同时作为买家和供应商。"
+          },
+          "master": {
+            "title": "主用户（公司的第一个用户）",
+            "name": "全名",
+            "email": "电子邮件",
+            "phone": "电话（可选）"
+          },
+          "warning": "一旦转换，此潜在客户将成为 Mundus 公司，并且无法再删除——只能停用。",
+          "confirm": "转换",
+          "toast": "已转换为 Mundus 公司",
+          "invalidMaster": "请提供有效的主用户名和电子邮件。",
+          "failed": "无法转换此潜在客户。"
+        },
+        "delete": {
+          "title": "删除潜在客户",
+          "body": "此操作无法撤销。公司及其所有联系人将被永久删除。",
+          "cannotOnboarded": "已入驻的公司无法删除——请改为停用。",
+          "toast": "潜在客户已删除"
+        },
+        "apollo": {
+          "title": "搜索更多人员",
+          "empty": "未为此公司找到其他人员。",
+          "revealed": "信息已显示",
+          "added": "联系人已添加到潜在客户",
+          "add": "添加",
+          "revealEmail": "显示电子邮件",
+          "revealPhone": "显示电话",
+          "revealMobile": "显示手机"
+        }
+      },
+      "title": "潜在客户",
+      "subtitle": "{{active}} 活跃 · {{total}} 总计",
+      "addProspect": "添加潜在客户",
+      "importCsv": "导入CSV",
+      "viewTable": "表格",
+      "viewKanban": "看板",
+      "pipeline": {
+        "filters": {
+          "all": "全部",
+          "buyer": "买家",
+          "supplier": "供应商",
+          "search": "搜索..."
+        },
+        "cards": {
+          "contact": "联系人",
+          "role": "角色"
+        },
+        "buyers": {
+          "title": "买家",
+          "add": "+ 添加买家"
+        },
+        "suppliers": {
+          "title": "供应商",
+          "add": "+ 添加供应商"
+        },
+        "interviews": {
+          "title": "面试",
+          "add": "+ 记录面试",
+          "company": "公司",
+          "contact": "联系人",
+          "date": "日期",
+          "duration": "持续时间",
+          "painPoints": "痛点",
+          "takeaways": "收获",
+          "keyQuotes": "关键引言",
+          "nextSteps": "下一步",
+          "empty": "尚未记录任何面试"
+        },
+        "learnings": {
+          "title": "学习",
+          "add": "+ 添加学习",
+          "week": "周",
+          "theme": "主题",
+          "insight": "见解",
+          "sources": "来源公司",
+          "category": "类别",
+          "empty": "尚未记录任何学习内容"
+        },
+        "modal": {
+          "addCompany": "添加公司",
+          "name": "公司名称",
+          "type": "类型",
+          "country": "国家",
+          "marketRegion": "市场区域",
+          "website": "网站",
+          "stage": "阶段",
+          "contactName": "联系人姓名",
+          "contactRole": "角色",
+          "contactPersona": "人物角色",
+          "contactEmail": "电子邮件",
+          "contactPhone": "电话",
+          "contactLinkedin": "领英",
+          "notes": "备注",
+          "source": "来源",
+          "cancel": "取消",
+          "submit": "保存",
+          "logInterview": "记录面试",
+          "pickCompany": "选择公司",
+          "pickContact": "选择联系人（可选）",
+          "duration": "持续时间（分钟）",
+          "conductedBy": "执行人",
+          "painPoints": "痛点",
+          "keyQuotes": "关键引言",
+          "takeaways": "收获",
+          "nextSteps": "下一步",
+          "recordingUrl": "录音网址",
+          "addLearning": "添加学习",
+          "weekStart": "起始周"
+        },
+        "table": {
+          "company": "公司",
+          "persona": "人物角色/角色",
+          "contact": "联系人",
+          "email": "电子邮件",
+          "phone": "电话",
+          "linkedin": "领英",
+          "country": "国家",
+          "stage": "阶段",
+          "actions": "操作",
+          "view": "查看"
+        },
+        "tabs": {
+          "pipeline": "销售渠道",
+          "buyers": "买家",
+          "suppliers": "供应商",
+          "interviews": "访谈",
+          "learnings": "经验教训"
+        },
+        "stages": {
+          "cold": "线索",
+          "contacted": "已联系",
+          "demo_scheduled": "已安排演示",
+          "demo_done": "演示已完成",
+          "active": "活跃",
+          "lost": "已丢失"
+        }
+      },
+      "meetingPrep": {
+        "back": "返回销售机会管理",
+        "title": "会议准备",
+        "empty": "尚未进行会议准备。为该潜在客户生成一份定制的会议准备。",
+        "generateNow": "立即生成",
+        "regenerate": "重新生成",
+        "exportPdf": "导出为PDF",
+        "email": "通过电子邮件发送给我",
+        "markDone": "标记演示完成",
+        "generatingMsg": "AI正在研究公司并撰写您的简报…",
+        "failedMsg": "生成失败。请重试。",
+        "toast": {
+          "generating": "正在生成会议准备…",
+          "autoStarted": "演示已安排——正在生成会议准备…",
+          "demoDone": "已标记为演示完成"
+        },
+        "sections": {
+          "research": "公司研究",
+          "contact": "联系人资料",
+          "market": "市场背景",
+          "painPoints": "潜在痛点",
+          "talkingPoints": "谈话要点",
+          "questions": "战略问题",
+          "valueProps": "Mundus价值主张",
+          "links": "研究链接"
+        }
+      },
+      "add": {
+        "title": "添加潜在客户",
+        "companyName": "公司名称",
+        "country": "国家",
+        "role": "角色",
+        "source": "来源",
+        "contactName": "联系人姓名",
+        "contactEmail": "联系人电子邮件",
+        "contactPhone": "联系人电话",
+        "estGmv": "预计年商品交易总额 (美元)",
+        "owner": "负责人",
+        "notes": "初始备注",
+        "submit": "添加潜在客户",
+        "cancel": "取消"
+      },
+      "import": {
+        "title": "导入 CSV",
+        "dropzone": "将 CSV 拖到此处或点击上传",
+        "template": "下载模板",
+        "preview": "预览 · 前 {{n}} 行，共 {{total}} 行",
+        "submit": "导入 {{n}} 个潜在客户",
+        "invalidFormat": "CSV 格式无效"
+      },
+      "toast": {
+        "added": "{{company}} 已添加到潜在客户",
+        "imported": "已导入 {{n}} 个潜在客户",
+        "stageChanged": "{{company}} 已移至 {{stage}}",
+        "invited": "邀请已发送至 {{email}} — 潜在客户已移至入驻阶段"
+      }
+    },
+    "comingSoon": {
+      "title": "即将推出",
+      "body": "此部分是管理面板构建的一部分 — 尚未实施。"
+    },
+    "dashboard": {
+      "title": "运营仪表板",
+      "subtitle": "过去30天",
+      "rangeLast30": "过去30天",
+      "kpi": {
+        "gmv": "商品交易总额",
+        "activeDeals": "活跃交易",
+        "verifications": "验证",
+        "verificationsQueue": "队列",
+        "winRate": "胜率",
+        "newSignups": "新注册",
+        "avgCycle": "平均交易周期",
+        "avgCycleSuffix": "天",
+        "avgDealSize": "平均交易规模",
+        "liquidity": "市场流动性",
+        "liquidityHint": "每个活跃买家的报价"
+      },
+      "trend": {
+        "title": "商品交易总额趋势",
+        "subtitle": "每日，过去30天",
+        "thirtyDaysAgo": "30天前",
+        "today": "今天"
+      },
+      "pipeline": {
+        "title": "交易流程",
+        "viewAll": "查看全部 →",
+        "offers": "报价进行中",
+        "negotiating": "谈判中",
+        "ordered": "已订购",
+        "shipped": "已装运",
+        "delivered": "已交付"
+      },
+      "topBuyers": "热门买家",
+      "topSuppliers": "热门供应商",
+      "productsMix": {
+        "title": "产品组合",
+        "beef": "牛肉",
+        "pork": "猪肉",
+        "poultry": "禽肉",
+        "lamb": "羊肉"
+      },
+      "destinations": "热门目的地",
+      "negotiationRounds": {
+        "title": "谈判轮次",
+        "subtitle": "交易完成地"
+      },
+      "originPorts": {
+        "title": "原产港口",
+        "subtitle": "装运量"
+      },
+      "activity": "活动",
+      "sla": {
+        "title": "验证SLA",
+        "onTime": "按时",
+        "atRisk": "有风险",
+        "overdue": "逾期",
+        "review": "审核队列 →"
+      },
+      "tta": {
+        "title": "接受时间",
+        "subtitle": "报价 → 首个订单"
+      },
+      "avgByProduct": "按产品划分的平均交易规模",
+      "opsQueue": {
+        "title": "运营队列 · 需要关注的公司",
+        "viewAll": "12个项目 →",
+        "company": "公司",
+        "role": "角色",
+        "issue": "问题",
+        "age": "时长",
+        "owner": "所有者",
+        "roleBuyer": "买家",
+        "roleSupplier": "供应商",
+        "issueKyc": "KYC审核",
+        "issueCert": "证书过期",
+        "issuePayment": "付款延迟",
+        "issueDocs": "文件不完整",
+        "issueOnboarding": "入职 ✓"
+      }
+    },
+    "companies": {
+      "cols": {
+        "location": "地点",
+        "verified": "已验证",
+        "onboarded": "已入驻",
+        "status": "状态",
+        "actions": "操作",
+        "proteins": "肉类",
+        "company": "公司",
+        "type": "类型"
+      },
+      "empty": {
+        "title": "暂无公司",
+        "body": "将潜在客户转化为 Mundus 公司，即可在此处查看。",
+        "cta": "打开CRM"
+      },
+      "actions": {
+        "new": "新公司",
+        "edit": "编辑",
+        "save": "保存",
+        "cancel": "取消",
+        "deactivate": "禁用",
+        "activate": "启用"
+      },
+      "sections": {
+        "identity": "身份",
+        "address": "地址",
+        "classification": "分类",
+        "onboarding": "入驻",
+        "role": "业务角色",
+        "protein": "肉类偏好与首选部位",
+        "company": "公司信息",
+        "contact": "业务联系人",
+        "admin": "管理设置"
+      },
+      "fields": {
+        "name": "公司名称",
+        "taxId": "税务ID",
+        "website": "网站",
+        "phone": "电话",
+        "logoUrl": "Logo网址",
+        "rating": "评级",
+        "address": "地址",
+        "city": "城市",
+        "state": "省/州",
+        "country": "国家",
+        "zipCode": "邮政编码",
+        "isBuyer": "是买家",
+        "isSupplier": "是供应商",
+        "isVerified": "已验证",
+        "businessTypes": "业务类型",
+        "proteinProfiles": "肉类偏好",
+        "onboardedAt": "入驻时间",
+        "onboardedBy": "入驻人",
+        "onboardedFromProspect": "来自潜在客户",
+        "createdAt": "创建时间",
+        "updatedAt": "更新时间",
+        "buyer": "买家",
+        "supplier": "供应商",
+        "bothRoleNote": "当公司同时是买家和供应商时，每个角色必须使用不同的电子邮件地址。只有 Mundus 管理员才能切换角色。",
+        "proteinProfile": "肉类偏好",
+        "preferredCuts": "首选部位",
+        "companyName": "公司名称",
+        "licenses": "营业执照或证书",
+        "licensesHint": "即将上线上传功能",
+        "verified": "已验证",
+        "status": "状态",
+        "onboarded": "已入驻",
+        "companyNumber": "公司编号"
+      },
+      "validation": {
+        "name": "公司名称必填",
+        "taxId": "税务ID必填",
+        "country": "国家必填",
+        "state": "省/州必填",
+        "address": "地址必填",
+        "phone": "电话必填"
+      },
+      "confirmDeactivate": {
+        "title": "禁用此公司？",
+        "body": "该公司将被标记为非活动状态。您可以随时重新启用它。"
+      },
+      "confirmActivate": {
+        "title": "启用此公司？",
+        "body": "该公司将再次被标记为活动状态。"
+      },
+      "toast": {
+        "created": "公司已创建",
+        "saved": "更改已保存",
+        "deactivated": "公司已禁用",
+        "activated": "公司已启用",
+        "error": "出现问题"
+      },
+      "detail": {
+        "title": "公司详情",
+        "newTitle": "新公司",
+        "save": "保存",
+        "saving": "正在保存...",
+        "saved": "公司已保存",
+        "deleteTitle": "删除公司",
+        "deleteConfirm": "这将永久删除该公司及所有相关数据。",
+        "deleted": "公司已删除"
+      },
+      "title": "Mundus公司",
+      "subtitle": "{{active}} 家活跃 · {{total}} 家总数",
+      "tiles": {
+        "total": "总数",
+        "buyers": "买家",
+        "suppliers": "供应商",
+        "both": "买家 + 供应商",
+        "inactive": "不活跃"
+      },
+      "filters": {
+        "search": "按名称、国家、编号搜索…",
+        "allTypes": "所有类型",
+        "buyer": "Mundus买家",
+        "supplier": "Mundus供应商",
+        "both": "买家 + 供应商",
+        "allStatuses": "所有状态",
+        "active": "活跃",
+        "inactive": "不活跃",
+        "allCountries": "所有国家"
+      },
+      "proteins": {
+        "beef": "牛肉",
+        "pork": "猪肉",
+        "poultry": "禽肉",
+        "ovine": "羊肉"
+      }
+    },
+    "analytics": {
+      "title": "分析",
+      "currentVisitors_one": "{{count}}位当前访客",
+      "currentVisitors_other": "{{count}}位当前访客",
+      "export": "导出CSV",
+      "details": "详情",
+      "search": "搜索…",
+      "empty": "无数据",
+      "clearAll": "清除所有",
+      "visitorsLabel": "访客",
+      "current": "当前",
+      "previous": "上一期",
+      "period": {
+        "realtime": "实时",
+        "last24h": "过去24小时",
+        "last7d": "7天",
+        "last30d": "30天",
+        "last90d": "90天",
+        "last12m": "12个月"
+      },
+      "metric": {
+        "visitors": "访客",
+        "pageviews": "页面浏览量",
+        "viewsPerVisit": "每次访问页面浏览量",
+        "duration": "访问时长",
+        "bounceRate": "跳出率"
+      },
+      "dim": {
+        "source": "来源",
+        "page": "页面",
+        "country": "国家",
+        "device": "设备"
+      },
+      "subtitle": "市场健康状况、转化率以及需要您关注的事项。",
+      "healthTitle": "市场健康状况",
+      "healthGood": "健康——保持势头。",
+      "healthOk": "稳定——密切关注。",
+      "healthBad": "需要关注。",
+      "basedOnPeriod": "基于所选时间段",
+      "vsPrevious": "与上一期相比",
+      "kpi": {
+        "gmv": "GMV",
+        "activeDeals": "活跃交易",
+        "winRate": "赢率",
+        "avgCycle": "平均周期",
+        "avgDealSize": "平均交易规模",
+        "newSignups": "新增注册"
+      },
+      "trend": {
+        "gmv": "GMV趋势",
+        "deals": "交易趋势"
+      },
+      "funnel": {
+        "title": "转化漏斗",
+        "steps": {
+          "offers": "报价",
+          "negotiations": "谈判",
+          "won": "已中标",
+          "shipped": "已装运",
+          "completed": "已完成"
+        }
+      },
+      "attention": {
+        "title": "需要关注",
+        "items": "项",
+        "empty": "一切正常——无紧急事项。"
+      },
+      "top": {
+        "buyers": "热门买家",
+        "suppliers": "热门供应商",
+        "empty": "本期暂无交易。"
+      }
+    },
+    "negotiations": {
+      "title": "谈判",
+      "subtitle": "平台所有谈判",
+      "stats": {
+        "active": "活跃谈判",
+        "total_value": "总价值",
+        "avg_gap": "平均差额",
+        "avg_rounds": "平均轮次",
+        "win_rate": "胜率"
+      },
+      "filter": {
+        "all": "全部",
+        "awaiting_supplier": "等待供应商",
+        "pending_buyer": "等待买家审核",
+        "accepted": "投标已接受",
+        "rejected": "已拒绝",
+        "expired": "已过期"
+      },
+      "table": {
+        "id": "ID",
+        "product": "产品",
+        "supplier": "供应商",
+        "buyer": "买家",
+        "route": "路线",
+        "status": "状态",
+        "round": "轮次",
+        "original": "原始",
+        "latest_bid": "最新投标",
+        "our_counter": "我方还价",
+        "gap": "差额",
+        "last_activity": "上次活动"
+      },
+      "empty": {
+        "title": "暂无谈判",
+        "description": "当买家开始对报价进行投标时，谈判将显示在此处。"
+      },
+      "status": {
+        "awaiting_supplier": "等待供应商",
+        "pending_buyer_review": "等待买家审核",
+        "bid_accepted": "投标已接受",
+        "offer_rejected": "已拒绝",
+        "offer_exhausted": "已耗尽",
+        "expired": "已过期"
+      }
+    },
+    "prospect": {
+      "lists": {
+        "title": "列表",
+        "newList": "新列表",
+        "createList": "创建",
+        "listName": "列表名称",
+        "companies": "公司",
+        "noLists": "暂无列表",
+        "noListsDesc": "创建列表来整理您的潜在客户公司",
+        "itemCount": "{{count}} 家公司",
+        "created": "创建于 {{date}}",
+        "deleteList": "删除列表",
+        "deleteConfirm": "删除此列表并移除所有项目？",
+        "deleted": "列表已删除",
+        "emptyList": "无记录",
+        "emptyListDesc": "暂无已保存的公司！将公司添加到此列表以开始。",
+        "findCompanies": "查找公司",
+        "findCompaniesDesc": "搜索要添加到此列表的公司",
+        "importCsv": "通过CSV导入",
+        "importCsvDesc": "从CSV文件导入记录到此列表",
+        "createWorkflow": "创建工作流",
+        "createWorkflowDesc": "创建工作流以自动将已保存的公司添加到此列表",
+        "addToList": "添加到列表",
+        "addedToList": "已将 {{count}} 家公司添加到 {{list}}",
+        "selectList": "选择列表",
+        "removeFromList": "移除",
+        "removed": "已从列表中移除",
+        "export": "导出CSV",
+        "cancel": "取消",
+        "back": "返回",
+        "searchPlaceholder": "搜索公司..."
+      }
+    },
+    "marketplace": {
+      "markets": {
+        "title": "市场",
+        "subtitle": "管理市场上可用的目的地国家",
+        "searchPlaceholder": "搜索国家，ISO...",
+        "next": "下一步",
+        "showing": "显示 {{from}}-{{to}} 条结果，共 {{total}} 条",
+        "shared": "已共享",
+        "portsShort": "港口",
+        "usesPortsFrom": "使用 {{country}} 的港口",
+        "stats": {
+          "total": "市场总数",
+          "active": "活跃市场",
+          "ports": "港口总数",
+          "origins": "原产国"
+        },
+        "regions": {
+          "all": "所有地区",
+          "americas": "美洲",
+          "europe": "欧洲",
+          "asia": "亚洲",
+          "middleEast": "中东",
+          "africa": "非洲",
+          "oceania": "大洋洲",
+          "other": "其他"
+        },
+        "filters": {
+          "all": "全部",
+          "activeOnly": "仅限活跃",
+          "inactiveOnly": "仅限不活跃"
+        },
+        "cols": {
+          "country": "国家",
+          "iso": "ISO",
+          "ports": "港口",
+          "origin": "原产地",
+          "destination": "目的地",
+          "active": "活跃",
+          "special": "特殊"
+        },
+        "toggle": {
+          "activated": "市场 {{country}} 已激活",
+          "deactivated": "市场 {{country}} 已停用"
+        },
+        "empty": {
+          "title": "没有市场符合这些筛选条件",
+          "body": "尝试清除筛选条件或使用其他搜索词。"
+        }
+      },
+      "cuts": {
+        "modal": {
+          "translations": "翻译",
+          "noTranslations": "暂无翻译",
+          "selectLocale": "选择语言环境",
+          "translatedName": "翻译名称",
+          "translationAdded": "翻译已添加",
+          "translationRemoved": "翻译已删除",
+          "saved": "部位已保存",
+          "delete": "删除",
+          "deleted": "部位已删除",
+          "confirmDeleteTitle": "删除此部位？",
+          "confirmDeleteBody": "这将永久删除该部位及其所有翻译。",
+          "title": "编辑部位",
+          "name": "部位名称",
+          "productNumber": "产品编号",
+          "category": "类别",
+          "uploadImage": "上传图片",
+          "replaceImage": "替换图片",
+          "uploading": "正在上传...",
+          "noImage": "暂无图片",
+          "imageUploaded": "图片已上传"
+        },
+        "title": "产品和部位",
+        "subtitle": "管理市场上的部位目录",
+        "searchPlaceholder": "搜索部位名称或产品编号...",
+        "allCategories": "所有类别",
+        "next": "下一步",
+        "showing": "显示 {{from}}-{{to}} 条，共 {{total}} 条结果",
+        "langsCount": "{{count}} 种语言",
+        "stats": {
+          "total": "部位总数",
+          "active": "活跃部位",
+          "categories": "类别",
+          "translations": "翻译"
+        },
+        "filters": {
+          "all": "全部",
+          "activeOnly": "仅限活跃",
+          "inactiveOnly": "仅限不活跃"
+        },
+        "categories": {
+          "Beef": "牛肉",
+          "Pork": "猪肉",
+          "Poultry": "禽肉",
+          "Ovine": "羊肉"
+        },
+        "cols": {
+          "name": "部位名称",
+          "pn": "PN",
+          "category": "类别",
+          "translations": "翻译",
+          "active": "活跃",
+          "actions": "操作"
+        },
+        "toggle": {
+          "activated": "部位 {{name}} 已激活",
+          "deactivated": "部位 {{name}} 已停用"
+        },
+        "empty": {
+          "title": "没有部位符合这些筛选条件",
+          "body": "尝试清除筛选条件或使用其他搜索词。"
+        }
+      },
+      "ports": {
+        "title": "港口",
+        "subtitle": "管理可用于装运路线的港口",
+        "searchPlaceholder": "搜索港口名称或代码...",
+        "allCountries": "所有国家",
+        "next": "下一步",
+        "showing": "显示 {{from}}-{{to}} 条，共 {{total}} 条结果",
+        "shared": "共享",
+        "usedBy": "由 {{country}} 使用",
+        "stats": {
+          "total": "港口总数",
+          "active": "活跃港口",
+          "countries": "有港口的国家"
+        },
+        "filters": {
+          "all": "全部",
+          "activeOnly": "仅限活跃",
+          "inactiveOnly": "仅限不活跃"
+        },
+        "cols": {
+          "name": "港口名称",
+          "code": "代码",
+          "country": "国家",
+          "shared": "共享",
+          "active": "活跃"
+        },
+        "toggle": {
+          "activated": "港口 {{port}} 已激活",
+          "deactivated": "港口 {{port}} 已停用"
+        },
+        "empty": {
+          "title": "没有港口符合这些筛选条件",
+          "body": "尝试清除筛选条件或使用其他搜索词。"
+        }
+      }
+    },
+    "flags": {
+      "title": "功能开关",
+      "subtitle": "按平台启用或禁用程序功能。",
+      "web": "网页",
+      "mobile": "移动端",
+      "active": "生效",
+      "searchPlaceholder": "搜索功能...",
+      "empty": "未找到任何功能。",
+      "enabledToast": "{{label}} 已启用",
+      "disabledToast": "{{label}} 已禁用",
+      "category": {
+        "general": "通用",
+        "buyer": "买家",
+        "supplier": "供应商",
+        "admin": "管理员",
+        "platform": "平台",
+        "buyer_main": "买家 · 主菜单",
+        "buyer_insights": "买家 · 洞察",
+        "buyer_future": "买家 · 即将推出",
+        "supplier_main": "供应商 · 主菜单",
+        "supplier_insights": "供应商 · 洞察",
+        "supplier_future": "供应商 · 即将推出",
+        "admin_crm": "管理员 · CRM",
+        "admin_ops": "管理员 · 运营",
+        "admin_marketplace": "管理员 · 市场",
+        "admin_finance": "管理员 · 财务"
+      },
+      "audience": {
+        "all": "全部",
+        "buyer": "买家",
+        "supplier": "供应商",
+        "admin": "管理员"
+      }
+    }
+  },
+  "notifications": {
+    "title": "通知",
+    "markAllRead": "全部标记为已读",
+    "empty": "暂无通知"
+  },
+  "profile": {
+    "activeRole": "当前角色",
+    "buyer": "买家",
+    "supplier": "供应商",
+    "admin": "管理员"
+  },
+  "engine": {
+    "expired": "已过期",
+    "expiresIn": "有效期至",
+    "expiredBanner": "此谈判已过期，无法再接收答复。",
+    "finalRound": {
+      "banner": "最终轮 — 这是达成协议的最后机会。本轮结束后，未解决的条款将被取消。"
+    },
+    "acceptThisPrice": "接受此价格",
+    "allLocked": "所有条款均已达成协议。",
+    "progress": {
+      "itemsAgreed": "已达成协议的条款",
+      "round": "轮",
+      "of": "共计"
+    },
+    "deal": {
+      "title": "交易已完成！订单即将创建。",
+      "subtitle": "最终结算总额",
+      "viewOrder": "查看订单",
+      "orderToast": "订单创建功能即将推出"
+    }
+  },
+  "filters": {
+    "searchPlaceholder": "按交易ID、产品、公司、港口搜索...",
+    "searchEllipsis": "搜索...",
+    "filters": "筛选",
+    "advanced": "高级筛选",
+    "apply": "应用",
+    "clear": "清除",
+    "clearAll": "清除所有",
+    "all": "所有",
+    "any": "任何",
+    "nSelected": "已选择 {{count}} 项",
+    "noOptions": "无选项",
+    "dealId": "交易ID",
+    "dealIdPlaceholder": "例如 0000045",
+    "product": "产品",
+    "buyer": "买家",
+    "supplier": "供应商",
+    "origin": "原产地",
+    "destination": "目的地",
+    "originPort": "原产港",
+    "destinationPort": "目的港",
+    "status": "状态",
+    "dateFrom": "起始日期",
+    "dateTo": "截止日期",
+    "noResults": "没有与您筛选条件匹配的结果"
+  }
+}
