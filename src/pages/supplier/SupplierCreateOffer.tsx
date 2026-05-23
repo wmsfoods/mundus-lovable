@@ -1,6 +1,7 @@
 import { Fragment, useCallback, useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
+import { formatOfferNumber } from "@/lib/offerNumber";
 import { useTranslation } from "react-i18next";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
