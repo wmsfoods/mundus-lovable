@@ -33,6 +33,7 @@ import AdminShell from "./pages/admin/AdminShell.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
 import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags.tsx";
+import AdminUserRequests from "./pages/admin/AdminUserRequests.tsx";
 import AdminProspects from "./pages/admin/AdminProspects.tsx";
 import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
 import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
@@ -185,6 +186,7 @@ const App = () => (
               <Route path="settings/team" element={<AdminComingSoon section="settings/team" />} />
               <Route path="settings/audit" element={<AdminComingSoon section="settings/audit" />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
+              <Route path="user-requests" element={<AdminUserRequests />} />
               <Route path="outreach" element={<OutreachCenter />} />
               <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
               <Route path="outreach/templates" element={<OutreachTemplates />} />
