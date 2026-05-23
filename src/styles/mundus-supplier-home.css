@@ -165,7 +165,7 @@
 @media (max-width: 900px) {
   .sh-hero { padding: 28px 24px 24px; }
   .sh-hero h2 { font-size: 22px; }
-  .sh-hero-icon { display: none; }
+  .sh-hero-img { display: none; }
   .sh-attention-row { grid-template-columns: 1fr; }
   .sh-attention-row .cta { justify-self: flex-start; }
 }

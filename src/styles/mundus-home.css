@@ -242,6 +242,7 @@
   }
   .hero h2 { font-size: 22px; max-width: 100%; }
   .hero-photo { width: 160px; opacity: 0.4; }
+  .hero-img { display: none; }
   .stats {
     grid-template-columns: 1fr 1fr;
     gap: 12px;
@@ -265,4 +266,5 @@
 @media (max-width: 480px) {
   .hero h2 { font-size: 18px; }
   .hero-photo { display: none; }
+  .hero-img { display: none; }
 }
