@@ -550,6 +550,28 @@ export function CounterOfferModal({
                 {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
               </span>
             </div>
+            {/* Reference (anchor) toggle */}
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="text-[11px] uppercase text-muted-foreground">Reference</span>
+              <div className="flex rounded-md border border-border overflow-hidden text-xs">
+                <button
+                  type="button"
+                  onClick={() => setBulkAnchor("self")}
+                  className="px-3 py-1.5 font-medium"
+                  style={bulkAnchor === "self" ? { background: "#8B2252", color: "white" } : {}}
+                >
+                  {anchorLabel("self")}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setBulkAnchor("other")}
+                  className="px-3 py-1.5 font-medium"
+                  style={bulkAnchor === "other" ? { background: "#8B2252", color: "white" } : {}}
+                >
+                  {anchorLabel("other")}
+                </button>
+              </div>
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <div className="flex rounded-md border border-border overflow-hidden text-xs">
                 <button
