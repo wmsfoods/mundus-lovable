@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar, type SidebarItem, type SidebarEntry } from "@/components/mundus/Sidebar";
@@ -40,6 +40,12 @@ function SupplierShellInner() {
   const isMobile = useIsMobileShell();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const focusRoute =
+    location.pathname.startsWith("/supplier/offers/new") ||
+    location.pathname.startsWith("/supplier/auctions/create");
+  const [sidebarManual, setSidebarManual] = useState<boolean | null>(null);
+  const sidebarCollapsed = !isMobile && (sidebarManual ?? focusRoute);
+  useEffect(() => { setSidebarManual(null); }, [location.pathname]);
   const userName = user?.email?.split("@")[0] ?? "User";
   const { openUpsell } = useInsightsUpsell();
   const stackMode = isMobile && isStackRoute(location.pathname);
@@ -115,7 +121,7 @@ function SupplierShellInner() {
   return (
     <StackHeaderProvider>
       <div
-        className={`app-shell ${isMobile ? "is-mobile" : ""} ${stackMode ? "is-stack" : ""}`.trim()}
+        className={`app-shell ${isMobile ? "is-mobile" : ""} ${stackMode ? "is-stack" : ""} ${sidebarCollapsed ? "is-sidebar-collapsed" : ""}`.trim()}
       >
         <Sidebar
           items={SUPPLIER_NAV}
@@ -123,6 +129,8 @@ function SupplierShellInner() {
           userName={userName}
           userSubtitle={company?.name}
           onProBadgeClick={onProBadgeClick}
+          collapsed={sidebarCollapsed}
+          onToggleCollapsed={() => setSidebarManual(!sidebarCollapsed)}
         />
         {stackMode ? <StackHeader /> : <Topbar onMenuClick={() => setDrawerOpen(true)} />}
         <main className="app-main">

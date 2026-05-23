@@ -2,6 +2,7 @@ import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { Logo } from "@/components/Logo";
 import { XIcon, ChevronDownIcon } from "@/components/icons";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProBadge } from "@/components/mundus/ProBadge";
 
 export type SidebarItem = {
@@ -39,6 +40,8 @@ type SidebarProps = {
   mobileOpen?: boolean;
   onClose?: () => void;
   onProBadgeClick?: (item: SidebarItem) => void;
+  collapsed?: boolean;
+  onToggleCollapsed?: () => void;
 };
 
 function renderItem(
@@ -117,6 +120,8 @@ export function Sidebar({
   mobileOpen = false,
   onClose,
   onProBadgeClick,
+  collapsed = false,
+  onToggleCollapsed,
 }: SidebarProps) {
   const initials = userName
     ? userName
@@ -134,10 +139,21 @@ export function Sidebar({
         onClick={onClose}
         aria-hidden="true"
       />
-      <aside className={`sb ${mobileOpen ? "is-open" : ""}`}>
+      <aside className={`sb ${mobileOpen ? "is-open" : ""} ${collapsed ? "is-collapsed" : ""}`.trim()}>
         <div className="sb-logo">
           <Logo />
-          {rolePill && <span className="sb-role-pill">{rolePill}</span>}
+          {rolePill && !collapsed && <span className="sb-role-pill">{rolePill}</span>}
+          {onToggleCollapsed && (
+            <button
+              type="button"
+              className="sb-collapse-toggle"
+              onClick={onToggleCollapsed}
+              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+              title={collapsed ? "Expand" : "Collapse"}
+            >
+              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            </button>
+          )}
           <button
             type="button"
             className="sb-close"

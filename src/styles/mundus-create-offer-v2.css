@@ -77,6 +77,7 @@
   padding: 16px 18px;
   overflow-y: auto;
   max-height: calc(100vh - 120px);
+  min-width: 0;
 }
 .cov4-panel-l { background: #fff; border-right: 1px solid var(--border); }
 .cov4-panel-c { background: var(--g050, #fafaf9); }
@@ -892,4 +893,24 @@
   padding: 2px 7px;
   border-radius: 999px;
   width: fit-content;
+}
+
+/* ---- Overflow fixes for narrow left panel inputs ---- */
+.ca-window-grid { min-width: 0; }
+.ca-field { min-width: 0; }
+.ca-input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+.ca-price-row { min-width: 0; }
+.ca-price-row .cov4-ip {
+  flex: 1 1 140px;
+  min-width: 0;
+  max-width: 100%;
+}
+.ca-price-row .cov4-ip input {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
 }
