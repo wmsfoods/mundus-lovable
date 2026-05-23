@@ -28,6 +28,7 @@ import {
   type SupplierSaleCard,
 } from "@/data/mockSupplierHome";
 import { useAuth } from "@/contexts/AuthContext";
+import { ProteinMarquee } from "@/components/mundus/ProteinMarquee";
 
 type IconCmp = ComponentType<{ size?: number }>;
 type TFn = (key: string, opts?: Record<string, unknown>) => string;
@@ -271,12 +272,7 @@ export default function SupplierHome() {
             </Link>
           </div>
         </div>
-        <div className="sh-hero-icon" aria-hidden="true">
-          <svg width="56" height="56" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M7 2v10" /><path d="M7 12a2 2 0 0 1-2-2V2" /><path d="M9 2v8a2 2 0 0 1-2 2" /><path d="M7 12v10" />
-            <path d="M17 2v20" /><path d="M17 12a3 3 0 0 0 3-3V4a2 2 0 0 0-3-1.7" />
-          </svg>
-        </div>
+        <ProteinMarquee />
       </section>
 
       <div className="sh-attention">

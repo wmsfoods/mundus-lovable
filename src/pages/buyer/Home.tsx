@@ -13,6 +13,7 @@ import {
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
+import { ProteinMarquee } from "@/components/mundus/ProteinMarquee";
 
 // =========================================================================
 // Stat card
@@ -77,7 +78,7 @@ export default function BuyerHome() {
     <>
       <section className="hero">
         <h2>{t("buyer.home.hero")}</h2>
-        <div className="hero-photo" aria-hidden="true" />
+        <ProteinMarquee />
       </section>
 
       <div className="stats">
