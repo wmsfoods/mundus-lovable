@@ -20,7 +20,7 @@ import {
   ClipboardIcon,
   UsersIcon,
 } from "@/components/icons";
-import { BarChart3, LineChart, Mail } from "lucide-react";
+import { BarChart3, LineChart } from "lucide-react";
 import { Gavel, Globe } from "lucide-react";
 import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
 import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
