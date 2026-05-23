@@ -278,6 +278,27 @@ export default function BuyerOffers() {
   const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
+  const { data: myNegotiations } = useQuery({
+    queryKey: ["my-negotiations-map", MOCK_BUYER_COMPANY_ID],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select("id, offer_id, status")
+        .eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
+        .not("status", "in", "(expired,offer_withdrawn)")
+        .is("deleted_at", null);
+      return data || [];
+    },
+  });
+
+  const myNegMap = useMemo(() => {
+    const map: Record<string, { id: string; status: string }> = {};
+    myNegotiations?.forEach((n) => {
+      map[n.offer_id] = { id: n.id, status: n.status };
+    });
+    return map;
+  }, [myNegotiations]);
+
   // Keep URL in sync when user changes the protein pill.
   useEffect(() => {
     const current = searchParams.get("protein");
@@ -501,6 +522,7 @@ export default function BuyerOffers() {
             <OfferCard
               key={offer.id}
               offer={offer}
+              myNeg={myNegMap[offer.id]}
               onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
             />
           ))}
