@@ -389,13 +389,44 @@ export function CounterOfferModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-[760px] max-h-[90vh] overflow-y-auto sm:rounded-lg max-sm:!max-w-full max-sm:!max-h-[100dvh] max-sm:!h-[100dvh] max-sm:!rounded-none max-sm:!m-0">
+      <DialogContent className="max-w-[960px] lg:max-w-[1040px] max-h-[90vh] overflow-y-auto sm:rounded-lg max-sm:!max-w-full max-sm:!max-h-[100dvh] max-sm:!h-[100dvh] max-sm:!rounded-none max-sm:!m-0">
         <DialogHeader>
           <DialogTitle>
             {t(titleKey)} — {t("supplier.counter.roundOf", { round: displayRound, max: MAX_DISPLAY_ROUNDS })}
           </DialogTitle>
           <DialogDescription>{t(`${perspective}.counter.subtitle`)}</DialogDescription>
         </DialogHeader>
+
+        {/* Offer summary header */}
+        {(() => {
+          const offer = negotiation.offer;
+          const markets = (offer?.offer_markets ?? [])
+            .map((m) => m?.market?.country?.english_name)
+            .filter((n): n is string => !!n);
+          const plants = Array.from(
+            new Set((offer?.items ?? []).map((it) => it.plant_number).filter((p): p is string => !!p)),
+          );
+          const dest = negotiation.port
+            ? `${negotiation.port.name}${negotiation.port.country?.english_name ? `, ${negotiation.port.country.english_name}` : ""}`
+            : "—";
+          const Field = ({ label, value }: { label: string; value: React.ReactNode }) => (
+            <div className="min-w-0">
+              <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">{label}</div>
+              <div className="text-sm font-medium text-foreground truncate" title={typeof value === "string" ? value : undefined}>
+                {value || "—"}
+              </div>
+            </div>
+          );
+          return (
+            <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              <Field label="Markets" value={markets.length ? markets.join(", ") : "—"} />
+              <Field label="Final Destination" value={dest} />
+              <Field label="Plant Number" value={plants.length ? plants.join(", ") : "—"} />
+              <Field label="Incoterm" value={negotiation.incoterm || "—"} />
+              <Field label="Payment Terms" value={offer?.payment_terms || "—"} />
+            </div>
+          );
+        })()}
 
         {isFinal && !exhausted && (
           <div

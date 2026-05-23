@@ -43,8 +43,12 @@ export type RealNegotiationRow = {
       amount: number;
       price: number;
       minimum_price: number | null;
+      plant_number: string | null;
       customer_product: { id: string; name: string } | null;
     }[];
+    offer_markets?: {
+      market: { id: string; country: { english_name: string | null; iso_code: string | null } | null } | null;
+    }[] | null;
   } | null;
   port: { id: string; name: string; country: { english_name: string | null; iso_code: string | null } | null } | null;
   rounds: {
@@ -98,9 +102,10 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
             id, offer_number, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
             items:offer_items (
-              id, amount, price, minimum_price,
+              id, amount, price, minimum_price, plant_number,
               customer_product:customer_products ( id, name )
-            )
+            ),
+            offer_markets ( market:markets ( id, country:countries ( english_name, iso_code ) ) )
           ),
           port:ports ( id, name, country:countries ( english_name, iso_code ) ),
           rounds:round_proposals!round_proposals_negotiation_id_fkey (
