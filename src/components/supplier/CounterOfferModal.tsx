@@ -143,7 +143,7 @@ export function CounterOfferModal({
         ? negotiation.buyer_message
         : negotiation.supplier_message) ?? "",
     );
-  }, [open, openItems, perspective, theirPrices]);
+  }, [open, openItems, perspective, theirPrices, negotiation.buyer_message, negotiation.supplier_message]);
 
   const askingTotal = openItems.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
   const theirTotal = openItems.reduce(
