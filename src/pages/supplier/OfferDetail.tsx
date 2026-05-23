@@ -15,6 +15,8 @@ import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
+import { useOfferImages } from "@/hooks/useOfferImages";
 import {
   Dialog,
   DialogContent,
@@ -175,6 +177,7 @@ export default function SupplierOfferDetail() {
   }
 
   const totalKg = offer.items.reduce((s, it) => s + it.qtyKg, 0);
+  const galleryImages = useOfferImages(offer.items);
   const firstDest = offer.destinations[0];
 
   return (
@@ -328,16 +331,10 @@ export default function SupplierOfferDetail() {
       )}
 
       <div className="od-grid">
-        <div className="od-gallery">
-          <div className="od-gallery-main">
-            <div className="od-gallery-placeholder">
-              <span className="od-illu-label">{t("supplier.offers.detail.illustrative")}</span>
-            </div>
-          </div>
-          <div className="od-gallery-thumbs">
-            {[0, 1, 2, 3].map((i) => <div key={i} className="od-thumb" />)}
-          </div>
-        </div>
+        <OfferImageGallery
+          images={galleryImages}
+          illustrativeLabel={t("supplier.offers.detail.illustrative")}
+        />
 
         <div className="od-right">
           <div className="od-title-row">

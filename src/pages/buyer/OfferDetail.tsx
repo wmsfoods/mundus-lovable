@@ -9,6 +9,8 @@ import {
 } from "@/components/icons";
 import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
+import { useOfferImages } from "@/hooks/useOfferImages";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BidModal } from "@/components/buyer/BidModal";
@@ -217,6 +219,7 @@ function OfferDetailContent({
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
+  const galleryImages = useOfferImages(items);
 
   const title = mixed
     ? t("buyer.offers.card.mixedTitle", { count: items.length })
@@ -279,18 +282,10 @@ function OfferDetailContent({
       </div>
 
       <div className="od-grid">
-        <div className="od-gallery">
-          <div className="od-gallery-main">
-            <div className="od-gallery-placeholder">
-              <span className="od-illu-label">{t("buyer.offerDetail.illustrative")}</span>
-            </div>
-          </div>
-          <div className="od-gallery-thumbs">
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} className="od-thumb" />
-            ))}
-          </div>
-        </div>
+        <OfferImageGallery
+          images={galleryImages}
+          illustrativeLabel={t("buyer.offerDetail.illustrative")}
+        />
 
         <div className="od-right">
           <div className="od-title-row">
