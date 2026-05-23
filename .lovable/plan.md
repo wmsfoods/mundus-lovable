@@ -1,73 +1,98 @@
-# Plano — Limpeza e ergonomia do CounterOfferModal
+## Goal
 
-Arquivo único: `src/components/supplier/CounterOfferModal.tsx` (mesmo modal usado por supplier e buyer; lógica de cada lado é preservada via `perspective`).
+Replicar o filtro completo das screenshots em **Supplier → My Offers** e **Buyer → Offers**, com funcionalidade total e um botão **Clear filters** sempre visível quando houver filtros ativos.
 
-## 1. Limpar a linha dos items (desktop e mobile)
+## Filtros (como nas screenshots)
 
-Hoje cada linha mostra: input do preço final + toggle anchor (`− my asking` / `+ buyer bid`) + toggle `$/%` + input Δ. Isso polui.
+Ordem na barra (linha rolável horizontal no mobile, flex-wrap no desktop):
 
-**Mudança:** na linha, manter apenas:
-- Checkbox de Accept
-- Input editável do preço final (`YOUR COUNTER`)
-- Mensagem de erro de validação (se houver)
-- Coluna DIFF
+1. **Pills de proteína** — `All / Beef / Pork / Poultry / Ovine` (já existe via `ProteinFilter`)
+2. **All Temps ▾** — single-select: `All / Frozen / Chilled / Fresh`
+3. **All Origins ▾** — multi-select com busca, bandeiras, contagem `· N` quando selecionado
+4. **All Incoterms ▾** — multi-select: `FOB / CFR / CIF / FCA / DDP / EXW` (lista derivada dos dados)
+5. **All Markets ▾** — multi-select com busca, bandeiras, contagem `· N`
+6. **Search** — input com ícone, busca por cut, supplier, origem, porto
+7. **Halal**: `Any / Yes / No` (segmented)
+8. **Kosher**: `Any / Yes / No` (segmented)
+9. **Clear filters** (link com ícone X) — aparece logo após o último controle, em destaque, sempre que houver `>0` filtros ativos. No mobile vira chip fixo no topo da lista de chips ativos.
 
-Remover dos itens (desktop table e mobile card) os toggles de anchor, `$/%` e o input Δ. O ajuste fino por item passa a ser feito digitando direto o preço final na coluna `YOUR COUNTER`, que continua respeitando todas as validações de cada lado.
+Abaixo da barra, manter linha **`Showing X of Y offers · Z MT`** (já existe).
 
-Estado `rowAnchor` / `rowMode` / `rowValue` e a função `updateRowDelta` deixam de ser necessários e serão removidos.
+## Componente compartilhado
 
-## 2. Reorganizar o bloco "Apply ... in all items"
+Criar `src/components/marketplace/OffersFilterBar.tsx` para reuso buyer/supplier:
 
-Layout atual está embolado (Reference em uma linha, $/% + input + botão em outra, Accept all / Meet in middle em outra). Reorganizar em duas linhas claras:
-
-```text
-APPLY COUNTER IN ALL ITEMS
-┌─────────────────────────────────────────────────────────────┐
-│ Reference: [− my asking] [+ buyer bid]                       │
-│                                                              │
-│ Adjust by:  [$/kg|%]   [   0.10   ]   [ Apply to All ]      │
-│                                                              │
-│ Shortcuts:  [✅ Accept all]   [⇄ Meet in middle]            │
-└─────────────────────────────────────────────────────────────┘
-```
-
-- Cada grupo com um micro-label (`Reference`, `Adjust by`, `Shortcuts`) à esquerda em `text-[11px] uppercase muted`.
-- Espaçamento vertical consistente (`gap-3`) entre os três grupos.
-- Mantém o `deductionFeedback` chip à direita do input quando `%` (buyer).
-
-## 3. Atalhos toggleáveis (reverter ao desclicar)
-
-Adicionar estado `activeShortcut: "accept_all" | "meet_middle" | null` e snapshot do estado anterior:
+- Props: `value`, `onChange`, `options { temps, origins, incoterms, markets }`, `proteinNode` (slot para o `ProteinFilter` existente), `showHalalKosher` (default `true`), `searchPlaceholder`.
+- Estado controlado, type:
 
 ```ts
-const [activeShortcut, setActiveShortcut] = useState<null|"accept_all"|"meet_middle">(null);
-const [snapshot, setSnapshot] = useState<{counters: Record<string,number>; accepted: Record<string,boolean>} | null>(null);
+type OffersFilterState = {
+  protein: ProteinKey;       // gerenciado fora
+  temp: "all" | "Frozen" | "Chilled" | "Fresh";
+  origins: string[];
+  incoterms: string[];
+  markets: string[];
+  halal: "any" | "yes" | "no";
+  kosher: "any" | "yes" | "no";
+  search: string;
+};
 ```
 
-Comportamento:
+- Dropdowns multi-select implementados com shadcn `Popover` + busca interna + checkbox custom + bandeira (`FlagSVG`). Reusa estilo do `DealsFilterBar` (`dfb-multi`) mas com nova classe `ofb-*` para o look "pill arredondado" das screenshots.
+- Single-select (Temps) é Popover com lista simples e ✓ no item ativo.
+- Segmented Halal/Kosher reusa estilo `bo-filter-pill`.
+- Chip do controle muda para variante "selected" (fundo `--p800`, texto branco) quando algum valor está aplicado, e mostra ` · N` ao lado do label.
+- "Clear filters" exibe ícone X + contador `(N)` e zera só os campos do filtro (mantém protein opcionalmente — botão limpa tudo inclusive protein).
 
-- **Accept all** (clique):
-  - Se inativo: salva snapshot `{counters, accepted}`, aplica `accepted=true` em todos os `openItems`, vira `activeShortcut="accept_all"`, label muda para `↩ Unselect all`.
-  - Se ativo: restaura snapshot, `activeShortcut=null`, label volta para `✅ Accept all`.
+CSS novo em `src/styles/mundus-offers.css` (`.ofb`, `.ofb-pill`, `.ofb-pill.is-active`, `.ofb-pop`, `.ofb-segment`, `.ofb-clear`).
 
-- **Meet in middle** (clique):
-  - Se inativo: salva snapshot, aplica `(asking + their) / 2` em todos os items não aceitos (mesma fórmula atual), vira `activeShortcut="meet_middle"`, label muda para `↩ Undo meet in middle`.
-  - Se ativo: restaura snapshot, `activeShortcut=null`.
+## Integração
 
-- Apenas um shortcut ativo por vez. Aplicar um cancela/sobrescreve o outro (snapshot continua sendo o estado pré-shortcut anterior, não o pós).
+### Supplier (`src/pages/supplier/Offers.tsx`)
+- Substituir bloco `so-filterbar` atual pelo `<OffersFilterBar>` (mantendo o `ProteinFilter` como `proteinNode`, e mantendo o select de status + sort + view toggle ao lado direito).
+- Derivar `options` a partir de `realOffers`: 
+  - `temps` = distintos de `condition`
+  - `origins` = distintos de `originCountry`
+  - `incoterms` = união de `incoterms[]`
+  - `markets` = união de `destinations[].name`
+- Aplicar filtro no `useMemo` existente (somar regras temp/origins/incoterms/markets/halal/kosher/search). Como `SupplierOffer` ainda não tem campos halal/kosher, adicionar `isHalal?: boolean; isKosher?: boolean;` opcionais (default `false`) — filtro funciona quando dado existir; UI mostra controle igual.
 
-- Qualquer interação manual depois disso (`Apply to All`, editar preço de uma linha, marcar/desmarcar checkbox) reseta `activeShortcut=null` e limpa o snapshot — pois o usuário deixou de estar em "modo shortcut".
+### Buyer (`src/pages/buyer/Offers.tsx`)
+- Substituir `bo-filter-row` (search/sort/chips) pelo `<OffersFilterBar>`. Manter `ProteinFilter` no slot, manter botão "Auctions only" e `AuctionInfoDialog` em linha separada acima, manter `sortBy` à direita.
+- `OfferWithDetails` já tem `is_halal` e `is_kosher` no select de `useOffers` (linhas 47-48, 91-92) — usar diretamente. Origins/incoterms/markets derivados dos dados retornados.
+- Sincronizar `protein` com URL como hoje.
 
-Visual: quando ativo, o botão fica preenchido (`background: #8B2252; color: white`) em vez de outline, deixando claro que é um toggle.
+## Clear filters – UX
 
-## 4. Aplicar dos dois lados
+- Botão **Clear filters** posicionado no fim da barra (desktop) e fixo logo abaixo (mobile) com:
+  - ícone X + texto + badge com nº de filtros ativos
+  - cor secundária quando 0 ativos (estado `disabled`, oculto)
+  - cor de destaque (border `--p800`, texto `--p800`, fundo hover `--p050`) quando ativos
+- Mantém também os "active chips" individuais (igual buyer hoje) para remover 1 a 1.
 
-A lógica por perspectiva (validação supplier não pode subir acima do counter anterior; buyer não pode cair abaixo do bid anterior, etc.) **não muda**. Só a UI muda — e os dois lados usam o mesmo modal, então a mudança vale para buyer e supplier automaticamente. `Meet in middle` continua usando `(asking + their)/2`, que faz sentido nas duas direções.
+## Aplicação dos filtros
 
-## Detalhes técnicos
+```ts
+const filtered = offers.filter(o => 
+  (state.temp === "all" || o.condition === state.temp) &&
+  (state.origins.length === 0 || state.origins.includes(o.originCountry)) &&
+  (state.incoterms.length === 0 || o.incoterms.some(i => state.incoterms.includes(i))) &&
+  (state.markets.length === 0 || o.destinations.some(d => state.markets.includes(d.name))) &&
+  (state.halal === "any" || (state.halal === "yes" ? o.isHalal : !o.isHalal)) &&
+  (state.kosher === "any" || (state.kosher === "yes" ? o.isKosher : !o.isKosher)) &&
+  (state.search === "" || matchesSearch(o, state.search))
+);
+```
 
-- Remover do JSX da `<tbody>` desktop (linhas ~720–769) e do mobile cards o bloco de anchor/$%/Δ.
-- Remover estados `rowAnchor`, `rowMode`, `rowValue`, função `updateRowDelta` e suas inicializações no `useEffect`.
-- Atualizar `applyBulk` para também resetar `activeShortcut=null` e `snapshot=null` (é uma ação manual).
-- `setAccepted` / `setCounters` chamados manualmente (não pelo shortcut) também resetam `activeShortcut`. Implementar via wrappers locais `handleManualCounterChange` / `handleManualAcceptToggle` para não vazar lógica de reset por todo o JSX.
-- Sem mudanças em hooks, edge functions ou tipos.
+## Mobile
+
+- Barra rola horizontalmente (`overflow-x:auto`, `scroll-snap-x`); pills/dropdowns mantêm tamanho confortável (≥40px alvo de toque).
+- Popovers viram bottom-sheet (shadcn `Sheet` side="bottom") em telas <640px, igual `DealsFilterBar`.
+- Halal/Kosher quebram para linha de baixo automaticamente.
+
+## Files
+
+- **new**: `src/components/marketplace/OffersFilterBar.tsx`
+- **edit**: `src/pages/supplier/Offers.tsx`, `src/pages/buyer/Offers.tsx`, `src/styles/mundus-offers.css`
+- **edit (i18n)**: chaves novas em `src/i18n/locales/{en,pt,es,fr,zh}.json` (`offers.filter.temps/origins/incoterms/markets/halal/kosher/clearAll/any/yes/no`)
+- **edit (mock, optional)**: adicionar `isHalal`/`isKosher` opcionais em `SupplierOffer`
