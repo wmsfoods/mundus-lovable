@@ -103,6 +103,7 @@ export function useOffer(id: string | undefined): UseOfferResult {
           is_halal,
           is_kosher,
           observation,
+          exw_pickup_location,
           created_at,
           items:offer_items (
             id,
