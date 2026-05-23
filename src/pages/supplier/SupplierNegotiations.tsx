@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
+import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 import {
   useNegotiations,
   type NegotiationBid,
@@ -135,6 +136,8 @@ export default function SupplierNegotiations() {
       />
 
       <PageTitle icon={MessageIcon} title={t("supplier.negotiations.title")} />
+
+      <OfficeIndicator />
 
       <div className="nego-toolbar">
         <div className="search-input">
