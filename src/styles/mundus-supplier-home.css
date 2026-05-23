@@ -45,12 +45,23 @@
 .sh-hero-cta .btn-hero.is-ghost:hover {
   background: rgba(255,255,255,0.12); border-color: #fff;
 }
-.sh-hero-icon {
-  position: absolute; right: 56px; top: 50%; transform: translateY(-50%);
-  width: 120px; height: 120px; border-radius: 50%;
-  border: 1.5px solid rgba(255,255,255,0.32);
-  display: flex; align-items: center; justify-content: center;
-  color: rgba(255,255,255,0.85); pointer-events: none;
+.sh-hero-img {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 45%;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+.sh-hero-photo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.8) 100%);
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.8) 100%);
 }
 
 /* Needs Your Attention */
@@ -154,7 +165,7 @@
 @media (max-width: 900px) {
   .sh-hero { padding: 28px 24px 24px; }
   .sh-hero h2 { font-size: 22px; }
-  .sh-hero-icon { display: none; }
+  .sh-hero-img { display: none; }
   .sh-attention-row { grid-template-columns: 1fr; }
   .sh-attention-row .cta { justify-self: flex-start; }
 }

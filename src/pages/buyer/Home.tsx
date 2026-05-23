@@ -13,7 +13,6 @@ import {
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
-import { ProteinMarquee } from "@/components/mundus/ProteinMarquee";
 
 // =========================================================================
 // Stat card
@@ -78,7 +77,19 @@ export default function BuyerHome() {
     <>
       <section className="hero">
         <h2>{t("buyer.home.hero")}</h2>
-        <ProteinMarquee />
+        <div className="hero-img" aria-hidden="true">
+          <img
+            src="https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=300&fit=crop&q=80"
+            alt=""
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              maskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.8) 100%)',
+              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, rgba(0,0,0,0.3) 30%, rgba(0,0,0,0.8) 100%)',
+            }}
+          />
+        </div>
       </section>
 
       <div className="stats">
