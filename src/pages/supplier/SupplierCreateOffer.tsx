@@ -149,6 +149,28 @@ export default function SupplierCreateOffer() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromRequestId = searchParams.get("from");
+  const location = useLocation();
+  const fromRequest = (location.state as any)?.fromRequest as
+    | {
+        requestId: string;
+        requestNumber: string;
+        client: string;
+        product: string;
+        category: string;
+        specification: string;
+        quantity: number;
+        targetPrice: number;
+        destinationCountry: string;
+        destinationPort: string;
+        incoterms: string;
+        containerSize: string;
+        containerCount: number;
+        temperature: string;
+        shipmentDate: string;
+        additionalInfo: string | null;
+      }
+    | undefined;
+  const prefilledRef = useRef(false);
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
