@@ -51,6 +51,7 @@ export default function AdminShell() {
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
     { to: "/admin/user-requests", label: "User Requests", icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },
+    { to: "/admin/offers", label: "All Offers", icon: Package as unknown as IconCmp },
     { to: "/admin/deals", label: t("admin.shell.nav.deals"), icon: Package as unknown as IconCmp },
     { to: "/admin/negotiations", label: t("admin.shell.nav.negotiations"), icon: MessagesSquare as unknown as IconCmp },
     { to: "/admin/verifications", label: t("admin.shell.nav.verifications"), icon: ShieldCheck as unknown as IconCmp, badge: 8 },
