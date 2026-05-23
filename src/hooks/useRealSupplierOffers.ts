@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 const COUNTRY_CODE: Record<string, string> = {
   argentina: "AR", brazil: "BR", canada: "CA", chile: "CL", china: "CN",
@@ -71,9 +72,10 @@ export function useRealSupplierOffers() {
         const fclCount = Number(o.total_fcl ?? 1) || 1;
         const pricePerFclUsd = fclCount > 0 ? askingPrice / fclCount : askingPrice;
         const firstName = items[0]?.customer_product?.name ?? null;
+        const formattedNumber = formatOfferNumber(o.offer_number, o.created_at);
         const title =
-          items.length === 0 ? `Offer #${o.offer_number}` :
-          items.length === 1 ? (firstName ?? `Offer #${o.offer_number}`) :
+          items.length === 0 ? formattedNumber :
+          items.length === 1 ? (firstName ?? formattedNumber) :
           `Mixed Container — ${items.length} cuts`;
         const cutsLabel = items.map((it) => it.customer_product?.name).filter(Boolean).join(", ") || "—";
         const condition = (items[0]?.condition === "Chilled" ? "Chilled" : "Frozen") as SupplierOffer["condition"];
@@ -88,6 +90,7 @@ export function useRealSupplierOffers() {
           id: o.id,
           status,
         createdAt: o.created_at,
+          offerNumber: o.offer_number,
           category: "Beef",
           condition,
           title,
