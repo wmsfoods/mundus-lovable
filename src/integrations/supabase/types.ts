@@ -276,9 +276,14 @@ export type Database = {
           is_verified: boolean | null
           logo_url: string | null
           name: string
+          office_country: string | null
+          office_name: string | null
+          office_region: string | null
+          office_type: string | null
           onboarded_at: string | null
           onboarded_by: string | null
           onboarded_from_prospect_id: string | null
+          parent_company_id: string | null
           phone: string
           plant_numbers: string[] | null
           preferred_cuts: string[] | null
@@ -306,9 +311,14 @@ export type Database = {
           is_verified?: boolean | null
           logo_url?: string | null
           name: string
+          office_country?: string | null
+          office_name?: string | null
+          office_region?: string | null
+          office_type?: string | null
           onboarded_at?: string | null
           onboarded_by?: string | null
           onboarded_from_prospect_id?: string | null
+          parent_company_id?: string | null
           phone: string
           plant_numbers?: string[] | null
           preferred_cuts?: string[] | null
@@ -336,9 +346,14 @@ export type Database = {
           is_verified?: boolean | null
           logo_url?: string | null
           name?: string
+          office_country?: string | null
+          office_name?: string | null
+          office_region?: string | null
+          office_type?: string | null
           onboarded_at?: string | null
           onboarded_by?: string | null
           onboarded_from_prospect_id?: string | null
+          parent_company_id?: string | null
           phone?: string
           plant_numbers?: string[] | null
           preferred_cuts?: string[] | null
@@ -351,7 +366,15 @@ export type Database = {
           website?: string | null
           zip_code?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "companies_parent_company_id_fkey"
+            columns: ["parent_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       company_about: {
         Row: {
@@ -3317,6 +3340,7 @@ export type Database = {
           is_kosher: boolean | null
           observation: string | null
           offer_number: number
+          office_id: string | null
           origin_city: string | null
           origin_country: string
           origin_port: string
@@ -3340,6 +3364,7 @@ export type Database = {
           is_kosher?: boolean | null
           observation?: string | null
           offer_number?: number
+          office_id?: string | null
           origin_city?: string | null
           origin_country: string
           origin_port: string
@@ -3363,6 +3388,7 @@ export type Database = {
           is_kosher?: boolean | null
           observation?: string | null
           offer_number?: number
+          office_id?: string | null
           origin_city?: string | null
           origin_country?: string
           origin_port?: string
@@ -3378,6 +3404,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "offers_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "offers_supplier_id_fkey"
             columns: ["supplier_id"]
@@ -4377,6 +4410,41 @@ export type Database = {
           },
         ]
       }
+      user_offices: {
+        Row: {
+          company_id: string
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          role?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_offices_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_request_documents: {
         Row: {
           created_at: string | null
@@ -4518,6 +4586,7 @@ export type Database = {
       users: {
         Row: {
           active_company_id: string | null
+          active_office_id: string | null
           avatar_url: string | null
           company_id: string
           created_at: string | null
@@ -4538,6 +4607,7 @@ export type Database = {
         }
         Insert: {
           active_company_id?: string | null
+          active_office_id?: string | null
           avatar_url?: string | null
           company_id: string
           created_at?: string | null
@@ -4558,6 +4628,7 @@ export type Database = {
         }
         Update: {
           active_company_id?: string | null
+          active_office_id?: string | null
           avatar_url?: string | null
           company_id?: string
           created_at?: string | null
@@ -4580,6 +4651,13 @@ export type Database = {
           {
             foreignKeyName: "users_active_company_id_fkey"
             columns: ["active_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "users_active_office_id_fkey"
+            columns: ["active_office_id"]
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
