@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useActiveOffice } from "./useActiveOffice";
 import {
   countryToCode,
   initialsOf,
@@ -23,6 +24,9 @@ export function useRealNegotiationsList(role: Role) {
   const [supplierGroups, setSupplierGroups] = useState<ParentOffer[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { activeOfficeId, isAllOffices } = useActiveOffice();
+  // Buyers always see all negotiations regardless of supplier office.
+  const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
 
   useEffect(() => {
     let cancelled = false;
@@ -56,6 +60,10 @@ export function useRealNegotiationsList(role: Role) {
         ? q.eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
         : q.eq("offer.supplier_id", MOCK_SUPPLIER_ID);
 
+      if (applyOfficeFilter) {
+        q = q.eq("office_id", activeOfficeId);
+      }
+
       const { data, error: err } = await q;
       if (cancelled) return;
       if (err) {
@@ -73,7 +81,7 @@ export function useRealNegotiationsList(role: Role) {
     return () => {
       cancelled = true;
     };
-  }, [role]);
+  }, [role, applyOfficeFilter, activeOfficeId]);
 
   if (role === "buyer") {
     const offerCount = buyerGroups.length;
