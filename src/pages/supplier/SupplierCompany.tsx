@@ -4,6 +4,7 @@ import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
+import TradePreferencesSection from "@/components/company/TradePreferencesSection";
 
 function initials(name: string) {
   return name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "M";
@@ -36,6 +37,7 @@ export default function SupplierCompany() {
       </section>
 
       {company?.id && <CompanyProfileSections companyId={company.id} canEdit />}
+      {company?.id && <TradePreferencesSection companyId={company.id} canEdit />}
     </div>
   );
 }
