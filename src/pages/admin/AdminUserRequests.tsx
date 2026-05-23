@@ -511,23 +511,103 @@ function Details({ r }: { r: RequestRow }) {
           </a>
         ) : null}
       />
-      <Field
-        label="Certificate"
-        value={r.certificate_url ? (
-          <a href={r.certificate_url} target="_blank" rel="noopener noreferrer" className="text-[#B64769] hover:underline">
-            View file
-          </a>
-        ) : null}
-      />
-      <Field
-        label="Document Scan"
-        value={r.scan_result ? (
-          <pre className="text-[11px] bg-white p-2 rounded border max-h-32 overflow-auto">
-            {JSON.stringify(r.scan_result, null, 2)}
-          </pre>
-        ) : null}
-      />
       <Field label="Registered At" value={fmtDate(r.created_at)} />
+      {r.certificate_url && (
+        <div className="sm:col-span-2 lg:col-span-3 mt-2">
+          <div className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">Uploaded Certificate / License</div>
+          <div className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+            {/\.(png|jpg|jpeg|gif|webp)(\?|$)/i.test(r.certificate_url) ? (
+              <div className="p-4">
+                <img
+                  src={r.certificate_url}
+                  alt="Certificate"
+                  className="max-h-[400px] w-auto rounded border border-gray-100 shadow-sm"
+                />
+              </div>
+            ) : (
+              <div className="p-4 flex items-center gap-3">
+                <div className="h-12 w-12 rounded-lg bg-red-50 flex items-center justify-center">
+                  <span className="text-2xl">📄</span>
+                </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium text-gray-800">Certificate Document (PDF)</p>
+                  <p className="text-xs text-gray-500">Click to view or download</p>
+                </div>
+              </div>
+            )}
+            <div className="border-t border-gray-100 px-4 py-2.5 bg-gray-50 flex gap-3">
+              <a
+                href={r.certificate_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium hover:underline flex items-center gap-1"
+                style={{ color: "#B64769" }}
+              >
+                🔗 Open in new tab
+              </a>
+              <a
+                href={r.certificate_url}
+                download
+                className="text-sm text-gray-600 hover:underline flex items-center gap-1"
+              >
+                ⬇️ Download
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
+      {r.scan_result && (
+        <div className="sm:col-span-2 lg:col-span-3">
+          <div className="text-[11px] uppercase tracking-wide text-gray-400 mb-2">AI Document Verification</div>
+          <div className={cn(
+            "rounded-lg border p-4",
+            r.scan_result.overallVerification === "verified" ? "border-green-200 bg-green-50" :
+            r.scan_result.overallVerification === "partial" ? "border-amber-200 bg-amber-50" :
+            "border-gray-200 bg-gray-50"
+          )}>
+            <div className="flex items-start gap-3">
+              <span className="text-lg">
+                {r.scan_result.overallVerification === "verified" ? "✅" :
+                 r.scan_result.overallVerification === "partial" ? "⚠️" : "❓"}
+              </span>
+              <div className="flex-1 text-sm">
+                <p className="font-medium text-gray-800">
+                  {r.scan_result.overallVerification === "verified" ? "Document Verified" :
+                   r.scan_result.overallVerification === "partial" ? "Partial Match" :
+                   "Needs Manual Review"}
+                </p>
+                {r.scan_result.documentType && (
+                  <p className="text-gray-600 mt-1">Type: {r.scan_result.documentType}</p>
+                )}
+                {r.scan_result.extractedCompanyName && (
+                  <p className="text-gray-600">
+                    Company: {r.scan_result.extractedCompanyName}
+                    {r.scan_result.companyNameMatch === "match" ? " ✓" : r.scan_result.companyNameMatch === "mismatch" ? " ✗" : ""}
+                  </p>
+                )}
+                {r.scan_result.extractedTaxId && (
+                  <p className="text-gray-600">
+                    Tax ID: {r.scan_result.extractedTaxId}
+                    {r.scan_result.taxIdMatch === "match" ? " ✓" : r.scan_result.taxIdMatch === "mismatch" ? " ✗" : ""}
+                  </p>
+                )}
+                {r.scan_result.extractedCountry && (
+                  <p className="text-gray-600">
+                    Country: {r.scan_result.extractedCountry}
+                    {r.scan_result.countryMatch === "match" ? " ✓" : ""}
+                  </p>
+                )}
+                {r.scan_result.notes && (
+                  <p className="text-gray-500 mt-1 italic text-xs">{r.scan_result.notes}</p>
+                )}
+                {r.scan_result.confidence && (
+                  <p className="text-gray-400 text-xs mt-1">Confidence: {(r.scan_result.confidence * 100).toFixed(0)}%</p>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {r.reject_reason && (
         <div className="sm:col-span-2 lg:col-span-3">
           <Field label="Rejection Reason (internal)" value={r.reject_reason} />
