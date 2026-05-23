@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { useMemo, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -17,17 +17,16 @@ import {
   ClipboardIcon,
   EyeIcon,
 } from "@/components/icons";
-import {
-  SUPPLIER_KPIS,
-  SUPPLIER_ATTENTION,
-  SUPPLIER_RECENT_OFFERS,
-  SUPPLIER_RECENT_SALES,
-  type SupplierKpi,
-  type AttentionAlert,
-  type SupplierOfferCard,
-  type SupplierSaleCard,
-} from "@/data/mockSupplierHome";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+
+type SupplierKpi = {
+  key: "activeOffers" | "totalOffers" | "closedDeals" | "inNegotiation" | "avgClosing";
+  value: string | number;
+  delta: number;
+  deltaUnit?: string;
+  isDark?: boolean;
+};
 
 type IconCmp = ComponentType<{ size?: number }>;
 type TFn = (key: string, opts?: Record<string, unknown>) => string;
@@ -70,28 +69,6 @@ function StatCard({ k, t }: { k: SupplierKpi; t: TFn }) {
         </span>
       )}
       <span className="ic"><I size={28} /></span>
-    </div>
-  );
-}
-
-const ATTENTION_ICONS: Record<AttentionAlert["tone"], IconCmp> = {
-  warning: MessageIcon,
-  info: ClockIcon,
-  purple: ClipboardIcon,
-};
-
-function AttentionRow({ a, t }: { a: AttentionAlert; t: TFn }) {
-  const I = ATTENTION_ICONS[a.tone];
-  return (
-    <div className={`sh-attention-row is-${a.tone}`}>
-      <span className="ic"><I size={16} /></span>
-      <div className="body">
-        <p className="title">{t(`supplier.home.${a.title}`)}</p>
-        <p className="sub">{t(`supplier.home.${a.subtitle}`)}</p>
-      </div>
-      <Link to={a.ctaPath} className="cta">
-        {t(`supplier.home.${a.ctaKey}`)} <ArrowRightIcon size={12} />
-      </Link>
     </div>
   );
 }
