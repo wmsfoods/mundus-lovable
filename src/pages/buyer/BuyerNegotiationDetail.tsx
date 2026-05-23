@@ -2,6 +2,7 @@ import { Fragment, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { countryFlag } from "@/lib/countryFlags";
 import {
   ArrowLeftIcon,
   ArrowsLeftRightIcon,
@@ -165,7 +166,7 @@ export default function BuyerNegotiationDetail() {
         </span>
         <span className="chip">
           <span className="chip-label">{t("buyer.negotiations.detail.meta.origin")}:</span>
-          <span className="chip-value">{d.originCountry}</span>
+          <span className="chip-value">{countryFlag(d.originCountry)} {d.originCountry}</span>
         </span>
         <span className="chip">
           <span className="chip-label">{t("buyer.negotiations.detail.meta.port")}:</span>
