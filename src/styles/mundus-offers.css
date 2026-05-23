@@ -71,11 +71,24 @@
   .oc {
     border-color: hsl(var(--border));
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.06), 0 4px 12px rgba(16, 24, 40, 0.04);
+    padding: 14px;
+    gap: 12px;
   }
   .oc:active {
     transform: none;
     box-shadow: 0 1px 2px rgba(16, 24, 40, 0.08);
   }
+  .card-row { grid-template-columns: 1fr; gap: 12px; }
+  .oc-title { font-size: 15.5px; }
+  .oc-price .amt, .oc-qty .amt { font-size: 19px; }
+  .oc-footer { gap: 8px; flex-wrap: wrap; }
+}
+
+@media (max-width: 380px) {
+  .oc { padding: 12px; }
+  .oc-meta-grid { grid-template-columns: 1fr; gap: 8px; }
+  .cm-value { white-space: normal; }
+  .oc-num { font-size: 10px; }
 }
 
 /* --- Offer card (v2) ----------------------------------------------------- */
