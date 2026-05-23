@@ -199,19 +199,26 @@ export default function SupplierOffers() {
   const { available: supplierProteins, counts: proteinCounts } = useSupplierProteins();
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
-  const [negCounts, setNegCounts] = useState<Record<string, number>>({});
+  const [negCounts, setNegCounts] = useState<Record<string, { total: number; companies: number }>>({});
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("negotiations")
-        .select("offer_id")
+        .select("offer_id, buyer_company_id")
         .not("status", "in", "(expired,offer_withdrawn,bid_accepted)")
         .is("deleted_at", null);
       if (cancelled) return;
-      const counts: Record<string, number> = {};
-      (data ?? []).forEach((n: { offer_id: string }) => {
-        counts[n.offer_id] = (counts[n.offer_id] || 0) + 1;
+      const byOffer: Record<string, { total: number; companies: Set<string> }> = {};
+      (data ?? []).forEach((n: { offer_id: string; buyer_company_id: string }) => {
+        const e = byOffer[n.offer_id] ?? { total: 0, companies: new Set<string>() };
+        e.total += 1;
+        if (n.buyer_company_id) e.companies.add(n.buyer_company_id);
+        byOffer[n.offer_id] = e;
+      });
+      const counts: Record<string, { total: number; companies: number }> = {};
+      Object.entries(byOffer).forEach(([k, v]) => {
+        counts[k] = { total: v.total, companies: v.companies.size };
       });
       setNegCounts(counts);
     })();
