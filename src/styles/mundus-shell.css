@@ -662,6 +662,25 @@
   min-height: calc(100dvh - 56px - env(safe-area-inset-top) - 72px - env(safe-area-inset-bottom));
   padding-bottom: 24px;
 }
+.profile-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 4px 8px;
+  margin-left: -8px;
+  color: hsl(var(--muted-foreground));
+  font-size: 14px;
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  border-radius: 8px;
+}
+.profile-back:hover {
+  background: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
 .profile-card {
   background: #fff;
   border: 1px solid hsl(var(--border));

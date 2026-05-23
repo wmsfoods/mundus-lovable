@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Camera } from "lucide-react";
+import { Camera, ArrowLeft } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
@@ -125,6 +125,14 @@ export default function Profile() {
 
   return (
     <div className="profile-page">
+      <button
+        type="button"
+        className="profile-back"
+        onClick={() => navigate(`/${currentRole}`)}
+      >
+        <ArrowLeft size={16} />
+        <span>{t("common.backToHome", { defaultValue: "Back to home" })}</span>
+      </button>
       <div className="profile-card">
         <div className="profile-avatar-wrap">
           <span className="profile-avatar">
