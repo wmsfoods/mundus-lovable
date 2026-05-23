@@ -143,7 +143,7 @@ export default function SupplierOffers() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { offers: realOffers, loading: realLoading } = useRealSupplierOffers();
-  const { activeOffice, isAllOffices, setActiveOffice } = useActiveOffice();
+  const { activeOffice, isAllOffices, setActiveOffice, isMaster } = useActiveOffice();
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priceDesc" | "priceAsc">("newest");
@@ -208,14 +208,18 @@ export default function SupplierOffers() {
 
       {!isAllOffices && activeOffice && (
         <div style={{ fontSize: 12, color: "var(--fg-muted)", display: "flex", alignItems: "center", gap: 8, margin: "0 0 12px" }}>
-          🏢 Viewing: {activeOffice.office_name || activeOffice.name}
-          <button
-            type="button"
-            onClick={() => setActiveOffice(null)}
-            style={{ fontSize: 11, color: "var(--brand)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-          >
-            ✕ Show all
-          </button>
+          {isMaster ? "🏢" : "🔒"} Viewing: {activeOffice.office_name || activeOffice.name}
+          {isMaster ? (
+            <button
+              type="button"
+              onClick={() => setActiveOffice(null)}
+              style={{ fontSize: 11, color: "var(--brand)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
+            >
+              ✕ Show all
+            </button>
+          ) : (
+            <span style={{ fontSize: 11, opacity: 0.7 }}>(your assigned office)</span>
+          )}
         </div>
       )}
 
