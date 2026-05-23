@@ -175,6 +175,10 @@
       "success": "E-mail vérifié",
       "alreadyRegistered": "Cet e-mail est déjà associé à un compte Mundus Trade.",
       "goToLogin": "Aller à la connexion"
+    },
+    "checklist": {
+      "toComplete": "Pour continuer, veuillez compléter :",
+      "allComplete": "Tout est rempli ! Vous pouvez continuer."
     }
   },
   "shell": {
