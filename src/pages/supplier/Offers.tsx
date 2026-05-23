@@ -99,6 +99,7 @@ function SupplierOfferCard({
               fontSize: 11,
               color: "#9ca3af",
               letterSpacing: "0.02em",
+              whiteSpace: "nowrap",
             }}
           >
             {formatOfferNumber(o.offerNumber, o.createdAt)}
@@ -109,29 +110,30 @@ function SupplierOfferCard({
             </span>
           )}
         </div>
-        <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
-          <span className="status-dot" style={{ background: status.dot }} />
-          {t(`supplier.offers.status.${o.status}`)}
-        </span>
-        {negInfo && negInfo.total > 0 ? (
-          <span
-            style={{
-              marginLeft: 6,
-              padding: "2px 8px",
-              borderRadius: 10,
-              background: "#fef3c7",
-              color: "#92400e",
-              fontSize: 10,
-              fontWeight: 600,
-              whiteSpace: "nowrap",
-            }}
-          >
-            🤝 {negInfo.total} negotiation{negInfo.total > 1 ? "s" : ""}
-            {negInfo.companies > 0 && (
-              <> · {negInfo.companies} {negInfo.companies > 1 ? "buyers" : "buyer"}</>
-            )}
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
+            <span className="status-dot" style={{ background: status.dot }} />
+            {t(`supplier.offers.status.${o.status}`)}
           </span>
-        ) : null}
+          {negInfo && negInfo.total > 0 ? (
+            <span
+              style={{
+                padding: "2px 8px",
+                borderRadius: 10,
+                background: "#fef3c7",
+                color: "#92400e",
+                fontSize: 10,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              🤝 {negInfo.total} negotiation{negInfo.total > 1 ? "s" : ""}
+              {negInfo.companies > 0 && (
+                <> · {negInfo.companies} {negInfo.companies > 1 ? "buyers" : "buyer"}</>
+              )}
+            </span>
+          ) : null}
+        </div>
       </div>
 
       <div className="oc-title-block">
