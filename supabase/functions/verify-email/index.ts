@@ -60,7 +60,7 @@ serve(async (req) => {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            from: "Mundus Trade <onboarding@resend.dev>",
+            from: "Mundus Trade <noreply@mundustrade.com>",
             to: [normalizedEmail],
             subject: "Your Mundus Trade verification code",
             html: `
