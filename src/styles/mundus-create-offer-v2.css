@@ -77,6 +77,7 @@
   padding: 16px 18px;
   overflow-y: auto;
   max-height: calc(100vh - 120px);
+  min-width: 0;
 }
 .cov4-panel-l { background: #fff; border-right: 1px solid var(--border); }
 .cov4-panel-c { background: var(--g050, #fafaf9); }
