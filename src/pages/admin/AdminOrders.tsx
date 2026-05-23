@@ -56,19 +56,26 @@ export default function AdminOrders() {
           .order("placed_at", { ascending: false });
         if (e) throw e;
         if (cancelled) return;
-        const list: OrderRow[] = (data ?? []).map((o: {
+        type Raw = {
           id: string; order_number: number; status: string | null; placed_at: string;
-          buyer: { name: string } | null;
-          offer: { offer_number: number | null; supplier_name: string | null } | null;
-        }) => ({
-          id: o.id,
-          order_number: o.order_number,
-          status: o.status,
-          placed_at: o.placed_at,
-          supplier_name: o.offer?.supplier_name ?? "—",
-          buyer_name: o.buyer?.name ?? "—",
-          offer_number: o.offer?.offer_number ?? null,
-        }));
+          buyer: { name: string } | { name: string }[] | null;
+          offer: { offer_number: number | null; supplier_name: string | null } | { offer_number: number | null; supplier_name: string | null }[] | null;
+        };
+        const one = <T,>(x: T | T[] | null | undefined): T | null =>
+          Array.isArray(x) ? (x[0] ?? null) : (x ?? null);
+        const list: OrderRow[] = ((data ?? []) as unknown as Raw[]).map((o) => {
+          const b = one(o.buyer);
+          const of = one(o.offer);
+          return {
+            id: o.id,
+            order_number: o.order_number,
+            status: o.status,
+            placed_at: o.placed_at,
+            supplier_name: of?.supplier_name ?? "—",
+            buyer_name: b?.name ?? "—",
+            offer_number: of?.offer_number ?? null,
+          };
+        });
         setRows(list);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : String(err));
