@@ -28,6 +28,30 @@ const countryCodes = [
 
 const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine", "Seafood"];
 
+const TAX_ID_RULES: Record<string, { label: string; hint: string; pattern: RegExp }> = {
+  "United States": { label: "EIN", hint: "Format: XX-XXXXXXX (9 digits)", pattern: /^\d{2}-?\d{7}$/ },
+  "Brazil": { label: "CNPJ", hint: "Format: XX.XXX.XXX/XXXX-XX", pattern: /^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/ },
+  "United Kingdom": { label: "VAT Number", hint: "Format: GB + 9 digits", pattern: /^GB\d{9}(\d{3})?$/ },
+  "Germany": { label: "USt-IdNr", hint: "Format: DE + 9 digits", pattern: /^DE\d{9}$/ },
+  "France": { label: "N° TVA", hint: "Format: FR + 2 chars + 9 digits", pattern: /^FR[A-Z0-9]{2}\d{9}$/i },
+  "Argentina": { label: "CUIT", hint: "Format: XX-XXXXXXXX-X (11 digits)", pattern: /^\d{2}-?\d{8}-?\d{1}$/ },
+  "China": { label: "USCC", hint: "18 alphanumeric characters", pattern: /^[A-Z0-9]{18}$/i },
+  "United Arab Emirates": { label: "TRN", hint: "15 digits", pattern: /^\d{15}$/ },
+  "Saudi Arabia": { label: "VAT", hint: "15 digits starting with 3", pattern: /^3\d{14}$/ },
+  "Australia": { label: "ABN", hint: "11 digits", pattern: /^\d{11}$/ },
+  "Uruguay": { label: "RUT", hint: "12 digits", pattern: /^\d{12}$/ },
+  "Paraguay": { label: "RUC", hint: "Format: XXXXXXXX-X", pattern: /^\d{1,8}-?\d{1}$/ },
+  "Mexico": { label: "RFC", hint: "12-13 alphanumeric", pattern: /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}$/i },
+  "Chile": { label: "RUT", hint: "Format: XX.XXX.XXX-X", pattern: /^\d{1,2}\.?\d{3}\.?\d{3}-?[0-9Kk]$/ },
+  "Colombia": { label: "NIT", hint: "9-10 digits", pattern: /^\d{9,10}$/ },
+};
+const DEFAULT_TAX_RULE = { label: "Tax ID", hint: "5-25 alphanumeric characters", pattern: /^[A-Z0-9.\-\/]{5,25}$/i };
+
+function getTaxRule(country?: string) {
+  if (!country) return DEFAULT_TAX_RULE;
+  return TAX_ID_RULES[country] || DEFAULT_TAX_RULE;
+}
+
 type Role = "buyer" | "supplier" | "";
 
 type FormData = {
