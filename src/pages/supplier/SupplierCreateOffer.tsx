@@ -90,6 +90,7 @@ type Cut = {
   ask: string;
   floor: string;
   notes: string;
+  plant: string;
 };
 
 type IncoExtras = {
@@ -139,7 +140,7 @@ function validatePricePair(ask: string | number | null | undefined, floor: strin
 
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
-  qty: "", ask: "", floor: "", notes: "",
+  qty: "", ask: "", floor: "", notes: "", plant: "",
 };
 
 /* ══════════════════════════════════════════════════════════
