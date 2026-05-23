@@ -142,11 +142,44 @@ export default function Signup() {
       toast.error(error.message);
       return;
     }
+
+    // Upload certificate to storage if present
+    let certificateUrl: string | null = null;
+    if (data.certificate) {
+      try {
+        const safeName = data.certificate.name.replace(/[^A-Za-z0-9.\-_]/g, "_");
+        const path = `signup-requests/${Date.now()}-${safeName}`;
+        const { error: upErr } = await supabase.storage
+          .from("company-files")
+          .upload(path, data.certificate, { upsert: false });
+        if (!upErr) {
+          const { data: pub } = supabase.storage.from("company-files").getPublicUrl(path);
+          certificateUrl = pub.publicUrl;
+        }
+      } catch (e) {
+        console.warn("Certificate upload failed", e);
+      }
+    }
+
     const { error: reqErr } = await supabase.from("user_requests").insert({
       company_id: MUNDUS_TRADE_COMPANY_ID,
       name: data.name,
       email: data.email,
       status: "pending",
+      company_name: data.companyName,
+      role: data.role || null,
+      registration_country: data.registrationCountry || null,
+      tax_id: data.taxId || null,
+      proteins: data.proteins,
+      countries_of_operation: data.countriesOfOperation.map((c) => c.name),
+      phone: data.phoneNumber ? `${data.phoneCode} ${data.phoneNumber}` : null,
+      address: [data.address, data.addressLine2].filter(Boolean).join(", ") || null,
+      city: data.city || null,
+      state: data.state || null,
+      zip: data.zip || null,
+      country: data.country || null,
+      website: data.website || null,
+      certificate_url: certificateUrl,
     });
     setSubmitting(false);
     if (reqErr) {
