@@ -437,23 +437,22 @@ function OfferDetailContent({
             </div>
           )}
 
-          <div className="od-actions">
-            {myNegotiation && (
-              <div
-                style={{
-                  width: "100%",
-                  padding: "12px 16px",
-                  borderRadius: 8,
-                  border: `1px solid ${negIsDealClosed ? "#bae6fd" : "#86efac"}`,
-                  background: negIsDealClosed ? "#f0f9ff" : "#f0fdf4",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  marginBottom: 12,
-                  flexWrap: "wrap",
-                  gap: 8,
-                }}
-              >
+          {myNegotiation && (
+            <div
+              style={{
+                width: "100%",
+                padding: "12px 16px",
+                borderRadius: 10,
+                border: `1px solid ${negIsDealClosed ? "#bae6fd" : "#86efac"}`,
+                background: negIsDealClosed ? "#f0f9ff" : "#f0fdf4",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginTop: 12,
+                flexWrap: "wrap",
+                gap: 10,
+              }}
+            >
                 <div>
                   <span style={{ fontSize: 13, fontWeight: 600, color: negIsDealClosed ? "#075985" : "#166534" }}>
                     {negIsDealClosed ? "✅ Deal closed on this offer" : "🤝 You have an active negotiation on this offer"}
@@ -479,24 +478,25 @@ function OfferDetailContent({
                 >
                   Open Negotiation →
                 </a>
-              </div>
-            )}
-            {!myNegotiation && offer.status === "negotiating" && (
-              <div
-                style={{
-                  width: "100%",
-                  padding: "10px 14px",
-                  borderRadius: 8,
-                  border: "1px solid #fde68a",
-                  background: "#fffbeb",
-                  fontSize: 13,
-                  color: "#92400e",
-                  marginBottom: 12,
-                }}
-              >
-                ⚠️ This offer is currently under negotiation with another buyer. You can still place your own bid.
-              </div>
-            )}
+            </div>
+          )}
+          {!myNegotiation && offer.status === "negotiating" && (
+            <div
+              style={{
+                width: "100%",
+                padding: "10px 14px",
+                borderRadius: 10,
+                border: "1px solid #fde68a",
+                background: "#fffbeb",
+                fontSize: 13,
+                color: "#92400e",
+                marginTop: 12,
+              }}
+            >
+              ⚠️ This offer is currently under negotiation with another buyer. You can still place your own bid.
+            </div>
+          )}
+          <div className="od-actions">
             <button
               type="button"
               className="btn-od btn-od-outline"
