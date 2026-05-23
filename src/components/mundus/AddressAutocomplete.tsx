@@ -34,6 +34,7 @@ export function AddressAutocomplete({
   const acRef = useRef<any>(null);
   const [ready, setReady] = useState(false);
   const enabled = hasGooglePlacesKey();
+  console.log('[AddressAutocomplete] enabled:', enabled, 'key present:', !!import.meta.env.VITE_GOOGLE_PLACES_API_KEY);
 
   useEffect(() => {
     if (!enabled || !inputRef.current) return;
