@@ -441,8 +441,8 @@ export default function SupplierCreateOffer() {
     setAiProcessing(true);
     setTimeout(() => {
       const mockParsed: Cut[] = [
-        { id: Date.now().toString(), cat: "Beef", cut: "Forequarter", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None", qty: "14000", ask: "6.40", floor: "5.80", notes: "98 VL" },
-        { id: (Date.now() + 1).toString(), cat: "Beef", cut: "Brisket", spec: "Boneless", pkg: "Carton Box", gr: "Medium", ag: "Wet Aged", qty: "13000", ask: "4.35", floor: "3.90", notes: "" },
+        { id: Date.now().toString(), cat: "Beef", cut: "Forequarter", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None", qty: "14000", ask: "6.40", floor: "5.80", notes: "98 VL", plant: "" },
+        { id: (Date.now() + 1).toString(), cat: "Beef", cut: "Brisket", spec: "Boneless", pkg: "Carton Box", gr: "Medium", ag: "Wet Aged", qty: "13000", ask: "4.35", floor: "3.90", notes: "", plant: "" },
       ];
       setCuts((prev) => [...prev, ...mockParsed]);
       setAiProcessing(false);
