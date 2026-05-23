@@ -50,7 +50,7 @@ const EMPTY_FORM: FormState = {
 
 export default function SupplierOffices() {
   const { company } = useCurrentCompany();
-  const { offices, userCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
+  const { offices, userCounts, offerCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
   const location = useLocation();
   const homeHref = location.pathname.startsWith("/buyer") ? "/buyer" : "/supplier";
 
@@ -189,6 +189,7 @@ export default function SupplierOffices() {
           office={hq}
           isHQ
           userCount={userCounts[hq.id] || 0}
+          offerCount={offerCounts[hq.id] || 0}
           onManageUsers={() => setUsersModalOffice(hq)}
         />
       )}
@@ -206,6 +207,7 @@ export default function SupplierOffices() {
               key={o.id}
               office={o}
               userCount={userCounts[o.id] || 0}
+              offerCount={offerCounts[o.id] || 0}
               onEdit={() => openEdit(o)}
               onDelete={() => handleDelete(o)}
               onManageUsers={() => setUsersModalOffice(o)}
