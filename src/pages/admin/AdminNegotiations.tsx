@@ -8,6 +8,7 @@ import {
   type AdminNegotiationRow,
   type NegotiationStatus,
 } from "@/hooks/useAdminNegotiations";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 type FilterKey = "all" | "awaiting_supplier" | "pending_buyer_review" | "bid_accepted" | "rejected" | "expired";
 
@@ -101,7 +102,7 @@ export default function AdminNegotiations() {
 
   const handleRowClick = (row: AdminNegotiationRow) => {
     toast(t("common.comingSoon", { defaultValue: "Coming soon" }), {
-      description: `#${String(row.offer_number ?? "").padStart(6, "0")}`,
+      description: formatOfferNumber(row.offer_number, row.offer_created_at),
     });
   };
 
@@ -182,7 +183,7 @@ export default function AdminNegotiations() {
                       : null;
                     return (
                       <tr key={r.id} onClick={() => handleRowClick(r)} style={{ cursor: "pointer" }}>
-                        <td><strong>#{String(r.offer_number ?? "").padStart(6, "0")}</strong></td>
+                        <td><strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.offer_created_at)}</strong></td>
                         <td>
                           {r.product_name ? (
                             <span>
@@ -226,7 +227,7 @@ export default function AdminNegotiations() {
             {filtered.map((r) => (
               <div key={r.id} className="adm-panel" onClick={() => handleRowClick(r)} style={{ padding: 12, cursor: "pointer" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <strong>#{String(r.offer_number ?? "").padStart(6, "0")}</strong>
+                  <strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.offer_created_at)}</strong>
                   <StatusBadge status={r.status} t={t} />
                 </div>
                 <div style={{ fontSize: 13, marginBottom: 4 }}>
