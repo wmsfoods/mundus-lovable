@@ -66,7 +66,9 @@
     "steps": {
       "basic": "Basic Information",
       "company": "Company",
-      "review": "Review"
+      "review": "Review",
+      "verification": "Email Verification",
+      "contact": "Business Contact"
     },
     "fields": {
       "fullName": "Full name",
@@ -93,7 +95,16 @@
       "addressLine2": "Address Line 2 (optional)",
       "country": "Country",
       "businessPhone": "Business Phone",
-      "phonePlaceholder": "Phone number"
+      "phonePlaceholder": "Phone number",
+      "taxId": "Tax ID / VAT / Registration Number",
+      "proteinProfile": "Protein profile",
+      "countriesOfOperation": "Countries of Operation",
+      "countriesPlaceholder": "Search country",
+      "countriesHint": "Choose from 1 to 5 main countries where you operate",
+      "countriesMax": "Maximum 5 countries",
+      "city": "City",
+      "zip": "ZIP / Postal Code",
+      "website": "Website"
     },
     "passwordsMismatch": "Passwords do not match.",
     "agreeTerms": "I declare that I have read and agree to the",
@@ -144,6 +155,19 @@
       "navTitle": "Partner Sign Up",
       "titlePrefix": "Sign Up via",
       "titleSuffix": "Partner"
+    },
+    "verification": {
+      "title": "Verify your email",
+      "subtitle": "We sent a 6-digit verification code to",
+      "enterCode": "Enter the code below",
+      "resend": "Resend code",
+      "resendIn": "Resend code ({{seconds}}s)",
+      "invalid": "Invalid code. {{remaining}} attempts remaining.",
+      "expired": "Code expired. Click 'Resend code' to get a new one.",
+      "tooMany": "Too many attempts. Click 'Resend code'.",
+      "success": "Email verified",
+      "alreadyRegistered": "This email is already associated with a Mundus Trade account.",
+      "goToLogin": "Go to Login"
     }
   },
   "shell": {

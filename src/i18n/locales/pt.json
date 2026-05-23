@@ -66,7 +66,9 @@
     "steps": {
       "basic": "Informações Básicas",
       "company": "Empresa",
-      "review": "Revisão"
+      "review": "Revisão",
+      "verification": "Verificação de E-mail",
+      "contact": "Contato Comercial"
     },
     "fields": {
       "fullName": "Nome completo",
@@ -79,7 +81,7 @@
       "repeatPasswordPlaceholder": "Repita a senha",
       "companyName": "Nome da Empresa",
       "cnpj": "CNPJ ou Número de Registro",
-      "role": "Função",
+      "role": "Papel",
       "buyer": "Comprador",
       "supplier": "Fornecedor",
       "licenses": "Licenças ou Certificados",
@@ -93,7 +95,16 @@
       "addressLine2": "Complemento (opcional)",
       "country": "País",
       "businessPhone": "Telefone Comercial",
-      "phonePlaceholder": "Número de telefone"
+      "phonePlaceholder": "Número de telefone",
+      "taxId": "CNPJ / VAT / Inscrição",
+      "proteinProfile": "Perfil de proteína",
+      "countriesOfOperation": "Países de Operação",
+      "countriesPlaceholder": "Buscar país",
+      "countriesHint": "Escolha de 1 a 5 países principais onde você opera",
+      "countriesMax": "Máximo de 5 países",
+      "city": "Cidade",
+      "zip": "CEP / Código Postal",
+      "website": "Site"
     },
     "passwordsMismatch": "As senhas não coincidem.",
     "agreeTerms": "Declaro que li e concordo com os",
@@ -144,6 +155,19 @@
       "navTitle": "Cadastro Parceiro",
       "titlePrefix": "Cadastro via",
       "titleSuffix": "Parceiro"
+    },
+    "verification": {
+      "title": "Verifique seu e-mail",
+      "subtitle": "Enviamos um código de 6 dígitos para",
+      "enterCode": "Digite o código abaixo",
+      "resend": "Reenviar código",
+      "resendIn": "Reenviar código ({{seconds}}s)",
+      "invalid": "Código inválido. Restam {{remaining}} tentativas.",
+      "expired": "Código expirado. Clique em 'Reenviar código'.",
+      "tooMany": "Muitas tentativas. Clique em 'Reenviar código'.",
+      "success": "E-mail verificado",
+      "alreadyRegistered": "Este e-mail já está associado a uma conta Mundus Trade.",
+      "goToLogin": "Ir para o Login"
     }
   },
   "shell": {

@@ -66,7 +66,9 @@
     "steps": {
       "basic": "基本信息",
       "company": "公司",
-      "review": "审核"
+      "review": "审核",
+      "verification": "邮箱验证",
+      "contact": "业务联系"
     },
     "fields": {
       "fullName": "全名",
@@ -93,7 +95,16 @@
       "addressLine2": "地址行2（可选）",
       "country": "国家",
       "businessPhone": "商务电话",
-      "phonePlaceholder": "电话号码"
+      "phonePlaceholder": "电话号码",
+      "taxId": "税号 / VAT / 注册号",
+      "proteinProfile": "蛋白类型",
+      "countriesOfOperation": "运营国家",
+      "countriesPlaceholder": "搜索国家",
+      "countriesHint": "选择 1 到 5 个您主要运营的国家",
+      "countriesMax": "最多 5 个国家",
+      "city": "城市",
+      "zip": "邮政编码",
+      "website": "网站"
     },
     "passwordsMismatch": "密码不匹配。",
     "agreeTerms": "我声明我已阅读并同意",
@@ -144,6 +155,19 @@
       "navTitle": "合作伙伴注册",
       "titlePrefix": "通过",
       "titleSuffix": "合作伙伴注册"
+    },
+    "verification": {
+      "title": "验证您的邮箱",
+      "subtitle": "我们已将 6 位验证码发送至",
+      "enterCode": "请在下方输入验证码",
+      "resend": "重新发送",
+      "resendIn": "重新发送 ({{seconds}}秒)",
+      "invalid": "验证码无效，剩余 {{remaining}} 次尝试。",
+      "expired": "验证码已过期，请点击重新发送。",
+      "tooMany": "尝试次数过多，请点击重新发送。",
+      "success": "邮箱已验证",
+      "alreadyRegistered": "此邮箱已与一个 Mundus Trade 账户关联。",
+      "goToLogin": "前往登录"
     }
   },
   "shell": {
