@@ -936,3 +936,53 @@
 /* Hide text label on mobile so the centered Mundus logo is not covered */
 .tb-mobile .office-switcher-label { display: none; }
 .tb-mobile .office-switcher-dropdown { right: 0; left: auto; min-width: 240px; max-width: calc(100vw - 24px); }
+
+/* ===== Collapsible desktop sidebar ===================================== */
+@media (min-width: 1024px) {
+  .app-shell.is-sidebar-collapsed { grid-template-columns: 64px 1fr; }
+  .sb.is-collapsed { width: 64px; }
+  .sb.is-collapsed .sb-logo {
+    padding: 0 12px;
+    justify-content: center;
+  }
+  .sb.is-collapsed .sb-logo img { height: 24px; }
+  .sb.is-collapsed .sb-item,
+  .sb.is-collapsed .sb-section-header {
+    justify-content: center;
+    padding-left: 0;
+    padding-right: 0;
+  }
+  .sb.is-collapsed .sb-item-label,
+  .sb.is-collapsed .sb-section-label,
+  .sb.is-collapsed .sb-group-label,
+  .sb.is-collapsed .sb-section-header > svg:last-child,
+  .sb.is-collapsed .sb-item-badge,
+  .sb.is-collapsed .nav-new-badge,
+  .sb.is-collapsed .sb-user-meta,
+  .sb.is-collapsed .sb-role-pill {
+    display: none !important;
+  }
+  .sb.is-collapsed .sb-section-body { padding-left: 0; }
+  .sb.is-collapsed .sb-user {
+    justify-content: center;
+    padding: 12px 8px;
+  }
+}
+.sb-collapse-toggle {
+  margin-left: auto;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid hsl(var(--border));
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fg);
+  cursor: pointer;
+}
+.sb-collapse-toggle:hover { background: var(--g100); }
+@media (max-width: 1023px) {
+  .sb-collapse-toggle { display: none; }
+}
+.sb.is-collapsed .sb-collapse-toggle { margin: 0 auto; }
