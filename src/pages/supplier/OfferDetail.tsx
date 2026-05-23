@@ -331,16 +331,10 @@ export default function SupplierOfferDetail() {
       )}
 
       <div className="od-grid">
-        <div className="od-gallery">
-          <div className="od-gallery-main">
-            <div className="od-gallery-placeholder">
-              <span className="od-illu-label">{t("supplier.offers.detail.illustrative")}</span>
-            </div>
-          </div>
-          <div className="od-gallery-thumbs">
-            {[0, 1, 2, 3].map((i) => <div key={i} className="od-thumb" />)}
-          </div>
-        </div>
+        <OfferImageGallery
+          images={galleryImages}
+          illustrativeLabel={t("supplier.offers.detail.illustrative")}
+        />
 
         <div className="od-right">
           <div className="od-title-row">
