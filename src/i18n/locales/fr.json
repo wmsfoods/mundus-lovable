@@ -66,7 +66,9 @@
     "steps": {
       "basic": "Informations de base",
       "company": "Entreprise",
-      "review": "Vérifier"
+      "review": "Vérifier",
+      "verification": "Vérification d'e-mail",
+      "contact": "Contact Professionnel"
     },
     "fields": {
       "fullName": "Nom complet",
@@ -93,7 +95,16 @@
       "addressLine2": "Ligne d'adresse 2 (facultatif)",
       "country": "Pays",
       "businessPhone": "Téléphone professionnel",
-      "phonePlaceholder": "Numéro de téléphone"
+      "phonePlaceholder": "Numéro de téléphone",
+      "taxId": "N° Fiscal / TVA / Immatriculation",
+      "proteinProfile": "Profil de protéine",
+      "countriesOfOperation": "Pays d'Opération",
+      "countriesPlaceholder": "Rechercher un pays",
+      "countriesHint": "Choisissez de 1 à 5 pays principaux où vous opérez",
+      "countriesMax": "Maximum 5 pays",
+      "city": "Ville",
+      "zip": "Code Postal",
+      "website": "Site Web"
     },
     "passwordsMismatch": "Les mots de passe ne correspondent pas.",
     "agreeTerms": "Je déclare avoir lu et accepté les",
@@ -144,6 +155,19 @@
       "navTitle": "Inscription partenaire",
       "titlePrefix": "Inscription via",
       "titleSuffix": "Partenaire"
+    },
+    "verification": {
+      "title": "Vérifiez votre e-mail",
+      "subtitle": "Nous avons envoyé un code à 6 chiffres à",
+      "enterCode": "Entrez le code ci-dessous",
+      "resend": "Renvoyer le code",
+      "resendIn": "Renvoyer le code ({{seconds}}s)",
+      "invalid": "Code invalide. {{remaining}} essais restants.",
+      "expired": "Code expiré. Cliquez sur 'Renvoyer le code'.",
+      "tooMany": "Trop d'essais. Cliquez sur 'Renvoyer le code'.",
+      "success": "E-mail vérifié",
+      "alreadyRegistered": "Cet e-mail est déjà associé à un compte Mundus Trade.",
+      "goToLogin": "Aller à la connexion"
     }
   },
   "shell": {
