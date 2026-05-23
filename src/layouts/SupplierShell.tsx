@@ -40,6 +40,11 @@ function SupplierShellInner() {
   const isMobile = useIsMobileShell();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const focusRoute =
+    location.pathname.startsWith("/supplier/offers/new") ||
+    location.pathname.startsWith("/supplier/auctions/create");
+  const [sidebarManual, setSidebarManual] = useState<boolean | null>(null);
+  const sidebarCollapsed = !isMobile && (sidebarManual ?? focusRoute);
   const userName = user?.email?.split("@")[0] ?? "User";
   const { openUpsell } = useInsightsUpsell();
   const stackMode = isMobile && isStackRoute(location.pathname);
@@ -115,7 +120,7 @@ function SupplierShellInner() {
   return (
     <StackHeaderProvider>
       <div
-        className={`app-shell ${isMobile ? "is-mobile" : ""} ${stackMode ? "is-stack" : ""}`.trim()}
+        className={`app-shell ${isMobile ? "is-mobile" : ""} ${stackMode ? "is-stack" : ""} ${sidebarCollapsed ? "is-sidebar-collapsed" : ""}`.trim()}
       >
         <Sidebar
           items={SUPPLIER_NAV}
@@ -123,6 +128,8 @@ function SupplierShellInner() {
           userName={userName}
           userSubtitle={company?.name}
           onProBadgeClick={onProBadgeClick}
+          collapsed={sidebarCollapsed}
+          onToggleCollapsed={() => setSidebarManual(!sidebarCollapsed)}
         />
         {stackMode ? <StackHeader /> : <Topbar onMenuClick={() => setDrawerOpen(true)} />}
         <main className="app-main">
