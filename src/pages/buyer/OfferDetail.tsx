@@ -8,6 +8,7 @@ import {
   FlagSVG,
 } from "@/components/icons";
 import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
+import { formatOfferNumber } from "@/lib/offerNumber";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BidModal } from "@/components/buyer/BidModal";
