@@ -258,6 +258,9 @@ export function CounterOfferModal({
             negotiation_id: negotiation.id,
             round: nextRaw,
             created_by_user_id: userId,
+            side: perspective,
+            type: perspective === "buyer" ? "bid" : "counter",
+            message: message.trim() || null,
           })
           .select("id")
           .single();
@@ -297,6 +300,8 @@ export function CounterOfferModal({
       } else {
         update.status = perspective === "supplier" ? "pending_buyer_review" : "awaiting_supplier";
         update.expires_at = nextExpirationIso();
+        update.current_round = displayRound;
+        if (displayRound >= 3) update.chat_enabled = true;
       }
       const { error: nErr } = await supabase
         .from("negotiations")
