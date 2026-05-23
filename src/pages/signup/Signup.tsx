@@ -1264,6 +1264,16 @@ function Step4Contact({
     !!data.country &&
     !!data.phoneNumber;
 
+  const checks = [
+    { key: "address", done: !!data.address, label: t("signup.fields.address") },
+    { key: "city", done: !!data.city, label: t("signup.fields.city") },
+    { key: "state", done: !!data.state, label: t("signup.fields.state") },
+    { key: "zip", done: !!data.zip, label: t("signup.fields.zip") },
+    { key: "country", done: !!data.country, label: t("signup.fields.country") },
+    { key: "phone", done: !!data.phoneNumber, label: t("signup.fields.businessPhone") },
+  ];
+  const allDone = checks.every((c) => c.done);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
