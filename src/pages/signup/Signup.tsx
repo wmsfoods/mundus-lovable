@@ -68,6 +68,7 @@ type FormData = {
   taxId: string;
   role: Role;
   proteins: string[];
+  registrationCountry: string;
   countriesOfOperation: { name: string; flag?: string }[];
   certificate: File | null;
   // step 4 contact
@@ -94,6 +95,7 @@ const initial: FormData = {
   taxId: "",
   role: "",
   proteins: [],
+  registrationCountry: "",
   countriesOfOperation: [],
   certificate: null,
   state: "",
