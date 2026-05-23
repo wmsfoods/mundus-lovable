@@ -739,6 +739,7 @@ function Step3Company({
     { key: "role", done: !!data.role, label: t("signup.fields.role") },
     { key: "proteins", done: data.proteins.length >= 1, label: t("signup.fields.proteinProfile") },
     { key: "countries", done: data.countriesOfOperation.length >= 1, label: t("signup.fields.countriesOfOperation") },
+    { key: "certificate", done: !!data.certificate, label: t("signup.fields.licenses") },
   ];
   const allDone = checks.every((c) => c.done);
 
