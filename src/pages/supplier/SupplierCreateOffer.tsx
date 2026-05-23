@@ -14,6 +14,7 @@ import { Check, Plus, Search as SearchIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import {
   toDisplay,
   fromDisplay,
@@ -154,6 +155,7 @@ export default function SupplierCreateOffer() {
   const fromRequestId = searchParams.get("from");
   const location = useLocation();
   const { activeOfficeId } = useActiveOffice();
+  const { company, loading: companyLoading } = useCurrentCompany();
   const fromRequest = (location.state as any)?.fromRequest as
     | {
         requestId: string;
@@ -549,12 +551,18 @@ export default function SupplierCreateOffer() {
   const [publishing, setPublishing] = useState(false);
   const handlePublish = async () => {
     if (!canPublish || publishing) return;
+    if (companyLoading) return;
+    if (!company?.id) {
+      toast.error("No supplier company linked to your account");
+      return;
+    }
     if (selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
       toast.error("Please enter the EXW pickup location");
       return;
     }
     setPublishing(true);
-    const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
+    const supplierId = company.id;
+    const supplierName = company.name || "Mundus Supplier";
     try {
       // Derive shipment month/year (next calendar month if not specified)
       const now = new Date();
@@ -566,19 +574,13 @@ export default function SupplierCreateOffer() {
       const totalKg = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
       const totalFcl = Math.max(1, Math.ceil(totalKg / cap));
 
-      // Supplier name (fallback)
-      let supplierName = "Mundus Supplier";
-      const { data: supplierRow } = await supabase
-        .from("companies").select("name").eq("id", MOCK_SUPPLIER_ID).maybeSingle();
-      if (supplierRow?.name) supplierName = supplierRow.name;
-
       // 1. Create offer
       let offer: { id: string; offer_number: number };
       try {
         const { data, error } = await supabase
           .from("offers")
           .insert({
-            supplier_id: MOCK_SUPPLIER_ID,
+            supplier_id: supplierId,
             supplier_name: supplierName,
             status: "active",
             origin_country: "Brazil",
@@ -590,7 +592,7 @@ export default function SupplierCreateOffer() {
             total_fcl: totalFcl,
             is_halal: certifications.includes("Halal"),
             is_kosher: certifications.includes("Kosher"),
-            office_id: activeOfficeId ?? MOCK_SUPPLIER_ID,
+            office_id: activeOfficeId ?? supplierId,
             exw_pickup_location: selInco.includes("EXW")
               ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
               : null,
@@ -691,7 +693,7 @@ export default function SupplierCreateOffer() {
           const { data: existing } = await supabase
             .from("customer_products")
             .select("id")
-            .eq("company_id", MOCK_SUPPLIER_ID)
+            .eq("company_id", supplierId)
             .eq("standard_product_id", standardProductId)
             .maybeSingle();
           let customerProductId = existing?.id;
@@ -699,7 +701,7 @@ export default function SupplierCreateOffer() {
             const { data: created, error: cpErr } = await supabase
               .from("customer_products")
               .insert({
-                company_id: MOCK_SUPPLIER_ID,
+                company_id: supplierId,
                 standard_product_id: standardProductId,
                 name: cutRow.name,
                 is_active: true,
