@@ -20,22 +20,6 @@ serve(async (req) => {
       });
     }
 
-    if (fileType === "application/pdf") {
-      return new Response(
-        JSON.stringify({
-          isBusinessDocument: true,
-          overallVerification: "error",
-          confidence: 0,
-          notes: "PDF received — will be reviewed manually after signup.",
-        }),
-        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
-      );
-    }
-
-    let mediaType = "image/jpeg";
-    if (fileType === "image/png") mediaType = "image/png";
-    else if (fileType === "image/jpeg" || fileType === "image/jpg") mediaType = "image/jpeg";
-
     const prompt = `You are a document verification specialist for a B2B meat trading platform called Mundus Trade. Analyze this business document (certificate, license, or registration document) and extract:
 
 1. Document type (e.g., Business License, Certificate of Incorporation, Tax Registration, CNPJ Card, Trade License)
@@ -64,6 +48,84 @@ Respond in JSON ONLY (no markdown, no backticks):
   "confidence": 0.0,
   "notes": "string"
 }`;
+
+    if (fileType === "application/pdf") {
+      const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") || "";
+      if (!ANTHROPIC_API_KEY) {
+        return new Response(
+          JSON.stringify({
+            isBusinessDocument: true,
+            overallVerification: "error",
+            confidence: 0,
+            notes: "PDF analysis not configured. Will be reviewed manually.",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": ANTHROPIC_API_KEY,
+          "anthropic-version": "2023-06-01",
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1024,
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "document",
+                  source: { type: "base64", media_type: "application/pdf", data: fileBase64 },
+                },
+                { type: "text", text: prompt },
+              ],
+            },
+          ],
+        }),
+      });
+
+      if (!claudeRes.ok) {
+        const errText = await claudeRes.text();
+        console.error("[VERIFY-DOC] Claude API error:", claudeRes.status, errText);
+        return new Response(
+          JSON.stringify({
+            overallVerification: "error",
+            confidence: 0,
+            notes: "PDF analysis failed. Will be reviewed manually.",
+          }),
+          { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+
+      const claudeData = await claudeRes.json();
+      const claudeText: string = claudeData.content?.[0]?.text || "";
+
+      let pdfResult;
+      try {
+        const clean = claudeText.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+        pdfResult = JSON.parse(clean);
+      } catch {
+        console.error("[VERIFY-DOC] Parse fail:", claudeText);
+        pdfResult = {
+          isBusinessDocument: false,
+          overallVerification: "error",
+          confidence: 0,
+          notes: "Could not analyze PDF document",
+        };
+      }
+
+      return new Response(JSON.stringify(pdfResult), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    let mediaType = "image/jpeg";
+    if (fileType === "image/png") mediaType = "image/png";
+    else if (fileType === "image/jpeg" || fileType === "image/jpg") mediaType = "image/jpeg";
 
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
