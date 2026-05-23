@@ -11,3 +11,6 @@ verify_jwt = false
 
 [functions.signup-notifications]
 verify_jwt = false
+
+[functions.negotiation-notifications]
+verify_jwt = false
