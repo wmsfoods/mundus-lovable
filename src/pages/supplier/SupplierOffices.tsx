@@ -9,6 +9,7 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCompanyOffices, type Office, type OfficeInput } from "@/hooks/useCompanyOffices";
 import { ManageOfficeUsersModal } from "@/components/supplier/ManageOfficeUsersModal";
 import { TransferOffersModal } from "@/components/supplier/TransferOffersModal";
+import { countryFlag } from "@/lib/countryFlags";
 import { toast } from "sonner";
 
 const REGIONS = ["Asia Pacific", "Americas", "Europe", "Middle East & Africa", "Latin America"];
@@ -378,7 +379,8 @@ function OfficeCard({
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const title = isHQ ? "Headquarters" : office.office_type === "branch" ? "Branch" : "Regional Office";
-  const icon = isHQ ? "🏛️" : "🌏";
+  const countryName = office.office_country || office.country || "";
+  const flag = countryFlag(countryName);
   const subtitle = isHQ ? office.name : `${office.name}${office.office_name ? ` — ${office.office_name}` : ""}`;
   const location = [office.office_country || office.country, office.city].filter(Boolean).join(" · ");
 
@@ -396,7 +398,8 @@ function OfficeCard({
     >
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 600 }}>
-          <span style={{ fontSize: 20 }}>{icon}</span> {title}
+          <span style={{ fontSize: 24, lineHeight: 1 }} aria-label={countryName}>{flag}</span>
+          <span>{isHQ ? "🏛️ " : ""}{title}</span>
         </div>
         {isHQ ? (
           <span style={{ fontSize: 12, padding: "2px 8px", background: "var(--brand)", color: "white", borderRadius: 999 }}>
