@@ -1635,6 +1635,38 @@ export default function SupplierCreateOffer() {
                     <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td>
+                      {companyPlants.length > 0 && !plantManual["__nf"] ? (
+                        <select
+                          value={nf.plant}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === "__custom__") {
+                              setPlantManual((p) => ({ ...p, __nf: true }));
+                              setNf((p) => ({ ...p, plant: "" }));
+                            } else {
+                              setNf((p) => ({ ...p, plant: v }));
+                            }
+                          }}
+                          title="USDA/SIF establishment number"
+                        >
+                          <option value="">Select...</option>
+                          {companyPlants.map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                          <option value="__custom__">+ Enter manually</option>
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="e.g. 4554"
+                          value={nf.plant}
+                          onChange={(e) => setNf((p) => ({ ...p, plant: e.target.value }))}
+                          title="USDA/SIF establishment number"
+                          style={{ width: 80 }}
+                        />
+                      )}
+                    </td>
+                    <td>
                       <input
                         type="number"
                         placeholder={qtyPh}
