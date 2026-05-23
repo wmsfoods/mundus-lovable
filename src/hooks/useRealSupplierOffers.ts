@@ -43,7 +43,9 @@ export function useRealSupplierOffers() {
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (!isAllOffices && activeOfficeId) {
-        query = query.eq("office_id", activeOfficeId);
+        // Include offers explicitly tied to this office OR offers with no office
+        // assigned (treated as visible across the company).
+        query = query.or(`office_id.eq.${activeOfficeId},office_id.is.null`);
       }
       const { data, error: err } = await query;
       if (cancelled) return;
