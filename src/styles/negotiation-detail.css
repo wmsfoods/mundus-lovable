@@ -1,0 +1,439 @@
+/* ─────────────────────────────────────────────────────────────
+   Negotiation Detail — Production Redesign
+   Targets the existing class names used by
+   SupplierNegotiationDetail.tsx and BuyerNegotiationDetail.tsx
+   (overrides mundus-negotiations.css — imported AFTER it).
+   ───────────────────────────────────────────────────────────── */
+
+/* Back link */
+.nd-back {
+  color: #8B2252;
+  font-size: 13px;
+  font-weight: 500;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.nd-back:hover { text-decoration: underline; }
+
+/* Product header bar */
+.nd-header {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+.nd-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: #fef2f2;
+  color: #8B2252;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.nd-h-text { min-width: 0; flex: 1; }
+.nd-h-text h1 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+  color: #111827;
+  line-height: 1.3;
+}
+.nd-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+.nd-sub .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+.nd-h-right { display: flex; align-items: center; gap: 8px; margin-left: auto; flex-shrink: 0; }
+
+/* Status pill (top right of header) */
+.pill.pill-action-required {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+.nd-timer {
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Meta chips row */
+.nd-meta-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+.nd-meta-chips .chip {
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  font-size: 12px;
+  color: #6b7280;
+  background: #fff;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.nd-meta-chips .chip-label { color: #9ca3af; }
+.nd-meta-chips .chip-value { color: #111827; font-weight: 600; }
+
+/* Two-column grid */
+.nd-grid {
+  display: grid;
+  grid-template-columns: 58fr 42fr;
+  gap: 16px;
+}
+@media (max-width: 900px) {
+  .nd-grid { grid-template-columns: 1fr; }
+}
+
+/* Cards */
+.nd-card {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 12px;
+}
+.nd-card--joined { margin-top: 0; }
+
+.nd-card-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+/* Round pill */
+.nd-round-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #111827;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+.nd-updated {
+  font-size: 12px;
+  color: #9ca3af;
+}
+
+/* Banners (final round / accepted / rejected / expired) */
+.nd-banner {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid;
+}
+.nd-banner.final-round { background: #fef3c7; color: #92400e; border-color: #fcd34d; }
+.nd-banner.success { background: #dcfce7; color: #166534; border-color: #86efac; }
+.nd-banner.danger { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
+.nd-banner.muted { background: #f9fafb; color: #4b5563; border-color: #e5e7eb; }
+
+/* Summary status text */
+.nd-summary {
+  font-size: 14px;
+  color: #374151;
+  line-height: 1.55;
+  margin: 12px 0 16px;
+}
+
+/* Three price summary cards */
+.nd-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: #fff;
+}
+.nd-stat {
+  padding: 14px 12px;
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+}
+.nd-stat:last-child { border-right: none; }
+.nd-stat.highlight { background: rgba(139, 34, 82, 0.04); }
+.nd-stat--full { /* legacy: ignore */ }
+.nd-stat-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: #9ca3af;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+.nd-stat-value {
+  display: block;
+  font-size: 18px;
+  font-weight: 700;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+.nd-stat.highlight .nd-stat-value { color: #8B2252; }
+.nd-stat:nth-child(2) .nd-stat-value { color: #2563eb; }
+
+/* Gap bar */
+.nd-gap-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+.nd-gap-value { font-weight: 600; color: #15803d; }
+.nd-gap-value.negative { color: #b91c1c; }
+
+.nd-gap-bar {
+  position: relative;
+  height: 8px;
+  background: linear-gradient(to right, #3b82f6, #e5e7eb 50%, #8B2252);
+  border-radius: 4px;
+  margin: 0 0 6px;
+}
+.nd-gap-bar::after {
+  content: "";
+  position: absolute;
+  top: -4px;
+  left: var(--knob, 50%);
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  border: 2px solid #8B2252;
+  transform: translateX(-50%);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+}
+.nd-gap-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 16px;
+}
+.nd-gap-labels .lbl-bid { color: #2563eb; }
+.nd-gap-labels .lbl-counter { color: #8B2252; }
+
+/* Action buttons */
+.nd-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.nd-actions button {
+  flex: 1 1 auto;
+  min-width: 120px;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+.nd-actions button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.nd-actions .btn-counter {
+  background: #8B2252;
+  color: #fff;
+  border-color: #8B2252;
+}
+.nd-actions .btn-counter:hover:not(:disabled) { background: #7a1d48; }
+
+.nd-actions .btn-accept {
+  background: #fff;
+  color: #15803d;
+  border-color: #86efac;
+}
+.nd-actions .btn-accept:hover:not(:disabled) { background: #f0fdf4; }
+
+.nd-actions .btn-reject {
+  background: #fff;
+  color: #b91c1c;
+  border-color: #fecaca;
+}
+.nd-actions .btn-reject:hover:not(:disabled) { background: #fef2f2; }
+
+/* Buyer / Supplier info card */
+.nd-buyer-info { padding: 16px 20px; }
+.nd-buyer-info dl {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px 16px;
+  margin: 0;
+}
+.nd-buyer-info dt {
+  font-size: 13px;
+  color: #6b7280;
+  font-weight: 400;
+  align-self: center;
+}
+.nd-buyer-info dd {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.nd-buyer-info dd.negative { color: #b91c1c; }
+
+/* Timeline */
+.nd-timeline-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+.tl-head-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.tl-head-meta { font-size: 12px; color: #9ca3af; }
+
+.nd-timeline-flow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.tl-sep { color: #9ca3af; font-size: 14px; }
+.tl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  border: 1px solid;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.tl-pill-label { font-weight: 600; }
+.tl-pill--bid {
+  background: #dcfce7;
+  color: #166534;
+  border-color: #86efac;
+}
+.tl-pill--counter {
+  background: #fce7f3;
+  color: #8B2252;
+  border-color: #f9a8d4;
+}
+.tl-pill--counter.tl-pill--current {
+  background: #8B2252;
+  color: #fff;
+  border-color: #8B2252;
+}
+
+/* Price details table */
+.nd-price-scroll-wrap { overflow-x: auto; }
+.nd-price-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+.nd-price-table th {
+  text-align: left;
+  text-transform: uppercase;
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  padding: 8px 6px;
+  border-bottom: 1px solid #e5e7eb;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+}
+.nd-price-table th.col-bid { color: #16a34a; }
+.nd-price-table th.col-counter { color: #8B2252; }
+.nd-price-table td {
+  padding: 10px 6px;
+  font-variant-numeric: tabular-nums;
+  color: #111827;
+  border-bottom: 1px solid #f3f4f6;
+  vertical-align: top;
+}
+.nd-price-table td.col-bid { color: #16a34a; font-weight: 600; }
+.nd-price-table td.col-counter { color: #8B2252; font-weight: 600; }
+.nd-price-table td.col-counter.col-counter--current {
+  background: rgba(139, 34, 82, 0.06);
+}
+.nd-price-table .product-name {
+  display: block;
+  font-weight: 600;
+  color: #111827;
+  font-size: 13px;
+}
+.nd-price-table .product-pack {
+  display: block;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* Detail empty state */
+.detail-empty {
+  background: #fff;
+  border: 1px dashed #e5e7eb;
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* Mobile tweaks (pocket version) */
+@media (max-width: 640px) {
+  .nd-header { padding: 14px; gap: 10px; }
+  .nd-avatar { width: 40px; height: 40px; border-radius: 10px; }
+  .nd-h-text h1 { font-size: 16px; }
+  .nd-sub { font-size: 12px; }
+  .nd-h-right { width: 100%; margin-left: 0; margin-top: 4px; }
+  .nd-card { padding: 16px; }
+  .nd-stats { grid-template-columns: 1fr; }
+  .nd-stat { border-right: none; border-bottom: 1px solid #e5e7eb; }
+  .nd-stat:last-child { border-bottom: none; }
+  .nd-actions button { flex: 1 1 100%; }
+  .nd-buyer-info dl { grid-template-columns: 1fr; gap: 4px; }
+  .nd-buyer-info dd { text-align: left; }
+}
