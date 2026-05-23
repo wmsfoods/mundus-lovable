@@ -97,7 +97,7 @@ function statusFor(s: string | null) {
   return STATUS_COLORS[s.toLowerCase()] ?? STATUS_COLORS.active;
 }
 
-function OfferCard({
+export function OfferCard({
   offer,
   onOpen,
   myNeg,
