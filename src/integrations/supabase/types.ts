@@ -264,8 +264,10 @@ export type Database = {
         Row: {
           address: string
           business_types: string | null
+          buyer_protein_profile: string[] | null
           city: string | null
           company_number: number
+          countries_of_operation: string[] | null
           country: string
           created_at: string | null
           deleted_at: string | null
@@ -286,7 +288,10 @@ export type Database = {
           parent_company_id: string | null
           phone: string
           plant_numbers: string[] | null
+          ports_of_shipment: string[] | null
           preferred_cuts: string[] | null
+          preferred_incoterms: string[] | null
+          preferred_payment_terms: string | null
           protein_profiles: string[] | null
           rating: number | null
           state: string
@@ -299,8 +304,10 @@ export type Database = {
         Insert: {
           address: string
           business_types?: string | null
+          buyer_protein_profile?: string[] | null
           city?: string | null
           company_number?: number
+          countries_of_operation?: string[] | null
           country: string
           created_at?: string | null
           deleted_at?: string | null
@@ -321,7 +328,10 @@ export type Database = {
           parent_company_id?: string | null
           phone: string
           plant_numbers?: string[] | null
+          ports_of_shipment?: string[] | null
           preferred_cuts?: string[] | null
+          preferred_incoterms?: string[] | null
+          preferred_payment_terms?: string | null
           protein_profiles?: string[] | null
           rating?: number | null
           state: string
@@ -334,8 +344,10 @@ export type Database = {
         Update: {
           address?: string
           business_types?: string | null
+          buyer_protein_profile?: string[] | null
           city?: string | null
           company_number?: number
+          countries_of_operation?: string[] | null
           country?: string
           created_at?: string | null
           deleted_at?: string | null
@@ -356,7 +368,10 @@ export type Database = {
           parent_company_id?: string | null
           phone?: string
           plant_numbers?: string[] | null
+          ports_of_shipment?: string[] | null
           preferred_cuts?: string[] | null
+          preferred_incoterms?: string[] | null
+          preferred_payment_terms?: string | null
           protein_profiles?: string[] | null
           rating?: number | null
           state?: string
