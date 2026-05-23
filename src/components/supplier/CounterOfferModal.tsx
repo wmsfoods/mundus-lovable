@@ -22,6 +22,7 @@ import {
   isCounterExhausted,
   isFinalDisplayRound,
   nextExpirationIso,
+  getDeductionFeedback,
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
