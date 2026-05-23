@@ -180,6 +180,14 @@
     "checklist": {
       "toComplete": "To proceed, please complete:",
       "allComplete": "All complete! You can proceed."
+    },
+    "docScan": {
+      "scanning": "Scanning document with AI...",
+      "verified": "Document verified — company information confirmed",
+      "partial": "Partial match — some information differs from your input",
+      "mismatch": "Information mismatch — document data doesn't match your input",
+      "notBusiness": "This doesn't appear to be a business document",
+      "error": "Could not analyze this document. You can proceed and we'll review it manually."
     }
   },
   "shell": {

@@ -180,6 +180,14 @@
     "checklist": {
       "toComplete": "要继续，请完成：",
       "allComplete": "全部完成！您可以继续。"
+    },
+    "docScan": {
+      "scanning": "正在使用 AI 分析文件...",
+      "verified": "文件已验证 — 公司信息已确认",
+      "partial": "部分匹配 — 某些信息与您的输入不同",
+      "mismatch": "信息不匹配 — 文件数据与您的输入不符",
+      "notBusiness": "这似乎不是商业文件",
+      "error": "无法分析此文件。您可以继续，我们将手动审核。"
     }
   },
   "shell": {
