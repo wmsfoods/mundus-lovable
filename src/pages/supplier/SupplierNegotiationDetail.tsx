@@ -183,7 +183,7 @@ export default function SupplierNegotiationDetail() {
         </span>
         <span className="chip">
           <span className="chip-label">{t("supplier.negotiations.detail.meta.destination")}:</span>
-          <span className="chip-value">{d.destinationCountry}</span>
+          <span className="chip-value">{countryFlag(d.destinationCountry)} {d.destinationCountry}</span>
         </span>
         <span className="chip">
           <span className="chip-label">{t("supplier.negotiations.detail.meta.port")}:</span>
