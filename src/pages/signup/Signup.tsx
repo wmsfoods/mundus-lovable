@@ -88,7 +88,6 @@ export default function Signup() {
   const [step, setStep] = useState(1);
   const [data, setData] = useState<FormData>(initial);
   const [submitting, setSubmitting] = useState(false);
-  const [devCode, setDevCode] = useState<string | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -159,7 +158,6 @@ export default function Signup() {
         { body: { action: "send", email: data.email } },
       );
       if (sendErr) throw sendErr;
-      setDevCode(send?._dev_code ?? null);
       setStep(2);
     } catch (e: any) {
       toast.error(e?.message ?? "Failed to send verification code");
@@ -189,7 +187,6 @@ export default function Signup() {
           {step === 2 && (
             <StepVerify
               email={data.email}
-              devCode={devCode}
               onBack={() => setStep(1)}
               onVerified={() => {
                 set("emailVerified", true);
@@ -200,7 +197,6 @@ export default function Signup() {
                 const { data: send } = await supabase.functions.invoke("verify-email", {
                   body: { action: "send", email: data.email },
                 });
-                setDevCode(send?._dev_code ?? null);
               }}
             />
           )}
@@ -399,13 +395,11 @@ function Step1({
 /* ----------------- STEP 2: VERIFY EMAIL ----------------- */
 function StepVerify({
   email,
-  devCode,
   onBack,
   onVerified,
   onResend,
 }: {
   email: string;
-  devCode: string | null;
   onBack: () => void;
   onVerified: () => void;
   onResend: () => Promise<void>;
@@ -547,10 +541,6 @@ function StepVerify({
             : t("signup.verification.resend")}
         </button>
       </div>
-
-      {devCode && (
-        <p className="text-xs text-gray-400">Dev code: {devCode}</p>
-      )}
 
       <div className="flex justify-center gap-3 pt-2">
         <button
