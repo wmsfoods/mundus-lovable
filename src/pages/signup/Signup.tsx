@@ -857,8 +857,7 @@ function Step3Company({
       {revealed.certs && (
         <div className="animate-fade-in">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("signup.fields.licenses")}{" "}
-            <span className="text-gray-400 font-normal">({t("common.optional")})</span>
+            {t("signup.fields.licenses")} <span className="text-red-500">*</span>
           </label>
           {data.certificate ? (
             <div className="flex items-center justify-between border border-gray-200 rounded-lg p-3 bg-gray-50">
