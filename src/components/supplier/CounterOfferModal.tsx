@@ -368,143 +368,88 @@ export function CounterOfferModal({
           </div>
         )}
 
-        {/* Bulk apply — desktop */}
+        {/* Bulk apply — unified responsive */}
         {openItems.length > 0 && (
-          <div className="hidden sm:flex flex-wrap items-center gap-2 mt-3">
-            <span className="text-xs uppercase font-semibold text-muted-foreground mr-1">
-              {t(`${perspective}.counter.bulk.label`, "Quick fill")}:
-            </span>
-            <button
-              type="button"
-              onClick={acceptAllRows}
-              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-            >
-              {t(`${perspective}.counter.bulk.acceptAll`, "Accept all")}
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setAllCounters(
-                  (it) =>
-                    ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2,
-                )
-              }
-              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-            >
-              {t(`${perspective}.counter.bulk.meetMiddle`, "Meet in middle")}
-            </button>
-            {perspective === "supplier" ? (
-              <>
+          <div className="mt-3 rounded-lg border border-border p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs uppercase font-semibold text-muted-foreground">
+                {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex rounded-md border border-border overflow-hidden text-xs">
                 <button
                   type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 1.03)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                  onClick={() => setBulkMode("amount")}
+                  className="px-3 py-1.5 font-medium"
+                  style={bulkMode === "amount" ? { background: "#8B2252", color: "white" } : {}}
                 >
-                  {t("supplier.counter.bulk.plus3", "Their price +3%")}
+                  $/{wLbl}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 1.05)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                  onClick={() => setBulkMode("percent")}
+                  className="px-3 py-1.5 font-medium"
+                  style={bulkMode === "percent" ? { background: "#8B2252", color: "white" } : {}}
                 >
-                  {t("supplier.counter.bulk.plus5", "Their price +5%")}
+                  %
                 </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 0.97)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-                >
-                  {t("buyer.counter.bulk.minus3pct", "Their counter -3%")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 0.95)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-                >
-                  {t("buyer.counter.bulk.minus5pct", "Their counter -5%")}
-                </button>
-              </>
-            )}
-            <div className="flex items-center gap-1">
+              </div>
               <Input
                 type="number"
-                step="0.01"
-                value={bulkOffset}
-                onChange={(e) => setBulkOffset(e.target.value)}
-                placeholder={t(`${perspective}.counter.bulk.customPlaceholder`, { defaultValue: "±{{unit}}", unit: pLbl })}
-                className="h-7 w-20 text-right tabular-nums text-xs"
+                step={bulkMode === "percent" ? "0.1" : "0.01"}
+                min="0"
+                max={bulkMode === "percent" ? "30" : undefined}
+                inputMode="decimal"
+                value={bulkValue}
+                onChange={(e) => setBulkValue(e.target.value)}
+                placeholder={bulkMode === "percent" ? "e.g. 3%" : `e.g. 0.10 $/${wLbl}`}
+                className="h-9 w-32 text-right tabular-nums text-xs"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7 px-3 text-xs"
-                onClick={applyBulkOffset}
+                className="h-9 px-3 text-xs"
+                onClick={applyBulk}
                 style={{ color: "#8B2252" }}
               >
-                {t(`${perspective}.counter.bulk.apply`, "Apply")}
+                Apply to All
               </Button>
+              {deductionFeedback && (
+                <span
+                  className="text-xs font-medium px-2 py-1 rounded-full"
+                  style={{ background: `${deductionFeedback.color}15`, color: deductionFeedback.color }}
+                >
+                  {deductionFeedback.level === "fair" && "✅ "}
+                  {deductionFeedback.level === "high" && "⚠️ "}
+                  {deductionFeedback.level === "aggressive" && "🔶 "}
+                  {deductionFeedback.level === "extreme" && "🔴 "}
+                  {deductionFeedback.message}
+                </span>
+              )}
             </div>
-          </div>
-        )}
-
-        {/* Bulk apply — mobile collapsible */}
-        {openItems.length > 0 && (
-          <details className="sm:hidden mt-3">
-            <summary className="text-xs font-semibold cursor-pointer py-2" style={{ color: "#8B2252" }}>
-              ⚡ {t(`${perspective}.counter.bulk.label`, "Quick fill")}
-            </summary>
-            <div className="flex flex-wrap gap-2 pt-2 pb-1">
+            <div className="flex flex-wrap gap-2 mt-2">
               <button
                 type="button"
                 onClick={acceptAllRows}
-                className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
                 style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
               >
-                {t(`${perspective}.counter.bulk.acceptAll`, "Accept all")}
+                ✅ Accept all
               </button>
               <button
                 type="button"
                 onClick={() =>
                   setAllCounters((it) => ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2)
                 }
-                className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
                 style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
               >
-                {t(`${perspective}.counter.bulk.meetMiddle`, "Meet in middle")}
+                Meet in middle
               </button>
-              <div className="flex items-center gap-1 w-full">
-                <Input
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={bulkOffset}
-                  onChange={(e) => setBulkOffset(e.target.value)}
-                  placeholder={t(`${perspective}.counter.bulk.customPlaceholder`, { defaultValue: "±{{unit}}", unit: pLbl })}
-                  className="h-11 flex-1 text-right tabular-nums"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-11 px-4 text-xs"
-                  onClick={applyBulkOffset}
-                  style={{ color: "#8B2252" }}
-                >
-                  {t(`${perspective}.counter.bulk.apply`, "Apply")}
-                </Button>
-              </div>
             </div>
-          </details>
+          </div>
         )}
 
         {/* Cuts — desktop table */}
