@@ -76,6 +76,15 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
     let cancelled = false;
     setLoading(true);
     setError(null);
+    // Set up realtime channel BEFORE any async work so .on() runs before .subscribe()
+    const channel = supabase
+      .channel(`neg-row-${negotiationId}-${Math.random().toString(36).slice(2)}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "negotiations", filter: `id=eq.${negotiationId}` },
+        () => setTick((n) => n + 1),
+      )
+      .subscribe();
     (async () => {
       const { data: row, error: err } = await supabase
         .from("negotiations")
@@ -113,15 +122,6 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
       }
       setLoading(false);
     })();
-    // Live updates: refetch when this negotiation row changes (round advance, chat unlock).
-    const channel = supabase
-      .channel(`neg-row-${negotiationId}`)
-      .on(
-        "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "negotiations", filter: `id=eq.${negotiationId}` },
-        () => setTick((n) => n + 1),
-      )
-      .subscribe();
     return () => {
       cancelled = true;
       supabase.removeChannel(channel);
