@@ -590,6 +590,9 @@ export default function SupplierCreateOffer() {
             is_halal: certifications.includes("Halal"),
             is_kosher: certifications.includes("Kosher"),
             office_id: activeOfficeId ?? MOCK_SUPPLIER_ID,
+            exw_pickup_location: selInco.includes("EXW")
+              ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
+              : null,
           })
           .select("id, offer_number")
           .single();
