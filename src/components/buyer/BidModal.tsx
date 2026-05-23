@@ -18,6 +18,7 @@ import type { OfferDetailed } from "@/hooks/useOffer";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
 import { isUuid } from "@/hooks/useRealNegotiation";
+import { getDeductionFeedback } from "@/lib/negotiationEngine";
 
 // Mock buyer identity until auth wiring is connected to the marketplace flow.
 const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
@@ -87,7 +88,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])),
   );
   const hydratedRef = useRef(false);
-  const [bulkOffset, setBulkOffset] = useState<string>("");
+  const [bulkMode, setBulkMode] = useState<"amount" | "percent">("amount");
+  const [bulkValue, setBulkValue] = useState<string>("");
 
   const applyAllBids = (priceFor: (askingKg: number) => number) => {
     setBids(
@@ -96,12 +98,25 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       ),
     );
   };
-  const applyBulkOffset = () => {
-    const v = parseFloat(bulkOffset);
-    if (!Number.isFinite(v)) return;
-    const deltaKg = fromDisplay(v, "price", unit);
-    applyAllBids((asking) => Math.max(0, asking + deltaKg));
+  const applyBulk = () => {
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return;
+    if (bulkMode === "percent") {
+      const capped = Math.min(v, 30); // max 30% deduction
+      const factor = 1 - capped / 100;
+      applyAllBids((asking) => asking * factor);
+    } else {
+      const deltaKg = fromDisplay(v, "price", unit);
+      applyAllBids((asking) => Math.max(0, asking - deltaKg)); // buyer deducts
+    }
   };
+
+  const deductionFeedback = useMemo(() => {
+    if (bulkMode !== "percent") return null;
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return null;
+    return getDeductionFeedback(v);
+  }, [bulkMode, bulkValue]);
 
   useEffect(() => {
     if (!open) return;
@@ -171,6 +186,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           min: toDisplay(min, "price", unit).toFixed(2),
         });
       }
+      // Max 30% deduction from asking
+      if (v != null && Number.isFinite(v) && v > 0 && asking > 0) {
+        const deductPct = ((asking - v) / asking) * 100;
+        if (deductPct > 30) {
+          out[it.id] = `Maximum deduction is 30%. Current: ${deductPct.toFixed(1)}%`;
+        }
+      }
     }
     return out;
   }, [isRealOffer, offer.items, bids, t, unit]);
@@ -226,6 +248,9 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           negotiation_id: neg.id,
           round: 1,
           created_by_user_id: MOCK_BUYER_USER_ID,
+          side: "buyer",
+          type: "bid",
+          message: message.trim() || null,
         })
         .select("id")
         .single();
@@ -310,110 +335,93 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           </label>
         </div>
 
-        {/* Bulk apply — desktop */}
-        <div className="hidden sm:flex flex-wrap items-center gap-2 mt-3">
-          <span className="text-xs uppercase font-semibold text-muted-foreground mr-1">
-            {t("buyer.bid.bulk.label", "Quick fill")}:
-          </span>
-          <button
-            type="button"
-            onClick={() => applyAllBids((a) => a)}
-            className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-            style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-          >
-            {t("buyer.bid.bulk.acceptAsking", "Accept asking")}
-          </button>
-          <button
-            type="button"
-            onClick={() => applyAllBids((a) => a * 0.95)}
-            className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-            style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-          >
-            {t("buyer.bid.bulk.minus5", "Asking -5%")}
-          </button>
-          <button
-            type="button"
-            onClick={() => applyAllBids((a) => a * 0.9)}
-            className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-            style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-          >
-            {t("buyer.bid.bulk.minus10", "Asking -10%")}
-          </button>
-          <div className="flex items-center gap-1">
+        {/* Bulk apply — unified responsive */}
+        <div className="mt-3 rounded-lg border border-border p-3">
+          <div className="flex items-center gap-2 mb-2">
+            <span className="text-xs uppercase font-semibold text-muted-foreground">
+              Apply bid in all items
+            </span>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Mode toggle */}
+            <div className="flex rounded-md border border-border overflow-hidden text-xs">
+              <button
+                type="button"
+                onClick={() => setBulkMode("amount")}
+                className="px-3 py-1.5 font-medium"
+                style={bulkMode === "amount" ? { background: "#8B2252", color: "white" } : {}}
+              >
+                $/{wLbl}
+              </button>
+              <button
+                type="button"
+                onClick={() => setBulkMode("percent")}
+                className="px-3 py-1.5 font-medium"
+                style={bulkMode === "percent" ? { background: "#8B2252", color: "white" } : {}}
+              >
+                %
+              </button>
+            </div>
+
+            {/* Value input */}
             <Input
               type="number"
-              step="0.01"
-              value={bulkOffset}
-              onChange={(e) => setBulkOffset(e.target.value)}
-              placeholder={t("buyer.bid.bulk.customPlaceholder", { defaultValue: "±{{unit}}", unit: pLbl })}
-              className="h-7 w-20 text-right tabular-nums text-xs"
+              step={bulkMode === "percent" ? "0.1" : "0.01"}
+              min="0"
+              max={bulkMode === "percent" ? "30" : undefined}
+              inputMode="decimal"
+              value={bulkValue}
+              onChange={(e) => setBulkValue(e.target.value)}
+              placeholder={bulkMode === "percent" ? "e.g. 3%" : `e.g. 0.10 $/${wLbl}`}
+              className="h-9 w-32 text-right tabular-nums text-xs"
             />
+
             <Button
               type="button"
               variant="outline"
               size="sm"
-              className="h-7 px-3 text-xs"
-              onClick={applyBulkOffset}
+              className="h-9 px-3 text-xs"
+              onClick={applyBulk}
               style={{ color: "#8B2252" }}
             >
-              {t("buyer.bid.bulk.apply", "Apply")}
+              Apply to All
             </Button>
-          </div>
-        </div>
 
-        {/* Bulk apply — mobile collapsible */}
-        <details className="sm:hidden mt-3">
-          <summary className="text-xs font-semibold cursor-pointer py-2" style={{ color: "#8B2252" }}>
-            ⚡ {t("buyer.bid.bulk.label", "Quick fill")}
-          </summary>
-          <div className="flex flex-wrap gap-2 pt-2 pb-1">
+            {/* Deduction feedback */}
+            {deductionFeedback && (
+              <span
+                className="text-xs font-medium px-2 py-1 rounded-full"
+                style={{ background: `${deductionFeedback.color}15`, color: deductionFeedback.color }}
+              >
+                {deductionFeedback.level === "fair" && "✅ "}
+                {deductionFeedback.level === "high" && "⚠️ "}
+                {deductionFeedback.level === "aggressive" && "🔶 "}
+                {deductionFeedback.level === "extreme" && "🔴 "}
+                {deductionFeedback.message}
+              </span>
+            )}
+          </div>
+
+          {/* Quick shortcuts */}
+          <div className="flex flex-wrap gap-2 mt-2">
             <button
               type="button"
               onClick={() => applyAllBids((a) => a)}
-              className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
               style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
             >
-              {t("buyer.bid.bulk.acceptAsking", "Accept asking")}
+              Accept asking
             </button>
             <button
               type="button"
-              onClick={() => applyAllBids((a) => a * 0.95)}
-              className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+              onClick={() => applyAllBids((a) => a * 0.97)}
+              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
               style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
             >
-              {t("buyer.bid.bulk.minus5", "Asking -5%")}
+              Asking -3%
             </button>
-            <button
-              type="button"
-              onClick={() => applyAllBids((a) => a * 0.9)}
-              className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-            >
-              {t("buyer.bid.bulk.minus10", "Asking -10%")}
-            </button>
-            <div className="flex items-center gap-1 w-full">
-              <Input
-                type="number"
-                step="0.01"
-                inputMode="decimal"
-                value={bulkOffset}
-                onChange={(e) => setBulkOffset(e.target.value)}
-                placeholder={t("buyer.bid.bulk.customPlaceholder", { defaultValue: "±{{unit}}", unit: pLbl })}
-                className="h-11 flex-1 text-right tabular-nums"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                className="h-11 px-4 text-xs"
-                onClick={applyBulkOffset}
-                style={{ color: "#8B2252" }}
-              >
-                {t("buyer.bid.bulk.apply", "Apply")}
-              </Button>
-            </div>
           </div>
-        </details>
+        </div>
 
         {/* Cuts — desktop table */}
         <div className="rounded-lg border border-border overflow-hidden mt-2 hidden sm:block">
@@ -576,6 +584,12 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             </div>
           </div>
         </div>
+        {selectedFreight && freightPerKg > 0 && (
+          <div className="text-xs text-muted-foreground mt-1">
+            Freight: US$ {Number(selectedFreight.cost).toLocaleString()} ({fmtPrice(freightPerKg, unit)} {pLbl}) · 
+            Total with freight: US$ {(bidTotal + Number(selectedFreight.cost)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          </div>
+        )}
 
         {/* Message */}
         <div className="mt-2">
