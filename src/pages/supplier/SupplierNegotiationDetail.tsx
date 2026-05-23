@@ -19,6 +19,8 @@ import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
 import { acceptNegotiation } from "@/components/supplier/CounterOfferActions";
 import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiationModal";
+import { NegotiationChat } from "@/components/negotiation/NegotiationChat";
+import { isChatEnabled } from "@/lib/negotiationEngine";
 import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
@@ -471,6 +473,20 @@ export default function SupplierNegotiationDetail() {
           </div>
         </div>
       </div>
+
+      {isReal && rawNeg && (
+        <NegotiationChat
+          negotiationId={rawNeg.id}
+          perspective="supplier"
+          offerItems={(rawNeg.offer?.items ?? []).map((it: any) => ({
+            id: it.id,
+            name: it.customer_product?.name ?? "Item",
+            price: Number(it.price),
+            amount: Number(it.amount),
+          }))}
+          enabled={isChatEnabled(rawNeg as any)}
+        />
+      )}
 
       {isReal && rawNeg && (
         <CounterOfferModal
