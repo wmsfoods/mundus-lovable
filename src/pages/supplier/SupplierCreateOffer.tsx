@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Check, Plus, Search as SearchIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import {
   toDisplay,
   fromDisplay,
