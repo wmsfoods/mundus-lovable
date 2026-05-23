@@ -1822,7 +1822,14 @@ export default function SupplierCreateOffer() {
                   <div className="cov4-prev-cuts-t">Cuts included</div>
                   {cuts.map((c) => (
                     <div key={c.id} className="cov4-prev-cut-row">
-                      <span>{c.cat} {c.cut}</span>
+                      <span>
+                        {c.cat} {c.cut}
+                        {c.plant && (
+                          <span style={{ marginLeft: 6, fontSize: 11, color: "#6b7280" }}>
+                            · Plant {c.plant}
+                          </span>
+                        )}
+                      </span>
                       <span>US$ {fmtPrice(Number(c.ask) || 0, unit)}/{wLbl}</span>
                     </div>
                   ))}
