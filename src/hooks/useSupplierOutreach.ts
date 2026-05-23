@@ -5,6 +5,7 @@ import { MOCK_SUPPLIER_COMPANY_ID } from "@/hooks/useSupplierUsers";
 export type OutreachOffer = {
   id: string;
   offerNumber: number;
+  createdAt: string | null;
   title: string;
   origin: string;
   markets: string[];
@@ -43,8 +44,11 @@ export type OutreachStats = {
   contactsReached: number;
 };
 
-function buildTitle(items: { name: string }[], offerNumber: number) {
-  if (!items.length) return `Offer #${offerNumber}`;
+function buildTitle(items: { name: string }[], offerNumber: number, createdAt: string | null) {
+  if (!items.length) {
+    const y = createdAt ? new Date(createdAt).getFullYear() : new Date().getFullYear();
+    return `M-${String(offerNumber ?? 0).padStart(6, "0")}-${y}`;
+  }
   if (items.length === 1) return items[0].name;
   return `Mixed Container — ${items.length} cuts`;
 }
@@ -63,7 +67,7 @@ export function useSupplierOutreach() {
     const { data: rawOffers } = await supa
       .from("offers")
       .select(`
-        id, offer_number, status, origin_country, container_size, total_fcl,
+        id, offer_number, created_at, status, origin_country, container_size, total_fcl,
         offer_items(amount, price, customer_products(name)),
         offer_markets(markets(countries(english_name))),
         offer_allowed_incoterms(incoterm)
@@ -114,7 +118,8 @@ export function useSupplierOutreach() {
       return {
         id: o.id,
         offerNumber: o.offer_number,
-        title: buildTitle(items, o.offer_number),
+        createdAt: o.created_at ?? null,
+        title: buildTitle(items, o.offer_number, o.created_at ?? null),
         origin: o.origin_country || "Brazil",
         markets,
         incoterm: incoterms[0] || "—",
