@@ -238,6 +238,83 @@ export default function SupplierCreateOffer() {
     }
   }, [fromRequestId]);
 
+  /* Prefill from a buyer's offer request (navigation state from Requests page). */
+  useEffect(() => {
+    if (prefilledRef.current) return;
+    if (!fromRequest) return;
+    if (!MARKETS || MARKETS.length === 0) return;
+    prefilledRef.current = true;
+
+    setUnit("kg");
+
+    if (fromRequest.containerSize === "20ft" || fromRequest.containerSize === "40ft") {
+      setCsize(fromRequest.containerSize);
+    }
+    if (fromRequest.temperature === "Frozen" || fromRequest.temperature === "Chilled") {
+      setTemp(fromRequest.temperature);
+    }
+
+    if (fromRequest.incoterms) {
+      setSelInco([fromRequest.incoterms]);
+      setPrimaryInco(fromRequest.incoterms);
+    }
+
+    // Match destination market by country name (case-insensitive).
+    const wanted = fromRequest.destinationCountry?.trim().toLowerCase();
+    const market = wanted
+      ? MARKETS.find((m) => m.n.trim().toLowerCase() === wanted) ||
+        MARKETS.find((m) => m.n.trim().toLowerCase().includes(wanted))
+      : undefined;
+    if (market) {
+      setSelMarkets([market]);
+      // Match port by name within the market if possible.
+      const portWanted = fromRequest.destinationPort?.trim().toLowerCase();
+      const matchedPort = portWanted
+        ? market.p.find((p) => p.name.trim().toLowerCase() === portWanted) ||
+          market.p.find((p) => p.name.trim().toLowerCase().includes(portWanted))
+        : undefined;
+      setMktCfg({
+        [market.id]: {
+          sp: matchedPort ? [matchedPort.id] : market.p.map((p) => p.id),
+          sm: true,
+          gf: "",
+          pf: Object.fromEntries(market.p.map((p) => [p.id, ""])),
+        },
+      });
+    }
+
+    // Seed an initial cut row from the requested product.
+    const ask = fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : "";
+    const floor = fromRequest.targetPrice
+      ? (fromRequest.targetPrice * 0.98).toFixed(2)
+      : "";
+    const qty = fromRequest.quantity ? String(fromRequest.quantity) : "";
+    setCuts([
+      {
+        id: Date.now().toString(),
+        cat: fromRequest.category || "Beef",
+        cut: fromRequest.product || "",
+        spec: fromRequest.specification || "Boneless",
+        pkg: "Vacuum Pack",
+        gr: "Not Classified",
+        ag: "None",
+        qty,
+        ask,
+        floor,
+        notes: fromRequest.additionalInfo || "",
+      },
+    ]);
+
+    // Distribution: pre-check Marketplace + Specific Customers and select requester.
+    setDistMarketplace(true);
+    setDistAllCustomers(false);
+    setDistSpecific(true);
+    const customer = MOCK_CUSTOMERS.find(
+      (c) => c.name.toLowerCase() === fromRequest.client.toLowerCase()
+    );
+    if (customer) setSelectedCustomers([customer.id]);
+  }, [fromRequest, MARKETS, setUnit]);
+
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
   }, [dataError]);
