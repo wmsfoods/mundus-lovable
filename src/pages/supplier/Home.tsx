@@ -1,4 +1,4 @@
-import type { ComponentType } from "react";
+import { useMemo, type ComponentType } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -12,22 +12,17 @@ import {
   PlusIcon,
   ArrowRightIcon,
   ArrowTopRightIcon,
-  MessageIcon,
-  ClockIcon,
-  ClipboardIcon,
-  EyeIcon,
 } from "@/components/icons";
-import {
-  SUPPLIER_KPIS,
-  SUPPLIER_ATTENTION,
-  SUPPLIER_RECENT_OFFERS,
-  SUPPLIER_RECENT_SALES,
-  type SupplierKpi,
-  type AttentionAlert,
-  type SupplierOfferCard,
-  type SupplierSaleCard,
-} from "@/data/mockSupplierHome";
 import { useAuth } from "@/contexts/AuthContext";
+import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+
+type SupplierKpi = {
+  key: "activeOffers" | "totalOffers" | "closedDeals" | "inNegotiation" | "avgClosing";
+  value: string | number;
+  delta: number;
+  deltaUnit?: string;
+  isDark?: boolean;
+};
 
 type IconCmp = ComponentType<{ size?: number }>;
 type TFn = (key: string, opts?: Record<string, unknown>) => string;
@@ -74,28 +69,6 @@ function StatCard({ k, t }: { k: SupplierKpi; t: TFn }) {
   );
 }
 
-const ATTENTION_ICONS: Record<AttentionAlert["tone"], IconCmp> = {
-  warning: MessageIcon,
-  info: ClockIcon,
-  purple: ClipboardIcon,
-};
-
-function AttentionRow({ a, t }: { a: AttentionAlert; t: TFn }) {
-  const I = ATTENTION_ICONS[a.tone];
-  return (
-    <div className={`sh-attention-row is-${a.tone}`}>
-      <span className="ic"><I size={16} /></span>
-      <div className="body">
-        <p className="title">{t(`supplier.home.${a.title}`)}</p>
-        <p className="sub">{t(`supplier.home.${a.subtitle}`)}</p>
-      </div>
-      <Link to={a.ctaPath} className="cta">
-        {t(`supplier.home.${a.ctaKey}`)} <ArrowRightIcon size={12} />
-      </Link>
-    </div>
-  );
-}
-
 function ActionCard(props: {
   icon: IconCmp;
   title: string;
@@ -119,8 +92,24 @@ function ActionCard(props: {
   );
 }
 
-function HomeOfferCard({ o, t }: { o: SupplierOfferCard; t: TFn }) {
-  const statusClass = o.status === "Available" ? "pill-active" : "pill-pending";
+type HomeOfferCardData = {
+  id: string;
+  category: string;
+  condition: string;
+  cutCount: number;
+  status: "active" | "new" | "negotiating" | "closed" | "inactive";
+  title: string;
+  cuts: string[];
+  destinationFlag: string;
+  destination: string;
+  incoterm: string;
+  shipment: string;
+  volumeMt: number;
+  qtyMt: number;
+};
+
+function HomeOfferCard({ o, t }: { o: HomeOfferCardData; t: TFn }) {
+  const statusClass = o.status === "active" ? "pill-active" : "pill-pending";
   const visibleCuts = o.cuts.slice(0, 3);
   const moreCount = Math.max(0, o.cuts.length - visibleCuts.length);
   return (
@@ -139,7 +128,7 @@ function HomeOfferCard({ o, t }: { o: SupplierOfferCard; t: TFn }) {
           )}
         </div>
         <span className={`pill ${statusClass}`}>
-          {o.status === "Available" ? t("supplier.home.statusAvailable") : t("supplier.home.statusNew")}
+          {o.status === "active" ? t("supplier.home.statusAvailable") : t("supplier.home.statusNew")}
         </span>
       </div>
       <div className="oc-title-block">
@@ -169,15 +158,6 @@ function HomeOfferCard({ o, t }: { o: SupplierOfferCard; t: TFn }) {
           <span className="cm-value">{o.volumeMt} {t("supplier.home.mt")}</span>
         </div>
       </div>
-      <div className="oc-stats">
-        <span className="stat-item"><EyeIcon size={12} /> {o.views} {t("supplier.home.card.views")}</span>
-        <span className="dot-sep" />
-        <span className="stat-item"><MessageIcon size={12} /> {o.proposals} {t("supplier.home.card.proposals")}</span>
-        <span className="dot-sep" />
-        <span className={`stat-item ${o.daysLeft <= 7 ? "danger" : ""}`}>
-          <ClockIcon size={12} /> {o.daysLeft}{t("supplier.home.card.daysLeft")}
-        </span>
-      </div>
       <div className="oc-footer">
         <div className="oc-qty">
           <span className="cur">{t("supplier.home.card.qty")}</span>
@@ -190,68 +170,44 @@ function HomeOfferCard({ o, t }: { o: SupplierOfferCard; t: TFn }) {
   );
 }
 
-function HomeSaleCard({ s, t }: { s: SupplierSaleCard; t: TFn }) {
-  const STATUS_CLASS: Record<SupplierSaleCard["status"], string> = {
-    AwaitingPrePayment: "pill-pending",
-    PrePaidLoading: "pill-info",
-    InTransit: "pill-info",
-    BalanceDue: "pill-pending",
-  };
-  return (
-    <Link to="/supplier/sales" className="oc">
-      <div className="oc-head">
-        <div className="oc-head-l">
-          <span className="oc-chip"><TagIcon size={14} /></span>
-          <span className="oc-cat">{s.category}</span>
-          <span className="dot-sep" />
-          <span className="oc-temp">{s.condition}</span>
-        </div>
-        <span className={`pill ${STATUS_CLASS[s.status]}`}>
-          {t(`supplier.home.saleStatus.${s.status}`)}
-        </span>
-      </div>
-      <div className="oc-title-block">
-        <div className="oc-title">{s.title}</div>
-        <span className="oc-cut-text">
-          {t("supplier.home.card.order", { id: s.orderNumber })} · {s.orderDate}
-        </span>
-      </div>
-      <div className="oc-meta-tight">
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.buyer")}</span>
-          <span className="cm-value">{s.buyer}</span>
-        </div>
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.destination")}</span>
-          <span className="cm-value">{s.destinationFlag} {s.destination}</span>
-        </div>
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.incoterm")}</span>
-          <span className="cm-value">{s.incoterm}</span>
-        </div>
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.shipment")}</span>
-          <span className="cm-value">{s.shipment}</span>
-        </div>
-      </div>
-      <div className="oc-footer">
-        <div className="oc-qty">
-          <span className="cur">{t("supplier.home.card.qty")}</span>
-          <span className="amt">{new Intl.NumberFormat("de-DE").format(s.qtyKg)}</span>
-          <span className="unit">kg</span>
-        </div>
-        <span className="oc-cta">{t(`supplier.home.card.${s.ctaKey}`)} <ArrowRightIcon size={12} /></span>
-      </div>
-    </Link>
-  );
-}
-
 export default function SupplierHome() {
   const { t } = useTranslation();
   const { user } = useAuth();
   const greetingKey = useGreetingKey();
   const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "Antonio";
   const firstName = userName.split(" ")[0].replace(/^./, (c) => c.toUpperCase());
+  const { offers, loading } = useRealSupplierOffers();
+
+  const kpis = useMemo<SupplierKpi[]>(() => {
+    const active = offers.filter((o) => o.status === "active").length;
+    const negotiating = offers.filter((o) => o.status === "negotiating").length;
+    const closed = offers.filter((o) => o.status === "closed").length;
+    return [
+      { key: "activeOffers", value: active, delta: 0 },
+      { key: "totalOffers", value: offers.length, delta: 0 },
+      { key: "closedDeals", value: closed, delta: 0 },
+      { key: "inNegotiation", value: negotiating, delta: 0 },
+      { key: "avgClosing", value: "—", delta: 0 },
+    ];
+  }, [offers]);
+
+  const recentOffers = useMemo<HomeOfferCardData[]>(() => {
+    return offers.slice(0, 3).map((o) => ({
+      id: o.id,
+      category: o.category,
+      condition: o.condition,
+      cutCount: o.items.length,
+      status: o.status,
+      title: o.title,
+      cuts: o.items.map((it) => it.name),
+      destinationFlag: o.destinations[0]?.code ?? "",
+      destination: o.destinations[0]?.name ?? "—",
+      incoterm: o.incoterms[0] ?? "—",
+      shipment: o.shipmentLabel,
+      volumeMt: Math.round(o.totalKg / 1000),
+      qtyMt: Math.round(o.totalKg / 1000),
+    }));
+  }, [offers]);
 
   return (
     <>
@@ -273,19 +229,8 @@ export default function SupplierHome() {
         </div>
       </section>
 
-      <div className="sh-attention">
-        <div className="sh-attention-head">
-          <MessageIcon size={14} />
-          {t("supplier.home.attention.title")}
-          <span className="count">{SUPPLIER_ATTENTION.length}</span>
-        </div>
-        <div className="sh-attention-list">
-          {SUPPLIER_ATTENTION.map((a) => <AttentionRow key={a.id} a={a} t={t} />)}
-        </div>
-      </div>
-
       <div className="stats">
-        {SUPPLIER_KPIS.map((k) => <StatCard key={k.key} k={k} t={t} />)}
+        {kpis.map((k) => <StatCard key={k.key} k={k} t={t} />)}
       </div>
 
       <div className="sh-action-row">
@@ -320,7 +265,13 @@ export default function SupplierHome() {
         </Link>
       </div>
       <div className="sh-card-row">
-        {SUPPLIER_RECENT_OFFERS.map((o) => <HomeOfferCard key={o.id} o={o} t={t} />)}
+        {loading ? (
+          <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>{t("common.loading", { defaultValue: "Loading…" })}</div>
+        ) : recentOffers.length === 0 ? (
+          <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>{t("supplier.home.emptyOffers", { defaultValue: "No offers yet." })}</div>
+        ) : (
+          recentOffers.map((o) => <HomeOfferCard key={o.id} o={o} t={t} />)
+        )}
       </div>
 
       <div className="sec-head">
@@ -330,7 +281,7 @@ export default function SupplierHome() {
         </Link>
       </div>
       <div className="sh-card-row">
-        {SUPPLIER_RECENT_SALES.map((s) => <HomeSaleCard key={s.id} s={s} t={t} />)}
+        <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>{t("supplier.home.emptySales", { defaultValue: "No sales yet." })}</div>
       </div>
     </>
   );
