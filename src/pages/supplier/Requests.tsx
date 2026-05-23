@@ -62,9 +62,30 @@ export default function SupplierRequests() {
   const to = Math.min(pageSafe * PAGE_SIZE, total);
   const slice = filtered.slice(from === 0 ? 0 : from - 1, to);
 
-  const handleCreateOffer = (_req: OfferRequest) => {
+  const handleCreateOffer = (req: OfferRequest) => {
     setOpenMenu(null);
-    alert(t("supplier.requests.detail.createOfferComingSoon"));
+    navigate(`/supplier/offers/new?from=${req.id}`, {
+      state: {
+        fromRequest: {
+          requestId: req.id,
+          requestNumber: req.id,
+          client: req.client,
+          product: req.product,
+          category: req.category,
+          specification: req.specification,
+          quantity: req.quantityKg,
+          targetPrice: req.targetPriceUsd,
+          destinationCountry: req.destinationCountry,
+          destinationPort: req.destinationPort,
+          incoterms: req.incoterms,
+          containerSize: req.containerSize,
+          containerCount: req.numberOfContainers,
+          temperature: req.productTemperature,
+          shipmentDate: req.shipmentDate,
+          additionalInfo: req.additionalInfo,
+        },
+      },
+    });
   };
 
   const handleConfirmDismiss = () => {
