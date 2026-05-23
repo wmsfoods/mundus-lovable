@@ -11,6 +11,7 @@ import {
 import {
   useMarketplaceAnalytics, type AnalyticsPeriod, type Kpi, type Insight,
 } from "@/hooks/useMarketplaceAnalytics";
+import { OfferAnalyticsSection } from "@/components/admin/OfferAnalyticsSection";
 
 const PERIODS: Array<{ value: AnalyticsPeriod; labelKey: string }> = [
   { value: "7d", labelKey: "admin.analytics.period.last7d" },
@@ -193,6 +194,8 @@ export default function AdminAnalytics() {
 
       {data && (
         <>
+          <OfferAnalyticsSection />
+
           {/* Health + Insights */}
           <section className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-4">
             <div className="rounded-xl border bg-card p-4 flex items-center gap-4">

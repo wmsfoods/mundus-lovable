@@ -12,6 +12,7 @@ import { useState, useEffect } from "react";
 import { BidModal } from "@/components/buyer/BidModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { toast } from "sonner";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -79,6 +80,31 @@ export default function BuyerOfferDetail() {
     })().catch(() => {});
   }, [id, company?.id]);
 
+  const handleNegotiate = async () => {
+    if (id && company?.id) {
+      const { data: existingNeg } = await supabase
+        .from("negotiations")
+        .select("id, status, rejection_cooldown_until")
+        .eq("offer_id", id)
+        .eq("buyer_company_id", company.id)
+        .eq("status", "offer_rejected")
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (existingNeg?.rejection_cooldown_until) {
+        const cooldownEnd = new Date(existingNeg.rejection_cooldown_until);
+        if (cooldownEnd > new Date()) {
+          const hoursLeft = Math.ceil((cooldownEnd.getTime() - Date.now()) / 3_600_000);
+          toast.error(
+            `Your bid was rejected. You can re-negotiate in ${hoursLeft} hour${hoursLeft > 1 ? "s" : ""}.`,
+          );
+          return;
+        }
+      }
+    }
+    setBidOpen(true);
+  };
+
   if (loading) {
     return (
       <>
@@ -118,7 +144,7 @@ export default function BuyerOfferDetail() {
         navigate={navigate}
         moreOpen={moreOpen}
         setMoreOpen={setMoreOpen}
-        onNegotiate={() => setBidOpen(true)}
+        onNegotiate={handleNegotiate}
       />
       <BidModal open={bidOpen} onOpenChange={setBidOpen} offer={offer} />
     </>
