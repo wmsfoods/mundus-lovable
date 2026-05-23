@@ -707,6 +707,8 @@ export function CounterOfferModal({
                           const v = parseFloat(e.target.value);
                           const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
                           setCounters((prev) => ({ ...prev, [it.id]: kg }));
+                          // user typed final price directly → clear delta input to avoid confusion
+                          setRowValue((p) => ({ ...p, [it.id]: "" }));
                         }}
                         className={
                           "h-9 w-24 ml-auto text-right tabular-nums focus-visible:ring-[#8B2252]" +
@@ -714,6 +716,58 @@ export function CounterOfferModal({
                           (errors[it.id] ? " border-destructive focus-visible:ring-destructive" : "")
                         }
                       />
+                      {!isAccepted && (
+                        <div className="flex items-center gap-1 mt-1 justify-end">
+                          <div className="flex rounded-md border border-border overflow-hidden text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => updateRowDelta(it.id, asking, their, { anchor: "self" })}
+                              className="px-1.5 py-0.5 font-medium"
+                              style={(rowAnchor[it.id] ?? "self") === "self" ? { background: "#8B2252", color: "white" } : {}}
+                              title={anchorLabel("self")}
+                            >
+                              {anchorLabel("self")}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateRowDelta(it.id, asking, their, { anchor: "other" })}
+                              className="px-1.5 py-0.5 font-medium"
+                              style={(rowAnchor[it.id] ?? "self") === "other" ? { background: "#8B2252", color: "white" } : {}}
+                              title={anchorLabel("other")}
+                            >
+                              {anchorLabel("other")}
+                            </button>
+                          </div>
+                          <div className="flex rounded-md border border-border overflow-hidden text-[10px]">
+                            <button
+                              type="button"
+                              onClick={() => updateRowDelta(it.id, asking, their, { mode: "amount" })}
+                              className="px-1.5 py-0.5 font-medium"
+                              style={(rowMode[it.id] ?? "amount") === "amount" ? { background: "#8B2252", color: "white" } : {}}
+                            >
+                              $
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => updateRowDelta(it.id, asking, their, { mode: "percent" })}
+                              className="px-1.5 py-0.5 font-medium"
+                              style={(rowMode[it.id] ?? "amount") === "percent" ? { background: "#8B2252", color: "white" } : {}}
+                            >
+                              %
+                            </button>
+                          </div>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            inputMode="decimal"
+                            value={rowValue[it.id] ?? ""}
+                            placeholder="Δ"
+                            onChange={(e) => updateRowDelta(it.id, asking, their, { value: e.target.value })}
+                            className="h-7 w-16 text-right tabular-nums text-xs"
+                          />
+                        </div>
+                      )}
                       {errors[it.id] && (
                         <div className="text-[11px] text-destructive mt-1 max-w-[200px] ml-auto">
                           {errors[it.id]}
