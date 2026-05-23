@@ -1,6 +1,7 @@
-import { NavLink } from "react-router-dom";
+import { useState } from "react";
+import { NavLink, useLocation } from "react-router-dom";
 import { Logo } from "@/components/Logo";
-import { XIcon } from "@/components/icons";
+import { XIcon, ChevronDownIcon } from "@/components/icons";
 import { ProBadge } from "@/components/mundus/ProBadge";
 
 export type SidebarItem = {
@@ -15,8 +16,23 @@ export type SidebarItem = {
   newBadge?: boolean;
 };
 
+export type SidebarSection = {
+  type: "section";
+  key: string;
+  label: string;
+  icon?: React.ComponentType<{ size?: number }>;
+  defaultOpen?: boolean;
+  children: SidebarItem[];
+};
+
+export type SidebarEntry = SidebarItem | SidebarSection;
+
+function isSection(e: SidebarEntry): e is SidebarSection {
+  return (e as SidebarSection).type === "section";
+}
+
 type SidebarProps = {
-  items: SidebarItem[];
+  items: SidebarEntry[];
   rolePill?: string;
   userName?: string;
   userSubtitle?: string;
@@ -24,6 +40,74 @@ type SidebarProps = {
   onClose?: () => void;
   onProBadgeClick?: (item: SidebarItem) => void;
 };
+
+function renderItem(
+  item: SidebarItem,
+  onClose: (() => void) | undefined,
+  onProBadgeClick: ((i: SidebarItem) => void) | undefined,
+) {
+  const I = item.icon;
+  return (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      end={item.end}
+      onClick={onClose}
+      className={({ isActive }) =>
+        `sb-item ${isActive ? "is-active" : ""} ${item.accent ? "is-accent" : ""}`.trim()
+      }
+    >
+      <I size={18} />
+      <span className="sb-item-label">{item.label}</span>
+      {item.proBadge && (
+        <ProBadge
+          onClick={onProBadgeClick ? () => onProBadgeClick(item) : undefined}
+          title={onProBadgeClick ? "Preview premium" : undefined}
+        />
+      )}
+      {item.newBadge && <span className="nav-new-badge">NEW</span>}
+      {item.badge ? <span className="sb-item-badge">{item.badge}</span> : null}
+    </NavLink>
+  );
+}
+
+function SectionGroup({
+  section,
+  onClose,
+  onProBadgeClick,
+}: {
+  section: SidebarSection;
+  onClose?: () => void;
+  onProBadgeClick?: (i: SidebarItem) => void;
+}) {
+  const { pathname } = useLocation();
+  const hasActive = section.children.some((c) =>
+    c.end ? pathname === c.to : pathname.startsWith(c.to),
+  );
+  const [open, setOpen] = useState<boolean>(
+    section.defaultOpen ?? hasActive,
+  );
+  const SI = section.icon;
+  return (
+    <div className={`sb-section ${open ? "is-open" : ""}`}>
+      <button
+        type="button"
+        className="sb-section-header"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        {SI && <SI size={18} />}
+        <span className="sb-section-label">{section.label}</span>
+        <ChevronDownIcon size={16} />
+      </button>
+      {open && (
+        <div className="sb-section-body">
+          {section.children.map((it) => renderItem(it, onClose, onProBadgeClick))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function Sidebar({
   items,
@@ -64,34 +148,23 @@ export function Sidebar({
           </button>
         </div>
         <nav className="sb-nav">
-          {items.map((item) => {
-            const I = item.icon;
+          {items.map((entry) => {
+            if (isSection(entry)) {
+              return (
+                <SectionGroup
+                  key={entry.key}
+                  section={entry}
+                  onClose={onClose}
+                  onProBadgeClick={onProBadgeClick}
+                />
+              );
+            }
             return (
-              <div key={item.to} className="sb-item-wrap">
-                {item.groupLabel && (
-                  <div className="sb-group-label">{item.groupLabel}</div>
+              <div key={entry.to} className="sb-item-wrap">
+                {entry.groupLabel && (
+                  <div className="sb-group-label">{entry.groupLabel}</div>
                 )}
-                <NavLink
-                to={item.to}
-                end={item.end}
-                onClick={onClose}
-                className={({ isActive }) =>
-                  `sb-item ${isActive ? "is-active" : ""} ${item.accent ? "is-accent" : ""}`.trim()
-                }
-              >
-                <I size={18} />
-                <span className="sb-item-label">{item.label}</span>
-                {item.proBadge && (
-                  <ProBadge
-                    onClick={
-                      onProBadgeClick ? () => onProBadgeClick(item) : undefined
-                    }
-                    title={onProBadgeClick ? "Preview premium" : undefined}
-                  />
-                )}
-                {item.newBadge && <span className="nav-new-badge">NEW</span>}
-                {item.badge ? <span className="sb-item-badge">{item.badge}</span> : null}
-                </NavLink>
+                {renderItem(entry, onClose, onProBadgeClick)}
               </div>
             );
           })}
