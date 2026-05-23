@@ -340,6 +340,7 @@ function OfficeCard({
   office,
   isHQ,
   userCount,
+  offerCount,
   onEdit,
   onDelete,
   onManageUsers,
@@ -347,6 +348,7 @@ function OfficeCard({
   office: Office;
   isHQ?: boolean;
   userCount: number;
+  offerCount?: number;
   onEdit?: () => void;
   onDelete?: () => void;
   onManageUsers?: () => void;
@@ -402,7 +404,7 @@ function OfficeCard({
       <div style={{ fontSize: 15, fontWeight: 500 }}>{subtitle}</div>
       {location && <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>📍 {location}</div>}
       <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>
-        👥 {userCount} user{userCount !== 1 ? "s" : ""} · 📦 — offers · 💰 — sales
+        👥 {userCount} user{userCount !== 1 ? "s" : ""} · 📦 {offerCount ?? 0} offer{(offerCount ?? 0) !== 1 ? "s" : ""}
       </div>
       {office.plant_numbers && office.plant_numbers.length > 0 && (
         <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>🏭 Plants: {office.plant_numbers.join(", ")}</div>
