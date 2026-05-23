@@ -33,6 +33,7 @@ export function OfficeSwitcher() {
     offices,
     hasMultipleOffices,
     isAllOffices,
+    showAllOfficesOption,
   } = useActiveOffice();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -74,18 +75,22 @@ export function OfficeSwitcher() {
 
       {open && (
         <div className="office-switcher-dropdown" role="menu">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveOffice(null);
-              setOpen(false);
-            }}
-          >
-            <span>🌐</span>
-            <span style={{ flex: 1 }}>All Offices (Consolidated)</span>
-            {isAllOffices && <CheckIcon size={14} />}
-          </button>
-          <hr />
+          {showAllOfficesOption && (
+            <>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveOffice(null);
+                  setOpen(false);
+                }}
+              >
+                <span>🌐</span>
+                <span style={{ flex: 1 }}>All Offices (Consolidated)</span>
+                {isAllOffices && <CheckIcon size={14} />}
+              </button>
+              <hr />
+            </>
+          )}
           {sorted.map((o) => {
             const isHQ = !o.parent_company_id;
             const icon = isHQ ? "🏛️" : o.office_type === "branch" ? "🏢" : "🌏";
