@@ -28,6 +28,7 @@ import {
   type SupplierSaleCard,
 } from "@/data/mockSupplierHome";
 import { useAuth } from "@/contexts/AuthContext";
+import { ProteinMarquee } from "@/components/mundus/ProteinMarquee";
 
 type IconCmp = ComponentType<{ size?: number }>;
 type TFn = (key: string, opts?: Record<string, unknown>) => string;
