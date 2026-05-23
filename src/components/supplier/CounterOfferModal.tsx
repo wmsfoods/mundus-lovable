@@ -164,24 +164,73 @@ export function CounterOfferModal({
   const theirLabelKey = perspective === "supplier" ? "supplier.counter.theirBid" : "buyer.counter.theirCounter";
   const theirTotalKey = perspective === "supplier" ? "supplier.counter.theirBidTotal" : "buyer.counter.theirCounterTotal";
 
-  // Buyer-side validation: counter cannot drop below your round-1 bid.
+  // Per-row validation: directional + range checks.
   const errors = useMemo(() => {
-    if (perspective !== "buyer") return {} as Record<string, string>;
     const out: Record<string, string> = {};
-    for (const it of openItems) {
-      if (accepted[it.id]) continue;
-      const floor = buyerInitialBid.get(it.id);
-      const v = counters[it.id];
-      if (floor != null && v != null && v < floor - 1e-9) {
-        out[it.id] = t("buyer.counter.errors.belowInitial", {
-          defaultValue: "Cannot bid below your initial bid of ${{min}}",
-          min: toDisplay(floor, "price", unit).toFixed(2),
-        });
+
+    if (perspective === "buyer") {
+      // Floor: initial (round-1) bid
+      for (const it of openItems) {
+        if (accepted[it.id]) continue;
+        const floor = buyerInitialBid.get(it.id);
+        const v = counters[it.id];
+        if (floor != null && v != null && v < floor - 1e-9) {
+          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(2)})`;
+        }
+      }
+      // Must be ≥ previous buyer bid
+      const buyerRounds = rounds.filter((r) => r.round % 2 === 1);
+      const lastBuyerRound = buyerRounds[buyerRounds.length - 1];
+      if (lastBuyerRound) {
+        for (const it of openItems) {
+          if (accepted[it.id] || out[it.id]) continue;
+          const v = counters[it.id];
+          const prevBid = lastBuyerRound.cut_rounds?.find((c) => c.offer_item_id === it.id);
+          if (prevBid && v != null && v < Number(prevBid.price_per_kg) - 1e-9) {
+            out[it.id] = `Bid must be ≥ your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
+          }
+        }
+      }
+      // Max 30% deduction from asking
+      for (const it of openItems) {
+        if (accepted[it.id] || out[it.id]) continue;
+        const v = counters[it.id];
+        const asking = Number(it.price);
+        if (v != null && asking > 0) {
+          const deductPct = ((asking - v) / asking) * 100;
+          if (deductPct > 30) {
+            out[it.id] = `Maximum deduction is 30%. Current: ${deductPct.toFixed(1)}%`;
+          }
+        }
       }
     }
+
+    if (perspective === "supplier") {
+      const supplierRounds = rounds.filter((r) => r.round % 2 === 0);
+      const lastSupplierRound = supplierRounds[supplierRounds.length - 1];
+      for (const it of openItems) {
+        if (accepted[it.id]) continue;
+        const v = counters[it.id];
+        if (v == null) continue;
+        const asking = Number(it.price);
+        const prevCounter = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
+        const ceiling = prevCounter ? Number(prevCounter.price_per_kg) : asking;
+        if (v > ceiling + 1e-9) {
+          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(2)} (your ${prevCounter ? "previous counter" : "asking price"})`;
+        }
+      }
+    }
+
     return out;
-  }, [perspective, openItems, accepted, buyerInitialBid, counters, t, unit]);
+  }, [perspective, openItems, accepted, buyerInitialBid, counters, rounds, unit]);
   const errorCount = Object.keys(errors).length;
+
+  const deductionFeedback = useMemo(() => {
+    if (perspective !== "buyer" || bulkMode !== "percent") return null;
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return null;
+    return getDeductionFeedback(v);
+  }, [perspective, bulkMode, bulkValue]);
 
   async function handleSubmit() {
     if (submitting || errorCount > 0) return;
