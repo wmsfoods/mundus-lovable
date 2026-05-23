@@ -107,6 +107,7 @@
       "website": "Site Web"
     },
     "passwordsMismatch": "Les mots de passe ne correspondent pas.",
+    "missingTitle": "Pour continuer, complétez :",
     "agreeTerms": "Je déclare avoir lu et accepté les",
     "termsLink": "Conditions Générales",
     "confirmInfo": "Je confirme que toutes les informations fournies sont vraies, exactes et complètes au meilleur de mes connaissances. Je comprends que la fourniture d'informations fausses ou trompeuses peut entraîner la suspension ou la résiliation du compte.",

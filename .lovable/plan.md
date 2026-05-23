@@ -1,31 +1,39 @@
-# Alinhar espaçamento lateral mobile
+## Mudanças no Step 3 do Signup (Company Profile)
 
-## Problema
-No mobile, o conteúdo (`.app-main`) usa **16px** de padding lateral, enquanto:
-- A bottom nav (`.bn`) usa **4px** + grid 1fr (ícones ficam quase encostados na borda visual da tela)
-- O `StackHeader` usa **8px** lateral
-- O `Topbar` mobile usa **12px**
+### 1. Lista de proteínas
+Em `src/pages/signup/Signup.tsx` (linha 29):
+- Trocar `["Beef", "Pork", "Poultry", "Lamb", "Seafood", "Other"]` por `["Beef", "Pork", "Poultry", "Ovine", "Seafood"]`.
+- Remove "Other" e renomeia "Lamb" → "Ovine".
 
-Resultado: o conteúdo aparece visivelmente mais "encolhido" para dentro do que os ícones da navbar e o título do header, criando desalinhamento.
+### 2. Tornar Protein profile obrigatório
+- Atualizar `canProceed` (linha ~577) para exigir `data.proteins.length >= 1`.
+- Continua permitindo selecionar todas (lógica de toggle já suporta múltipla seleção, inclusive todas).
+- Adicionar `*` vermelho no label "Protein profile" indicando obrigatoriedade (mesmo padrão visual dos demais obrigatórios).
 
-## Solução
-Padronizar o gutter lateral mobile em **12px** em todas as superfícies do shell, batendo com o Topbar e ficando alinhado com a área visual da bottom nav.
+### 3. Feedback do que falta preencher
+Quando o botão "Proceed" estiver desabilitado, mostrar abaixo dele um bloco discreto listando os campos pendentes em tempo real:
 
-### Alterações em `src/styles/mundus-shell.css`
-- `.app-main` (media `max-width: 1023px`): `padding: 16px 16px ...` → `padding: 12px 12px calc(72px + env(safe-area-inset-bottom))`
-- Manter `.tb` mobile em 12px (já está)
+```
+text
+⚠ To proceed, complete:
+  • Company name
+  • Tax ID
+  • Role
+  • Protein profile (select at least one)
+  • Countries of operation (at least 1)
+```
 
-### Alterações em `src/styles/mundus-stack-header.css`
-- `.stack-header` mobile: `padding: env(safe-area-inset-top) 8px 0 8px` → `12px`
-- Conteúdo interno (`padding: 16px 16px ...`) → `12px 12px ...` para alinhar com `.app-main`
+Detalhes de UI:
+- Bloco aparece logo acima/abaixo do botão Proceed, só quando há pendências.
+- Texto pequeno em `text-gray-500`, ícone alerta em `#B64769`.
+- Lista é derivada do estado atual (sem useState extra): mapeia cada campo faltante para o seu label traduzido.
+- Como bônus de affordance: ao passar o mouse sobre o botão desabilitado, o bloco recebe um leve highlight (border do bloco em `#B64769`/10).
 
-### Bottom nav
-- `.bn` continua com `padding: 6px 4px ...` (ícones ficam centralizados nas células 1fr, então o "edge visual" do primeiro/último ícone fica próximo de 12px em telas de ~390px, alinhando naturalmente com o novo gutter do conteúdo)
+### 4. i18n
+Adicionar chaves em `en/es/fr/pt/zh`:
+- `signup.fields.proteinProfileRequired` → "Select at least one protein"
+- `signup.missingFields.title` → "To proceed, please complete:"
+- `signup.missingFields.companyName`, `.taxId`, `.role`, `.proteinProfile`, `.countriesOfOperation`
 
-## Escopo
-Só CSS de shell/header. Não toca em páginas individuais nem em lógica. Cards/listas dentro das páginas já usam padding próprio e continuarão funcionando — só vão respirar 4px a mais nas laterais, que é o objetivo.
-
-## Verificação
-Abrir no preview 390x844:
-- `/buyer/requests`, `/buyer/requests/new`, `/buyer/negotiations/:id`, `/supplier/offers`
-- Confirmar que a borda esquerda do conteúdo alinha visualmente com o ícone mais à esquerda da bottom nav e com o botão "voltar" do StackHeader.
+### Fora do escopo
+- Sem mudanças em backend, Edge Functions, schema ou outras telas. Apenas Step 3 do Signup + locales.

@@ -107,6 +107,7 @@
       "website": "网站"
     },
     "passwordsMismatch": "密码不匹配。",
+    "missingTitle": "请完成以下内容以继续：",
     "agreeTerms": "我声明我已阅读并同意",
     "termsLink": "条款和条件",
     "confirmInfo": "我确认所提供的所有信息均为真实、准确和完整的，据我所知。我理解提供虚假或误导性信息可能导致账户暂停或终止。",
