@@ -151,13 +151,10 @@
       "special": "Un carácter especial."
     },
     "success": {
-      "navTitle": "Confirmar Correo",
-      "title": "¡Registro completado con éxito!",
-      "body": "Para activar su cuenta, se ha enviado un código de verificación al correo {{email}}.",
-      "resend": "Reenviar código",
-      "enterCode": "Ingresar código",
-      "resent": "Código de verificación reenviado",
-      "missingEmail": "Falta el correo"
+      "navTitle": "Registro en Revisión",
+      "title": "¡Registro recibido!",
+      "body": "Su registro está en revisión por el equipo de Mundus. Una vez aprobado, recibirá un correo de confirmación en <1>{{email}}</1> y podrá acceder con el correo y contraseña que creó.",
+      "backToLogin": "Volver al inicio de sesión"
     },
     "partner": {
       "navTitle": "Registro de Socio",

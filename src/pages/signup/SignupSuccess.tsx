@@ -1,9 +1,7 @@
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { CheckCircle, Mail } from "lucide-react";
-import { toast } from "sonner";
 import { useTranslation, Trans } from "react-i18next";
 import { SignupShell } from "./SignupShell";
-import { supabase } from "@/integrations/supabase/client";
 
 function maskEmail(email: string) {
   const [local, domain] = email.split("@");
@@ -17,16 +15,6 @@ export default function SignupSuccess() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const email = params.get("email") ?? "";
-
-  const resend = async () => {
-    if (!email) {
-      toast.error(t("signup.success.missingEmail"));
-      return;
-    }
-    const { error } = await supabase.auth.resend({ type: "signup", email });
-    if (error) toast.error(error.message);
-    else toast.success(t("signup.success.resent"));
-  };
 
   return (
     <SignupShell title={t("signup.success.navTitle")}>
@@ -53,16 +41,10 @@ export default function SignupSuccess() {
         </p>
         <div className="mt-8 flex justify-center gap-3">
           <button
-            onClick={resend}
-            className="h-11 px-6 rounded-full border border-[#B64769] text-[#B64769] bg-white hover:bg-[#B64769]/5 text-sm font-medium"
-          >
-            {t("signup.success.resend")}
-          </button>
-          <button
             onClick={() => navigate("/login")}
             className="h-11 px-6 rounded-full bg-[#B64769] text-white hover:bg-[#8E3653] text-sm font-medium"
           >
-            {t("signup.success.enterCode")}
+            {t("signup.success.backToLogin")}
           </button>
         </div>
       </div>

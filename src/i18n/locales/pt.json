@@ -151,13 +151,10 @@
       "special": "Um caractere especial."
     },
     "success": {
-      "navTitle": "Confirmar E-mail",
-      "title": "Cadastro concluído com sucesso!",
-      "body": "Para ativar sua conta, um código de verificação foi enviado para o e-mail {{email}}.",
-      "resend": "Reenviar código",
-      "enterCode": "Inserir código",
-      "resent": "Código de verificação reenviado",
-      "missingEmail": "E-mail ausente"
+      "navTitle": "Cadastro em Análise",
+      "title": "Cadastro recebido!",
+      "body": "Seu cadastro está em análise pela equipe Mundus. Assim que for aprovado, você receberá um e-mail de confirmação em <1>{{email}}</1> e poderá acessar a plataforma com o e-mail e senha que criou.",
+      "backToLogin": "Voltar para login"
     },
     "partner": {
       "navTitle": "Cadastro Parceiro",

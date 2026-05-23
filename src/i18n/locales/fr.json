@@ -151,13 +151,10 @@
       "special": "Un caractère spécial."
     },
     "success": {
-      "navTitle": "Confirmer l'e-mail",
-      "title": "Inscription effectuée avec succès !",
-      "body": "Pour activer votre compte, un code de vérification a été envoyé à l'adresse e-mail {{email}}.",
-      "resend": "Renvoyer le code",
-      "enterCode": "Saisir le code",
-      "resent": "Code de vérification renvoyé",
-      "missingEmail": "E-mail manquant"
+      "navTitle": "Inscription en cours d'examen",
+      "title": "Inscription reçue !",
+      "body": "Votre inscription est en cours d'examen par l'équipe Mundus. Dès qu'elle sera approuvée, vous recevrez un e-mail de confirmation à <1>{{email}}</1> et pourrez vous connecter avec l'e-mail et le mot de passe que vous avez créés.",
+      "backToLogin": "Retour à la connexion"
     },
     "partner": {
       "navTitle": "Inscription partenaire",
