@@ -214,9 +214,8 @@ export function CounterOfferModal({
     }
     setCounters(initial);
     setAccepted({});
-    setRowAnchor(Object.fromEntries(openItems.map((it) => [it.id, "self" as Anchor])));
-    setRowMode(Object.fromEntries(openItems.map((it) => [it.id, "amount" as DeltaUnit])));
-    setRowValue(Object.fromEntries(openItems.map((it) => [it.id, ""])));
+    setActiveShortcut(null);
+    setSnapshot(null);
     setBulkAnchor("self");
     setBulkValue("");
     setMessage(
