@@ -92,15 +92,20 @@ export function CreateSupplierProfileModal({
         const { data: auth } = await supabase.auth.getUser();
         const adminId = auth?.user?.id;
         if (adminId) {
-          await supabase.from("user_offices").upsert(
-            {
+          const { data: existing } = await supabase
+            .from("user_offices")
+            .select("id")
+            .eq("user_id", adminId)
+            .eq("company_id", company.id)
+            .maybeSingle();
+          if (!existing) {
+            await supabase.from("user_offices").insert({
               user_id: adminId,
               company_id: company.id,
               role: "office_admin",
               is_primary: false,
-            },
-            { onConflict: "user_id,company_id" },
-          );
+            });
+          }
         }
       }
 
