@@ -13,6 +13,70 @@ import {
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
+import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
+import { useBuyerOrders, type BuyerOrder } from "@/hooks/useBuyerOrders";
+
+const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function formatShipment(month: number, year: number) {
+  return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
+}
+
+function RecentOfferCard({ o }: { o: OfferWithDetails }) {
+  const totalKg = (o.items ?? []).reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const itemsCount = (o.items ?? []).length;
+  return (
+    <Link to={`/buyer/offers/${o.id}`} className="mini-card">
+      <div className="mc-head">
+        <span className="mc-num">#{String(o.offer_number).padStart(5, "0")}</span>
+        <span className={`pill ${o.status === "active" ? "pill-active" : "pill-info"}`}>
+          {o.status ?? "—"}
+        </span>
+      </div>
+      <div className="mc-title">{o.supplier_name}</div>
+      <div className="mc-meta">
+        <span>{o.origin_country}</span>
+        <span>·</span>
+        <span>{formatShipment(o.shipment_month, o.shipment_year)}</span>
+      </div>
+      <div className="mc-foot">
+        <span>{itemsCount} item{itemsCount === 1 ? "" : "s"}</span>
+        <span>{(totalKg / 1000).toFixed(1)} MT</span>
+      </div>
+    </Link>
+  );
+}
+
+function RecentOrderCard({ o }: { o: BuyerOrder }) {
+  return (
+    <Link to={`/buyer/orders/${o.id}`} className="mini-card">
+      <div className="mc-head">
+        <span className="mc-num">#{o.orderNumber}</span>
+        <span className="pill pill-info">{o.status.replace(/_/g, " ")}</span>
+      </div>
+      <div className="mc-title">{o.supplierName}</div>
+      <div className="mc-meta">
+        <span>{o.origin}</span>
+        <span>→</span>
+        <span>{o.destination}</span>
+      </div>
+      <div className="mc-foot">
+        <span>{o.shipmentMonth}</span>
+        <span>{o.fcls} × {o.fclSize}</span>
+      </div>
+    </Link>
+  );
+}
+
+function MiniSkeleton() {
+  return (
+    <>
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="mini-card mini-card-skeleton" />
+      ))}
+    </>
+  );
+}
 
 // =========================================================================
 // Stat card
@@ -71,6 +135,10 @@ function ActionCard({ icon: I, title, desc, ctaLabel, to, primary }: ActionCardP
 export default function BuyerHome() {
   const { t } = useTranslation();
   const { available, counts } = useMarketplaceProteins();
+  const { offers, loading: offersLoading } = useOffers();
+  const { data: orders, isLoading: ordersLoading } = useBuyerOrders();
+  const recentOffers = offers.slice(0, 4);
+  const recentOrders = orders.slice(0, 4);
   // Always show the 4 proteins (even with 0), so the section is stable.
   const proteinKeys = ["beef", "pork", "poultry", "ovine"] as const;
   return (
@@ -138,9 +206,15 @@ export default function BuyerHome() {
           {t("buyer.home.seeAll")} <ArrowRightIcon size={14} />
         </Link>
       </div>
-      <div className="card-row-empty">
-        {t("buyer.home.emptyOffers")}
-      </div>
+      {offersLoading ? (
+        <div className="card-row"><MiniSkeleton /></div>
+      ) : recentOffers.length === 0 ? (
+        <div className="card-row-empty">{t("buyer.home.emptyOffers")}</div>
+      ) : (
+        <div className="card-row">
+          {recentOffers.map((o) => <RecentOfferCard key={o.id} o={o} />)}
+        </div>
+      )}
 
       <div className="sec-head">
         <h3>{t("buyer.home.recentOrders")}</h3>
@@ -148,9 +222,15 @@ export default function BuyerHome() {
           {t("buyer.home.seeAll")} <ArrowRightIcon size={14} />
         </Link>
       </div>
-      <div className="card-row-empty">
-        {t("buyer.home.emptyOrders")}
-      </div>
+      {ordersLoading ? (
+        <div className="card-row"><MiniSkeleton /></div>
+      ) : recentOrders.length === 0 ? (
+        <div className="card-row-empty">{t("buyer.home.emptyOrders")}</div>
+      ) : (
+        <div className="card-row">
+          {recentOrders.map((o) => <RecentOrderCard key={o.id} o={o} />)}
+        </div>
+      )}
     </>
   );
 }
