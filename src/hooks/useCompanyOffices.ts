@@ -26,6 +26,8 @@ export function useCompanyOffices(currentCompanyId: string | null) {
   const [offices, setOffices] = useState<Office[]>([]);
   const [userCounts, setUserCounts] = useState<Record<string, number>>({});
   const [offerCounts, setOfferCounts] = useState<Record<string, number>>({});
+  const [orderCounts, setOrderCounts] = useState<Record<string, number>>({});
+  const [negotiationCounts, setNegotiationCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -34,6 +36,8 @@ export function useCompanyOffices(currentCompanyId: string | null) {
       setOffices([]);
       setUserCounts({});
       setOfferCounts({});
+      setOrderCounts({});
+      setNegotiationCounts({});
       setLoading(false);
       return;
     }
@@ -51,6 +55,8 @@ export function useCompanyOffices(currentCompanyId: string | null) {
       setOffices([]);
       setUserCounts({});
       setOfferCounts({});
+      setOrderCounts({});
+      setNegotiationCounts({});
     } else {
       const list = (data || []) as Office[];
       setOffices(list);
@@ -77,9 +83,31 @@ export function useCompanyOffices(currentCompanyId: string | null) {
           if (r.office_id) oc[r.office_id] = (oc[r.office_id] || 0) + 1;
         });
         setOfferCounts(oc);
+
+        const { data: ord } = await (supabase as any)
+          .from("orders")
+          .select("office_id")
+          .in("office_id", ids);
+        const orc: Record<string, number> = {};
+        ((ord as any[]) || []).forEach((r: { office_id: string | null }) => {
+          if (r.office_id) orc[r.office_id] = (orc[r.office_id] || 0) + 1;
+        });
+        setOrderCounts(orc);
+
+        const { data: neg } = await (supabase as any)
+          .from("negotiations")
+          .select("office_id")
+          .in("office_id", ids);
+        const nc: Record<string, number> = {};
+        ((neg as any[]) || []).forEach((r: { office_id: string | null }) => {
+          if (r.office_id) nc[r.office_id] = (nc[r.office_id] || 0) + 1;
+        });
+        setNegotiationCounts(nc);
       } else {
         setUserCounts({});
         setOfferCounts({});
+        setOrderCounts({});
+        setNegotiationCounts({});
       }
     }
     setLoading(false);
@@ -107,5 +135,5 @@ export function useCompanyOffices(currentCompanyId: string | null) {
     await fetchOffices();
   };
 
-  return { offices, userCounts, offerCounts, loading, error, refetch: fetchOffices, createOffice, updateOffice, deleteOffice };
+  return { offices, userCounts, offerCounts, orderCounts, negotiationCounts, loading, error, refetch: fetchOffices, createOffice, updateOffice, deleteOffice };
 }
