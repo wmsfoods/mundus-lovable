@@ -114,6 +114,7 @@ export default function Signup() {
   const [step, setStep] = useState(1);
   const [data, setData] = useState<FormData>(initial);
   const [submitting, setSubmitting] = useState(false);
+  const [scanResult, setScanResult] = useState<any>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -180,6 +181,7 @@ export default function Signup() {
       country: data.country || null,
       website: data.website || null,
       certificate_url: certificateUrl,
+      scan_result: scanResult,
     });
     setSubmitting(false);
     if (reqErr) {
@@ -287,6 +289,8 @@ export default function Signup() {
               set={set}
               onBack={() => setStep(2)}
               onNext={() => setStep(4)}
+              scanResult={scanResult}
+              setScanResult={setScanResult}
             />
           )}
           {step === 4 && (
