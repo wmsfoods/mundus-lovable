@@ -9,6 +9,7 @@ import { EditUserModal, type EditableUser } from "@/components/team/EditUserModa
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useUserOfficeMap } from "@/hooks/useUserOfficeMap";
 
 const PROFILE_OPTIONS: SupplierProfileType[] = [
   "master_supplier",
@@ -39,6 +40,7 @@ export default function SupplierUsers() {
   const { t, i18n } = useTranslation();
   const { data: users, isLoading, refetch } = useSupplierUsers();
   const locale = i18n.language || "en";
+  const { map: userOfficeMap } = useUserOfficeMap(users.map((u) => u.id));
 
   const [query, setQuery] = useState("");
   const [profileFilter, setProfileFilter] = useState<string>("all");
@@ -131,6 +133,9 @@ export default function SupplierUsers() {
                 <th>{t("supplier.users.col.user")}</th>
                 <th>{t("supplier.users.col.email")}</th>
                 <th>{t("supplier.users.col.profileType")}</th>
+                <th>Office</th>
+                <th>City</th>
+                <th>Country</th>
                 <th>{t("supplier.users.col.created")}</th>
                 <th>{t("supplier.users.col.lastLogin")}</th>
                 <th>{t("supplier.users.col.status")}</th>
@@ -148,6 +153,21 @@ export default function SupplierUsers() {
                   </td>
                   <td style={{ color: "var(--fg-muted)" }}>{u.email}</td>
                   <td>{t(`supplier.users.profile.${u.profileType}`)}</td>
+                  <td>
+                    {(userOfficeMap[u.id] || []).length === 0 ? (
+                      <span style={{ color: "var(--fg-muted)" }}>—</span>
+                    ) : (
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                        {userOfficeMap[u.id].map((o, i) => (
+                          <span key={i} className="pill" style={{ fontSize: 11 }}>
+                            {o.isHQ ? "🏛️" : "🌏"} {o.officeName}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </td>
+                  <td>{userOfficeMap[u.id]?.[0]?.city || "—"}</td>
+                  <td>{userOfficeMap[u.id]?.[0]?.country || "—"}</td>
                   <td>{formatDate(u.createdAt, locale)}</td>
                   <td>{u.lastLoginAt ? formatDateTime(u.lastLoginAt, locale) : "—"}</td>
                   <td>

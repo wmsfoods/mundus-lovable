@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { GlobeIcon, HomeIcon, PlusIcon, MoreVerticalIcon, EditIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
@@ -50,6 +51,8 @@ const EMPTY_FORM: FormState = {
 export default function SupplierOffices() {
   const { company } = useCurrentCompany();
   const { offices, userCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
+  const location = useLocation();
+  const homeHref = location.pathname.startsWith("/buyer") ? "/buyer" : "/supplier";
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -150,7 +153,7 @@ export default function SupplierOffices() {
 
   return (
     <div className="cp-page" style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-      <Crumbs items={[{ label: "Home", to: "/supplier" }, { label: "International Offices" }]} />
+      <Crumbs items={[{ label: "Home", to: homeHref }, { label: "International Offices" }]} />
       <PageTitle
         icon={GlobeIcon}
         title="🌐 International Offices"

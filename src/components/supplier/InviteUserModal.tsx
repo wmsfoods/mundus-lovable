@@ -6,6 +6,7 @@ import { TextField } from "@/components/mundus/TextField";
 import { SelectField } from "@/components/mundus/SelectField";
 import { supabase } from "@/integrations/supabase/client";
 import { MOCK_SUPPLIER_COMPANY_ID, type SupplierProfileType } from "@/hooks/useSupplierUsers";
+import { useCompanyOffices } from "@/hooks/useCompanyOffices";
 
 type Props = {
   open: boolean;
@@ -27,20 +28,39 @@ export function InviteUserModal({ open, onClose, onCreated }: Props) {
   const [email, setEmail] = useState("");
   const [profile, setProfile] = useState<SupplierProfileType>("operator");
   const [busy, setBusy] = useState(false);
+  const { offices } = useCompanyOffices(MOCK_SUPPLIER_COMPANY_ID);
+  const sortedOffices = [...offices].sort((a, b) =>
+    !a.parent_company_id ? -1 : !b.parent_company_id ? 1 : 0,
+  );
+  const [selectedOfficeId, setSelectedOfficeId] = useState<string>("");
+
+  // Default to HQ when offices load
+  if (!selectedOfficeId && sortedOffices.length > 0) {
+    // initialize lazily without effect (safe — no re-render storm because next render finds it set)
+    setTimeout(() => setSelectedOfficeId(sortedOffices[0].id), 0);
+  }
 
   const handleSend = async () => {
     setBusy(true);
-    const { error } = await (supabase as any).from("company_users").insert({
+    const { data: inserted, error } = await (supabase as any).from("company_users").insert({
       company_id: MOCK_SUPPLIER_COMPANY_ID,
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       role: profile,
       status: "invited",
-    });
+    }).select("id").single();
     setBusy(false);
     if (error) {
       toast.error(error.message);
       return;
+    }
+    if (selectedOfficeId && inserted?.id) {
+      await (supabase as any).from("user_offices").insert({
+        user_id: inserted.id,
+        company_id: selectedOfficeId,
+        role: "member",
+        is_primary: true,
+      });
     }
     toast.success(t("supplier.users.invite.successEmail", { email: email.trim() }));
     setFullName("");
@@ -79,6 +99,24 @@ export function InviteUserModal({ open, onClose, onCreated }: Props) {
           onChange={(v) => setProfile(v as SupplierProfileType)}
           options={PROFILES.map((p) => ({ value: p, label: t(`supplier.users.profile.${p}`) }))}
         />
+        {sortedOffices.length > 1 && (
+          <div className="field">
+            <label className="field-label">Assign to Office</label>
+            <select
+              className="input"
+              value={selectedOfficeId}
+              onChange={(e) => setSelectedOfficeId(e.target.value)}
+            >
+              {sortedOffices.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {!o.parent_company_id
+                    ? `🏛️ HQ ${o.office_country || o.country || ""}`.trim()
+                    : `🌏 ${o.office_name || o.office_country || "Office"}`}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
       <div className="modal-footer">
         <button type="button" className="btn btn-ghost" onClick={onClose}>
