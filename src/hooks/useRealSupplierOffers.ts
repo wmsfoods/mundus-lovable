@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { formatOfferNumber } from "@/lib/offerNumber";
-import { MOCK_SUPPLIER_COMPANY_ID } from "@/hooks/useSupplierUsers";
 
 const COUNTRY_CODE: Record<string, string> = {
   argentina: "AR", brazil: "BR", canada: "CA", chile: "CL", china: "CN",
@@ -21,11 +20,18 @@ export function useRealSupplierOffers() {
   const [offers, setOffers] = useState<SupplierOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { company } = useCurrentCompany();
-  const supplierId = company?.id ?? MOCK_SUPPLIER_COMPANY_ID;
+  const { company, loading: companyLoading } = useCurrentCompany();
+  const supplierId = company?.id ?? null;
 
   useEffect(() => {
     let cancelled = false;
+    if (companyLoading) {
+      // Wait for the real company to resolve so we don't briefly query a
+      // different (mock) supplier's offers and then replace them with an
+      // empty list once the real id arrives.
+      setLoading(true);
+      return;
+    }
     if (!supplierId) {
       setOffers([]);
       setLoading(false);
@@ -125,7 +131,7 @@ export function useRealSupplierOffers() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [supplierId]);
+  }, [supplierId, companyLoading]);
 
   return { offers, loading, error };
 }
