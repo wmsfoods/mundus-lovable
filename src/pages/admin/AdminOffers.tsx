@@ -236,7 +236,7 @@ export default function AdminOffers() {
                 <tbody>
                   {filtered.map(r => (
                     <tr key={r.id}>
-                      <td><strong>#{String(r.offer_number ?? "").padStart(6, "0")}</strong></td>
+                      <td><strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.created_at)}</strong></td>
                       <td>{r.supplier_name}</td>
                       <td>{r.product_name ?? "—"}</td>
                       <td>{r.origin_country ?? "—"}</td>
@@ -274,7 +274,7 @@ export default function AdminOffers() {
             {filtered.map(r => (
               <div key={r.id} className="adm-panel" style={{ padding: 12 }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                  <strong>#{String(r.offer_number ?? "").padStart(6, "0")}</strong>
+                  <strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.created_at)}</strong>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[r.status ?? ""] ?? "bg-zinc-200 text-zinc-700"}`}>
                     {r.status ?? "—"}
                   </span>
@@ -299,6 +299,7 @@ export default function AdminOffers() {
           onClose={() => setDistribute(null)}
           offerId={distribute.id}
           offerNumber={distribute.offer_number}
+          offerCreatedAt={distribute.created_at}
           offerTitle={distribute.product_name ?? "Offer"}
           supplierName={distribute.supplier_name}
         />
