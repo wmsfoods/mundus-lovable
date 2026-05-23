@@ -12,6 +12,7 @@ import {
 } from "./useRealNegotiation";
 import type { ParentOffer, NegotiationBid, NegotiationDetail, NegotiationProduct, NegotiationRound } from "./useNegotiations";
 import type { BuyerParentOffer, BuyerNegotiationBid, BuyerNegotiationDetail, BuyerNegotiationProduct, BuyerNegotiationRound } from "./useBuyerNegotiations";
+import { MAX_DISPLAY_ROUNDS } from "@/lib/negotiationEngine";
 
 export const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 export const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
@@ -66,6 +67,7 @@ export function useRealNegotiationsList(role: Role) {
 
       const { data, error: err } = await q;
       if (cancelled) return;
+      console.log("[NegList]", role, "rows:", data?.length, "err:", err?.message);
       if (err) {
         setError(new Error(err.message));
         setLoading(false);
@@ -74,8 +76,15 @@ export function useRealNegotiationsList(role: Role) {
       const rows = ((data ?? []) as unknown as RealNegotiationRow[]).filter((r) => r.offer);
       for (const r of rows) r.rounds?.sort((a, b) => a.round - b.round);
 
-      if (role === "buyer") setBuyerGroups(groupForBuyer(rows));
-      else setSupplierGroups(groupForSupplier(rows));
+      if (role === "buyer") {
+        const groups = groupForBuyer(rows);
+        console.log("[NegList] buyer groups:", groups.length, "bids:", groups.reduce((s, g) => s + g.bids.length, 0));
+        setBuyerGroups(groups);
+      } else {
+        const groups = groupForSupplier(rows);
+        console.log("[NegList] supplier groups:", groups.length);
+        setSupplierGroups(groups);
+      }
       setLoading(false);
     })();
     return () => {
@@ -140,7 +149,7 @@ function groupForBuyer(rows: RealNegotiationRow[]): BuyerParentOffer[] {
       supplierCountryCode: countryToCode(o.origin_country),
       supplierContact: undefined,
       round: displayRound,
-      maxRounds: 3,
+      maxRounds: MAX_DISPLAY_ROUNDS,
       yourBidUsd: yourBid,
       supplierCounterUsd: counter,
       originPort: o.origin_port,
@@ -177,7 +186,7 @@ function groupForSupplier(rows: RealNegotiationRow[]): ParentOffer[] {
       buyerCountryCode: countryToCode(destCountry),
       buyerContact: undefined,
       round: displayRound,
-      maxRounds: 3,
+      maxRounds: MAX_DISPLAY_ROUNDS,
       latestBidUsd: yourBid,
       yourCounterUsd: counter,
       destinationPort: destPort,
@@ -251,7 +260,7 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
     supplierCountryCode: countryToCode(o.origin_country),
     supplierContact: undefined,
     round: displayRound,
-    maxRounds: 3,
+    maxRounds: MAX_DISPLAY_ROUNDS,
     yourBidUsd: yourBid,
     supplierCounterUsd: counter,
     originPort: o.origin_port,

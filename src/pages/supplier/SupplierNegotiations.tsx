@@ -46,7 +46,7 @@ function fmtDate(iso: string, locale: string) {
 export default function SupplierNegotiations() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { data: offers, offerCount, bidCount } = useNegotiations();
+  const { data: offers, offerCount, bidCount, isLoading, error } = useNegotiations();
   const locale = i18n.language || "en";
 
   // Negotiation IDs that have at least one share token (email relay enabled).
@@ -178,7 +178,15 @@ export default function SupplierNegotiations() {
         ))}
       </div>
 
-      {groups.length === 0 ? (
+      {isLoading ? (
+        <div className="detail-empty">
+          <p>Loading negotiations…</p>
+        </div>
+      ) : error ? (
+        <div className="detail-empty" style={{ color: "#b91c1c" }}>
+          <p>Error loading negotiations: {error.message}</p>
+        </div>
+      ) : groups.length === 0 ? (
         <div className="detail-empty">
           <p>{t("supplier.negotiations.empty")}</p>
         </div>
