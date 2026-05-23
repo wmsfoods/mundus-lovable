@@ -8,7 +8,6 @@ import {
   SearchIcon,
   GridIcon,
   FlagSVG,
-  XIcon,
 } from "@/components/icons";
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
 import { ProteinFilter, type ProteinKey } from "@/components/marketplace/ProteinFilter";
