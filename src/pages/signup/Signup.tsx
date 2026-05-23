@@ -700,7 +700,8 @@ function Step3Company({
     taxIdValid &&
     !!data.role &&
     data.proteins.length >= 1 &&
-    data.countriesOfOperation.length >= 1;
+    data.countriesOfOperation.length >= 1 &&
+    !!data.certificate;
 
   // Progressive disclosure — once a section is revealed it stays revealed
   // even if the triggering field is cleared (so user doesn't lose work).
