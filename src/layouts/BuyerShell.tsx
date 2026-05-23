@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
+import { Sidebar, type SidebarItem, type SidebarEntry } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
 import { BottomNav, type BottomNavItem } from "@/components/mundus/BottomNav";
 import { MobileDrawer } from "@/components/mundus/MobileDrawer";
@@ -21,7 +21,7 @@ import {
   FileTextIcon,
   MessageIcon,
 } from "@/components/icons";
-import { BarChart3, ShoppingBag } from "lucide-react";
+import { BarChart3, ShoppingBag, Settings2 } from "lucide-react";
 import { Globe } from "lucide-react";
 import { InsightsUpsellProvider } from "@/contexts/InsightsUpsellContext";
 
@@ -43,23 +43,46 @@ function BuyerShellInner() {
   const userName = user?.email?.split("@")[0] ?? "User";
   const stackMode = isMobile && isStackRoute(location.pathname);
 
-  const BUYER_NAV: SidebarItem[] = [
+  const BUYER_NAV: SidebarEntry[] = [
     { to: "/buyer", label: t("shell.nav.home"), icon: HomeIcon, end: true },
-    { to: "/buyer/requests", label: t("shell.nav.requests"), icon: ClipboardIcon },
-    { to: "/buyer/requests/new", label: t("shell.nav.createRequest"), icon: PlusIcon, accent: true },
-    { to: "/buyer/marketplace", label: t("buyer.marketplace.nav", { defaultValue: "Marketplace" }), icon: ShoppingBag as unknown as SidebarItem["icon"] },
-    { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },
-    { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
-    { to: "/buyer/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
-    { to: "/buyer/chat", label: t("shell.nav.chat"), icon: MessageIcon, badge: BUYER_CHAT_TOTAL_UNREAD || undefined },
-    { to: "/buyer/users", label: t("shell.nav.users"), icon: UsersIcon },
-    { to: "/buyer/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
     {
-      to: "/buyer/procurement-intelligence",
-      label: t("buyer.procurement.nav", { defaultValue: "Procurement Intelligence" }),
-      icon: BarChart3 as unknown as SidebarItem["icon"],
-      proBadge: true,
-      groupLabel: t("buyer.procurement.groupLabel", { defaultValue: "Insights" }),
+      type: "section",
+      key: "marketplace",
+      label: "Marketplace",
+      icon: ShoppingBag as unknown as SidebarItem["icon"],
+      children: [
+        { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },
+        { to: "/buyer/requests/new", label: t("shell.nav.createRequest"), icon: PlusIcon, accent: true },
+        { to: "/buyer/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
+        { to: "/buyer/requests", label: t("shell.nav.requests"), icon: ClipboardIcon },
+        { to: "/buyer/chat", label: t("shell.nav.chat"), icon: MessageIcon, badge: BUYER_CHAT_TOTAL_UNREAD || undefined },
+      ],
+    },
+    {
+      type: "section",
+      key: "operations",
+      label: "Operations",
+      icon: Settings2 as unknown as SidebarItem["icon"],
+      children: [
+        {
+          to: "/buyer/procurement-intelligence",
+          label: t("buyer.procurement.nav", { defaultValue: "Procurement Intelligence" }),
+          icon: BarChart3 as unknown as SidebarItem["icon"],
+          proBadge: true,
+        },
+        { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
+      ],
+    },
+    {
+      type: "section",
+      key: "admin",
+      label: "Admin",
+      icon: UsersIcon as unknown as SidebarItem["icon"],
+      children: [
+        { to: "/buyer/users", label: t("shell.nav.users"), icon: UsersIcon },
+        { to: "/buyer/company", label: t("shell.nav.myCompany", { defaultValue: "My Company" }), icon: HomeIcon },
+        { to: "/buyer/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
+      ],
     },
   ];
 
