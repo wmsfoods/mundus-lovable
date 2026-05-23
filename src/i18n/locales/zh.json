@@ -175,6 +175,10 @@
       "success": "邮箱已验证",
       "alreadyRegistered": "此邮箱已与一个 Mundus Trade 账户关联。",
       "goToLogin": "前往登录"
+    },
+    "checklist": {
+      "toComplete": "要继续，请完成：",
+      "allComplete": "全部完成！您可以继续。"
     }
   },
   "shell": {
