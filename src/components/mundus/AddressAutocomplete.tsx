@@ -40,6 +40,7 @@ export function AddressAutocomplete({
 
     async function load() {
       if ((window as any).google?.maps?.places) {
+        console.log('[AddressAutocomplete] Google Maps loaded, places available:', !!(window as any).google?.maps?.places?.AutocompleteService);
         if (!cancelled) initService();
         return;
       }
@@ -65,6 +66,7 @@ export function AddressAutocomplete({
       const g = (window as any).google;
       serviceRef.current = new g.maps.places.AutocompleteService();
       sessionTokenRef.current = new g.maps.places.AutocompleteSessionToken();
+      console.log('[AddressAutocomplete] Service initialized:', !!serviceRef.current);
       setReady(true);
     }
 
@@ -79,6 +81,7 @@ export function AddressAutocomplete({
       return;
     }
 
+    console.log('[AddressAutocomplete] Fetching for:', input);
     serviceRef.current.getPlacePredictions(
       {
         input,
@@ -87,6 +90,7 @@ export function AddressAutocomplete({
         componentRestrictions: restrictCountry ? { country: restrictCountry } : undefined,
       },
       (predictions: any[] | null, status: string) => {
+        console.log('[AddressAutocomplete] Response:', status, predictions?.length, predictions);
         if (status === "OK" && predictions) {
           setSuggestions(predictions.slice(0, 5));
           setShowDropdown(true);
