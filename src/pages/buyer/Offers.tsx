@@ -159,25 +159,6 @@ export function OfferCard({
         }
       }}
     >
-      {myNeg && (
-        <div
-          style={{
-            position: "absolute",
-            top: 36,
-            right: 8,
-            padding: "3px 8px",
-            borderRadius: 12,
-            background: myNeg.status === "bid_accepted" ? "#0ea5e9" : "#8B2252",
-            color: "white",
-            fontSize: 10,
-            fontWeight: 600,
-            zIndex: 2,
-            pointerEvents: "none",
-          }}
-        >
-          {myNeg.status === "bid_accepted" ? "✅ Deal closed" : "🤝 Negotiating"}
-        </div>
-      )}
       <div className="oc-head">
         <div className="oc-head-l">
           <span className="oc-chip">
@@ -205,9 +186,34 @@ export function OfferCard({
             </span>
           )}
         </div>
-        <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
-          <span className="status-dot" style={{ background: status.dot }} />
-          {statusLabel}
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            flexWrap: "wrap",
+            justifyContent: "flex-end",
+          }}
+        >
+          <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
+            <span className="status-dot" style={{ background: status.dot }} />
+            {statusLabel}
+          </span>
+          {myNeg && (
+            <span
+              style={{
+                padding: "3px 8px",
+                borderRadius: 12,
+                background: myNeg.status === "bid_accepted" ? "#0ea5e9" : "#8B2252",
+                color: "white",
+                fontSize: 10,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {myNeg.status === "bid_accepted" ? "✅ Deal closed" : "🤝 Negotiating"}
+            </span>
+          )}
         </span>
       </div>
 
