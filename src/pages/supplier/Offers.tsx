@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { supabase } from "@/integrations/supabase/client";
 import {
   TagIcon,
   KnifeForkIcon,
@@ -52,7 +53,17 @@ function derive(o: SupplierOffer) {
   };
 }
 
-function SupplierOfferCard({ o, onOpen, t }: { o: SupplierOffer; onOpen: () => void; t: (k: string, opts?: Record<string, unknown>) => string }) {
+function SupplierOfferCard({
+  o,
+  onOpen,
+  t,
+  negCount,
+}: {
+  o: SupplierOffer;
+  onOpen: () => void;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  negCount?: number;
+}) {
   const status = STATUS_COLORS[o.status] ?? STATUS_COLORS.active;
   const firstDest = o.destinations[0];
   const extraDest = Math.max(0, o.destinations.length - 1);
@@ -90,6 +101,22 @@ function SupplierOfferCard({ o, onOpen, t }: { o: SupplierOffer; onOpen: () => v
           <span className="status-dot" style={{ background: status.dot }} />
           {t(`supplier.offers.status.${o.status}`)}
         </span>
+        {negCount && negCount > 0 ? (
+          <span
+            style={{
+              marginLeft: 6,
+              padding: "2px 8px",
+              borderRadius: 10,
+              background: "#fef3c7",
+              color: "#92400e",
+              fontSize: 10,
+              fontWeight: 600,
+              whiteSpace: "nowrap",
+            }}
+          >
+            🤝 {negCount} negotiation{negCount > 1 ? "s" : ""}
+          </span>
+        ) : null}
       </div>
 
       <div className="oc-title-block">
@@ -159,6 +186,25 @@ export default function SupplierOffers() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { available: supplierProteins, counts: proteinCounts } = useSupplierProteins();
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
+
+  const [negCounts, setNegCounts] = useState<Record<string, number>>({});
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select("offer_id")
+        .not("status", "in", "(expired,offer_withdrawn,bid_accepted)")
+        .is("deleted_at", null);
+      if (cancelled) return;
+      const counts: Record<string, number> = {};
+      (data ?? []).forEach((n: { offer_id: string }) => {
+        counts[n.offer_id] = (counts[n.offer_id] || 0) + 1;
+      });
+      setNegCounts(counts);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   const filterOptions = useMemo(() => {
     const temps = new Set<TempValue>();
@@ -341,6 +387,7 @@ export default function SupplierOffers() {
                 key={o.id}
                 o={o}
                 t={t}
+                negCount={negCounts[o.id]}
                 onOpen={() => navigate(`/supplier/offers/${o.id}`)}
               />
             ))}

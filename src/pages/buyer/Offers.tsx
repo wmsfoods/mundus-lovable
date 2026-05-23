@@ -10,6 +10,8 @@ import {
   FlagSVG,
 } from "@/components/icons";
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { ProteinFilter, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProteins";
 import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
@@ -23,6 +25,8 @@ import {
   type OffersFilterState,
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
+
+const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -93,7 +97,15 @@ function statusFor(s: string | null) {
   return STATUS_COLORS[s.toLowerCase()] ?? STATUS_COLORS.active;
 }
 
-function OfferCard({ offer, onOpen }: { offer: OfferWithDetails; onOpen: () => void }) {
+function OfferCard({
+  offer,
+  onOpen,
+  myNeg,
+}: {
+  offer: OfferWithDetails;
+  onOpen: () => void;
+  myNeg?: { id: string; status: string };
+}) {
   const { t } = useTranslation();
   const items = offer.items ?? [];
   const mixed = items.length > 1;
@@ -138,6 +150,7 @@ function OfferCard({ offer, onOpen }: { offer: OfferWithDetails; onOpen: () => v
       role="button"
       tabIndex={0}
       onClick={onOpen}
+      style={{ position: "relative" }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
@@ -145,6 +158,25 @@ function OfferCard({ offer, onOpen }: { offer: OfferWithDetails; onOpen: () => v
         }
       }}
     >
+      {myNeg && (
+        <div
+          style={{
+            position: "absolute",
+            top: 8,
+            right: 8,
+            padding: "3px 8px",
+            borderRadius: 12,
+            background: myNeg.status === "bid_accepted" ? "#0ea5e9" : "#8B2252",
+            color: "white",
+            fontSize: 10,
+            fontWeight: 600,
+            zIndex: 2,
+            pointerEvents: "none",
+          }}
+        >
+          {myNeg.status === "bid_accepted" ? "✅ Deal closed" : "🤝 Negotiating"}
+        </div>
+      )}
       <div className="oc-head">
         <div className="oc-head-l">
           <span className="oc-chip">
@@ -245,6 +277,27 @@ export default function BuyerOffers() {
   const [auctionsOnly, setAuctionsOnly] = useState(false);
   const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
+
+  const { data: myNegotiations } = useQuery({
+    queryKey: ["my-negotiations-map", MOCK_BUYER_COMPANY_ID],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select("id, offer_id, status")
+        .eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
+        .not("status", "in", "(expired,offer_withdrawn)")
+        .is("deleted_at", null);
+      return data || [];
+    },
+  });
+
+  const myNegMap = useMemo(() => {
+    const map: Record<string, { id: string; status: string }> = {};
+    myNegotiations?.forEach((n) => {
+      map[n.offer_id] = { id: n.id, status: n.status };
+    });
+    return map;
+  }, [myNegotiations]);
 
   // Keep URL in sync when user changes the protein pill.
   useEffect(() => {
@@ -469,6 +522,7 @@ export default function BuyerOffers() {
             <OfferCard
               key={offer.id}
               offer={offer}
+              myNeg={myNegMap[offer.id]}
               onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
             />
           ))}

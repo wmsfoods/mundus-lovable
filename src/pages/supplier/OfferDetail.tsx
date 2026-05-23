@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -40,6 +40,30 @@ export default function SupplierOfferDetail() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
+  const [negotiations, setNegotiations] = useState<Array<{
+    id: string;
+    status: string;
+    buyer_company_id: string;
+    incoterm: string | null;
+    created_at: string;
+    updated_at: string;
+  }>>([]);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select("id, status, buyer_company_id, incoterm, created_at, updated_at")
+        .eq("offer_id", id)
+        .not("status", "in", "(expired,offer_withdrawn)")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+      if (!cancelled) setNegotiations(data ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const { offers: realOffers, loading: offersLoading } = useRealSupplierOffers();
   const offer: SupplierOffer | undefined = useMemo(
@@ -245,6 +269,60 @@ export default function SupplierOfferDetail() {
       {!isActive && (
         <div className="so-inactive-banner">
           {t("supplier.offers.detail.inactiveBanner")}
+        </div>
+      )}
+
+      {negotiations.length > 0 && (
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: 8,
+            border: "1px solid #e5e7eb",
+            background: "#fafafa",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+            🤝 Active Negotiations ({negotiations.length})
+          </div>
+          {negotiations.map((n) => {
+            const isAwaiting = n.status === "awaiting_supplier";
+            const isClosed = n.status === "bid_accepted";
+            return (
+              <a
+                key={n.id}
+                href={`/supplier/negotiations/${n.id}`}
+                onClick={(e) => { e.preventDefault(); navigate(`/supplier/negotiations/${n.id}`); }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  marginBottom: 4,
+                  textDecoration: "none",
+                  color: "inherit",
+                  fontSize: 12,
+                }}
+              >
+                <span>Buyer #{n.buyer_company_id.slice(0, 8)} · {n.incoterm || "FOB"}</span>
+                <span
+                  style={{
+                    padding: "2px 8px",
+                    borderRadius: 10,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    background: isClosed ? "#dcfce7" : isAwaiting ? "#fee2e2" : "#fef3c7",
+                    color: isClosed ? "#15803d" : isAwaiting ? "#b91c1c" : "#92400e",
+                  }}
+                >
+                  {n.status.replace(/_/g, " ")}
+                </span>
+              </a>
+            );
+          })}
         </div>
       )}
 
