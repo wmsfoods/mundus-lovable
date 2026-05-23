@@ -19,7 +19,6 @@ import { MOCK_SUPPLIER_OFFERS, PAGE_SIZE, type SupplierOffer } from "@/data/mock
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { ProteinFilter, categoryToProtein, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useSupplierProteins } from "@/hooks/useSupplierProteins";
-import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
@@ -144,7 +143,6 @@ export default function SupplierOffers() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { offers: realOffers, loading: realLoading } = useRealSupplierOffers();
-  const { activeOffice, isAllOffices, setActiveOffice, isMaster } = useActiveOffice();
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priceDesc" | "priceAsc">("newest");
