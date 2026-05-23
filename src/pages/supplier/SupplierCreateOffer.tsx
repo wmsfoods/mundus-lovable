@@ -1499,6 +1499,7 @@ export default function SupplierCreateOffer() {
                     <td><span className="cov4-tag">{c.pkg}</span></td>
                     <td><span className="cov4-tag">{c.gr !== "Not Classified" ? c.gr : "—"}</span></td>
                     <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
+                    <td><span className="cov4-tag">{c.plant || "—"}</span></td>
                     <td className="num">{fmtWeight(Number(c.qty) || 0, unit)}</td>
                     <td className="num">{fmtPrice(Number(c.ask) || 0, unit)}</td>
                     <td className="num cov4-floor">{c.floor ? fmtPrice(Number(c.floor) || 0, unit) : "—"}</td>
