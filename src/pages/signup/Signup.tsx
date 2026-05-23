@@ -700,7 +700,8 @@ function Step3Company({
     taxIdValid &&
     !!data.role &&
     data.proteins.length >= 1 &&
-    data.countriesOfOperation.length >= 1;
+    data.countriesOfOperation.length >= 1 &&
+    !!data.certificate;
 
   // Progressive disclosure — once a section is revealed it stays revealed
   // even if the triggering field is cleared (so user doesn't lose work).
@@ -738,6 +739,7 @@ function Step3Company({
     { key: "role", done: !!data.role, label: t("signup.fields.role") },
     { key: "proteins", done: data.proteins.length >= 1, label: t("signup.fields.proteinProfile") },
     { key: "countries", done: data.countriesOfOperation.length >= 1, label: t("signup.fields.countriesOfOperation") },
+    { key: "certificate", done: !!data.certificate, label: t("signup.fields.licenses") },
   ];
   const allDone = checks.every((c) => c.done);
 
@@ -855,8 +857,7 @@ function Step3Company({
       {revealed.certs && (
         <div className="animate-fade-in">
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("signup.fields.licenses")}{" "}
-            <span className="text-gray-400 font-normal">({t("common.optional")})</span>
+            {t("signup.fields.licenses")} <span className="text-red-500">*</span>
           </label>
           {data.certificate ? (
             <div className="flex items-center justify-between border border-gray-200 rounded-lg p-3 bg-gray-50">
@@ -1263,6 +1264,16 @@ function Step4Contact({
     !!data.country &&
     !!data.phoneNumber;
 
+  const checks = [
+    { key: "address", done: !!data.address, label: t("signup.fields.address") },
+    { key: "city", done: !!data.city, label: t("signup.fields.city") },
+    { key: "state", done: !!data.state, label: t("signup.fields.state") },
+    { key: "zip", done: !!data.zip, label: t("signup.fields.zip") },
+    { key: "country", done: !!data.country, label: t("signup.fields.country") },
+    { key: "phone", done: !!data.phoneNumber, label: t("signup.fields.businessPhone") },
+  ];
+  const allDone = checks.every((c) => c.done);
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1382,6 +1393,43 @@ function Step4Contact({
             placeholder="https://"
           />
         </Field>
+      </div>
+
+      {/* Always-visible checklist */}
+      <div
+        className={cn(
+          "rounded-lg border p-4 transition-colors",
+          allDone ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50",
+        )}
+      >
+        <p
+          className={cn(
+            "text-sm font-medium mb-2",
+            allDone ? "text-green-700" : "text-gray-700",
+          )}
+        >
+          {allDone
+            ? `✅ ${t("signup.checklist.allComplete")}`
+            : t("signup.checklist.toComplete")}
+        </p>
+        {!allDone && (
+          <ul className="space-y-1">
+            {checks.map((c) => (
+              <li
+                key={c.key}
+                className={cn(
+                  "text-sm flex items-center gap-2",
+                  c.done ? "text-gray-400 line-through" : "text-gray-700",
+                )}
+              >
+                <span className={c.done ? "text-green-500" : "text-red-400"}>
+                  {c.done ? "✓" : "○"}
+                </span>
+                {c.label}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
 
       <div className="flex gap-3">
