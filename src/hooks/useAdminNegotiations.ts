@@ -72,7 +72,7 @@ export function useAdminNegotiations() {
       const negIds = negs.map((n) => n.id);
 
       const [offersRes, buyersRes, portsRes, itemsRes, roundsRes] = await Promise.all([
-        supabase.from("offers").select("id, offer_number, supplier_name, origin_port").in("id", offerIds),
+        supabase.from("offers").select("id, offer_number, created_at, supplier_name, origin_port").in("id", offerIds),
         supabase.from("companies").select("id, name").in("id", buyerIds),
         portIds.length
           ? supabase.from("ports").select("id, name").in("id", portIds as string[])
@@ -153,6 +153,7 @@ export function useAdminNegotiations() {
           updated_at: n.updated_at,
           offer_id: n.offer_id,
           offer_number: offer?.offer_number ?? null,
+          offer_created_at: (offer as { created_at?: string | null } | undefined)?.created_at ?? null,
           supplier_name: offer?.supplier_name ?? null,
           origin_port: offer?.origin_port ?? null,
           buyer_company_id: n.buyer_company_id,
