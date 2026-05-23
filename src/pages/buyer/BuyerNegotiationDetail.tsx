@@ -217,6 +217,40 @@ export default function BuyerNegotiationDetail() {
         </div>
       )}
 
+      {isReal && rawNeg?.status === "offer_rejected" && (
+        <div className="rounded-md px-4 py-3 mb-3 border" style={{ background: "#fef2f2", borderColor: "#fecaca" }}>
+          <div className="font-semibold text-sm" style={{ color: "#b91c1c" }}>
+            Supplier rejected your bid
+          </div>
+          {rawNeg.rejection_cooldown_until && new Date(rawNeg.rejection_cooldown_until) > new Date() ? (
+            <div className="text-xs mt-1" style={{ color: "#991b1b" }}>
+              You can restart negotiating this offer in {Math.ceil((new Date(rawNeg.rejection_cooldown_until).getTime() - Date.now()) / 3_600_000)} hours, if still available.
+            </div>
+          ) : (
+            <div className="text-xs mt-1" style={{ color: "#166534" }}>
+              ✅ Cooldown period has passed. You can negotiate this offer again if still available.
+            </div>
+          )}
+          <a href="/buyer/offers" className="text-xs font-medium mt-2 inline-block" style={{ color: "#8B2252" }}>
+            🔍 Check similar offers on marketplace →
+          </a>
+        </div>
+      )}
+
+      {isReal && rawNeg?.status === "offer_withdrawn" && (
+        <div className="rounded-md px-4 py-3 mb-3 border" style={{ background: "#fffbeb", borderColor: "#fcd34d" }}>
+          <div className="font-semibold text-sm" style={{ color: "#92400e" }}>
+            Offer no longer available
+          </div>
+          <div className="text-xs mt-1" style={{ color: "#78350f" }}>
+            The supplier has withdrawn this offer. It may have been sold or revised.
+          </div>
+          <a href="/buyer/offers" className="text-xs font-medium mt-2 inline-block" style={{ color: "#8B2252" }}>
+            🔍 Check similar offers on marketplace →
+          </a>
+        </div>
+      )}
+
       <div className="nd-grid">
         {/* LEFT */}
         <div>
