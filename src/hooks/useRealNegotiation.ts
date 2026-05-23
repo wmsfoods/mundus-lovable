@@ -29,6 +29,7 @@ export type RealNegotiationRow = {
   offer: {
     id: string;
     offer_number: number;
+    created_at?: string | null;
     supplier_id: string;
     supplier_name: string;
     origin_country: string;
