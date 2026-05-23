@@ -2,7 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { GalleryImage } from "@/components/offer/OfferImageGallery";
 
-type ItemLike = { id: string; customer_product?: { name: string | null } | null } | null | undefined;
+type ItemLike =
+  | { id: string; customer_product?: { name: string | null } | null; name?: string | null }
+  | { id?: string; name: string | null }
+  | null
+  | undefined;
 
 /**
  * Builds a deduped gallery image list for an offer's items by matching the
@@ -34,12 +38,13 @@ export function useOfferImages(items: ItemLike[] | undefined): GalleryImage[] {
   const images: GalleryImage[] = [];
   for (const it of items) {
     if (!it) continue;
-    const name = it.customer_product?.name?.trim();
+    const anyIt = it as { customer_product?: { name?: string | null } | null; name?: string | null; id?: string };
+    const name = (anyIt.customer_product?.name ?? anyIt.name ?? "").trim();
     if (!name) continue;
     const url = byName.get(name.toLowerCase());
     if (!url || seen.has(url)) continue;
     seen.add(url);
-    images.push({ id: it.id, src: url, label: name });
+    images.push({ id: anyIt.id ?? name, src: url, label: name });
   }
   return images;
 }
