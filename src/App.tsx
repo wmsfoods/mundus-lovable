@@ -70,6 +70,7 @@ import SupplierUsers from "./pages/supplier/SupplierUsers.tsx";
 import SupplierNegotiations from "./pages/supplier/SupplierNegotiations.tsx";
 import SupplierNegotiationDetail from "./pages/supplier/SupplierNegotiationDetail.tsx";
 import SupplierCompany from "./pages/supplier/SupplierCompany.tsx";
+import SupplierOffices from "./pages/supplier/SupplierOffices.tsx";
 import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import SupplierOutreach from "./pages/supplier/Outreach.tsx";
@@ -151,6 +152,7 @@ const App = () => (
               <Route path="sales/:id" element={<SupplierSaleDetail />} />
               <Route path="users" element={<SupplierUsers />} />
               <Route path="company" element={<SupplierCompany />} />
+              <Route path="offices" element={<SupplierOffices />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
               <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
