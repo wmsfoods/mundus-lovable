@@ -596,12 +596,46 @@ function Step3Company({
   const [taxIdTouched, setTaxIdTouched] = useState(false);
   const taxRule = getTaxRule(data.registrationCountry);
   const taxIdValid = taxRule.pattern.test(data.taxId.trim());
-  const onFile = (f: File | null) => {
-    if (f && f.size > 5 * 1024 * 1024) {
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<any>(null);
+
+  const onFile = async (f: File | null) => {
+    if (!f) {
+      set("certificate", null);
+      setScanResult(null);
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
       toast.error(t("signup.fileTooLarge"));
       return;
     }
     set("certificate", f);
+    setScanning(true);
+    setScanResult(null);
+    try {
+      const base64 = await new Promise<string>((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res((reader.result as string).split(",")[1]);
+        reader.onerror = () => rej(new Error("Read failed"));
+        reader.readAsDataURL(f);
+      });
+      const { data: scanData, error: scanError } = await supabase.functions.invoke("verify-document", {
+        body: {
+          fileBase64: base64,
+          fileType: f.type,
+          companyName: data.companyName,
+          taxId: data.taxId,
+          registrationCountry: data.registrationCountry,
+        },
+      });
+      if (scanError) throw scanError;
+      setScanResult(scanData);
+    } catch (err) {
+      console.warn("[DocScan] error:", err);
+      setScanResult({ overallVerification: "error", notes: "Scan failed" });
+    } finally {
+      setScanning(false);
+    }
   };
 
   const canProceed =
