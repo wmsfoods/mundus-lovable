@@ -918,6 +918,7 @@ function Step4Contact({
   submitting: boolean;
 }) {
   const { t } = useTranslation();
+  const [countryFromGoogle, setCountryFromGoogle] = useState(false);
   const canFinish =
     !!data.state &&
     !!data.city &&
@@ -939,7 +940,10 @@ function Step4Contact({
               if (addr.city) set("city", addr.city);
               if (addr.state) set("state", addr.state);
               if (addr.zip) set("zip", addr.zip);
-              if (addr.country) set("country", addr.country);
+              if (addr.country) {
+                set("country", addr.country);
+                setCountryFromGoogle(true);
+              }
             }}
           />
         </Field>
@@ -972,12 +976,40 @@ function Step4Contact({
             onChange={(e) => set("zip", e.target.value)}
           />
         </Field>
-        <Field label={t("signup.fields.country")}>
-          <input
-            className={inputCls}
-            value={data.country}
-            onChange={(e) => set("country", e.target.value)}
-          />
+        <Field
+          label={
+            <span className="flex items-center justify-between gap-2">
+              <span>{t("signup.fields.country")}</span>
+              {countryFromGoogle && (
+                <button
+                  type="button"
+                  onClick={() => setCountryFromGoogle(false)}
+                  className="text-xs font-medium hover:underline"
+                  style={{ color: WINE }}
+                >
+                  ✎ {t("signup.fields.changeCountry")}
+                </button>
+              )}
+            </span>
+          }
+        >
+          <div className="relative">
+            <input
+              className={cn(
+                inputCls,
+                countryFromGoogle && "bg-gray-50 text-gray-700 cursor-not-allowed pr-10",
+              )}
+              value={data.country}
+              onChange={(e) => set("country", e.target.value)}
+              disabled={countryFromGoogle}
+              title={countryFromGoogle ? t("signup.fields.countryLocked") : undefined}
+            />
+            {countryFromGoogle && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                🔒
+              </span>
+            )}
+          </div>
         </Field>
         <Field label={t("signup.fields.businessPhone")}>
           <div className="flex gap-2">
