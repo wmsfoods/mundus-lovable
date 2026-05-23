@@ -270,8 +270,8 @@ export default function SupplierCreateOffer() {
       // Match port by name within the market if possible.
       const portWanted = fromRequest.destinationPort?.trim().toLowerCase();
       const matchedPort = portWanted
-        ? market.p.find((p) => p.name.trim().toLowerCase() === portWanted) ||
-          market.p.find((p) => p.name.trim().toLowerCase().includes(portWanted))
+        ? market.p.find((p) => p.n.trim().toLowerCase() === portWanted) ||
+          market.p.find((p) => p.n.trim().toLowerCase().includes(portWanted))
         : undefined;
       setMktCfg({
         [market.id]: {
