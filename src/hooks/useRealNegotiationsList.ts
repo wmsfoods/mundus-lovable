@@ -13,6 +13,7 @@ import {
 import type { ParentOffer, NegotiationBid, NegotiationDetail, NegotiationProduct, NegotiationRound } from "./useNegotiations";
 import type { BuyerParentOffer, BuyerNegotiationBid, BuyerNegotiationDetail, BuyerNegotiationProduct, BuyerNegotiationRound } from "./useBuyerNegotiations";
 import { MAX_DISPLAY_ROUNDS } from "@/lib/negotiationEngine";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 export const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 export const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
@@ -41,7 +42,7 @@ export function useRealNegotiationsList(role: Role) {
           id, offer_id, buyer_company_id, port_id, incoterm, status,
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
           offer:offers!inner (
-            id, offer_number, supplier_id, supplier_name, origin_country, origin_port,
+            id, offer_number, created_at, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
             items:offer_items (
               id, amount, price, minimum_price,
@@ -110,9 +111,9 @@ export function useRealNegotiationsList(role: Role) {
 function offerTitle(r: RealNegotiationRow): string {
   const o = r.offer!;
   const items = o.items ?? [];
-  if (items.length === 1) return items[0].customer_product?.name ?? `Offer #${o.offer_number}`;
+  if (items.length === 1) return items[0].customer_product?.name ?? formatOfferNumber(o.offer_number, o.created_at);
   if (items.length > 1) return `Mixed Container — ${items.length} cuts`;
-  return `Offer #${o.offer_number}`;
+  return formatOfferNumber(o.offer_number, o.created_at);
 }
 
 function lastTotals(r: RealNegotiationRow) {
