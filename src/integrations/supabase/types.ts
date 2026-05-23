@@ -1211,6 +1211,7 @@ export type Database = {
           mundus_company_id: string | null
           mundus_user_id: string | null
           notes: string | null
+          office_id: string | null
           personal_linkedin: string | null
           phone: string | null
           phone_confidence: string | null
@@ -1303,6 +1304,7 @@ export type Database = {
           mundus_company_id?: string | null
           mundus_user_id?: string | null
           notes?: string | null
+          office_id?: string | null
           personal_linkedin?: string | null
           phone?: string | null
           phone_confidence?: string | null
@@ -1395,6 +1397,7 @@ export type Database = {
           mundus_company_id?: string | null
           mundus_user_id?: string | null
           notes?: string | null
+          office_id?: string | null
           personal_linkedin?: string | null
           phone?: string | null
           phone_confidence?: string | null
@@ -1454,6 +1457,13 @@ export type Database = {
             columns: ["merged_into_id"]
             isOneToOne: false
             referencedRelation: "crm_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "crm_contacts_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
@@ -3000,6 +3010,7 @@ export type Database = {
           incoterm: string
           locked_until: string | null
           offer_id: string
+          office_id: string | null
           order_id: string | null
           port_id: string | null
           rejection_notes: string | null
@@ -3024,6 +3035,7 @@ export type Database = {
           incoterm: string
           locked_until?: string | null
           offer_id: string
+          office_id?: string | null
           order_id?: string | null
           port_id?: string | null
           rejection_notes?: string | null
@@ -3048,6 +3060,7 @@ export type Database = {
           incoterm?: string
           locked_until?: string | null
           offer_id?: string
+          office_id?: string | null
           order_id?: string | null
           port_id?: string | null
           rejection_notes?: string | null
@@ -3078,6 +3091,13 @@ export type Database = {
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negotiations_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
@@ -3667,6 +3687,7 @@ export type Database = {
           id: string
           incoterm: string | null
           offer_id: string
+          office_id: string | null
           order_number: number
           placed_at: string | null
           reject_justification: string | null
@@ -3684,6 +3705,7 @@ export type Database = {
           id?: string
           incoterm?: string | null
           offer_id: string
+          office_id?: string | null
           order_number?: number
           placed_at?: string | null
           reject_justification?: string | null
@@ -3701,6 +3723,7 @@ export type Database = {
           id?: string
           incoterm?: string | null
           offer_id?: string
+          office_id?: string | null
           order_number?: number
           placed_at?: string | null
           reject_justification?: string | null
@@ -3726,6 +3749,13 @@ export type Database = {
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
         ]
