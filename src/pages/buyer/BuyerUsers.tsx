@@ -10,6 +10,7 @@ import { EditUserModal, type EditableUser } from "@/components/team/EditUserModa
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useUserOfficeMap } from "@/hooks/useUserOfficeMap";
+import { countryFlag } from "@/lib/countryFlags";
 
 const PROFILE_OPTIONS: BuyerProfileType[] = ["master_buyer", "procurement", "finance", "compliance"];
 
@@ -161,14 +162,18 @@ export default function BuyerUsers() {
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
                         {userOfficeMap[u.id].map((o, i) => (
                           <span key={i} className="pill" style={{ fontSize: 11 }}>
-                            {o.isHQ ? "🏛️" : "🌏"} {o.officeName}
+                            {o.isHQ ? "🏛️ " : ""}{countryFlag(o.country)} {o.officeName}
                           </span>
                         ))}
                       </div>
                     )}
                   </td>
                   <td>{userOfficeMap[u.id]?.[0]?.city || "—"}</td>
-                  <td>{userOfficeMap[u.id]?.[0]?.country || "—"}</td>
+                  <td>
+                    {userOfficeMap[u.id]?.[0]?.country
+                      ? <><span style={{ marginRight: 4 }}>{countryFlag(userOfficeMap[u.id][0].country)}</span>{userOfficeMap[u.id][0].country}</>
+                      : "—"}
+                  </td>
                   <td>{formatDate(u.createdAt, locale)}</td>
                   <td>{u.lastLoginAt ? formatDateTime(u.lastLoginAt, locale) : "—"}</td>
                   <td>
