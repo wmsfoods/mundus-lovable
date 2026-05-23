@@ -2224,30 +2224,39 @@ export type Database = {
       }
       cut_rounds: {
         Row: {
+          agreed_at: string | null
+          agreed_by: string | null
           created_at: string
           id: string
           offer_item_id: string
           price_per_kg: number
           quantity_kg: number
           round_proposal_id: string
+          status: string | null
           total_value: number | null
         }
         Insert: {
+          agreed_at?: string | null
+          agreed_by?: string | null
           created_at?: string
           id?: string
           offer_item_id: string
           price_per_kg: number
           quantity_kg: number
           round_proposal_id: string
+          status?: string | null
           total_value?: number | null
         }
         Update: {
+          agreed_at?: string | null
+          agreed_by?: string | null
           created_at?: string
           id?: string
           offer_item_id?: string
           price_per_kg?: number
           quantity_kg?: number
           round_proposal_id?: string
+          status?: string | null
           total_value?: number | null
         }
         Relationships: [
@@ -2951,6 +2960,62 @@ export type Database = {
           },
         ]
       }
+      negotiation_messages: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          emailed: boolean | null
+          emailed_at: string | null
+          id: string
+          is_read: boolean | null
+          message_type: string | null
+          negotiation_id: string
+          proposal_status: string | null
+          read_at: string | null
+          sender_side: string
+          sender_user_id: string
+          structured_data: Json | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          emailed?: boolean | null
+          emailed_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          negotiation_id: string
+          proposal_status?: string | null
+          read_at?: string | null
+          sender_side: string
+          sender_user_id: string
+          structured_data?: Json | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          emailed?: boolean | null
+          emailed_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message_type?: string | null
+          negotiation_id?: string
+          proposal_status?: string | null
+          read_at?: string | null
+          sender_side?: string
+          sender_user_id?: string
+          structured_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negotiation_messages_negotiation_id_fkey"
+            columns: ["negotiation_id"]
+            isOneToOne: false
+            referencedRelation: "negotiations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       negotiation_tokens: {
         Row: {
           created_at: string
@@ -3000,8 +3065,10 @@ export type Database = {
           agreed_items: Json
           buyer_company_id: string
           buyer_message: string | null
+          chat_enabled: boolean | null
           created_at: string
           created_by_user_id: string
+          current_round: number | null
           deleted_at: string | null
           expires_at: string | null
           fcl_count: number
@@ -3009,10 +3076,13 @@ export type Database = {
           id: string
           incoterm: string
           locked_until: string | null
+          max_rounds: number | null
+          negotiation_type: string | null
           offer_id: string
           office_id: string | null
           order_id: string | null
           port_id: string | null
+          rejection_cooldown_until: string | null
           rejection_notes: string | null
           rejection_reason: string | null
           settled_round_proposal_id: string | null
@@ -3025,8 +3095,10 @@ export type Database = {
           agreed_items?: Json
           buyer_company_id: string
           buyer_message?: string | null
+          chat_enabled?: boolean | null
           created_at?: string
           created_by_user_id: string
+          current_round?: number | null
           deleted_at?: string | null
           expires_at?: string | null
           fcl_count: number
@@ -3034,10 +3106,13 @@ export type Database = {
           id?: string
           incoterm: string
           locked_until?: string | null
+          max_rounds?: number | null
+          negotiation_type?: string | null
           offer_id: string
           office_id?: string | null
           order_id?: string | null
           port_id?: string | null
+          rejection_cooldown_until?: string | null
           rejection_notes?: string | null
           rejection_reason?: string | null
           settled_round_proposal_id?: string | null
@@ -3050,8 +3125,10 @@ export type Database = {
           agreed_items?: Json
           buyer_company_id?: string
           buyer_message?: string | null
+          chat_enabled?: boolean | null
           created_at?: string
           created_by_user_id?: string
+          current_round?: number | null
           deleted_at?: string | null
           expires_at?: string | null
           fcl_count?: number
@@ -3059,10 +3136,13 @@ export type Database = {
           id?: string
           incoterm?: string
           locked_until?: string | null
+          max_rounds?: number | null
+          negotiation_type?: string | null
           offer_id?: string
           office_id?: string | null
           order_id?: string | null
           port_id?: string | null
+          rejection_cooldown_until?: string | null
           rejection_notes?: string | null
           rejection_reason?: string | null
           settled_round_proposal_id?: string | null
@@ -3185,6 +3265,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "offer_allowed_incoterms_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_distributions: {
+        Row: {
+          channel: string | null
+          clicked_at: string | null
+          created_at: string | null
+          id: string
+          offer_id: string
+          opened_at: string | null
+          sent_at: string | null
+          sent_by_user_id: string | null
+          status: string | null
+          target_company_id: string | null
+          target_country: string | null
+          target_email: string | null
+        }
+        Insert: {
+          channel?: string | null
+          clicked_at?: string | null
+          created_at?: string | null
+          id?: string
+          offer_id: string
+          opened_at?: string | null
+          sent_at?: string | null
+          sent_by_user_id?: string | null
+          status?: string | null
+          target_company_id?: string | null
+          target_country?: string | null
+          target_email?: string | null
+        }
+        Update: {
+          channel?: string | null
+          clicked_at?: string | null
+          created_at?: string | null
+          id?: string
+          offer_id?: string
+          opened_at?: string | null
+          sent_at?: string | null
+          sent_by_user_id?: string | null
+          status?: string | null
+          target_company_id?: string | null
+          target_country?: string | null
+          target_email?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_distributions_offer_id_fkey"
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "offers"
@@ -3346,6 +3479,50 @@ export type Database = {
             columns: ["id"]
             isOneToOne: true
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_views: {
+        Row: {
+          id: string
+          offer_id: string
+          session_duration_seconds: number | null
+          source: string | null
+          viewed_at: string | null
+          viewer_company_id: string | null
+          viewer_country: string | null
+          viewer_ip: string | null
+          viewer_user_id: string | null
+        }
+        Insert: {
+          id?: string
+          offer_id: string
+          session_duration_seconds?: number | null
+          source?: string | null
+          viewed_at?: string | null
+          viewer_company_id?: string | null
+          viewer_country?: string | null
+          viewer_ip?: string | null
+          viewer_user_id?: string | null
+        }
+        Update: {
+          id?: string
+          offer_id?: string
+          session_duration_seconds?: number | null
+          source?: string | null
+          viewed_at?: string | null
+          viewer_company_id?: string | null
+          viewer_country?: string | null
+          viewer_ip?: string | null
+          viewer_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_views_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
             referencedColumns: ["id"]
           },
         ]
@@ -4278,22 +4455,31 @@ export type Database = {
           created_at: string
           created_by_user_id: string
           id: string
+          message: string | null
           negotiation_id: string
           round: number
+          side: string | null
+          type: string | null
         }
         Insert: {
           created_at?: string
           created_by_user_id: string
           id?: string
+          message?: string | null
           negotiation_id: string
           round: number
+          side?: string | null
+          type?: string | null
         }
         Update: {
           created_at?: string
           created_by_user_id?: string
           id?: string
+          message?: string | null
           negotiation_id?: string
           round?: number
+          side?: string | null
+          type?: string | null
         }
         Relationships: [
           {
