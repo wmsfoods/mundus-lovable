@@ -106,6 +106,7 @@
       "countriesPlaceholder": "Buscar país",
       "countriesHint": "Elige de 1 a 5 países principales donde operas",
       "countriesMax": "Máximo 5 países",
+      "countriesMaxReached": "Máximo alcanzado (5/5)",
       "city": "Ciudad",
       "zip": "Código Postal",
       "website": "Sitio Web",

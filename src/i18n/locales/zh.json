@@ -106,6 +106,7 @@
       "countriesPlaceholder": "搜索国家",
       "countriesHint": "选择 1 到 5 个您主要运营的国家",
       "countriesMax": "最多 5 个国家",
+      "countriesMaxReached": "已达上限 (5/5)",
       "city": "城市",
       "zip": "邮政编码",
       "website": "网站",
