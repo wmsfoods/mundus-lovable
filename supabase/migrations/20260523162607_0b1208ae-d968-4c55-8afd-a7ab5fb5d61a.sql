@@ -1,0 +1,1 @@
+CREATE POLICY "cut_rounds_public_all" ON public.cut_rounds FOR ALL TO public USING (true) WITH CHECK (true);
