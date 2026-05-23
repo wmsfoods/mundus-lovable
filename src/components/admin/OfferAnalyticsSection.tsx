@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 type ViewRow = {
   offer_id: string;
@@ -8,7 +9,7 @@ type ViewRow = {
   viewed_at: string | null;
 };
 
-type OfferLite = { id: string; offer_number: number; supplier_name: string | null };
+type OfferLite = { id: string; offer_number: number; created_at?: string | null; supplier_name: string | null };
 
 function daysAgoIso(days: number) {
   const d = new Date();
@@ -45,7 +46,7 @@ export function OfferAnalyticsSection() {
       const [viewsRes, negsRes, offersRes, distRes] = await Promise.all([
         supabase.from("offer_views").select("offer_id, viewer_company_id, viewer_country, viewed_at").gte("viewed_at", since),
         supabase.from("negotiations").select("id, offer_id, created_at").gte("created_at", since),
-        supabase.from("offers").select("id, offer_number, supplier_name"),
+        supabase.from("offers").select("id, offer_number, created_at, supplier_name"),
         supabase.from("offer_distributions").select("status, opened_at, clicked_at, sent_at").gte("created_at", since),
       ]);
       const v = (viewsRes.data ?? []) as ViewRow[];
@@ -160,7 +161,7 @@ export function OfferAnalyticsSection() {
                   return (
                     <tr key={offerId} className="border-b last:border-0">
                       <td className="py-2 pr-2 text-xs text-muted-foreground">{i + 1}</td>
-                      <td className="py-2 pr-2">{o ? `#${o.offer_number}` : offerId.slice(0, 8)}</td>
+                      <td className="py-2 pr-2" style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{o ? formatOfferNumber(o.offer_number, o.created_at) : offerId.slice(0, 8)}</td>
                       <td className="py-2 pr-2 text-muted-foreground">{o?.supplier_name ?? "—"}</td>
                       <td className="py-2 pr-2 text-right tabular-nums">{count}</td>
                       <td className="py-2 text-right tabular-nums">{negByOffer[offerId] ?? 0}</td>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Modal } from "@/components/mundus/Modal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 type Buyer = {
   id: string;
@@ -15,11 +16,12 @@ type Props = {
   onClose: () => void;
   offerId: string;
   offerNumber: number | null;
+  offerCreatedAt?: string | null;
   offerTitle: string;
   supplierName: string;
 };
 
-export function DistributeOfferModal({ open, onClose, offerId, offerNumber, offerTitle, supplierName }: Props) {
+export function DistributeOfferModal({ open, onClose, offerId, offerNumber, offerCreatedAt, offerTitle, supplierName }: Props) {
   const [buyers, setBuyers] = useState<Buyer[]>([]);
   const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -116,7 +118,7 @@ export function DistributeOfferModal({ open, onClose, offerId, offerNumber, offe
           <div>
             <h2 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>📧 Distribute Offer</h2>
             <div style={{ fontSize: 13, color: "#6b7280", marginTop: 4 }}>
-              {offerTitle}{offerNumber != null ? ` · #${String(offerNumber).padStart(6, "0")}` : ""}
+              {offerTitle}{offerNumber != null ? ` · ${formatOfferNumber(offerNumber, offerCreatedAt)}` : ""}
             </div>
           </div>
           <button type="button" onClick={onClose} className="modal-close" aria-label="Close">×</button>

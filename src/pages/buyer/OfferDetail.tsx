@@ -8,6 +8,7 @@ import {
   FlagSVG,
 } from "@/components/icons";
 import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
+import { formatOfferNumber } from "@/lib/offerNumber";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BidModal } from "@/components/buyer/BidModal";
@@ -299,6 +300,16 @@ function OfferDetailContent({
             <div className="od-title-block">
               <h1 className="od-title">{title}</h1>
               <div className="od-subtitle">
+                <span
+                  style={{
+                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                    fontSize: 12,
+                    color: "#9ca3af",
+                    marginRight: 8,
+                  }}
+                >
+                  {formatOfferNumber(offer.offer_number, offer.created_at)}
+                </span>
                 {offer.supplier_name}
                 {offer.supplier_rating != null && (
                   <span className="od-rating"> ⭐ {Number(offer.supplier_rating).toFixed(1)}</span>

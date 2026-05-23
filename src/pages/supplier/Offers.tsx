@@ -27,6 +27,7 @@ import {
   type OffersFilterState,
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 const PAGE_SIZE = 12;
 
@@ -91,6 +92,17 @@ function SupplierOfferCard({
           <span className="oc-cat">{o.category}</span>
           <span className="dot-sep" />
           <span className="oc-temp">{o.condition}</span>
+          <span className="dot-sep" />
+          <span
+            style={{
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontSize: 11,
+              color: "#9ca3af",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {formatOfferNumber(o.offerNumber, o.createdAt)}
+          </span>
           {o.mixed && (
             <span className="mixed-badge cuts-badge-strong">
               <GridIcon size={9} /> {t("supplier.offers.card.cuts", { count: o.items.length })}

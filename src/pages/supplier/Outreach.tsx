@@ -1,3 +1,4 @@
+import { formatOfferNumber } from "@/lib/offerNumber";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Mail, Send, Eye, Users } from "lucide-react";
@@ -57,7 +58,7 @@ export default function Outreach() {
             <div key={o.id} style={{ background: "#fff", border: "1px solid var(--border,#eee)", borderRadius: 10, padding: 16, display: "flex", flexDirection: "column", gap: 8 }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 8 }}>
                 <strong style={{ fontSize: 15 }}>{o.title}</strong>
-                <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>#{o.offerNumber}</span>
+                <span style={{ fontSize: 12, color: "var(--fg-muted)", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}>{formatOfferNumber(o.offerNumber, o.createdAt)}</span>
               </div>
               <div style={{ fontSize: 13, color: "var(--fg-muted)" }}>
                 {o.origin} → {o.markets.join(", ") || "—"}

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Package, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 type OrderRow = {
   id: string;
@@ -10,6 +11,7 @@ type OrderRow = {
   supplier_name: string;
   buyer_name: string;
   offer_number: number | null;
+  offer_created_at: string | null;
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -51,7 +53,7 @@ export default function AdminOrders() {
       try {
         const { data, error: e } = await supabase
           .from("orders")
-          .select("id, order_number, status, placed_at, buyer:companies!orders_buyer_id_fkey(name), offer:offers(offer_number, supplier_name)")
+          .select("id, order_number, status, placed_at, buyer:companies!orders_buyer_id_fkey(name), offer:offers(offer_number, created_at, supplier_name)")
           .is("deleted_at", null)
           .order("placed_at", { ascending: false });
         if (e) throw e;
@@ -59,7 +61,7 @@ export default function AdminOrders() {
         type Raw = {
           id: string; order_number: number; status: string | null; placed_at: string;
           buyer: { name: string } | { name: string }[] | null;
-          offer: { offer_number: number | null; supplier_name: string | null } | { offer_number: number | null; supplier_name: string | null }[] | null;
+          offer: { offer_number: number | null; created_at: string | null; supplier_name: string | null } | { offer_number: number | null; created_at: string | null; supplier_name: string | null }[] | null;
         };
         const one = <T,>(x: T | T[] | null | undefined): T | null =>
           Array.isArray(x) ? (x[0] ?? null) : (x ?? null);
@@ -74,6 +76,7 @@ export default function AdminOrders() {
             supplier_name: of?.supplier_name ?? "—",
             buyer_name: b?.name ?? "—",
             offer_number: of?.offer_number ?? null,
+            offer_created_at: of?.created_at ?? null,
           };
         });
         setRows(list);
@@ -175,7 +178,7 @@ export default function AdminOrders() {
                   {filtered.map(r => (
                     <tr key={r.id}>
                       <td><strong>#{String(r.order_number).padStart(7, "0")}</strong></td>
-                      <td>{r.offer_number != null ? `#${String(r.offer_number).padStart(6, "0")}` : "—"}</td>
+                      <td style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{r.offer_number != null ? formatOfferNumber(r.offer_number, r.offer_created_at) : "—"}</td>
                       <td>{r.supplier_name}</td>
                       <td>{r.buyer_name}</td>
                       <td>

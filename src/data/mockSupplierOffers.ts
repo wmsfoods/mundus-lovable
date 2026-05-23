@@ -17,6 +17,7 @@ export type SupplierOffer = {
   id: string;
   status: SupplierOfferStatus;
   createdAt?: string;
+  offerNumber?: number | null;
   category: "Beef" | "Pork" | "Poultry" | "Lamb";
   condition: "Frozen" | "Chilled";
   title: string;
