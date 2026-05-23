@@ -74,11 +74,10 @@ export default function BuyerOfferDetail() {
         offer_id: id,
         viewer_user_id: user.id,
         viewer_company_id: company?.id ?? null,
-        viewer_country: company?.country ?? null,
         source: "marketplace",
       });
     })().catch(() => {});
-  }, [id, company?.id, company?.country]);
+  }, [id, company?.id]);
 
   if (loading) {
     return (
