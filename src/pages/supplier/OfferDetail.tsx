@@ -177,6 +177,7 @@ export default function SupplierOfferDetail() {
   }
 
   const totalKg = offer.items.reduce((s, it) => s + it.qtyKg, 0);
+  const galleryImages = useOfferImages(offer.items);
   const firstDest = offer.destinations[0];
 
   return (
