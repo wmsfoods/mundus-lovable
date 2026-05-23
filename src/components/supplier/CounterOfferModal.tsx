@@ -82,7 +82,8 @@ export function CounterOfferModal({
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [bulkOffset, setBulkOffset] = useState<string>("");
+  const [bulkMode, setBulkMode] = useState<"amount" | "percent">("amount");
+  const [bulkValue, setBulkValue] = useState<string>("");
 
   const setAllCounters = (priceFor: (it: typeof openItems[number]) => number) => {
     setCounters((prev) => {
@@ -97,11 +98,21 @@ export function CounterOfferModal({
   const acceptAllRows = () => {
     setAccepted(Object.fromEntries(openItems.map((it) => [it.id, true])));
   };
-  const applyBulkOffset = () => {
-    const v = parseFloat(bulkOffset);
-    if (!Number.isFinite(v)) return;
-    const deltaKg = fromDisplay(v, "price", unit);
-    setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) + deltaKg);
+  const applyBulk = () => {
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return;
+    if (bulkMode === "percent") {
+      const capped = perspective === "buyer" ? Math.min(v, 30) : v;
+      const factor = perspective === "buyer" ? (1 - capped / 100) : (1 + capped / 100);
+      setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * factor);
+    } else {
+      const deltaKg = fromDisplay(v, "price", unit);
+      if (perspective === "buyer") {
+        setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) - deltaKg);
+      } else {
+        setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) + deltaKg);
+      }
+    }
   };
 
   // Buyer's initial bid (round 1) per offer_item — used to floor buyer counter-bids.
