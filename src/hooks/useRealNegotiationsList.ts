@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
+import { useCurrentCompany } from "./useCurrentCompany";
 import {
   countryToCode,
   initialsOf,
@@ -27,11 +28,16 @@ export function useRealNegotiationsList(role: Role) {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { activeOfficeId, isAllOffices } = useActiveOffice();
+  const { company, loading: companyLoading } = useCurrentCompany();
   // Buyers always see all negotiations regardless of supplier office.
   const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
 
   useEffect(() => {
     let cancelled = false;
+    if (role === "supplier" && (companyLoading || !company?.id)) {
+      setLoading(true);
+      return;
+    }
     setLoading(true);
     setError(null);
     (async () => {
@@ -60,7 +66,7 @@ export function useRealNegotiationsList(role: Role) {
 
       q = role === "buyer"
         ? q.eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
-        : q.eq("offer.supplier_id", MOCK_SUPPLIER_ID);
+        : q.eq("offer.supplier_id", company!.id);
 
       if (applyOfficeFilter) {
         // Include negotiations explicitly assigned to this office AND
@@ -94,7 +100,7 @@ export function useRealNegotiationsList(role: Role) {
     return () => {
       cancelled = true;
     };
-  }, [role, applyOfficeFilter, activeOfficeId]);
+  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading]);
 
   if (role === "buyer") {
     const offerCount = buyerGroups.length;
