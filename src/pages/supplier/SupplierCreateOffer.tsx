@@ -152,6 +152,7 @@ export default function SupplierCreateOffer() {
   const [searchParams] = useSearchParams();
   const fromRequestId = searchParams.get("from");
   const location = useLocation();
+  const { activeOfficeId } = useActiveOffice();
   const fromRequest = (location.state as any)?.fromRequest as
     | {
         requestId: string;
