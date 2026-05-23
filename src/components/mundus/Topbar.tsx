@@ -14,6 +14,7 @@ import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { Logo } from "@/components/Logo";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { OfficeSwitcher } from "./OfficeSwitcher";
 
 type TopbarProps = {
   onMenuClick?: () => void;
@@ -80,6 +81,7 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
         </div>
       )}
       {!isMobile && <div className="tb-spacer" />}
+      <OfficeSwitcher />
       {!isMobile && <div ref={langRef} style={{ position: "relative" }}>
         <button
           className="tb-item"
