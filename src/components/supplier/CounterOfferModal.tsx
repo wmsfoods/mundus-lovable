@@ -27,7 +27,6 @@ import {
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const MOCK_SUPPLIER_USER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
 const MOCK_BUYER_USER_ID = "c3000001-0000-0000-0000-000000000001";
 
 export interface CounterOfferModalProps {
@@ -236,7 +235,11 @@ export function CounterOfferModal({
     if (submitting || errorCount > 0) return;
     setSubmitting(true);
     try {
-      const userId = perspective === "supplier" ? MOCK_SUPPLIER_USER_ID : MOCK_BUYER_USER_ID;
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const userId = authData.user?.id ?? (perspective === "buyer" ? MOCK_BUYER_USER_ID : null);
+      if (authError || !userId) {
+        throw new Error("Please sign in again before sending a counter-offer.");
+      }
 
       // Newly-agreed items in this round (lock at the other side's price)
       const newlyAgreed: AgreedItem[] = openItems
