@@ -77,7 +77,7 @@ export default function BuyerHome() {
     <>
       <section className="hero">
         <h2>{t("buyer.home.hero")}</h2>
-        <div className="hero-photo" aria-hidden="true" />
+        <ProteinMarquee />
       </section>
 
       <div className="stats">
