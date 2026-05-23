@@ -548,6 +548,10 @@ export default function SupplierCreateOffer() {
   const [publishing, setPublishing] = useState(false);
   const handlePublish = async () => {
     if (!canPublish || publishing) return;
+    if (selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
+      toast.error("Please enter the EXW pickup location");
+      return;
+    }
     setPublishing(true);
     const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
     try {
