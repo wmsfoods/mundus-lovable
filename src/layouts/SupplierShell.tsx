@@ -21,7 +21,7 @@ import {
   UsersIcon,
 } from "@/components/icons";
 import { BarChart3, LineChart, Mail } from "lucide-react";
-import { Gavel } from "lucide-react";
+import { Gavel, Globe } from "lucide-react";
 import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
 import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
 
@@ -79,6 +79,7 @@ function SupplierShellInner() {
     { to: "/supplier/outreach", label: t("supplier.outreach.navLabel"), icon: Mail as unknown as SidebarItem["icon"] },
     { to: "/supplier/users", label: t("shell.nav.users"), icon: UsersIcon },
     { to: "/supplier/company", label: t("shell.nav.myCompany"), icon: HomeIcon },
+    { to: "/supplier/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
   ];
 
   const SUPPLIER_BOTTOM: BottomNavItem[] = [
