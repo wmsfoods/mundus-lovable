@@ -272,6 +272,60 @@ export default function SupplierOfferDetail() {
         </div>
       )}
 
+      {negotiations.length > 0 && (
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: 8,
+            border: "1px solid #e5e7eb",
+            background: "#fafafa",
+            marginBottom: 12,
+          }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+            🤝 Active Negotiations ({negotiations.length})
+          </div>
+          {negotiations.map((n) => {
+            const isAwaiting = n.status === "awaiting_supplier";
+            const isClosed = n.status === "bid_accepted";
+            return (
+              <a
+                key={n.id}
+                href={`/supplier/negotiations/${n.id}`}
+                onClick={(e) => { e.preventDefault(); navigate(`/supplier/negotiations/${n.id}`); }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  marginBottom: 4,
+                  textDecoration: "none",
+                  color: "inherit",
+                  fontSize: 12,
+                }}
+              >
+                <span>Buyer #{n.buyer_company_id.slice(0, 8)} · {n.incoterm || "FOB"}</span>
+                <span
+                  style={{
+                    padding: "2px 8px",
+                    borderRadius: 10,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    background: isClosed ? "#dcfce7" : isAwaiting ? "#fee2e2" : "#fef3c7",
+                    color: isClosed ? "#15803d" : isAwaiting ? "#b91c1c" : "#92400e",
+                  }}
+                >
+                  {n.status.replace(/_/g, " ")}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      )}
+
       <div className="od-grid">
         <div className="od-gallery">
           <div className="od-gallery-main">
