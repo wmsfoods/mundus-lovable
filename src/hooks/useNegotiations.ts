@@ -83,7 +83,7 @@ const MOCK: ParentOffer[] = [
 export function useNegotiations() {
   const real = useRealNegotiationsList("supplier");
   const realData = (real.data as ParentOffer[]) ?? [];
-  const data = [...realData, ...MOCK];
+  const data = realData;
   const offerCount = data.length;
   const bidCount = data.reduce((s, p) => s + p.bids.length, 0);
   return { data, offerCount, bidCount, isLoading: real.isLoading, error: real.error };
