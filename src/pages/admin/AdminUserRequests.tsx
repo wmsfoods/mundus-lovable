@@ -129,6 +129,16 @@ export default function AdminUserRequests() {
       .update({ status: "approved", reviewed_at: new Date().toISOString() })
       .eq("id", approveTarget.id);
     if (error) { setActing(false); toast.error(error.message); return; }
+    // TODO: Auto-assign approved user to their company HQ in `user_offices`.
+    // When the real auth flow is wired (creating an auth.users row + a row in
+    // public.users / public.companies on approval), insert here:
+    //   await supabase.from("user_offices").insert({
+    //     user_id: <newUserId>,
+    //     company_id: <hqCompanyId>,
+    //     role: "member",
+    //     is_primary: true,
+    //   });
+    // Today, user_requests only flips status — no user/company exists yet.
     await supabase.functions.invoke("signup-notifications", {
       body: {
         action: "approval",
