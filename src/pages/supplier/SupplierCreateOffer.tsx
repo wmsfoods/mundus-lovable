@@ -585,6 +585,7 @@ export default function SupplierCreateOffer() {
             total_fcl: totalFcl,
             is_halal: certifications.includes("Halal"),
             is_kosher: certifications.includes("Kosher"),
+            office_id: activeOfficeId ?? MOCK_SUPPLIER_ID,
           })
           .select("id, offer_number")
           .single();
