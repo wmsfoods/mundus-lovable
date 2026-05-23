@@ -21,6 +21,7 @@ export interface AdminNegotiationRow {
   // offer
   offer_id: string;
   offer_number: number | null;
+  offer_created_at: string | null;
   supplier_name: string | null;
   origin_port: string | null;
   // buyer
