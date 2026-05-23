@@ -4,9 +4,59 @@
  */
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 
-export const MAX_DISPLAY_ROUNDS = 3;
+export const MAX_DISPLAY_ROUNDS = 4;
 export const MAX_RAW_ROUNDS = MAX_DISPLAY_ROUNDS * 2;
 export const EXPIRATION_HOURS = 24;
+export const CHAT_ENABLED_FROM_ROUND = 3;
+
+/** Check if chat should be enabled for this negotiation */
+export function isChatEnabled(
+  neg: { current_round?: number; chat_enabled?: boolean } | null,
+): boolean {
+  if (!neg) return false;
+  if (neg.chat_enabled) return true;
+  return (neg.current_round ?? 1) >= CHAT_ENABLED_FROM_ROUND;
+}
+
+/** Validate price direction for buyer: each bid must be >= previous bid */
+export function validateBuyerBidDirection(
+  previousBidPricePerKg: number | null,
+  newBidPricePerKg: number,
+): { valid: boolean; message?: string } {
+  if (previousBidPricePerKg === null) return { valid: true };
+  if (newBidPricePerKg >= previousBidPricePerKg) return { valid: true };
+  return {
+    valid: false,
+    message: `Bid must be ≥ your previous bid ($${previousBidPricePerKg.toFixed(2)}/kg). You cannot lower your offer.`,
+  };
+}
+
+/** Validate price direction for supplier: each counter must be <= previous counter (or asking) */
+export function validateSupplierCounterDirection(
+  previousCounterPricePerKg: number | null,
+  askingPricePerKg: number,
+  newCounterPricePerKg: number,
+): { valid: boolean; message?: string } {
+  const ceiling = previousCounterPricePerKg ?? askingPricePerKg;
+  if (newCounterPricePerKg <= ceiling) return { valid: true };
+  return {
+    valid: false,
+    message: `Counter must be ≤ your previous counter ($${ceiling.toFixed(2)}/kg). You cannot increase your price.`,
+  };
+}
+
+/** Calculate deduction feedback for buyer bulk apply */
+export function getDeductionFeedback(deductionPercent: number): {
+  level: "fair" | "high" | "aggressive" | "extreme";
+  message: string;
+  color: string;
+} {
+  if (deductionPercent <= 4) return { level: "fair", message: "Fair", color: "#16a34a" };
+  if (deductionPercent <= 10) return { level: "high", message: "High deduction", color: "#d97706" };
+  if (deductionPercent <= 20)
+    return { level: "aggressive", message: "Probably bid will not be competitive", color: "#ea580c" };
+  return { level: "extreme", message: "You probably will not be considered", color: "#dc2626" };
+}
 
 export type AgreedItem = {
   offer_item_id: string;

@@ -8,8 +8,10 @@ import {
   FlagSVG,
 } from "@/components/icons";
 import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BidModal } from "@/components/buyer/BidModal";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -60,6 +62,22 @@ export default function BuyerOfferDetail() {
   const { offer, loading, error, notFound } = useOffer(id);
   const [moreOpen, setMoreOpen] = useState(false);
   const [bidOpen, setBidOpen] = useState(false);
+  const { company } = useCurrentCompany();
+
+  useEffect(() => {
+    if (!id) return;
+    (async () => {
+      const { data: userData } = await supabase.auth.getUser();
+      const user = userData?.user;
+      if (!user) return;
+      await supabase.from("offer_views").insert({
+        offer_id: id,
+        viewer_user_id: user.id,
+        viewer_company_id: company?.id ?? null,
+        source: "marketplace",
+      });
+    })().catch(() => {});
+  }, [id, company?.id]);
 
   if (loading) {
     return (
