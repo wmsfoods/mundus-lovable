@@ -22,6 +22,7 @@ import {
   MessageIcon,
 } from "@/components/icons";
 import { BarChart3, ShoppingBag } from "lucide-react";
+import { Globe } from "lucide-react";
 import { InsightsUpsellProvider } from "@/contexts/InsightsUpsellContext";
 
 export default function BuyerShell() {
@@ -52,6 +53,7 @@ function BuyerShellInner() {
     { to: "/buyer/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
     { to: "/buyer/chat", label: t("shell.nav.chat"), icon: MessageIcon, badge: BUYER_CHAT_TOTAL_UNREAD || undefined },
     { to: "/buyer/users", label: t("shell.nav.users"), icon: UsersIcon },
+    { to: "/buyer/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
     {
       to: "/buyer/procurement-intelligence",
       label: t("buyer.procurement.nav", { defaultValue: "Procurement Intelligence" }),
