@@ -15,6 +15,8 @@ import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
+import { useOfferImages } from "@/hooks/useOfferImages";
 import {
   Dialog,
   DialogContent,
