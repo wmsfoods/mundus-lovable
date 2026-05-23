@@ -7,6 +7,36 @@ const corsHeaders = {
 
 const GOOGLE_API_KEY = Deno.env.get("GOOGLE_PLACES_API_KEY") || "AIzaSyAlx04KCzO-8AKnn515qcirGH7BFNdBzt0";
 
+const FALLBACK_REFERRER = "https://mundus-lovable.lovable.app/";
+const ALLOWED_REFERRER_HOSTS = new Set([
+  "170ae70f-e543-40da-9f55-de7221b2701a.lovableproject.com",
+  "id-preview--170ae70f-e543-40da-9f55-de7221b2701a.lovable.app",
+  "mundus-lovable.lovable.app",
+  "localhost",
+]);
+
+const getGoogleHeaders = (req: Request, extraHeaders: Record<string, string> = {}) => {
+  const rawReferrer = req.headers.get("origin") || req.headers.get("referer");
+  let referrer = FALLBACK_REFERRER;
+
+  if (rawReferrer) {
+    try {
+      const url = new URL(rawReferrer);
+      if (ALLOWED_REFERRER_HOSTS.has(url.hostname)) {
+        referrer = `${url.origin}/`;
+      }
+    } catch {
+      referrer = FALLBACK_REFERRER;
+    }
+  }
+
+  return {
+    "X-Goog-Api-Key": GOOGLE_API_KEY,
+    Referer: referrer,
+    ...extraHeaders,
+  };
+};
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -26,10 +56,9 @@ serve(async (req) => {
 
       const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
         method: "POST",
-        headers: {
+        headers: getGoogleHeaders(req, {
           "Content-Type": "application/json",
-          "X-Goog-Api-Key": GOOGLE_API_KEY,
-        },
+        }),
         body: JSON.stringify(body),
       });
 
@@ -38,7 +67,7 @@ serve(async (req) => {
       if (!res.ok) {
         console.error("Google Places error:", data);
         return new Response(JSON.stringify({ error: data }), {
-          status: res.status,
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
@@ -62,10 +91,9 @@ serve(async (req) => {
       const res = await fetch(
         `https://places.googleapis.com/v1/places/${placeId}`,
         {
-          headers: {
-            "X-Goog-Api-Key": GOOGLE_API_KEY,
+          headers: getGoogleHeaders(req, {
             "X-Goog-FieldMask": "addressComponents,formattedAddress,location",
-          },
+          }),
         }
       );
 
@@ -73,7 +101,7 @@ serve(async (req) => {
 
       if (!res.ok) {
         return new Response(JSON.stringify({ error: place }), {
-          status: res.status,
+          status: 200,
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
