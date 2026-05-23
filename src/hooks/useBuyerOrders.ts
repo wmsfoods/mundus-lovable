@@ -1,3 +1,6 @@
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
 export type BuyerOrderStatus =
   | 'awaiting_supplier_acceptance'
   | 'awaiting_pre_payment'
@@ -28,24 +31,128 @@ export type BuyerOrder = {
   paymentTerm: string;
 };
 
-const MOCK_ORDERS: BuyerOrder[] = [
-  { id:'ord-0050', orderNumber:'0000050', status:'awaiting_supplier_acceptance', supplierName:'Alpha Foods', orderDate:'2026-05-19', origin:'Brazil', destination:'Argentina', product:'Beef Brisket', quantityKg:27000, pricePerKg:4.35, fcls:1, fclSize:'40ft', oceanFreightUsd:324, shipmentMonth:'June 2026', incoterm:'CFR', paymentTerm:'30% advance, 70% after shipment' },
-  { id:'ord-0049', orderNumber:'0000049', status:'awaiting_pre_payment', supplierName:'Beta Meats', orderDate:'2026-05-12', origin:'Brazil', destination:'China', product:'Beef Forequarter', quantityKg:27000, pricePerKg:6.20, fcls:1, fclSize:'40ft', oceanFreightUsd:4500, shipmentMonth:'July 2026', incoterm:'CIF', paymentTerm:'50% advance, balance TT' },
-  { id:'ord-0048', orderNumber:'0000048', status:'in_production', supplierName:'Gamma Suppliers', orderDate:'2026-04-28', origin:'Brazil', destination:'Vietnam', product:'Chicken Wings', quantityKg:27000, pricePerKg:1.85, fcls:1, fclSize:'40ft', oceanFreightUsd:3800, shipmentMonth:'June 2026', incoterm:'CFR', paymentTerm:'30% advance, balance TT' },
-  { id:'ord-0047', orderNumber:'0000047', status:'awaiting_balance_payment', supplierName:'Alpha Foods', orderDate:'2026-04-15', origin:'Brazil', destination:'United States', product:'Beef Sangria 90VL', quantityKg:54000, pricePerKg:5.80, fcls:2, fclSize:'40ft', oceanFreightUsd:9000, shipmentMonth:'May 2026', incoterm:'CIF', paymentTerm:'30% advance, 70% after shipment' },
-  { id:'ord-0046', orderNumber:'0000046', status:'shipped', supplierName:'Delta Trading', orderDate:'2026-04-02', origin:'Brazil', destination:'Saudi Arabia', product:'Boneless Beef 90VL', quantityKg:27000, pricePerKg:6.10, fcls:1, fclSize:'40ft', oceanFreightUsd:4200, shipmentMonth:'May 2026', incoterm:'CFR', paymentTerm:'10% advance, balance TT' },
-  { id:'ord-0045', orderNumber:'0000045', status:'delivered', supplierName:'Echo Foods', orderDate:'2026-03-18', origin:'Brazil', destination:'Argentina', product:'Beef Bones', quantityKg:13000, pricePerKg:2.65, fcls:1, fclSize:'20ft', oceanFreightUsd:2100, shipmentMonth:'April 2026', incoterm:'CFR', paymentTerm:'100% advance' },
-  { id:'ord-0044', orderNumber:'0000044', status:'completed', supplierName:'Foxtrot Foods', orderDate:'2026-03-05', origin:'Brazil', destination:'Hong Kong', product:'Pork Belly', quantityKg:27000, pricePerKg:4.90, fcls:1, fclSize:'40ft', oceanFreightUsd:4100, shipmentMonth:'April 2026', incoterm:'CIF', paymentTerm:'30% advance, balance TT' },
-  { id:'ord-0043', orderNumber:'0000043', status:'rejected', supplierName:'Alpha Foods', orderDate:'2026-02-22', origin:'Brazil', destination:'United Arab Emirates', product:'Beef Striploin', quantityKg:13000, pricePerKg:8.20, fcls:1, fclSize:'20ft', oceanFreightUsd:3400, shipmentMonth:'March 2026', incoterm:'CIF', paymentTerm:'50% advance, balance TT' },
-  { id:'ord-0042', orderNumber:'0000042', status:'awaiting_supplier_acceptance', supplierName:'Gamma Suppliers', orderDate:'2026-02-14', origin:'Brazil', destination:'Singapore', product:'Chicken Leg Quarters', quantityKg:54000, pricePerKg:1.45, fcls:2, fclSize:'40ft', oceanFreightUsd:7600, shipmentMonth:'March 2026', incoterm:'CFR', paymentTerm:'30% advance, balance TT' },
-  { id:'ord-0041', orderNumber:'0000041', status:'pre_payment_confirmed', supplierName:'Hotel Imports', orderDate:'2026-02-01', origin:'Brazil', destination:'Philippines', product:'Boneless Beef 90VL', quantityKg:27000, pricePerKg:6.05, fcls:1, fclSize:'40ft', oceanFreightUsd:4800, shipmentMonth:'March 2026', incoterm:'CIF', paymentTerm:'50% advance, balance TT' },
-];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+type OrderRow = {
+  id: string;
+  order_number: number | null;
+  status: string | null;
+  fcl_count: number | null;
+  incoterm: string | null;
+  freight_cost: number | null;
+  placed_at: string | null;
+  created_at: string | null;
+  offer: {
+    supplier_name: string | null;
+    origin_country: string | null;
+    shipment_month: number | null;
+    shipment_year: number | null;
+    payment_terms: string | null;
+    container_size: string | null;
+    total_fcl: number | null;
+    items: { amount: number | null; price: number | null; customer_product: { name: string | null } | null }[] | null;
+  } | null;
+  destination_port: { name: string | null; country: { english_name: string | null } | null } | null;
+};
+
+function mapRow(r: OrderRow): BuyerOrder {
+  const offer = r.offer;
+  const items = offer?.items ?? [];
+  const totalKg = items.reduce((s, i) => s + (Number(i.amount) || 0), 0);
+  const weightedPrice = totalKg > 0
+    ? items.reduce((s, i) => s + (Number(i.amount) || 0) * (Number(i.price) || 0), 0) / totalKg
+    : 0;
+  const productName = items[0]?.customer_product?.name ?? "—";
+  const shipmentMonth = offer?.shipment_month && offer?.shipment_year
+    ? `${MONTHS[(offer.shipment_month - 1) % 12]} ${offer.shipment_year}`
+    : "—";
+  const fcls = r.fcl_count ?? offer?.total_fcl ?? 0;
+  const fclSize: '20ft' | '40ft' = offer?.container_size === '20ft' ? '20ft' : '40ft';
+  const incoterm = (['CFR','CIF','FOB'] as const).includes((r.incoterm as never)) ? (r.incoterm as 'CFR'|'CIF'|'FOB') : 'CFR';
+  return {
+    id: r.id,
+    orderNumber: String(r.order_number ?? r.id.slice(0, 7)).padStart(7, '0'),
+    status: (r.status as BuyerOrderStatus) ?? 'awaiting_supplier_acceptance',
+    supplierName: offer?.supplier_name ?? '—',
+    orderDate: r.placed_at ?? r.created_at ?? new Date().toISOString(),
+    origin: offer?.origin_country ?? '—',
+    destination: r.destination_port?.country?.english_name ?? r.destination_port?.name ?? '—',
+    product: productName,
+    quantityKg: totalKg,
+    pricePerKg: weightedPrice,
+    fcls,
+    fclSize,
+    oceanFreightUsd: Number(r.freight_cost) || 0,
+    shipmentMonth,
+    incoterm,
+    paymentTerm: offer?.payment_terms ?? '—',
+  };
+}
+
+const SELECT = `
+  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at,
+  offer:offers (
+    supplier_name, origin_country, shipment_month, shipment_year,
+    payment_terms, container_size, total_fcl,
+    items:offer_items ( amount, price, customer_product:customer_products ( name ) )
+  ),
+  destination_port:ports!destination_port_id ( name, country:countries ( english_name ) )
+`;
 
 export function useBuyerOrders() {
-  return { data: MOCK_ORDERS, isLoading: false, error: null as null | Error };
+  const [data, setData] = useState<BuyerOrder[]>([]);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data: rows, error: qErr } = await supabase
+        .from('orders')
+        .select(SELECT)
+        .is('deleted_at', null)
+        .order('placed_at', { ascending: false, nullsFirst: false })
+        .order('created_at', { ascending: false });
+      if (cancelled) return;
+      if (qErr) {
+        setError(new Error(qErr.message));
+        setData([]);
+      } else {
+        setData(((rows ?? []) as unknown as OrderRow[]).map(mapRow));
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
+  return { data, isLoading, error };
 }
 
 export function useBuyerOrder(id: string) {
-  const order = MOCK_ORDERS.find(o => o.id === id || o.orderNumber === id) ?? null;
-  return { data: order, isLoading: false, error: null as null | Error };
+  const [data, setData] = useState<BuyerOrder | null>(null);
+  const [isLoading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data: rows, error: qErr } = await supabase
+        .from('orders')
+        .select(SELECT)
+        .or(`id.eq.${id},order_number.eq.${/^\d+$/.test(id) ? id : 0}`)
+        .limit(1);
+      if (cancelled) return;
+      if (qErr) { setError(new Error(qErr.message)); setData(null); }
+      else {
+        const list = ((rows ?? []) as unknown as OrderRow[]).map(mapRow);
+        setData(list[0] ?? null);
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  return { data, isLoading, error };
 }
