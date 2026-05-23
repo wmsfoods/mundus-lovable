@@ -271,13 +271,6 @@ export default function SupplierHome() {
             </Link>
           </div>
         </div>
-        <div className="sh-hero-img" aria-hidden="true">
-          <img
-            src="https://images.unsplash.com/photo-1588168333986-5078d3ae3976?w=600&h=300&fit=crop&q=80"
-            alt=""
-            className="sh-hero-photo"
-          />
-        </div>
       </section>
 
       <div className="sh-attention">
