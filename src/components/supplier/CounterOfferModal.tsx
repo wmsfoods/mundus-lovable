@@ -117,10 +117,17 @@ export function CounterOfferModal({
   const [bulkMode, setBulkMode] = useState<DeltaUnit>("amount");
   const [bulkValue, setBulkValue] = useState<string>("");
 
-  // Per-row delta controls (drive counters[itemId]).
-  const [rowAnchor, setRowAnchor] = useState<Record<string, Anchor>>({});
-  const [rowMode, setRowMode] = useState<Record<string, DeltaUnit>>({});
-  const [rowValue, setRowValue] = useState<Record<string, string>>({});
+  // Toggleable shortcuts ("Accept all", "Meet in middle") — clicking again reverts.
+  type Shortcut = "accept_all" | "meet_middle";
+  const [activeShortcut, setActiveShortcut] = useState<Shortcut | null>(null);
+  const [snapshot, setSnapshot] = useState<{
+    counters: Record<string, number>;
+    accepted: Record<string, boolean>;
+  } | null>(null);
+  const clearShortcut = () => {
+    if (activeShortcut !== null) setActiveShortcut(null);
+    if (snapshot !== null) setSnapshot(null);
+  };
 
   const anchorLabel = (a: Anchor): string => {
     if (perspective === "supplier") return a === "self" ? "− my asking" : "+ buyer bid";
@@ -137,8 +144,29 @@ export function CounterOfferModal({
       return next;
     });
   };
-  const acceptAllRows = () => {
+  const toggleAcceptAll = () => {
+    if (activeShortcut === "accept_all" && snapshot) {
+      setCounters(snapshot.counters);
+      setAccepted(snapshot.accepted);
+      setActiveShortcut(null);
+      setSnapshot(null);
+      return;
+    }
+    setSnapshot({ counters: { ...counters }, accepted: { ...accepted } });
     setAccepted(Object.fromEntries(openItems.map((it) => [it.id, true])));
+    setActiveShortcut("accept_all");
+  };
+  const toggleMeetInMiddle = () => {
+    if (activeShortcut === "meet_middle" && snapshot) {
+      setCounters(snapshot.counters);
+      setAccepted(snapshot.accepted);
+      setActiveShortcut(null);
+      setSnapshot(null);
+      return;
+    }
+    setSnapshot({ counters: { ...counters }, accepted: { ...accepted } });
+    setAllCounters((it) => ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2);
+    setActiveShortcut("meet_middle");
   };
   const applyBulk = () => {
     const v = parseFloat(bulkValue);
@@ -149,41 +177,18 @@ export function CounterOfferModal({
       const their = theirPrices.get(it.id) ?? asking;
       return priceFromDelta(perspective, bulkAnchor, bulkMode, valKg, asking, their);
     });
-    // Sync per-row controls so UI stays coherent
-    setRowAnchor((prev) => {
-      const next = { ...prev };
-      for (const it of openItems) if (!accepted[it.id]) next[it.id] = bulkAnchor;
-      return next;
-    });
-    setRowMode((prev) => {
-      const next = { ...prev };
-      for (const it of openItems) if (!accepted[it.id]) next[it.id] = bulkMode;
-      return next;
-    });
-    setRowValue((prev) => {
-      const next = { ...prev };
-      for (const it of openItems) if (!accepted[it.id]) next[it.id] = bulkValue;
-      return next;
-    });
+    clearShortcut();
   };
 
-  /** Update a single row's delta input and recompute the final price. */
-  const updateRowDelta = (
-    itemId: string,
-    asking: number,
-    their: number,
-    patch: Partial<{ anchor: Anchor; mode: DeltaUnit; value: string }>,
-  ) => {
-    const anchor = patch.anchor ?? rowAnchor[itemId] ?? "self";
-    const mode = patch.mode ?? rowMode[itemId] ?? "amount";
-    const valueStr = patch.value ?? rowValue[itemId] ?? "";
-    if (patch.anchor !== undefined) setRowAnchor((p) => ({ ...p, [itemId]: anchor }));
-    if (patch.mode !== undefined) setRowMode((p) => ({ ...p, [itemId]: mode }));
-    if (patch.value !== undefined) setRowValue((p) => ({ ...p, [itemId]: valueStr }));
-    const v = parseFloat(valueStr);
-    const valKg = mode === "amount" && Number.isFinite(v) ? fromDisplay(v, "price", unit) : v;
-    const price = priceFromDelta(perspective, anchor, mode, valKg, asking, their);
-    setCounters((prev) => ({ ...prev, [itemId]: +price.toFixed(4) }));
+  /** Manual per-row counter edit — also cancels any active shortcut. */
+  const handleManualCounterChange = (itemId: string, kg: number) => {
+    setCounters((prev) => ({ ...prev, [itemId]: kg }));
+    clearShortcut();
+  };
+  /** Manual per-row accept toggle — also cancels any active shortcut. */
+  const handleManualAcceptToggle = (itemId: string, checked: boolean) => {
+    setAccepted((p) => ({ ...p, [itemId]: checked }));
+    clearShortcut();
   };
 
   // Buyer's initial bid (round 1) per offer_item — used to floor buyer counter-bids.
@@ -209,9 +214,8 @@ export function CounterOfferModal({
     }
     setCounters(initial);
     setAccepted({});
-    setRowAnchor(Object.fromEntries(openItems.map((it) => [it.id, "self" as Anchor])));
-    setRowMode(Object.fromEntries(openItems.map((it) => [it.id, "amount" as DeltaUnit])));
-    setRowValue(Object.fromEntries(openItems.map((it) => [it.id, ""])));
+    setActiveShortcut(null);
+    setSnapshot(null);
     setBulkAnchor("self");
     setBulkValue("");
     setMessage(
@@ -544,15 +548,14 @@ export function CounterOfferModal({
 
         {/* Bulk apply — unified responsive */}
         {openItems.length > 0 && (
-          <div className="mt-3 rounded-lg border border-border p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs uppercase font-semibold text-muted-foreground">
-                {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
-              </span>
+          <div className="mt-3 rounded-lg border border-border p-3 flex flex-col gap-3">
+            <div className="text-xs uppercase font-semibold text-muted-foreground">
+              {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
             </div>
-            {/* Reference (anchor) toggle */}
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-[11px] uppercase text-muted-foreground">Reference</span>
+
+            {/* Row 1 — Reference */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] uppercase text-muted-foreground w-20 shrink-0">Reference</span>
               <div className="flex rounded-md border border-border overflow-hidden text-xs">
                 <button
                   type="button"
@@ -572,7 +575,10 @@ export function CounterOfferModal({
                 </button>
               </div>
             </div>
+
+            {/* Row 2 — Adjust by */}
             <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] uppercase text-muted-foreground w-20 shrink-0">Adjust by</span>
               <div className="flex rounded-md border border-border overflow-hidden text-xs">
                 <button
                   type="button"
@@ -625,24 +631,33 @@ export function CounterOfferModal({
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
+
+            {/* Row 3 — Shortcuts (toggleable) */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] uppercase text-muted-foreground w-20 shrink-0">Shortcuts</span>
               <button
                 type="button"
-                onClick={acceptAllRows}
-                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                onClick={toggleAcceptAll}
+                className="h-8 px-3 rounded-full border text-xs font-medium transition-colors"
+                style={
+                  activeShortcut === "accept_all"
+                    ? { background: "#8B2252", color: "white", borderColor: "#8B2252" }
+                    : { borderColor: "hsl(var(--border))", color: "#8B2252" }
+                }
               >
-                ✅ Accept all
+                {activeShortcut === "accept_all" ? "↩ Unselect all" : "✅ Accept all"}
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  setAllCounters((it) => ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2)
+                onClick={toggleMeetInMiddle}
+                className="h-8 px-3 rounded-full border text-xs font-medium transition-colors"
+                style={
+                  activeShortcut === "meet_middle"
+                    ? { background: "#8B2252", color: "white", borderColor: "#8B2252" }
+                    : { borderColor: "hsl(var(--border))", color: "#8B2252" }
                 }
-                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
               >
-                Meet in middle
+                {activeShortcut === "meet_middle" ? "↩ Undo meet in middle" : "⇄ Meet in middle"}
               </button>
             </div>
           </div>
@@ -680,9 +695,7 @@ export function CounterOfferModal({
                     <td className="px-3 py-2 align-middle">
                       <Checkbox
                         checked={isAccepted}
-                        onCheckedChange={(c) =>
-                          setAccepted((p) => ({ ...p, [it.id]: c === true }))
-                        }
+                        onCheckedChange={(c) => handleManualAcceptToggle(it.id, c === true)}
                         aria-label={t("engine.acceptThisPrice", "Accept this price")}
                       />
                     </td>
@@ -706,9 +719,7 @@ export function CounterOfferModal({
                           if (isAccepted) return;
                           const v = parseFloat(e.target.value);
                           const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
-                          setCounters((prev) => ({ ...prev, [it.id]: kg }));
-                          // user typed final price directly → clear delta input to avoid confusion
-                          setRowValue((p) => ({ ...p, [it.id]: "" }));
+                          handleManualCounterChange(it.id, kg);
                         }}
                         className={
                           "h-9 w-24 ml-auto text-right tabular-nums focus-visible:ring-[#8B2252]" +
@@ -716,58 +727,6 @@ export function CounterOfferModal({
                           (errors[it.id] ? " border-destructive focus-visible:ring-destructive" : "")
                         }
                       />
-                      {!isAccepted && (
-                        <div className="flex items-center gap-1 mt-1 justify-end">
-                          <div className="flex rounded-md border border-border overflow-hidden text-[10px]">
-                            <button
-                              type="button"
-                              onClick={() => updateRowDelta(it.id, asking, their, { anchor: "self" })}
-                              className="px-1.5 py-0.5 font-medium"
-                              style={(rowAnchor[it.id] ?? "self") === "self" ? { background: "#8B2252", color: "white" } : {}}
-                              title={anchorLabel("self")}
-                            >
-                              {anchorLabel("self")}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateRowDelta(it.id, asking, their, { anchor: "other" })}
-                              className="px-1.5 py-0.5 font-medium"
-                              style={(rowAnchor[it.id] ?? "self") === "other" ? { background: "#8B2252", color: "white" } : {}}
-                              title={anchorLabel("other")}
-                            >
-                              {anchorLabel("other")}
-                            </button>
-                          </div>
-                          <div className="flex rounded-md border border-border overflow-hidden text-[10px]">
-                            <button
-                              type="button"
-                              onClick={() => updateRowDelta(it.id, asking, their, { mode: "amount" })}
-                              className="px-1.5 py-0.5 font-medium"
-                              style={(rowMode[it.id] ?? "amount") === "amount" ? { background: "#8B2252", color: "white" } : {}}
-                            >
-                              $
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => updateRowDelta(it.id, asking, their, { mode: "percent" })}
-                              className="px-1.5 py-0.5 font-medium"
-                              style={(rowMode[it.id] ?? "amount") === "percent" ? { background: "#8B2252", color: "white" } : {}}
-                            >
-                              %
-                            </button>
-                          </div>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            inputMode="decimal"
-                            value={rowValue[it.id] ?? ""}
-                            placeholder="Δ"
-                            onChange={(e) => updateRowDelta(it.id, asking, their, { value: e.target.value })}
-                            className="h-7 w-16 text-right tabular-nums text-xs"
-                          />
-                        </div>
-                      )}
                       {errors[it.id] && (
                         <div className="text-[11px] text-destructive mt-1 max-w-[200px] ml-auto">
                           {errors[it.id]}
@@ -824,9 +783,7 @@ export function CounterOfferModal({
                 <label className="flex items-center gap-2 mb-2 cursor-pointer">
                   <Checkbox
                     checked={isAccepted}
-                    onCheckedChange={(c) =>
-                      setAccepted((p) => ({ ...p, [it.id]: c === true }))
-                    }
+                    onCheckedChange={(c) => handleManualAcceptToggle(it.id, c === true)}
                     aria-label={t("engine.acceptThisPrice", "Accept this price")}
                   />
                   <span className="font-medium text-sm flex-1">{it.customer_product?.name ?? "—"}</span>
@@ -861,8 +818,7 @@ export function CounterOfferModal({
                       if (isAccepted) return;
                       const v = parseFloat(e.target.value);
                       const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
-                      setCounters((prev) => ({ ...prev, [it.id]: kg }));
-                      setRowValue((p) => ({ ...p, [it.id]: "" }));
+                      handleManualCounterChange(it.id, kg);
                     }}
                     className={
                       "h-11 w-full text-right tabular-nums focus-visible:ring-[#8B2252]" +
@@ -870,56 +826,6 @@ export function CounterOfferModal({
                       (errors[it.id] ? " border-destructive focus-visible:ring-destructive" : "")
                     }
                   />
-                  {!isAccepted && (
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                      <div className="flex rounded-md border border-border overflow-hidden text-[11px] flex-1 min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { anchor: "self" })}
-                          className="px-2 py-1 font-medium flex-1"
-                          style={(rowAnchor[it.id] ?? "self") === "self" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          {anchorLabel("self")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { anchor: "other" })}
-                          className="px-2 py-1 font-medium flex-1"
-                          style={(rowAnchor[it.id] ?? "self") === "other" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          {anchorLabel("other")}
-                        </button>
-                      </div>
-                      <div className="flex rounded-md border border-border overflow-hidden text-[11px]">
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { mode: "amount" })}
-                          className="px-2 py-1 font-medium"
-                          style={(rowMode[it.id] ?? "amount") === "amount" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          $
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { mode: "percent" })}
-                          className="px-2 py-1 font-medium"
-                          style={(rowMode[it.id] ?? "amount") === "percent" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          %
-                        </button>
-                      </div>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        inputMode="decimal"
-                        value={rowValue[it.id] ?? ""}
-                        placeholder="Δ"
-                        onChange={(e) => updateRowDelta(it.id, asking, their, { value: e.target.value })}
-                        className="h-9 w-20 text-right tabular-nums text-xs"
-                      />
-                    </div>
-                  )}
                   {errors[it.id] && (
                     <div className="text-[11px] text-destructive mt-1">{errors[it.id]}</div>
                   )}

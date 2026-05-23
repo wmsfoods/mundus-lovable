@@ -1,142 +1,73 @@
+# Plano — Limpeza e ergonomia do CounterOfferModal
 
-## Escopo
+Arquivo único: `src/components/supplier/CounterOfferModal.tsx` (mesmo modal usado por supplier e buyer; lógica de cada lado é preservada via `perspective`).
 
-Mudança UX no `src/components/supplier/CounterOfferModal.tsx` (usado por ambos os lados nos rounds 2+). Sem alterações no banco, RPC ou edge functions. Validação client mantém as regras atuais (não passar do counter anterior / não cair abaixo do bid anterior).
+## 1. Limpar a linha dos items (desktop e mobile)
 
-`BidModal` (bid inicial R1 do buyer) **fica fora** — lá não existe "outro lado" ainda.
+Hoje cada linha mostra: input do preço final + toggle anchor (`− my asking` / `+ buyer bid`) + toggle `$/%` + input Δ. Isso polui.
 
-## Conceito
+**Mudança:** na linha, manter apenas:
+- Checkbox de Accept
+- Input editável do preço final (`YOUR COUNTER`)
+- Mensagem de erro de validação (se houver)
+- Coluna DIFF
 
-Cada lado escolhe a **âncora** (de onde parte o ajuste) e a **direção** já é implícita pelo papel:
+Remover dos itens (desktop table e mobile card) os toggles de anchor, `$/%` e o input Δ. O ajuste fino por item passa a ser feito digitando direto o preço final na coluna `YOUR COUNTER`, que continua respeitando todas as validações de cada lado.
 
-- **Supplier**
-  - `− do meu asking` (default) — desconto em $/kg ou % sobre o próprio asking price do item
-  - `+ no bid do buyer` — acréscimo em $/kg ou % sobre o último bid do buyer para o item
-- **Buyer**
-  - `+ no meu bid` (default) — acréscimo em $/kg ou % sobre o próprio bid anterior do item
-  - `− do counter do supplier` — desconto em $/kg ou % sobre o último counter do supplier para o item
+Estado `rowAnchor` / `rowMode` / `rowValue` e a função `updateRowDelta` deixam de ser necessários e serão removidos.
 
-A âncora é puramente de **input** (de onde o cálculo parte). O valor final ainda precisa cair na janela válida (já validado hoje: supplier ≤ counter/asking anterior; buyer ≥ bid anterior, ≤ counter anterior implícito, ≤ 30% deduction).
+## 2. Reorganizar o bloco "Apply ... in all items"
 
-## Mudanças no `CounterOfferModal.tsx`
-
-### 1. Estado de modo (bulk e por item)
-
-```ts
-type Anchor = "self" | "other"; // self = meu lado, other = lado oposto
-type Unit = "amount" | "percent";
-
-const [bulkAnchor, setBulkAnchor] = useState<Anchor>("self");          // default −asking / +bid
-const [bulkMode, setBulkMode] = useState<Unit>("amount");              // já existe
-const [bulkValue, setBulkValue] = useState<string>("");                // já existe
-
-// Por item (sobrescreve quando o usuário digita direto no input do item)
-const [rowAnchor, setRowAnchor] = useState<Record<string, Anchor>>({});
-const [rowMode, setRowMode]   = useState<Record<string, Unit>>({});
-const [rowValue, setRowValue] = useState<Record<string, string>>({});  // texto do delta
-```
-
-`counters[itemId]` continua sendo o **preço final em $/kg** (estado autoritativo enviado ao banco). Os controles novos são uma camada de input que recalcula `counters[itemId]` quando o usuário muda anchor/mode/valor.
-
-### 2. Helper de cálculo
-
-```ts
-function priceFromDelta(args: {
-  perspective: "supplier"|"buyer",
-  anchor: Anchor,
-  mode: Unit,
-  value: number,           // já em $/kg se mode=amount (após fromDisplay)
-  askingKg: number,        // it.price
-  theirKg: number,         // theirPrices.get(it.id) (último bid p/ supplier, último counter p/ buyer)
-}): number {
-  const base = args.anchor === "self" ? args.askingKg : args.theirKg;
-  const sign =
-    args.perspective === "supplier" ? -1 /* desconta se self, acrescenta se other */ : +1;
-  // supplier self = base − Δ ; supplier other = base + Δ
-  // buyer    self = base + Δ ; buyer    other = base − Δ
-  const dir = args.anchor === "self" ? sign * -1 /* invert: self é "ceder no meu lado" */ : sign;
-  // simplificado:
-  // supplier self → −, supplier other → +
-  // buyer self → +,    buyer other → −
-  const factorOrDelta =
-    args.mode === "percent" ? base * (args.value / 100) : args.value;
-  return Math.max(0, base + dir * factorOrDelta);
-}
-```
-
-(A tabela "self vs other × supplier vs buyer" será mapeada explicitamente; ignorar a álgebra acima — virá com switch claro no código.)
-
-### 3. UI do bulk (substitui o bloco atual "Apply ... in all items")
+Layout atual está embolado (Reference em uma linha, $/% + input + botão em outra, Accept all / Meet in middle em outra). Reorganizar em duas linhas claras:
 
 ```text
-┌ Apply in all items ─────────────────────────────────────────────────┐
-│ Reference: [ − from my asking ] [ + on buyer bid ]   ← toggle pill │
-│            (supplier)                                               │
-│            [ + on my bid ] [ − from supplier counter ]              │
-│            (buyer)                                                  │
-│                                                                     │
-│ [ $/kg ] [ % ]   [ input 0.10 ]   [ Apply to All ]                  │
-│                                                                     │
-│ [Accept all]  [Meet in middle]                                      │
-└─────────────────────────────────────────────────────────────────────┘
+APPLY COUNTER IN ALL ITEMS
+┌─────────────────────────────────────────────────────────────┐
+│ Reference: [− my asking] [+ buyer bid]                       │
+│                                                              │
+│ Adjust by:  [$/kg|%]   [   0.10   ]   [ Apply to All ]      │
+│                                                              │
+│ Shortcuts:  [✅ Accept all]   [⇄ Meet in middle]            │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-Mantém `Meet in middle` e `Accept all`. Feedback de deduction (%) continua aparecendo p/ buyer.
+- Cada grupo com um micro-label (`Reference`, `Adjust by`, `Shortcuts`) à esquerda em `text-[11px] uppercase muted`.
+- Espaçamento vertical consistente (`gap-3`) entre os três grupos.
+- Mantém o `deductionFeedback` chip à direita do input quando `%` (buyer).
 
-### 4. UI por item (linha da tabela e card mobile)
+## 3. Atalhos toggleáveis (reverter ao desclicar)
 
-Na célula "Your Counter" trocar o input simples por um grupo compacto:
+Adicionar estado `activeShortcut: "accept_all" | "meet_middle" | null` e snapshot do estado anterior:
 
-```text
-[anchor toggle ▾]  [ $/kg | % ]   [ Δ input ]   = $X.XX/kg
+```ts
+const [activeShortcut, setActiveShortcut] = useState<null|"accept_all"|"meet_middle">(null);
+const [snapshot, setSnapshot] = useState<{counters: Record<string,number>; accepted: Record<string,boolean>} | null>(null);
 ```
 
-- `anchor toggle` mostra o label curto (`−asking` / `+bid` no supplier; `+bid` / `−counter` no buyer).
-- Δ input recebe o número; quando o usuário muda qualquer um dos três, recalcula `counters[it.id]` via helper.
-- Continua possível **digitar o preço final** num campo escondido atrás de um link "edit price directly" (mantém fallback p/ quem quer só bater o número). Opcional — se simplificar, removo esse fallback.
+Comportamento:
 
-No mobile (card), os controles ficam empilhados em 1 linha (`flex-wrap`), input com `h-11`.
+- **Accept all** (clique):
+  - Se inativo: salva snapshot `{counters, accepted}`, aplica `accepted=true` em todos os `openItems`, vira `activeShortcut="accept_all"`, label muda para `↩ Unselect all`.
+  - Se ativo: restaura snapshot, `activeShortcut=null`, label volta para `✅ Accept all`.
 
-### 5. Prefill
+- **Meet in middle** (clique):
+  - Se inativo: salva snapshot, aplica `(asking + their) / 2` em todos os items não aceitos (mesma fórmula atual), vira `activeShortcut="meet_middle"`, label muda para `↩ Undo meet in middle`.
+  - Se ativo: restaura snapshot, `activeShortcut=null`.
 
-Quando o modal abre:
-- `bulkAnchor = "self"`, `bulkValue = ""`.
-- Para cada item: `rowAnchor[it.id] = "self"`, `rowMode = "amount"`, `rowValue = ""`.
-- `counters[it.id]` segue prefill atual (supplier = asking, buyer = último counter), então o input mostra "Δ vazio → preço = base default".
+- Apenas um shortcut ativo por vez. Aplicar um cancela/sobrescreve o outro (snapshot continua sendo o estado pré-shortcut anterior, não o pós).
 
-### 6. Aplicar bulk
+- Qualquer interação manual depois disso (`Apply to All`, editar preço de uma linha, marcar/desmarcar checkbox) reseta `activeShortcut=null` e limpa o snapshot — pois o usuário deixou de estar em "modo shortcut".
 
-`applyBulk()` itera `openItems`, recalcula `counters[it.id]` via helper usando `(bulkAnchor, bulkMode, bulkValue)`, e também **sincroniza** `rowAnchor/rowMode/rowValue` por linha pra UI ficar coerente.
+Visual: quando ativo, o botão fica preenchido (`background: #8B2252; color: white`) em vez de outline, deixando claro que é um toggle.
 
-### 7. Validação (mantém o existente, só ajusta mensagens)
+## 4. Aplicar dos dois lados
 
-O bloco `errors` atual (linhas 167–224) **continua valendo** — ele valida o **preço final**, que é o que importa. Mensagens já são adequadas. Adiciono só uma proteção: se o anchor + valor resultarem em preço inválido, o input do item fica em vermelho com a mensagem atual + dica ("Reduce Δ or change reference").
+A lógica por perspectiva (validação supplier não pode subir acima do counter anterior; buyer não pode cair abaixo do bid anterior, etc.) **não muda**. Só a UI muda — e os dois lados usam o mesmo modal, então a mudança vale para buyer e supplier automaticamente. `Meet in middle` continua usando `(asking + their)/2`, que faz sentido nas duas direções.
 
-### 8. Telemetria/i18n
+## Detalhes técnicos
 
-- Adicionar 4 chaves novas no `en.json`/`pt.json`/etc:
-  - `engine.anchor.supplier.self` = "− from my asking"
-  - `engine.anchor.supplier.other` = "+ on buyer bid"
-  - `engine.anchor.buyer.self` = "+ on my bid"
-  - `engine.anchor.buyer.other` = "− from supplier counter"
-
-### 9. Mobile
-
-- Toggle de anchor vira segmented control compacto (`text-[11px] px-2 py-1`) acima do input.
-- Tudo dentro do card existente; respeita safe-area (modal já tem `max-sm:!h-[100dvh]`).
-
-## Fora do escopo
-
-- Edge function `propose-counter` e RPC `submit_negotiation_round` ficam intocados.
-- `BidModal` (bid inicial R1) intocado.
-- Nada de migração de schema.
-
-## Arquivos tocados
-
-- `src/components/supplier/CounterOfferModal.tsx` (refactor do bloco bulk + colunas da tabela/cards)
-- `src/i18n/locales/{en,pt,es,fr,zh}.json` (4 chaves novas)
-
-## Riscos
-
-- Estado por linha aumenta a complexidade do `useEffect` de prefill — vou garantir deps estáveis pra não resetar a digitação do usuário (regressão recente já corrigida).
-- Manter o input de "preço final direto" como fallback evita travar quem prefere digitar o número.
+- Remover do JSX da `<tbody>` desktop (linhas ~720–769) e do mobile cards o bloco de anchor/$%/Δ.
+- Remover estados `rowAnchor`, `rowMode`, `rowValue`, função `updateRowDelta` e suas inicializações no `useEffect`.
+- Atualizar `applyBulk` para também resetar `activeShortcut=null` e `snapshot=null` (é uma ação manual).
+- `setAccepted` / `setCounters` chamados manualmente (não pelo shortcut) também resetam `activeShortcut`. Implementar via wrappers locais `handleManualCounterChange` / `handleManualAcceptToggle` para não vazar lógica de reset por todo o JSX.
+- Sem mudanças em hooks, edge functions ou tipos.
