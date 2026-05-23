@@ -5,7 +5,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const GOOGLE_API_KEY = Deno.env.get("GOOGLE_PLACES_API_KEY") || "AIzaSyAlx04KCzO-8AKnn515qcirGH7BFNdBzt0";
+const GOOGLE_API_KEY = Deno.env.get("GOOGLE_PLACES_API_KEY");
 
 const FALLBACK_REFERRER = "https://mundus-lovable.lovable.app/";
 const ALLOWED_REFERRER_HOSTS = new Set([
@@ -43,6 +43,13 @@ serve(async (req) => {
   }
 
   try {
+    if (!GOOGLE_API_KEY) {
+      return new Response(JSON.stringify({ error: "GOOGLE_PLACES_API_KEY is not configured" }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { action, input, restrictCountry, placeId } = await req.json();
 
     if (action === "autocomplete") {
