@@ -71,7 +71,13 @@ export function ShareWithSupplierCard({ negotiationId, buyerLabel }: Props) {
   }
   if (!tok) return null;
 
-  const link = `${window.location.origin}/respond/${tok.token}`;
+  const isPreview =
+    window.location.hostname.includes("lovable") ||
+    window.location.hostname.includes("localhost");
+  const baseUrl = isPreview ? window.location.origin : "https://app.mundustrade.com";
+  const link = `${baseUrl}/respond/${tok.token}`;
+  const shortToken = tok.token.slice(0, 12);
+  const displayLink = `${baseUrl}/respond/${shortToken}`;
 
   async function copyLink() {
     try {
@@ -135,7 +141,7 @@ export function ShareWithSupplierCard({ negotiationId, buyerLabel }: Props) {
           <div className="mt-3 flex gap-2">
             <Input
               readOnly
-              value={link}
+              value={displayLink}
               onFocus={(e) => e.currentTarget.select()}
               className="text-xs font-mono"
             />
