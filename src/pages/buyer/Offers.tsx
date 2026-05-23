@@ -194,6 +194,7 @@ export function OfferCard({
               fontSize: 11,
               color: "#9ca3af",
               letterSpacing: "0.02em",
+              whiteSpace: "nowrap",
             }}
           >
             {formatOfferNumber(offer.offer_number, offer.created_at)}
