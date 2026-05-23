@@ -342,7 +342,7 @@
 .od-gallery-main {
   background: linear-gradient(135deg, #c9d9d4 0%, #a8c0c4 50%, #6f8a96 100%);
   border-radius: 12px;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: 16 / 10;
   position: relative;
   overflow: hidden;
   border: 1px solid var(--border);
