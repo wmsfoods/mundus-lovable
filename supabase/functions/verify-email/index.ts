@@ -50,11 +50,55 @@ serve(async (req) => {
 
       console.log(`[VERIFY] Code for ${normalizedEmail}: ${verificationCode}`);
 
+      // Send email via Resend
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
+      if (RESEND_API_KEY) {
+        const emailRes = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            "Authorization": `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Mundus Trade <onboarding@resend.dev>",
+            to: [normalizedEmail],
+            subject: "Your Mundus Trade verification code",
+            html: `
+              <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                  <div style="background: #8B2252; color: white; display: inline-block; padding: 8px 20px; border-radius: 8px; font-size: 18px; font-weight: 700; letter-spacing: 1px;">
+                    M <span style="font-weight: 400;">Mundus</span> <span style="font-size: 10px; letter-spacing: 2px; opacity: 0.7;">TRADE</span>
+                  </div>
+                </div>
+                <h1 style="font-size: 24px; font-weight: 700; color: #111; text-align: center; margin: 0 0 8px;">Verify your email</h1>
+                <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0 0 32px;">Use the code below to complete your registration on Mundus Trade.</p>
+                <div style="background: #f9fafb; border: 2px solid #e5e7eb; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 24px;">
+                  <div style="font-size: 36px; font-weight: 700; letter-spacing: 8px; color: #8B2252; font-family: 'Courier New', monospace;">
+                    ${verificationCode}
+                  </div>
+                </div>
+                <p style="font-size: 13px; color: #9ca3af; text-align: center; margin: 0 0 8px;">This code expires in <strong>10 minutes</strong>.</p>
+                <p style="font-size: 13px; color: #9ca3af; text-align: center; margin: 0;">If you didn't request this, you can safely ignore this email.</p>
+                <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 32px 0 16px;" />
+                <p style="font-size: 11px; color: #d1d5db; text-align: center; margin: 0;">Mundus Trade · International Meat Trading Platform</p>
+              </div>
+            `,
+          }),
+        });
+
+        if (!emailRes.ok) {
+          const errBody = await emailRes.text();
+          console.error("[VERIFY] Resend error:", emailRes.status, errBody);
+        } else {
+          console.log("[VERIFY] Email sent successfully to", normalizedEmail);
+        }
+      }
+
       return new Response(
         JSON.stringify({
           sent: true,
           message: "Verification code sent",
-          _dev_code: verificationCode,
+          ...(RESEND_API_KEY ? {} : { _dev_code: verificationCode }),
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
