@@ -140,7 +140,7 @@ function groupForBuyer(rows: RealNegotiationRow[]): BuyerParentOffer[] {
       groups.set(parentId, {
         id: parentId,
         title: offerTitle(r),
-        oppWmsRef: `Offer #${o.offer_number}`,
+        oppWmsRef: formatOfferNumber(o.offer_number, o.created_at),
         bids: [],
       });
     }
@@ -175,7 +175,7 @@ function groupForSupplier(rows: RealNegotiationRow[]): ParentOffer[] {
       groups.set(parentId, {
         id: parentId,
         title: offerTitle(r),
-        oppWmsRef: `Offer #${o.offer_number}`,
+        oppWmsRef: formatOfferNumber(o.offer_number, o.created_at),
         bids: [],
       });
     }
@@ -276,7 +276,7 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
     paymentTerms: o.payment_terms,
     fclCount: r.fcl_count,
     totalWeightKg,
-    oppWmsRef: `Offer #${o.offer_number}`,
+    oppWmsRef: formatOfferNumber(o.offer_number, o.created_at),
     supplierInternalId: o.supplier_id.slice(0, 6),
     askingPriceUsd: askingTotal,
     avgReplyDays: 2,
