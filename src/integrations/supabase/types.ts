@@ -4405,40 +4405,85 @@ export type Database = {
       }
       user_requests: {
         Row: {
+          address: string | null
           approval_user_id: string | null
+          certificate_url: string | null
+          city: string | null
           company_id: string
+          company_name: string | null
+          countries_of_operation: string[] | null
+          country: string | null
           created_at: string | null
           created_user_id: string | null
           email: string
           id: string
           name: string
+          phone: string | null
+          proteins: string[] | null
+          registration_country: string | null
           reject_reason: string | null
           reviewed_at: string | null
+          role: string | null
+          scan_result: Json | null
+          state: string | null
           status: string | null
+          tax_id: string | null
+          website: string | null
+          zip: string | null
         }
         Insert: {
+          address?: string | null
           approval_user_id?: string | null
+          certificate_url?: string | null
+          city?: string | null
           company_id: string
+          company_name?: string | null
+          countries_of_operation?: string[] | null
+          country?: string | null
           created_at?: string | null
           created_user_id?: string | null
           email: string
           id?: string
           name: string
+          phone?: string | null
+          proteins?: string[] | null
+          registration_country?: string | null
           reject_reason?: string | null
           reviewed_at?: string | null
+          role?: string | null
+          scan_result?: Json | null
+          state?: string | null
           status?: string | null
+          tax_id?: string | null
+          website?: string | null
+          zip?: string | null
         }
         Update: {
+          address?: string | null
           approval_user_id?: string | null
+          certificate_url?: string | null
+          city?: string | null
           company_id?: string
+          company_name?: string | null
+          countries_of_operation?: string[] | null
+          country?: string | null
           created_at?: string | null
           created_user_id?: string | null
           email?: string
           id?: string
           name?: string
+          phone?: string | null
+          proteins?: string[] | null
+          registration_country?: string | null
           reject_reason?: string | null
           reviewed_at?: string | null
+          role?: string | null
+          scan_result?: Json | null
+          state?: string | null
           status?: string | null
+          tax_id?: string | null
+          website?: string | null
+          zip?: string | null
         }
         Relationships: [
           {
