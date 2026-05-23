@@ -645,18 +645,21 @@ function Step3Company({
   set,
   onBack,
   onNext,
+  scanResult,
+  setScanResult,
 }: {
   data: FormData;
   set: <K extends keyof FormData>(k: K, v: FormData[K]) => void;
   onBack: () => void;
   onNext: () => void;
+  scanResult: any;
+  setScanResult: (v: any) => void;
 }) {
   const { t } = useTranslation();
   const [taxIdTouched, setTaxIdTouched] = useState(false);
   const taxRule = getTaxRule(data.registrationCountry);
   const taxIdValid = taxRule.pattern.test(data.taxId.trim());
   const [scanning, setScanning] = useState(false);
-  const [scanResult, setScanResult] = useState<any>(null);
 
   const onFile = async (f: File | null) => {
     if (!f) {
