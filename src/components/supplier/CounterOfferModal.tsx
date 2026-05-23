@@ -27,7 +27,6 @@ import {
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const MOCK_SUPPLIER_USER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
 const MOCK_BUYER_USER_ID = "c3000001-0000-0000-0000-000000000001";
 
 export interface CounterOfferModalProps {
@@ -50,13 +49,13 @@ export function CounterOfferModal({
   const pLbl = priceLabel(unit);
   const wLbl = weightLabel(unit);
 
-  const items = negotiation.offer?.items ?? [];
-  const rounds = negotiation.rounds ?? [];
+  const items = useMemo(() => negotiation.offer?.items ?? [], [negotiation.offer?.items]);
+  const rounds = useMemo(() => negotiation.rounds ?? [], [negotiation.rounds]);
 
   // Already-agreed items (locked) — exclude from this round
-  const existingAgreed: AgreedItem[] = getAgreedItems(negotiation);
-  const agreedIds = new Set(existingAgreed.map((a) => a.offer_item_id));
-  const openItems = items.filter((it) => !agreedIds.has(it.id));
+  const existingAgreed: AgreedItem[] = useMemo(() => getAgreedItems(negotiation), [negotiation]);
+  const agreedIds = useMemo(() => new Set(existingAgreed.map((a) => a.offer_item_id)), [existingAgreed]);
+  const openItems = useMemo(() => items.filter((it) => !agreedIds.has(it.id)), [items, agreedIds]);
 
   // Next raw round number; display round = ceil/2.
   const maxRaw = rounds.reduce((m, r) => Math.max(m, r.round), 0);
@@ -143,7 +142,7 @@ export function CounterOfferModal({
         ? negotiation.buyer_message
         : negotiation.supplier_message) ?? "",
     );
-  }, [open, openItems, perspective, theirPrices]);
+  }, [open, openItems, perspective, theirPrices, negotiation.buyer_message, negotiation.supplier_message]);
 
   const askingTotal = openItems.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
   const theirTotal = openItems.reduce(
@@ -236,7 +235,11 @@ export function CounterOfferModal({
     if (submitting || errorCount > 0) return;
     setSubmitting(true);
     try {
-      const userId = perspective === "supplier" ? MOCK_SUPPLIER_USER_ID : MOCK_BUYER_USER_ID;
+      const { data: authData, error: authError } = await supabase.auth.getUser();
+      const userId = authData.user?.id ?? (perspective === "buyer" ? MOCK_BUYER_USER_ID : null);
+      if (authError || !userId) {
+        throw new Error("Please sign in again before sending a counter-offer.");
+      }
 
       // Newly-agreed items in this round (lock at the other side's price)
       const newlyAgreed: AgreedItem[] = openItems
