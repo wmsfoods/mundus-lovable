@@ -2,8 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
-
-const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 const COUNTRY_CODE: Record<string, string> = {
   argentina: "AR", brazil: "BR", canada: "CA", chile: "CL", china: "CN",
@@ -22,9 +21,16 @@ export function useRealSupplierOffers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { activeOfficeId, isAllOffices } = useActiveOffice();
+  const { company } = useCurrentCompany();
+  const supplierId = company?.id ?? null;
 
   useEffect(() => {
     let cancelled = false;
+    if (!supplierId) {
+      setOffers([]);
+      setLoading(false);
+      return;
+    }
     (async () => {
       setLoading(true);
       setError(null);
@@ -39,7 +45,7 @@ export function useRealSupplierOffers() {
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
           incoterms:offer_allowed_incoterms ( incoterm_type )
         `)
-        .eq("supplier_id", MOCK_SUPPLIER_ID)
+        .eq("supplier_id", supplierId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (!isAllOffices && activeOfficeId) {
@@ -117,7 +123,7 @@ export function useRealSupplierOffers() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [activeOfficeId, isAllOffices]);
+  }, [activeOfficeId, isAllOffices, supplierId]);
 
   return { offers, loading, error };
 }
