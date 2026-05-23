@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -16,7 +16,6 @@ import { isStackRoute } from "@/lib/mobile-nav";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
-import { useEffect as _useEffect, useState as _useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 type IconCmp = SidebarItem["icon"];
@@ -30,9 +29,9 @@ export default function AdminShell() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const userName = user?.email?.split("@")[0] ?? "User";
   const stackMode = isMobile && isStackRoute(location.pathname);
-  const [pendingUserRequests, setPendingUserRequests] = _useState<number>(0);
+  const [pendingUserRequests, setPendingUserRequests] = useState<number>(0);
 
-  _useEffect(() => {
+  useEffect(() => {
     let cancelled = false;
     const load = async () => {
       const { count } = await supabase
