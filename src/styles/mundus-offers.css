@@ -111,12 +111,16 @@
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  flex-wrap: wrap;
+  row-gap: 6px;
 }
 .oc-head-l {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
 .oc-chip {
   width: 26px;
