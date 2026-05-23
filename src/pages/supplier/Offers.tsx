@@ -20,6 +20,12 @@ import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { ProteinFilter, categoryToProtein, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useSupplierProteins } from "@/hooks/useSupplierProteins";
 import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
+import {
+  OffersFilterBar,
+  DEFAULT_OFFERS_FILTER,
+  type OffersFilterState,
+  type TempValue,
+} from "@/components/marketplace/OffersFilterBar";
 
 const PAGE_SIZE = 12;
 
@@ -152,11 +158,54 @@ export default function SupplierOffers() {
   const [statusFilter, setStatusFilter] = useState<"all" | SupplierOffer["status"]>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const { available: supplierProteins, counts: proteinCounts } = useSupplierProteins();
+  const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
+
+  const filterOptions = useMemo(() => {
+    const temps = new Set<TempValue>();
+    const origins = new Set<string>();
+    const incoterms = new Set<string>();
+    const markets = new Set<string>();
+    for (const o of realOffers) {
+      if (o.condition === "Frozen" || o.condition === "Chilled") temps.add(o.condition);
+      if (o.originCountry) origins.add(o.originCountry);
+      for (const i of o.incoterms ?? []) incoterms.add(i);
+      for (const d of o.destinations ?? []) markets.add(d.name);
+    }
+    return {
+      temps: Array.from(temps),
+      origins: Array.from(origins),
+      incoterms: Array.from(incoterms),
+      markets: Array.from(markets),
+    };
+  }, [realOffers]);
 
   const filtered = useMemo(() => {
     let copy: SupplierOffer[] = [...realOffers];
     if (cat !== "all") copy = copy.filter((o) => categoryToProtein(o.category) === cat);
     if (statusFilter !== "all") copy = copy.filter((o) => o.status === statusFilter);
+    if (filter.temp !== "all") copy = copy.filter((o) => o.condition === filter.temp);
+    if (filter.origins.length > 0)
+      copy = copy.filter((o) => filter.origins.includes(o.originCountry));
+    if (filter.incoterms.length > 0)
+      copy = copy.filter((o) =>
+        (o.incoterms ?? []).some((i) => filter.incoterms.includes(i)),
+      );
+    if (filter.markets.length > 0)
+      copy = copy.filter((o) =>
+        (o.destinations ?? []).some((d) => filter.markets.includes(d.name)),
+      );
+    if (filter.search.trim()) {
+      const q = filter.search.trim().toLowerCase();
+      copy = copy.filter((o) => {
+        return (
+          o.title.toLowerCase().includes(q) ||
+          o.cutsLabel.toLowerCase().includes(q) ||
+          (o.originCountry ?? "").toLowerCase().includes(q) ||
+          (o.originPort ?? "").toLowerCase().includes(q) ||
+          o.items.some((it) => it.name.toLowerCase().includes(q))
+        );
+      });
+    }
     copy.sort((a, b) => {
       if (sortBy === "newest") return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
       if (sortBy === "oldest") return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
@@ -164,7 +213,7 @@ export default function SupplierOffers() {
       return a.pricePerFclUsd - b.pricePerFclUsd;
     });
     return copy;
-  }, [sortBy, cat, statusFilter, realOffers]);
+  }, [sortBy, cat, statusFilter, realOffers, filter]);
 
   const total = filtered.length;
   const visible = filtered.slice(0, shown);
@@ -210,14 +259,7 @@ export default function SupplierOffers() {
       </div>
 
       <div className="so-filterbar">
-        <ProteinFilter
-          value={cat}
-          onChange={setCat}
-          available={supplierProteins}
-          counts={proteinCounts}
-          allLabel={t("supplier.offers.cat.all")}
-        />
-        <div className="so-toolbar-r">
+        <div className="so-toolbar-r" style={{ marginLeft: "auto" }}>
           <div className="mini-select-wrap">
             <select
               className="mini-select"
@@ -251,6 +293,22 @@ export default function SupplierOffers() {
           </div>
         </div>
       </div>
+
+      <OffersFilterBar
+        value={filter}
+        onChange={setFilter}
+        options={filterOptions}
+        searchPlaceholder={t("supplier.offers.searchPlaceholder", "Search products, ports...")}
+        proteinNode={
+          <ProteinFilter
+            value={cat}
+            onChange={setCat}
+            available={supplierProteins}
+            counts={proteinCounts}
+            allLabel={t("supplier.offers.cat.all")}
+          />
+        }
+      />
 
       <div className="so-count-row">
         <span className="result-count">
