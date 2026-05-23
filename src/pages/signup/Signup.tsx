@@ -594,8 +594,7 @@ function Step3Company({
 }) {
   const { t } = useTranslation();
   const [taxIdTouched, setTaxIdTouched] = useState(false);
-  const firstCountry = data.countriesOfOperation[0]?.name;
-  const taxRule = getTaxRule(firstCountry);
+  const taxRule = getTaxRule(data.registrationCountry);
   const taxIdValid = taxRule.pattern.test(data.taxId.trim());
   const onFile = (f: File | null) => {
     if (f && f.size > 5 * 1024 * 1024) {
@@ -607,6 +606,7 @@ function Step3Company({
 
   const canProceed =
     !!data.companyName &&
+    !!data.registrationCountry &&
     !!data.taxId &&
     taxIdValid &&
     !!data.role &&
@@ -615,6 +615,7 @@ function Step3Company({
 
   const missing: string[] = [];
   if (!data.companyName) missing.push(t("signup.fields.companyName"));
+  if (!data.registrationCountry) missing.push(t("signup.fields.registrationCountry"));
   if (!data.taxId) missing.push(t("signup.fields.taxId"));
   else if (!taxIdValid) missing.push(`${taxRule.label} (${taxRule.hint})`);
   if (!data.role) missing.push(t("signup.fields.role"));
@@ -632,9 +633,16 @@ function Step3Company({
             onChange={(e) => set("companyName", e.target.value)}
           />
         </Field>
+        <RegistrationCountry
+          value={data.registrationCountry}
+          onChange={(v) => set("registrationCountry", v)}
+        />
+      </div>
+
+      <div>
         <Field
           label={
-            firstCountry
+            data.registrationCountry
               ? `${taxRule.label} — ${t("signup.fields.taxId")}`
               : t("signup.fields.taxId")
           }
