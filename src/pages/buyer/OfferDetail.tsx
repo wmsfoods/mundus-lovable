@@ -9,10 +9,13 @@ import {
 } from "@/components/icons";
 import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
 import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { BidModal } from "@/components/buyer/BidModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
+
+const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -64,6 +67,25 @@ export default function BuyerOfferDetail() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [bidOpen, setBidOpen] = useState(false);
   const { company } = useCurrentCompany();
+  const currentCompanyId = company?.id ?? MOCK_BUYER_COMPANY_ID;
+
+  const { data: myNegotiation } = useQuery({
+    queryKey: ["my-negotiation", id, currentCompanyId],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select("id, status")
+        .eq("offer_id", id!)
+        .eq("buyer_company_id", currentCompanyId)
+        .not("status", "in", "(expired,offer_withdrawn)")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!id && !!currentCompanyId,
+  });
 
   useEffect(() => {
     if (!id) return;
@@ -145,6 +167,7 @@ export default function BuyerOfferDetail() {
         moreOpen={moreOpen}
         setMoreOpen={setMoreOpen}
         onNegotiate={handleNegotiate}
+        myNegotiation={myNegotiation ?? null}
       />
       <BidModal open={bidOpen} onOpenChange={setBidOpen} offer={offer} />
     </>
@@ -174,12 +197,14 @@ function OfferDetailContent({
   moreOpen,
   setMoreOpen,
   onNegotiate,
+  myNegotiation,
 }: {
   offer: OfferDetailed;
   navigate: (path: string) => void;
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
   onNegotiate: () => void;
+  myNegotiation: { id: string; status: string } | null;
 }) {
   const { t } = useTranslation();
   const marblingLabel = (code: number | null | undefined): string => {
@@ -224,6 +249,11 @@ function OfferDetailContent({
 
   const status = statusFor(offer.status);
   const statusLabel = t(`buyer.offers.status.${status.key}`);
+
+  const negStatus = myNegotiation?.status ?? null;
+  const negIsDealClosed = negStatus === "bid_accepted";
+  const negIsBiddable = negStatus === "awaiting_supplier" || negStatus === "pending_buyer_review";
+  const negStatusLabel = (negStatus ?? "").replace(/_/g, " ");
 
   return (
     <>
@@ -408,12 +438,75 @@ function OfferDetailContent({
           )}
 
           <div className="od-actions">
+            {myNegotiation && (
+              <div
+                style={{
+                  width: "100%",
+                  padding: "12px 16px",
+                  borderRadius: 8,
+                  border: `1px solid ${negIsDealClosed ? "#bae6fd" : "#86efac"}`,
+                  background: negIsDealClosed ? "#f0f9ff" : "#f0fdf4",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  marginBottom: 12,
+                  flexWrap: "wrap",
+                  gap: 8,
+                }}
+              >
+                <div>
+                  <span style={{ fontSize: 13, fontWeight: 600, color: negIsDealClosed ? "#075985" : "#166534" }}>
+                    {negIsDealClosed ? "✅ Deal closed on this offer" : "🤝 You have an active negotiation on this offer"}
+                  </span>
+                  {!negIsDealClosed && (
+                    <span style={{ fontSize: 12, color: "#6b7280", marginLeft: 8 }}>
+                      Status: {negStatusLabel}
+                    </span>
+                  )}
+                </div>
+                <a
+                  href={`/buyer/negotiations/${myNegotiation.id}`}
+                  onClick={(e) => { e.preventDefault(); navigate(`/buyer/negotiations/${myNegotiation.id}`); }}
+                  style={{
+                    padding: "6px 14px",
+                    borderRadius: 6,
+                    background: "#8B2252",
+                    color: "white",
+                    fontSize: 12,
+                    fontWeight: 600,
+                    textDecoration: "none",
+                  }}
+                >
+                  Open Negotiation →
+                </a>
+              </div>
+            )}
+            {!myNegotiation && offer.status === "negotiating" && (
+              <div
+                style={{
+                  width: "100%",
+                  padding: "10px 14px",
+                  borderRadius: 8,
+                  border: "1px solid #fde68a",
+                  background: "#fffbeb",
+                  fontSize: 13,
+                  color: "#92400e",
+                  marginBottom: 12,
+                }}
+              >
+                ⚠️ This offer is currently under negotiation with another buyer. You can still place your own bid.
+              </div>
+            )}
             <button
               type="button"
               className="btn-od btn-od-outline"
               onClick={onNegotiate}
+              disabled={!!myNegotiation && !negIsBiddable}
+              style={!!myNegotiation && !negIsBiddable ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
             >
-              {t("buyer.offerDetail.negotiate")}
+              {myNegotiation
+                ? (negIsBiddable ? "Update Bid" : negIsDealClosed ? "Deal closed" : "Negotiation in progress")
+                : t("buyer.offerDetail.negotiate")}
             </button>
             <button
               type="button"
