@@ -548,15 +548,14 @@ export function CounterOfferModal({
 
         {/* Bulk apply — unified responsive */}
         {openItems.length > 0 && (
-          <div className="mt-3 rounded-lg border border-border p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs uppercase font-semibold text-muted-foreground">
-                {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
-              </span>
+          <div className="mt-3 rounded-lg border border-border p-3 flex flex-col gap-3">
+            <div className="text-xs uppercase font-semibold text-muted-foreground">
+              {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
             </div>
-            {/* Reference (anchor) toggle */}
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="text-[11px] uppercase text-muted-foreground">Reference</span>
+
+            {/* Row 1 — Reference */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] uppercase text-muted-foreground w-20 shrink-0">Reference</span>
               <div className="flex rounded-md border border-border overflow-hidden text-xs">
                 <button
                   type="button"
@@ -576,7 +575,10 @@ export function CounterOfferModal({
                 </button>
               </div>
             </div>
+
+            {/* Row 2 — Adjust by */}
             <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] uppercase text-muted-foreground w-20 shrink-0">Adjust by</span>
               <div className="flex rounded-md border border-border overflow-hidden text-xs">
                 <button
                   type="button"
@@ -629,24 +631,33 @@ export function CounterOfferModal({
                 </span>
               )}
             </div>
-            <div className="flex flex-wrap gap-2 mt-2">
+
+            {/* Row 3 — Shortcuts (toggleable) */}
+            <div className="flex flex-wrap items-center gap-3">
+              <span className="text-[11px] uppercase text-muted-foreground w-20 shrink-0">Shortcuts</span>
               <button
                 type="button"
-                onClick={acceptAllRows}
-                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                onClick={toggleAcceptAll}
+                className="h-8 px-3 rounded-full border text-xs font-medium transition-colors"
+                style={
+                  activeShortcut === "accept_all"
+                    ? { background: "#8B2252", color: "white", borderColor: "#8B2252" }
+                    : { borderColor: "hsl(var(--border))", color: "#8B2252" }
+                }
               >
-                ✅ Accept all
+                {activeShortcut === "accept_all" ? "↩ Unselect all" : "✅ Accept all"}
               </button>
               <button
                 type="button"
-                onClick={() =>
-                  setAllCounters((it) => ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2)
+                onClick={toggleMeetInMiddle}
+                className="h-8 px-3 rounded-full border text-xs font-medium transition-colors"
+                style={
+                  activeShortcut === "meet_middle"
+                    ? { background: "#8B2252", color: "white", borderColor: "#8B2252" }
+                    : { borderColor: "hsl(var(--border))", color: "#8B2252" }
                 }
-                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
               >
-                Meet in middle
+                {activeShortcut === "meet_middle" ? "↩ Undo meet in middle" : "⇄ Meet in middle"}
               </button>
             </div>
           </div>
