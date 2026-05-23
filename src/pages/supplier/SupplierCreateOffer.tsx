@@ -799,7 +799,7 @@ export default function SupplierCreateOffer() {
         throw new Error(`Step 6 failed: freight_options — ${m}`);
       }
 
-      toast.success(`Offer #${offer.offer_number} published successfully!`);
+      toast.success(`Offer ${formatOfferNumber(offer.offer_number)} published successfully!`);
       navigate("/supplier/offers");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed to publish offer";
