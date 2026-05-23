@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, CheckCircle2, AlertCircle, Plus, Pencil } from "lucide-react";
+import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from "lucide-react";
+import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
 import {
   useAdminCompanies,
   companyType,
@@ -41,6 +42,7 @@ export default function AdminCompanies() {
   const locale = i18n.language || "en";
   const navigate = useNavigate();
   const { rows, loading, error } = useAdminCompanies();
+  const [createSupplierOpen, setCreateSupplierOpen] = useState(false);
 
   const [search, setSearch] = useState("");
   const [typeF, setTypeF] = useState<CompanyTypeFilter>("all");
@@ -87,9 +89,19 @@ export default function AdminCompanies() {
             · {t("admin.companies.subtitle", { active: totals.active, total: totals.total })}
           </span>
         </div>
-        <button type="button" className="crm-btn-primary" onClick={() => navigate("/admin/companies/new")}>
-          <Plus size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.new")}
-        </button>
+        <div style={{ display: "flex", gap: 8 }}>
+          <button
+            type="button"
+            className="crm-btn-primary"
+            style={{ background: "#8B2252", color: "white", borderRadius: 6, padding: "8px 12px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}
+            onClick={() => setCreateSupplierOpen(true)}
+          >
+            <Plus size={14} style={{ marginRight: 4, display: "inline" }} /> Create Supplier Profile
+          </button>
+          <button type="button" className="crm-btn-primary" onClick={() => navigate("/admin/companies/new")}>
+            <Plus size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.new")}
+          </button>
+        </div>
       </div>
 
       {/* toolbar */}
@@ -148,7 +160,16 @@ export default function AdminCompanies() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((r) => <Row key={r.id} row={r} locale={locale} t={t} onOpen={() => navigate(`/admin/companies/${r.id}`)} />)}
+                  {filtered.map((r) => (
+                    <Row
+                      key={r.id}
+                      row={r}
+                      locale={locale}
+                      t={t}
+                      onOpen={() => navigate(`/admin/companies/${r.id}`)}
+                      onManageOffers={() => navigate(`/admin/offers?supplier=${encodeURIComponent(r.name)}`)}
+                    />
+                  ))}
                 </tbody>
               </table>
             </div>
@@ -160,13 +181,28 @@ export default function AdminCompanies() {
           </div>
         </>
       )}
+
+      <CreateSupplierProfileModal
+        open={createSupplierOpen}
+        onClose={() => setCreateSupplierOpen(false)}
+        onCreated={(id) => navigate(`/admin/companies/${id}`)}
+      />
     </div>
   );
 }
 
-function Row({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string; onOpen: () => void }) {
+function Row({
+  row, locale, t, onOpen, onManageOffers,
+}: {
+  row: AdminCompanyRow;
+  locale: string;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+  onOpen: () => void;
+  onManageOffers: () => void;
+}) {
   const k = companyType(row);
   const isActive = (row.status ?? "active") === "active";
+  const [menuOpen, setMenuOpen] = useState(false);
   return (
     <tr onClick={onOpen} style={{ cursor: "pointer" }}>
       <td>
@@ -205,13 +241,48 @@ function Row({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string;
         </span>
       </td>
       <td onClick={(e) => e.stopPropagation()}>
-        <button type="button" onClick={onOpen} className="adm-btn-ghost" aria-label="Edit" title={t("admin.companies.actions.edit") as string}>
-          <Pencil size={14} />
-        </button>
+        <div style={{ position: "relative", display: "inline-flex", gap: 4 }}>
+          <button type="button" onClick={onOpen} className="adm-btn-ghost" aria-label="Edit" title={t("admin.companies.actions.edit") as string}>
+            <Pencil size={14} />
+          </button>
+          {row.is_supplier && (
+            <button
+              type="button"
+              onClick={() => setMenuOpen((v) => !v)}
+              className="adm-btn-ghost"
+              aria-label="Manage"
+              title="Manage"
+            >
+              <MoreHorizontal size={14} />
+            </button>
+          )}
+          {menuOpen && (
+            <div
+              onMouseLeave={() => setMenuOpen(false)}
+              style={{
+                position: "absolute", right: 0, top: "100%", marginTop: 4, zIndex: 30,
+                background: "white", border: "1px solid #e5e7eb", borderRadius: 6,
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)", minWidth: 180,
+              }}
+            >
+              <button type="button" onClick={() => { setMenuOpen(false); onManageOffers(); }} style={menuItemStyle}>
+                View Offers
+              </button>
+              <button type="button" onClick={() => { setMenuOpen(false); onOpen(); }} style={menuItemStyle}>
+                Edit Profile
+              </button>
+            </div>
+          )}
+        </div>
       </td>
     </tr>
   );
 }
+
+const menuItemStyle: React.CSSProperties = {
+  display: "block", width: "100%", textAlign: "left", padding: "8px 12px",
+  fontSize: 13, background: "transparent", border: "none", cursor: "pointer",
+};
 
 function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string; onOpen: () => void }) {
   const k = companyType(row);
