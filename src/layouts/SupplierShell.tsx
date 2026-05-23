@@ -64,7 +64,8 @@ function SupplierShellInner() {
       icon: ShoppingBag as unknown as SidebarItem["icon"],
       children: [
         { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
-        { to: "/supplier/auctions/new", label: "Create Auction", icon: Gavel as unknown as SidebarItem["icon"] },
+        { to: "/supplier/auctions", label: t("supplier.auctions.nav"), icon: Gavel as unknown as SidebarItem["icon"], newBadge: true },
+        { to: "/supplier/auctions/create", label: "Create Auction", icon: Gavel as unknown as SidebarItem["icon"] },
         { to: "/supplier/offers/new", label: t("shell.nav.createOffer"), icon: PlusIcon, accent: true },
         { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
         { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon },
