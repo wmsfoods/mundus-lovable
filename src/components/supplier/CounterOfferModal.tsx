@@ -50,13 +50,13 @@ export function CounterOfferModal({
   const pLbl = priceLabel(unit);
   const wLbl = weightLabel(unit);
 
-  const items = negotiation.offer?.items ?? [];
-  const rounds = negotiation.rounds ?? [];
+  const items = useMemo(() => negotiation.offer?.items ?? [], [negotiation.offer?.items]);
+  const rounds = useMemo(() => negotiation.rounds ?? [], [negotiation.rounds]);
 
   // Already-agreed items (locked) — exclude from this round
-  const existingAgreed: AgreedItem[] = getAgreedItems(negotiation);
-  const agreedIds = new Set(existingAgreed.map((a) => a.offer_item_id));
-  const openItems = items.filter((it) => !agreedIds.has(it.id));
+  const existingAgreed: AgreedItem[] = useMemo(() => getAgreedItems(negotiation), [negotiation]);
+  const agreedIds = useMemo(() => new Set(existingAgreed.map((a) => a.offer_item_id)), [existingAgreed]);
+  const openItems = useMemo(() => items.filter((it) => !agreedIds.has(it.id)), [items, agreedIds]);
 
   // Next raw round number; display round = ceil/2.
   const maxRaw = rounds.reduce((m, r) => Math.max(m, r.round), 0);
