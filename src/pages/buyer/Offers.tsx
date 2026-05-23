@@ -13,10 +13,9 @@ import {
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
 import { ProteinFilter, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProteins";
-import { AuctionCard } from "@/components/marketplace/AuctionCard";
 import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
 import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
-import { MOCK_BUYER_AUCTIONS, type MockAuction } from "@/data/mockAuctions";
+import type { MockAuction } from "@/data/mockAuctions";
 import { Gavel } from "lucide-react";
 
 const MONTH_NAMES = [
@@ -334,7 +333,7 @@ export default function BuyerOffers() {
             aria-pressed={auctionsOnly}
           >
             <Gavel size={13} /> 🔨 {t("buyer.auctions.filter")}
-            <span style={{ opacity: 0.7, marginLeft: 4 }}>{MOCK_BUYER_AUCTIONS.length}</span>
+            <span style={{ opacity: 0.7, marginLeft: 4 }}>0</span>
           </button>
           <AuctionInfoDialog />
         </div>
@@ -422,49 +421,13 @@ export default function BuyerOffers() {
         </div>
       ) : (
         <div className="card-row">
-          {(() => {
-            // Interleave auction cards into the grid at positions 0, 3, 6 (1st, 4th, 7th).
-            // When the user toggles "Auctions only", regular offer cards are hidden.
-            const nodes: React.ReactNode[] = [];
-            const auctions = MOCK_BUYER_AUCTIONS;
-            const regulars = auctionsOnly ? [] : filtered;
-            const INSERT_AT = [0, 3, 6];
-            let ai = 0;
-            let ri = 0;
-            let position = 0;
-            while (ai < auctions.length || ri < regulars.length) {
-              if (INSERT_AT.includes(position) && ai < auctions.length) {
-                const a = auctions[ai++];
-                nodes.push(
-                  <AuctionCard
-                    key={`auction-${a.id}`}
-                    auction={a}
-                    onPlaceBid={() => setBidAuction(a)}
-                  />
-                );
-              } else if (ri < regulars.length) {
-                const offer = regulars[ri++];
-                nodes.push(
-                  <OfferCard
-                    key={offer.id}
-                    offer={offer}
-                    onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
-                  />
-                );
-              } else if (ai < auctions.length) {
-                const a = auctions[ai++];
-                nodes.push(
-                  <AuctionCard
-                    key={`auction-${a.id}`}
-                    auction={a}
-                    onPlaceBid={() => setBidAuction(a)}
-                  />
-                );
-              }
-              position++;
-            }
-            return nodes;
-          })()}
+          {(auctionsOnly ? [] : filtered).map((offer) => (
+            <OfferCard
+              key={offer.id}
+              offer={offer}
+              onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+            />
+          ))}
         </div>
       )}
       {bidAuction && (

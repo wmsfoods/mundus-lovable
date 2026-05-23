@@ -15,11 +15,13 @@ import {
   AlertIcon,
   ListIcon,
 } from "@/components/icons";
-import { MOCK_SUPPLIER_OFFERS, PAGE_SIZE, type SupplierOffer } from "@/data/mockSupplierOffers";
+import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { ProteinFilter, categoryToProtein, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useSupplierProteins } from "@/hooks/useSupplierProteins";
 import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
+
+const PAGE_SIZE = 12;
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
@@ -152,13 +154,12 @@ export default function SupplierOffers() {
   const { available: supplierProteins, counts: proteinCounts } = useSupplierProteins();
 
   const filtered = useMemo(() => {
-    // Real offers first (newest from DB), then mocks
-    let copy: SupplierOffer[] = [...realOffers, ...MOCK_SUPPLIER_OFFERS];
+    let copy: SupplierOffer[] = [...realOffers];
     if (cat !== "all") copy = copy.filter((o) => categoryToProtein(o.category) === cat);
     if (statusFilter !== "all") copy = copy.filter((o) => o.status === statusFilter);
     copy.sort((a, b) => {
-      if (sortBy === "newest") return b.id.localeCompare(a.id);
-      if (sortBy === "oldest") return a.id.localeCompare(b.id);
+      if (sortBy === "newest") return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+      if (sortBy === "oldest") return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
       if (sortBy === "priceDesc") return b.pricePerFclUsd - a.pricePerFclUsd;
       return a.pricePerFclUsd - b.pricePerFclUsd;
     });
@@ -169,25 +170,17 @@ export default function SupplierOffers() {
   const visible = filtered.slice(0, shown);
   const hasMore = shown < total;
 
-  // KPIs (from full mock set, not filtered)
   const kpis = useMemo(() => {
-    const all = MOCK_SUPPLIER_OFFERS;
-    let views = 0, proposals = 0, expiring = 0;
-    for (const o of all) {
-      const d = derive(o);
-      views += d.views;
-      proposals += d.proposals;
-      if (d.daysLeft <= 7) expiring += 1;
-    }
+    const all = realOffers;
     return {
       total: all.length,
       available: all.filter((o) => o.status === "active").length,
       negotiating: all.filter((o) => o.status === "negotiating").length,
-      expiring,
-      views,
-      proposals,
+      expiring: 0,
+      views: 0,
+      proposals: 0,
     };
-  }, []);
+  }, [realOffers]);
 
   return (
     <>

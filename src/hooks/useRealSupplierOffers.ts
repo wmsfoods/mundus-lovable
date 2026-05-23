@@ -77,10 +77,12 @@ export function useRealSupplierOffers() {
         const status: SupplierOffer["status"] =
           o.status === "active" ? "active" :
           o.status === "draft" ? "new" :
+        o.status === "negotiating" ? "negotiating" :
           o.status === "archived" ? "closed" : "inactive";
         return {
           id: o.id,
           status,
+        createdAt: o.created_at,
           category: "Beef",
           condition,
           title,
