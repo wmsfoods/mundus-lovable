@@ -8,6 +8,7 @@ import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCompanyOffices, type Office, type OfficeInput } from "@/hooks/useCompanyOffices";
 import { ManageOfficeUsersModal } from "@/components/supplier/ManageOfficeUsersModal";
+import { TransferOffersModal } from "@/components/supplier/TransferOffersModal";
 import { toast } from "sonner";
 
 const REGIONS = ["Asia Pacific", "Americas", "Europe", "Middle East & Africa", "Latin America"];
@@ -50,7 +51,7 @@ const EMPTY_FORM: FormState = {
 
 export default function SupplierOffices() {
   const { company } = useCurrentCompany();
-  const { offices, userCounts, offerCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
+  const { offices, userCounts, offerCounts, orderCounts, negotiationCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
   const location = useLocation();
   const homeHref = location.pathname.startsWith("/buyer") ? "/buyer" : "/supplier";
 
@@ -59,6 +60,7 @@ export default function SupplierOffices() {
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
   const [usersModalOffice, setUsersModalOffice] = useState<Office | null>(null);
+  const [transferSource, setTransferSource] = useState<Office | null>(null);
 
   const hq = useMemo(() => offices.find((o) => o.id === company?.id) ?? null, [offices, company?.id]);
   const branches = useMemo(
@@ -190,6 +192,8 @@ export default function SupplierOffices() {
           isHQ
           userCount={userCounts[hq.id] || 0}
           offerCount={offerCounts[hq.id] || 0}
+          orderCount={orderCounts[hq.id] || 0}
+          negotiationCount={negotiationCounts[hq.id] || 0}
           onManageUsers={() => setUsersModalOffice(hq)}
         />
       )}
@@ -208,9 +212,12 @@ export default function SupplierOffices() {
               office={o}
               userCount={userCounts[o.id] || 0}
               offerCount={offerCounts[o.id] || 0}
+              orderCount={orderCounts[o.id] || 0}
+              negotiationCount={negotiationCounts[o.id] || 0}
               onEdit={() => openEdit(o)}
               onDelete={() => handleDelete(o)}
               onManageUsers={() => setUsersModalOffice(o)}
+              onTransferOffers={() => setTransferSource(o)}
             />
           ))}
         </div>
@@ -332,6 +339,16 @@ export default function SupplierOffices() {
           onChanged={refetch}
         />
       )}
+
+      {transferSource && (
+        <TransferOffersModal
+          open={!!transferSource}
+          onClose={() => setTransferSource(null)}
+          source={transferSource}
+          targets={offices.filter((o) => o.id !== transferSource.id)}
+          onTransferred={refetch}
+        />
+      )}
     </div>
   );
 }
@@ -341,17 +358,23 @@ function OfficeCard({
   isHQ,
   userCount,
   offerCount,
+  orderCount,
+  negotiationCount,
   onEdit,
   onDelete,
   onManageUsers,
+  onTransferOffers,
 }: {
   office: Office;
   isHQ?: boolean;
   userCount: number;
   offerCount?: number;
+  orderCount?: number;
+  negotiationCount?: number;
   onEdit?: () => void;
   onDelete?: () => void;
   onManageUsers?: () => void;
+  onTransferOffers?: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const title = isHQ ? "Headquarters" : office.office_type === "branch" ? "Branch" : "Regional Office";
@@ -390,6 +413,12 @@ function OfficeCard({
                   onClick={() => { setMenuOpen(false); onEdit(); }}>
                   <EditIcon size={14} /> Edit
                 </button>
+                {onTransferOffers && (
+                  <button className="btn ghost" style={{ width: "100%", justifyContent: "flex-start" }}
+                    onClick={() => { setMenuOpen(false); onTransferOffers(); }}>
+                    📦 Transfer Offers
+                  </button>
+                )}
                 {onDelete && (
                   <button className="btn ghost" style={{ width: "100%", justifyContent: "flex-start", color: "var(--danger)" }}
                     onClick={() => { setMenuOpen(false); onDelete(); }}>
@@ -404,7 +433,7 @@ function OfficeCard({
       <div style={{ fontSize: 15, fontWeight: 500 }}>{subtitle}</div>
       {location && <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>📍 {location}</div>}
       <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>
-        👥 {userCount} user{userCount !== 1 ? "s" : ""} · 📦 {offerCount ?? 0} offer{(offerCount ?? 0) !== 1 ? "s" : ""}
+        👥 {userCount} user{userCount !== 1 ? "s" : ""} · 📦 {offerCount ?? 0} offer{(offerCount ?? 0) !== 1 ? "s" : ""} · 💰 {orderCount ?? 0} sale{(orderCount ?? 0) !== 1 ? "s" : ""} · 💬 {negotiationCount ?? 0} nego{(negotiationCount ?? 0) !== 1 ? "s" : ""}
       </div>
       {office.plant_numbers && office.plant_numbers.length > 0 && (
         <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>🏭 Plants: {office.plant_numbers.join(", ")}</div>

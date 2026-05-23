@@ -19,7 +19,7 @@ import { MOCK_SUPPLIER_OFFERS, PAGE_SIZE, type SupplierOffer } from "@/data/mock
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { ProteinFilter, categoryToProtein, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useSupplierProteins } from "@/hooks/useSupplierProteins";
-import { useActiveOffice } from "@/hooks/useActiveOffice";
+import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
@@ -143,7 +143,6 @@ export default function SupplierOffers() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { offers: realOffers, loading: realLoading } = useRealSupplierOffers();
-  const { activeOffice, isAllOffices, setActiveOffice, isMaster } = useActiveOffice();
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priceDesc" | "priceAsc">("newest");
@@ -206,22 +205,7 @@ export default function SupplierOffers() {
         </button>
       </header>
 
-      {!isAllOffices && activeOffice && (
-        <div style={{ fontSize: 12, color: "var(--fg-muted)", display: "flex", alignItems: "center", gap: 8, margin: "0 0 12px" }}>
-          {isMaster ? "🏢" : "🔒"} Viewing: {activeOffice.office_name || activeOffice.name}
-          {isMaster ? (
-            <button
-              type="button"
-              onClick={() => setActiveOffice(null)}
-              style={{ fontSize: 11, color: "var(--brand)", background: "none", border: "none", cursor: "pointer", padding: 0 }}
-            >
-              ✕ Show all
-            </button>
-          ) : (
-            <span style={{ fontSize: 11, opacity: 0.7 }}>(your assigned office)</span>
-          )}
-        </div>
-      )}
+      <OfficeIndicator />
 
       <div className="so-kpis">
         <div className="so-kpi"><span className="so-kpi-ic"><TagIcon size={14} /></span><div><span className="so-kpi-n">{kpis.total}</span><span className="so-kpi-l">{t("supplier.offers.kpi.total")}</span></div></div>
