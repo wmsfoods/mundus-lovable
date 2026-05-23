@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { Package, Eye, Send, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DistributeOfferModal } from "@/components/admin/DistributeOfferModal";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 type OfferRow = {
   id: string;
