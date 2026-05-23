@@ -227,6 +227,80 @@
   margin-bottom: 32px;
 }
 
+/* --- Mini card (recent offers / recent orders) ----------------- */
+.mini-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color .15s ease, box-shadow .15s ease, transform .15s ease;
+  min-height: 132px;
+}
+.mini-card:hover {
+  border-color: var(--p400);
+  box-shadow: 0 2px 8px rgba(16,24,40,.06);
+  transform: translateY(-1px);
+}
+.mini-card .mc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.mini-card .mc-num {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+  font-weight: var(--weight-medium);
+}
+.mini-card .mc-title {
+  font-weight: var(--weight-semibold);
+  font-size: var(--fs-sm);
+  color: var(--fg);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mini-card .mc-meta,
+.mini-card .mc-foot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--fs-xs);
+  color: var(--fg-muted);
+}
+.mini-card .mc-foot {
+  margin-top: auto;
+  justify-content: space-between;
+  padding-top: 6px;
+  border-top: 1px dashed hsl(var(--border));
+  color: var(--fg);
+  font-weight: var(--weight-medium);
+}
+.mini-card .pill {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  text-transform: capitalize;
+  font-weight: var(--weight-medium);
+}
+.mini-card-skeleton {
+  background: linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%);
+  background-size: 200% 100%;
+  animation: mc-shimmer 1.4s ease-in-out infinite;
+  border-style: dashed;
+}
+@keyframes mc-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
 /* =========================================================================
    MOBILE — Buyer Home responsive
    ========================================================================= */
