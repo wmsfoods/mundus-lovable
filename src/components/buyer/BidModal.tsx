@@ -186,6 +186,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           min: toDisplay(min, "price", unit).toFixed(2),
         });
       }
+      // Max 30% deduction from asking
+      if (v != null && Number.isFinite(v) && v > 0 && asking > 0) {
+        const deductPct = ((asking - v) / asking) * 100;
+        if (deductPct > 30) {
+          out[it.id] = `Maximum deduction is 30%. Current: ${deductPct.toFixed(1)}%`;
+        }
+      }
     }
     return out;
   }, [isRealOffer, offer.items, bids, t, unit]);
@@ -241,6 +248,9 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           negotiation_id: neg.id,
           round: 1,
           created_by_user_id: MOCK_BUYER_USER_ID,
+          side: "buyer",
+          type: "bid",
+          message: message.trim() || null,
         })
         .select("id")
         .single();
@@ -574,6 +584,12 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             </div>
           </div>
         </div>
+        {selectedFreight && freightPerKg > 0 && (
+          <div className="text-xs text-muted-foreground mt-1">
+            Freight: US$ {Number(selectedFreight.cost).toLocaleString()} ({fmtPrice(freightPerKg, unit)} {pLbl}) · 
+            Total with freight: US$ {(bidTotal + Number(selectedFreight.cost)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          </div>
+        )}
 
         {/* Message */}
         <div className="mt-2">
