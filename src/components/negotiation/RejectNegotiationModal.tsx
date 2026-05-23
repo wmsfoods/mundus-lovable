@@ -57,10 +57,29 @@ export function RejectNegotiationModal({
           status: "offer_rejected",
           rejection_reason: reason,
           rejection_notes: notes.trim() ? notes.trim() : null,
+          rejection_cooldown_until: new Date(Date.now() + 24 * 3600_000).toISOString(),
           updated_at: new Date().toISOString(),
         } as any)
         .eq("id", negotiation.id);
       if (error) throw error;
+
+      // Fire email notification (best-effort)
+      try {
+        supabase.functions.invoke("negotiation-notifications", {
+          body: {
+            action: "bid_rejected",
+            data: {
+              buyer_email: "buyer@example.com",
+              offer_title: "Offer",
+              reason: notes.trim() || null,
+              marketplace_link: `${window.location.origin}/buyer/marketplace`,
+            },
+          },
+        }).catch(() => {});
+      } catch (e) {
+        console.warn("rejection notification failed", e);
+      }
+
       toast.success(t("negotiation.reject.successToast", "Negotiation rejected"));
       onOpenChange(false);
       onRejected?.();
