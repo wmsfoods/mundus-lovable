@@ -6,6 +6,7 @@ import { Modal } from "@/components/mundus/Modal";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCompanyOffices, type Office, type OfficeInput } from "@/hooks/useCompanyOffices";
+import { ManageOfficeUsersModal } from "@/components/supplier/ManageOfficeUsersModal";
 import { toast } from "sonner";
 
 const REGIONS = ["Asia Pacific", "Americas", "Europe", "Middle East & Africa", "Latin America"];
@@ -48,12 +49,13 @@ const EMPTY_FORM: FormState = {
 
 export default function SupplierOffices() {
   const { company } = useCurrentCompany();
-  const { offices, loading, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
+  const { offices, userCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY_FORM);
   const [saving, setSaving] = useState(false);
+  const [usersModalOffice, setUsersModalOffice] = useState<Office | null>(null);
 
   const hq = useMemo(() => offices.find((o) => o.id === company?.id) ?? null, [offices, company?.id]);
   const branches = useMemo(
@@ -180,7 +182,12 @@ export default function SupplierOffices() {
       )}
 
       {!loading && hq && (
-        <OfficeCard office={hq} isHQ />
+        <OfficeCard
+          office={hq}
+          isHQ
+          userCount={userCounts[hq.id] || 0}
+          onManageUsers={() => setUsersModalOffice(hq)}
+        />
       )}
 
       {!loading && branches.length > 0 && (
@@ -192,7 +199,14 @@ export default function SupplierOffices() {
           }}
         >
           {branches.map((o) => (
-            <OfficeCard key={o.id} office={o} onEdit={() => openEdit(o)} onDelete={() => handleDelete(o)} />
+            <OfficeCard
+              key={o.id}
+              office={o}
+              userCount={userCounts[o.id] || 0}
+              onEdit={() => openEdit(o)}
+              onDelete={() => handleDelete(o)}
+              onManageUsers={() => setUsersModalOffice(o)}
+            />
           ))}
         </div>
       )}
@@ -298,6 +312,21 @@ export default function SupplierOffices() {
           </button>
         </div>
       </Modal>
+
+      {usersModalOffice && company?.id && (
+        <ManageOfficeUsersModal
+          open={!!usersModalOffice}
+          onClose={() => setUsersModalOffice(null)}
+          officeId={usersModalOffice.id}
+          officeLabel={
+            usersModalOffice.id === company.id
+              ? `Headquarters — ${usersModalOffice.name}`
+              : usersModalOffice.office_name || usersModalOffice.name
+          }
+          parentCompanyId={company.id}
+          onChanged={refetch}
+        />
+      )}
     </div>
   );
 }
@@ -305,13 +334,17 @@ export default function SupplierOffices() {
 function OfficeCard({
   office,
   isHQ,
+  userCount,
   onEdit,
   onDelete,
+  onManageUsers,
 }: {
   office: Office;
   isHQ?: boolean;
+  userCount: number;
   onEdit?: () => void;
   onDelete?: () => void;
+  onManageUsers?: () => void;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const title = isHQ ? "Headquarters" : office.office_type === "branch" ? "Branch" : "Regional Office";
@@ -363,9 +396,18 @@ function OfficeCard({
       </div>
       <div style={{ fontSize: 15, fontWeight: 500 }}>{subtitle}</div>
       {location && <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>📍 {location}</div>}
-      <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>👥 — users · 📦 — offers · 💰 — sales</div>
+      <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>
+        👥 {userCount} user{userCount !== 1 ? "s" : ""} · 📦 — offers · 💰 — sales
+      </div>
       {office.plant_numbers && office.plant_numbers.length > 0 && (
         <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>🏭 Plants: {office.plant_numbers.join(", ")}</div>
+      )}
+      {onManageUsers && (
+        <div style={{ marginTop: 4 }}>
+          <button className="btn ghost" onClick={onManageUsers} style={{ padding: "6px 10px", fontSize: 13 }}>
+            👥 Manage Users
+          </button>
+        </div>
       )}
     </div>
   );
