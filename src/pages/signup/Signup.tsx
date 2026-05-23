@@ -1395,6 +1395,43 @@ function Step4Contact({
         </Field>
       </div>
 
+      {/* Always-visible checklist */}
+      <div
+        className={cn(
+          "rounded-lg border p-4 transition-colors",
+          allDone ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50",
+        )}
+      >
+        <p
+          className={cn(
+            "text-sm font-medium mb-2",
+            allDone ? "text-green-700" : "text-gray-700",
+          )}
+        >
+          {allDone
+            ? `✅ ${t("signup.checklist.allComplete")}`
+            : t("signup.checklist.toComplete")}
+        </p>
+        {!allDone && (
+          <ul className="space-y-1">
+            {checks.map((c) => (
+              <li
+                key={c.key}
+                className={cn(
+                  "text-sm flex items-center gap-2",
+                  c.done ? "text-gray-400 line-through" : "text-gray-700",
+                )}
+              >
+                <span className={c.done ? "text-green-500" : "text-red-400"}>
+                  {c.done ? "✓" : "○"}
+                </span>
+                {c.label}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+
       <div className="flex gap-3">
         <button
           onClick={onBack}
