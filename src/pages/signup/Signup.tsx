@@ -613,15 +613,44 @@ function Step3Company({
     data.proteins.length >= 1 &&
     data.countriesOfOperation.length >= 1;
 
-  const missing: string[] = [];
-  if (!data.companyName) missing.push(t("signup.fields.companyName"));
-  if (!data.registrationCountry) missing.push(t("signup.fields.registrationCountry"));
-  if (!data.taxId) missing.push(t("signup.fields.taxId"));
-  else if (!taxIdValid) missing.push(`${taxRule.label} (${taxRule.hint})`);
-  if (!data.role) missing.push(t("signup.fields.role"));
-  if (data.proteins.length < 1) missing.push(t("signup.fields.proteinProfile"));
-  if (data.countriesOfOperation.length < 1)
-    missing.push(t("signup.fields.countriesOfOperation"));
+  // Progressive disclosure — once a section is revealed it stays revealed
+  // even if the triggering field is cleared (so user doesn't lose work).
+  const triggerTaxId = !!data.registrationCountry;
+  const triggerRole = triggerTaxId && data.taxId.trim().length >= 3;
+  const triggerProteins = triggerRole && !!data.role;
+  const triggerCountries = triggerProteins && data.proteins.length >= 1;
+  const triggerCerts = triggerCountries && data.countriesOfOperation.length >= 1;
+
+  const [revealed, setRevealed] = useState({
+    taxId: triggerTaxId,
+    role: triggerRole,
+    proteins: triggerProteins,
+    countries: triggerCountries,
+    certs: triggerCerts,
+  });
+  useEffect(() => {
+    setRevealed((r) => ({
+      taxId: r.taxId || triggerTaxId,
+      role: r.role || triggerRole,
+      proteins: r.proteins || triggerProteins,
+      countries: r.countries || triggerCountries,
+      certs: r.certs || triggerCerts,
+    }));
+  }, [triggerTaxId, triggerRole, triggerProteins, triggerCountries, triggerCerts]);
+
+  const taxIdLabel = data.registrationCountry
+    ? `${taxRule.label} — ${t("signup.fields.taxId")}`
+    : t("signup.fields.taxId");
+
+  const checks = [
+    { key: "companyName", done: !!data.companyName, label: t("signup.fields.companyName") },
+    { key: "registrationCountry", done: !!data.registrationCountry, label: t("signup.fields.registrationCountry") },
+    { key: "taxId", done: !!data.taxId && taxIdValid, label: taxIdLabel },
+    { key: "role", done: !!data.role, label: t("signup.fields.role") },
+    { key: "proteins", done: data.proteins.length >= 1, label: t("signup.fields.proteinProfile") },
+    { key: "countries", done: data.countriesOfOperation.length >= 1, label: t("signup.fields.countriesOfOperation") },
+  ];
+  const allDone = checks.every((c) => c.done);
 
   return (
     <div className="space-y-6">
@@ -639,63 +668,61 @@ function Step3Company({
         />
       </div>
 
-      <div>
-        <Field
-          label={
-            data.registrationCountry
-              ? `${taxRule.label} — ${t("signup.fields.taxId")}`
-              : t("signup.fields.taxId")
-          }
-        >
-          <input
-            className={cn(
-              inputCls,
-              taxIdTouched && data.taxId && !taxIdValid && "border-red-500 focus:border-red-500 focus:ring-red-500",
-            )}
-            value={data.taxId}
-            onChange={(e) => set("taxId", e.target.value)}
-            onBlur={() => setTaxIdTouched(true)}
-          />
-          {taxIdTouched && data.taxId && !taxIdValid ? (
-            <p className="text-xs text-red-500 mt-1">
-              {t("signup.fields.taxIdError", { hint: taxRule.hint })}
-            </p>
-          ) : (
-            <p className="text-xs text-gray-500 mt-1">{taxRule.hint}</p>
-          )}
-        </Field>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t("signup.fields.role")}
-        </label>
-        <div className="flex flex-wrap gap-3">
-          {(["buyer", "supplier"] as const).map((r) => (
-            <label
-              key={r}
+      {revealed.taxId && (
+        <div className="animate-fade-in">
+          <Field label={taxIdLabel}>
+            <input
               className={cn(
-                "flex items-center gap-2 cursor-pointer text-sm rounded-lg border px-4 h-12 min-w-[140px]",
-                data.role === r
-                  ? "border-[#B64769] bg-[#B64769]/5 text-[#B64769] font-medium"
-                  : "border-gray-200 text-gray-700",
+                inputCls,
+                taxIdTouched && data.taxId && !taxIdValid && "border-red-500 focus:border-red-500 focus:ring-red-500",
               )}
-            >
-              <input
-                type="radio"
-                name="role"
-                checked={data.role === r}
-                onChange={() => set("role", r)}
-                className="h-4 w-4 accent-[#B64769]"
-              />
-              {t(`signup.fields.${r}`)}
-            </label>
-          ))}
+              value={data.taxId}
+              onChange={(e) => set("taxId", e.target.value)}
+              onBlur={() => setTaxIdTouched(true)}
+            />
+            {taxIdTouched && data.taxId && !taxIdValid ? (
+              <p className="text-xs text-red-500 mt-1">
+                {t("signup.fields.taxIdError", { hint: taxRule.hint })}
+              </p>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1">{taxRule.hint}</p>
+            )}
+          </Field>
         </div>
-      </div>
+      )}
 
-      {data.role && (
-        <div>
+      {revealed.role && (
+        <div className="animate-fade-in">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t("signup.fields.role")}
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {(["buyer", "supplier"] as const).map((r) => (
+              <label
+                key={r}
+                className={cn(
+                  "flex items-center gap-2 cursor-pointer text-sm rounded-lg border px-4 h-12 min-w-[140px]",
+                  data.role === r
+                    ? "border-[#B64769] bg-[#B64769]/5 text-[#B64769] font-medium"
+                    : "border-gray-200 text-gray-700",
+                )}
+              >
+                <input
+                  type="radio"
+                  name="role"
+                  checked={data.role === r}
+                  onChange={() => set("role", r)}
+                  className="h-4 w-4 accent-[#B64769]"
+                />
+                {t(`signup.fields.${r}`)}
+              </label>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {revealed.proteins && (
+        <div className="animate-fade-in">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             {t("signup.fields.proteinProfile")} <span className="text-red-500">*</span>
           </label>
@@ -727,35 +754,78 @@ function Step3Company({
         </div>
       )}
 
-      <CountriesOfOperation
-        value={data.countriesOfOperation}
-        onChange={(v) => set("countriesOfOperation", v)}
-      />
+      {revealed.countries && (
+        <div className="animate-fade-in">
+          <CountriesOfOperation
+            value={data.countriesOfOperation}
+            onChange={(v) => set("countriesOfOperation", v)}
+          />
+        </div>
+      )}
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          {t("signup.fields.licenses")}{" "}
-          <span className="text-gray-400 font-normal">({t("common.optional")})</span>
-        </label>
-        {data.certificate ? (
-          <div className="flex items-center justify-between border border-gray-200 rounded-lg p-3 bg-gray-50">
-            <span className="text-sm text-gray-700 truncate">{data.certificate.name}</span>
-            <button onClick={() => onFile(null)} className="text-gray-500 hover:text-gray-700">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-        ) : (
-          <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 py-8 cursor-pointer hover:bg-gray-100">
-            <Upload className="h-6 w-6" style={{ color: WINE }} />
-            <span className="text-sm text-gray-700">{t("signup.fields.uploadHint")}</span>
-            <span className="text-xs text-gray-500">{t("signup.fields.uploadFormat")}</span>
-            <input
-              type="file"
-              accept=".png,.jpg,.jpeg,.pdf"
-              className="hidden"
-              onChange={(e) => onFile(e.target.files?.[0] ?? null)}
-            />
+      {revealed.certs && (
+        <div className="animate-fade-in">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            {t("signup.fields.licenses")}{" "}
+            <span className="text-gray-400 font-normal">({t("common.optional")})</span>
           </label>
+          {data.certificate ? (
+            <div className="flex items-center justify-between border border-gray-200 rounded-lg p-3 bg-gray-50">
+              <span className="text-sm text-gray-700 truncate">{data.certificate.name}</span>
+              <button onClick={() => onFile(null)} className="text-gray-500 hover:text-gray-700">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+          ) : (
+            <label className="flex flex-col items-center justify-center gap-2 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 py-8 cursor-pointer hover:bg-gray-100">
+              <Upload className="h-6 w-6" style={{ color: WINE }} />
+              <span className="text-sm text-gray-700">{t("signup.fields.uploadHint")}</span>
+              <span className="text-xs text-gray-500">{t("signup.fields.uploadFormat")}</span>
+              <input
+                type="file"
+                accept=".png,.jpg,.jpeg,.pdf"
+                className="hidden"
+                onChange={(e) => onFile(e.target.files?.[0] ?? null)}
+              />
+            </label>
+          )}
+        </div>
+      )}
+
+      {/* Always-visible checklist */}
+      <div
+        className={cn(
+          "rounded-lg border p-4 transition-colors",
+          allDone ? "border-green-200 bg-green-50" : "border-gray-200 bg-gray-50",
+        )}
+      >
+        <p
+          className={cn(
+            "text-sm font-medium mb-2",
+            allDone ? "text-green-700" : "text-gray-700",
+          )}
+        >
+          {allDone
+            ? `✅ ${t("signup.checklist.allComplete")}`
+            : t("signup.checklist.toComplete")}
+        </p>
+        {!allDone && (
+          <ul className="space-y-1">
+            {checks.map((c) => (
+              <li
+                key={c.key}
+                className={cn(
+                  "text-sm flex items-center gap-2",
+                  c.done ? "text-gray-400 line-through" : "text-gray-700",
+                )}
+              >
+                <span className={c.done ? "text-green-500" : "text-red-400"}>
+                  {c.done ? "✓" : "○"}
+                </span>
+                {c.label}
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
@@ -779,19 +849,6 @@ function Step3Company({
           {t("common.proceed")}
         </button>
       </div>
-
-      {!canProceed && missing.length > 0 && (
-        <div className="mt-3 rounded-lg border border-[#B64769]/20 bg-[#B64769]/5 px-4 py-3 text-sm text-gray-600">
-          <div className="font-medium text-[#B64769] mb-1">
-            {t("signup.missingTitle")}
-          </div>
-          <ul className="list-disc pl-5 space-y-0.5">
-            {missing.map((m) => (
-              <li key={m}>{m}</li>
-            ))}
-          </ul>
-        </div>
-      )}
     </div>
   );
 }
