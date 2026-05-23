@@ -1,0 +1,1 @@
+UPDATE public.offers SET deleted_at = now() WHERE id::text LIKE '11110001-%';
