@@ -151,13 +151,10 @@
       "special": "One special character."
     },
     "success": {
-      "navTitle": "Confirm Email",
-      "title": "Registration completed successfully!",
-      "body": "To activate your account, a verification code has been sent to the email address {{email}}.",
-      "resend": "Resend code",
-      "enterCode": "Enter code",
-      "resent": "Verification code resent",
-      "missingEmail": "Missing email"
+      "navTitle": "Account Pending Review",
+      "title": "Registration received!",
+      "body": "Your registration is under review by the Mundus team. As soon as it's approved, you'll receive a confirmation email at <1>{{email}}</1> and will be able to sign in with the email and password you created.",
+      "backToLogin": "Back to login"
     },
     "partner": {
       "navTitle": "Partner Sign Up",

@@ -151,13 +151,10 @@
       "special": "一个或多个特殊字符。"
     },
     "success": {
-      "navTitle": "确认电子邮件",
-      "title": "注册成功！",
-      "body": "为激活您的账户，一个验证码已发送至邮箱 {{email}}。",
-      "resend": "重新发送验证码",
-      "enterCode": "输入验证码",
-      "resent": "验证码已重新发送",
-      "missingEmail": "缺少电子邮件"
+      "navTitle": "账户审核中",
+      "title": "注册已收到！",
+      "body": "您的注册正在由 Mundus 团队审核。一经批准，您将在 <1>{{email}}</1> 收到确认邮件，并可使用您创建的邮箱和密码登录。",
+      "backToLogin": "返回登录"
     },
     "partner": {
       "navTitle": "合作伙伴注册",
