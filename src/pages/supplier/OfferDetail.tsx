@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -40,6 +40,30 @@ export default function SupplierOfferDetail() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
+  const [negotiations, setNegotiations] = useState<Array<{
+    id: string;
+    status: string;
+    buyer_company_id: string;
+    incoterm: string | null;
+    created_at: string;
+    updated_at: string;
+  }>>([]);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select("id, status, buyer_company_id, incoterm, created_at, updated_at")
+        .eq("offer_id", id)
+        .not("status", "in", "(expired,offer_withdrawn)")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+      if (!cancelled) setNegotiations(data ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
 
   const { offers: realOffers, loading: offersLoading } = useRealSupplierOffers();
   const offer: SupplierOffer | undefined = useMemo(
