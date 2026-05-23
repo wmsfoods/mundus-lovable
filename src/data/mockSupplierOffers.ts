@@ -38,6 +38,7 @@ export type SupplierOffer = {
   observation: string | null;
   items: SupplierOfferItem[];
   active: boolean;
+  exwPickupLocation?: string | null;
 };
 
 export const MOCK_SUPPLIER_OFFERS: SupplierOffer[] = [
