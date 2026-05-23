@@ -107,6 +107,7 @@
       "website": "Website"
     },
     "passwordsMismatch": "Passwords do not match.",
+    "missingTitle": "To proceed, please complete:",
     "agreeTerms": "I declare that I have read and agree to the",
     "termsLink": "Terms and Conditions",
     "confirmInfo": "I confirm that all information provided is true, accurate, and complete to the best of my knowledge. I understand that providing false or misleading information may result in suspension or termination of the account.",
