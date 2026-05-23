@@ -1,3 +1,4 @@
+import { formatOfferNumber } from "@/lib/offerNumber";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Mail, Send, Eye, Users } from "lucide-react";
