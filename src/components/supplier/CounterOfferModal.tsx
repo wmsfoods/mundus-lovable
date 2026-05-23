@@ -22,6 +22,7 @@ import {
   isCounterExhausted,
   isFinalDisplayRound,
   nextExpirationIso,
+  getDeductionFeedback,
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -81,7 +82,8 @@ export function CounterOfferModal({
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [bulkOffset, setBulkOffset] = useState<string>("");
+  const [bulkMode, setBulkMode] = useState<"amount" | "percent">("amount");
+  const [bulkValue, setBulkValue] = useState<string>("");
 
   const setAllCounters = (priceFor: (it: typeof openItems[number]) => number) => {
     setCounters((prev) => {
@@ -96,11 +98,21 @@ export function CounterOfferModal({
   const acceptAllRows = () => {
     setAccepted(Object.fromEntries(openItems.map((it) => [it.id, true])));
   };
-  const applyBulkOffset = () => {
-    const v = parseFloat(bulkOffset);
-    if (!Number.isFinite(v)) return;
-    const deltaKg = fromDisplay(v, "price", unit);
-    setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) + deltaKg);
+  const applyBulk = () => {
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return;
+    if (bulkMode === "percent") {
+      const capped = perspective === "buyer" ? Math.min(v, 30) : v;
+      const factor = perspective === "buyer" ? (1 - capped / 100) : (1 + capped / 100);
+      setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * factor);
+    } else {
+      const deltaKg = fromDisplay(v, "price", unit);
+      if (perspective === "buyer") {
+        setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) - deltaKg);
+      } else {
+        setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) + deltaKg);
+      }
+    }
   };
 
   // Buyer's initial bid (round 1) per offer_item — used to floor buyer counter-bids.
@@ -152,24 +164,73 @@ export function CounterOfferModal({
   const theirLabelKey = perspective === "supplier" ? "supplier.counter.theirBid" : "buyer.counter.theirCounter";
   const theirTotalKey = perspective === "supplier" ? "supplier.counter.theirBidTotal" : "buyer.counter.theirCounterTotal";
 
-  // Buyer-side validation: counter cannot drop below your round-1 bid.
+  // Per-row validation: directional + range checks.
   const errors = useMemo(() => {
-    if (perspective !== "buyer") return {} as Record<string, string>;
     const out: Record<string, string> = {};
-    for (const it of openItems) {
-      if (accepted[it.id]) continue;
-      const floor = buyerInitialBid.get(it.id);
-      const v = counters[it.id];
-      if (floor != null && v != null && v < floor - 1e-9) {
-        out[it.id] = t("buyer.counter.errors.belowInitial", {
-          defaultValue: "Cannot bid below your initial bid of ${{min}}",
-          min: toDisplay(floor, "price", unit).toFixed(2),
-        });
+
+    if (perspective === "buyer") {
+      // Floor: initial (round-1) bid
+      for (const it of openItems) {
+        if (accepted[it.id]) continue;
+        const floor = buyerInitialBid.get(it.id);
+        const v = counters[it.id];
+        if (floor != null && v != null && v < floor - 1e-9) {
+          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(2)})`;
+        }
+      }
+      // Must be ≥ previous buyer bid
+      const buyerRounds = rounds.filter((r) => r.round % 2 === 1);
+      const lastBuyerRound = buyerRounds[buyerRounds.length - 1];
+      if (lastBuyerRound) {
+        for (const it of openItems) {
+          if (accepted[it.id] || out[it.id]) continue;
+          const v = counters[it.id];
+          const prevBid = lastBuyerRound.cut_rounds?.find((c) => c.offer_item_id === it.id);
+          if (prevBid && v != null && v < Number(prevBid.price_per_kg) - 1e-9) {
+            out[it.id] = `Bid must be ≥ your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
+          }
+        }
+      }
+      // Max 30% deduction from asking
+      for (const it of openItems) {
+        if (accepted[it.id] || out[it.id]) continue;
+        const v = counters[it.id];
+        const asking = Number(it.price);
+        if (v != null && asking > 0) {
+          const deductPct = ((asking - v) / asking) * 100;
+          if (deductPct > 30) {
+            out[it.id] = `Maximum deduction is 30%. Current: ${deductPct.toFixed(1)}%`;
+          }
+        }
       }
     }
+
+    if (perspective === "supplier") {
+      const supplierRounds = rounds.filter((r) => r.round % 2 === 0);
+      const lastSupplierRound = supplierRounds[supplierRounds.length - 1];
+      for (const it of openItems) {
+        if (accepted[it.id]) continue;
+        const v = counters[it.id];
+        if (v == null) continue;
+        const asking = Number(it.price);
+        const prevCounter = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
+        const ceiling = prevCounter ? Number(prevCounter.price_per_kg) : asking;
+        if (v > ceiling + 1e-9) {
+          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(2)} (your ${prevCounter ? "previous counter" : "asking price"})`;
+        }
+      }
+    }
+
     return out;
-  }, [perspective, openItems, accepted, buyerInitialBid, counters, t, unit]);
+  }, [perspective, openItems, accepted, buyerInitialBid, counters, rounds, unit]);
   const errorCount = Object.keys(errors).length;
+
+  const deductionFeedback = useMemo(() => {
+    if (perspective !== "buyer" || bulkMode !== "percent") return null;
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return null;
+    return getDeductionFeedback(v);
+  }, [perspective, bulkMode, bulkValue]);
 
   async function handleSubmit() {
     if (submitting || errorCount > 0) return;
@@ -197,6 +258,9 @@ export function CounterOfferModal({
             negotiation_id: negotiation.id,
             round: nextRaw,
             created_by_user_id: userId,
+            side: perspective,
+            type: perspective === "buyer" ? "bid" : "counter",
+            message: message.trim() || null,
           })
           .select("id")
           .single();
@@ -236,6 +300,8 @@ export function CounterOfferModal({
       } else {
         update.status = perspective === "supplier" ? "pending_buyer_review" : "awaiting_supplier";
         update.expires_at = nextExpirationIso();
+        update.current_round = displayRound;
+        if (displayRound >= 3) update.chat_enabled = true;
       }
       const { error: nErr } = await supabase
         .from("negotiations")
@@ -302,143 +368,88 @@ export function CounterOfferModal({
           </div>
         )}
 
-        {/* Bulk apply — desktop */}
+        {/* Bulk apply — unified responsive */}
         {openItems.length > 0 && (
-          <div className="hidden sm:flex flex-wrap items-center gap-2 mt-3">
-            <span className="text-xs uppercase font-semibold text-muted-foreground mr-1">
-              {t(`${perspective}.counter.bulk.label`, "Quick fill")}:
-            </span>
-            <button
-              type="button"
-              onClick={acceptAllRows}
-              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-            >
-              {t(`${perspective}.counter.bulk.acceptAll`, "Accept all")}
-            </button>
-            <button
-              type="button"
-              onClick={() =>
-                setAllCounters(
-                  (it) =>
-                    ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2,
-                )
-              }
-              className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-              style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-            >
-              {t(`${perspective}.counter.bulk.meetMiddle`, "Meet in middle")}
-            </button>
-            {perspective === "supplier" ? (
-              <>
+          <div className="mt-3 rounded-lg border border-border p-3">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-xs uppercase font-semibold text-muted-foreground">
+                {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex rounded-md border border-border overflow-hidden text-xs">
                 <button
                   type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 1.03)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                  onClick={() => setBulkMode("amount")}
+                  className="px-3 py-1.5 font-medium"
+                  style={bulkMode === "amount" ? { background: "#8B2252", color: "white" } : {}}
                 >
-                  {t("supplier.counter.bulk.plus3", "Their price +3%")}
+                  $/{wLbl}
                 </button>
                 <button
                   type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 1.05)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
+                  onClick={() => setBulkMode("percent")}
+                  className="px-3 py-1.5 font-medium"
+                  style={bulkMode === "percent" ? { background: "#8B2252", color: "white" } : {}}
                 >
-                  {t("supplier.counter.bulk.plus5", "Their price +5%")}
+                  %
                 </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 0.97)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-                >
-                  {t("buyer.counter.bulk.minus3pct", "Their counter -3%")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * 0.95)}
-                  className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
-                  style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
-                >
-                  {t("buyer.counter.bulk.minus5pct", "Their counter -5%")}
-                </button>
-              </>
-            )}
-            <div className="flex items-center gap-1">
+              </div>
               <Input
                 type="number"
-                step="0.01"
-                value={bulkOffset}
-                onChange={(e) => setBulkOffset(e.target.value)}
-                placeholder={t(`${perspective}.counter.bulk.customPlaceholder`, { defaultValue: "±{{unit}}", unit: pLbl })}
-                className="h-7 w-20 text-right tabular-nums text-xs"
+                step={bulkMode === "percent" ? "0.1" : "0.01"}
+                min="0"
+                max={bulkMode === "percent" ? "30" : undefined}
+                inputMode="decimal"
+                value={bulkValue}
+                onChange={(e) => setBulkValue(e.target.value)}
+                placeholder={bulkMode === "percent" ? "e.g. 3%" : `e.g. 0.10 $/${wLbl}`}
+                className="h-9 w-32 text-right tabular-nums text-xs"
               />
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                className="h-7 px-3 text-xs"
-                onClick={applyBulkOffset}
+                className="h-9 px-3 text-xs"
+                onClick={applyBulk}
                 style={{ color: "#8B2252" }}
               >
-                {t(`${perspective}.counter.bulk.apply`, "Apply")}
+                Apply to All
               </Button>
+              {deductionFeedback && (
+                <span
+                  className="text-xs font-medium px-2 py-1 rounded-full"
+                  style={{ background: `${deductionFeedback.color}15`, color: deductionFeedback.color }}
+                >
+                  {deductionFeedback.level === "fair" && "✅ "}
+                  {deductionFeedback.level === "high" && "⚠️ "}
+                  {deductionFeedback.level === "aggressive" && "🔶 "}
+                  {deductionFeedback.level === "extreme" && "🔴 "}
+                  {deductionFeedback.message}
+                </span>
+              )}
             </div>
-          </div>
-        )}
-
-        {/* Bulk apply — mobile collapsible */}
-        {openItems.length > 0 && (
-          <details className="sm:hidden mt-3">
-            <summary className="text-xs font-semibold cursor-pointer py-2" style={{ color: "#8B2252" }}>
-              ⚡ {t(`${perspective}.counter.bulk.label`, "Quick fill")}
-            </summary>
-            <div className="flex flex-wrap gap-2 pt-2 pb-1">
+            <div className="flex flex-wrap gap-2 mt-2">
               <button
                 type="button"
                 onClick={acceptAllRows}
-                className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
                 style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
               >
-                {t(`${perspective}.counter.bulk.acceptAll`, "Accept all")}
+                ✅ Accept all
               </button>
               <button
                 type="button"
                 onClick={() =>
                   setAllCounters((it) => ((theirPrices.get(it.id) ?? Number(it.price)) + Number(it.price)) / 2)
                 }
-                className="h-9 px-3 rounded-full border text-xs font-medium hover:bg-muted"
+                className="h-7 px-3 rounded-full border text-xs font-medium hover:bg-muted"
                 style={{ borderColor: "hsl(var(--border))", color: "#8B2252" }}
               >
-                {t(`${perspective}.counter.bulk.meetMiddle`, "Meet in middle")}
+                Meet in middle
               </button>
-              <div className="flex items-center gap-1 w-full">
-                <Input
-                  type="number"
-                  step="0.01"
-                  inputMode="decimal"
-                  value={bulkOffset}
-                  onChange={(e) => setBulkOffset(e.target.value)}
-                  placeholder={t(`${perspective}.counter.bulk.customPlaceholder`, { defaultValue: "±{{unit}}", unit: pLbl })}
-                  className="h-11 flex-1 text-right tabular-nums"
-                />
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="h-11 px-4 text-xs"
-                  onClick={applyBulkOffset}
-                  style={{ color: "#8B2252" }}
-                >
-                  {t(`${perspective}.counter.bulk.apply`, "Apply")}
-                </Button>
-              </div>
             </div>
-          </details>
+          </div>
         )}
 
         {/* Cuts — desktop table */}
