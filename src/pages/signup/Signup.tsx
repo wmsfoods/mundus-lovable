@@ -153,6 +153,28 @@ export default function Signup() {
       toast.error(reqErr.message);
       return;
     }
+    // Fire-and-forget email notifications
+    Promise.allSettled([
+      supabase.functions.invoke("signup-notifications", {
+        body: {
+          action: "user_confirmation",
+          userEmail: data.email,
+          userName: data.name,
+          companyName: data.companyName,
+        },
+      }),
+      supabase.functions.invoke("signup-notifications", {
+        body: {
+          action: "admin_notification",
+          userEmail: data.email,
+          userName: data.name,
+          companyName: data.companyName,
+          role: data.role,
+          registrationCountry: data.registrationCountry,
+          taxId: data.taxId,
+        },
+      }),
+    ]);
     navigate(`/signup/success?email=${encodeURIComponent(data.email)}`);
   };
 
