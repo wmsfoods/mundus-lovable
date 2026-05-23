@@ -13,7 +13,6 @@ import {
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
-import { ProteinMarquee } from "@/components/mundus/ProteinMarquee";
 
 // =========================================================================
 // Stat card
