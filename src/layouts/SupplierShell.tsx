@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar, type SidebarItem, type SidebarEntry } from "@/components/mundus/Sidebar";
@@ -45,6 +45,7 @@ function SupplierShellInner() {
     location.pathname.startsWith("/supplier/auctions/create");
   const [sidebarManual, setSidebarManual] = useState<boolean | null>(null);
   const sidebarCollapsed = !isMobile && (sidebarManual ?? focusRoute);
+  useEffect(() => { setSidebarManual(null); }, [location.pathname]);
   const userName = user?.email?.split("@")[0] ?? "User";
   const { openUpsell } = useInsightsUpsell();
   const stackMode = isMobile && isStackRoute(location.pathname);
