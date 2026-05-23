@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { type ParsedAddress } from "@/lib/googlePlaces";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface AddressAutocompleteProps {
   value?: string;
@@ -29,76 +30,41 @@ export function AddressAutocomplete({
   className,
   disabled,
   id,
-  showAttribution = true,
 }: AddressAutocompleteProps) {
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [showDropdown, setShowDropdown] = useState(false);
-  const [, setLoading] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout>>();
-  const apiKey = import.meta.env.VITE_GOOGLE_PLACES_API_KEY;
-  const enabled = Boolean(apiKey);
 
   const fetchSuggestions = useCallback(async (input: string) => {
-    if (!enabled || input.length < 3) {
+    if (input.length < 3) {
       setSuggestions([]);
       setShowDropdown(false);
       return;
     }
 
-    setLoading(true);
     try {
-      const body: any = {
-        input,
-        includedPrimaryTypes: ["street_address", "subpremise", "premise", "route"],
-      };
-      if (restrictCountry) {
-        body.includedRegionCodes = [restrictCountry.toUpperCase()];
-      }
-
-      const res = await fetch("https://places.googleapis.com/v1/places:autocomplete", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": apiKey,
-        },
-        body: JSON.stringify(body),
+      const { data, error } = await supabase.functions.invoke("places-autocomplete", {
+        body: { action: "autocomplete", input, restrictCountry },
       });
 
-      if (!res.ok) {
-        console.warn("[AddressAutocomplete] API error:", res.status, await res.text());
-        setSuggestions([]);
-        setShowDropdown(false);
+      if (error) {
+        console.warn("[AddressAC] Edge function error:", error);
         return;
       }
 
-      const data = await res.json();
-      const items: Suggestion[] = (data.suggestions || [])
-        .filter((s: any) => s.placePrediction)
-        .slice(0, 5)
-        .map((s: any) => ({
-          placeId: s.placePrediction.placeId,
-          mainText: s.placePrediction.structuredFormat?.mainText?.text || "",
-          secondaryText: s.placePrediction.structuredFormat?.secondaryText?.text || "",
-          fullText: s.placePrediction.text?.text || "",
-        }));
-
+      const items: Suggestion[] = data?.suggestions || [];
       setSuggestions(items);
       setShowDropdown(items.length > 0);
     } catch (err) {
-      console.warn("[AddressAutocomplete] fetch error:", err);
-      setSuggestions([]);
-      setShowDropdown(false);
-    } finally {
-      setLoading(false);
+      console.warn("[AddressAC] fetch error:", err);
     }
-  }, [enabled, apiKey, restrictCountry]);
+  }, [restrictCountry]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value;
     onChange?.(val);
-
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchSuggestions(val), 300);
   };
@@ -109,45 +75,17 @@ export function AddressAutocomplete({
     onChange?.(suggestion.fullText);
 
     try {
-      const res = await fetch(
-        `https://places.googleapis.com/v1/places/${suggestion.placeId}`,
-        {
-          headers: {
-            "X-Goog-Api-Key": apiKey,
-            "X-Goog-FieldMask": "addressComponents,formattedAddress,location",
-          },
-        }
-      );
+      const { data, error } = await supabase.functions.invoke("places-autocomplete", {
+        body: { action: "details", placeId: suggestion.placeId },
+      });
 
-      if (!res.ok) return;
-      const place = await res.json();
+      if (error || !data?.address) return;
 
-      const get = (type: string, short = false) => {
-        const comp = (place.addressComponents || []).find((c: any) =>
-          c.types?.includes(type)
-        );
-        return comp ? (short ? comp.shortText : comp.longText) : "";
-      };
-
-      const streetNumber = get("street_number");
-      const route = get("route");
-
-      const parsed: ParsedAddress = {
-        street: [streetNumber, route].filter(Boolean).join(" "),
-        city: get("locality") || get("sublocality_level_1") || get("administrative_area_level_2"),
-        state: get("administrative_area_level_1"),
-        zip: get("postal_code"),
-        country: get("country"),
-        countryCode: get("country", true),
-        lat: place.location?.latitude ?? 0,
-        lng: place.location?.longitude ?? 0,
-        formatted: place.formattedAddress ?? "",
-      };
-
+      const parsed: ParsedAddress = data.address;
       onChange?.(parsed.street || parsed.formatted);
       onAddressSelect?.(parsed);
     } catch (err) {
-      console.warn("[AddressAutocomplete] details error:", err);
+      console.warn("[AddressAC] details error:", err);
     }
   };
 
@@ -198,9 +136,7 @@ export function AddressAutocomplete({
               </div>
             </div>
           ))}
-          {showAttribution && (
-            <div className="maa-dropdown-attr">Powered by Google</div>
-          )}
+          <div className="maa-dropdown-attr">Powered by Google</div>
         </div>
       )}
     </div>
