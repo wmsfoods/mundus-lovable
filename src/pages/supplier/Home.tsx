@@ -12,10 +12,6 @@ import {
   PlusIcon,
   ArrowRightIcon,
   ArrowTopRightIcon,
-  MessageIcon,
-  ClockIcon,
-  ClipboardIcon,
-  EyeIcon,
 } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
