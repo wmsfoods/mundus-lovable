@@ -1,42 +1,30 @@
-/* Google Places Autocomplete — themed to Mundus */
-.pac-container {
-  border-radius: 8px;
-  border: 1px solid hsl(var(--border));
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+/* New Google Places Web Component styling */
+.mundus-address-container {
+  width: 100%;
+}
+
+.mundus-address-container gmp-place-autocomplete {
+  width: 100%;
+  display: block;
+}
+
+.mundus-address-container gmp-place-autocomplete::part(input) {
   font-family: inherit;
-  z-index: 9999;
-  margin-top: 4px;
-  background: hsl(var(--popover));
-  overflow: hidden;
-}
-
-.pac-item {
-  padding: 10px 12px;
-  cursor: pointer;
-  font-size: 13px;
-  line-height: 1.4;
-  border-top: 1px solid hsl(var(--border) / 0.5);
+  font-size: 14px;
+  padding: 8px 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  background: hsl(var(--background));
   color: hsl(var(--foreground));
+  width: 100%;
+  height: 38px;
+  outline: none;
+  transition: border-color 0.15s;
 }
 
-.pac-item:first-child { border-top: none; }
-
-.pac-item:hover,
-.pac-item-selected {
-  background: hsl(var(--accent));
-}
-
-.pac-item-query {
-  font-weight: 600;
-  color: hsl(var(--foreground));
-  font-size: 13px;
-}
-
-.pac-matched { font-weight: 700; color: #8B2252; }
-
-.pac-icon {
-  opacity: 0.5;
-  margin-right: 8px;
+.mundus-address-container gmp-place-autocomplete::part(input):focus {
+  border-color: #8B2252;
+  box-shadow: 0 0 0 2px rgba(139, 34, 82, 0.15);
 }
 
 .maa-attr {
@@ -47,8 +35,9 @@
   letter-spacing: 0.02em;
 }
 
-/* Touch-friendly on mobile */
 @media (max-width: 640px) {
-  .pac-item { padding: 12px 14px; font-size: 14px; min-height: 44px; }
-  .pac-item-query { font-size: 14px; }
+  .mundus-address-container gmp-place-autocomplete::part(input) {
+    height: 44px;
+    font-size: 16px;
+  }
 }
