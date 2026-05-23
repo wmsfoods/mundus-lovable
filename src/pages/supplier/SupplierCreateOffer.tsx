@@ -775,6 +775,26 @@ export default function SupplierCreateOffer() {
 
   return (
     <div className="cov4">
+      {fromRequest && (
+        <div
+          className="rounded-lg p-4 mb-4 flex items-start gap-3"
+          style={{
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+          }}
+        >
+          <span style={{ color: "#3B82F6", fontSize: 18, lineHeight: 1 }}>ℹ️</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1E40AF" }}>
+              Creating offer from request #{fromRequest.requestNumber}
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 14, color: "#2563EB" }}>
+              Pre-filled with {fromRequest.client}'s request for {fromRequest.product}.
+              Review and adjust the details before publishing.
+            </p>
+          </div>
+        </div>
+      )}
       {/* HEADER */}
       <header className="cov4-header">
         <div className="cov4-hdr-l">
