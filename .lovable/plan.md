@@ -1,39 +1,29 @@
-## Mudanças no Step 3 do Signup (Company Profile)
 
-### 1. Lista de proteínas
-Em `src/pages/signup/Signup.tsx` (linha 29):
-- Trocar `["Beef", "Pork", "Poultry", "Lamb", "Seafood", "Other"]` por `["Beef", "Pork", "Poultry", "Ovine", "Seafood"]`.
-- Remove "Other" e renomeia "Lamb" → "Ovine".
+## Objetivo
+Após o cadastro, o usuário não deve ver "código de verificação enviado". O cadastro fica **em análise** pelo admin. Quando aprovado, recebe um email de boas-vindas e faz login normalmente com o email/senha que criou.
 
-### 2. Tornar Protein profile obrigatório
-- Atualizar `canProceed` (linha ~577) para exigir `data.proteins.length >= 1`.
-- Continua permitindo selecionar todas (lógica de toggle já suporta múltipla seleção, inclusive todas).
-- Adicionar `*` vermelho no label "Protein profile" indicando obrigatoriedade (mesmo padrão visual dos demais obrigatórios).
+## Mudanças
 
-### 3. Feedback do que falta preencher
-Quando o botão "Proceed" estiver desabilitado, mostrar abaixo dele um bloco discreto listando os campos pendentes em tempo real:
+### 1. `src/pages/signup/SignupSuccess.tsx`
+Reescrever o conteúdo da tela:
+- **Título:** "Cadastro recebido!" / "Registration received!"
+- **Mensagem:** "Seu cadastro está em análise pela equipe Mundus. Assim que for aprovado, você receberá um email de confirmação no endereço `f******@hotmail.com` e poderá acessar a plataforma com o email e senha que criou."
+- **Remover** os botões "Resend code" e "Enter code".
+- **Manter** apenas um botão "Voltar para login" → navega para `/login`.
+- Manter o ícone de envelope + check (visual atual).
+- Remover a função `resend()` e o import de `supabase` (não é mais usado aqui).
 
-```
-text
-⚠ To proceed, complete:
-  • Company name
-  • Tax ID
-  • Role
-  • Protein profile (select at least one)
-  • Countries of operation (at least 1)
-```
+### 2. i18n — `src/i18n/locales/{en,pt,es,fr,zh}.json`
+Atualizar as chaves em `signup.success.*`:
+- `title` → "Cadastro recebido!" / "Registration received!" / etc.
+- `body` → nova mensagem de análise (com `{{email}}` mascarado)
+- Trocar/remover `resend` e `enterCode`; adicionar `backToLogin`
+- `navTitle` pode permanecer
 
-Detalhes de UI:
-- Bloco aparece logo acima/abaixo do botão Proceed, só quando há pendências.
-- Texto pequeno em `text-gray-500`, ícone alerta em `#B64769`.
-- Lista é derivada do estado atual (sem useState extra): mapeia cada campo faltante para o seu label traduzido.
-- Como bônus de affordance: ao passar o mouse sobre o botão desabilitado, o bloco recebe um leve highlight (border do bloco em `#B64769`/10).
+### 3. Email de boas-vindas (aprovação do admin)
+**Não implementar agora** — o fluxo de aprovação do admin (`AdminUserRequests`) já existe. Quando for hora de disparar o email de boas-vindas, criaremos um template transacional ("welcome-approved") e chamaremos `send-transactional-email` no momento em que o admin aprovar o request. Fica registrado como próximo passo, fora do escopo desta correção.
 
-### 4. i18n
-Adicionar chaves em `en/es/fr/pt/zh`:
-- `signup.fields.proteinProfileRequired` → "Select at least one protein"
-- `signup.missingFields.title` → "To proceed, please complete:"
-- `signup.missingFields.companyName`, `.taxId`, `.role`, `.proteinProfile`, `.countriesOfOperation`
-
-### Fora do escopo
-- Sem mudanças em backend, Edge Functions, schema ou outras telas. Apenas Step 3 do Signup + locales.
+## Fora de escopo
+- Edge functions
+- Lógica de aprovação do admin
+- Qualquer mudança no fluxo de auth/Supabase
