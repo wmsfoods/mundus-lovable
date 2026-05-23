@@ -28,6 +28,30 @@ const countryCodes = [
 
 const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine", "Seafood"];
 
+const TAX_ID_RULES: Record<string, { label: string; hint: string; pattern: RegExp }> = {
+  "United States": { label: "EIN", hint: "Format: XX-XXXXXXX (9 digits)", pattern: /^\d{2}-?\d{7}$/ },
+  "Brazil": { label: "CNPJ", hint: "Format: XX.XXX.XXX/XXXX-XX", pattern: /^\d{2}\.?\d{3}\.?\d{3}\/?\d{4}-?\d{2}$/ },
+  "United Kingdom": { label: "VAT Number", hint: "Format: GB + 9 digits", pattern: /^GB\d{9}(\d{3})?$/ },
+  "Germany": { label: "USt-IdNr", hint: "Format: DE + 9 digits", pattern: /^DE\d{9}$/ },
+  "France": { label: "N° TVA", hint: "Format: FR + 2 chars + 9 digits", pattern: /^FR[A-Z0-9]{2}\d{9}$/i },
+  "Argentina": { label: "CUIT", hint: "Format: XX-XXXXXXXX-X (11 digits)", pattern: /^\d{2}-?\d{8}-?\d{1}$/ },
+  "China": { label: "USCC", hint: "18 alphanumeric characters", pattern: /^[A-Z0-9]{18}$/i },
+  "United Arab Emirates": { label: "TRN", hint: "15 digits", pattern: /^\d{15}$/ },
+  "Saudi Arabia": { label: "VAT", hint: "15 digits starting with 3", pattern: /^3\d{14}$/ },
+  "Australia": { label: "ABN", hint: "11 digits", pattern: /^\d{11}$/ },
+  "Uruguay": { label: "RUT", hint: "12 digits", pattern: /^\d{12}$/ },
+  "Paraguay": { label: "RUC", hint: "Format: XXXXXXXX-X", pattern: /^\d{1,8}-?\d{1}$/ },
+  "Mexico": { label: "RFC", hint: "12-13 alphanumeric", pattern: /^[A-Z&Ñ]{3,4}\d{6}[A-Z0-9]{3}$/i },
+  "Chile": { label: "RUT", hint: "Format: XX.XXX.XXX-X", pattern: /^\d{1,2}\.?\d{3}\.?\d{3}-?[0-9Kk]$/ },
+  "Colombia": { label: "NIT", hint: "9-10 digits", pattern: /^\d{9,10}$/ },
+};
+const DEFAULT_TAX_RULE = { label: "Tax ID", hint: "5-25 alphanumeric characters", pattern: /^[A-Z0-9.\-\/]{5,25}$/i };
+
+function getTaxRule(country?: string) {
+  if (!country) return DEFAULT_TAX_RULE;
+  return TAX_ID_RULES[country] || DEFAULT_TAX_RULE;
+}
+
 type Role = "buyer" | "supplier" | "";
 
 type FormData = {
@@ -567,6 +591,10 @@ function Step3Company({
   onNext: () => void;
 }) {
   const { t } = useTranslation();
+  const [taxIdTouched, setTaxIdTouched] = useState(false);
+  const firstCountry = data.countriesOfOperation[0]?.name;
+  const taxRule = getTaxRule(firstCountry);
+  const taxIdValid = taxRule.pattern.test(data.taxId.trim());
   const onFile = (f: File | null) => {
     if (f && f.size > 5 * 1024 * 1024) {
       toast.error(t("signup.fileTooLarge"));
@@ -578,6 +606,7 @@ function Step3Company({
   const canProceed =
     !!data.companyName &&
     !!data.taxId &&
+    taxIdValid &&
     !!data.role &&
     data.proteins.length >= 1 &&
     data.countriesOfOperation.length >= 1;
@@ -585,6 +614,7 @@ function Step3Company({
   const missing: string[] = [];
   if (!data.companyName) missing.push(t("signup.fields.companyName"));
   if (!data.taxId) missing.push(t("signup.fields.taxId"));
+  else if (!taxIdValid) missing.push(`${taxRule.label} (${taxRule.hint})`);
   if (!data.role) missing.push(t("signup.fields.role"));
   if (data.proteins.length < 1) missing.push(t("signup.fields.proteinProfile"));
   if (data.countriesOfOperation.length < 1)
@@ -600,12 +630,29 @@ function Step3Company({
             onChange={(e) => set("companyName", e.target.value)}
           />
         </Field>
-        <Field label={t("signup.fields.taxId")}>
+        <Field
+          label={
+            firstCountry
+              ? `${taxRule.label} — ${t("signup.fields.taxId")}`
+              : t("signup.fields.taxId")
+          }
+        >
           <input
-            className={inputCls}
+            className={cn(
+              inputCls,
+              taxIdTouched && data.taxId && !taxIdValid && "border-red-500 focus:border-red-500 focus:ring-red-500",
+            )}
             value={data.taxId}
             onChange={(e) => set("taxId", e.target.value)}
+            onBlur={() => setTaxIdTouched(true)}
           />
+          {taxIdTouched && data.taxId && !taxIdValid ? (
+            <p className="text-xs text-red-500 mt-1">
+              {t("signup.fields.taxIdError", { hint: taxRule.hint })}
+            </p>
+          ) : (
+            <p className="text-xs text-gray-500 mt-1">{taxRule.hint}</p>
+          )}
         </Field>
       </div>
 
@@ -871,6 +918,7 @@ function Step4Contact({
   submitting: boolean;
 }) {
   const { t } = useTranslation();
+  const [countryFromGoogle, setCountryFromGoogle] = useState(false);
   const canFinish =
     !!data.state &&
     !!data.city &&
@@ -892,7 +940,10 @@ function Step4Contact({
               if (addr.city) set("city", addr.city);
               if (addr.state) set("state", addr.state);
               if (addr.zip) set("zip", addr.zip);
-              if (addr.country) set("country", addr.country);
+              if (addr.country) {
+                set("country", addr.country);
+                setCountryFromGoogle(true);
+              }
             }}
           />
         </Field>
@@ -925,12 +976,40 @@ function Step4Contact({
             onChange={(e) => set("zip", e.target.value)}
           />
         </Field>
-        <Field label={t("signup.fields.country")}>
-          <input
-            className={inputCls}
-            value={data.country}
-            onChange={(e) => set("country", e.target.value)}
-          />
+        <Field
+          label={
+            <span className="flex items-center justify-between gap-2">
+              <span>{t("signup.fields.country")}</span>
+              {countryFromGoogle && (
+                <button
+                  type="button"
+                  onClick={() => setCountryFromGoogle(false)}
+                  className="text-xs font-medium hover:underline"
+                  style={{ color: WINE }}
+                >
+                  ✎ {t("signup.fields.changeCountry")}
+                </button>
+              )}
+            </span>
+          }
+        >
+          <div className="relative">
+            <input
+              className={cn(
+                inputCls,
+                countryFromGoogle && "bg-gray-50 text-gray-700 cursor-not-allowed pr-10",
+              )}
+              value={data.country}
+              onChange={(e) => set("country", e.target.value)}
+              disabled={countryFromGoogle}
+              title={countryFromGoogle ? t("signup.fields.countryLocked") : undefined}
+            />
+            {countryFromGoogle && (
+              <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none">
+                🔒
+              </span>
+            )}
+          </div>
         </Field>
         <Field label={t("signup.fields.businessPhone")}>
           <div className="flex gap-2">
@@ -994,7 +1073,7 @@ function Step4Contact({
 }
 
 /* ----------------- helpers ----------------- */
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-sm text-gray-700 mb-1.5">{label}</label>
