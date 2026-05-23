@@ -24,12 +24,14 @@ export type OfficeInput = Partial<Omit<Office, "id">>;
 
 export function useCompanyOffices(currentCompanyId: string | null) {
   const [offices, setOffices] = useState<Office[]>([]);
+  const [userCounts, setUserCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchOffices = useCallback(async () => {
     if (!currentCompanyId) {
       setOffices([]);
+      setUserCounts({});
       setLoading(false);
       return;
     }
@@ -45,9 +47,25 @@ export function useCompanyOffices(currentCompanyId: string | null) {
     if (error) {
       setError(error.message);
       setOffices([]);
+      setUserCounts({});
     } else {
-      setOffices((data || []) as Office[]);
+      const list = (data || []) as Office[];
+      setOffices(list);
       setError(null);
+      const ids = list.map((o) => o.id);
+      if (ids.length) {
+        const { data: uo } = await supabase
+          .from("user_offices")
+          .select("company_id")
+          .in("company_id", ids);
+        const counts: Record<string, number> = {};
+        (uo || []).forEach((r: { company_id: string }) => {
+          counts[r.company_id] = (counts[r.company_id] || 0) + 1;
+        });
+        setUserCounts(counts);
+      } else {
+        setUserCounts({});
+      }
     }
     setLoading(false);
   }, [currentCompanyId]);
@@ -74,5 +92,5 @@ export function useCompanyOffices(currentCompanyId: string | null) {
     await fetchOffices();
   };
 
-  return { offices, loading, error, refetch: fetchOffices, createOffice, updateOffice, deleteOffice };
+  return { offices, userCounts, loading, error, refetch: fetchOffices, createOffice, updateOffice, deleteOffice };
 }
