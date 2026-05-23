@@ -67,7 +67,6 @@ export default function BuyerOfferDetail() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { offer, loading, error, notFound } = useOffer(id);
-  const galleryImages = useOfferImages(offer?.items);
   const [moreOpen, setMoreOpen] = useState(false);
   const [bidOpen, setBidOpen] = useState(false);
   const { company } = useCurrentCompany();
@@ -220,6 +219,7 @@ function OfferDetailContent({
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
+  const galleryImages = useOfferImages(items);
 
   const title = mixed
     ? t("buyer.offers.card.mixedTitle", { count: items.length })
