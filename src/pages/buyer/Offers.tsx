@@ -17,6 +17,13 @@ import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
 import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
 import type { MockAuction } from "@/data/mockAuctions";
 import { Gavel } from "lucide-react";
+import {
+  OffersFilterBar,
+  DEFAULT_OFFERS_FILTER,
+  countActiveOfferFilters,
+  type OffersFilterState,
+  type TempValue,
+} from "@/components/marketplace/OffersFilterBar";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -235,10 +242,10 @@ export default function BuyerOffers() {
 
   const initialProtein = (searchParams.get("protein") as ProteinKey | null) ?? "all";
   const [protein, setProtein] = useState<ProteinKey>(initialProtein);
-  const [search, setSearch] = useState("");
   const [sortBy, setSortBy] = useState<"newest" | "priceAsc" | "priceDesc" | "volumeDesc">("newest");
   const [auctionsOnly, setAuctionsOnly] = useState(false);
   const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
+  const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
   // Keep URL in sync when user changes the protein pill.
   useEffect(() => {
@@ -253,20 +260,84 @@ export default function BuyerOffers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [protein]);
 
+  const filterOptions = useMemo(() => {
+    const temps = new Set<TempValue>();
+    const origins = new Set<string>();
+    const incoterms = new Set<string>();
+    const markets = new Set<string>();
+    for (const o of offers) {
+      for (const it of o.items ?? []) {
+        const c = (it.condition ?? "").trim();
+        if (c === "Frozen" || c === "Chilled" || c === "Fresh") temps.add(c);
+      }
+      if (o.origin_country) origins.add(o.origin_country);
+      for (const i of o.incoterms ?? []) {
+        if (i.incoterm_type) incoterms.add(i.incoterm_type);
+      }
+      for (const m of o.markets ?? []) {
+        const n = m?.market?.country?.english_name;
+        if (n) markets.add(n);
+      }
+    }
+    return {
+      temps: Array.from(temps),
+      origins: Array.from(origins),
+      incoterms: Array.from(incoterms),
+      markets: Array.from(markets),
+    };
+  }, [offers]);
+
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = filter.search.trim().toLowerCase();
     let copy = [...offers];
     if (protein !== "all") {
       copy = copy.filter((o) => offerProtein(o) === protein);
+    }
+    if (filter.temp !== "all") {
+      copy = copy.filter((o) =>
+        (o.items ?? []).some((it) => it.condition === filter.temp),
+      );
+    }
+    if (filter.origins.length > 0) {
+      copy = copy.filter((o) =>
+        o.origin_country ? filter.origins.includes(o.origin_country) : false,
+      );
+    }
+    if (filter.incoterms.length > 0) {
+      copy = copy.filter((o) =>
+        (o.incoterms ?? []).some((i) =>
+          filter.incoterms.includes(i.incoterm_type),
+        ),
+      );
+    }
+    if (filter.markets.length > 0) {
+      copy = copy.filter((o) =>
+        (o.markets ?? []).some((m) =>
+          m?.market?.country?.english_name
+            ? filter.markets.includes(m.market.country.english_name)
+            : false,
+        ),
+      );
+    }
+    if (filter.halal !== "any") {
+      copy = copy.filter((o) =>
+        filter.halal === "yes" ? !!o.is_halal : !o.is_halal,
+      );
+    }
+    if (filter.kosher !== "any") {
+      copy = copy.filter((o) =>
+        filter.kosher === "yes" ? !!o.is_kosher : !o.is_kosher,
+      );
     }
     if (q) {
       copy = copy.filter((o) => {
         const inOrigin = (o.origin_country ?? "").toLowerCase().includes(q);
         const inSupplier = (o.supplier_name ?? "").toLowerCase().includes(q);
+        const inPort = (o.origin_port ?? "").toLowerCase().includes(q);
         const inItems = (o.items ?? []).some((it) =>
-          (it.customer_product?.name ?? "").toLowerCase().includes(q)
+          (it.customer_product?.name ?? "").toLowerCase().includes(q),
         );
-        return inOrigin || inSupplier || inItems;
+        return inOrigin || inSupplier || inPort || inItems;
       });
     }
     copy.sort((a, b) => {
@@ -286,7 +357,7 @@ export default function BuyerOffers() {
       return totalKg(b) - totalKg(a);
     });
     return copy;
-  }, [offers, protein, search, sortBy]);
+  }, [offers, protein, filter, sortBy]);
 
   const total = filtered.length;
   const totalMT = filtered.reduce(
@@ -294,10 +365,11 @@ export default function BuyerOffers() {
     0
   ) / 1000;
 
-  const hasActiveFilters = protein !== "all" || search.trim().length > 0;
+  const activeFilterCount = countActiveOfferFilters(filter);
+  const hasActiveFilters = protein !== "all" || activeFilterCount > 0;
   const clearAll = () => {
     setProtein("all");
-    setSearch("");
+    setFilter(DEFAULT_OFFERS_FILTER);
     setAuctionsOnly(false);
   };
 
@@ -319,13 +391,7 @@ export default function BuyerOffers() {
       </div>
 
       <div className="bo-filterbar">
-        <ProteinFilter
-          value={protein}
-          onChange={setProtein}
-          available={marketProteins}
-          counts={proteinCounts}
-        />
-        <div className="bo-filter-row" style={{ alignItems: "center" }}>
+        <div className="bo-filter-row" style={{ alignItems: "center", gap: 10 }}>
           <button
             type="button"
             className={`bo-filter-pill ${auctionsOnly ? "is-active" : ""}`}
@@ -336,19 +402,7 @@ export default function BuyerOffers() {
             <span style={{ opacity: 0.7, marginLeft: 4 }}>0</span>
           </button>
           <AuctionInfoDialog />
-        </div>
-        <div className="bo-filter-row">
-          <div className="bo-search">
-            <span className="bo-search-icon"><SearchIcon size={16} /></span>
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("buyer.offers.searchPlaceholder", "Search by cut, origin, supplier…")}
-              aria-label="Search offers"
-            />
-          </div>
-          <div className="mini-select-wrap">
+          <div className="mini-select-wrap" style={{ marginLeft: "auto" }}>
             <select
               className="mini-select"
               value={sortBy}
@@ -361,30 +415,21 @@ export default function BuyerOffers() {
               <option value="volumeDesc">{t("buyer.offers.sort.volumeDesc", "Largest volume")}</option>
             </select>
           </div>
-          {hasActiveFilters && (
-            <div className="bo-active-chips">
-              {protein !== "all" && (
-                <span className="bo-chip">
-                  {protein.charAt(0).toUpperCase() + protein.slice(1)}
-                  <button type="button" onClick={() => setProtein("all")} aria-label="Clear protein">
-                    <XIcon size={12} />
-                  </button>
-                </span>
-              )}
-              {search.trim() && (
-                <span className="bo-chip">
-                  “{search.trim()}”
-                  <button type="button" onClick={() => setSearch("")} aria-label="Clear search">
-                    <XIcon size={12} />
-                  </button>
-                </span>
-              )}
-              <button type="button" className="bo-chip-clear" onClick={clearAll}>
-                {t("buyer.offers.clearAll", "Clear all")}
-              </button>
-            </div>
-          )}
         </div>
+        <OffersFilterBar
+          value={filter}
+          onChange={setFilter}
+          options={filterOptions}
+          searchPlaceholder={t("buyer.offers.searchPlaceholder", "Search products, ports...")}
+          proteinNode={
+            <ProteinFilter
+              value={protein}
+              onChange={setProtein}
+              available={marketProteins}
+              counts={proteinCounts}
+            />
+          }
+        />
       </div>
 
       <div className="result-bar">
