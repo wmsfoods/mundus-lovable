@@ -1,5 +1,5 @@
 import { Fragment, useCallback, useState, useEffect, useRef } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
@@ -149,6 +149,28 @@ export default function SupplierCreateOffer() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const fromRequestId = searchParams.get("from");
+  const location = useLocation();
+  const fromRequest = (location.state as any)?.fromRequest as
+    | {
+        requestId: string;
+        requestNumber: string;
+        client: string;
+        product: string;
+        category: string;
+        specification: string;
+        quantity: number;
+        targetPrice: number;
+        destinationCountry: string;
+        destinationPort: string;
+        incoterms: string;
+        containerSize: string;
+        containerCount: number;
+        temperature: string;
+        shipmentDate: string;
+        additionalInfo: string | null;
+      }
+    | undefined;
+  const prefilledRef = useRef(false);
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
@@ -215,6 +237,83 @@ export default function SupplierCreateOffer() {
       toast.success(`Prefilled from request #${fromRequestId}`, { duration: 4000 });
     }
   }, [fromRequestId]);
+
+  /* Prefill from a buyer's offer request (navigation state from Requests page). */
+  useEffect(() => {
+    if (prefilledRef.current) return;
+    if (!fromRequest) return;
+    if (!MARKETS || MARKETS.length === 0) return;
+    prefilledRef.current = true;
+
+    setUnit("kg");
+
+    if (fromRequest.containerSize === "20ft" || fromRequest.containerSize === "40ft") {
+      setCsize(fromRequest.containerSize);
+    }
+    if (fromRequest.temperature === "Frozen" || fromRequest.temperature === "Chilled") {
+      setTemp(fromRequest.temperature);
+    }
+
+    if (fromRequest.incoterms) {
+      setSelInco([fromRequest.incoterms]);
+      setPrimaryInco(fromRequest.incoterms);
+    }
+
+    // Match destination market by country name (case-insensitive).
+    const wanted = fromRequest.destinationCountry?.trim().toLowerCase();
+    const market = wanted
+      ? MARKETS.find((m) => m.n.trim().toLowerCase() === wanted) ||
+        MARKETS.find((m) => m.n.trim().toLowerCase().includes(wanted))
+      : undefined;
+    if (market) {
+      setSelMarkets([market]);
+      // Match port by name within the market if possible.
+      const portWanted = fromRequest.destinationPort?.trim().toLowerCase();
+      const matchedPort = portWanted
+        ? market.p.find((p) => p.n.trim().toLowerCase() === portWanted) ||
+          market.p.find((p) => p.n.trim().toLowerCase().includes(portWanted))
+        : undefined;
+      setMktCfg({
+        [market.id]: {
+          sp: matchedPort ? [matchedPort.id] : market.p.map((p) => p.id),
+          sm: true,
+          gf: "",
+          pf: Object.fromEntries(market.p.map((p) => [p.id, ""])),
+        },
+      });
+    }
+
+    // Seed an initial cut row from the requested product.
+    const ask = fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : "";
+    const floor = fromRequest.targetPrice
+      ? (fromRequest.targetPrice * 0.98).toFixed(2)
+      : "";
+    const qty = fromRequest.quantity ? String(fromRequest.quantity) : "";
+    setCuts([
+      {
+        id: Date.now().toString(),
+        cat: fromRequest.category || "Beef",
+        cut: fromRequest.product || "",
+        spec: fromRequest.specification || "Boneless",
+        pkg: "Vacuum Pack",
+        gr: "Not Classified",
+        ag: "None",
+        qty,
+        ask,
+        floor,
+        notes: fromRequest.additionalInfo || "",
+      },
+    ]);
+
+    // Distribution: pre-check Marketplace + Specific Customers and select requester.
+    setDistMarketplace(true);
+    setDistAllCustomers(false);
+    setDistSpecific(true);
+    const customer = MOCK_CUSTOMERS.find(
+      (c) => c.name.toLowerCase() === fromRequest.client.toLowerCase()
+    );
+    if (customer) setSelectedCustomers([customer.id]);
+  }, [fromRequest, MARKETS, setUnit]);
 
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
@@ -676,6 +775,26 @@ export default function SupplierCreateOffer() {
 
   return (
     <div className="cov4">
+      {fromRequest && (
+        <div
+          className="rounded-lg p-4 mb-4 flex items-start gap-3"
+          style={{
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+          }}
+        >
+          <span style={{ color: "#3B82F6", fontSize: 18, lineHeight: 1 }}>ℹ️</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#1E40AF" }}>
+              Creating offer from request #{fromRequest.requestNumber}
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 14, color: "#2563EB" }}>
+              Pre-filled with {fromRequest.client}'s request for {fromRequest.product}.
+              Review and adjust the details before publishing.
+            </p>
+          </div>
+        </div>
+      )}
       {/* HEADER */}
       <header className="cov4-header">
         <div className="cov4-hdr-l">
