@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
-import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 const COUNTRY_CODE: Record<string, string> = {
@@ -20,7 +19,6 @@ export function useRealSupplierOffers() {
   const [offers, setOffers] = useState<SupplierOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { activeOfficeId, isAllOffices } = useActiveOffice();
   const { company } = useCurrentCompany();
   const supplierId = company?.id ?? null;
 
@@ -34,7 +32,7 @@ export function useRealSupplierOffers() {
     (async () => {
       setLoading(true);
       setError(null);
-      let query = supabase
+      const query = supabase
         .from("offers")
         .select(`
           id, offer_number, status, origin_country, origin_port,
@@ -48,11 +46,10 @@ export function useRealSupplierOffers() {
         .eq("supplier_id", supplierId)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
-      if (!isAllOffices && activeOfficeId) {
-        // Include offers explicitly tied to this office OR offers with no office
-        // assigned (treated as visible across the company).
-        query = query.or(`office_id.eq.${activeOfficeId},office_id.is.null`);
-      }
+      // Always return ALL offers belonging to the supplier company. The active
+      // office filter is intentionally not applied here so the "My Offers"
+      // listing surfaces every offer the supplier owns, including offers tied
+      // to legacy/external office_ids or offers without an office assigned.
       const { data, error: err } = await query;
       if (cancelled) return;
       if (err) {
@@ -124,7 +121,7 @@ export function useRealSupplierOffers() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [activeOfficeId, isAllOffices, supplierId]);
+  }, [supplierId]);
 
   return { offers, loading, error };
 }
