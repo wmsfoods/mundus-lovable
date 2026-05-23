@@ -29,6 +29,38 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 const MOCK_BUYER_USER_ID = "c3000001-0000-0000-0000-000000000001";
 
+type Anchor = "self" | "other";
+type DeltaUnit = "amount" | "percent";
+
+/**
+ * Compute final price from a delta applied against an anchor base.
+ *  - supplier · self  : base = own asking, signed = −  ("− from my asking")
+ *  - supplier · other : base = buyer's bid, signed = +  ("+ on buyer bid")
+ *  - buyer    · self  : base = own previous bid, signed = +  ("+ on my bid")
+ *  - buyer    · other : base = supplier counter, signed = −  ("− from supplier counter")
+ */
+function priceFromDelta(
+  perspective: "supplier" | "buyer",
+  anchor: Anchor,
+  mode: DeltaUnit,
+  value: number, // already $/kg if amount; percent otherwise
+  askingKg: number,
+  theirKg: number,
+): number {
+  const base = anchor === "self" ? askingKg : theirKg;
+  if (!Number.isFinite(value) || value <= 0) return base;
+  const magnitude = mode === "percent" ? base * (value / 100) : value;
+  const signed =
+    perspective === "supplier"
+      ? anchor === "self"
+        ? -magnitude
+        : +magnitude
+      : anchor === "self"
+        ? +magnitude
+        : -magnitude;
+  return Math.max(0, base + signed);
+}
+
 export interface CounterOfferModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -81,8 +113,19 @@ export function CounterOfferModal({
   const [accepted, setAccepted] = useState<Record<string, boolean>>({});
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
-  const [bulkMode, setBulkMode] = useState<"amount" | "percent">("amount");
+  const [bulkAnchor, setBulkAnchor] = useState<Anchor>("self");
+  const [bulkMode, setBulkMode] = useState<DeltaUnit>("amount");
   const [bulkValue, setBulkValue] = useState<string>("");
+
+  // Per-row delta controls (drive counters[itemId]).
+  const [rowAnchor, setRowAnchor] = useState<Record<string, Anchor>>({});
+  const [rowMode, setRowMode] = useState<Record<string, DeltaUnit>>({});
+  const [rowValue, setRowValue] = useState<Record<string, string>>({});
+
+  const anchorLabel = (a: Anchor): string => {
+    if (perspective === "supplier") return a === "self" ? "− my asking" : "+ buyer bid";
+    return a === "self" ? "+ my bid" : "− supplier counter";
+  };
 
   const setAllCounters = (priceFor: (it: typeof openItems[number]) => number) => {
     setCounters((prev) => {
@@ -100,18 +143,47 @@ export function CounterOfferModal({
   const applyBulk = () => {
     const v = parseFloat(bulkValue);
     if (!Number.isFinite(v) || v <= 0) return;
-    if (bulkMode === "percent") {
-      const capped = perspective === "buyer" ? Math.min(v, 30) : v;
-      const factor = perspective === "buyer" ? (1 - capped / 100) : (1 + capped / 100);
-      setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) * factor);
-    } else {
-      const deltaKg = fromDisplay(v, "price", unit);
-      if (perspective === "buyer") {
-        setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) - deltaKg);
-      } else {
-        setAllCounters((it) => (theirPrices.get(it.id) ?? Number(it.price)) + deltaKg);
-      }
-    }
+    const valKg = bulkMode === "amount" ? fromDisplay(v, "price", unit) : v;
+    setAllCounters((it) => {
+      const asking = Number(it.price);
+      const their = theirPrices.get(it.id) ?? asking;
+      return priceFromDelta(perspective, bulkAnchor, bulkMode, valKg, asking, their);
+    });
+    // Sync per-row controls so UI stays coherent
+    setRowAnchor((prev) => {
+      const next = { ...prev };
+      for (const it of openItems) if (!accepted[it.id]) next[it.id] = bulkAnchor;
+      return next;
+    });
+    setRowMode((prev) => {
+      const next = { ...prev };
+      for (const it of openItems) if (!accepted[it.id]) next[it.id] = bulkMode;
+      return next;
+    });
+    setRowValue((prev) => {
+      const next = { ...prev };
+      for (const it of openItems) if (!accepted[it.id]) next[it.id] = bulkValue;
+      return next;
+    });
+  };
+
+  /** Update a single row's delta input and recompute the final price. */
+  const updateRowDelta = (
+    itemId: string,
+    asking: number,
+    their: number,
+    patch: Partial<{ anchor: Anchor; mode: DeltaUnit; value: string }>,
+  ) => {
+    const anchor = patch.anchor ?? rowAnchor[itemId] ?? "self";
+    const mode = patch.mode ?? rowMode[itemId] ?? "amount";
+    const valueStr = patch.value ?? rowValue[itemId] ?? "";
+    if (patch.anchor !== undefined) setRowAnchor((p) => ({ ...p, [itemId]: anchor }));
+    if (patch.mode !== undefined) setRowMode((p) => ({ ...p, [itemId]: mode }));
+    if (patch.value !== undefined) setRowValue((p) => ({ ...p, [itemId]: valueStr }));
+    const v = parseFloat(valueStr);
+    const valKg = mode === "amount" && Number.isFinite(v) ? fromDisplay(v, "price", unit) : v;
+    const price = priceFromDelta(perspective, anchor, mode, valKg, asking, their);
+    setCounters((prev) => ({ ...prev, [itemId]: +price.toFixed(4) }));
   };
 
   // Buyer's initial bid (round 1) per offer_item — used to floor buyer counter-bids.
@@ -137,6 +209,11 @@ export function CounterOfferModal({
     }
     setCounters(initial);
     setAccepted({});
+    setRowAnchor(Object.fromEntries(openItems.map((it) => [it.id, "self" as Anchor])));
+    setRowMode(Object.fromEntries(openItems.map((it) => [it.id, "amount" as DeltaUnit])));
+    setRowValue(Object.fromEntries(openItems.map((it) => [it.id, ""])));
+    setBulkAnchor("self");
+    setBulkValue("");
     setMessage(
       (perspective === "buyer"
         ? negotiation.buyer_message
