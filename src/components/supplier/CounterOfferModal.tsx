@@ -783,9 +783,7 @@ export function CounterOfferModal({
                 <label className="flex items-center gap-2 mb-2 cursor-pointer">
                   <Checkbox
                     checked={isAccepted}
-                    onCheckedChange={(c) =>
-                      setAccepted((p) => ({ ...p, [it.id]: c === true }))
-                    }
+                    onCheckedChange={(c) => handleManualAcceptToggle(it.id, c === true)}
                     aria-label={t("engine.acceptThisPrice", "Accept this price")}
                   />
                   <span className="font-medium text-sm flex-1">{it.customer_product?.name ?? "—"}</span>
@@ -820,8 +818,7 @@ export function CounterOfferModal({
                       if (isAccepted) return;
                       const v = parseFloat(e.target.value);
                       const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
-                      setCounters((prev) => ({ ...prev, [it.id]: kg }));
-                      setRowValue((p) => ({ ...p, [it.id]: "" }));
+                      handleManualCounterChange(it.id, kg);
                     }}
                     className={
                       "h-11 w-full text-right tabular-nums focus-visible:ring-[#8B2252]" +
@@ -829,56 +826,6 @@ export function CounterOfferModal({
                       (errors[it.id] ? " border-destructive focus-visible:ring-destructive" : "")
                     }
                   />
-                  {!isAccepted && (
-                    <div className="flex flex-wrap items-center gap-1.5 mt-2">
-                      <div className="flex rounded-md border border-border overflow-hidden text-[11px] flex-1 min-w-0">
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { anchor: "self" })}
-                          className="px-2 py-1 font-medium flex-1"
-                          style={(rowAnchor[it.id] ?? "self") === "self" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          {anchorLabel("self")}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { anchor: "other" })}
-                          className="px-2 py-1 font-medium flex-1"
-                          style={(rowAnchor[it.id] ?? "self") === "other" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          {anchorLabel("other")}
-                        </button>
-                      </div>
-                      <div className="flex rounded-md border border-border overflow-hidden text-[11px]">
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { mode: "amount" })}
-                          className="px-2 py-1 font-medium"
-                          style={(rowMode[it.id] ?? "amount") === "amount" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          $
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => updateRowDelta(it.id, asking, their, { mode: "percent" })}
-                          className="px-2 py-1 font-medium"
-                          style={(rowMode[it.id] ?? "amount") === "percent" ? { background: "#8B2252", color: "white" } : {}}
-                        >
-                          %
-                        </button>
-                      </div>
-                      <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
-                        inputMode="decimal"
-                        value={rowValue[it.id] ?? ""}
-                        placeholder="Δ"
-                        onChange={(e) => updateRowDelta(it.id, asking, their, { value: e.target.value })}
-                        className="h-9 w-20 text-right tabular-nums text-xs"
-                      />
-                    </div>
-                  )}
                   {errors[it.id] && (
                     <div className="text-[11px] text-destructive mt-1">{errors[it.id]}</div>
                   )}
