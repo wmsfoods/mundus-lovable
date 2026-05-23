@@ -913,6 +913,114 @@ function CountriesOfOperation({
   );
 }
 
+/* --- Country of Registration (single select) --- */
+function RegistrationCountry({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [query, setQuery] = useState("");
+  const [options, setOptions] = useState<{ name: string; flag?: string }[]>([]);
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data } = await supabase
+        .from("countries")
+        .select("english_name, flag_emoji")
+        .order("english_name");
+      if (!mounted) return;
+      setOptions(
+        (data ?? []).map((c: any) => ({ name: c.english_name, flag: c.flag_emoji ?? "" })),
+      );
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    const h = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", h);
+    return () => document.removeEventListener("mousedown", h);
+  }, []);
+
+  const selected = options.find((o) => o.name === value);
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return options.slice(0, 8);
+    return options.filter((o) => o.name.toLowerCase().includes(q)).slice(0, 8);
+  }, [options, query]);
+
+  return (
+    <div ref={wrapRef}>
+      <label className="block text-sm font-medium text-gray-700 mb-1.5">
+        {t("signup.fields.registrationCountry")}
+      </label>
+      {value ? (
+        <div className="flex flex-wrap gap-2">
+          <span className="inline-flex items-center gap-1.5 h-12 px-3 rounded-lg bg-[#B64769]/10 text-[#B64769] text-sm border border-[#B64769]/20">
+            <span>{selected?.flag || "🏳️"}</span>
+            {value}
+            <button
+              type="button"
+              onClick={() => {
+                onChange("");
+                setQuery("");
+              }}
+              className="ml-1 text-[#B64769]/70 hover:text-[#B64769]"
+              aria-label="Clear"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </span>
+        </div>
+      ) : (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            className={cn(inputCls, "pl-10")}
+            value={query}
+            placeholder={t("signup.fields.registrationCountryPlaceholder")}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+          />
+          {open && filtered.length > 0 && (
+            <div className="absolute z-20 mt-1 w-full max-h-64 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+              {filtered.map((c) => (
+                <button
+                  type="button"
+                  key={c.name}
+                  onClick={() => {
+                    onChange(c.name);
+                    setQuery("");
+                    setOpen(false);
+                  }}
+                  className="w-full text-left px-3 py-3 hover:bg-gray-50 flex items-center gap-2 text-sm"
+                >
+                  <span>{c.flag || "🏳️"}</span>
+                  <span>{c.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ----------------- STEP 4: BUSINESS CONTACT ----------------- */
 function Step4Contact({
   data,
