@@ -359,6 +359,26 @@ export default function SupplierOfferDetail() {
             </span>
           </div>
 
+          {offer.exwPickupLocation && offer.incoterms.includes("EXW") && (
+            <div
+              style={{
+                marginTop: 8,
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: "1px solid #fde68a",
+                background: "#fffbeb",
+                color: "#92400e",
+                fontSize: 13,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span>📍 EXW Pickup</span>
+              <strong>{offer.exwPickupLocation}</strong>
+            </div>
+          )}
+
           <div className="od-shipment-row">
             <span className="od-meta-label">{t("supplier.offers.detail.fields.shipment")}</span>
             <span className="od-meta-value">{offer.shipmentLabel}</span>

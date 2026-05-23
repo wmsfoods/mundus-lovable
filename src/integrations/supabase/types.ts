@@ -3532,6 +3532,7 @@ export type Database = {
           container_size: string
           created_at: string | null
           deleted_at: string | null
+          exw_pickup_location: string | null
           id: string
           is_halal: boolean | null
           is_kosher: boolean | null
@@ -3556,6 +3557,7 @@ export type Database = {
           container_size: string
           created_at?: string | null
           deleted_at?: string | null
+          exw_pickup_location?: string | null
           id?: string
           is_halal?: boolean | null
           is_kosher?: boolean | null
@@ -3580,6 +3582,7 @@ export type Database = {
           container_size?: string
           created_at?: string | null
           deleted_at?: string | null
+          exw_pickup_location?: string | null
           id?: string
           is_halal?: boolean | null
           is_kosher?: boolean | null
