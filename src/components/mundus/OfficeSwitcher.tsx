@@ -1,30 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { ChevronDownIcon, CheckIcon } from "@/components/icons";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
-
-function flagFor(country: string | null | undefined): string {
-  if (!country) return "";
-  const c = country.toLowerCase();
-  if (/brazil|brasil/.test(c)) return "🇧🇷";
-  if (/china/.test(c)) return "🇨🇳";
-  if (/united states|usa|u\.s\./.test(c)) return "🇺🇸";
-  if (/uae|emirates/.test(c)) return "🇦🇪";
-  if (/argentina/.test(c)) return "🇦🇷";
-  if (/uruguay/.test(c)) return "🇺🇾";
-  if (/mexico/.test(c)) return "🇲🇽";
-  if (/japan/.test(c)) return "🇯🇵";
-  if (/korea/.test(c)) return "🇰🇷";
-  if (/germany/.test(c)) return "🇩🇪";
-  if (/france/.test(c)) return "🇫🇷";
-  if (/spain/.test(c)) return "🇪🇸";
-  if (/italy/.test(c)) return "🇮🇹";
-  if (/united kingdom|uk/.test(c)) return "🇬🇧";
-  if (/netherlands/.test(c)) return "🇳🇱";
-  if (/saudi/.test(c)) return "🇸🇦";
-  if (/singapore/.test(c)) return "🇸🇬";
-  if (/canada/.test(c)) return "🇨🇦";
-  return "🌐";
-}
+import { countryFlag } from "@/lib/countryFlags";
 
 export function OfficeSwitcher() {
   const {
@@ -94,7 +71,7 @@ export function OfficeSwitcher() {
           {sorted.map((o) => {
             const isHQ = !o.parent_company_id;
             const icon = isHQ ? "🏛️" : o.office_type === "branch" ? "🏢" : "🌏";
-            const flag = flagFor(o.office_country || o.country);
+            const flag = countryFlag(o.office_country || o.country);
             const label = isHQ
               ? `HQ ${o.office_country || o.country || ""}`.trim()
               : o.office_name || o.name;
