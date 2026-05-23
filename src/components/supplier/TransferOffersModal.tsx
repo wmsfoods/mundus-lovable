@@ -3,10 +3,12 @@ import { toast } from "sonner";
 import { Modal } from "@/components/mundus/Modal";
 import { supabase } from "@/integrations/supabase/client";
 import type { Office } from "@/hooks/useCompanyOffices";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 type OfferRow = {
   id: string;
   offer_number: number | string | null;
+  created_at?: string | null;
   status: string | null;
   origin_country: string | null;
   shipment_month: string | null;
@@ -28,7 +30,11 @@ function offerLabel(o: OfferRow): string {
     .filter(Boolean) as string[];
   const cutText = cuts.length === 0 ? "Offer" : cuts.length === 1 ? cuts[0] : `Mixed (${cuts.length} cuts)`;
   const ship = [o.shipment_month, o.shipment_year].filter(Boolean).join(" ");
-  return [`#${o.offer_number ?? "?"} ${cutText}`, ship].filter(Boolean).join(" — ");
+  const num =
+    typeof o.offer_number === "number"
+      ? formatOfferNumber(o.offer_number, o.created_at)
+      : `M-${String(o.offer_number ?? "0").padStart(6, "0")}-${new Date(o.created_at ?? Date.now()).getFullYear()}`;
+  return [`${num} ${cutText}`, ship].filter(Boolean).join(" — ");
 }
 
 export function TransferOffersModal({ open, onClose, source, targets, onTransferred }: Props) {
@@ -47,7 +53,7 @@ export function TransferOffersModal({ open, onClose, source, targets, onTransfer
       const { data, error } = await (supabase as any)
         .from("offers")
         .select(
-          "id, offer_number, status, origin_country, shipment_month, shipment_year, items:offer_items(customer_product:customer_products(name))"
+          "id, offer_number, created_at, status, origin_country, shipment_month, shipment_year, items:offer_items(customer_product:customer_products(name))"
         )
         .eq("office_id", source.id)
         .is("deleted_at", null);
