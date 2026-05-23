@@ -25,6 +25,7 @@ import {
   type OffersFilterState,
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
@@ -185,6 +186,18 @@ export function OfferCard({
           <span className="oc-cat">{category}</span>
           <span className="dot-sep" />
           <span className="oc-temp">{condition}</span>
+          <span className="dot-sep" />
+          <span
+            className="oc-num"
+            style={{
+              fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+              fontSize: 11,
+              color: "#9ca3af",
+              letterSpacing: "0.02em",
+            }}
+          >
+            {formatOfferNumber(offer.offer_number, offer.created_at)}
+          </span>
           {mixed && (
             <span className="mixed-badge">
               <GridIcon size={9} /> {t("buyer.offers.card.cuts", { count: items.length })}
