@@ -129,16 +129,45 @@ export default function AdminUserRequests() {
       .update({ status: "approved", reviewed_at: new Date().toISOString() })
       .eq("id", approveTarget.id);
     if (error) { setActing(false); toast.error(error.message); return; }
-    // TODO: Auto-assign approved user to their company HQ in `user_offices`.
-    // When the real auth flow is wired (creating an auth.users row + a row in
-    // public.users / public.companies on approval), insert here:
-    //   await supabase.from("user_offices").insert({
-    //     user_id: <newUserId>,
-    //     company_id: <hqCompanyId>,
-    //     role: "member",
-    //     is_primary: true,
-    //   });
-    // Today, user_requests only flips status — no user/company exists yet.
+    // Best-effort: auto-assign the approved user to their company HQ in
+    // `user_offices`. If a `company_users` row already exists for this email
+    // (real auth flow), we link them to the HQ company so the office switcher
+    // can find them. If nothing is found yet, this is a no-op and the link
+    // will be created later by the signup flow.
+    try {
+      const { data: cu } = await supabase
+        .from("company_users")
+        .select("user_id, company_id")
+        .eq("email", approveTarget.email)
+        .limit(1)
+        .maybeSingle();
+      if (cu?.user_id && cu?.company_id) {
+        // HQ = the parent (or self) company.
+        const { data: comp } = await supabase
+          .from("companies")
+          .select("id, parent_company_id, office_type")
+          .eq("id", cu.company_id)
+          .maybeSingle();
+        const hqId =
+          comp?.office_type === "headquarters" || !comp?.parent_company_id
+            ? cu.company_id
+            : comp.parent_company_id;
+        await supabase
+          .from("user_offices")
+          .upsert(
+            {
+              user_id: cu.user_id,
+              company_id: hqId,
+              role: "member",
+              is_primary: true,
+            },
+            { onConflict: "user_id,company_id" }
+          );
+      }
+    } catch (e) {
+      // Non-fatal — approval still succeeds.
+      console.warn("auto-assign HQ office failed", e);
+    }
     await supabase.functions.invoke("signup-notifications", {
       body: {
         action: "approval",
