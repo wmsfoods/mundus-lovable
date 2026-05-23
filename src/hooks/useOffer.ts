@@ -48,6 +48,7 @@ export type OfferDetailed = {
   is_halal: boolean | null;
   is_kosher: boolean | null;
   observation: string | null;
+  exw_pickup_location: string | null;
   created_at: string | null;
   items: OfferDetailItem[];
   markets: { market: { id: string; country: { english_name: string | null } | null } | null }[];
