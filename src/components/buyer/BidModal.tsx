@@ -18,6 +18,7 @@ import type { OfferDetailed } from "@/hooks/useOffer";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
 import { isUuid } from "@/hooks/useRealNegotiation";
+import { getDeductionFeedback } from "@/lib/negotiationEngine";
 
 // Mock buyer identity until auth wiring is connected to the marketplace flow.
 const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
@@ -87,7 +88,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])),
   );
   const hydratedRef = useRef(false);
-  const [bulkOffset, setBulkOffset] = useState<string>("");
+  const [bulkMode, setBulkMode] = useState<"amount" | "percent">("amount");
+  const [bulkValue, setBulkValue] = useState<string>("");
 
   const applyAllBids = (priceFor: (askingKg: number) => number) => {
     setBids(
@@ -96,12 +98,25 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       ),
     );
   };
-  const applyBulkOffset = () => {
-    const v = parseFloat(bulkOffset);
-    if (!Number.isFinite(v)) return;
-    const deltaKg = fromDisplay(v, "price", unit);
-    applyAllBids((asking) => Math.max(0, asking + deltaKg));
+  const applyBulk = () => {
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return;
+    if (bulkMode === "percent") {
+      const capped = Math.min(v, 30); // max 30% deduction
+      const factor = 1 - capped / 100;
+      applyAllBids((asking) => asking * factor);
+    } else {
+      const deltaKg = fromDisplay(v, "price", unit);
+      applyAllBids((asking) => Math.max(0, asking - deltaKg)); // buyer deducts
+    }
   };
+
+  const deductionFeedback = useMemo(() => {
+    if (bulkMode !== "percent") return null;
+    const v = parseFloat(bulkValue);
+    if (!Number.isFinite(v) || v <= 0) return null;
+    return getDeductionFeedback(v);
+  }, [bulkMode, bulkValue]);
 
   useEffect(() => {
     if (!open) return;
