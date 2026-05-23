@@ -24,6 +24,8 @@ export type RealNegotiationRow = {
   buyer_message: string | null;
   supplier_message: string | null;
   rejection_cooldown_until: string | null;
+  current_round: number | null;
+  chat_enabled: boolean | null;
   offer: {
     id: string;
     offer_number: number;
@@ -82,7 +84,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           id, offer_id, buyer_company_id, port_id, incoterm, status,
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
           agreed_items, settled_total_value, buyer_message, supplier_message,
-          rejection_cooldown_until,
+          rejection_cooldown_until, current_round, chat_enabled,
           offer:offers (
             id, offer_number, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
@@ -111,8 +113,18 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
       }
       setLoading(false);
     })();
+    // Live updates: refetch when this negotiation row changes (round advance, chat unlock).
+    const channel = supabase
+      .channel(`neg-row-${negotiationId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "negotiations", filter: `id=eq.${negotiationId}` },
+        () => setTick((n) => n + 1),
+      )
+      .subscribe();
     return () => {
       cancelled = true;
+      supabase.removeChannel(channel);
     };
   }, [negotiationId, tick]);
 
