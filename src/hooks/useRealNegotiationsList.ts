@@ -62,7 +62,10 @@ export function useRealNegotiationsList(role: Role) {
         : q.eq("offer.supplier_id", MOCK_SUPPLIER_ID);
 
       if (applyOfficeFilter) {
-        q = q.eq("office_id", activeOfficeId);
+        // Include negotiations explicitly assigned to this office AND
+        // legacy/unassigned ones (office_id IS NULL) so suppliers don't
+        // see an empty list after switching offices.
+        q = q.or(`office_id.eq.${activeOfficeId},office_id.is.null`);
       }
 
       const { data, error: err } = await q;
