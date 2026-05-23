@@ -230,6 +230,33 @@ export default function SupplierCreateOffer() {
 
   const [showPreview, setShowPreview] = useState(false);
 
+  /* Supplier plant numbers (USDA/SIF establishment numbers) loaded from
+     the current user's company profile. Used to populate the per-cut
+     "Plant Numbers" dropdown. */
+  const [companyPlants, setCompanyPlants] = useState<string[]>([]);
+  const [plantManual, setPlantManual] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("companies")
+          .select("plant_numbers")
+          .limit(1)
+          .maybeSingle();
+        if (cancelled || error || !data) return;
+        const list = (data as any).plant_numbers as string[] | null;
+        if (list && list.length > 0) setCompanyPlants(list);
+      } catch {
+        /* no-op: anonymous or no company; falls back to free text input */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [mlOpen, setMlOpen] = useState(false);
   const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
 
