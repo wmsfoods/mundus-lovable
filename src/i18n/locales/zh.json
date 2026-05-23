@@ -108,7 +108,9 @@
       "countriesMax": "最多 5 个国家",
       "city": "城市",
       "zip": "邮政编码",
-      "website": "网站"
+      "website": "网站",
+      "registrationCountry": "注册国家",
+      "registrationCountryPlaceholder": "搜索注册国家..."
     },
     "passwordsMismatch": "密码不匹配。",
     "missingTitle": "请完成以下内容以继续：",

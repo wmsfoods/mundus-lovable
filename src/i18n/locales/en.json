@@ -108,7 +108,9 @@
       "countriesMax": "Maximum 5 countries",
       "city": "City",
       "zip": "ZIP / Postal Code",
-      "website": "Website"
+      "website": "Website",
+      "registrationCountry": "Country of Registration",
+      "registrationCountryPlaceholder": "Search country of registration..."
     },
     "passwordsMismatch": "Passwords do not match.",
     "missingTitle": "To proceed, please complete:",

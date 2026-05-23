@@ -108,7 +108,9 @@
       "countriesMax": "Maximum 5 pays",
       "city": "Ville",
       "zip": "Code Postal",
-      "website": "Site Web"
+      "website": "Site Web",
+      "registrationCountry": "Pays d'Immatriculation",
+      "registrationCountryPlaceholder": "Rechercher pays d'immatriculation..."
     },
     "passwordsMismatch": "Les mots de passe ne correspondent pas.",
     "missingTitle": "Pour continuer, complétez :",
