@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { FileTextIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
+import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 import { Pagination } from "@/components/mundus/Pagination";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { MOCK_SALES, type Sale, type SaleStatus } from "@/data/mockSales";
@@ -90,6 +91,8 @@ export default function SupplierSales() {
       />
 
       <PageTitle icon={FileTextIcon} title={t("supplier.sales.title")} />
+
+      <OfficeIndicator />
 
       <DealsFilterBar
         value={filter}
