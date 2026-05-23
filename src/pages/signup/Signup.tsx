@@ -591,6 +591,10 @@ function Step3Company({
   onNext: () => void;
 }) {
   const { t } = useTranslation();
+  const [taxIdTouched, setTaxIdTouched] = useState(false);
+  const firstCountry = data.countriesOfOperation[0]?.name;
+  const taxRule = getTaxRule(firstCountry);
+  const taxIdValid = taxRule.pattern.test(data.taxId.trim());
   const onFile = (f: File | null) => {
     if (f && f.size > 5 * 1024 * 1024) {
       toast.error(t("signup.fileTooLarge"));
@@ -602,6 +606,7 @@ function Step3Company({
   const canProceed =
     !!data.companyName &&
     !!data.taxId &&
+    taxIdValid &&
     !!data.role &&
     data.proteins.length >= 1 &&
     data.countriesOfOperation.length >= 1;
@@ -609,6 +614,7 @@ function Step3Company({
   const missing: string[] = [];
   if (!data.companyName) missing.push(t("signup.fields.companyName"));
   if (!data.taxId) missing.push(t("signup.fields.taxId"));
+  else if (!taxIdValid) missing.push(`${taxRule.label} (${taxRule.hint})`);
   if (!data.role) missing.push(t("signup.fields.role"));
   if (data.proteins.length < 1) missing.push(t("signup.fields.proteinProfile"));
   if (data.countriesOfOperation.length < 1)
@@ -624,12 +630,29 @@ function Step3Company({
             onChange={(e) => set("companyName", e.target.value)}
           />
         </Field>
-        <Field label={t("signup.fields.taxId")}>
+        <Field
+          label={
+            firstCountry
+              ? `${taxRule.label} — ${t("signup.fields.taxId")}`
+              : t("signup.fields.taxId")
+          }
+        >
           <input
-            className={inputCls}
+            className={cn(
+              inputCls,
+              taxIdTouched && data.taxId && !taxIdValid && "border-red-500 focus:border-red-500 focus:ring-red-500",
+            )}
             value={data.taxId}
             onChange={(e) => set("taxId", e.target.value)}
+            onBlur={() => setTaxIdTouched(true)}
           />
+          {taxIdTouched && data.taxId && !taxIdValid ? (
+            <p className="text-xs text-red-500 mt-1">
+              {t("signup.fields.taxIdError", { hint: taxRule.hint })}
+            </p>
+          ) : (
+            <p className="text-xs text-gray-500 mt-1">{taxRule.hint}</p>
+          )}
         </Field>
       </div>
 
