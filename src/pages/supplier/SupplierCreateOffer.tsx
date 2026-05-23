@@ -1779,6 +1779,15 @@ export default function SupplierCreateOffer() {
           {!addRow && (
             <button type="button" className="cov4-add-row-btn" onClick={() => setAddRow(true)}>+ Add cut manually</button>
           )}
+          <div style={{ marginTop: 6, fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
+            <button
+              type="button"
+              onClick={() => navigate("/supplier/profile/plants")}
+              style={{ background: "none", border: "none", padding: 0, color: "var(--p800, #8B2252)", cursor: "pointer", textDecoration: "underline", fontSize: 12 }}
+            >
+              Manage plant numbers
+            </button>
+          </div>
           {cuts.length === 0 && !addRow && !showAiImport && (
             <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add cuts manually or use AI Import</p></div>
           )}
