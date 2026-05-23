@@ -43,15 +43,13 @@ function fmtDate(iso: string, locale: string) {
 export default function BuyerNegotiations() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { data: offers, offerCount, bidCount } = useBuyerNegotiations();
+  const { data: offers, offerCount, bidCount, isLoading, error } = useBuyerNegotiations();
   const locale = i18n.language || "en";
 
   const [query, setQuery] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [sortBy, setSortBy] = useState<SortKey>("recent");
-  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>(
-    () => Object.fromEntries(offers.map((o) => [o.id, true])),
-  );
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
 
   const allBids = useMemo(
     () => offers.flatMap((p) => p.bids.map((b) => ({ ...b, parentTitle: p.title, oppWmsRef: p.oppWmsRef }))),
@@ -157,7 +155,15 @@ export default function BuyerNegotiations() {
         ))}
       </div>
 
-      {groups.length === 0 ? (
+      {isLoading ? (
+        <div className="detail-empty">
+          <p>Loading negotiations…</p>
+        </div>
+      ) : error ? (
+        <div className="detail-empty" style={{ color: "#b91c1c" }}>
+          <p>Error loading negotiations: {error.message}</p>
+        </div>
+      ) : groups.length === 0 ? (
         <div className="detail-empty">
           <p>{t("buyer.negotiations.empty")}</p>
         </div>
