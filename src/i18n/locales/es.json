@@ -107,6 +107,7 @@
       "website": "Sitio Web"
     },
     "passwordsMismatch": "Las contraseñas no coinciden.",
+    "missingTitle": "Para continuar, completa:",
     "agreeTerms": "Declaro que he leído y acepto los",
     "termsLink": "Términos y Condiciones",
     "confirmInfo": "Confirmo que toda la información proporcionada es verdadera, precisa y completa según mi conocimiento. Entiendo que proporcionar información falsa o engañosa puede resultar en la suspensión o terminación de la cuenta.",
