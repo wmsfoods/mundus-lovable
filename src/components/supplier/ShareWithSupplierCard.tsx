@@ -141,7 +141,7 @@ export function ShareWithSupplierCard({ negotiationId, buyerLabel }: Props) {
           <div className="mt-3 flex gap-2">
             <Input
               readOnly
-              value={link}
+              value={displayLink}
               onFocus={(e) => e.currentTarget.select()}
               className="text-xs font-mono"
             />
