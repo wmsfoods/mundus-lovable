@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
 import {
   TagIcon,
   ArrowLeftIcon,
@@ -11,6 +12,16 @@ import {
   FlagSVG,
 } from "@/components/icons";
 import { MOCK_SUPPLIER_OFFERS, type SupplierOffer } from "@/data/mockSupplierOffers";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 function formatNumber(n: number): string {
   return new Intl.NumberFormat("de-DE").format(Math.round(n));
@@ -25,6 +36,9 @@ export default function SupplierOfferDetail() {
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [active, setActive] = useState<boolean | null>(null);
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [activeNegCount, setActiveNegCount] = useState<number>(0);
+  const [deactivating, setDeactivating] = useState(false);
 
   const offer: SupplierOffer | undefined = useMemo(
     () => MOCK_SUPPLIER_OFFERS.find((o) => o.id === id),
@@ -56,6 +70,79 @@ export default function SupplierOfferDetail() {
   }
 
   const isActive = active ?? offer.active;
+  const offerTitle = offer.title;
+
+  const ACTIVE_STATUSES_EXCLUSION = '("offer_rejected","expired","bid_accepted","offer_withdrawn")';
+
+  async function openToggle() {
+    // Activating again is unrestricted
+    if (!isActive) {
+      setActive(true);
+      return;
+    }
+    // Check for active negotiations before deactivating
+    const { data: negs } = await supabase
+      .from("negotiations")
+      .select("id")
+      .eq("offer_id", id)
+      .not("status", "in", ACTIVE_STATUSES_EXCLUSION)
+      .is("deleted_at", null);
+    setActiveNegCount(negs?.length ?? 0);
+    setDeactivateOpen(true);
+  }
+
+  async function confirmDeactivate() {
+    if (deactivating) return;
+    setDeactivating(true);
+    try {
+      // 1. Mark offer inactive (best-effort against real DB; mock data also flips UI)
+      await supabase.from("offers").update({ status: "inactive" }).eq("id", id);
+
+      // 2. Fetch active negotiations
+      const { data: negs } = await supabase
+        .from("negotiations")
+        .select("id, buyer_company_id")
+        .eq("offer_id", id)
+        .not("status", "in", ACTIVE_STATUSES_EXCLUSION)
+        .is("deleted_at", null);
+
+      if (negs && negs.length > 0) {
+        const negIds = negs.map((n) => n.id);
+        await supabase
+          .from("negotiations")
+          .update({ status: "offer_withdrawn", updated_at: new Date().toISOString() })
+          .in("id", negIds);
+
+        for (const _neg of negs) {
+          supabase.functions
+            .invoke("negotiation-notifications", {
+              body: {
+                action: "offer_withdrawn",
+                data: {
+                  buyer_email: "buyer@example.com",
+                  offer_title: offerTitle,
+                  marketplace_link: `${window.location.origin}/buyer/marketplace`,
+                },
+              },
+            })
+            .catch(() => {});
+        }
+      }
+
+      setActive(false);
+      setDeactivateOpen(false);
+      toast.success(
+        negs && negs.length > 0
+          ? "Offer deactivated. Negotiating buyers have been notified."
+          : "Offer deactivated.",
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to deactivate");
+    } finally {
+      setDeactivating(false);
+    }
+  }
+
   const totalKg = offer.items.reduce((s, it) => s + it.qtyKg, 0);
   const firstDest = offer.destinations[0];
 
@@ -85,7 +172,7 @@ export default function SupplierOfferDetail() {
         <button
           type="button"
           className="so-detail-toggle"
-          onClick={() => setActive(!isActive)}
+          onClick={openToggle}
           aria-pressed={isActive}
         >
           <span className={`so-toggle-switch ${isActive ? "is-on" : ""}`} />
@@ -108,6 +195,46 @@ export default function SupplierOfferDetail() {
           </button>
         </div>
       </div>
+
+      <Dialog open={deactivateOpen} onOpenChange={setDeactivateOpen}>
+        <DialogContent className="max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>⚠️ Deactivate Offer?</DialogTitle>
+            <DialogDescription>
+              {activeNegCount > 0 ? (
+                <>
+                  This offer has <strong>{activeNegCount}</strong> active negotiation{activeNegCount > 1 ? "s" : ""}.
+                </>
+              ) : (
+                "It will no longer be visible in the marketplace."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {activeNegCount > 0 && (
+            <div className="text-sm text-foreground">
+              <p className="mb-2">Deactivating will:</p>
+              <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                <li>Mark the offer as inactive</li>
+                <li>Notify all negotiating buyers</li>
+                <li>Cancel all active negotiations</li>
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">This action cannot be undone.</p>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeactivateOpen(false)} disabled={deactivating}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeactivate}
+              disabled={deactivating}
+            >
+              {deactivating ? "Deactivating…" : "Deactivate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {!isActive && (
         <div className="so-inactive-banner">
