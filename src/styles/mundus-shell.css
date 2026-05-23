@@ -837,5 +837,12 @@
 }
 
 /* Mobile: full-width dropdown, compact trigger */
-.tb-mobile .office-switcher-btn { padding: 6px 8px; max-width: 140px; font-size: 12px; }
+.tb-mobile .office-switcher-btn {
+  padding: 6px 8px;
+  font-size: 12px;
+  gap: 4px;
+  flex-shrink: 0;
+}
+/* Hide text label on mobile so the centered Mundus logo is not covered */
+.tb-mobile .office-switcher-label { display: none; }
 .tb-mobile .office-switcher-dropdown { right: 0; left: auto; min-width: 240px; max-width: calc(100vw - 24px); }
