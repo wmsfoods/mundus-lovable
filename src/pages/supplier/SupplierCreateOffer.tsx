@@ -303,6 +303,7 @@ export default function SupplierCreateOffer() {
         ask,
         floor,
         notes: fromRequest.additionalInfo || "",
+        plant: "",
       },
     ]);
 
