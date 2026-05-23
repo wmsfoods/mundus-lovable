@@ -311,6 +311,69 @@ export function CounterOfferModal({
       if (nErr) throw nErr;
 
       toast.success(t(`${perspective}.counter.successToast`));
+
+      // Fire email notification (best-effort, non-blocking)
+      try {
+        const offerTitle = items[0]?.customer_product?.name
+          ? items.length > 1
+            ? `Mix · ${items.length} items`
+            : items[0].customer_product.name
+          : "Offer";
+
+        if (perspective === "buyer") {
+          supabase.functions.invoke("negotiation-notifications", {
+            body: {
+              action: "new_bid",
+              data: {
+                supplier_email: "supplier@example.com",
+                offer_title: offerTitle,
+                buyer_name: "Buyer",
+                round: displayRound,
+                max_rounds: MAX_DISPLAY_ROUNDS,
+                bid_total: counterTotal.toFixed(2),
+                asking_total: askingTotal.toFixed(2),
+                link: `${window.location.origin}/supplier/negotiations/${negotiation.id}`,
+              },
+            },
+          }).catch(() => {});
+        } else {
+          supabase.functions.invoke("negotiation-notifications", {
+            body: {
+              action: "new_counter",
+              data: {
+                buyer_email: "buyer@example.com",
+                offer_title: offerTitle,
+                supplier_name: "Supplier",
+                round: displayRound,
+                max_rounds: MAX_DISPLAY_ROUNDS,
+                counter_total: counterTotal.toFixed(2),
+                link: `${window.location.origin}/buyer/negotiations/${negotiation.id}`,
+              },
+            },
+          }).catch(() => {});
+        }
+
+        if (allLockedNow) {
+          const settledValue = mergedAgreed.reduce((s, a) => {
+            const it = items.find((x) => x.id === a.offer_item_id);
+            return s + a.price_per_kg * Number(it?.amount ?? 0);
+          }, 0);
+          supabase.functions.invoke("negotiation-notifications", {
+            body: {
+              action: "bid_accepted",
+              data: {
+                to_email: perspective === "buyer" ? "supplier@example.com" : "buyer@example.com",
+                offer_title: offerTitle,
+                total_value: settledValue.toLocaleString(undefined, { maximumFractionDigits: 2 }),
+                link: `${window.location.origin}/supplier/negotiations/${negotiation.id}`,
+              },
+            },
+          }).catch(() => {});
+        }
+      } catch (e) {
+        console.warn("notification failed", e);
+      }
+
       onOpenChange(false);
       onSubmitted?.();
     } catch (e: unknown) {
