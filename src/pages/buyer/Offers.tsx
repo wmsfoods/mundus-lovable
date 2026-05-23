@@ -162,7 +162,7 @@ function OfferCard({
         <div
           style={{
             position: "absolute",
-            top: 8,
+            top: 36,
             right: 8,
             padding: "3px 8px",
             borderRadius: 12,
