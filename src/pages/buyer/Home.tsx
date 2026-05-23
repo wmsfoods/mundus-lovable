@@ -15,36 +15,17 @@ import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
 import { useBuyerOrders, type BuyerOrder } from "@/hooks/useBuyerOrders";
+import { OfferCard } from "@/pages/buyer/Offers";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
+
+const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
 function formatShipment(month: number, year: number) {
   return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
-}
-
-function RecentOfferCard({ o }: { o: OfferWithDetails }) {
-  const totalKg = (o.items ?? []).reduce((s, i) => s + (Number(i.amount) || 0), 0);
-  const itemsCount = (o.items ?? []).length;
-  return (
-    <Link to={`/buyer/offers/${o.id}`} className="mini-card">
-      <div className="mc-head">
-        <span className="mc-num">#{String(o.offer_number).padStart(5, "0")}</span>
-        <span className={`pill ${o.status === "active" ? "pill-active" : "pill-info"}`}>
-          {o.status ?? "—"}
-        </span>
-      </div>
-      <div className="mc-title">{o.supplier_name}</div>
-      <div className="mc-meta">
-        <span>{o.origin_country}</span>
-        <span>·</span>
-        <span>{formatShipment(o.shipment_month, o.shipment_year)}</span>
-      </div>
-      <div className="mc-foot">
-        <span>{itemsCount} item{itemsCount === 1 ? "" : "s"}</span>
-        <span>{(totalKg / 1000).toFixed(1)} MT</span>
-      </div>
-    </Link>
-  );
 }
 
 function RecentOrderCard({ o }: { o: BuyerOrder }) {
