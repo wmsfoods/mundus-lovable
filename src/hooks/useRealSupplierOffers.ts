@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { MOCK_SUPPLIER_COMPANY_ID } from "@/hooks/useSupplierUsers";
 
 const COUNTRY_CODE: Record<string, string> = {
   argentina: "AR", brazil: "BR", canada: "CA", chile: "CL", china: "CN",
@@ -21,7 +22,7 @@ export function useRealSupplierOffers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { company } = useCurrentCompany();
-  const supplierId = company?.id ?? null;
+  const supplierId = company?.id ?? MOCK_SUPPLIER_COMPANY_ID;
 
   useEffect(() => {
     let cancelled = false;
