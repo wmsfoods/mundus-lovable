@@ -50,7 +50,7 @@ const EMPTY_FORM: FormState = {
 
 export default function SupplierOffices() {
   const { company } = useCurrentCompany();
-  const { offices, userCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
+  const { offices, userCounts, offerCounts, loading, refetch, createOffice, updateOffice, deleteOffice } = useCompanyOffices(company?.id ?? null);
   const location = useLocation();
   const homeHref = location.pathname.startsWith("/buyer") ? "/buyer" : "/supplier";
 
@@ -189,6 +189,7 @@ export default function SupplierOffices() {
           office={hq}
           isHQ
           userCount={userCounts[hq.id] || 0}
+          offerCount={offerCounts[hq.id] || 0}
           onManageUsers={() => setUsersModalOffice(hq)}
         />
       )}
@@ -206,6 +207,7 @@ export default function SupplierOffices() {
               key={o.id}
               office={o}
               userCount={userCounts[o.id] || 0}
+              offerCount={offerCounts[o.id] || 0}
               onEdit={() => openEdit(o)}
               onDelete={() => handleDelete(o)}
               onManageUsers={() => setUsersModalOffice(o)}
@@ -338,6 +340,7 @@ function OfficeCard({
   office,
   isHQ,
   userCount,
+  offerCount,
   onEdit,
   onDelete,
   onManageUsers,
@@ -345,6 +348,7 @@ function OfficeCard({
   office: Office;
   isHQ?: boolean;
   userCount: number;
+  offerCount?: number;
   onEdit?: () => void;
   onDelete?: () => void;
   onManageUsers?: () => void;
@@ -400,7 +404,7 @@ function OfficeCard({
       <div style={{ fontSize: 15, fontWeight: 500 }}>{subtitle}</div>
       {location && <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>📍 {location}</div>}
       <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>
-        👥 {userCount} user{userCount !== 1 ? "s" : ""} · 📦 — offers · 💰 — sales
+        👥 {userCount} user{userCount !== 1 ? "s" : ""} · 📦 {offerCount ?? 0} offer{(offerCount ?? 0) !== 1 ? "s" : ""}
       </div>
       {office.plant_numbers && office.plant_numbers.length > 0 && (
         <div style={{ color: "var(--fg-muted)", fontSize: 13 }}>🏭 Plants: {office.plant_numbers.join(", ")}</div>

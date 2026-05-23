@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 
 const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
 
@@ -20,18 +21,19 @@ export function useRealSupplierOffers() {
   const [offers, setOffers] = useState<SupplierOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { activeOfficeId, isAllOffices } = useActiveOffice();
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       setLoading(true);
       setError(null);
-      const { data, error: err } = await supabase
+      let query = supabase
         .from("offers")
         .select(`
           id, offer_number, status, origin_country, origin_port,
           shipment_month, shipment_year, payment_terms, container_size,
-          total_fcl, created_at,
+          total_fcl, created_at, office_id,
           items:offer_items ( id, amount, price, minimum_price, condition,
             customer_product:customer_products ( id, name ) ),
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
@@ -40,6 +42,10 @@ export function useRealSupplierOffers() {
         .eq("supplier_id", MOCK_SUPPLIER_ID)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
+      if (!isAllOffices && activeOfficeId) {
+        query = query.eq("office_id", activeOfficeId);
+      }
+      const { data, error: err } = await query;
       if (cancelled) return;
       if (err) {
         setError(err.message);
@@ -107,7 +113,7 @@ export function useRealSupplierOffers() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [activeOfficeId, isAllOffices]);
 
   return { offers, loading, error };
 }

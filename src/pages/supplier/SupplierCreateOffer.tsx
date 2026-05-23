@@ -12,6 +12,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { Check, Plus, Search as SearchIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import {
   toDisplay,
   fromDisplay,
@@ -151,6 +152,7 @@ export default function SupplierCreateOffer() {
   const [searchParams] = useSearchParams();
   const fromRequestId = searchParams.get("from");
   const location = useLocation();
+  const { activeOfficeId } = useActiveOffice();
   const fromRequest = (location.state as any)?.fromRequest as
     | {
         requestId: string;
@@ -583,6 +585,7 @@ export default function SupplierCreateOffer() {
             total_fcl: totalFcl,
             is_halal: certifications.includes("Halal"),
             is_kosher: certifications.includes("Kosher"),
+            office_id: activeOfficeId ?? MOCK_SUPPLIER_ID,
           })
           .select("id, offer_number")
           .single();

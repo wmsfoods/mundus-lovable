@@ -25,6 +25,7 @@ export type OfficeInput = Partial<Omit<Office, "id">>;
 export function useCompanyOffices(currentCompanyId: string | null) {
   const [offices, setOffices] = useState<Office[]>([]);
   const [userCounts, setUserCounts] = useState<Record<string, number>>({});
+  const [offerCounts, setOfferCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +33,7 @@ export function useCompanyOffices(currentCompanyId: string | null) {
     if (!currentCompanyId) {
       setOffices([]);
       setUserCounts({});
+      setOfferCounts({});
       setLoading(false);
       return;
     }
@@ -48,6 +50,7 @@ export function useCompanyOffices(currentCompanyId: string | null) {
       setError(error.message);
       setOffices([]);
       setUserCounts({});
+      setOfferCounts({});
     } else {
       const list = (data || []) as Office[];
       setOffices(list);
@@ -63,8 +66,20 @@ export function useCompanyOffices(currentCompanyId: string | null) {
           counts[r.company_id] = (counts[r.company_id] || 0) + 1;
         });
         setUserCounts(counts);
+
+        const { data: off } = await supabase
+          .from("offers")
+          .select("office_id")
+          .in("office_id", ids)
+          .is("deleted_at", null);
+        const oc: Record<string, number> = {};
+        (off || []).forEach((r: { office_id: string | null }) => {
+          if (r.office_id) oc[r.office_id] = (oc[r.office_id] || 0) + 1;
+        });
+        setOfferCounts(oc);
       } else {
         setUserCounts({});
+        setOfferCounts({});
       }
     }
     setLoading(false);
@@ -92,5 +107,5 @@ export function useCompanyOffices(currentCompanyId: string | null) {
     await fetchOffices();
   };
 
-  return { offices, userCounts, loading, error, refetch: fetchOffices, createOffice, updateOffice, deleteOffice };
+  return { offices, userCounts, offerCounts, loading, error, refetch: fetchOffices, createOffice, updateOffice, deleteOffice };
 }
