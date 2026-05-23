@@ -15,12 +15,17 @@ export function loadGooglePlaces(): Promise<void> {
 
   loadPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=__gmapsLoaded`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&loading=async&libraries=places`;
     script.async = true;
     script.defer = true;
-    (window as any).__gmapsLoaded = () => {
-      resolve();
-      try { delete (window as any).__gmapsLoaded; } catch { /* noop */ }
+    script.onload = () => {
+      const check = setInterval(() => {
+        if ((window as any).google?.maps?.places) {
+          clearInterval(check);
+          resolve();
+        }
+      }, 100);
+      setTimeout(() => clearInterval(check), 10000);
     };
     script.onerror = () => {
       loadPromise = null;
