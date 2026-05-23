@@ -180,6 +180,14 @@
     "checklist": {
       "toComplete": "Pour continuer, veuillez compléter :",
       "allComplete": "Tout est rempli ! Vous pouvez continuer."
+    },
+    "docScan": {
+      "scanning": "Analyse du document par IA...",
+      "verified": "Document vérifié — informations confirmées",
+      "partial": "Correspondance partielle — certaines informations diffèrent",
+      "mismatch": "Données divergentes — le document ne correspond pas",
+      "notBusiness": "Ceci ne semble pas être un document professionnel",
+      "error": "Analyse impossible. Continuez, nous le vérifierons manuellement."
     }
   },
   "shell": {

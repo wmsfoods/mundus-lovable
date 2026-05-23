@@ -596,12 +596,46 @@ function Step3Company({
   const [taxIdTouched, setTaxIdTouched] = useState(false);
   const taxRule = getTaxRule(data.registrationCountry);
   const taxIdValid = taxRule.pattern.test(data.taxId.trim());
-  const onFile = (f: File | null) => {
-    if (f && f.size > 5 * 1024 * 1024) {
+  const [scanning, setScanning] = useState(false);
+  const [scanResult, setScanResult] = useState<any>(null);
+
+  const onFile = async (f: File | null) => {
+    if (!f) {
+      set("certificate", null);
+      setScanResult(null);
+      return;
+    }
+    if (f.size > 5 * 1024 * 1024) {
       toast.error(t("signup.fileTooLarge"));
       return;
     }
     set("certificate", f);
+    setScanning(true);
+    setScanResult(null);
+    try {
+      const base64 = await new Promise<string>((res, rej) => {
+        const reader = new FileReader();
+        reader.onload = () => res((reader.result as string).split(",")[1]);
+        reader.onerror = () => rej(new Error("Read failed"));
+        reader.readAsDataURL(f);
+      });
+      const { data: scanData, error: scanError } = await supabase.functions.invoke("verify-document", {
+        body: {
+          fileBase64: base64,
+          fileType: f.type,
+          companyName: data.companyName,
+          taxId: data.taxId,
+          registrationCountry: data.registrationCountry,
+        },
+      });
+      if (scanError) throw scanError;
+      setScanResult(scanData);
+    } catch (err) {
+      console.warn("[DocScan] error:", err);
+      setScanResult({ overallVerification: "error", notes: "Scan failed" });
+    } finally {
+      setScanning(false);
+    }
   };
 
   const canProceed =
@@ -788,6 +822,72 @@ function Step3Company({
                 onChange={(e) => onFile(e.target.files?.[0] ?? null)}
               />
             </label>
+          )}
+
+          {scanning && (
+            <div className="animate-fade-in mt-3 rounded-lg border border-blue-200 bg-blue-50 p-3 flex items-center gap-3">
+              <div className="h-5 w-5 border-2 border-blue-400 border-t-transparent rounded-full animate-spin" />
+              <span className="text-sm text-blue-700">🔍 {t("signup.docScan.scanning", { defaultValue: "Scanning document with AI..." })}</span>
+            </div>
+          )}
+
+          {scanResult && !scanning && (
+            <div
+              className={cn(
+                "animate-fade-in mt-3 rounded-lg border p-4",
+                scanResult.overallVerification === "verified" ? "border-green-200 bg-green-50" :
+                scanResult.overallVerification === "partial" ? "border-amber-200 bg-amber-50" :
+                scanResult.overallVerification === "error" ? "border-gray-200 bg-gray-50" :
+                "border-red-200 bg-red-50",
+              )}
+            >
+              <div className="flex items-start gap-3">
+                <span className="text-lg mt-0.5">
+                  {scanResult.overallVerification === "verified" ? "✅" :
+                   scanResult.overallVerification === "partial" ? "⚠️" :
+                   scanResult.overallVerification === "error" ? "❓" : "❌"}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className={cn(
+                    "text-sm font-medium",
+                    scanResult.overallVerification === "verified" ? "text-green-800" :
+                    scanResult.overallVerification === "partial" ? "text-amber-800" :
+                    scanResult.overallVerification === "error" ? "text-gray-600" :
+                    "text-red-800",
+                  )}>
+                    {scanResult.overallVerification === "verified" ? t("signup.docScan.verified") :
+                     scanResult.overallVerification === "partial" ? t("signup.docScan.partial") :
+                     scanResult.overallVerification === "not_business_document" ? t("signup.docScan.notBusiness") :
+                     scanResult.overallVerification === "error" ? t("signup.docScan.error") :
+                     t("signup.docScan.mismatch")}
+                  </p>
+                  {scanResult.documentType && (
+                    <p className="text-xs text-gray-600 mt-1">📄 {scanResult.documentType}</p>
+                  )}
+                  {scanResult.extractedCompanyName && (
+                    <div className="flex items-center gap-1.5 text-xs mt-1">
+                      <span>{scanResult.companyNameMatch === "match" ? "✓" : scanResult.companyNameMatch === "partial" ? "~" : "✗"}</span>
+                      <span className="text-gray-600">Company: {scanResult.extractedCompanyName}</span>
+                    </div>
+                  )}
+                  {scanResult.extractedTaxId && (
+                    <div className="flex items-center gap-1.5 text-xs mt-1">
+                      <span>{scanResult.taxIdMatch === "match" ? "✓" : scanResult.taxIdMatch === "partial" ? "~" : "✗"}</span>
+                      <span className="text-gray-600">Tax ID: {scanResult.extractedTaxId}</span>
+                    </div>
+                  )}
+                  {scanResult.extractedCountry && (
+                    <div className="flex items-center gap-1.5 text-xs mt-1">
+                      <span>{scanResult.countryMatch === "match" ? "✓" : "✗"}</span>
+                      <span className="text-gray-600">Country: {scanResult.extractedCountry}</span>
+                    </div>
+                  )}
+                  {scanResult.notes && (
+                    <p className="text-xs text-gray-500 mt-2 italic">{scanResult.notes}</p>
+                  )}
+                </div>
+              </div>
+            </div>
           )}
         </div>
       )}
