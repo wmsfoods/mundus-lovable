@@ -280,6 +280,7 @@ export type Database = {
           onboarded_by: string | null
           onboarded_from_prospect_id: string | null
           phone: string
+          plant_numbers: string[] | null
           preferred_cuts: string[] | null
           protein_profiles: string[] | null
           rating: number | null
@@ -309,6 +310,7 @@ export type Database = {
           onboarded_by?: string | null
           onboarded_from_prospect_id?: string | null
           phone: string
+          plant_numbers?: string[] | null
           preferred_cuts?: string[] | null
           protein_profiles?: string[] | null
           rating?: number | null
@@ -338,6 +340,7 @@ export type Database = {
           onboarded_by?: string | null
           onboarded_from_prospect_id?: string | null
           phone?: string
+          plant_numbers?: string[] | null
           preferred_cuts?: string[] | null
           protein_profiles?: string[] | null
           rating?: number | null
@@ -3159,6 +3162,7 @@ export type Database = {
           minimum_amount: number
           minimum_price: number
           offer_id: string
+          plant_number: string | null
           price: number
         }
         Insert: {
@@ -3173,6 +3177,7 @@ export type Database = {
           minimum_amount: number
           minimum_price: number
           offer_id: string
+          plant_number?: string | null
           price: number
         }
         Update: {
@@ -3187,6 +3192,7 @@ export type Database = {
           minimum_amount?: number
           minimum_price?: number
           offer_id?: string
+          plant_number?: string | null
           price?: number
         }
         Relationships: [

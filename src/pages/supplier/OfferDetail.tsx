@@ -156,7 +156,14 @@ export default function SupplierOfferDetail() {
             </div>
             {offer.items.map((it, i) => (
               <div key={i} className="od-cuts-row">
-                <span>{it.name}</span>
+                <span>
+                  {it.name}
+                  {(it as any).plant && (
+                    <span style={{ marginLeft: 6, fontSize: 11, color: "#6b7280" }}>
+                      · Plant {(it as any).plant}
+                    </span>
+                  )}
+                </span>
                 <span>{it.marbling}</span>
                 <span className="num">{formatNumber(it.qtyKg)} kg</span>
                 <span className="num">US$ {formatPrice(it.pricePerKgUsd)}/kg</span>

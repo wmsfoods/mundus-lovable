@@ -90,6 +90,7 @@ type Cut = {
   ask: string;
   floor: string;
   notes: string;
+  plant: string;
 };
 
 type IncoExtras = {
@@ -139,7 +140,7 @@ function validatePricePair(ask: string | number | null | undefined, floor: strin
 
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
-  qty: "", ask: "", floor: "", notes: "",
+  qty: "", ask: "", floor: "", notes: "", plant: "",
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -229,6 +230,33 @@ export default function SupplierCreateOffer() {
 
   const [showPreview, setShowPreview] = useState(false);
 
+  /* Supplier plant numbers (USDA/SIF establishment numbers) loaded from
+     the current user's company profile. Used to populate the per-cut
+     "Plant Numbers" dropdown. */
+  const [companyPlants, setCompanyPlants] = useState<string[]>([]);
+  const [plantManual, setPlantManual] = useState<Record<string, boolean>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data, error } = await supabase
+          .from("companies")
+          .select("plant_numbers")
+          .limit(1)
+          .maybeSingle();
+        if (cancelled || error || !data) return;
+        const list = (data as any).plant_numbers as string[] | null;
+        if (list && list.length > 0) setCompanyPlants(list);
+      } catch {
+        /* no-op: anonymous or no company; falls back to free text input */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const [mlOpen, setMlOpen] = useState(false);
   const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
 
@@ -302,6 +330,7 @@ export default function SupplierCreateOffer() {
         ask,
         floor,
         notes: fromRequest.additionalInfo || "",
+        plant: "",
       },
     ]);
 
@@ -439,8 +468,8 @@ export default function SupplierCreateOffer() {
     setAiProcessing(true);
     setTimeout(() => {
       const mockParsed: Cut[] = [
-        { id: Date.now().toString(), cat: "Beef", cut: "Forequarter", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None", qty: "14000", ask: "6.40", floor: "5.80", notes: "98 VL" },
-        { id: (Date.now() + 1).toString(), cat: "Beef", cut: "Brisket", spec: "Boneless", pkg: "Carton Box", gr: "Medium", ag: "Wet Aged", qty: "13000", ask: "4.35", floor: "3.90", notes: "" },
+        { id: Date.now().toString(), cat: "Beef", cut: "Forequarter", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None", qty: "14000", ask: "6.40", floor: "5.80", notes: "98 VL", plant: "" },
+        { id: (Date.now() + 1).toString(), cat: "Beef", cut: "Brisket", spec: "Boneless", pkg: "Carton Box", gr: "Medium", ag: "Wet Aged", qty: "13000", ask: "4.35", floor: "3.90", notes: "", plant: "" },
       ];
       setCuts((prev) => [...prev, ...mockParsed]);
       setAiProcessing(false);
@@ -1424,6 +1453,7 @@ export default function SupplierCreateOffer() {
                   <th>Packaging</th>
                   <th>Grading</th>
                   <th>Aging</th>
+                  <th title="USDA/SIF establishment number">Plant #</th>
                   <th className="num">{qLbl}</th>
                   <th className="num">
                     Ask {pLbl}
@@ -1469,6 +1499,7 @@ export default function SupplierCreateOffer() {
                     <td><span className="cov4-tag">{c.pkg}</span></td>
                     <td><span className="cov4-tag">{c.gr !== "Not Classified" ? c.gr : "—"}</span></td>
                     <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
+                    <td><span className="cov4-tag">{c.plant || "—"}</span></td>
                     <td className="num">{fmtWeight(Number(c.qty) || 0, unit)}</td>
                     <td className="num">{fmtPrice(Number(c.ask) || 0, unit)}</td>
                     <td className="num cov4-floor">{c.floor ? fmtPrice(Number(c.floor) || 0, unit) : "—"}</td>
@@ -1604,6 +1635,38 @@ export default function SupplierCreateOffer() {
                     <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
                     <td>
+                      {companyPlants.length > 0 && !plantManual["__nf"] ? (
+                        <select
+                          value={nf.plant}
+                          onChange={(e) => {
+                            const v = e.target.value;
+                            if (v === "__custom__") {
+                              setPlantManual((p) => ({ ...p, __nf: true }));
+                              setNf((p) => ({ ...p, plant: "" }));
+                            } else {
+                              setNf((p) => ({ ...p, plant: v }));
+                            }
+                          }}
+                          title="USDA/SIF establishment number"
+                        >
+                          <option value="">Select...</option>
+                          {companyPlants.map((p) => (
+                            <option key={p} value={p}>{p}</option>
+                          ))}
+                          <option value="__custom__">+ Enter manually</option>
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          placeholder="e.g. 4554"
+                          value={nf.plant}
+                          onChange={(e) => setNf((p) => ({ ...p, plant: e.target.value }))}
+                          title="USDA/SIF establishment number"
+                          style={{ width: 80 }}
+                        />
+                      )}
+                    </td>
+                    <td>
                       <input
                         type="number"
                         placeholder={qtyPh}
@@ -1716,6 +1779,15 @@ export default function SupplierCreateOffer() {
           {!addRow && (
             <button type="button" className="cov4-add-row-btn" onClick={() => setAddRow(true)}>+ Add cut manually</button>
           )}
+          <div style={{ marginTop: 6, fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
+            <button
+              type="button"
+              onClick={() => navigate("/supplier/profile/plants")}
+              style={{ background: "none", border: "none", padding: 0, color: "var(--p800, #8B2252)", cursor: "pointer", textDecoration: "underline", fontSize: 12 }}
+            >
+              Manage plant numbers
+            </button>
+          </div>
           {cuts.length === 0 && !addRow && !showAiImport && (
             <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add cuts manually or use AI Import</p></div>
           )}
@@ -1750,7 +1822,14 @@ export default function SupplierCreateOffer() {
                   <div className="cov4-prev-cuts-t">Cuts included</div>
                   {cuts.map((c) => (
                     <div key={c.id} className="cov4-prev-cut-row">
-                      <span>{c.cat} {c.cut}</span>
+                      <span>
+                        {c.cat} {c.cut}
+                        {c.plant && (
+                          <span style={{ marginLeft: 6, fontSize: 11, color: "#6b7280" }}>
+                            · Plant {c.plant}
+                          </span>
+                        )}
+                      </span>
                       <span>US$ {fmtPrice(Number(c.ask) || 0, unit)}/{wLbl}</span>
                     </div>
                   ))}
