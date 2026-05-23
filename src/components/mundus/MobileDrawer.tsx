@@ -1,23 +1,97 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Logo } from "@/components/Logo";
-import { XIcon, GlobeIcon } from "@/components/icons";
+import { XIcon, GlobeIcon, ChevronDownIcon } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
-import type { SidebarItem } from "@/components/mundus/Sidebar";
+import type { SidebarItem, SidebarEntry, SidebarSection } from "@/components/mundus/Sidebar";
 import { ProBadge } from "@/components/mundus/ProBadge";
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  items: SidebarItem[];
+  items: SidebarEntry[];
   rolePill?: string;
   userName?: string;
   userSubtitle?: string;
   onProBadgeClick?: (item: SidebarItem) => void;
 };
+
+function isSection(e: SidebarEntry): e is SidebarSection {
+  return (e as SidebarSection).type === "section";
+}
+
+function renderMdItem(
+  item: SidebarItem,
+  onClose: () => void,
+  onProBadgeClick?: (i: SidebarItem) => void,
+) {
+  const I = item.icon;
+  return (
+    <NavLink
+      key={item.to}
+      to={item.to}
+      end={item.end}
+      className={({ isActive }) =>
+        `md-item ${isActive ? "is-active" : ""} ${item.accent ? "is-accent" : ""}`.trim()
+      }
+      onClick={onClose}
+    >
+      <I size={20} />
+      <span>{item.label}</span>
+      {item.proBadge && (
+        <ProBadge
+          onClick={
+            onProBadgeClick
+              ? () => {
+                  onClose();
+                  onProBadgeClick(item);
+                }
+              : undefined
+          }
+        />
+      )}
+    </NavLink>
+  );
+}
+
+function MdSection({
+  section,
+  onClose,
+  onProBadgeClick,
+}: {
+  section: SidebarSection;
+  onClose: () => void;
+  onProBadgeClick?: (i: SidebarItem) => void;
+}) {
+  const { pathname } = useLocation();
+  const hasActive = section.children.some((c) =>
+    c.end ? pathname === c.to : pathname.startsWith(c.to),
+  );
+  const [open, setOpen] = useState<boolean>(section.defaultOpen ?? hasActive);
+  const SI = section.icon;
+  return (
+    <div className={`md-section ${open ? "is-open" : ""}`}>
+      <button
+        type="button"
+        className="md-section-header"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+      >
+        {SI && <SI size={20} />}
+        <span className="md-section-label">{section.label}</span>
+        <ChevronDownIcon size={18} />
+      </button>
+      {open && (
+        <div className="md-section-body">
+          {section.children.map((it) => renderMdItem(it, onClose, onProBadgeClick))}
+        </div>
+      )}
+    </div>
+  );
+}
 
 export function MobileDrawer({
   open,
@@ -98,38 +172,23 @@ export function MobileDrawer({
         </div>
 
         <nav className="md-nav">
-          {items.map((item) => {
-            const I = item.icon;
+          {items.map((entry) => {
+            if (isSection(entry)) {
+              return (
+                <MdSection
+                  key={entry.key}
+                  section={entry}
+                  onClose={onClose}
+                  onProBadgeClick={onProBadgeClick}
+                />
+              );
+            }
             return (
-              <div key={item.to} className="md-item-wrap">
-                {item.groupLabel && (
-                  <div className="md-group-label">{item.groupLabel}</div>
+              <div key={entry.to} className="md-item-wrap">
+                {entry.groupLabel && (
+                  <div className="md-group-label">{entry.groupLabel}</div>
                 )}
-                <NavLink
-                  to={item.to}
-                  end={item.end}
-                  className={({ isActive }) =>
-                    `md-item ${isActive ? "is-active" : ""} ${
-                      item.accent ? "is-accent" : ""
-                    }`.trim()
-                  }
-                  onClick={onClose}
-                >
-                  <I size={20} />
-                  <span>{item.label}</span>
-                  {item.proBadge && (
-                    <ProBadge
-                      onClick={
-                        onProBadgeClick
-                          ? () => {
-                              onClose();
-                              onProBadgeClick(item);
-                            }
-                          : undefined
-                      }
-                    />
-                  )}
-                </NavLink>
+                {renderMdItem(entry, onClose, onProBadgeClick)}
               </div>
             );
           })}

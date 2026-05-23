@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
+import { Sidebar, type SidebarItem, type SidebarEntry } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
 import { BottomNav, type BottomNavItem } from "@/components/mundus/BottomNav";
 import { MobileDrawer } from "@/components/mundus/MobileDrawer";
@@ -20,7 +20,7 @@ import {
   ClipboardIcon,
   UsersIcon,
 } from "@/components/icons";
-import { BarChart3, LineChart } from "lucide-react";
+import { BarChart3, LineChart, ShoppingBag, Settings2 } from "lucide-react";
 import { Gavel, Globe } from "lucide-react";
 import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
 import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
@@ -55,30 +55,53 @@ function SupplierShellInner() {
     if (f) openUpsell(f);
   };
 
-  const SUPPLIER_NAV: SidebarItem[] = [
+  const SUPPLIER_NAV: SidebarEntry[] = [
     { to: "/supplier", label: t("shell.nav.home"), icon: HomeIcon, end: true },
-    { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
-    { to: "/supplier/auctions", label: t("supplier.auctions.nav"), icon: Gavel as unknown as SidebarItem["icon"], newBadge: true },
-    { to: "/supplier/offers/new", label: t("shell.nav.createOffer"), icon: PlusIcon, accent: true },
-    { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
     {
-      to: "/supplier/insights/price-benchmark",
-      label: t("supplier.insights.nav.priceBenchmark"),
-      icon: BarChart3 as unknown as SidebarItem["icon"],
-      proBadge: true,
-      groupLabel: t("supplier.insights.groupLabel"),
+      type: "section",
+      key: "marketplace",
+      label: "Marketplace",
+      icon: ShoppingBag as unknown as SidebarItem["icon"],
+      children: [
+        { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
+        { to: "/supplier/auctions/create", label: "Create Auction", icon: Gavel as unknown as SidebarItem["icon"], newBadge: true },
+        { to: "/supplier/offers/new", label: t("shell.nav.createOffer"), icon: PlusIcon, accent: true },
+        { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
+        { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon },
+      ],
     },
     {
-      to: "/supplier/insights/analytics",
-      label: t("supplier.insights.nav.analytics"),
-      icon: LineChart as unknown as SidebarItem["icon"],
-      proBadge: true,
+      type: "section",
+      key: "operations",
+      label: "Operations",
+      icon: Settings2 as unknown as SidebarItem["icon"],
+      children: [
+        {
+          to: "/supplier/insights/price-benchmark",
+          label: t("supplier.insights.nav.priceBenchmark"),
+          icon: BarChart3 as unknown as SidebarItem["icon"],
+          proBadge: true,
+        },
+        {
+          to: "/supplier/insights/analytics",
+          label: t("supplier.insights.nav.analytics"),
+          icon: LineChart as unknown as SidebarItem["icon"],
+          proBadge: true,
+        },
+        { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
+      ],
     },
-    { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
-    { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon },
-    { to: "/supplier/users", label: t("shell.nav.users"), icon: UsersIcon },
-    { to: "/supplier/company", label: t("shell.nav.myCompany"), icon: HomeIcon },
-    { to: "/supplier/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
+    {
+      type: "section",
+      key: "admin",
+      label: "Admin",
+      icon: UsersIcon as unknown as SidebarItem["icon"],
+      children: [
+        { to: "/supplier/users", label: t("shell.nav.users"), icon: UsersIcon },
+        { to: "/supplier/company", label: t("shell.nav.myCompany"), icon: HomeIcon },
+        { to: "/supplier/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
+      ],
+    },
   ];
 
   const SUPPLIER_BOTTOM: BottomNavItem[] = [
