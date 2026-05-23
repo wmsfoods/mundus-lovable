@@ -1073,7 +1073,7 @@ function Step4Contact({
 }
 
 /* ----------------- helpers ----------------- */
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({ label, children }: { label: React.ReactNode; children: React.ReactNode }) {
   return (
     <div>
       <label className="block text-sm text-gray-700 mb-1.5">{label}</label>
