@@ -20,6 +20,11 @@ const PAYMENT_TERMS = [
 
 const INCOTERMS = ["FOB", "CFR", "CIF", "EXW", "FCA", "DAP", "DDP"];
 
+const labelStyle: React.CSSProperties = {
+  display: "block", fontSize: 12, fontWeight: 600, color: "#374151",
+  marginBottom: 6, textTransform: "uppercase", letterSpacing: 0.3,
+};
+
 type PortRow = { id: string; name: string; code: string | null; country_id: string | null };
 type CountryRow = { id: string; english_name: string; iso_code: string | null };
 
