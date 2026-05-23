@@ -58,12 +58,12 @@ function SupplierOfferCard({
   o,
   onOpen,
   t,
-  negCount,
+  negInfo,
 }: {
   o: SupplierOffer;
   onOpen: () => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
-  negCount?: number;
+  negInfo?: { total: number; companies: number };
 }) {
   const status = STATUS_COLORS[o.status] ?? STATUS_COLORS.active;
   const firstDest = o.destinations[0];
@@ -113,7 +113,7 @@ function SupplierOfferCard({
           <span className="status-dot" style={{ background: status.dot }} />
           {t(`supplier.offers.status.${o.status}`)}
         </span>
-        {negCount && negCount > 0 ? (
+        {negInfo && negInfo.total > 0 ? (
           <span
             style={{
               marginLeft: 6,
@@ -126,7 +126,10 @@ function SupplierOfferCard({
               whiteSpace: "nowrap",
             }}
           >
-            🤝 {negCount} negotiation{negCount > 1 ? "s" : ""}
+            🤝 {negInfo.total} negotiation{negInfo.total > 1 ? "s" : ""}
+            {negInfo.companies > 0 && (
+              <> · {negInfo.companies} {negInfo.companies > 1 ? "buyers" : "buyer"}</>
+            )}
           </span>
         ) : null}
       </div>
@@ -406,7 +409,7 @@ export default function SupplierOffers() {
                 key={o.id}
                 o={o}
                 t={t}
-                negCount={negCounts[o.id]}
+                negInfo={negCounts[o.id]}
                 onOpen={() => navigate(`/supplier/offers/${o.id}`)}
               />
             ))}
