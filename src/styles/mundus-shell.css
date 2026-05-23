@@ -105,6 +105,45 @@
   text-transform: uppercase;
   color: var(--g500);
 }
+
+/* Collapsible sections (desktop sidebar) */
+.sb-section { display: flex; flex-direction: column; }
+.sb-section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  width: 100%;
+  text-align: left;
+  color: var(--g700);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  border-radius: var(--radius);
+  transition: background 0.12s, color 0.12s;
+}
+.sb-section-header:hover { background: var(--g100); color: var(--fg); }
+.sb-section-header svg { color: var(--g500); flex-shrink: 0; }
+.sb-section-label { flex: 1; }
+.sb-section-header > svg:last-child {
+  transition: transform 0.18s ease;
+}
+.sb-section.is-open .sb-section-header > svg:last-child {
+  transform: rotate(180deg);
+}
+.sb-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 2px 0 6px 8px;
+  margin-left: 14px;
+  border-left: 1px solid var(--g200);
+}
+.sb-section-body .sb-item { padding: 8px 12px; }
 .md-item-wrap { display: contents; }
 .md-group-label {
   padding: 14px 14px 4px;
