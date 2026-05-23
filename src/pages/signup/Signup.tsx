@@ -937,35 +937,41 @@ function CountriesOfOperation({
           ))}
         </div>
       )}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        <input
-          className={cn(inputCls, "pl-10")}
-          value={query}
-          placeholder={t("signup.fields.countriesPlaceholder")}
-          onChange={(e) => {
-            setQuery(e.target.value);
-            setOpen(true);
-          }}
-          onFocus={() => setOpen(true)}
-        />
-        {open && filtered.length > 0 && (
-          <div className="absolute z-20 mt-1 w-full max-h-64 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
-            {filtered.map((c) => (
-              <button
-                type="button"
-                key={c.name}
-                onClick={() => add(c)}
-                className="w-full text-left px-3 py-3 hover:bg-gray-50 flex items-center gap-2 text-sm"
-              >
-                <span>{c.flag || "🏳️"}</span>
-                <span>{c.name}</span>
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
-      <p className="text-xs text-gray-500 mt-1.5">{t("signup.fields.countriesHint")}</p>
+      {value.length < 5 ? (
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <input
+            className={cn(inputCls, "pl-10")}
+            value={query}
+            placeholder={t("signup.fields.countriesPlaceholder")}
+            onChange={(e) => {
+              setQuery(e.target.value);
+              setOpen(true);
+            }}
+            onFocus={() => setOpen(true)}
+          />
+          {open && filtered.length > 0 && (
+            <div className="absolute z-20 mt-1 w-full max-h-64 overflow-auto rounded-lg border border-gray-200 bg-white shadow-lg">
+              {filtered.map((c) => (
+                <button
+                  type="button"
+                  key={c.name}
+                  onClick={() => add(c)}
+                  className="w-full text-left px-3 py-3 hover:bg-gray-50 flex items-center gap-2 text-sm"
+                >
+                  <span>{c.flag || "🏳️"}</span>
+                  <span>{c.name}</span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      ) : null}
+      <p className={cn("text-xs mt-1.5", value.length >= 5 ? "text-green-600" : "text-gray-500")}>
+        {value.length >= 5
+          ? t("signup.fields.countriesMaxReached", { defaultValue: "Maximum reached (5/5)" })
+          : t("signup.fields.countriesHint")}
+      </p>
     </div>
   );
 }
