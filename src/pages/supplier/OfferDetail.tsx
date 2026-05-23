@@ -14,6 +14,7 @@ import {
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
+import { formatOfferNumber } from "@/lib/offerNumber";
 import {
   Dialog,
   DialogContent,
@@ -344,6 +345,16 @@ export default function SupplierOfferDetail() {
             <div className="od-title-block">
               <h1 className="od-title">{offer.title}</h1>
               <div className="od-subtitle">
+                <span
+                  style={{
+                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                    fontSize: 12,
+                    color: "#9ca3af",
+                    marginRight: 8,
+                  }}
+                >
+                  {formatOfferNumber(offer.offerNumber, offer.createdAt)}
+                </span>
                 {t("supplier.offers.detail.specifications", { count: offer.items.length })}
               </div>
             </div>
