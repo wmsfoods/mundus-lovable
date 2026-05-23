@@ -11,7 +11,8 @@ import {
   ShareIcon,
   FlagSVG,
 } from "@/components/icons";
-import { MOCK_SUPPLIER_OFFERS, type SupplierOffer } from "@/data/mockSupplierOffers";
+import type { SupplierOffer } from "@/data/mockSupplierOffers";
+import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
@@ -40,10 +41,15 @@ export default function SupplierOfferDetail() {
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
 
+  const { offers: realOffers, loading: offersLoading } = useRealSupplierOffers();
   const offer: SupplierOffer | undefined = useMemo(
-    () => MOCK_SUPPLIER_OFFERS.find((o) => o.id === id),
-    [id]
+    () => realOffers.find((o) => o.id === id),
+    [id, realOffers]
   );
+
+  if (offersLoading && !offer) {
+    return <div className="empty-state"><p>{t("supplier.offers.loading", "Loading…")}</p></div>;
+  }
 
   if (!offer) {
     return (
