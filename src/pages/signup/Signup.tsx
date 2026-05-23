@@ -790,6 +790,27 @@ function CountriesOfOperation({
       <label className="block text-sm font-medium text-gray-700 mb-1.5">
         {t("signup.fields.countriesOfOperation")}
       </label>
+      {value.length > 0 && (
+        <div className="flex flex-wrap gap-2 mb-2">
+          {value.map((c) => (
+            <span
+              key={c.name}
+              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#B64769]/10 text-[#B64769] text-sm"
+            >
+              <span>{c.flag || "🏳️"}</span>
+              {c.name}
+              <button
+                type="button"
+                onClick={() => remove(c.name)}
+                className="ml-1 text-[#B64769]/70 hover:text-[#B64769]"
+                aria-label="Remove"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
         <input
@@ -819,27 +840,6 @@ function CountriesOfOperation({
         )}
       </div>
       <p className="text-xs text-gray-500 mt-1.5">{t("signup.fields.countriesHint")}</p>
-      {value.length > 0 && (
-        <div className="flex flex-wrap gap-2 mt-3">
-          {value.map((c) => (
-            <span
-              key={c.name}
-              className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-[#B64769]/10 text-[#B64769] text-sm"
-            >
-              <span>{c.flag || "🏳️"}</span>
-              {c.name}
-              <button
-                type="button"
-                onClick={() => remove(c.name)}
-                className="ml-1 text-[#B64769]/70 hover:text-[#B64769]"
-                aria-label="Remove"
-              >
-                <X className="h-3.5 w-3.5" />
-              </button>
-            </span>
-          ))}
-        </div>
-      )}
     </div>
   );
 }
