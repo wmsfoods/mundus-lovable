@@ -165,7 +165,7 @@ export default function BuyerNegotiationDetail() {
         </span>
         <span className="chip">
           <span className="chip-label">{t("buyer.negotiations.detail.meta.origin")}:</span>
-          <span className="chip-value">{d.originCountry}</span>
+          <span className="chip-value">{countryFlag(d.originCountry)} {d.originCountry}</span>
         </span>
         <span className="chip">
           <span className="chip-label">{t("buyer.negotiations.detail.meta.port")}:</span>
