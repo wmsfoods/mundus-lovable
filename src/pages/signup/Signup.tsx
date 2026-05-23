@@ -26,7 +26,7 @@ const countryCodes = [
   { code: "+54", flag: "🇦🇷" },
 ];
 
-const PROTEINS = ["Beef", "Pork", "Poultry", "Lamb", "Seafood", "Other"];
+const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine", "Seafood"];
 
 type Role = "buyer" | "supplier" | "";
 
@@ -579,7 +579,16 @@ function Step3Company({
     !!data.companyName &&
     !!data.taxId &&
     !!data.role &&
+    data.proteins.length >= 1 &&
     data.countriesOfOperation.length >= 1;
+
+  const missing: string[] = [];
+  if (!data.companyName) missing.push(t("signup.fields.companyName"));
+  if (!data.taxId) missing.push(t("signup.fields.taxId"));
+  if (!data.role) missing.push(t("signup.fields.role"));
+  if (data.proteins.length < 1) missing.push(t("signup.fields.proteinProfile"));
+  if (data.countriesOfOperation.length < 1)
+    missing.push(t("signup.fields.countriesOfOperation"));
 
   return (
     <div className="space-y-6">
@@ -631,7 +640,7 @@ function Step3Company({
       {data.role && (
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            {t("signup.fields.proteinProfile")}
+            {t("signup.fields.proteinProfile")} <span className="text-red-500">*</span>
           </label>
           <div className="flex flex-wrap gap-2">
             {PROTEINS.map((p) => {
@@ -713,6 +722,19 @@ function Step3Company({
           {t("common.proceed")}
         </button>
       </div>
+
+      {!canProceed && missing.length > 0 && (
+        <div className="mt-3 rounded-lg border border-[#B64769]/20 bg-[#B64769]/5 px-4 py-3 text-sm text-gray-600">
+          <div className="font-medium text-[#B64769] mb-1">
+            {t("signup.missingTitle")}
+          </div>
+          <ul className="list-disc pl-5 space-y-0.5">
+            {missing.map((m) => (
+              <li key={m}>{m}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   );
 }
