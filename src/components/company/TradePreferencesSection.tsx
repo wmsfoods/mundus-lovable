@@ -104,7 +104,7 @@ export default function TradePreferencesSection({ companyId, canEdit, defaultCou
 
       {/* Payment terms */}
       <div style={{ marginBottom: 18 }}>
-        <label className="cp-label">Preferred Payment Terms *</label>
+        <label style={labelStyle}>Preferred Payment Terms *</label>
         {canEdit ? (
           <select
             className="cp-inline"
@@ -122,7 +122,7 @@ export default function TradePreferencesSection({ companyId, canEdit, defaultCou
 
       {/* Incoterms */}
       <div style={{ marginBottom: 18 }}>
-        <label className="cp-label">Preferred Incoterms</label>
+        <label style={labelStyle}>Preferred Incoterms</label>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {INCOTERMS.map((i) => {
             const on = (val.preferred_incoterms ?? []).includes(i);
@@ -146,7 +146,7 @@ export default function TradePreferencesSection({ companyId, canEdit, defaultCou
 
       {/* Countries */}
       <div style={{ marginBottom: 18 }}>
-        <label className="cp-label">Countries of Operation</label>
+        <label style={labelStyle}>Countries of Operation</label>
         <TagMultiSelect
           canEdit={canEdit}
           selected={val.countries_of_operation ?? []}
@@ -163,7 +163,7 @@ export default function TradePreferencesSection({ companyId, canEdit, defaultCou
 
       {/* Ports */}
       <div>
-        <label className="cp-label">Ports of Shipment</label>
+        <label style={labelStyle}>Ports of Shipment</label>
         <TagMultiSelect
           canEdit={canEdit}
           selected={val.ports_of_shipment ?? []}
