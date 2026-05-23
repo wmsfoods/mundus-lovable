@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
-import { MOCK_SUPPLIER_OFFERS } from "@/data/mockSupplierOffers";
 import { categoryToProtein, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 
 type ProteinNonAll = Exclude<ProteinKey, "all">;
@@ -15,7 +14,7 @@ export function useSupplierProteins() {
 
   return useMemo(() => {
     const counts: Record<ProteinNonAll, number> = { beef: 0, pork: 0, poultry: 0, ovine: 0 };
-    const all = [...real, ...MOCK_SUPPLIER_OFFERS];
+    const all = real;
     for (const o of all) {
       const p = categoryToProtein(o.category);
       if (p) counts[p] += 1;
