@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { Package, Eye, Send, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DistributeOfferModal } from "@/components/admin/DistributeOfferModal";
@@ -40,16 +40,22 @@ function StatCard({ label, value }: { label: string; value: string | number }) {
 
 export default function AdminOffers() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const supplierParam = searchParams.get("supplier");
   const [rows, setRows] = useState<OfferRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [supplierFilter, setSupplierFilter] = useState<string>("all");
+  const [supplierFilter, setSupplierFilter] = useState<string>(supplierParam ?? "all");
   const [originFilter, setOriginFilter] = useState<string>("all");
   const [viewsToday, setViewsToday] = useState(0);
   const [totalDistributions, setTotalDistributions] = useState(0);
   const [distribute, setDistribute] = useState<OfferRow | null>(null);
+
+  useEffect(() => {
+    if (supplierParam) setSupplierFilter(supplierParam);
+  }, [supplierParam]);
 
   useEffect(() => {
     let cancelled = false;
@@ -251,6 +257,7 @@ export default function AdminOffers() {
                       <td className="text-right">
                         <div style={{ display: "inline-flex", gap: 6 }}>
                           <button type="button" onClick={() => navigate(`/admin/companies/${r.supplier_id}`)} style={btnGhost}>View</button>
+                          <button type="button" onClick={() => navigate(`/supplier/offers/${r.id}`)} style={btnGhost}>View as Supplier</button>
                           <button type="button" onClick={() => setDistribute(r)} style={btnPrimary}>
                             <Send size={12} style={{ marginRight: 4, display: "inline" }} /> Send
                           </button>
