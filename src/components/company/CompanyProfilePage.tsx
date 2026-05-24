@@ -350,17 +350,6 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
     }
   }
 
-  if (loading || !company) {
-    return (
-      <div className="cprofile-page">
-        <Crumbs items={[{ label: "Home", to: `/${role}` }, { label: "My Company" }]} />
-        <div className="cprofile-empty">Loading…</div>
-      </div>
-    );
-  }
-
-  const visibleLocations = locations.filter((l) => !l._deleted);
-
   const countryOptions = useMemo(
     () => marketCountries.map((c) => `${c.flag} ${c.name}`.trim()),
     [marketCountries],
@@ -380,6 +369,17 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       .filter((p) => supplierCountries.has(p.country_name.toLowerCase()))
       .map(fmt);
   }, [allPorts, locations, role]);
+
+  if (loading || !company) {
+    return (
+      <div className="cprofile-page">
+        <Crumbs items={[{ label: "Home", to: `/${role}` }, { label: "My Company" }]} />
+        <div className="cprofile-empty">Loading…</div>
+      </div>
+    );
+  }
+
+  const visibleLocations = locations.filter((l) => !l._deleted);
 
   return (
     <div className="cprofile-page">
