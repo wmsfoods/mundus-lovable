@@ -8,8 +8,6 @@ const fmtMoneyShort = (v: number) => {
   return `$${v}`;
 };
 const fmtMoneyExact = (v: number) => `$${v.toLocaleString("en-US")}`;
-const fmtPct = (v: number) => `${Math.round(v * 100)}%`;
-const fmtPpDelta = (v: number) => `${v > 0 ? "↑" : "↓"}${Math.abs(Math.round(v * 100))}pp`;
 const fmtPctDelta = (v: number) => `${v > 0 ? "↑" : "↓"}${Math.abs(Math.round(v * 100))}%`;
 
 function TrendChart({ data }: { data: Array<{ date: string; value: number }> }) {
