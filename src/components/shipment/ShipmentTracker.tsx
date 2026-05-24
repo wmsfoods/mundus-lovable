@@ -118,6 +118,13 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
   const [vesselOpen, setVesselOpen] = useState(false);
   const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
+  // BL extraction state (per active container)
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [extractResult, setExtractResult] = useState<Record<string, unknown> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const draftInputRef = useRef<HTMLInputElement | null>(null);
+
   // Load ports + containers
   useEffect(() => {
     let cancelled = false;
