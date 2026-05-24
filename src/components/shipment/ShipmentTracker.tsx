@@ -199,6 +199,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
   }, [ports, onChange]);
 
   const addContainer = async () => {
+    if (containers.length >= fclCount) return;
     const pos = (containers[containers.length - 1]?.position ?? containers.length) + 1;
     const { data } = await supabase.from("shipment_containers").insert({
       order_id: orderId, position: pos, status: "pending",
@@ -207,6 +208,31 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       setContainers((prev) => [...prev, data as ShipmentContainer]);
       setActiveIdx(containers.length);
     }
+  };
+
+  const isContainerEmpty = useCallback((c: ShipmentContainer) => {
+    const checkKeys: (keyof ShipmentContainer)[] = [
+      "container_number", "seal_number", "bl_number", "shipping_line",
+      "vessel_name", "voyage_number", "origin_port_id", "destination_port_id",
+      "stuffed_date", "gate_in_date", "vessel_loaded_date", "departed_date",
+      "arrived_date", "discharged_date", "gate_out_date", "delivered_date",
+      "bl_document_url", "bl_draft_url",
+    ];
+    return checkKeys.every((k) => !c[k]);
+  }, []);
+
+  const deleteContainer = async (id: string) => {
+    const target = containers.find((c) => c.id === id);
+    if (!target || !isContainerEmpty(target)) return;
+    if (containers.length <= 1) return;
+    if (!window.confirm(`Remove FCL ${target.position ?? ""}? This container has no data.`)) return;
+    const { error } = await supabase.from("shipment_containers").delete().eq("id", id);
+    if (error) return;
+    setContainers((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      setActiveIdx((idx) => Math.min(idx, Math.max(0, next.length - 1)));
+      return next;
+    });
   };
 
   const filledCount = useMemo(() => {
@@ -356,19 +382,42 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       {(containers.length > 1 || !readOnly) && (
         <div className="shp-tabs" role="tablist">
           {containers.map((c, i) => (
-            <button
-              key={c.id}
-              type="button"
-              role="tab"
-              aria-selected={i === activeIdx}
-              className={`shp-tab ${i === activeIdx ? "is-active" : ""}`}
-              onClick={() => setActiveIdx(i)}
-            >
-              FCL {c.position ?? i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
-            </button>
+            <span key={c.id} className={`shp-tab ${i === activeIdx ? "is-active" : ""}`} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={i === activeIdx}
+                onClick={() => setActiveIdx(i)}
+                style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
+              >
+                FCL {c.position ?? i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
+              </button>
+              {!readOnly && containers.length > 1 && isContainerEmpty(c) && (
+                <button
+                  type="button"
+                  title="Remove this empty FCL"
+                  aria-label="Remove this empty FCL"
+                  onClick={(e) => { e.stopPropagation(); deleteContainer(c.id); }}
+                  style={{
+                    width: 18, height: 18, borderRadius: 9,
+                    border: "1px solid #e5e7eb", background: "white",
+                    color: "#8B2252", cursor: "pointer", lineHeight: 1,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 12, padding: 0,
+                  }}
+                >×</button>
+              )}
+            </span>
           ))}
-          {!readOnly && (
-            <button type="button" className="shp-tab shp-tab-add" onClick={addContainer}>+ Add Container</button>
+          {!readOnly && containers.length < fclCount && (
+            <button
+              type="button"
+              className="shp-tab shp-tab-add"
+              onClick={addContainer}
+              title={`Add container (${containers.length}/${fclCount})`}
+            >
+              + Add Container ({containers.length}/{fclCount})
+            </button>
           )}
         </div>
       )}
