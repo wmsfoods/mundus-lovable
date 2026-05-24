@@ -26,6 +26,8 @@ export type RealNegotiationRow = {
   rejection_cooldown_until: string | null;
   current_round: number | null;
   chat_enabled: boolean | null;
+  order_id: string | null;
+  order: { id: string; order_number: number | null } | null;
   offer: {
     id: string;
     offer_number: number;
@@ -99,6 +101,8 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
           agreed_items, settled_total_value, buyer_message, supplier_message,
           rejection_cooldown_until, current_round, chat_enabled,
+          order_id,
+          order:orders!negotiations_order_id_fkey ( id, order_number ),
           offer:offers (
             id, offer_number, created_at, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,

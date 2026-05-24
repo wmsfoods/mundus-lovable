@@ -44,6 +44,8 @@ export type OfferWithDetails = {
   payment_terms: string;
   container_size: string;
   total_fcl: number | null;
+  remaining_fcl: number;
+  sold_fcl: number;
   is_halal: boolean | null;
   is_kosher: boolean | null;
   created_at: string | null;
@@ -123,6 +125,7 @@ export function useOffers(): UseOffersResult {
         `
         )
         .is("deleted_at", null)
+        .neq("status", "sold_out")
         .order("created_at", { ascending: false });
 
       if (cancelled) return;
@@ -131,7 +134,30 @@ export function useOffers(): UseOffersResult {
         setError(qErr.message);
         setOffers([]);
       } else {
-        setOffers((data ?? []) as unknown as OfferWithDetails[]);
+        const rows = (data ?? []) as unknown as OfferWithDetails[];
+        // Fetch accepted FCL counts per offer to compute remaining capacity
+        const ids = rows.map((o) => o.id);
+        const soldMap: Record<string, number> = {};
+        if (ids.length > 0) {
+          const { data: accepted } = await supabase
+            .from("negotiations")
+            .select("offer_id, fcl_count")
+            .in("offer_id", ids)
+            .eq("status", "bid_accepted")
+            .is("deleted_at", null);
+          for (const n of accepted ?? []) {
+            soldMap[n.offer_id as string] = (soldMap[n.offer_id as string] || 0) + Number(n.fcl_count ?? 1);
+          }
+        }
+        const enriched = rows
+          .map((o) => {
+            const total = o.total_fcl ?? 1;
+            const sold = soldMap[o.id] || 0;
+            return { ...o, sold_fcl: sold, remaining_fcl: Math.max(total - sold, 0) };
+          })
+          .filter((o) => o.remaining_fcl > 0);
+        if (cancelled) return;
+        setOffers(enriched);
       }
       setLoading(false);
     }
