@@ -8,6 +8,7 @@ import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 import { Pagination } from "@/components/mundus/Pagination";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import type { Sale, SaleStatus } from "@/data/mockSales";
+import { useSupplierSales } from "@/hooks/useSupplierSales";
 import { DealsFilterBar } from "@/components/marketplace/DealsFilterBar";
 import {
   EMPTY_FILTER,
@@ -26,7 +27,7 @@ export default function SupplierSales() {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const [sales] = useState<Sale[]>([]);
+  const { data: sales } = useSupplierSales();
   const [page, setPage] = useState(1);
   const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [filter, setFilter] = useState<DealsFilterState>(EMPTY_FILTER);
