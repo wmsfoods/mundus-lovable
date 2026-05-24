@@ -90,6 +90,12 @@ export default function BuyerRequestDetail() {
   };
 
   const reqNo = formatRequestNumber(r.request_number, r.created_at);
+  const hasActiveNegotiation = negotiations.some((n) =>
+    ["awaiting_supplier", "pending_buyer_review", "awaiting_buyer"].includes(n.status),
+  );
+  const hasDealClosed = negotiations.some((n) => n.status === "bid_accepted");
+  const canEdit = !hasActiveNegotiation && !hasDealClosed && r.status !== "not_interested" && r.status !== "closed";
+  const canCancel = !hasDealClosed && r.status !== "not_interested" && r.status !== "closed";
 
   return (
     <>
