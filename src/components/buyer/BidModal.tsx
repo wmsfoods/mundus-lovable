@@ -393,12 +393,66 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             </select>
             {selectedFreight && (
               <span className="text-xs text-muted-foreground">
-                {t("buyer.bid.freightCost")}: US$ {Number(selectedFreight.cost).toLocaleString()} ({pLbl}{" "}
-                {fmtPrice(freightPerKg, unit)})
+                {t("buyer.bid.freightCost")}: US$ {Number(selectedFreight.cost).toLocaleString()} (
+                {fmtPrice(freightPerKg, unit)} {pLbl})
+                {insurancePerKg > 0 && (
+                  <> · Insurance {fmtPrice(insurancePerKg, unit)} {pLbl}</>
+                )}
               </span>
             )}
           </label>
         </div>
+
+        {/* Incoterm banner — explains what's included in the displayed prices */}
+        <div
+          className="rounded-md border px-3 py-2 mt-2 text-xs"
+          style={
+            incoBanner.tone === "warn"
+              ? { background: "#fef3c7", borderColor: "#fcd34d", color: "#92400e" }
+              : { background: "#ecfeff", borderColor: "#a5f3fc", color: "#155e75" }
+          }
+        >
+          {incoBanner.tone === "warn" ? "⚠️ " : "ℹ️ "}
+          {incoBanner.text}
+        </div>
+
+        {/* FCL allocation (Feature 2) */}
+        {totalOfferFcl > 1 && (
+          <div className="mt-3 rounded-lg border border-border p-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs uppercase font-semibold text-muted-foreground">
+                  Number of FCLs
+                </label>
+                <select
+                  value={fclCount}
+                  onChange={(e) => setFclCount(Number(e.target.value))}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
+                  disabled={remainingFcl === 0}
+                >
+                  {Array.from({ length: Math.max(1, remainingFcl) }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>
+                      {n} FCL{n > 1 ? "s" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="text-xs text-muted-foreground flex-1">
+                <span className="font-medium text-foreground">
+                  {remainingFcl}
+                </span>{" "}
+                of {totalOfferFcl} available
+                {fclAlloc.sold > 0 && <> · {fclAlloc.sold} sold</>}
+                {fclAlloc.inNegotiation > 0 && <> · {fclAlloc.inNegotiation} in negotiation</>}
+              </div>
+            </div>
+            {remainingFcl === 0 && (
+              <div className="text-xs text-destructive mt-2">
+                No FCLs available — this offer is fully claimed.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bulk apply — unified responsive */}
         <div className="mt-3 rounded-lg border border-border p-3">
@@ -495,13 +549,15 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
               <tr className="text-left text-xs uppercase text-muted-foreground">
                 <th className="px-3 py-2 font-medium">{t("buyer.bid.cut")}</th>
                 <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.qty", { unit: wLbl })}</th>
-                <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.asking")} ({pLbl})</th>
+                <th className="px-3 py-2 font-medium text-right">FOB ({pLbl})</th>
+                <th className="px-3 py-2 font-medium text-right">Asking ({pLbl})</th>
                 <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.yourBid")} ({pLbl})</th>
               </tr>
             </thead>
             <tbody>
               {offer.items.map((it) => {
-                const asking = Number(it.price);
+                const fob = Number(it.price);
+                const asking = effectiveAsking(fob);
                 const bidVal = bids[it.id];
                 const bid = typeof bidVal === "number" ? bidVal : asking;
                 const d = bid - asking;
@@ -514,8 +570,20 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                 return (
                   <tr key={it.id} className="border-t border-border">
                     <td className="px-3 py-2">{it.customer_product?.name ?? "—"}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{fmtWeight(Number(it.amount), unit)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{fmtPrice(asking, unit)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {fmtWeight(Number(it.amount) * fclScale, unit)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+                      {fmtPrice(fob, unit)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums font-medium">
+                      {fmtPrice(asking, unit)}
+                      {asking !== fob && (
+                        <div className="text-[10px] text-muted-foreground font-normal">
+                          {(incoterm || "").toUpperCase()}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex flex-col items-end gap-0.5">
                         <Input
@@ -568,7 +636,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         {/* Cuts — mobile cards */}
         <div className="flex flex-col gap-3 mt-2 sm:hidden">
           {offer.items.map((it) => {
-            const asking = Number(it.price);
+            const fob = Number(it.price);
+            const asking = effectiveAsking(fob);
             const bidVal = bids[it.id];
             const bid = typeof bidVal === "number" ? bidVal : asking;
             const d = bid - asking;
@@ -581,13 +650,23 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             return (
               <div key={it.id} className="rounded-lg border border-border p-3">
                 <div className="font-medium text-sm mb-2">{it.customer_product?.name ?? "—"}</div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <div className="text-muted-foreground">{t("buyer.bid.qty", { unit: wLbl })}</div>
-                    <div className="font-semibold tabular-nums">{fmtWeight(Number(it.amount), unit)}</div>
+                    <div className="font-semibold tabular-nums">
+                      {fmtWeight(Number(it.amount) * fclScale, unit)}
+                    </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground">{t("buyer.bid.asking")} ({pLbl})</div>
+                    <div className="text-muted-foreground">FOB ({pLbl})</div>
+                    <div className="font-semibold tabular-nums text-muted-foreground">
+                      {fmtPrice(fob, unit)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">
+                      Asking{asking !== fob ? ` · ${(incoterm || "").toUpperCase()}` : ""} ({pLbl})
+                    </div>
                     <div className="font-semibold tabular-nums">{fmtPrice(asking, unit)}</div>
                   </div>
                 </div>
