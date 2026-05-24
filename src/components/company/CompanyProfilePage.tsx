@@ -361,6 +361,26 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
 
   const visibleLocations = locations.filter((l) => !l._deleted);
 
+  const countryOptions = useMemo(
+    () => marketCountries.map((c) => `${c.flag} ${c.name}`.trim()),
+    [marketCountries],
+  );
+  const cutOptions = useMemo(() => allCuts.map((c) => c.name), [allCuts]);
+  const portOptions = useMemo(() => {
+    const fmt = (p: { name: string; code: string | null; flag: string }) =>
+      `${p.flag} ${p.code ? `${p.name} (${p.code})` : p.name}`.trim();
+    if (role === "buyer") return allPorts.map(fmt);
+    const supplierCountries = new Set(
+      locations
+        .filter((l) => !l._deleted)
+        .map((l) => (l.country || "").trim().toLowerCase())
+        .filter(Boolean),
+    );
+    return allPorts
+      .filter((p) => supplierCountries.has(p.country_name.toLowerCase()))
+      .map(fmt);
+  }, [allPorts, locations, role]);
+
   return (
     <div className="cprofile-page">
       <Crumbs items={[{ label: "Home", to: `/${role}` }, { label: "My Company" }]} />
@@ -497,10 +517,12 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
             />
           </FieldLabel>
           <FieldLabel label="Preferred Cuts">
-            <ChipTagInput
+            <SearchableChipInput
               value={company.preferred_cuts || []}
               onChange={(v) => patchCompany({ preferred_cuts: v })}
               placeholder="Add cut…"
+              options={cutOptions}
+              allowCustom
             />
           </FieldLabel>
         </Section>
@@ -532,18 +554,25 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           />
         </FieldLabel>
         <FieldLabel label="Countries of Operation">
-          <ChipTagInput
+          <SearchableChipInput
             value={company.countries_of_operation || []}
             onChange={(v) => patchCompany({ countries_of_operation: v })}
             placeholder="Add country…"
-            renderTag={(t) => `${countryFlag(t)} ${t}`}
+            options={countryOptions}
+            allowCustom={role === "buyer"}
           />
         </FieldLabel>
         <FieldLabel label="Ports of Shipment">
-          <ChipTagInput
+          <SearchableChipInput
             value={company.ports_of_shipment || []}
             onChange={(v) => patchCompany({ ports_of_shipment: v })}
-            placeholder="Add port…"
+            placeholder={
+              role === "supplier" && portOptions.length === 0
+                ? "Add an office/factory location first…"
+                : "Add port…"
+            }
+            options={portOptions}
+            allowCustom={role === "buyer"}
           />
         </FieldLabel>
       </Section>
