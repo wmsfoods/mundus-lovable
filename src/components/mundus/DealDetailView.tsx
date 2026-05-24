@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { Fragment, useState, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
@@ -21,6 +21,7 @@ import {
   DollarIcon,
   KnifeForkIcon,
   UserIcon,
+  SparkleIcon,
 } from "@/components/icons";
 
 export type DealParty = {
@@ -33,6 +34,9 @@ export type DealCut = {
   name: string;
   weightKg: number;
   pricePerKgUsd: number;
+  floorPerKgUsd?: number;
+  askingPerKgUsd?: number;
+  rounds?: Array<{ bidPerKgUsd?: number | null; counterPerKgUsd?: number | null }>;
   subItems?: string[];
 };
 
