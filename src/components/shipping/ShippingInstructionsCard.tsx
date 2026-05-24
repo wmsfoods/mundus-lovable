@@ -434,7 +434,17 @@ function SIViewModal({ si, request, onClose }: { si: SIRecord; request: SIReques
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ color: "#8B2252", margin: 0, fontSize: 18 }}>Shipping Instructions</h2>
-          <button className="si-btn" onClick={onClose}>✕</button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {request?.id && (
+              <button
+                onClick={() => window.open(`/shipping-instructions/print/${request.id}`, "_blank")}
+                style={{ background: "#8B2252", color: "white", border: "none", padding: "8px 14px", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              >
+                📄 Download PDF
+              </button>
+            )}
+            <button className="si-btn" onClick={onClose}>✕</button>
+          </div>
         </div>
         <Row k="Order Number" v={String(si.order_number ?? "—")} />
         <Row k="Importer Reference" v={String(si.importer_reference ?? "—")} />
