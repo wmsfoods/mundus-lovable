@@ -1,0 +1,134 @@
+
+CREATE OR REPLACE FUNCTION public.accept_negotiation(p_negotiation_id uuid, p_user_id uuid)
+ RETURNS jsonb
+ LANGUAGE plpgsql
+ SECURITY DEFINER
+ SET search_path TO 'public'
+AS $function$
+DECLARE
+  v_neg record;
+  v_last_round_id uuid;
+  v_order_id uuid;
+  v_settled_total numeric := 0;
+  v_agreed jsonb;
+BEGIN
+  SELECT status, offer_id, buyer_company_id, created_by_user_id, port_id, fcl_count,
+         incoterm, freight_cost_per_kg, office_id, order_id, agreed_items, settled_total_value
+    INTO v_neg
+    FROM negotiations WHERE id = p_negotiation_id FOR UPDATE;
+
+  IF NOT FOUND THEN RAISE EXCEPTION 'negotiation_not_found' USING ERRCODE='P0001'; END IF;
+  IF v_neg.status <> 'pending_buyer_review' THEN RAISE EXCEPTION 'invalid_status' USING ERRCODE='P0002'; END IF;
+
+  SELECT id INTO v_last_round_id FROM round_proposals
+    WHERE negotiation_id = p_negotiation_id ORDER BY round DESC LIMIT 1;
+
+  -- Prefer agreed_items if present; fallback to counter_proposals aggregate
+  IF v_neg.agreed_items IS NOT NULL AND jsonb_array_length(v_neg.agreed_items) > 0 THEN
+    SELECT COALESCE(SUM( (item->>'price_per_kg')::numeric * oi.amount ), 0)
+      INTO v_settled_total
+      FROM jsonb_array_elements(v_neg.agreed_items) AS item
+      JOIN offer_items oi ON oi.id = (item->>'offer_item_id')::uuid;
+  ELSIF v_last_round_id IS NOT NULL THEN
+    SELECT COALESCE(SUM(cp.price_per_kg * cr.quantity_kg), 0) INTO v_settled_total
+      FROM cut_rounds cr JOIN counter_proposals cp ON cp.cut_round_id = cr.id
+      WHERE cr.round_proposal_id = v_last_round_id;
+  END IF;
+
+  IF v_settled_total <= 0 THEN RAISE EXCEPTION 'no_counter_to_accept' USING ERRCODE='P0008'; END IF;
+
+  INSERT INTO orders (
+    buyer_id, offer_id, destination_port_id, status, fcl_count,
+    incoterm, freight_cost, office_id, placed_at
+  ) VALUES (
+    v_neg.created_by_user_id, v_neg.offer_id, v_neg.port_id, 'awaiting_payment',
+    COALESCE(v_neg.fcl_count, 1), v_neg.incoterm,
+    COALESCE(v_neg.freight_cost_per_kg, 0), v_neg.office_id, now()
+  ) RETURNING id INTO v_order_id;
+
+  -- Build agreed price map from agreed_items, or fallback to last-round counters
+  IF v_neg.agreed_items IS NOT NULL AND jsonb_array_length(v_neg.agreed_items) > 0 THEN
+    v_agreed := v_neg.agreed_items;
+  ELSE
+    SELECT COALESCE(jsonb_agg(jsonb_build_object(
+      'offer_item_id', cr.offer_item_id,
+      'price_per_kg', cp.price_per_kg
+    )), '[]'::jsonb) INTO v_agreed
+    FROM cut_rounds cr JOIN counter_proposals cp ON cp.cut_round_id = cr.id
+    WHERE cr.round_proposal_id = v_last_round_id;
+  END IF;
+
+  INSERT INTO order_items (
+    order_id, customer_product_id, customer_product_name, customer_product_description,
+    customer_code, standard_product_id, standard_product_name, standard_product_description,
+    product_category_id, product_category_code,
+    original_amount, settlement_amount, original_price, settlement_price,
+    condition, beef_marbling
+  )
+  SELECT
+    v_order_id, cp_cust.id, cp_cust.name, cp_cust.description, cp_cust.customer_code,
+    sp.id, COALESCE(spn.name, sp.description), sp.description,
+    pc.id, pc.code,
+    oi.amount, oi.amount, oi.price, (item->>'price_per_kg')::numeric,
+    oi.condition, NULLIF(cp_cust.beef_marbling::text, '')
+  FROM jsonb_array_elements(v_agreed) AS item
+  JOIN offer_items oi ON oi.id = (item->>'offer_item_id')::uuid
+  JOIN customer_products cp_cust ON cp_cust.id = oi.customer_product_id
+  JOIN standard_products sp ON sp.id = cp_cust.standard_product_id
+  JOIN product_categories pc ON pc.id = sp.product_category_id
+  LEFT JOIN LATERAL (
+    SELECT name FROM standard_product_names
+    WHERE standard_product_id = sp.id ORDER BY created_at LIMIT 1
+  ) spn ON true;
+
+  UPDATE negotiations
+    SET status='bid_accepted',
+        settled_total_value=v_settled_total,
+        settled_round_proposal_id=v_last_round_id,
+        order_id=v_order_id
+   WHERE id = p_negotiation_id;
+
+  RETURN jsonb_build_object('success', true, 'settled_total_value', v_settled_total,
+    'round_proposal_id', v_last_round_id, 'order_id', v_order_id);
+END; $function$;
+
+-- Backfill order_items for any orders that exist but have no items
+DO $$
+DECLARE
+  r record;
+  v_agreed jsonb;
+BEGIN
+  FOR r IN
+    SELECT n.id AS neg_id, n.order_id, n.agreed_items
+      FROM negotiations n
+      JOIN orders o ON o.id = n.order_id
+     WHERE n.status='bid_accepted'
+       AND NOT EXISTS (SELECT 1 FROM order_items oi WHERE oi.order_id = n.order_id)
+  LOOP
+    IF r.agreed_items IS NULL OR jsonb_array_length(r.agreed_items) = 0 THEN CONTINUE; END IF;
+    v_agreed := r.agreed_items;
+
+    INSERT INTO order_items (
+      order_id, customer_product_id, customer_product_name, customer_product_description,
+      customer_code, standard_product_id, standard_product_name, standard_product_description,
+      product_category_id, product_category_code,
+      original_amount, settlement_amount, original_price, settlement_price,
+      condition, beef_marbling
+    )
+    SELECT
+      r.order_id, cp_cust.id, cp_cust.name, cp_cust.description, cp_cust.customer_code,
+      sp.id, COALESCE(spn.name, sp.description), sp.description,
+      pc.id, pc.code,
+      oi.amount, oi.amount, oi.price, (item->>'price_per_kg')::numeric,
+      oi.condition, NULLIF(cp_cust.beef_marbling::text, '')
+    FROM jsonb_array_elements(v_agreed) AS item
+    JOIN offer_items oi ON oi.id = (item->>'offer_item_id')::uuid
+    JOIN customer_products cp_cust ON cp_cust.id = oi.customer_product_id
+    JOIN standard_products sp ON sp.id = cp_cust.standard_product_id
+    JOIN product_categories pc ON pc.id = sp.product_category_id
+    LEFT JOIN LATERAL (
+      SELECT name FROM standard_product_names
+      WHERE standard_product_id = sp.id ORDER BY created_at LIMIT 1
+    ) spn ON true;
+  END LOOP;
+END $$;
