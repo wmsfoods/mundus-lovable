@@ -1,4 +1,6 @@
 import type { CSSProperties } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ORDER_STATUSES = [
   { value: "pending_supplier",     label: "Awaiting Supplier Acceptance", color: "#f59e0b", bg: "#fef3c7", icon: "⏳" },
@@ -99,8 +101,10 @@ export const SHIPPING_STATUSES: OrderStatus[] = [
 
 export function ShippingStatusTracker({
   currentStatus,
+  label,
 }: {
   currentStatus: string | null | undefined;
+  label?: string;
 }) {
   const norm = normalizeStatus(currentStatus);
   const currentIdx = SHIPPING_STATUSES.indexOf(norm as OrderStatus);
@@ -116,7 +120,7 @@ export function ShippingStatusTracker({
       }}
     >
       <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 12, color: "#111827" }}>
-        📦 Order Status
+        📦 {label ?? "Order Status"}
       </div>
       <div
         style={{
