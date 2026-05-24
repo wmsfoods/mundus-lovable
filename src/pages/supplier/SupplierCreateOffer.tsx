@@ -596,6 +596,7 @@ export default function SupplierCreateOffer() {
             exw_pickup_location: selInco.includes("EXW")
               ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
               : null,
+            request_id: fromRequest?.requestId ?? null,
           })
           .select("id, offer_number")
           .single();
