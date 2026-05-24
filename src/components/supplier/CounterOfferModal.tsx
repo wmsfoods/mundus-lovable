@@ -27,6 +27,10 @@ import {
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
+import {
+  getIncotermAddOn,
+  getIncotermBannerLabel,
+} from "@/lib/incotermPricing";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
@@ -82,6 +86,16 @@ export function CounterOfferModal({
 
   const items = useMemo(() => negotiation.offer?.items ?? [], [negotiation.offer?.items]);
   const rounds = useMemo(() => negotiation.rounds ?? [], [negotiation.rounds]);
+
+  // Incoterm/freight context (Feature 1). All stored prices are FOB-equivalent;
+  // these add-ons just drive what the *other side* perceives.
+  const negIncoterm = negotiation.incoterm ?? "FOB";
+  const negFreightPerKg = Number(negotiation.freight_cost_per_kg ?? 0);
+  // insurance_per_kg may not be in the typed shape yet — read defensively.
+  const negInsurancePerKg = Number(
+    (negotiation as unknown as { insurance_per_kg?: number | null }).insurance_per_kg ?? 0,
+  );
+  const buyerAddOn = getIncotermAddOn(negIncoterm, negFreightPerKg, negInsurancePerKg);
 
   // Already-agreed items (locked) — exclude from this round
   const existingAgreed: AgreedItem[] = useMemo(() => getAgreedItems(negotiation), [negotiation]);
@@ -507,6 +521,22 @@ export function CounterOfferModal({
             </div>
           );
         })()}
+
+        {/* Incoterm context banner (supplier always thinks in FOB) */}
+        {buyerAddOn > 0 && (
+          <div
+            className="rounded-md border px-3 py-2 text-xs"
+            style={{ background: "#ecfeff", borderColor: "#a5f3fc", color: "#155e75" }}
+          >
+            ℹ️ Buyer is negotiating on{" "}
+            <strong>{(negIncoterm || "").toUpperCase()}</strong> — freight{" "}
+            <strong>{fmtPrice(negFreightPerKg, unit)} {pLbl}</strong>
+            {negInsurancePerKg > 0 && (
+              <> + insurance <strong>{fmtPrice(negInsurancePerKg, unit)} {pLbl}</strong></>
+            )}
+            . Prices below are FOB-equivalent; the buyer sees them with the add-on applied.
+          </div>
+        )}
 
         {isFinal && !exhausted && (
           <div
