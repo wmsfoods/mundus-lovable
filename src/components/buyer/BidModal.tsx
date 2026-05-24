@@ -21,12 +21,19 @@ import { isUuid } from "@/hooks/useRealNegotiation";
 import { getDeductionFeedback } from "@/lib/negotiationEngine";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  getEffectiveAskingPrice,
+  getIncotermBannerLabel,
+  getIncotermAddOn,
+} from "@/lib/incotermPricing";
+import { useRemainingFcl } from "@/hooks/useRemainingFcl";
 
 const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
 
 type FreightOption = {
   id: string;
   cost: number;
+  insurance?: number | null;
   port: { id: string; name: string; country: { english_name: string | null } | null } | null;
 };
 
@@ -41,6 +48,7 @@ type DraftShape = {
   portId?: string;
   message?: string;
   bids?: Record<string, number>;
+  fclCount?: number;
 };
 
 function draftKey(offerId: string) {
@@ -82,6 +90,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const [portId, setPortId] = useState<string>("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [fclCount, setFclCount] = useState<number>(1);
   // bids stored as $/kg
   // null = empty input (user cleared it). Numbers stored as $/kg.
   const [bids, setBids] = useState<Record<string, number | null>>(() =>
@@ -128,12 +137,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     );
     setIncoterm(draft?.incoterm ?? allowedIncoterms[0] ?? "CFR");
     setMessage(draft?.message ?? "");
+    setFclCount(draft?.fclCount ?? 1);
     hydratedRef.current = true;
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("freight_options")
-        .select("id, cost, port:ports(id, name, country:countries(english_name))")
+        .select("id, cost, insurance, port:ports(id, name, country:countries(english_name))")
         .eq("offer_id", offer.id);
       if (cancelled) return;
       const list = (data ?? []) as unknown as FreightOption[];
@@ -155,16 +165,50 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     for (const [k, v] of Object.entries(bids)) {
       if (typeof v === "number" && Number.isFinite(v)) cleanBids[k] = v;
     }
-    saveDraft(offer.id, { incoterm, portId, message, bids: cleanBids });
-  }, [open, offer.id, incoterm, portId, message, bids]);
+    saveDraft(offer.id, { incoterm, portId, message, bids: cleanBids, fclCount });
+  }, [open, offer.id, incoterm, portId, message, bids, fclCount]);
 
   const selectedFreight = freight.find((f) => f.port?.id === portId);
   const totalKg = offer.items.reduce((s, it) => s + Number(it.amount), 0);
   const freightPerKg = selectedFreight && totalKg > 0 ? Number(selectedFreight.cost) / totalKg : 0;
+  const insurancePerKg =
+    selectedFreight && selectedFreight.insurance && totalKg > 0
+      ? Number(selectedFreight.insurance) / totalKg
+      : 0;
 
-  const askingTotal = offer.items.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
+  // FCL allocation (Feature 2)
+  const fclAlloc = useRemainingFcl(isRealOffer ? offer.id : null, offer.total_fcl ?? 1);
+  const totalOfferFcl = Math.max(1, offer.total_fcl ?? 1);
+  // For real offers honor what's still available; for mocks fall back to total.
+  const remainingFcl = isRealOffer ? Math.max(1, fclAlloc.available) : totalOfferFcl;
+  // Clamp draft / out-of-range values once the allocation is known.
+  useEffect(() => {
+    if (fclCount > remainingFcl) setFclCount(remainingFcl);
+    if (fclCount < 1) setFclCount(1);
+  }, [remainingFcl, fclCount]);
+
+  const fclScale = fclCount / totalOfferFcl; // proportionally scales quantities
+
+  // Effective (incoterm-adjusted) asking price per item.
+  const effectiveAsking = (basePrice: number) =>
+    getEffectiveAskingPrice(basePrice, incoterm, freightPerKg, insurancePerKg);
+  const incoBanner = getIncotermBannerLabel(
+    incoterm,
+    freightPerKg,
+    insurancePerKg,
+    (v) => `${fmtPrice(v, unit)} ${pLbl}`,
+  );
+
+  const askingTotal = offer.items.reduce(
+    (s, it) => s + effectiveAsking(Number(it.price)) * Number(it.amount) * fclScale,
+    0,
+  );
   const bidTotal = offer.items.reduce(
-    (s, it) => s + (typeof bids[it.id] === "number" ? (bids[it.id] as number) : 0) * Number(it.amount),
+    (s, it) =>
+      s +
+      (typeof bids[it.id] === "number" ? (bids[it.id] as number) : 0) *
+        Number(it.amount) *
+        fclScale,
     0,
   );
   const diff = bidTotal - askingTotal;
@@ -175,7 +219,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     if (!isRealOffer) return {} as Record<string, string>;
     const out: Record<string, string> = {};
     for (const it of offer.items) {
-      const asking = Number(it.price);
+      const asking = effectiveAsking(Number(it.price));
       const min = asking * MIN_BID_PCT;
       const v = bids[it.id];
       if (v == null || !Number.isFinite(v) || v <= 0) {
@@ -195,7 +239,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       }
     }
     return out;
-  }, [isRealOffer, offer.items, bids, t, unit]);
+  }, [isRealOffer, offer.items, bids, t, unit, incoterm, freightPerKg, insurancePerKg]);
   const errorCount = Object.keys(errors).length;
 
   const allFilled = offer.items.every((it) => {
