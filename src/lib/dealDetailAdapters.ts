@@ -194,8 +194,10 @@ export function buyerOrderToDeal(
     totalValueUsd,
     status: {
       label: t(`buyer.orders.status.${order.status}`, order.status),
-      tone: BUYER_STATUS_TONE[order.status],
+      tone: BUYER_STATUS_TONE[order.status as BuyerOrderStatus] ?? "info",
     },
+    rawStatus: order.status,
+    statusUpdatedAt: order.updatedAt,
     party: {
       name: order.supplierName,
       country: order.origin,
@@ -267,8 +269,9 @@ export function supplierSaleToDeal(
     totalValueUsd: sale.totalValueUsd,
     status: {
       label: t(`supplier.sales.status.${sale.status}`, sale.status),
-      tone: SUPPLIER_STATUS_TONE[sale.status],
+      tone: SUPPLIER_STATUS_TONE[sale.status as keyof typeof SUPPLIER_STATUS_TONE] ?? "info",
     },
+    rawStatus: sale.status,
     party: {
       name: sale.buyer,
       country: sale.destination,
