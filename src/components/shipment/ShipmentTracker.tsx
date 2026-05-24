@@ -382,19 +382,42 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       {(containers.length > 1 || !readOnly) && (
         <div className="shp-tabs" role="tablist">
           {containers.map((c, i) => (
-            <button
-              key={c.id}
-              type="button"
-              role="tab"
-              aria-selected={i === activeIdx}
-              className={`shp-tab ${i === activeIdx ? "is-active" : ""}`}
-              onClick={() => setActiveIdx(i)}
-            >
-              FCL {c.position ?? i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
-            </button>
+            <span key={c.id} className={`shp-tab ${i === activeIdx ? "is-active" : ""}`} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={i === activeIdx}
+                onClick={() => setActiveIdx(i)}
+                style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
+              >
+                FCL {c.position ?? i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
+              </button>
+              {!readOnly && containers.length > 1 && isContainerEmpty(c) && (
+                <button
+                  type="button"
+                  title="Remove this empty FCL"
+                  aria-label="Remove this empty FCL"
+                  onClick={(e) => { e.stopPropagation(); deleteContainer(c.id); }}
+                  style={{
+                    width: 18, height: 18, borderRadius: 9,
+                    border: "1px solid #e5e7eb", background: "white",
+                    color: "#8B2252", cursor: "pointer", lineHeight: 1,
+                    display: "inline-flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 12, padding: 0,
+                  }}
+                >×</button>
+              )}
+            </span>
           ))}
-          {!readOnly && (
-            <button type="button" className="shp-tab shp-tab-add" onClick={addContainer}>+ Add Container</button>
+          {!readOnly && containers.length < fclCount && (
+            <button
+              type="button"
+              className="shp-tab shp-tab-add"
+              onClick={addContainer}
+              title={`Add container (${containers.length}/${fclCount})`}
+            >
+              + Add Container ({containers.length}/{fclCount})
+            </button>
           )}
         </div>
       )}
