@@ -739,6 +739,11 @@ export function CounterOfferModal({
                       style={{ color: "#1e3a8a" }}
                     >
                       {fmtPrice(their, unit)}
+                      {buyerAddOn > 0 && (
+                        <div className="text-[10px] font-normal text-muted-foreground tabular-nums">
+                          buyer sees {fmtPrice(their + buyerAddOn, unit)} {(negIncoterm || "").toUpperCase()}
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <Input
@@ -833,6 +838,11 @@ export function CounterOfferModal({
                   <div>
                     <div className="text-muted-foreground">{t(theirLabelKey)} ({pLbl})</div>
                     <div className="font-semibold tabular-nums" style={{ color: "#1e3a8a" }}>{fmtPrice(their, unit)}</div>
+                    {buyerAddOn > 0 && (
+                      <div className="text-[10px] text-muted-foreground tabular-nums">
+                        buyer sees {fmtPrice(their + buyerAddOn, unit)} {(negIncoterm || "").toUpperCase()}
+                      </div>
+                    )}
                   </div>
                 </div>
                 <div className="mt-2">
