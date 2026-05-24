@@ -537,6 +537,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
           </TabPanel>
 
           <TabPanel active={tab === "shipment"}>
+            <ShippingStatusTracker currentStatus={currentStatus} />
             {data.orderId ? (
               <ShipmentTracker
                 orderId={data.orderId}
