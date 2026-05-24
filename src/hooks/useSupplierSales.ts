@@ -19,12 +19,7 @@ export function useSupplierSales() {
     if (!company?.id) { setData([]); setLoading(false); return; }
     let cancelled = false;
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
-    const reload = () => {
-      if (reloadTimer) clearTimeout(reloadTimer);
-      reloadTimer = setTimeout(() => { void load(); }, 300);
-    };
     const load = async () => {
-    (async () => {
       setLoading(true);
       const { data: offerRows } = await supabase
         .from("offers")
@@ -100,8 +95,20 @@ export function useSupplierSales() {
       });
       setData(list);
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    };
+    void load();
+    const channel = supabase
+      .channel(`supplier-sales-${company.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 400);
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      if (reloadTimer) clearTimeout(reloadTimer);
+      supabase.removeChannel(channel);
+    };
   }, [company?.id, companyLoading, company?.name]);
 
   return { data, isLoading };
