@@ -100,7 +100,7 @@ function genDocuments(seed: string, dealNumber: string, completion: number): { a
 
 /* ============== BUYER ORDER → DealDetailData ============== */
 
-const BUYER_STATUS_TONE: Record<BuyerOrderStatus, DealStatus["tone"]> = {
+const BUYER_STATUS_TONE: Record<string, DealStatus["tone"]> = {
   awaiting_supplier_acceptance: "pending",
   awaiting_pre_payment: "info",
   pre_payment_confirmed: "info",
@@ -113,7 +113,7 @@ const BUYER_STATUS_TONE: Record<BuyerOrderStatus, DealStatus["tone"]> = {
 };
 
 type StageKey = "early" | "production" | "shipped" | "delivered" | "rejected";
-const BUYER_STAGE: Record<BuyerOrderStatus, StageKey> = {
+const BUYER_STAGE: Record<string, StageKey> = {
   awaiting_supplier_acceptance: "early",
   awaiting_pre_payment: "early",
   pre_payment_confirmed: "production",
@@ -127,7 +127,7 @@ const BUYER_STAGE: Record<BuyerOrderStatus, StageKey> = {
 
 function buyerTimeline(order: BuyerOrder, t: (k: string, fallback: string) => string): DealTimelineStage[] {
   const s = order.status;
-  const stage = (after: BuyerOrderStatus[], done: BuyerOrderStatus[]): DealTimelineStage["tone"] => {
+  const stage = (after: string[], done: string[]): DealTimelineStage["tone"] => {
     if (done.includes(s)) return "success";
     if (after.includes(s)) return "info";
     return "muted";
