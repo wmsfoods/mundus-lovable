@@ -3,15 +3,22 @@ import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BellIcon } from "@/components/icons";
+import type { NotificationType, NotificationEntityType } from "@/lib/notificationTypes";
+import { resolveNotificationRoute } from "@/lib/notificationTypes";
 
 export type NotificationItem = {
   id: string;
-  type: string;
+  type: NotificationType;
+  /** ID da entidade-alvo (order, negotiation, auction, etc.) usado p/ deeplink */
+  entityId?: string;
+  /** Tipo da entidade-alvo. Opcional — inferido de `type` se ausente. */
+  entityType?: NotificationEntityType;
   title: string;
   body: string;
   time: string;
   unread: boolean;
   icon: string;
+  /** Override manual do destino. Caso ausente, é resolvido por `type` + `entityId`. */
   to?: string;
 };
 
@@ -23,6 +30,9 @@ type Props = {
 export function NotificationDropdown({ notifications, ariaLabel }: Props) {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
+  const audience: "buyer" | "supplier" =
+    location.pathname.startsWith("/supplier") ? "supplier" : "buyer";
   const [items, setItems] = useState<NotificationItem[]>(notifications);
   const [open, setOpen] = useState(false);
   const unreadCount = useMemo(() => items.filter((n) => n.unread).length, [items]);
@@ -32,9 +42,10 @@ export function NotificationDropdown({ notifications, ariaLabel }: Props) {
 
   const handleClick = (n: NotificationItem) => {
     setItems((prev) => prev.map((it) => (it.id === n.id ? { ...it, unread: false } : it)));
-    if (n.to) {
+    const target = n.to ?? resolveNotificationRoute(n.type, n.entityId, audience);
+    if (target) {
       setOpen(false);
-      navigate(n.to);
+      navigate(target);
     }
   };
 
