@@ -1,0 +1,1 @@
+ALTER TABLE public.shipping_instructions_requests ADD COLUMN IF NOT EXISTS notes TEXT;

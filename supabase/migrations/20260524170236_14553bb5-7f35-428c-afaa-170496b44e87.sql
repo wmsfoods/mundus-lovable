@@ -1,0 +1,1 @@
+ALTER TABLE public.shipping_instructions_requests DROP COLUMN IF EXISTS notes;

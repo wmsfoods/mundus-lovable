@@ -361,6 +361,14 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
                         <SparkleIcon size={14} />
                         {tk("dealDetail.negotiation.timeline", "Round timeline")}
                       </span>
+                      <Link
+                        to={data.role === "supplier"
+                          ? `/supplier/negotiations/${data.orderId}`
+                          : `/buyer/negotiations/${data.orderId}`}
+                        className="text-xs font-medium text-[#8B2252] hover:underline"
+                      >
+                        {tk("dealDetail.negotiation.openFull", "Open negotiation →")}
+                      </Link>
                       <span className="tl-head-meta">
                         {tk("dealDetail.negotiation.roundOf", "Round {{round}} of {{max}}", { round: maxRound, max: maxRound })}
                       </span>
