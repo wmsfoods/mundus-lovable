@@ -384,6 +384,9 @@ function RequestSIModal({
             <div style={{ margin: "16px 0" }}>
               <span style={{ background: "#8B2252", color: "white", padding: "10px 20px", borderRadius: 6, fontSize: 13, fontWeight: 600 }}>→ Submit shipping instructions</span>
             </div>
+            <p style={{ color: "#9ca3af", fontSize: 11, margin: "0 0 8px", wordBreak: "break-all" }}>
+              app.mundustrade.com/shipping-instructions/…
+            </p>
             <p style={{ color: "#6b7280", fontSize: 12, margin: "0 0 8px" }}>The link expires in 30 days.</p>
             <p style={{ margin: 0 }}>Best,<br /><strong>Mundus Trade</strong></p>
           </div>
