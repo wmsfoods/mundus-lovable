@@ -3882,6 +3882,7 @@ export type Database = {
           freight_cost: number | null
           id: string
           incoterm: string | null
+          negotiation_id: string | null
           offer_id: string
           office_id: string | null
           order_number: number
@@ -3901,6 +3902,7 @@ export type Database = {
           freight_cost?: number | null
           id?: string
           incoterm?: string | null
+          negotiation_id?: string | null
           offer_id: string
           office_id?: string | null
           order_number?: number
@@ -3920,6 +3922,7 @@ export type Database = {
           freight_cost?: number | null
           id?: string
           incoterm?: string | null
+          negotiation_id?: string | null
           offer_id?: string
           office_id?: string | null
           order_number?: number
@@ -3947,6 +3950,13 @@ export type Database = {
             columns: ["destination_port_id"]
             isOneToOne: false
             referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_negotiation_id_fkey"
+            columns: ["negotiation_id"]
+            isOneToOne: false
+            referencedRelation: "negotiations"
             referencedColumns: ["id"]
           },
           {
