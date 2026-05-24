@@ -904,3 +904,147 @@ export function PhoneInput({
     </div>
   );
 }
+
+/* ------------ Searchable Chip Input ------------ */
+
+export function SearchableChipInput({
+  value,
+  onChange,
+  options,
+  placeholder,
+  allowCustom = false,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  options: string[];
+  placeholder?: string;
+  allowCustom?: boolean;
+}) {
+  const [draft, setDraft] = useState("");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const selected = new Set(value);
+  const term = draft.trim().toLowerCase();
+  const filtered = options
+    .filter((o) => !selected.has(o))
+    .filter((o) => !term || o.toLowerCase().includes(term))
+    .slice(0, 100);
+
+  function add(v: string) {
+    const t = v.trim();
+    if (!t || selected.has(t)) {
+      setDraft("");
+      return;
+    }
+    onChange([...value, t]);
+    setDraft("");
+  }
+
+  return (
+    <div className="cprofile-tags" ref={wrapRef} style={{ position: "relative" }}>
+      {value.map((t) => (
+        <span key={t} className="cprofile-tag">
+          {t}
+          <button type="button" onClick={() => onChange(value.filter((x) => x !== t))} aria-label={`Remove ${t}`}>
+            ×
+          </button>
+        </span>
+      ))}
+      <span className="cprofile-tag-input-wrap">
+        <input
+          className="cprofile-tag-input"
+          value={draft}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (filtered[0]) add(filtered[0]);
+              else if (allowCustom) add(draft);
+            }
+          }}
+          placeholder={placeholder}
+        />
+      </span>
+      {open && (filtered.length > 0 || (allowCustom && term)) && (
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            zIndex: 30,
+            marginTop: 4,
+            background: "#fff",
+            border: "1px solid #e5e7eb",
+            borderRadius: 8,
+            boxShadow: "0 6px 20px rgba(0,0,0,.08)",
+            maxHeight: 280,
+            overflow: "auto",
+          }}
+        >
+          {filtered.map((o) => (
+            <button
+              key={o}
+              type="button"
+              onClick={() => {
+                add(o);
+                setOpen(false);
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "8px 10px",
+                border: 0,
+                background: "transparent",
+                cursor: "pointer",
+                fontSize: 13,
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#fdf2f8")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "transparent")}
+            >
+              {o}
+            </button>
+          ))}
+          {allowCustom && term && !filtered.some((o) => o.toLowerCase() === term) && (
+            <button
+              type="button"
+              onClick={() => {
+                add(draft);
+                setOpen(false);
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "8px 10px",
+                border: 0,
+                borderTop: filtered.length ? "1px solid #f1f5f9" : 0,
+                background: "transparent",
+                cursor: "pointer",
+                fontSize: 13,
+                color: "#8B2252",
+                fontWeight: 600,
+              }}
+            >
+              + Add "{draft.trim()}"
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
