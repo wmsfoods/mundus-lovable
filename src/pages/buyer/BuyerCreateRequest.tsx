@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon } from "@/components/icons";
+import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
 import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
 import RequestPasteImport, { type ParsedRow } from "@/components/buyer/RequestPasteImport";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -9,9 +9,10 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
+import { countryFlag } from "@/lib/countryFlags";
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
-const INCOTERMS = ["CFR", "CIF", "FOB"] as const;
+const INCOTERM_OPTIONS = ["FOB", "CFR", "CIF", "EXW"] as const;
 const MARBLINGS = ["Not specified", "Low", "Medium", "High", "Prime"] as const;
 const CONTAINER_KG = { "20": 14000, "40": 28000 } as const;
 
@@ -38,8 +39,22 @@ export default function BuyerCreateRequest() {
   const [submitting, setSubmitting] = useState(false);
 
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Beef");
-  const [countryId, setCountryId] = useState("");
-  const [incoterm, setIncoterm] = useState<(typeof INCOTERMS)[number]>("CFR");
+  // Destination — searchable single-select
+  const [destCountry, setDestCountry] = useState("");
+  const [destSearch, setDestSearch] = useState("");
+  const [destOpen, setDestOpen] = useState(false);
+  const destRef = useRef<HTMLDivElement | null>(null);
+  // Incoterm — multi-select
+  const [selectedIncoterms, setSelectedIncoterms] = useState<string[]>(["CFR"]);
+  // Origin — multi-select with "any origin"
+  const [anyOrigin, setAnyOrigin] = useState(true);
+  const [originCountries, setOriginCountries] = useState<string[]>([]);
+  const [originSearch, setOriginSearch] = useState("");
+  const [originOpen, setOriginOpen] = useState(false);
+  const originRef = useRef<HTMLDivElement | null>(null);
+  // Attachments
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [containerType, setContainerType] = useState<"20" | "40">("40");
   const [containerCount, setContainerCount] = useState("1");
   const [shipmentWindow, setShipmentWindow] = useState("");
@@ -50,6 +65,48 @@ export default function BuyerCreateRequest() {
   const [openCutFor, setOpenCutFor] = useState<string | null>(null);
   const [openMarblingFor, setOpenMarblingFor] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (destRef.current && !destRef.current.contains(e.target as Node)) setDestOpen(false);
+      if (originRef.current && !originRef.current.contains(e.target as Node)) setOriginOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  const filteredDest = useMemo(() => {
+    const q = destSearch.trim().toLowerCase();
+    if (!q) return markets;
+    return markets.filter((m) => m.n.toLowerCase().includes(q));
+  }, [markets, destSearch]);
+
+  const filteredOrigin = useMemo(() => {
+    const q = originSearch.trim().toLowerCase();
+    const base = markets.filter((m) => !originCountries.includes(m.n));
+    if (!q) return base;
+    return base.filter((m) => m.n.toLowerCase().includes(q));
+  }, [markets, originSearch, originCountries]);
+
+  const toggleIncoterm = (inc: string) =>
+    setSelectedIncoterms((prev) =>
+      prev.includes(inc) ? prev.filter((i) => i !== inc) : [...prev, inc]
+    );
+
+  const addFiles = (incoming: FileList | File[] | null) => {
+    if (!incoming) return;
+    const arr = Array.from(incoming);
+    const valid: File[] = [];
+    for (const f of arr) {
+      if (f.size > 5 * 1024 * 1024) {
+        toast.error(`${f.name} exceeds 5MB`);
+        continue;
+      }
+      valid.push(f);
+    }
+    setFiles((prev) => [...prev, ...valid].slice(0, 10));
+  };
 
   const cuts = cutsByCategory[category] ?? [];
   const knownCutNames = useMemo(() => cuts.map((c) => c.displayName), [cuts]);
@@ -89,9 +146,9 @@ export default function BuyerCreateRequest() {
 
   const broadcast = async () => {
     if (!company?.id) return toast.error("No company linked");
-    if (!countryId) return toast.error("Select a destination country");
+    if (!destCountry) return toast.error("Select a destination country");
+    if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
     if (filledRows === 0) return toast.error("Add at least one cut");
-    const country = markets.find((m) => m.id === countryId);
     const valid = rows.filter((r) => r.cut.trim());
     const primary = valid[0];
     const productName = valid.length === 1
@@ -110,6 +167,23 @@ export default function BuyerCreateRequest() {
     ].filter(Boolean).join("\n\n");
 
     setSubmitting(true);
+
+    // Upload attachments to storage
+    const uploaded: { name: string; url: string; size: number; type: string }[] = [];
+    for (const file of files) {
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${company.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("request-attachments")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) {
+        toast.error(`Upload failed: ${file.name}`);
+        continue;
+      }
+      const { data: pub } = supabase.storage.from("request-attachments").getPublicUrl(path);
+      uploaded.push({ name: file.name, url: pub.publicUrl, size: file.size, type: file.type });
+    }
+
     const { data, error } = await supabase
       .from("buyer_requests")
       .insert({
@@ -118,9 +192,9 @@ export default function BuyerCreateRequest() {
         product_name: productName,
         category,
         specification: primary.spec || null,
-        destination_country: country?.n ?? "",
+        destination_country: destCountry,
         destination_port: null,
-        incoterm,
+        incoterm: selectedIncoterms.join(","),
         container_size: containerType === "20" ? "20ft" : "40ft",
         container_count: parseInt(containerCount) || 1,
         quantity_kg: totalKg,
@@ -129,6 +203,9 @@ export default function BuyerCreateRequest() {
         shipment_date: shipmentWindow || null,
         additional_info: additional || null,
         status: "new",
+        any_origin: anyOrigin,
+        origin_countries: anyOrigin ? [] : originCountries,
+        attachments: uploaded,
       })
       .select("id")
       .single();
@@ -165,18 +242,60 @@ export default function BuyerCreateRequest() {
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="bcr-field">
+            <div className="bcr-field" ref={destRef} style={{ position: "relative" }}>
               <label>Destination country *</label>
-              <select value={countryId} onChange={(e) => setCountryId(e.target.value)}>
-                <option value="">Select country…</option>
-                {markets.map((m) => <option key={m.id} value={m.id}>{m.f} {m.n}</option>)}
-              </select>
+              <input
+                type="text"
+                className="bcr-input"
+                value={destOpen ? destSearch : destCountry}
+                onChange={(e) => { setDestSearch(e.target.value); setDestOpen(true); }}
+                onFocus={() => { setDestSearch(""); setDestOpen(true); }}
+                placeholder="Type to search country…"
+                autoComplete="off"
+              />
+              {destOpen && filteredDest.length > 0 && (
+                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+                  {filteredDest.map((m) => (
+                    <div
+                      key={m.id}
+                      onMouseDown={(e) => { e.preventDefault(); setDestCountry(m.n); setDestSearch(""); setDestOpen(false); }}
+                      style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                    >
+                      {m.f} {m.n}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="bcr-field">
-              <label>Incoterm *</label>
-              <select value={incoterm} onChange={(e) => setIncoterm(e.target.value as any)}>
-                {INCOTERMS.map((i) => <option key={i} value={i}>{i}</option>)}
-              </select>
+              <label>Preferred incoterms *</label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {INCOTERM_OPTIONS.map((inc) => {
+                  const on = selectedIncoterms.includes(inc);
+                  return (
+                    <button
+                      key={inc}
+                      type="button"
+                      onClick={() => toggleIncoterm(inc)}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: 20,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        border: on ? "2px solid #8B2252" : "1px solid #d1d5db",
+                        background: on ? "#fdf2f8" : "#fff",
+                        color: on ? "#8B2252" : "#374151",
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {on && "✓ "}{inc}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -374,6 +493,71 @@ export default function BuyerCreateRequest() {
               <strong>Tip</strong> · target price is optional. Leave blank if you want suppliers to quote freely.
             </div>
           </div>
+
+          {/* ATTACHMENTS */}
+          <div className="bcr-card">
+            <div className="bcr-side-title" style={{ borderBottom: "1px solid var(--g100, #f5f4f3)", marginBottom: 12 }}>
+              📎 SPECIFICATIONS &amp; PHOTOS
+            </div>
+            <p style={{ fontSize: 12, color: "var(--fg-muted)", margin: "0 0 10px" }}>
+              Upload product specs, reference images, or other documents. PDF, PNG, JPG — max 5MB each, up to 10 files.
+            </p>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); }}
+              onDrop={(e) => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
+              style={{
+                border: "1.5px dashed #d1d5db",
+                borderRadius: 10,
+                padding: 20,
+                textAlign: "center",
+                cursor: "pointer",
+                background: "var(--g050, #fafaf9)",
+              }}
+            >
+              <UploadIcon size={28} style={{ color: "var(--fg-muted)" }} />
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600 }}>
+                Drop files here or click to upload
+              </div>
+              <div style={{ marginTop: 4, fontSize: 11, color: "var(--fg-muted)" }}>
+                PDF, PNG, JPG · max 5MB each · up to 10 files
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg"
+                style={{ display: "none" }}
+                onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
+              />
+            </div>
+            {files.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                {files.map((f, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "5px 10px", borderRadius: 999,
+                      background: "#FBEAF0", color: "#8B2252",
+                      fontSize: 12, fontWeight: 500,
+                    }}
+                  >
+                    <FileIcon size={12} />
+                    <span style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                      style={{ background: "transparent", border: "none", color: "#8B2252", cursor: "pointer", padding: 0, display: "inline-flex" }}
+                      aria-label="Remove file"
+                    >
+                      <XIcon size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* RIGHT: logistics & terms */}
@@ -381,6 +565,72 @@ export default function BuyerCreateRequest() {
           <div className="bcr-card bcr-card-logistics">
             <div className="bcr-side-title">
               <ClipboardIcon size={14} /> LOGISTICS &amp; TERMS
+            </div>
+
+            <div className="bcr-side-block" ref={originRef} style={{ position: "relative" }}>
+              <label className="bcr-side-label">COUNTRY OF ORIGIN</label>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer" }}>
+                <input type="checkbox" checked={anyOrigin} onChange={(e) => setAnyOrigin(e.target.checked)} />
+                Any origin accepted
+              </label>
+              {!anyOrigin && (
+                <>
+                  <input
+                    type="text"
+                    className="bcr-input"
+                    value={originSearch}
+                    onChange={(e) => { setOriginSearch(e.target.value); setOriginOpen(true); }}
+                    onFocus={() => setOriginOpen(true)}
+                    placeholder="Type to add an origin country…"
+                    autoComplete="off"
+                  />
+                  {originOpen && filteredOrigin.length > 0 && (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 200, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+                      {filteredOrigin.map((m) => (
+                        <div
+                          key={m.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setOriginCountries((prev) => [...prev, m.n]);
+                            setOriginSearch("");
+                            setOriginOpen(false);
+                          }}
+                          style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                        >
+                          {m.f} {m.n}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {originCountries.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+                      {originCountries.map((c) => (
+                        <span
+                          key={c}
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: 6,
+                            padding: "4px 10px", borderRadius: 999,
+                            background: "#FBEAF0", color: "#8B2252",
+                            fontSize: 12, fontWeight: 500,
+                          }}
+                        >
+                          {countryFlag(c)} {c}
+                          <button
+                            type="button"
+                            onClick={() => setOriginCountries((prev) => prev.filter((x) => x !== c))}
+                            style={{ background: "transparent", border: "none", color: "#8B2252", cursor: "pointer", padding: 0, display: "inline-flex" }}
+                            aria-label="Remove"
+                          >
+                            <XIcon size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="bcr-side-block">

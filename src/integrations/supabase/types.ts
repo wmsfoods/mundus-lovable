@@ -263,6 +263,8 @@ export type Database = {
       buyer_requests: {
         Row: {
           additional_info: string | null
+          any_origin: boolean | null
+          attachments: Json | null
           buyer_company_id: string
           buyer_user_id: string | null
           category: string | null
@@ -274,6 +276,7 @@ export type Database = {
           destination_port: string | null
           id: string
           incoterm: string | null
+          origin_countries: string[] | null
           product_name: string
           quantity_kg: number
           request_number: number
@@ -286,6 +289,8 @@ export type Database = {
         }
         Insert: {
           additional_info?: string | null
+          any_origin?: boolean | null
+          attachments?: Json | null
           buyer_company_id: string
           buyer_user_id?: string | null
           category?: string | null
@@ -297,6 +302,7 @@ export type Database = {
           destination_port?: string | null
           id?: string
           incoterm?: string | null
+          origin_countries?: string[] | null
           product_name: string
           quantity_kg: number
           request_number?: number
@@ -309,6 +315,8 @@ export type Database = {
         }
         Update: {
           additional_info?: string | null
+          any_origin?: boolean | null
+          attachments?: Json | null
           buyer_company_id?: string
           buyer_user_id?: string | null
           category?: string | null
@@ -320,6 +328,7 @@ export type Database = {
           destination_port?: string | null
           id?: string
           incoterm?: string | null
+          origin_countries?: string[] | null
           product_name?: string
           quantity_kg?: number
           request_number?: number
