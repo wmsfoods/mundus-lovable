@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { DealDetailView } from "@/components/mundus/DealDetailView";
 import { supplierSaleToDeal } from "@/lib/dealDetailAdapters";
 import { useSupplierSales } from "@/hooks/useSupplierSales";
+import { OrderNegotiationLink } from "@/components/negotiation/OrderNegotiationLink";
 
 export default function SupplierSaleDetail() {
   const { id = "" } = useParams<{ id: string }>();
@@ -25,5 +26,10 @@ export default function SupplierSaleDetail() {
   }
 
   const data = supplierSaleToDeal(sale, (k, fb) => t(k, { defaultValue: fb }) as string);
-  return <DealDetailView data={data} />;
+  return (
+    <>
+      <OrderNegotiationLink orderId={sale.id} role="supplier" />
+      <DealDetailView data={data} />
+    </>
+  );
 }
