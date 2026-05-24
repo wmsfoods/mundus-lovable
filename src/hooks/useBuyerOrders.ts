@@ -9,6 +9,7 @@ export type BuyerOrder = {
   orderNumber: string;
   status: BuyerOrderStatus;
   updatedAt?: string;
+  negotiationId?: string | null;
   supplierName: string;
   orderDate: string;
   origin: string;
@@ -35,6 +36,7 @@ type OrderRow = {
   freight_cost: number | null;
   placed_at: string | null;
   created_at: string | null;
+  negotiation_id: string | null;
   offer: {
     supplier_name: string | null;
     origin_country: string | null;
@@ -67,6 +69,7 @@ function mapRow(r: OrderRow): BuyerOrder {
     orderNumber: String(r.order_number ?? r.id.slice(0, 7)).padStart(7, '0'),
     status: r.status ?? 'pending_supplier',
     updatedAt: r.placed_at ?? r.created_at ?? undefined,
+    negotiationId: r.negotiation_id ?? null,
     supplierName: offer?.supplier_name ?? '—',
     orderDate: r.placed_at ?? r.created_at ?? new Date().toISOString(),
     origin: offer?.origin_country ?? '—',
@@ -84,7 +87,7 @@ function mapRow(r: OrderRow): BuyerOrder {
 }
 
 const SELECT = `
-  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at,
+  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at, negotiation_id,
   offer:offers (
     supplier_name, origin_country, shipment_month, shipment_year,
     payment_terms, container_size, total_fcl,
