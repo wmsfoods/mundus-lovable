@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import {
   Building2,
@@ -78,6 +78,56 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
   const [loading, setLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  // Reference data from DB
+  const [marketCountries, setMarketCountries] = useState<
+    { id: string; name: string; flag: string }[]
+  >([]);
+  const [allPorts, setAllPorts] = useState<
+    { id: string; name: string; code: string | null; country_id: string; country_name: string; flag: string }[]
+  >([]);
+  const [allCuts, setAllCuts] = useState<{ id: string; name: string; category: string }[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [mRes, cRes, pRes, cutsRes] = await Promise.all([
+        (supabase as any).from("markets").select("id, country_id, is_active").eq("is_active", true),
+        (supabase as any).from("countries").select("id, english_name, flag_emoji"),
+        (supabase as any).from("ports").select("id, name, code, country_id, is_active").eq("is_active", true).order("name"),
+        (supabase as any).from("cuts").select("id, name, category, is_active").eq("is_active", true).order("name"),
+      ]);
+      if (cancelled) return;
+      const countriesById = new Map<string, any>();
+      for (const c of cRes.data ?? []) countriesById.set(c.id, c);
+      const mc = ((mRes.data ?? []) as any[])
+        .map((m) => {
+          const c = countriesById.get(m.country_id);
+          if (!c) return null;
+          return { id: c.id, name: c.english_name as string, flag: (c.flag_emoji ?? "") as string };
+        })
+        .filter(Boolean)
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+      setMarketCountries(mc as any);
+      setAllPorts(
+        ((pRes.data ?? []) as any[]).map((p) => {
+          const c = countriesById.get(p.country_id);
+          return {
+            id: p.id,
+            name: p.name,
+            code: p.code,
+            country_id: p.country_id,
+            country_name: (c?.english_name ?? "") as string,
+            flag: (c?.flag_emoji ?? "") as string,
+          };
+        }),
+      );
+      setAllCuts(((cutsRes.data ?? []) as any[]).map((c) => ({ id: c.id, name: c.name, category: c.category })));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   useEffect(() => {
     if (!companyId) return;
@@ -311,6 +361,26 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
 
   const visibleLocations = locations.filter((l) => !l._deleted);
 
+  const countryOptions = useMemo(
+    () => marketCountries.map((c) => `${c.flag} ${c.name}`.trim()),
+    [marketCountries],
+  );
+  const cutOptions = useMemo(() => allCuts.map((c) => c.name), [allCuts]);
+  const portOptions = useMemo(() => {
+    const fmt = (p: { name: string; code: string | null; flag: string }) =>
+      `${p.flag} ${p.code ? `${p.name} (${p.code})` : p.name}`.trim();
+    if (role === "buyer") return allPorts.map(fmt);
+    const supplierCountries = new Set(
+      locations
+        .filter((l) => !l._deleted)
+        .map((l) => (l.country || "").trim().toLowerCase())
+        .filter(Boolean),
+    );
+    return allPorts
+      .filter((p) => supplierCountries.has(p.country_name.toLowerCase()))
+      .map(fmt);
+  }, [allPorts, locations, role]);
+
   return (
     <div className="cprofile-page">
       <Crumbs items={[{ label: "Home", to: `/${role}` }, { label: "My Company" }]} />
@@ -447,10 +517,12 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
             />
           </FieldLabel>
           <FieldLabel label="Preferred Cuts">
-            <ChipTagInput
+            <SearchableChipInput
               value={company.preferred_cuts || []}
               onChange={(v) => patchCompany({ preferred_cuts: v })}
               placeholder="Add cut…"
+              options={cutOptions}
+              allowCustom
             />
           </FieldLabel>
         </Section>
@@ -482,18 +554,25 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           />
         </FieldLabel>
         <FieldLabel label="Countries of Operation">
-          <ChipTagInput
+          <SearchableChipInput
             value={company.countries_of_operation || []}
             onChange={(v) => patchCompany({ countries_of_operation: v })}
             placeholder="Add country…"
-            renderTag={(t) => `${countryFlag(t)} ${t}`}
+            options={countryOptions}
+            allowCustom={role === "buyer"}
           />
         </FieldLabel>
         <FieldLabel label="Ports of Shipment">
-          <ChipTagInput
+          <SearchableChipInput
             value={company.ports_of_shipment || []}
             onChange={(v) => patchCompany({ ports_of_shipment: v })}
-            placeholder="Add port…"
+            placeholder={
+              role === "supplier" && portOptions.length === 0
+                ? "Add an office/factory location first…"
+                : "Add port…"
+            }
+            options={portOptions}
+            allowCustom={role === "buyer"}
           />
         </FieldLabel>
       </Section>
@@ -822,6 +901,150 @@ export function PhoneInput({
         placeholder="(11) 99888-1010"
         autoComplete="tel-national"
       />
+    </div>
+  );
+}
+
+/* ------------ Searchable Chip Input ------------ */
+
+export function SearchableChipInput({
+  value,
+  onChange,
+  options,
+  placeholder,
+  allowCustom = false,
+}: {
+  value: string[];
+  onChange: (v: string[]) => void;
+  options: string[];
+  placeholder?: string;
+  allowCustom?: boolean;
+}) {
+  const [draft, setDraft] = useState("");
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const onDoc = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, []);
+
+  const selected = new Set(value);
+  const term = draft.trim().toLowerCase();
+  const filtered = options
+    .filter((o) => !selected.has(o))
+    .filter((o) => !term || o.toLowerCase().includes(term))
+    .slice(0, 100);
+
+  function add(v: string) {
+    const t = v.trim();
+    if (!t || selected.has(t)) {
+      setDraft("");
+      return;
+    }
+    onChange([...value, t]);
+    setDraft("");
+  }
+
+  return (
+    <div className="cprofile-tags" ref={wrapRef} style={{ position: "relative" }}>
+      {value.map((t) => (
+        <span key={t} className="cprofile-tag">
+          {t}
+          <button type="button" onClick={() => onChange(value.filter((x) => x !== t))} aria-label={`Remove ${t}`}>
+            ×
+          </button>
+        </span>
+      ))}
+      <span className="cprofile-tag-input-wrap">
+        <input
+          className="cprofile-tag-input"
+          value={draft}
+          onFocus={() => setOpen(true)}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setOpen(true);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              if (filtered[0]) add(filtered[0]);
+              else if (allowCustom) add(draft);
+            }
+          }}
+          placeholder={placeholder}
+        />
+      </span>
+      {open && (filtered.length > 0 || (allowCustom && term)) && (
+        <div
+          style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            zIndex: 30,
+            marginTop: 4,
+            background: "#fff",
+            border: "1px solid #e5e7eb",
+            borderRadius: 8,
+            boxShadow: "0 6px 20px rgba(0,0,0,.08)",
+            maxHeight: 280,
+            overflow: "auto",
+          }}
+        >
+          {filtered.map((o) => (
+            <button
+              key={o}
+              type="button"
+              onClick={() => {
+                add(o);
+                setOpen(false);
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "8px 10px",
+                border: 0,
+                background: "transparent",
+                cursor: "pointer",
+                fontSize: 13,
+              }}
+              onMouseEnter={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "#fdf2f8")}
+              onMouseLeave={(e) => ((e.currentTarget as HTMLButtonElement).style.background = "transparent")}
+            >
+              {o}
+            </button>
+          ))}
+          {allowCustom && term && !filtered.some((o) => o.toLowerCase() === term) && (
+            <button
+              type="button"
+              onClick={() => {
+                add(draft);
+                setOpen(false);
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                textAlign: "left",
+                padding: "8px 10px",
+                border: 0,
+                borderTop: filtered.length ? "1px solid #f1f5f9" : 0,
+                background: "transparent",
+                cursor: "pointer",
+                fontSize: 13,
+                color: "#8B2252",
+                fontWeight: 600,
+              }}
+            >
+              + Add "{draft.trim()}"
+            </button>
+          )}
+        </div>
+      )}
     </div>
   );
 }
