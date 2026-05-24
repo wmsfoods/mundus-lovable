@@ -134,7 +134,7 @@ export default function Signup() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: publicUrl("/dashboard"),
         data: { name: data.name },
       },
     });
