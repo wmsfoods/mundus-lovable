@@ -28,18 +28,25 @@ export function useSupplierSales() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: rows } = await supabase
+      const { data: offerRows } = await supabase
+        .from("offers")
+        .select("id")
+        .eq("supplier_id", company.id);
+      const offerIds = (offerRows ?? []).map((o: { id: string }) => o.id);
+      if (offerIds.length === 0) { setData([]); setLoading(false); return; }
+      const { data: rows, error: qErr } = await supabase
         .from("orders")
         .select(`
           id, order_number, status, placed_at, incoterm, fcl_count,
           buyer:companies!orders_buyer_id_fkey(name),
-          offer:offers!inner(supplier_id, origin_port, origin_country),
+          offer:offers(supplier_id, origin_port, origin_country),
           destination_port:ports!destination_port_id(name, country:countries(english_name)),
           items:order_items(customer_product_name, settlement_amount, settlement_price)
         `)
-        .eq("offer.supplier_id", company.id)
+        .in("offer_id", offerIds)
         .is("deleted_at", null)
         .order("placed_at", { ascending: false });
+      if (qErr) { console.error("useSupplierSales", qErr); setData([]); setLoading(false); return; }
       if (cancelled) return;
       type Raw = {
         id: string; order_number: number; status: string | null; placed_at: string;
