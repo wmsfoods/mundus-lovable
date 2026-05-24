@@ -37,6 +37,7 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   negotiating: { bg: "#fef0f0", fg: "#b6354b", dot: "#d65370" },
   closed:      { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af" },
   inactive:    { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af" },
+  sold_out:    { bg: "#dcfce7", fg: "#166534", dot: "#16a34a" },
 };
 
 function hashId(id: string): number {
