@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ClipboardIcon, SearchIcon, PlusIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { useBuyerRequests, type BuyerRequestStatus, type BuyerRequestRow } from "@/hooks/useBuyerRequests";
 import { formatRequestNumber } from "@/lib/requestNumber";
+import { supabase } from "@/integrations/supabase/client";
 
 const STATUS_CHIP: Record<BuyerRequestStatus, string> = {
   new: "req-status-chip is-draft",
@@ -34,6 +35,30 @@ export default function BuyerRequests() {
   const { data, counts, isLoading } = useBuyerRequests();
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
+  const [responseOffers, setResponseOffers] = useState<Array<{ id: string; request_id: string | null }>>([]);
+
+  useEffect(() => {
+    const ids = data.map((r) => r.id);
+    if (ids.length === 0) { setResponseOffers([]); return; }
+    let cancelled = false;
+    (async () => {
+      const { data: offers } = await supabase
+        .from("offers")
+        .select("id, request_id")
+        .in("request_id", ids)
+        .is("deleted_at", null);
+      if (!cancelled) setResponseOffers((offers ?? []) as Array<{ id: string; request_id: string | null }>);
+    })();
+    return () => { cancelled = true; };
+  }, [data]);
+
+  const responsesMap = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (const o of responseOffers) {
+      if (o.request_id) map[o.request_id] = (map[o.request_id] ?? 0) + 1;
+    }
+    return map;
+  }, [responseOffers]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -105,14 +130,15 @@ export default function BuyerRequests() {
               <th>Volume</th>
               <th>Shipment</th>
               <th>Status</th>
+              <th>Responses</th>
               <th>Created</th>
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
-              <tr><td colSpan={8} style={{ textAlign: "center", padding: 32, color: "var(--fg-muted)" }}>Loading…</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: "center", padding: 32, color: "var(--fg-muted)" }}>Loading…</td></tr>
             ) : filtered.length === 0 ? (
-              <tr><td colSpan={8} style={{ textAlign: "center", padding: 32, color: "var(--fg-muted)" }}>No requests yet.</td></tr>
+              <tr><td colSpan={9} style={{ textAlign: "center", padding: 32, color: "var(--fg-muted)" }}>No requests yet.</td></tr>
             ) : (
               filtered.map((r: BuyerRequestRow) => (
                 <tr key={r.id} style={{ cursor: "pointer" }} onClick={() => navigate(`/buyer/requests/${r.id}`)}>
@@ -131,6 +157,22 @@ export default function BuyerRequests() {
                   <td>{fmtKg(Number(r.quantity_kg))} kg</td>
                   <td>{r.shipment_date ?? "—"}</td>
                   <td><span className={STATUS_CHIP[r.status]}>{STATUS_LABEL[r.status]}</span></td>
+                  <td>
+                    {(responsesMap[r.id] ?? 0) > 0 ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                        <span style={{
+                          display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start",
+                          padding: "3px 8px", borderRadius: 999,
+                          background: "#dbeafe", color: "#1e40af",
+                          fontSize: 10, fontWeight: 700,
+                        }}>
+                          📦 {responsesMap[r.id]} supplier{responsesMap[r.id] > 1 ? "s" : ""}
+                        </span>
+                      </div>
+                    ) : (
+                      <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>Waiting…</span>
+                    )}
+                  </td>
                   <td>{fmtDate(r.created_at)}</td>
                 </tr>
               ))

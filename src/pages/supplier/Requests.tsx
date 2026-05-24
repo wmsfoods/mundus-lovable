@@ -8,10 +8,21 @@ import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { supabase } from "@/integrations/supabase/client";
 import { formatRequestNumber } from "@/lib/requestNumber";
 import type { BuyerRequestRow } from "@/hooks/useBuyerRequests";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 const PAGE_SIZE = 10;
 
 type Row = BuyerRequestRow & { buyer_company_name?: string | null };
+
+type MyOffer = {
+  id: string;
+  offer_number: number | null;
+  request_id: string | null;
+  status: string | null;
+  created_at: string;
+};
+type MyNeg = { id: string; offer_id: string; status: string };
+type ResponseInfo = { offers: MyOffer[]; negotiations: MyNeg[] };
 
 function fmtKg(v: number) {
   return new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 }).format(v);
@@ -22,11 +33,14 @@ function fmtDate(iso: string) {
 
 export default function SupplierRequests() {
   const navigate = useNavigate();
+  const { company } = useCurrentCompany();
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
+  const [myOffers, setMyOffers] = useState<MyOffer[]>([]);
+  const [myNegs, setMyNegs] = useState<MyNeg[]>([]);
 
   useEffect(() => {
     let cancelled = false;
@@ -53,6 +67,51 @@ export default function SupplierRequests() {
     })();
     return () => { cancelled = true; };
   }, []);
+
+  useEffect(() => {
+    if (!company?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data: offers } = await supabase
+        .from("offers")
+        .select("id, offer_number, request_id, status, created_at")
+        .eq("supplier_id", company.id)
+        .not("request_id", "is", null)
+        .is("deleted_at", null);
+      if (cancelled) return;
+      const list = (offers ?? []) as MyOffer[];
+      setMyOffers(list);
+      const ids = list.map((o) => o.id);
+      if (ids.length) {
+        const { data: negs } = await supabase
+          .from("negotiations")
+          .select("id, offer_id, status")
+          .in("offer_id", ids)
+          .is("deleted_at", null);
+        if (!cancelled) setMyNegs((negs ?? []) as MyNeg[]);
+      } else {
+        setMyNegs([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [company?.id]);
+
+  const responseMap = useMemo(() => {
+    const map: Record<string, ResponseInfo> = {};
+    for (const o of myOffers) {
+      if (!o.request_id) continue;
+      if (!map[o.request_id]) map[o.request_id] = { offers: [], negotiations: [] };
+      map[o.request_id].offers.push(o);
+    }
+    for (const n of myNegs) {
+      for (const key of Object.keys(map)) {
+        if (map[key].offers.some((o) => o.id === n.offer_id)) {
+          map[key].negotiations.push(n);
+        }
+      }
+    }
+    return map;
+  }, [myOffers, myNegs]);
 
   const visible = useMemo(() => rows.filter((r) => !dismissed.has(r.id)), [rows, dismissed]);
   const filtered = useMemo(() => {
@@ -129,15 +188,19 @@ export default function SupplierRequests() {
               <th>Quantity</th>
               <th>Container</th>
               <th>Created</th>
+              <th>Responses</th>
               <th aria-label="Actions" />
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr className="empty-row"><td colSpan={9}>Loading…</td></tr>
+              <tr className="empty-row"><td colSpan={10}>Loading…</td></tr>
             ) : slice.length === 0 ? (
-              <tr className="empty-row"><td colSpan={9}>No active requests right now.</td></tr>
-            ) : slice.map((r) => (
+              <tr className="empty-row"><td colSpan={10}>No active requests right now.</td></tr>
+            ) : slice.map((r) => {
+              const resp = responseMap[r.id];
+              const acceptedNeg = resp?.negotiations.find((n) => n.status === "bid_accepted");
+              return (
               <tr key={r.id}>
                 <td>
                   <button type="button" className="link-action" onClick={() => navigate(`/supplier/requests/${r.id}`)}>
@@ -152,17 +215,53 @@ export default function SupplierRequests() {
                 <td>{r.container_size ?? "—"} ({r.container_count ?? 1})</td>
                 <td>{fmtDate(r.created_at)}</td>
                 <td>
+                  {resp ? (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 4, alignSelf: "flex-start",
+                        padding: "3px 8px", borderRadius: 999,
+                        background: "#dcfce7", color: "#166534",
+                        fontSize: 10, fontWeight: 700,
+                      }}>
+                        ✓ You responded ({resp.offers.length})
+                      </span>
+                      {resp.negotiations.length > 0 && (
+                        <span style={{ fontSize: 10, color: acceptedNeg ? "#166534" : "#0d9488" }}>
+                          {acceptedNeg ? "🎉 Deal closed!" : `💬 ${resp.negotiations.length} negotiation(s)`}
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>—</span>
+                  )}
+                </td>
+                <td>
                   <div className="row-actions">
-                    <button type="button" className="btn-tb is-primary" onClick={() => handleCreateOffer(r)}>
-                      Create Offer
-                    </button>
-                    <button type="button" className="btn-tb" onClick={() => setDismissed((s) => new Set(s).add(r.id))}>
-                      Not interested
-                    </button>
+                    {resp ? (
+                      <>
+                        <button type="button" className="btn-tb is-primary"
+                          onClick={() => navigate(`/supplier/offers/${resp.offers[0].id}`)}>
+                          View your offer →
+                        </button>
+                        <button type="button" className="btn-tb" onClick={() => handleCreateOffer(r)}>
+                          + Another offer
+                        </button>
+                      </>
+                    ) : (
+                      <>
+                        <button type="button" className="btn-tb is-primary" onClick={() => handleCreateOffer(r)}>
+                          Create Offer
+                        </button>
+                        <button type="button" className="btn-tb" onClick={() => setDismissed((s) => new Set(s).add(r.id))}>
+                          Not interested
+                        </button>
+                      </>
+                    )}
                   </div>
                 </td>
               </tr>
-            ))}
+              );
+            })}
           </tbody>
         </table>
       </div>
@@ -170,8 +269,11 @@ export default function SupplierRequests() {
       <ListCardList>
         {slice.length === 0 ? (
           <div className="empty-state">{loading ? "Loading…" : "No active requests."}</div>
-        ) : slice.map((r) => (
-          <ListCard
+        ) : slice.map((r) => {
+          const resp = responseMap[r.id];
+          const acceptedNeg = resp?.negotiations.find((n) => n.status === "bid_accepted");
+          return (
+            <ListCard
             key={r.id}
             onClick={() => navigate(`/supplier/requests/${r.id}`)}
             title={r.product_name}
@@ -181,9 +283,11 @@ export default function SupplierRequests() {
               { label: "Incoterm", value: r.incoterm ?? "—" },
               { label: "Quantity", value: `${fmtKg(Number(r.quantity_kg))} kg` },
               { label: "Container", value: `${r.container_size ?? "—"} (${r.container_count ?? 1})` },
+              { label: "Responses", value: resp ? (acceptedNeg ? "🎉 Deal closed" : `✓ You responded (${resp.offers.length})`) : "—" },
             ]}
-          />
-        ))}
+            />
+          );
+        })}
       </ListCardList>
 
       <div className="table-footer">
