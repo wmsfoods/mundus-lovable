@@ -6,15 +6,23 @@ import { formatRequestNumber } from "@/lib/requestNumber";
 import type { BuyerRequestRow } from "@/hooks/useBuyerRequests";
 import { RequestDetailCard } from "@/components/request/RequestDetailCard";
 import { countryFlag } from "@/lib/countryFlags";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { formatOfferNumber } from "@/lib/offerNumber";
+
+type ResponseOffer = { id: string; offer_number: number | null; status: string | null; created_at: string };
+type ResponseNeg = { id: string; offer_id: string; status: string };
 
 export default function SupplierRequestDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { company } = useCurrentCompany();
   const [request, setRequest] = useState<BuyerRequestRow | null>(null);
   const [buyerName, setBuyerName] = useState<string>("");
   const [buyerCountry, setBuyerCountry] = useState<string>("");
   const [contactName, setContactName] = useState<string>("");
   const [loading, setLoading] = useState(true);
+  const [myOffers, setMyOffers] = useState<ResponseOffer[]>([]);
+  const [myNegs, setMyNegs] = useState<ResponseNeg[]>([]);
 
   useEffect(() => {
     if (!id) return;
@@ -47,6 +55,35 @@ export default function SupplierRequestDetail() {
     })();
     return () => { cancelled = true; };
   }, [id]);
+
+  useEffect(() => {
+    if (!id || !company?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data: offers } = await supabase
+        .from("offers")
+        .select("id, offer_number, status, created_at")
+        .eq("supplier_id", company.id)
+        .eq("request_id", id)
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+      if (cancelled) return;
+      const list = (offers ?? []) as ResponseOffer[];
+      setMyOffers(list);
+      const ids = list.map((o) => o.id);
+      if (ids.length) {
+        const { data: negs } = await supabase
+          .from("negotiations")
+          .select("id, offer_id, status")
+          .in("offer_id", ids)
+          .is("deleted_at", null);
+        if (!cancelled) setMyNegs((negs ?? []) as ResponseNeg[]);
+      } else {
+        setMyNegs([]);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [id, company?.id]);
 
   if (loading) return <div className="detail-empty"><p>Loading…</p></div>;
   if (!request) {
@@ -115,10 +152,54 @@ export default function SupplierRequestDetail() {
 
         <RequestDetailCard r={r} />
 
+        {myOffers.length > 0 && (
+          <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 12, padding: 20 }}>
+            <div style={{ fontSize: 14, fontWeight: 700, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
+              ✅ Your Response{myOffers.length > 1 ? "s" : ""} ({myOffers.length})
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {myOffers.map((offer) => {
+                const negs = myNegs.filter((n) => n.offer_id === offer.id);
+                const accepted = negs.find((n) => n.status === "bid_accepted");
+                return (
+                  <div key={offer.id} style={{
+                    padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border)",
+                    background: "var(--g050, #fafaf9)",
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    gap: 10, flexWrap: "wrap",
+                  }}>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: 13 }}>
+                        Offer {formatOfferNumber(offer.offer_number, offer.created_at)}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>
+                        Created {new Date(offer.created_at).toLocaleDateString()}
+                        {negs.length > 0 && ` · ${negs.length} negotiation(s)`}
+                        {accepted && " · 🎉 Deal closed!"}
+                      </div>
+                    </div>
+                    <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                      <button type="button" className="btn-tb" onClick={() => navigate(`/supplier/offers/${offer.id}`)}>
+                        View offer →
+                      </button>
+                      {accepted && (
+                        <button type="button" className="btn-tb is-primary"
+                          onClick={() => navigate(`/supplier/negotiations/${accepted.id}`)}>
+                          View deal →
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, flexWrap: "wrap" }}>
           <Link to="/supplier/requests" className="btn-tb">Not interested</Link>
           <button type="button" className="btn-tb is-primary" onClick={handleCreateOffer}>
-            Create offer from this request →
+            {myOffers.length > 0 ? "Create another offer →" : "Create offer from this request →"}
           </button>
         </div>
       </div>
