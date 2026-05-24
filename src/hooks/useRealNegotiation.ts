@@ -26,6 +26,8 @@ export type RealNegotiationRow = {
   rejection_cooldown_until: string | null;
   current_round: number | null;
   chat_enabled: boolean | null;
+  order_id: string | null;
+  order: { id: string; order_number: number | null } | null;
   offer: {
     id: string;
     offer_number: number;
