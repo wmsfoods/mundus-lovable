@@ -3185,6 +3185,7 @@ export type Database = {
           freight_cost_per_kg: number
           id: string
           incoterm: string
+          insurance_per_kg: number | null
           locked_until: string | null
           max_rounds: number | null
           negotiation_type: string | null
@@ -3215,6 +3216,7 @@ export type Database = {
           freight_cost_per_kg?: number
           id?: string
           incoterm: string
+          insurance_per_kg?: number | null
           locked_until?: string | null
           max_rounds?: number | null
           negotiation_type?: string | null
@@ -3245,6 +3247,7 @@ export type Database = {
           freight_cost_per_kg?: number
           id?: string
           incoterm?: string
+          insurance_per_kg?: number | null
           locked_until?: string | null
           max_rounds?: number | null
           negotiation_type?: string | null
@@ -4604,7 +4607,10 @@ export type Database = {
         Row: {
           created_at: string
           created_by_user_id: string
+          freight_per_kg: number | null
           id: string
+          incoterm: string | null
+          insurance_per_kg: number | null
           message: string | null
           negotiation_id: string
           round: number
@@ -4614,7 +4620,10 @@ export type Database = {
         Insert: {
           created_at?: string
           created_by_user_id: string
+          freight_per_kg?: number | null
           id?: string
+          incoterm?: string | null
+          insurance_per_kg?: number | null
           message?: string | null
           negotiation_id: string
           round: number
@@ -4624,7 +4633,10 @@ export type Database = {
         Update: {
           created_at?: string
           created_by_user_id?: string
+          freight_per_kg?: number | null
           id?: string
+          incoterm?: string | null
+          insurance_per_kg?: number | null
           message?: string | null
           negotiation_id?: string
           round?: number
