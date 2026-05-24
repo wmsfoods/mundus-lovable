@@ -1,7 +1,7 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon } from "@/components/icons";
+import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
 import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
 import RequestPasteImport, { type ParsedRow } from "@/components/buyer/RequestPasteImport";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -9,9 +9,10 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
+import { countryFlag } from "@/lib/countryFlags";
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
-const INCOTERMS = ["CFR", "CIF", "FOB"] as const;
+const INCOTERM_OPTIONS = ["FOB", "CFR", "CIF", "EXW"] as const;
 const MARBLINGS = ["Not specified", "Low", "Medium", "High", "Prime"] as const;
 const CONTAINER_KG = { "20": 14000, "40": 28000 } as const;
 
@@ -38,8 +39,22 @@ export default function BuyerCreateRequest() {
   const [submitting, setSubmitting] = useState(false);
 
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Beef");
-  const [countryId, setCountryId] = useState("");
-  const [incoterm, setIncoterm] = useState<(typeof INCOTERMS)[number]>("CFR");
+  // Destination — searchable single-select
+  const [destCountry, setDestCountry] = useState("");
+  const [destSearch, setDestSearch] = useState("");
+  const [destOpen, setDestOpen] = useState(false);
+  const destRef = useRef<HTMLDivElement | null>(null);
+  // Incoterm — multi-select
+  const [selectedIncoterms, setSelectedIncoterms] = useState<string[]>(["CFR"]);
+  // Origin — multi-select with "any origin"
+  const [anyOrigin, setAnyOrigin] = useState(true);
+  const [originCountries, setOriginCountries] = useState<string[]>([]);
+  const [originSearch, setOriginSearch] = useState("");
+  const [originOpen, setOriginOpen] = useState(false);
+  const originRef = useRef<HTMLDivElement | null>(null);
+  // Attachments
+  const [files, setFiles] = useState<File[]>([]);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [containerType, setContainerType] = useState<"20" | "40">("40");
   const [containerCount, setContainerCount] = useState("1");
   const [shipmentWindow, setShipmentWindow] = useState("");
@@ -50,6 +65,48 @@ export default function BuyerCreateRequest() {
   const [openCutFor, setOpenCutFor] = useState<string | null>(null);
   const [openMarblingFor, setOpenMarblingFor] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
+
+  // Close dropdowns on outside click
+  useEffect(() => {
+    const onDown = (e: MouseEvent) => {
+      if (destRef.current && !destRef.current.contains(e.target as Node)) setDestOpen(false);
+      if (originRef.current && !originRef.current.contains(e.target as Node)) setOriginOpen(false);
+    };
+    document.addEventListener("mousedown", onDown);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, []);
+
+  const filteredDest = useMemo(() => {
+    const q = destSearch.trim().toLowerCase();
+    if (!q) return markets;
+    return markets.filter((m) => m.n.toLowerCase().includes(q));
+  }, [markets, destSearch]);
+
+  const filteredOrigin = useMemo(() => {
+    const q = originSearch.trim().toLowerCase();
+    const base = markets.filter((m) => !originCountries.includes(m.n));
+    if (!q) return base;
+    return base.filter((m) => m.n.toLowerCase().includes(q));
+  }, [markets, originSearch, originCountries]);
+
+  const toggleIncoterm = (inc: string) =>
+    setSelectedIncoterms((prev) =>
+      prev.includes(inc) ? prev.filter((i) => i !== inc) : [...prev, inc]
+    );
+
+  const addFiles = (incoming: FileList | File[] | null) => {
+    if (!incoming) return;
+    const arr = Array.from(incoming);
+    const valid: File[] = [];
+    for (const f of arr) {
+      if (f.size > 5 * 1024 * 1024) {
+        toast.error(`${f.name} exceeds 5MB`);
+        continue;
+      }
+      valid.push(f);
+    }
+    setFiles((prev) => [...prev, ...valid].slice(0, 10));
+  };
 
   const cuts = cutsByCategory[category] ?? [];
   const knownCutNames = useMemo(() => cuts.map((c) => c.displayName), [cuts]);
@@ -89,9 +146,9 @@ export default function BuyerCreateRequest() {
 
   const broadcast = async () => {
     if (!company?.id) return toast.error("No company linked");
-    if (!countryId) return toast.error("Select a destination country");
+    if (!destCountry) return toast.error("Select a destination country");
+    if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
     if (filledRows === 0) return toast.error("Add at least one cut");
-    const country = markets.find((m) => m.id === countryId);
     const valid = rows.filter((r) => r.cut.trim());
     const primary = valid[0];
     const productName = valid.length === 1
@@ -110,6 +167,23 @@ export default function BuyerCreateRequest() {
     ].filter(Boolean).join("\n\n");
 
     setSubmitting(true);
+
+    // Upload attachments to storage
+    const uploaded: { name: string; url: string; size: number; type: string }[] = [];
+    for (const file of files) {
+      const ext = file.name.split(".").pop() || "bin";
+      const path = `${company.id}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from("request-attachments")
+        .upload(path, file, { contentType: file.type, upsert: false });
+      if (upErr) {
+        toast.error(`Upload failed: ${file.name}`);
+        continue;
+      }
+      const { data: pub } = supabase.storage.from("request-attachments").getPublicUrl(path);
+      uploaded.push({ name: file.name, url: pub.publicUrl, size: file.size, type: file.type });
+    }
+
     const { data, error } = await supabase
       .from("buyer_requests")
       .insert({
@@ -118,9 +192,9 @@ export default function BuyerCreateRequest() {
         product_name: productName,
         category,
         specification: primary.spec || null,
-        destination_country: country?.n ?? "",
+        destination_country: destCountry,
         destination_port: null,
-        incoterm,
+        incoterm: selectedIncoterms.join(","),
         container_size: containerType === "20" ? "20ft" : "40ft",
         container_count: parseInt(containerCount) || 1,
         quantity_kg: totalKg,
@@ -129,6 +203,9 @@ export default function BuyerCreateRequest() {
         shipment_date: shipmentWindow || null,
         additional_info: additional || null,
         status: "new",
+        any_origin: anyOrigin,
+        origin_countries: anyOrigin ? [] : originCountries,
+        attachments: uploaded,
       })
       .select("id")
       .single();
