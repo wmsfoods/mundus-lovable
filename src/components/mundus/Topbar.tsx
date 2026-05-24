@@ -7,7 +7,7 @@ import {
 } from "@/components/icons";
 import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 import { supplierNotifications, buyerNotifications } from "@/data/mockNotifications";
-import { Menu as MenuIcon } from "lucide-react";
+import { Menu as MenuIcon, Bell as BellLucide } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
@@ -55,6 +55,12 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
   const currentLang =
     SUPPORTED_LANGUAGES.find((l) => l.code === i18n.resolvedLanguage) ??
     SUPPORTED_LANGUAGES[0];
+
+  const isSupplierPath = location.pathname.startsWith("/supplier");
+  const notifList = isSupplierPath ? supplierNotifications : buyerNotifications;
+  const notifUnreadCount = notifList.filter((n) => n.unread).length;
+  const goToNotifications = () =>
+    navigate(isSupplierPath ? "/supplier/notifications" : "/buyer/notifications");
 
   return (
     <div className={`tb ${isMobile ? "tb-mobile" : ""}`.trim()}>
@@ -154,10 +160,42 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
           <span style={{ fontWeight: unit === "lbs" ? 700 : 400, opacity: unit === "lbs" ? 1 : 0.55 }}>lbs</span>
         </button>
       )}
-      <NotificationDropdown
-        notifications={location.pathname.startsWith("/supplier") ? supplierNotifications : buyerNotifications}
-        ariaLabel={t("shell.notifications")}
-      />
+      {isMobile ? (
+        <button
+          type="button"
+          className="tb-bell"
+          onClick={goToNotifications}
+          aria-label={t("shell.notifications", { defaultValue: "Notifications" })}
+        >
+          <BellLucide size={18} />
+          {notifUnreadCount > 0 && (
+            <span
+              className="dot"
+              style={{
+                width: 16,
+                height: 16,
+                top: 4,
+                right: 4,
+                background: "#dc2626",
+                color: "#fff",
+                fontSize: 9,
+                fontWeight: 700,
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                lineHeight: 1,
+              }}
+            >
+              {notifUnreadCount > 9 ? "9+" : notifUnreadCount}
+            </span>
+          )}
+        </button>
+      ) : (
+        <NotificationDropdown
+          notifications={notifList}
+          ariaLabel={t("shell.notifications")}
+        />
+      )}
       <button
         className="tb-avatar"
         type="button"
