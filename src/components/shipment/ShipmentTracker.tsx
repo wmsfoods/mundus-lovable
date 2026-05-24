@@ -199,6 +199,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
   }, [ports, onChange]);
 
   const addContainer = async () => {
+    if (containers.length >= fclCount) return;
     const pos = (containers[containers.length - 1]?.position ?? containers.length) + 1;
     const { data } = await supabase.from("shipment_containers").insert({
       order_id: orderId, position: pos, status: "pending",
@@ -207,6 +208,31 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       setContainers((prev) => [...prev, data as ShipmentContainer]);
       setActiveIdx(containers.length);
     }
+  };
+
+  const isContainerEmpty = useCallback((c: ShipmentContainer) => {
+    const checkKeys: (keyof ShipmentContainer)[] = [
+      "container_number", "seal_number", "bl_number", "shipping_line",
+      "vessel_name", "voyage_number", "origin_port_id", "destination_port_id",
+      "stuffed_date", "gate_in_date", "vessel_loaded_date", "departed_date",
+      "arrived_date", "discharged_date", "gate_out_date", "delivered_date",
+      "bl_document_url", "bl_draft_url",
+    ];
+    return checkKeys.every((k) => !c[k]);
+  }, []);
+
+  const deleteContainer = async (id: string) => {
+    const target = containers.find((c) => c.id === id);
+    if (!target || !isContainerEmpty(target)) return;
+    if (containers.length <= 1) return;
+    if (!window.confirm(`Remove FCL ${target.position ?? ""}? This container has no data.`)) return;
+    const { error } = await supabase.from("shipment_containers").delete().eq("id", id);
+    if (error) return;
+    setContainers((prev) => {
+      const next = prev.filter((c) => c.id !== id);
+      setActiveIdx((idx) => Math.min(idx, Math.max(0, next.length - 1)));
+      return next;
+    });
   };
 
   const filledCount = useMemo(() => {
