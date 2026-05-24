@@ -319,9 +319,13 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
           </p>
         </div>
         <div className="ddv-head-right">
-          <span className={`ddv-status ddv-status--${data.status.tone}`}>
-            {data.status.label}
-          </span>
+          {currentStatus ? (
+            <StatusBadge status={currentStatus} />
+          ) : (
+            <span className={`ddv-status ddv-status--${data.status.tone}`}>
+              {data.status.label}
+            </span>
+          )}
           <span className="ddv-head-total">{fmtUsd(data.totalValueUsd)}</span>
         </div>
       </header>
