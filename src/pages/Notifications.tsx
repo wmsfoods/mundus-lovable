@@ -3,14 +3,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { buyerNotifications, supplierNotifications } from "@/data/mockNotifications";
 import type { NotificationItem } from "@/components/notifications/NotificationDropdown";
+import { resolveNotificationRoute } from "@/lib/notificationTypes";
 
 export default function Notifications() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const initial = location.pathname.startsWith("/supplier")
-    ? supplierNotifications
-    : buyerNotifications;
+  const audience: "buyer" | "supplier" =
+    location.pathname.startsWith("/supplier") ? "supplier" : "buyer";
+  const initial = audience === "supplier" ? supplierNotifications : buyerNotifications;
   const [items, setItems] = useState<NotificationItem[]>(initial);
   const unreadCount = useMemo(() => items.filter((n) => n.unread).length, [items]);
 
@@ -19,7 +20,8 @@ export default function Notifications() {
 
   const handleClick = (n: NotificationItem) => {
     setItems((prev) => prev.map((it) => (it.id === n.id ? { ...it, unread: false } : it)));
-    if (n.to) navigate(n.to);
+    const target = n.to ?? resolveNotificationRoute(n.type, n.entityId, audience);
+    if (target) navigate(target);
   };
 
   return (
