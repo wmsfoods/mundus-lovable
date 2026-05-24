@@ -19,10 +19,8 @@ import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
 import { isUuid } from "@/hooks/useRealNegotiation";
 import { getDeductionFeedback } from "@/lib/negotiationEngine";
-
-// Mock buyer identity until auth wiring is connected to the marketplace flow.
-const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
-const MOCK_BUYER_USER_ID = "c3000001-0000-0000-0000-000000000001";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useAuth } from "@/contexts/AuthContext";
 
 const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
 
@@ -68,6 +66,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { unit } = useWeightUnit();
+  const { company } = useCurrentCompany();
+  const { user: authUser } = useAuth();
   const pLbl = priceLabel(unit);
   const wLbl = weightLabel(unit);
   const isRealOffer = isUuid(offer.id);
@@ -206,6 +206,12 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return;
+    const buyerCompanyId = company?.id;
+    const buyerUserId = authUser?.id;
+    if (!buyerCompanyId || !buyerUserId) {
+      toast.error("Please sign in to submit a bid.");
+      return;
+    }
     setSubmitting(true);
     try {
       // Check if buyer already has an active negotiation for this offer
@@ -213,7 +219,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         .from("negotiations")
         .select("id, status")
         .eq("offer_id", offer.id)
-        .eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
+        .eq("buyer_company_id", buyerCompanyId)
         .in("status", ["awaiting_supplier", "pending_buyer_review"])
         .maybeSingle();
       if (existing?.id) {
@@ -228,8 +234,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         .from("negotiations")
         .insert({
           offer_id: offer.id,
-          buyer_company_id: MOCK_BUYER_COMPANY_ID,
-          created_by_user_id: MOCK_BUYER_USER_ID,
+          buyer_company_id: buyerCompanyId,
+          created_by_user_id: buyerUserId,
           port_id: portId || null,
           freight_cost_per_kg: freightPerKg,
           fcl_count: offer.total_fcl ?? 1,
@@ -247,7 +253,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         .insert({
           negotiation_id: neg.id,
           round: 1,
-          created_by_user_id: MOCK_BUYER_USER_ID,
+          created_by_user_id: buyerUserId,
           side: "buyer",
           type: "bid",
           message: message.trim() || null,

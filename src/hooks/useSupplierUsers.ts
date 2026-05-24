@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
+/** @deprecated Use useCurrentCompany(). Kept for legacy imports. */
 export const MOCK_SUPPLIER_COMPANY_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
 
 export type SupplierProfileType =
@@ -25,13 +27,20 @@ export function useSupplierUsers() {
   const [data, setData] = useState<SupplierUser[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { company } = useCurrentCompany();
+  const companyId = company?.id ?? null;
 
   const load = useCallback(async () => {
+    if (!companyId) {
+      setData([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const { data: rows, error: err } = await (supabase as any)
       .from("company_users")
       .select("id, full_name, email, role, status, created_at, accepted_at")
-      .eq("company_id", MOCK_SUPPLIER_COMPANY_ID)
+      .eq("company_id", companyId)
       .order("created_at", { ascending: true });
     if (err) {
       setError(err as unknown as Error);
@@ -52,7 +61,7 @@ export function useSupplierUsers() {
       setError(null);
     }
     setLoading(false);
-  }, []);
+  }, [companyId]);
 
   useEffect(() => {
     load();

@@ -5,8 +5,9 @@ import { Modal } from "@/components/mundus/Modal";
 import { TextField } from "@/components/mundus/TextField";
 import { SelectField } from "@/components/mundus/SelectField";
 import { supabase } from "@/integrations/supabase/client";
-import { MOCK_SUPPLIER_COMPANY_ID, type SupplierProfileType } from "@/hooks/useSupplierUsers";
+import { type SupplierProfileType } from "@/hooks/useSupplierUsers";
 import { useCompanyOffices } from "@/hooks/useCompanyOffices";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 type Props = {
   open: boolean;
@@ -28,7 +29,9 @@ export function InviteUserModal({ open, onClose, onCreated }: Props) {
   const [email, setEmail] = useState("");
   const [profile, setProfile] = useState<SupplierProfileType>("operator");
   const [busy, setBusy] = useState(false);
-  const { offices } = useCompanyOffices(MOCK_SUPPLIER_COMPANY_ID);
+  const { company } = useCurrentCompany();
+  const companyId = company?.id ?? "";
+  const { offices } = useCompanyOffices(companyId);
   const sortedOffices = [...offices].sort((a, b) =>
     !a.parent_company_id ? -1 : !b.parent_company_id ? 1 : 0,
   );
@@ -41,9 +44,13 @@ export function InviteUserModal({ open, onClose, onCreated }: Props) {
   }
 
   const handleSend = async () => {
+    if (!companyId) {
+      toast.error("No company found for this user.");
+      return;
+    }
     setBusy(true);
     const { data: inserted, error } = await (supabase as any).from("company_users").insert({
-      company_id: MOCK_SUPPLIER_COMPANY_ID,
+      company_id: companyId,
       full_name: fullName.trim(),
       email: email.trim().toLowerCase(),
       role: profile,

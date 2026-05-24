@@ -34,7 +34,7 @@ export function useRealNegotiationsList(role: Role) {
 
   useEffect(() => {
     let cancelled = false;
-    if (role === "supplier" && (companyLoading || !company?.id)) {
+    if (companyLoading || !company?.id) {
       setLoading(true);
       return;
     }
@@ -65,7 +65,7 @@ export function useRealNegotiationsList(role: Role) {
         .order("updated_at", { ascending: false });
 
       q = role === "buyer"
-        ? q.eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
+        ? q.eq("buyer_company_id", company!.id)
         : q.eq("offer.supplier_id", company!.id);
 
       if (applyOfficeFilter) {

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MOCK_SUPPLIER_COMPANY_ID } from "@/hooks/useSupplierUsers";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 export type OutreachOffer = {
   id: string;
@@ -58,8 +58,16 @@ export function useSupplierOutreach() {
   const [recentEmails, setRecentEmails] = useState<OutreachEmail[]>([]);
   const [stats, setStats] = useState<OutreachStats>({ sent7d: 0, openRate: 0, pendingOffers: 0, contactsReached: 0 });
   const [loading, setLoading] = useState(true);
+  const { company } = useCurrentCompany();
+  const companyId = company?.id ?? null;
 
   const load = useCallback(async () => {
+    if (!companyId) {
+      setOffers([]);
+      setRecentEmails([]);
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     const supa = supabase as any;
 
@@ -72,7 +80,7 @@ export function useSupplierOutreach() {
         offer_markets(markets(countries(english_name))),
         offer_allowed_incoterms(incoterm)
       `)
-      .eq("supplier_id", MOCK_SUPPLIER_COMPANY_ID)
+      .eq("supplier_id", companyId)
       .eq("status", "active")
       .order("created_at", { ascending: false });
 
@@ -161,7 +169,7 @@ export function useSupplierOutreach() {
       contactsReached: reached,
     });
     setLoading(false);
-  }, []);
+  }, [companyId]);
 
   useEffect(() => {
     load();
