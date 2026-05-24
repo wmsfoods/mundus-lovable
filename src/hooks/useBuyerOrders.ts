@@ -34,7 +34,6 @@ type OrderRow = {
   freight_cost: number | null;
   placed_at: string | null;
   created_at: string | null;
-  updated_at?: string | null;
   offer: {
     supplier_name: string | null;
     origin_country: string | null;
@@ -66,7 +65,7 @@ function mapRow(r: OrderRow): BuyerOrder {
     id: r.id,
     orderNumber: String(r.order_number ?? r.id.slice(0, 7)).padStart(7, '0'),
     status: r.status ?? 'pending_supplier',
-    updatedAt: r.updated_at ?? r.placed_at ?? r.created_at ?? undefined,
+    updatedAt: r.placed_at ?? r.created_at ?? undefined,
     supplierName: offer?.supplier_name ?? '—',
     orderDate: r.placed_at ?? r.created_at ?? new Date().toISOString(),
     origin: offer?.origin_country ?? '—',
@@ -84,7 +83,7 @@ function mapRow(r: OrderRow): BuyerOrder {
 }
 
 const SELECT = `
-  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at, updated_at,
+  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at,
   offer:offers (
     supplier_name, origin_country, shipment_month, shipment_year,
     payment_terms, container_size, total_fcl,
