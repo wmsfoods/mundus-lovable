@@ -340,6 +340,27 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
       <div className="ddv-layout">
         <div className="ddv-main">
           <TabPanel active={tab === "overview"}>
+            {currentStatus && (() => {
+              const cfg = getStatusConfig(currentStatus);
+              return (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "12px 16px", borderRadius: 8,
+                  background: cfg.bg, border: `1px solid ${cfg.color}33`,
+                  marginBottom: 16,
+                }}>
+                  <span style={{ fontSize: 20 }}>{cfg.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: cfg.color }}>{cfg.label}</div>
+                    {liveUpdatedAt && (
+                      <div style={{ fontSize: 12, color: "#6b7280" }}>
+                        Last updated: {new Date(liveUpdatedAt).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
             <Card title={`${recordLabel.toUpperCase()} ${tk("dealDetail.section.details", "DETAILS")}`} icon={FileTextIcon}>
               <FieldGrid>
                 <Field label={partyHeaderLabel.toUpperCase()} value={data.party.name} />
