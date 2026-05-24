@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { PUBLIC_APP_URL, publicUrl } from "@/lib/publicUrl";
+import { printShippingInstructions } from "@/lib/printShippingInstructions";
 import "@/styles/mundus-shipping-instructions.css";
 
 type SIRequest = {
@@ -224,7 +225,7 @@ export function ShippingInstructionsCard({ orderId, orderNumber = "", defaultBuy
             </span>
             <div style={{ display: "flex", gap: 6 }}>
               <button style={ghostBtn} onClick={() => setViewOpen(true)}>👁 View</button>
-              <button style={ghostBtn} onClick={() => window.open(publicUrl(`/shipping-instructions/print/${request.id}`), "_blank")}>📄 PDF</button>
+              <button style={ghostBtn} onClick={() => si && printShippingInstructions(si, request)} disabled={!si}>📄 PDF</button>
               {!readOnly && !isApproved && (
                 <button style={primarySmallBtn} onClick={approve}>✓ Approve</button>
               )}
@@ -438,7 +439,7 @@ function SIViewModal({ si, request, onClose }: { si: SIRecord; request: SIReques
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {request?.id && (
               <button
-                onClick={() => window.open(publicUrl(`/shipping-instructions/print/${request.id}`), "_blank")}
+                onClick={() => si && printShippingInstructions(si, request)}
                 style={{ background: "#8B2252", color: "white", border: "none", padding: "8px 14px", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
               >
                 📄 Download PDF
