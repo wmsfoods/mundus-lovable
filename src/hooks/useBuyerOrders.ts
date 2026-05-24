@@ -1,21 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type BuyerOrderStatus =
-  | 'awaiting_supplier_acceptance'
-  | 'awaiting_pre_payment'
-  | 'pre_payment_confirmed'
-  | 'in_production'
-  | 'awaiting_balance_payment'
-  | 'shipped'
-  | 'delivered'
-  | 'completed'
-  | 'rejected';
+export type BuyerOrderStatus = string;
 
 export type BuyerOrder = {
   id: string;
   orderNumber: string;
   status: BuyerOrderStatus;
+  updatedAt?: string;
   supplierName: string;
   orderDate: string;
   origin: string;
