@@ -1,6 +1,5 @@
 import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
-import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
@@ -26,6 +25,10 @@ export function DealClosedBanner({
   const agreedMap = new Map(getAgreedItems(negotiation).map((a) => [a.offer_item_id, a] as const));
 
   const total = settledTotal ?? Number(negotiation.settled_total_value ?? 0);
+  const orderNumber = negotiation.order?.order_number;
+  const orderHref = orderNumber
+    ? `${perspective === "buyer" ? "/buyer/orders" : "/supplier/sales"}/${String(orderNumber).padStart(7, "0")}`
+    : (perspective === "buyer" ? "/buyer/orders" : "/supplier/sales");
 
   return (
     <div
@@ -42,10 +45,7 @@ export function DealClosedBanner({
           </div>
         </div>
         <Button
-          onClick={() => {
-            toast(t("engine.deal.orderToast", "Order creation coming soon"));
-            nav(perspective === "buyer" ? "/buyer/orders" : "/supplier/sales");
-          }}
+          onClick={() => nav(orderHref)}
           style={{ background: "#15803d", color: "#fff" }}
           className="hover:opacity-90"
         >
