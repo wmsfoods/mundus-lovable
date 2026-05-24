@@ -4634,6 +4634,197 @@ export type Database = {
           },
         ]
       }
+      shipping_instructions: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          approved_shipping_lines: Json | null
+          buyer_address: string | null
+          buyer_name: string | null
+          consignee_address: string | null
+          consignee_fax: string | null
+          consignee_name: string | null
+          consignee_phone: string | null
+          country_of_destination: string | null
+          created_at: string
+          doc_delivery_address: string | null
+          doc_delivery_city: string | null
+          doc_delivery_company: string | null
+          doc_delivery_contact_name: string | null
+          doc_delivery_contact_phone: string | null
+          doc_delivery_country: string | null
+          doc_delivery_postal_code: string | null
+          doc_delivery_state: string | null
+          documents_requested: Json | null
+          id: string
+          importer_reference: string | null
+          notify_address: string | null
+          notify_fax: string | null
+          notify_name: string | null
+          notify_phone: string | null
+          notify_same_as_consignee: boolean | null
+          observations: string | null
+          offer_id: string | null
+          order_id: string | null
+          order_number: string | null
+          port_of_destination: string | null
+          request_id: string | null
+          submitted_at: string | null
+          submitted_by_ip: string | null
+          telex_release: string | null
+          updated_at: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_shipping_lines?: Json | null
+          buyer_address?: string | null
+          buyer_name?: string | null
+          consignee_address?: string | null
+          consignee_fax?: string | null
+          consignee_name?: string | null
+          consignee_phone?: string | null
+          country_of_destination?: string | null
+          created_at?: string
+          doc_delivery_address?: string | null
+          doc_delivery_city?: string | null
+          doc_delivery_company?: string | null
+          doc_delivery_contact_name?: string | null
+          doc_delivery_contact_phone?: string | null
+          doc_delivery_country?: string | null
+          doc_delivery_postal_code?: string | null
+          doc_delivery_state?: string | null
+          documents_requested?: Json | null
+          id?: string
+          importer_reference?: string | null
+          notify_address?: string | null
+          notify_fax?: string | null
+          notify_name?: string | null
+          notify_phone?: string | null
+          notify_same_as_consignee?: boolean | null
+          observations?: string | null
+          offer_id?: string | null
+          order_id?: string | null
+          order_number?: string | null
+          port_of_destination?: string | null
+          request_id?: string | null
+          submitted_at?: string | null
+          submitted_by_ip?: string | null
+          telex_release?: string | null
+          updated_at?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          approved_shipping_lines?: Json | null
+          buyer_address?: string | null
+          buyer_name?: string | null
+          consignee_address?: string | null
+          consignee_fax?: string | null
+          consignee_name?: string | null
+          consignee_phone?: string | null
+          country_of_destination?: string | null
+          created_at?: string
+          doc_delivery_address?: string | null
+          doc_delivery_city?: string | null
+          doc_delivery_company?: string | null
+          doc_delivery_contact_name?: string | null
+          doc_delivery_contact_phone?: string | null
+          doc_delivery_country?: string | null
+          doc_delivery_postal_code?: string | null
+          doc_delivery_state?: string | null
+          documents_requested?: Json | null
+          id?: string
+          importer_reference?: string | null
+          notify_address?: string | null
+          notify_fax?: string | null
+          notify_name?: string | null
+          notify_phone?: string | null
+          notify_same_as_consignee?: boolean | null
+          observations?: string | null
+          offer_id?: string | null
+          order_id?: string | null
+          order_number?: string | null
+          port_of_destination?: string | null
+          request_id?: string | null
+          submitted_at?: string | null
+          submitted_by_ip?: string | null
+          telex_release?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_instructions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "shipping_instructions_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shipping_instructions_requests: {
+        Row: {
+          buyer_email: string
+          buyer_name: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          offer_id: string | null
+          order_id: string | null
+          sent_at: string | null
+          sent_by: string | null
+          status: string
+          submitted_at: string | null
+          token: string
+          updated_at: string
+        }
+        Insert: {
+          buyer_email: string
+          buyer_name?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          offer_id?: string | null
+          order_id?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Update: {
+          buyer_email?: string
+          buyer_name?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          offer_id?: string | null
+          order_id?: string | null
+          sent_at?: string | null
+          sent_by?: string | null
+          status?: string
+          submitted_at?: string | null
+          token?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipping_instructions_requests_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipping_instructions_requests_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standard_product_names: {
         Row: {
           created_at: string | null
