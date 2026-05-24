@@ -84,7 +84,7 @@ function mapRow(r: OrderRow): BuyerOrder {
 }
 
 const SELECT = `
-  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at,
+  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at, updated_at,
   offer:offers (
     supplier_name, origin_country, shipment_month, shipment_year,
     payment_terms, container_size, total_fcl,
