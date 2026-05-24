@@ -18,6 +18,12 @@ export function useSupplierSales() {
     if (companyLoading) return;
     if (!company?.id) { setData([]); setLoading(false); return; }
     let cancelled = false;
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const reload = () => {
+      if (reloadTimer) clearTimeout(reloadTimer);
+      reloadTimer = setTimeout(() => { void load(); }, 300);
+    };
+    const load = async () => {
     (async () => {
       setLoading(true);
       const { data: offerRows } = await supabase
