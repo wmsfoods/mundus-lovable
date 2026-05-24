@@ -4,12 +4,16 @@ import { Crumbs } from "@/components/mundus/Crumbs";
 import { supabase } from "@/integrations/supabase/client";
 import { formatRequestNumber } from "@/lib/requestNumber";
 import type { BuyerRequestRow } from "@/hooks/useBuyerRequests";
+import { RequestDetailCard } from "@/components/request/RequestDetailCard";
+import { countryFlag } from "@/lib/countryFlags";
 
 export default function SupplierRequestDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [request, setRequest] = useState<BuyerRequestRow | null>(null);
   const [buyerName, setBuyerName] = useState<string>("");
+  const [buyerCountry, setBuyerCountry] = useState<string>("");
+  const [contactName, setContactName] = useState<string>("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -21,8 +25,23 @@ export default function SupplierRequestDetail() {
       const row = r as BuyerRequestRow | null;
       setRequest(row);
       if (row?.buyer_company_id) {
-        const { data: co } = await supabase.from("companies").select("name").eq("id", row.buyer_company_id).maybeSingle();
-        if (!cancelled) setBuyerName((co as { name?: string } | null)?.name ?? "Buyer");
+        const { data: co } = await supabase
+          .from("companies")
+          .select("name, country")
+          .eq("id", row.buyer_company_id)
+          .maybeSingle();
+        if (!cancelled) {
+          setBuyerName((co as any)?.name ?? "Buyer");
+          setBuyerCountry((co as any)?.country ?? "");
+        }
+      }
+      if (row?.buyer_user_id) {
+        const { data: cu } = await supabase
+          .from("company_users")
+          .select("full_name")
+          .eq("user_id", row.buyer_user_id)
+          .maybeSingle();
+        if (!cancelled) setContactName((cu as any)?.full_name ?? "");
       }
       setLoading(false);
     })();
@@ -41,6 +60,9 @@ export default function SupplierRequestDetail() {
 
   const r = request;
   const reqNo = formatRequestNumber(r.request_number, r.created_at);
+  const postedAt = new Date(r.created_at).toLocaleDateString(undefined, {
+    year: "numeric", month: "short", day: "numeric",
+  });
 
   const handleCreateOffer = () => {
     navigate(`/supplier/offers/new?from=${r.id}`, {
@@ -75,61 +97,31 @@ export default function SupplierRequestDetail() {
         { label: reqNo },
       ]} />
 
-      <div className="rd-header">
-        <div>
-          <h1 className="rd-title">Buyer Request</h1>
-          <p className="rd-subtitle">{reqNo} · from {buyerName}</p>
-        </div>
-      </div>
-
-      <section className="rd-section">
-        <h2 className="rd-section-title">Product</h2>
-        <div className="rd-card">
-          <h3 className="rd-card-title">{r.product_name}</h3>
-          <div className="rd-grid">
-            <Field label="Category" value={r.category ?? "—"} />
-            <Field label="Specification" value={r.specification ?? "—"} />
-            <Field label="Temperature" value={r.temperature ?? "—"} />
-            <Field label="Quantity" value={`${Number(r.quantity_kg).toLocaleString()} kg`} />
-            <Field label="Target price" value={r.target_price_usd != null ? `US$ ${Number(r.target_price_usd).toFixed(2)}/kg` : "—"} />
+      <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 12 }}>
+        {/* Buyer header card */}
+        <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 12, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+          <div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--fg-muted)" }}>
+              Requested by
+            </div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginTop: 2 }}>
+              {countryFlag(buyerCountry)} {buyerName}
+            </div>
+            <div style={{ fontSize: 12, color: "var(--fg-muted)", marginTop: 2 }}>
+              {contactName ? <>Contact: {contactName} · </> : null}Posted {postedAt}
+            </div>
           </div>
         </div>
-      </section>
 
-      <section className="rd-section">
-        <h2 className="rd-section-title">Logistics</h2>
-        <div className="rd-grid rd-grid-3">
-          <Field label="Destination country" value={r.destination_country} />
-          <Field label="Destination port" value={r.destination_port ?? "—"} />
-          <Field label="Incoterm" value={r.incoterm ?? "—"} />
-          <Field label="Container size" value={r.container_size ?? "—"} />
-          <Field label="# Containers" value={String(r.container_count ?? 1)} />
-          <Field label="Shipment date" value={r.shipment_date ?? "—"} />
+        <RequestDetailCard r={r} />
+
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, flexWrap: "wrap" }}>
+          <Link to="/supplier/requests" className="btn-tb">Not interested</Link>
+          <button type="button" className="btn-tb is-primary" onClick={handleCreateOffer}>
+            Create offer from this request →
+          </button>
         </div>
-      </section>
-
-      {r.additional_info && (
-        <section className="rd-section">
-          <h2 className="rd-section-title">Additional info</h2>
-          <div className="rd-additional" style={{ whiteSpace: "pre-wrap" }}>{r.additional_info}</div>
-        </section>
-      )}
-
-      <div className="rd-cta-row">
-        <Link to="/supplier/requests" className="btn-tb">Back</Link>
-        <button type="button" className="btn-tb is-primary" onClick={handleCreateOffer}>
-          Create Offer from this Request
-        </button>
       </div>
     </>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="rd-field-label">{label}</div>
-      <div className="rd-field-value">{value}</div>
-    </div>
   );
 }
