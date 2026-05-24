@@ -438,6 +438,57 @@ export function NegotiationChat({
               borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--muted))",
               paddingBottom: isMobile ? "calc(12px + env(safe-area-inset-bottom))" : 12,
             }}>
+            </div>
+            {detected.length > 0 && (
+              <div style={{
+                padding: "10px 16px",
+                borderTop: "1px solid hsl(var(--border))",
+                background: "#fef9c3",
+                color: "#713f12",
+                fontSize: 12,
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>
+                  💡 We detected {detected.length === 1 ? "a price" : `${detected.length} prices`} in your message
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 8 }}>
+                  {detected.map((d) => (
+                    <div key={d.itemId} style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>{d.itemName}</span>
+                      <span style={{ fontWeight: 600 }}>
+                        {fmtUsd(d.price)}/kg
+                        {d.askingPrice > 0 && (
+                          <span style={{ marginLeft: 6, color: "#92400e", fontWeight: 400 }}>
+                            (asking {fmtUsd(d.askingPrice)})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={sendAsProposal}
+                    disabled={sending}
+                    style={{ flex: 1, padding: "8px 10px", fontSize: 12, fontWeight: 700, background: "#16a34a", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}
+                  >
+                    Send as formal proposal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDismissedFor(input.trim())}
+                    style={{ padding: "8px 10px", fontSize: 12, fontWeight: 600, background: "transparent", color: "#713f12", border: "1px solid #d6b86a", borderRadius: 8, cursor: "pointer" }}
+                  >
+                    Send as text only
+                  </button>
+                </div>
+              </div>
+            )}
+            <div style={{
+              display: "flex", gap: 8, padding: "12px 16px",
+              borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--muted))",
+              paddingBottom: isMobile ? "calc(12px + env(safe-area-inset-bottom))" : 12,
+            }}>
               <input
                 type="text"
                 value={input}
