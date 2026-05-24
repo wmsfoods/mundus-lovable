@@ -1,63 +1,44 @@
-## Goal
+# Remover URLs Lovable de todos os links públicos
 
-Trocar a forma como o deal fechado é mostrado na aba **Negotiation** do detalhe de **Order/Sales** (tanto para buyer quanto supplier). Em vez das barras coloridas "How this deal closed", reusar o mesmo layout da página de negociação interna (Round timeline + Price details), com diferenças por perspectiva:
+## Problema
 
-- **Supplier**: mostra colunas **Asking** + **Floor** + Bid R1/Counter R1/…
-- **Buyer**: mostra **Asking** + Bid R1/Counter R1/… (sem Floor)
+Ao clicar **PDF** em Shipping Instructions, abre nova aba com URL:
+`https://170ae70f-...lovableproject.com/shipping-instructions/print/...`
 
-## Onde mexer
+A rota usa caminho relativo, então herda a origem atual (preview Lovable). Em produção (`app.mundustrade.com`) já funcionaria, mas o usuário quer garantir que **nunca** apareça `lovable` em nenhum link gerado/compartilhado pelo sistema.
 
-Toda a mudança vive em `src/components/mundus/DealDetailView.tsx` (aba `negotiation`). Nenhuma mudança em backend/dados — vamos reutilizar o que já está em `data.negotiation.rounds`, `data.cuts` e adicionar leitura de floor a partir dos cuts quando `role === "supplier"`.
+## Solução
 
-## Mudanças
+Criar helper único `getPublicAppUrl()` em `src/lib/publicUrl.ts`:
 
-### 1. Aba Negotiation — substituir o card "HOW THIS DEAL CLOSED"
+```ts
+// Domínio público canônico do app. Nunca usar window.location.origin
+// para links compartilhados, redirects de auth ou URLs de impressão,
+// pois o preview rodando em *.lovableproject.com vazaria a marca.
+export const PUBLIC_APP_URL = "https://app.mundustrade.com";
 
-Remover o bloco atual das barras por round (linhas ~336-389) e o `FINAL PRICE PER CUT` (linhas ~391-420). No lugar, renderizar dois cards no mesmo estilo de `SupplierNegotiationDetail`:
-
-**a) Round timeline card** (`.nd-card` + `.nd-timeline-flow`)
-- Header: ícone Sparkle + "Round timeline" + meta "Round X of Y"
-- Pills alternadas Bid → Counter → Bid → … usando `data.negotiation.rounds` (bid azul, counter verde, último accepted em destaque `tl-pill--current`)
-
-**b) Price details card** (`.nd-card` + `.nd-price-table`)
-- Colunas fixas: Product · Qty · **Asking** · (**Floor** somente se `data.role === "supplier"`) · Bid R1 · Counter R1 · Bid R2 · Counter R2 · …
-- Linhas: `data.cuts` (com badge "Agreed at $X/lb" verde no produto, igual ao detail)
-- A coluna do último counter em verde forte (deal final)
-- Wrapper `.nd-price-scroll-wrap` para scroll horizontal mobile (já estilizado em `mundus-negotiations.css`)
-
-### 2. Manter o "Deal closed" banner verde acima
-
-O `DealClosedBanner` (ou equivalente já renderizado pelo container) continua acima dos cards — o usuário pediu apenas para mudar a forma como mostramos o histórico/preços dentro da aba.
-
-### 3. Floor por cut
-
-`DealDetailViewProps.cuts` hoje tem `pricePerKgUsd`. Para o floor do supplier vamos:
-- Adicionar campo opcional `floorPerKgUsd?: number` em `DealCut` (mesmo arquivo).
-- No render, se `data.role === "supplier"` e o cut tiver `floorPerKgUsd`, mostra na coluna Floor; caso contrário "—".
-- Quem alimenta `DealDetailView` (ex. `SaleDetail`, mock adapters) passa o floor quando disponível. Nesta primeira iteração, basta deixar opcional — se o adapter ainda não preencher, mostra "—" e seguimos.
-
-### 4. Aside (TOTALS) — sem mudança
-
-Mantém o card lateral "TOTALS" (Initial asking / First buyer bid / Discount / Final total) e o link "Open full negotiation".
-
-## Visual reference
-
-```text
-┌── Round timeline ───────────────────────── Round 2 of 4 ─┐
-│ Bid 1 $154,000 → Counter 1 $156,800 → Bid 2 $155,400    │
-└──────────────────────────────────────────────────────────┘
-
-┌── Price details ─────────────────────────────────────────┐
-│ PRODUCT          QTY   ASKING [FLOOR] BID R1 CNT R1 …    │
-│ 🔒 Beef Navel  14k lb  $2.68  [$2.55] $2.59   $2.63 …    │
-│    Agreed at $2.61/lb                                    │
-│ 🔒 Beef Point  14k lb  $2.49  [$2.40] $2.40   $2.45 …    │
-└──────────────────────────────────────────────────────────┘
+export function publicUrl(path = "/"): string {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  return `${PUBLIC_APP_URL}${p}`;
+}
 ```
-Colchetes `[FLOOR]` aparecem só na visão supplier.
 
-## Out of scope
+## Pontos a corrigir
 
-- Não mexer no `DealClosedBanner` em si.
-- Não criar/alterar tabelas, edge functions ou rotas.
-- Não mudar a página `SupplierNegotiationDetail` / `BuyerNegotiationDetail`.
+| Arquivo | Linha | Uso atual | Correção |
+|---|---|---|---|
+| `src/components/shipping/ShippingInstructionsCard.tsx` | 226, 440 | `window.open('/shipping-instructions/print/...')` (relativo → preview) | `window.open(publicUrl('/shipping-instructions/print/' + id))` |
+| `src/components/shipping/ShippingInstructionsCard.tsx` | 78 | `${window.location.origin}/shipping-instructions/${token}` (link copiado para buyer) | `publicUrl('/shipping-instructions/' + token)` |
+| `src/components/shipping/ShippingInstructionsCard.tsx` | 302 | `origin: window.location.origin` enviado para edge function | `origin: PUBLIC_APP_URL` |
+| `src/pages/signup/Signup.tsx` | 137 | `emailRedirectTo: ${window.location.origin}/dashboard` | `publicUrl('/dashboard')` |
+| `src/pages/signup/PartnerSignup.tsx` | 42 | idem | `publicUrl('/dashboard')` |
+| `src/pages/supplier/OfferDetail.tsx` | 159 | `marketplace_link: ${window.location.origin}/buyer/marketplace` | `publicUrl('/buyer/marketplace')` |
+
+## Verificação adicional
+
+Após editar, rodar busca por `lovable` e `window.location.origin` em `src/` e `supabase/functions/` para garantir que nada que gere link compartilhável ainda dependa da origem do preview. Edge functions (`shipping-instructions-send-link`) já têm fallback `https://app.mundustrade.com` — manter, mas ignorar o `origin` recebido se contiver `lovable`.
+
+## Não muda
+
+- Navegação interna do app (router `<Link>`) continua relativa — não afeta a URL exibida no browser do usuário logado.
+- Apenas URLs **abertas em nova aba**, **enviadas por email**, **copiadas** ou usadas em **redirect de auth** passam pelo helper.
