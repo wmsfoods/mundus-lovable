@@ -134,6 +134,7 @@ const App = () => (
               <Route path="negotiations/:id" element={<BuyerNegotiationDetail />} />
               <Route path="requests" element={<BuyerRequests />} />
               <Route path="requests/new" element={<BuyerCreateRequest />} />
+             <Route path="requests/:editId/edit" element={<BuyerCreateRequest />} />
               <Route path="requests/:id" element={<BuyerRequestDetail />} />
               <Route path="chat" element={<BuyerChat />} />
               <Route path="chat/:conversationId" element={<BuyerChat />} />
