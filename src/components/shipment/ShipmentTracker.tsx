@@ -390,7 +390,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
                 onClick={() => setActiveIdx(i)}
                 style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
               >
-                FCL {c.position ?? i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
+                FCL {i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
               </button>
               {!readOnly && containers.length > 1 && isContainerEmpty(c) && (
                 <button
