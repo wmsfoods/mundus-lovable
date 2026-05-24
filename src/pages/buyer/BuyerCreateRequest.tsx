@@ -493,6 +493,71 @@ export default function BuyerCreateRequest() {
               <strong>Tip</strong> · target price is optional. Leave blank if you want suppliers to quote freely.
             </div>
           </div>
+
+          {/* ATTACHMENTS */}
+          <div className="bcr-card">
+            <div className="bcr-side-title" style={{ borderBottom: "1px solid var(--g100, #f5f4f3)", marginBottom: 12 }}>
+              📎 SPECIFICATIONS &amp; PHOTOS
+            </div>
+            <p style={{ fontSize: 12, color: "var(--fg-muted)", margin: "0 0 10px" }}>
+              Upload product specs, reference images, or other documents. PDF, PNG, JPG — max 5MB each, up to 10 files.
+            </p>
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); }}
+              onDrop={(e) => { e.preventDefault(); addFiles(e.dataTransfer.files); }}
+              style={{
+                border: "1.5px dashed #d1d5db",
+                borderRadius: 10,
+                padding: 20,
+                textAlign: "center",
+                cursor: "pointer",
+                background: "var(--g050, #fafaf9)",
+              }}
+            >
+              <UploadIcon size={28} style={{ color: "var(--fg-muted)" }} />
+              <div style={{ marginTop: 8, fontSize: 13, fontWeight: 600 }}>
+                Drop files here or click to upload
+              </div>
+              <div style={{ marginTop: 4, fontSize: 11, color: "var(--fg-muted)" }}>
+                PDF, PNG, JPG · max 5MB each · up to 10 files
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg"
+                style={{ display: "none" }}
+                onChange={(e) => { addFiles(e.target.files); e.target.value = ""; }}
+              />
+            </div>
+            {files.length > 0 && (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
+                {files.map((f, i) => (
+                  <span
+                    key={i}
+                    style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "5px 10px", borderRadius: 999,
+                      background: "#FBEAF0", color: "#8B2252",
+                      fontSize: 12, fontWeight: 500,
+                    }}
+                  >
+                    <FileIcon size={12} />
+                    <span style={{ maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => setFiles((prev) => prev.filter((_, j) => j !== i))}
+                      style={{ background: "transparent", border: "none", color: "#8B2252", cursor: "pointer", padding: 0, display: "inline-flex" }}
+                      aria-label="Remove file"
+                    >
+                      <XIcon size={12} />
+                    </button>
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
         </section>
 
         {/* RIGHT: logistics & terms */}
@@ -500,6 +565,72 @@ export default function BuyerCreateRequest() {
           <div className="bcr-card bcr-card-logistics">
             <div className="bcr-side-title">
               <ClipboardIcon size={14} /> LOGISTICS &amp; TERMS
+            </div>
+
+            <div className="bcr-side-block" ref={originRef} style={{ position: "relative" }}>
+              <label className="bcr-side-label">COUNTRY OF ORIGIN</label>
+              <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, cursor: "pointer" }}>
+                <input type="checkbox" checked={anyOrigin} onChange={(e) => setAnyOrigin(e.target.checked)} />
+                Any origin accepted
+              </label>
+              {!anyOrigin && (
+                <>
+                  <input
+                    type="text"
+                    className="bcr-input"
+                    value={originSearch}
+                    onChange={(e) => { setOriginSearch(e.target.value); setOriginOpen(true); }}
+                    onFocus={() => setOriginOpen(true)}
+                    placeholder="Type to add an origin country…"
+                    autoComplete="off"
+                  />
+                  {originOpen && filteredOrigin.length > 0 && (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 200, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+                      {filteredOrigin.map((m) => (
+                        <div
+                          key={m.id}
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            setOriginCountries((prev) => [...prev, m.n]);
+                            setOriginSearch("");
+                            setOriginOpen(false);
+                          }}
+                          style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
+                          onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                          onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                        >
+                          {m.f} {m.n}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {originCountries.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 4 }}>
+                      {originCountries.map((c) => (
+                        <span
+                          key={c}
+                          style={{
+                            display: "inline-flex", alignItems: "center", gap: 6,
+                            padding: "4px 10px", borderRadius: 999,
+                            background: "#FBEAF0", color: "#8B2252",
+                            fontSize: 12, fontWeight: 500,
+                          }}
+                        >
+                          {countryFlag(c)} {c}
+                          <button
+                            type="button"
+                            onClick={() => setOriginCountries((prev) => prev.filter((x) => x !== c))}
+                            style={{ background: "transparent", border: "none", color: "#8B2252", cursor: "pointer", padding: 0, display: "inline-flex" }}
+                            aria-label="Remove"
+                          >
+                            <XIcon size={12} />
+                          </button>
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
             </div>
 
             <div className="bcr-side-block">
