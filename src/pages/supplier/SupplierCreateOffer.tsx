@@ -316,28 +316,37 @@ export default function SupplierCreateOffer() {
       });
     }
 
-    // Seed an initial cut row from the requested product.
+    // Prefill the editable "add row" with requested product data so every
+    // field (category, cut, spec, qty, ask, floor, notes) remains editable.
+    // The supplier can adjust any value and then click "Add" to confirm.
     const ask = fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : "";
     const floor = fromRequest.targetPrice
       ? (fromRequest.targetPrice * 0.98).toFixed(2)
       : "";
     const qty = fromRequest.quantity ? String(fromRequest.quantity) : "";
-    setCuts([
-      {
-        id: Date.now().toString(),
-        cat: fromRequest.category || "Beef",
-        cut: fromRequest.product || "",
-        spec: fromRequest.specification || "Boneless",
-        pkg: "Vacuum Pack",
-        gr: "Not Classified",
-        ag: "None",
-        qty,
-        ask,
-        floor,
-        notes: fromRequest.additionalInfo || "",
-        plant: "",
-      },
-    ]);
+    const cat = fromRequest.category || "Beef";
+    const cutName = fromRequest.product || "";
+    // Try to resolve a matching cut id for the cut picker so the image loads.
+    const matched = (cutsByCategory[cat] || []).find(
+      (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
+    );
+    setNf({
+      cat,
+      cut: matched?.displayName || cutName,
+      cutId: matched?.id,
+      cutImage: matched?.image_url ?? null,
+      spec: fromRequest.specification || "Boneless",
+      pkg: "Vacuum Pack",
+      gr: "Not Classified",
+      ag: "None",
+      qty,
+      ask,
+      floor,
+      notes: fromRequest.additionalInfo || "",
+      plant: "",
+    });
+    if (matched?.image_url) setNewImgPrev(matched.image_url);
+    setAddRow(true);
 
     // Distribution: pre-check Marketplace + Specific Customers and select requester.
     setDistMarketplace(true);
@@ -347,7 +356,7 @@ export default function SupplierCreateOffer() {
       (c) => c.name.toLowerCase() === fromRequest.client.toLowerCase()
     );
     if (customer) setSelectedCustomers([customer.id]);
-  }, [fromRequest, MARKETS, setUnit]);
+  }, [fromRequest, MARKETS, cutsByCategory, setUnit]);
 
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
@@ -1160,7 +1169,15 @@ export default function SupplierCreateOffer() {
             {selInco.includes("EXW") && (
               <div className="cov4-inco-extra">
                 <span className="cov4-inco-ex-lbl">📍 EXW Pickup location</span>
-                <input className="cov4-text-in" placeholder="City, warehouse address..." value={incoExtras.exwCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, exwCity: e.target.value }))} />
+                <input
+                  className="cov4-text-in"
+                  type="text"
+                  name="exw-pickup-address"
+                  autoComplete="street-address"
+                  placeholder="City, warehouse address..."
+                  value={incoExtras.exwCity || ""}
+                  onChange={(e) => setIncoExtras((p) => ({ ...p, exwCity: e.target.value }))}
+                />
               </div>
             )}
             {selInco.includes("DDP") && (
