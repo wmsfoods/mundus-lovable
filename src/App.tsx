@@ -139,6 +139,7 @@ const App = () => (
               <Route path="chat/:conversationId" element={<BuyerChat />} />
               <Route path="procurement-intelligence" element={<ProcurementIntelligence />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="notifications" element={<Notifications />} />
             </Route>
             <Route
               path="/supplier"
@@ -167,6 +168,7 @@ const App = () => (
               <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
               <Route path="insights/analytics" element={<SupplierAnalytics />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="notifications" element={<Notifications />} />
             </Route>
             <Route path="/admin" element={<AdminShell />}>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
