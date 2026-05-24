@@ -200,12 +200,25 @@ export default function SupplierRequests() {
             ) : slice.map((r) => {
               const resp = responseMap[r.id];
               const acceptedNeg = resp?.negotiations.find((n) => n.status === "bid_accepted");
+              const withdrawn = r.status === "not_interested";
               return (
               <tr key={r.id}>
                 <td>
                   <button type="button" className="link-action" onClick={() => navigate(`/supplier/requests/${r.id}`)}>
                     {formatRequestNumber(r.request_number, r.created_at)}
                   </button>
+                  {withdrawn && (
+                    <div style={{ marginTop: 4 }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        padding: "3px 8px", borderRadius: 999,
+                        background: "#fee2e2", color: "#dc2626",
+                        fontSize: 10, fontWeight: 700,
+                      }}>
+                        ⚠️ Buyer withdrew
+                      </span>
+                    </div>
+                  )}
                 </td>
                 <td>{r.buyer_company_name ?? "—"}</td>
                 <td>{r.product_name}</td>
@@ -237,7 +250,15 @@ export default function SupplierRequests() {
                 </td>
                 <td>
                   <div className="row-actions">
-                    {resp ? (
+                    {withdrawn ? (
+                      resp ? (
+                        <button type="button" className="btn-tb" onClick={() => navigate(`/supplier/offers/${resp.offers[0].id}`)}>
+                          View your offer →
+                        </button>
+                      ) : (
+                        <span style={{ fontSize: 11, color: "var(--fg-muted)" }}>Withdrawn</span>
+                      )
+                    ) : resp ? (
                       <>
                         <button type="button" className="btn-tb is-primary"
                           onClick={() => navigate(`/supplier/offers/${resp.offers[0].id}`)}>
