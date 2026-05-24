@@ -210,6 +210,32 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>("overview");
   const [containerIdx] = useState(0);
+  const [liveStatus, setLiveStatus] = useState<string | undefined>(data.rawStatus);
+  const [liveUpdatedAt, setLiveUpdatedAt] = useState<string | undefined>(data.statusUpdatedAt);
+
+  useEffect(() => {
+    setLiveStatus(data.rawStatus);
+    setLiveUpdatedAt(data.statusUpdatedAt);
+  }, [data.rawStatus, data.statusUpdatedAt]);
+
+  useEffect(() => {
+    if (!data.orderId) return;
+    const channel = supabase
+      .channel(`deal-status-${data.orderId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${data.orderId}` },
+        (payload) => {
+          const row = payload.new as { status?: string; updated_at?: string } | null;
+          if (row?.status) setLiveStatus(row.status);
+          if (row?.updated_at) setLiveUpdatedAt(row.updated_at);
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [data.orderId]);
+
+  const currentStatus = liveStatus ?? data.rawStatus;
 
   const tk = (k: string, fallback: string, opts?: Record<string, unknown>) =>
     (t(k, { defaultValue: fallback, ...opts }) as string);
