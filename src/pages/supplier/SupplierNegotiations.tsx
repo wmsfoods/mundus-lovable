@@ -332,6 +332,15 @@ export default function SupplierNegotiations() {
                                 <Mail size={10} /> {t("supplier.negotiations.emailSent")}
                               </span>
                             )}
+                            {b.status === "accepted" && b.orderNumber && (
+                              <a
+                                href={`/supplier/sales/${b.orderNumber}`}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ fontSize: 11, color: "#8B2252", fontWeight: 500, textDecoration: "none" }}
+                              >
+                                Order #{b.orderNumber} →
+                              </a>
+                            )}
                           </div>
                         </td>
                         <td data-label={t("supplier.negotiations.col.updated")}>
