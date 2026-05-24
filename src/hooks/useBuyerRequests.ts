@@ -31,6 +31,9 @@ export type BuyerRequestRow = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
+  origin_countries?: string[] | null;
+  any_origin?: boolean | null;
+  attachments?: Array<{ name: string; url: string; size?: number; type?: string }> | null;
 };
 
 export function useBuyerRequests() {

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBuyerRequest, type BuyerRequestStatus } from "@/hooks/useBuyerRequests";
 import { formatRequestNumber } from "@/lib/requestNumber";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { RequestDetailCard } from "@/components/request/RequestDetailCard";
 
 const STATUS_CHIP: Record<BuyerRequestStatus, string> = {
   new: "req-status-chip is-draft",
@@ -77,88 +78,54 @@ export default function BuyerRequestDetail() {
     <>
       <Link to="/buyer/requests" className="nd-back"><ArrowLeftIcon size={16} /> Back</Link>
 
-      <div className="nd-header">
-        <div className="nd-h-text">
-          <h1>{r.product_name}</h1>
-          <div className="nd-sub">
-            <span className="mono">{reqNo}</span> ·{" "}
-            <span className={STATUS_CHIP[r.status]} style={{ marginLeft: 4 }}>{STATUS_LABEL[r.status]}</span>
-          </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 12, margin: "12px 0 16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--fg-muted)" }}>Status</span>
+          <span className={STATUS_CHIP[r.status]}>{STATUS_LABEL[r.status]}</span>
         </div>
-        <div className="nd-h-right">
+        <div style={{ display: "flex", gap: 8 }}>
           {r.status !== "not_interested" && r.status !== "closed" && (
-            <button type="button" className="btn-tb" onClick={onCancel}>Cancel Request</button>
+            <button type="button" className="btn-tb" onClick={onCancel}>Cancel request</button>
           )}
         </div>
       </div>
 
-      <div className="req-detail-grid">
-        <div>
-          <div className="nd-card">
-            <div className="nd-card-head"><strong>Product</strong></div>
-            <div className="rd-grid">
-              <Field label="Product" value={r.product_name} />
-              <Field label="Category" value={r.category ?? "—"} />
-              <Field label="Specification" value={r.specification ?? "—"} />
-              <Field label="Temperature" value={r.temperature ?? "—"} />
-              <Field label="Quantity" value={`${Number(r.quantity_kg).toLocaleString()} kg`} />
-              <Field label="Target price" value={r.target_price_usd != null ? `US$ ${Number(r.target_price_usd).toFixed(2)}/kg` : "—"} />
-            </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+        <RequestDetailCard r={r} />
+
+        <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 12, padding: 20 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>📦 Supplier responses</span>
+            <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>({offers.length})</span>
           </div>
-
-          <div className="nd-card">
-            <div className="nd-card-head"><strong>Logistics</strong></div>
-            <div className="rd-grid">
-              <Field label="Destination country" value={r.destination_country} />
-              <Field label="Destination port" value={r.destination_port ?? "—"} />
-              <Field label="Incoterm" value={r.incoterm ?? "—"} />
-              <Field label="Container" value={`${r.container_size ?? "—"} × ${r.container_count ?? 1}`} />
-              <Field label="Shipment date" value={r.shipment_date ?? "—"} />
-            </div>
-          </div>
-
-          {r.additional_info && (
-            <div className="nd-card">
-              <div className="nd-card-head"><strong>Additional notes</strong></div>
-              <p style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--fg-muted)", fontSize: "var(--fs-sm)" }}>
-                {r.additional_info}
-              </p>
-            </div>
-          )}
-
-          <div className="nd-card">
-            <div className="nd-card-head"><strong>Offers received ({offers.length})</strong></div>
-            {offers.length === 0 ? (
-              <p style={{ color: "var(--fg-muted)", fontSize: "var(--fs-sm)", margin: 0 }}>No offers received yet.</p>
-            ) : (
-              <div className="req-offer-list">
-                {offers.map((o) => (
-                  <div key={o.id} className="req-offer-card">
-                    <div className="supplier">
-                      <div style={{ minWidth: 0 }}>
-                        <div className="name">{o.supplier_name ?? "Supplier"}</div>
-                        <div className="sub mono">{formatOfferNumber(o.offer_number, o.created_at)}</div>
-                      </div>
-                    </div>
-                    <div className="actions">
-                      <button type="button" className="view" onClick={() => navigate(`/buyer/offers/${o.id}`)}>View offer</button>
+          {offers.length === 0 ? (
+            <p style={{ color: "var(--fg-muted)", fontSize: 13, margin: 0 }}>No offers received yet.</p>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {offers.map((o) => (
+                <button
+                  key={o.id}
+                  type="button"
+                  onClick={() => navigate(`/buyer/offers/${o.id}`)}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "space-between",
+                    padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border)",
+                    background: "var(--g050, #fafaf9)", cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 13 }}>{o.supplier_name ?? "Supplier"}</div>
+                    <div style={{ fontSize: 11, color: "var(--fg-muted)", fontFamily: "ui-monospace, monospace" }}>
+                      {formatOfferNumber(o.offer_number, o.created_at)}
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  <span style={{ color: "#8B2252", fontWeight: 600, fontSize: 13 }}>View →</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </>
-  );
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-  return (
-    <div>
-      <div className="rd-field-label">{label}</div>
-      <div className="rd-field-value">{value}</div>
-    </div>
   );
 }
