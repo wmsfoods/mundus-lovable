@@ -37,8 +37,8 @@ export function useSupplierSales() {
       const { data: rows, error: qErr } = await supabase
         .from("orders")
         .select(`
-          id, order_number, status, placed_at, incoterm, fcl_count,
-          buyer:companies!orders_buyer_id_fkey(name),
+          id, order_number, status, placed_at, incoterm, fcl_count, buyer_id,
+          buyer_user:users!orders_buyer_id_fkey(full_name, company:companies!users_company_id_fkey(name)),
           offer:offers(supplier_id, origin_port, origin_country),
           destination_port:ports!destination_port_id(name, country:countries(english_name)),
           items:order_items(customer_product_name, settlement_amount, settlement_price)
@@ -51,7 +51,7 @@ export function useSupplierSales() {
       type Raw = {
         id: string; order_number: number; status: string | null; placed_at: string;
         incoterm: string | null; fcl_count: number | null;
-        buyer: { name: string } | { name: string }[] | null;
+        buyer_user: { full_name: string | null; company: { name: string | null } | { name: string | null }[] | null } | { full_name: string | null; company: { name: string | null } | { name: string | null }[] | null }[] | null;
         offer: { supplier_id: string; origin_port: string | null; origin_country: string | null } | null;
         destination_port: { name: string | null; country: { english_name: string | null } | null } | null;
         items: { customer_product_name: string; settlement_amount: number; settlement_price: number }[] | null;
@@ -59,7 +59,8 @@ export function useSupplierSales() {
       const one = <T,>(x: T | T[] | null | undefined): T | null =>
         Array.isArray(x) ? (x[0] ?? null) : (x ?? null);
       const list: Sale[] = ((rows ?? []) as unknown as Raw[]).map((r) => {
-        const b = one(r.buyer);
+        const bu = one(r.buyer_user);
+        const bCo = one(bu?.company ?? null);
         const items = r.items ?? [];
         const totalKg = items.reduce((s, i) => s + Number(i.settlement_amount || 0), 0);
         const totalValue = items.reduce((s, i) => s + Number(i.settlement_amount || 0) * Number(i.settlement_price || 0), 0);
@@ -69,7 +70,7 @@ export function useSupplierSales() {
           id: r.id,
           dealId,
           status: STATUS_MAP[r.status ?? ""] ?? "AWAITING_PRE_PAYMENT",
-          buyer: b?.name ?? "—",
+          buyer: bCo?.name ?? bu?.full_name ?? "—",
           buyerContact: "—",
           orderDate: fmtDate(r.placed_at),
           destination: destCountry,
