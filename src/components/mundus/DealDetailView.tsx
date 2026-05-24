@@ -5,6 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabPanel } from "@/components/mundus/Tabs";
 import { ShipmentTracker } from "@/components/shipment/ShipmentTracker";
 import { ShippingInstructionsCard } from "@/components/shipping/ShippingInstructionsCard";
+import { StatusBadge, ShippingStatusTracker, getStatusConfig } from "@/lib/orderStatus";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import {
   FileTextIcon,
   ArrowLeftIcon,
@@ -112,6 +115,8 @@ export type DealDetailData = {
   product: string;
   totalValueUsd: number;
   status: DealStatus;
+  rawStatus?: string;
+  statusUpdatedAt?: string;
   party: DealParty;
   overview: {
     date: string;
