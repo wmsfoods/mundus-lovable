@@ -1,16 +1,29 @@
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { DealDetailView } from "@/components/mundus/DealDetailView";
+import { supplierSaleToDeal } from "@/lib/dealDetailAdapters";
+import { useSupplierSales } from "@/hooks/useSupplierSales";
 
 export default function SupplierSaleDetail() {
-  useParams<{ id: string }>();
+  const { id = "" } = useParams<{ id: string }>();
   const { t } = useTranslation();
-  return (
-    <div className="detail-empty">
-      <h1>{t("supplier.sales.detail.notFoundTitle")}</h1>
-      <p>{t("supplier.sales.detail.notFoundBody")}</p>
-      <Link to="/supplier/sales" className="btn-tb is-primary">
-        {t("supplier.sales.detail.back")}
-      </Link>
-    </div>
-  );
+  const { data: sales, isLoading } = useSupplierSales();
+
+  if (isLoading) return null;
+
+  const sale = sales.find((s) => s.dealId === id || s.id === id);
+  if (!sale) {
+    return (
+      <div className="detail-empty">
+        <h1>{t("supplier.sales.detail.notFoundTitle")}</h1>
+        <p>{t("supplier.sales.detail.notFoundBody")}</p>
+        <Link to="/supplier/sales" className="btn-tb is-primary">
+          {t("supplier.sales.detail.back")}
+        </Link>
+      </div>
+    );
+  }
+
+  const data = supplierSaleToDeal(sale, (k, fb) => t(k, { defaultValue: fb }) as string);
+  return <DealDetailView data={data} />;
 }
