@@ -34,6 +34,7 @@ type OrderRow = {
   freight_cost: number | null;
   placed_at: string | null;
   created_at: string | null;
+  updated_at?: string | null;
   offer: {
     supplier_name: string | null;
     origin_country: string | null;
