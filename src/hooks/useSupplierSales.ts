@@ -38,7 +38,7 @@ export function useSupplierSales() {
         .from("orders")
         .select(`
           id, order_number, status, placed_at, incoterm, fcl_count, buyer_id,
-          buyer_user:users!orders_buyer_id_fkey(full_name, company:companies!users_company_id_fkey(name)),
+          buyer_user:users!orders_buyer_id_fkey(name, company:companies!users_company_id_fkey(name)),
           offer:offers(supplier_id, origin_port, origin_country),
           destination_port:ports!destination_port_id(name, country:countries(english_name)),
           items:order_items(customer_product_name, settlement_amount, settlement_price)
@@ -51,7 +51,7 @@ export function useSupplierSales() {
       type Raw = {
         id: string; order_number: number; status: string | null; placed_at: string;
         incoterm: string | null; fcl_count: number | null;
-        buyer_user: { full_name: string | null; company: { name: string | null } | { name: string | null }[] | null } | { full_name: string | null; company: { name: string | null } | { name: string | null }[] | null }[] | null;
+        buyer_user: { name: string | null; company: { name: string | null } | { name: string | null }[] | null } | { name: string | null; company: { name: string | null } | { name: string | null }[] | null }[] | null;
         offer: { supplier_id: string; origin_port: string | null; origin_country: string | null } | null;
         destination_port: { name: string | null; country: { english_name: string | null } | null } | null;
         items: { customer_product_name: string; settlement_amount: number; settlement_price: number }[] | null;
@@ -70,7 +70,7 @@ export function useSupplierSales() {
           id: r.id,
           dealId,
           status: STATUS_MAP[r.status ?? ""] ?? "AWAITING_PRE_PAYMENT",
-          buyer: bCo?.name ?? bu?.full_name ?? "—",
+          buyer: bCo?.name ?? bu?.name ?? "—",
           buyerContact: "—",
           orderDate: fmtDate(r.placed_at),
           destination: destCountry,
