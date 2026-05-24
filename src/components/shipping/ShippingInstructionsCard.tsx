@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { PUBLIC_APP_URL, publicUrl } from "@/lib/publicUrl";
 import "@/styles/mundus-shipping-instructions.css";
 
 type SIRequest = {
@@ -75,7 +76,7 @@ export function ShippingInstructionsCard({ orderId, orderNumber = "", defaultBuy
 
   async function copyLink() {
     if (!request) return;
-    const url = `${window.location.origin}/shipping-instructions/${request.token}`;
+    const url = publicUrl(`/shipping-instructions/${request.token}`);
     await navigator.clipboard.writeText(url);
     toast({ title: "Link copied" });
   }
@@ -223,7 +224,7 @@ export function ShippingInstructionsCard({ orderId, orderNumber = "", defaultBuy
             </span>
             <div style={{ display: "flex", gap: 6 }}>
               <button style={ghostBtn} onClick={() => setViewOpen(true)}>👁 View</button>
-              <button style={ghostBtn} onClick={() => window.open(`/shipping-instructions/print/${request.id}`, "_blank")}>📄 PDF</button>
+              <button style={ghostBtn} onClick={() => window.open(publicUrl(`/shipping-instructions/print/${request.id}`), "_blank")}>📄 PDF</button>
               {!readOnly && !isApproved && (
                 <button style={primarySmallBtn} onClick={approve}>✓ Approve</button>
               )}
@@ -299,7 +300,7 @@ function RequestSIModal({
           order_id: orderId,
           buyer_email: to.trim() || defaultBuyerEmail,
           buyer_name: buyerName,
-          origin: window.location.origin,
+          origin: PUBLIC_APP_URL,
           skip_email: copyOnly,
           personal_note: note.trim() || undefined,
           cc_emails: cc.split(",").map((e) => e.trim()).filter(Boolean),
@@ -437,7 +438,7 @@ function SIViewModal({ si, request, onClose }: { si: SIRecord; request: SIReques
           <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
             {request?.id && (
               <button
-                onClick={() => window.open(`/shipping-instructions/print/${request.id}`, "_blank")}
+                onClick={() => window.open(publicUrl(`/shipping-instructions/print/${request.id}`), "_blank")}
                 style={{ background: "#8B2252", color: "white", border: "none", padding: "8px 14px", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
               >
                 📄 Download PDF
