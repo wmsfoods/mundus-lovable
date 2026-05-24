@@ -5,8 +5,8 @@ import type {
   DealTimelineStage,
   DealDocumentItem,
 } from "@/components/mundus/DealDetailView";
-import type { BuyerOrder, BuyerOrderStatus } from "@/hooks/useBuyerOrders";
-import type { Sale, SaleStatus } from "@/data/mockSales";
+import type { BuyerOrder } from "@/hooks/useBuyerOrders";
+import type { Sale } from "@/data/mockSales";
 
 const FLAGS: Record<string, string> = {
   Brazil: "🇧🇷", "Hong Kong": "🇭🇰", China: "🇨🇳", Argentina: "🇦🇷",
@@ -196,7 +196,7 @@ export function buyerOrderToDeal(
     totalValueUsd,
     status: {
       label: t(`buyer.orders.status.${order.status}`, order.status),
-      tone: BUYER_STATUS_TONE[order.status as BuyerOrderStatus] ?? "info",
+      tone: BUYER_STATUS_TONE[order.status] ?? "info",
     },
     rawStatus: order.status,
     statusUpdatedAt: order.updatedAt,
@@ -277,7 +277,7 @@ export function supplierSaleToDeal(
     totalValueUsd: sale.totalValueUsd,
     status: {
       label: t(`supplier.sales.status.${sale.status}`, sale.status),
-      tone: SUPPLIER_STATUS_TONE[sale.status as keyof typeof SUPPLIER_STATUS_TONE] ?? "info",
+      tone: SUPPLIER_STATUS_TONE[sale.status] ?? "info",
     },
     rawStatus: sale.status,
     party: {
