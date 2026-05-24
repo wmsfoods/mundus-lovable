@@ -385,6 +385,127 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
             </span>
           </span>
         </div>
+        {/* Mundus AI BL Extraction (suppliers only) */}
+        {!readOnly && (
+          <div className="shp-ai">
+            <div className="shp-ai-head">
+              <strong>🤖 Mundus AI — BL Extraction</strong>
+              <span>Upload a Bill of Lading (PDF or image) and our AI will auto-fill the shipment details.</span>
+            </div>
+            <div
+              className="shp-ai-drop"
+              onDragOver={(e) => { e.preventDefault(); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const f = e.dataTransfer.files?.[0];
+                if (f) uploadBLFile(f, "final");
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+            >
+              📄 Drop BL here or click to upload
+              <small>Accepted: PDF, PNG, JPG (max 10MB)</small>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadBLFile(f, "final");
+                e.target.value = "";
+              }}
+            />
+            <input
+              ref={draftInputRef}
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadBLFile(f, "draft");
+                e.target.value = "";
+              }}
+            />
+            <div className="shp-ai-actions">
+              <button type="button" className="shp-carrier-btn" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
+                📎 Upload BL
+              </button>
+              <button type="button" className="shp-carrier-btn shp-btn-ghost" onClick={() => draftInputRef.current?.click()} disabled={extracting}>
+                📋 Upload Draft BL
+              </button>
+            </div>
+
+            {extracting && (
+              <div className="shp-ai-progress">
+                <div className="shp-ai-pulse" />
+                <span>🤖 Mundus AI is reading your Bill of Lading…</span>
+              </div>
+            )}
+
+            {extractError && (
+              <div className="shp-ai-error">
+                ❌ {extractError}
+                <button type="button" className="shp-btn-link" onClick={() => setExtractError(null)}>Dismiss</button>
+              </div>
+            )}
+
+            {extractResult && !extracting && (
+              <ExtractionReview
+                data={extractResult}
+                formFields={FORM_FIELDS as readonly string[]}
+                onApply={applyExtraction}
+                onDismiss={() => setExtractResult(null)}
+                blUrl={current.bl_document_url ?? null}
+              />
+            )}
+
+            {(current.bl_document_url || current.bl_draft_url) && (
+              <div className="shp-ai-docs">
+                {current.bl_document_url && (
+                  <div>
+                    <strong>📄 BL Document:</strong>{" "}
+                    <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                    {" · "}
+                    <a href={current.bl_document_url} download>Download</a>
+                  </div>
+                )}
+                {current.bl_draft_url && (
+                  <div>
+                    <strong>📋 Draft BL:</strong>{" "}
+                    <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                    {" · "}
+                    <a href={current.bl_draft_url} download>Download</a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Buyer view: only show BL document links */}
+        {readOnly && (current.bl_document_url || current.bl_draft_url) && (
+          <div className="shp-ai-docs is-readonly">
+            {current.bl_document_url && (
+              <div>
+                <strong>📄 BL Document:</strong>{" "}
+                <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                {" · "}
+                <a href={current.bl_document_url} download>Download</a>
+              </div>
+            )}
+            {current.bl_draft_url && (
+              <div>
+                <strong>📋 Draft BL:</strong>{" "}
+                <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                {" · "}
+                <a href={current.bl_draft_url} download>Download</a>
+              </div>
+            )}
+          </div>
+        )}
         <div className="shp-grid-4">
           <Field label="Container #">
             <input
