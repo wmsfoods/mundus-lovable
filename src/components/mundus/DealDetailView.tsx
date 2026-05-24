@@ -338,90 +338,138 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
           </TabPanel>
 
           <TabPanel active={tab === "negotiation"}>
-            {data.negotiation ? (
-              <Card
-                title={tk("dealDetail.negotiation.howClosed", "HOW THIS DEAL CLOSED")}
-                icon={ArrowsLeftRightIcon}
-                right={
-                  data.negotiation.closedAt ? (
-                    <span className="ddv-card-sub">
-                      {tk("dealDetail.negotiation.closedAfter", "Closed after {{n}} rounds", { n: data.negotiation.rounds.length })}
-                      {" · "}{data.negotiation.closedAt}
-                    </span>
-                  ) : null
+            {data.negotiation ? (() => {
+              const neg = data.negotiation;
+              const showFloor = data.role === "supplier";
+              const totalKg = data.totalKg || 1;
+              const askingPerKg = neg.initialAskingUsd / totalKg;
+              // Build flat pill timeline: bid1 -> counter1 -> bid2 -> counter2 ...
+              const pills: Array<{ type: "bid" | "counter"; round: number; totalUsd: number; current: boolean }> = [];
+              neg.rounds.forEach((r, idx) => {
+                const isLast = idx === neg.rounds.length - 1;
+                pills.push({ type: "bid", round: r.round, totalUsd: r.buyerBidUsd, current: false });
+                if (r.counterUsd) {
+                  pills.push({ type: "counter", round: r.round, totalUsd: r.counterUsd, current: isLast });
                 }
-              >
-                {data.negotiation.rounds.map((r) => {
-                  const max = Math.max(r.buyerBidUsd, r.counterUsd, data.negotiation!.initialAskingUsd);
-                  const bidPct = Math.max(8, Math.round((r.buyerBidUsd / max) * 100));
-                  const cntPct = Math.max(8, Math.round((r.counterUsd / max) * 100));
-                  return (
-                    <div key={r.round} className={`ddv-round ${r.accepted ? "is-accepted" : ""}`}>
-                      <div className="ddv-round-head">
-                        <strong>{tk("dealDetail.negotiation.round", "Round")} {r.round}</strong>
-                        {r.accepted && (
-                          <span className="ddv-pill-success">
-                            ★ {tk("dealDetail.negotiation.accepted", "ACCEPTED")}
-                          </span>
-                        )}
-                        {r.at && <span className="ddv-round-at">{r.at}</span>}
-                      </div>
-                      <div className="ddv-bar-row">
-                        <span className="ddv-bar-lbl">{tk("dealDetail.negotiation.buyerBid", "Buyer bid")}</span>
-                        <div className="ddv-bar ddv-bar--blue" style={{ width: `${bidPct}%` }}>
-                          <span>{fmtUsd(r.buyerBidUsd)}</span>
-                        </div>
-                      </div>
-                      <div className="ddv-bar-row">
-                        <span className="ddv-bar-lbl">
-                          {data.role === "buyer"
-                            ? tk("dealDetail.negotiation.supplierCounter", "Supplier counter")
-                            : tk("dealDetail.negotiation.yourCounter", "Your counter")}
-                        </span>
-                        <div className="ddv-bar ddv-bar--rose" style={{ width: `${cntPct}%` }}>
-                          <span>{fmtUsd(r.counterUsd)}</span>
-                        </div>
-                      </div>
+              });
+              const maxRound = neg.rounds.length;
+              return (
+                <>
+                  <div className="nd-card">
+                    <div className="nd-timeline-head">
+                      <span className="tl-head-title">
+                        <SparkleIcon size={14} />
+                        {tk("dealDetail.negotiation.timeline", "Round timeline")}
+                      </span>
+                      <span className="tl-head-meta">
+                        {tk("dealDetail.negotiation.roundOf", "Round {{round}} of {{max}}", { round: maxRound, max: maxRound })}
+                      </span>
                     </div>
-                  );
-                })}
-              </Card>
-            ) : (
+                    <div className="nd-timeline-flow">
+                      {pills.map((p, i) => {
+                        const labelKey = p.type === "bid"
+                          ? tk("dealDetail.negotiation.pillBid", "Bid {{n}}", { n: p.round })
+                          : p.current
+                            ? tk("dealDetail.negotiation.pillCounterCurrent", "Counter {{n}}", { n: p.round })
+                            : tk("dealDetail.negotiation.pillCounter", "Counter {{n}}", { n: p.round });
+                        const cls = p.type === "bid"
+                          ? "tl-pill tl-pill--bid"
+                          : p.current
+                            ? "tl-pill tl-pill--counter tl-pill--current"
+                            : "tl-pill tl-pill--counter";
+                        return (
+                          <Fragment key={`${p.type}-${p.round}-${i}`}>
+                            {i > 0 && <span className="tl-sep">→</span>}
+                            <span className={cls}>
+                              <span className="tl-pill-label">{labelKey}</span>
+                              <span>{fmtUsd(p.totalUsd)}</span>
+                            </span>
+                          </Fragment>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="nd-card">
+                    <div className="nd-card-head">
+                      <strong>{tk("dealDetail.negotiation.priceDetails", "Price details")}</strong>
+                      {neg.closedAt && (
+                        <span className="nd-updated">{neg.closedAt}</span>
+                      )}
+                    </div>
+                    <div className="nd-price-scroll-wrap" style={{ overflowX: "auto" }}>
+                      <table className="nd-price-table">
+                        <thead>
+                          <tr>
+                            <th>{tk("dealDetail.negotiation.col.product", "Product")}</th>
+                            <th>{tk("dealDetail.negotiation.col.qty", "Qty (kg)")}</th>
+                            <th>{tk("dealDetail.negotiation.col.asking", "Asking")}</th>
+                            {showFloor && <th>{tk("dealDetail.negotiation.col.floor", "Floor")}</th>}
+                            {Array.from({ length: maxRound }, (_, i) => (
+                              <Fragment key={`h-${i}`}>
+                                <th className="col-bid">{tk("dealDetail.negotiation.col.bidR", "Bid R{{n}}", { n: i + 1 })}</th>
+                                <th className="col-counter">{tk("dealDetail.negotiation.col.counterR", "Counter R{{n}}", { n: i + 1 })}</th>
+                              </Fragment>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {data.cuts.map((cut, ci) => {
+                            const cutAsking = cut.askingPerKgUsd ?? askingPerKg;
+                            return (
+                              <tr key={ci} style={{ background: "rgba(34,197,94,0.06)" }}>
+                                <td>
+                                  <span className="product-name">🔒 {cut.name}</span>
+                                  {cut.subItems && cut.subItems.length > 0 && (
+                                    <span className="product-pack">{cut.subItems.join(" · ")}</span>
+                                  )}
+                                  <span
+                                    className="inline-block ml-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
+                                    style={{ background: "rgba(34,197,94,0.15)", color: "#15803d" }}
+                                  >
+                                    {tk("dealDetail.negotiation.agreedAt", "Agreed at ${{price}}/kg", { price: cut.pricePerKgUsd.toFixed(2) })}
+                                  </span>
+                                </td>
+                                <td>{fmtKg(cut.weightKg)}</td>
+                                <td>{fmtUsdPerKg(cutAsking)}</td>
+                                {showFloor && (
+                                  <td>{cut.floorPerKgUsd != null ? fmtUsdPerKg(cut.floorPerKgUsd) : "—"}</td>
+                                )}
+                                {Array.from({ length: maxRound }, (_, i) => {
+                                  const r = cut.rounds?.[i];
+                                  const isLast = i === maxRound - 1;
+                                  const bidV = r?.bidPerKgUsd;
+                                  const cntV = r?.counterPerKgUsd;
+                                  return (
+                                    <Fragment key={`v-${ci}-${i}`}>
+                                      <td className="col-bid">{bidV != null ? fmtUsdPerKg(bidV) : "—"}</td>
+                                      <td
+                                        className={`col-counter${isLast ? " col-counter--current" : ""}`}
+                                        style={isLast ? { color: "#15803d", fontWeight: 600 } : undefined}
+                                      >
+                                        {isLast
+                                          ? `${fmtUsdPerKg(cut.pricePerKgUsd)} 🔒`
+                                          : cntV != null
+                                            ? fmtUsdPerKg(cntV)
+                                            : "—"}
+                                      </td>
+                                    </Fragment>
+                                  );
+                                })}
+                              </tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              );
+            })() : (
               <Card title={tk("dealDetail.negotiation.howClosed", "HOW THIS DEAL CLOSED")} icon={ArrowsLeftRightIcon}>
                 <p className="ddv-empty">{tk("dealDetail.negotiation.none", "No negotiation rounds recorded.")}</p>
               </Card>
             )}
-
-            <Card title={tk("dealDetail.negotiation.finalPerCut", "FINAL PRICE PER CUT")} icon={DollarIcon}>
-              <div className="ddv-final-table">
-                <div className="ddv-final-head">
-                  <span>{tk("dealDetail.cuts.cut", "Cut")}</span>
-                  <span className="num">{tk("dealDetail.cuts.qty", "Qty")}</span>
-                  <span className="num">{tk("dealDetail.cuts.asking", "Asking")}</span>
-                  <span className="num">{tk("dealDetail.cuts.finalKg", "Final $/kg")}</span>
-                  <span className="num">{tk("dealDetail.cuts.total", "Total")}</span>
-                </div>
-                {data.cuts.map((cut, i) => {
-                  const asking = data.negotiation
-                    ? (data.negotiation.initialAskingUsd / data.totalKg)
-                    : cut.pricePerKgUsd;
-                  return (
-                    <div key={i} className="ddv-final-row">
-                      <span>
-                        <strong>{cut.name}</strong>
-                        {cut.subItems && cut.subItems.length > 0 && (
-                          <span className="ddv-cut-sub"> · {cut.subItems.join(" · ")}</span>
-                        )}
-                      </span>
-                      <span className="num">{fmtKg(cut.weightKg)} kg</span>
-                      <span className="num">{fmtUsdPerKg(asking)}</span>
-                      <span className="num accent">{fmtUsdPerKg(cut.pricePerKgUsd)}</span>
-                      <span className="num">{fmtUsd(cut.weightKg * cut.pricePerKgUsd)}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
           </TabPanel>
 
           <TabPanel active={tab === "shipment"}>
