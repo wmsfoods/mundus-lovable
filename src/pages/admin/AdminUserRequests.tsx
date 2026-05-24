@@ -129,12 +129,109 @@ export default function AdminUserRequests() {
       .update({ status: "approved", reviewed_at: new Date().toISOString() })
       .eq("id", approveTarget.id);
     if (error) { setActing(false); toast.error(error.message); return; }
-    // Best-effort: auto-assign the approved user to their company HQ in
-    // `user_offices`. If a `company_users` row already exists for this email
-    // (real auth flow), we link them to the HQ company so the office switcher
-    // can find them. If nothing is found yet, this is a no-op and the link
-    // will be created later by the signup flow.
+    // Best-effort: provision the buyer/supplier company and link the auth user
+    // so they actually get access to the right module after approval.
     try {
+      const req = approveTarget;
+      const role = (req.role || "").toLowerCase();
+      const isBuyer = role === "buyer";
+      const isSupplier = role === "supplier";
+
+      // 1) Find the auth user id by email (via public.users if it already
+      //    exists, otherwise via the verify-email edge function).
+      let userId: string | null = null;
+      const { data: existingUser } = await supabase
+        .from("users")
+        .select("id, company_id")
+        .eq("email", req.email)
+        .maybeSingle();
+      if (existingUser?.id) userId = existingUser.id;
+      if (!userId) {
+        try {
+          const { data: check } = await supabase.functions.invoke("verify-email", {
+            body: { action: "lookup", email: req.email },
+          });
+          if (check?.user_id) userId = check.user_id as string;
+        } catch {
+          /* lookup not available — fall through */
+        }
+      }
+
+      // 2) Find or create the company.
+      let companyId: string | null = existingUser?.company_id ?? null;
+      if (!companyId && req.company_name) {
+        const { data: existingCompany } = await supabase
+          .from("companies")
+          .select("id")
+          .eq("name", req.company_name)
+          .eq("country", req.registration_country || req.country || "")
+          .maybeSingle();
+        if (existingCompany?.id) {
+          companyId = existingCompany.id;
+        } else {
+          const { data: newCompany, error: companyErr } = await supabase
+            .from("companies")
+            .insert({
+              name: req.company_name,
+              tax_id: req.tax_id || "",
+              country: req.registration_country || req.country || "",
+              state: req.state || "",
+              address: req.address || "",
+              city: req.city || null,
+              zip_code: req.zip || null,
+              phone: req.phone || "",
+              is_buyer: isBuyer,
+              is_supplier: isSupplier,
+              office_type: "headquarters",
+              status: "active",
+              protein_profiles: req.proteins || [],
+              buyer_protein_profile: isBuyer ? (req.proteins || []) : [],
+              countries_of_operation: req.countries_of_operation || [],
+            })
+            .select("id")
+            .single();
+          if (companyErr) throw companyErr;
+          companyId = newCompany.id;
+        }
+      }
+
+      // 3) Link the auth user to the company.
+      if (userId && companyId) {
+        await supabase
+          .from("users")
+          .upsert(
+            {
+              id: userId,
+              company_id: companyId,
+              active_company_id: companyId,
+              name: req.name,
+              email: req.email,
+              user_type: "Master",
+              is_owner: true,
+              status: "active",
+            },
+            { onConflict: "id" },
+          );
+        await supabase
+          .from("user_offices")
+          .upsert(
+            {
+              user_id: userId,
+              company_id: companyId,
+              role: "office_admin",
+              is_primary: true,
+            },
+            { onConflict: "user_id,company_id" },
+          );
+      } else if (!userId) {
+        console.warn(
+          "approval: auth user not found for",
+          req.email,
+          "— they'll be linked on first login if signup flow runs.",
+        );
+      }
+
+      // 4) Legacy company_users path (kept for backwards compat with offices).
       const { data: cu } = await supabase
         .from("company_users")
         .select("user_id, company_id")
@@ -158,15 +255,15 @@ export default function AdminUserRequests() {
             {
               user_id: cu.user_id,
               company_id: hqId,
-              role: "member",
+              role: "office_admin",
               is_primary: true,
             },
             { onConflict: "user_id,company_id" }
           );
       }
     } catch (e) {
-      // Non-fatal — approval still succeeds.
-      console.warn("auto-assign HQ office failed", e);
+      // Non-fatal — approval still succeeds, admin can fix manually.
+      console.warn("auto-provision company/user failed", e);
     }
     await supabase.functions.invoke("signup-notifications", {
       body: {
