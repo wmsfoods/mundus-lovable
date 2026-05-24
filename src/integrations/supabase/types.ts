@@ -4519,6 +4519,9 @@ export type Database = {
       shipment_containers: {
         Row: {
           arrived_date: string | null
+          bl_document_url: string | null
+          bl_draft_url: string | null
+          bl_extracted_data: Json | null
           bl_number: string | null
           container_number: string | null
           created_at: string | null
@@ -4547,6 +4550,9 @@ export type Database = {
         }
         Insert: {
           arrived_date?: string | null
+          bl_document_url?: string | null
+          bl_draft_url?: string | null
+          bl_extracted_data?: Json | null
           bl_number?: string | null
           container_number?: string | null
           created_at?: string | null
@@ -4575,6 +4581,9 @@ export type Database = {
         }
         Update: {
           arrived_date?: string | null
+          bl_document_url?: string | null
+          bl_draft_url?: string | null
+          bl_extracted_data?: Json | null
           bl_number?: string | null
           container_number?: string | null
           created_at?: string | null

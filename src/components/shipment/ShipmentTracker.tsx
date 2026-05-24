@@ -26,6 +26,9 @@ type ShipmentContainer = {
   gate_out_date: string | null;
   delivered_date: string | null;
   status: string | null;
+  bl_document_url?: string | null;
+  bl_draft_url?: string | null;
+  bl_extracted_data?: unknown;
 };
 
 type Port = { id: string; name: string; code: string; country_id: string; country?: { english_name: string | null } };
@@ -115,6 +118,13 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
   const [vesselOpen, setVesselOpen] = useState(false);
   const debounceRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
+  // BL extraction state (per active container)
+  const [extracting, setExtracting] = useState(false);
+  const [extractError, setExtractError] = useState<string | null>(null);
+  const [extractResult, setExtractResult] = useState<Record<string, unknown> | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const draftInputRef = useRef<HTMLInputElement | null>(null);
+
   // Load ports + containers
   useEffect(() => {
     let cancelled = false;
@@ -156,7 +166,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       const combined = { ...target, ...patch };
       merged.status = computeStatus(combined);
     }
-    const { error } = await supabase.from("shipment_containers").update(merged).eq("id", id);
+    const { error } = await supabase.from("shipment_containers").update(merged as never).eq("id", id);
     setSavingId(null);
     if (!error) {
       patchLocal(id, merged);
@@ -203,6 +213,101 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
     if (!current) return 0;
     return MILESTONES.filter((m) => m.key !== ("__transit__" as never) && current[m.key as keyof ShipmentContainer]).length;
   }, [current]);
+
+  // ------- BL upload + AI extraction -------
+  const fileToBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const s = String(r.result || "");
+        const idx = s.indexOf(",");
+        resolve(idx >= 0 ? s.slice(idx + 1) : s);
+      };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+
+  const uploadBLFile = async (file: File, kind: "final" | "draft") => {
+    if (!current) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setExtractError("File exceeds 10MB limit.");
+      return;
+    }
+    setExtractError(null);
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${orderId}/${current.id}/${kind}-${Date.now()}-${safeName}`;
+    const { error: upErr } = await supabase.storage.from("bl-documents").upload(path, file, {
+      cacheControl: "3600", upsert: false, contentType: file.type,
+    });
+    if (upErr) { setExtractError(`Upload failed: ${upErr.message}`); return; }
+    const { data: pub } = supabase.storage.from("bl-documents").getPublicUrl(path);
+    const url = pub.publicUrl;
+    const patch: Partial<ShipmentContainer> = kind === "final"
+      ? { bl_document_url: url }
+      : { bl_draft_url: url };
+    await persist(current.id, patch);
+
+    if (kind === "final") {
+      // trigger AI extraction
+      try {
+        setExtracting(true);
+        setExtractResult(null);
+        const b64 = await fileToBase64(file);
+        const { data, error } = await supabase.functions.invoke("extract-bl", {
+          body: { fileBase64: b64, mimeType: file.type },
+        });
+        if (error) throw new Error(error.message);
+        if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+        const extracted = (data as { extracted: Record<string, unknown> }).extracted || {};
+        setExtractResult(extracted);
+        await persist(current.id, { bl_extracted_data: extracted as unknown as ShipmentContainer["bl_extracted_data"] });
+      } catch (e) {
+        setExtractError(e instanceof Error ? e.message : "Extraction failed.");
+      } finally {
+        setExtracting(false);
+      }
+    }
+  };
+
+  const FORM_FIELDS = [
+    "container_number","seal_number","bl_number","shipping_line",
+    "vessel_name","voyage_number","origin_port","destination_port",
+    "origin_country","destination_country","departed_date","arrived_date",
+  ] as const;
+
+  const applyExtraction = async () => {
+    if (!extractResult || !current) return;
+    const patch: Partial<ShipmentContainer> = {};
+    for (const k of FORM_FIELDS) {
+      const v = extractResult[k];
+      if (v === null || v === undefined || v === "") continue;
+      if (k === "departed_date" || k === "arrived_date") {
+        const iso = fromDateInput(String(v));
+        if (iso) (patch as Record<string, unknown>)[k] = iso;
+      } else if (k === "shipping_line") {
+        const norm = SHIPPING_LINES.find((s) => s.toLowerCase() === String(v).toLowerCase());
+        if (norm) patch.shipping_line = norm;
+      } else {
+        (patch as Record<string, unknown>)[k] = String(v);
+      }
+    }
+    // Try to match ports by extracted port string
+    const matchPort = (txt: string) => {
+      const t = txt.toLowerCase();
+      return ports.find((p) => t.includes(p.code.toLowerCase()) || t.includes(p.name.toLowerCase()));
+    };
+    if (typeof extractResult.origin_port === "string") {
+      const p = matchPort(extractResult.origin_port);
+      if (p) { patch.origin_port_id = p.id; patch.origin_country = p.country?.english_name ?? patch.origin_country ?? null; }
+    }
+    if (typeof extractResult.destination_port === "string") {
+      const p = matchPort(extractResult.destination_port);
+      if (p) { patch.destination_port_id = p.id; patch.destination_country = p.country?.english_name ?? patch.destination_country ?? null; }
+    }
+    await persist(current.id, patch);
+    setExtractResult(null);
+  };
+  // ------- end BL extraction -------
 
   if (loading) return <div className="shp-empty">Loading shipment…</div>;
   if (!current) {
@@ -280,6 +385,127 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
             </span>
           </span>
         </div>
+        {/* Mundus AI BL Extraction (suppliers only) */}
+        {!readOnly && (
+          <div className="shp-ai">
+            <div className="shp-ai-head">
+              <strong>🤖 Mundus AI — BL Extraction</strong>
+              <span>Upload a Bill of Lading (PDF or image) and our AI will auto-fill the shipment details.</span>
+            </div>
+            <div
+              className="shp-ai-drop"
+              onDragOver={(e) => { e.preventDefault(); }}
+              onDrop={(e) => {
+                e.preventDefault();
+                const f = e.dataTransfer.files?.[0];
+                if (f) uploadBLFile(f, "final");
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+            >
+              📄 Drop BL here or click to upload
+              <small>Accepted: PDF, PNG, JPG (max 10MB)</small>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadBLFile(f, "final");
+                e.target.value = "";
+              }}
+            />
+            <input
+              ref={draftInputRef}
+              type="file"
+              accept="application/pdf,image/png,image/jpeg"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadBLFile(f, "draft");
+                e.target.value = "";
+              }}
+            />
+            <div className="shp-ai-actions">
+              <button type="button" className="shp-carrier-btn" onClick={() => fileInputRef.current?.click()} disabled={extracting}>
+                📎 Upload BL
+              </button>
+              <button type="button" className="shp-carrier-btn shp-btn-ghost" onClick={() => draftInputRef.current?.click()} disabled={extracting}>
+                📋 Upload Draft BL
+              </button>
+            </div>
+
+            {extracting && (
+              <div className="shp-ai-progress">
+                <div className="shp-ai-pulse" />
+                <span>🤖 Mundus AI is reading your Bill of Lading…</span>
+              </div>
+            )}
+
+            {extractError && (
+              <div className="shp-ai-error">
+                ❌ {extractError}
+                <button type="button" className="shp-btn-link" onClick={() => setExtractError(null)}>Dismiss</button>
+              </div>
+            )}
+
+            {extractResult && !extracting && (
+              <ExtractionReview
+                data={extractResult}
+                formFields={FORM_FIELDS as readonly string[]}
+                onApply={applyExtraction}
+                onDismiss={() => setExtractResult(null)}
+                blUrl={current.bl_document_url ?? null}
+              />
+            )}
+
+            {(current.bl_document_url || current.bl_draft_url) && (
+              <div className="shp-ai-docs">
+                {current.bl_document_url && (
+                  <div>
+                    <strong>📄 BL Document:</strong>{" "}
+                    <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                    {" · "}
+                    <a href={current.bl_document_url} download>Download</a>
+                  </div>
+                )}
+                {current.bl_draft_url && (
+                  <div>
+                    <strong>📋 Draft BL:</strong>{" "}
+                    <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                    {" · "}
+                    <a href={current.bl_draft_url} download>Download</a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Buyer view: only show BL document links */}
+        {readOnly && (current.bl_document_url || current.bl_draft_url) && (
+          <div className="shp-ai-docs is-readonly">
+            {current.bl_document_url && (
+              <div>
+                <strong>📄 BL Document:</strong>{" "}
+                <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                {" · "}
+                <a href={current.bl_document_url} download>Download</a>
+              </div>
+            )}
+            {current.bl_draft_url && (
+              <div>
+                <strong>📋 Draft BL:</strong>{" "}
+                <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                {" · "}
+                <a href={current.bl_draft_url} download>Download</a>
+              </div>
+            )}
+          </div>
+        )}
         <div className="shp-grid-4">
           <Field label="Container #">
             <input
@@ -501,3 +727,75 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default ShipmentTracker;
+
+const FIELD_LABELS: Record<string, string> = {
+  container_number: "Container",
+  seal_number: "Seal",
+  bl_number: "BL Number",
+  shipping_line: "Shipping Line",
+  vessel_name: "Vessel",
+  voyage_number: "Voyage",
+  origin_port: "Origin",
+  destination_port: "Destination",
+  origin_country: "Origin Country",
+  destination_country: "Destination Country",
+  departed_date: "ETD",
+  arrived_date: "ETA",
+  shipper_name: "Shipper",
+  consignee_name: "Consignee",
+  notify_party: "Notify Party",
+  description_of_goods: "Goods",
+  gross_weight_kg: "Gross Weight (kg)",
+  number_of_packages: "Packages",
+  package_type: "Package Type",
+  freight_terms: "Freight Terms",
+  place_of_receipt: "Place of Receipt",
+  place_of_delivery: "Place of Delivery",
+};
+
+function ExtractionReview({
+  data, formFields, onApply, onDismiss, blUrl,
+}: {
+  data: Record<string, unknown>;
+  formFields: readonly string[];
+  onApply: () => void;
+  onDismiss: () => void;
+  blUrl: string | null;
+}) {
+  const entries = Object.entries(data).filter(([, v]) => v !== null && v !== undefined && v !== "");
+  const newCount = entries.filter(([k]) => formFields.includes(k)).length;
+  return (
+    <div className="shp-ai-success">
+      <div className="shp-ai-success-head">
+        ✅ Extracted {entries.length} fields from BL — Review and confirm.
+      </div>
+      <ul className="shp-ai-fields">
+        {entries.map(([k, v]) => {
+          const isNew = formFields.includes(k);
+          return (
+            <li key={k} className={isNew ? "is-new" : "is-info"}>
+              <span className="shp-ai-key">{FIELD_LABELS[k] ?? k}:</span>
+              <span className="shp-ai-val">{String(v)}</span>
+              <span className={`shp-ai-badge ${isNew ? "is-new" : "is-info"}`}>
+                {isNew ? "✓ NEW" : "ℹ INFO"}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="shp-ai-actions">
+        <button type="button" className="shp-carrier-btn" onClick={onApply}>
+          ✓ Apply {newCount} field{newCount === 1 ? "" : "s"}
+        </button>
+        <button type="button" className="shp-carrier-btn shp-btn-ghost" onClick={onDismiss}>
+          ✕ Dismiss
+        </button>
+        {blUrl && (
+          <a className="shp-carrier-btn shp-btn-ghost" href={blUrl} target="_blank" rel="noopener noreferrer">
+            📄 View BL
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
