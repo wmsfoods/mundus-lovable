@@ -90,11 +90,9 @@ export default function BuyerRequestDetail() {
   };
 
   const reqNo = formatRequestNumber(r.request_number, r.created_at);
-  const hasActiveNegotiation = negotiations.some((n) =>
-    ["awaiting_supplier", "pending_buyer_review", "awaiting_buyer"].includes(n.status),
-  );
+  const hasResponses = offers.length > 0;
   const hasDealClosed = negotiations.some((n) => n.status === "bid_accepted");
-  const canEdit = !hasActiveNegotiation && !hasDealClosed && r.status !== "not_interested" && r.status !== "closed";
+  const canEdit = !hasResponses && !hasDealClosed && r.status !== "not_interested" && r.status !== "closed";
   const canCancel = !hasDealClosed && r.status !== "not_interested" && r.status !== "closed";
 
   return (
@@ -105,9 +103,9 @@ export default function BuyerRequestDetail() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--fg-muted)" }}>Status</span>
           <span className={STATUS_CHIP[r.status]}>{STATUS_LABEL[r.status]}</span>
-          {hasActiveNegotiation && !hasDealClosed && (
+          {hasResponses && !hasDealClosed && (
             <span style={{ fontSize: 11, color: "#f59e0b", display: "inline-flex", alignItems: "center", gap: 4 }}>
-              ⚠️ Cannot edit — negotiation in progress
+              ⚠️ Cannot edit — replies already received
             </span>
           )}
           {hasDealClosed && (
