@@ -28,23 +28,30 @@ export function useSupplierSales() {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: rows } = await supabase
+      const { data: offerRows } = await supabase
+        .from("offers")
+        .select("id")
+        .eq("supplier_id", company.id);
+      const offerIds = (offerRows ?? []).map((o: { id: string }) => o.id);
+      if (offerIds.length === 0) { setData([]); setLoading(false); return; }
+      const { data: rows, error: qErr } = await supabase
         .from("orders")
         .select(`
-          id, order_number, status, placed_at, incoterm, fcl_count,
-          buyer:companies!orders_buyer_id_fkey(name),
-          offer:offers!inner(supplier_id, origin_port, origin_country),
+          id, order_number, status, placed_at, incoterm, fcl_count, buyer_id,
+          buyer_user:users!orders_buyer_id_fkey(name, company:companies!users_company_id_fkey(name)),
+          offer:offers(supplier_id, origin_port, origin_country),
           destination_port:ports!destination_port_id(name, country:countries(english_name)),
           items:order_items(customer_product_name, settlement_amount, settlement_price)
         `)
-        .eq("offer.supplier_id", company.id)
+        .in("offer_id", offerIds)
         .is("deleted_at", null)
         .order("placed_at", { ascending: false });
+      if (qErr) { console.error("useSupplierSales", qErr); setData([]); setLoading(false); return; }
       if (cancelled) return;
       type Raw = {
         id: string; order_number: number; status: string | null; placed_at: string;
         incoterm: string | null; fcl_count: number | null;
-        buyer: { name: string } | { name: string }[] | null;
+        buyer_user: { name: string | null; company: { name: string | null } | { name: string | null }[] | null } | { name: string | null; company: { name: string | null } | { name: string | null }[] | null }[] | null;
         offer: { supplier_id: string; origin_port: string | null; origin_country: string | null } | null;
         destination_port: { name: string | null; country: { english_name: string | null } | null } | null;
         items: { customer_product_name: string; settlement_amount: number; settlement_price: number }[] | null;
@@ -52,7 +59,8 @@ export function useSupplierSales() {
       const one = <T,>(x: T | T[] | null | undefined): T | null =>
         Array.isArray(x) ? (x[0] ?? null) : (x ?? null);
       const list: Sale[] = ((rows ?? []) as unknown as Raw[]).map((r) => {
-        const b = one(r.buyer);
+        const bu = one(r.buyer_user);
+        const bCo = one(bu?.company ?? null);
         const items = r.items ?? [];
         const totalKg = items.reduce((s, i) => s + Number(i.settlement_amount || 0), 0);
         const totalValue = items.reduce((s, i) => s + Number(i.settlement_amount || 0) * Number(i.settlement_price || 0), 0);
@@ -62,7 +70,7 @@ export function useSupplierSales() {
           id: r.id,
           dealId,
           status: STATUS_MAP[r.status ?? ""] ?? "AWAITING_PRE_PAYMENT",
-          buyer: b?.name ?? "—",
+          buyer: bCo?.name ?? bu?.name ?? "—",
           buyerContact: "—",
           orderDate: fmtDate(r.placed_at),
           destination: destCountry,

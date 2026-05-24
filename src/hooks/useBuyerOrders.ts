@@ -138,11 +138,13 @@ export function useBuyerOrder(id: string) {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data: rows, error: qErr } = await supabase
-        .from('orders')
-        .select(SELECT)
-        .or(`id.eq.${id},order_number.eq.${/^\d+$/.test(id) ? id : 0}`)
-        .limit(1);
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      const isNum = /^\d+$/.test(id);
+      let q = supabase.from('orders').select(SELECT).is('deleted_at', null);
+      if (isUuid) q = q.eq('id', id);
+      else if (isNum) q = q.eq('order_number', Number(id));
+      else q = q.eq('id', '00000000-0000-0000-0000-000000000000');
+      const { data: rows, error: qErr } = await q.limit(1);
       if (cancelled) return;
       if (qErr) { setError(new Error(qErr.message)); setData(null); }
       else {
