@@ -246,7 +246,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     const v = bids[it.id];
     return typeof v === "number" && Number.isFinite(v) && v > 0;
   });
-  const canSubmit = allFilled && (!isRealOffer || errorCount === 0);
+  const canSubmit =
+    allFilled && (!isRealOffer || (errorCount === 0 && remainingFcl > 0));
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return;
