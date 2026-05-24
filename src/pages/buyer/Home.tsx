@@ -20,6 +20,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -123,6 +124,8 @@ export default function BuyerHome() {
 
   const { company } = useCurrentCompany();
   const buyerCompanyId = company?.id ?? null;
+  const dash = useBuyerDashboard();
+  const fmt = (v: number | undefined) => (v === undefined ? "—" : String(v));
 
   const { data: myNegotiations } = useQuery({
     queryKey: ["my-negotiations-map", buyerCompanyId],
@@ -150,11 +153,11 @@ export default function BuyerHome() {
       </section>
 
       <div className="stats">
-        <StatCard label={t("buyer.home.stats.activeOffers")} value="64" icon={SparkleIcon} />
-        <StatCard label={t("buyer.home.stats.totalOffers")} value="71" icon={FlagIcon} />
-        <StatCard label={t("buyer.home.stats.closedDeals")} value="0" icon={CheckCircleIcon} />
-        <StatCard label={t("buyer.home.stats.inNegotiation")} value="24" icon={ArrowsLeftRightIcon} />
-        <StatCard label={t("buyer.home.stats.avgClosing")} value="–" icon={CartIcon} dark />
+        <StatCard label="Marketplace offers" value={fmt(dash.marketplaceOffers)} icon={SparkleIcon} />
+        <StatCard label="Active negotiations" value={fmt(dash.negotiations)} icon={ArrowsLeftRightIcon} />
+        <StatCard label="Closed deals" value={fmt(dash.closedDeals)} icon={CheckCircleIcon} />
+        <StatCard label="My orders" value={fmt(dash.orders)} icon={FileTextIcon} />
+        <StatCard label="My requests" value={fmt(dash.requests)} icon={FlagIcon} dark />
       </div>
 
       <div className="action-row">

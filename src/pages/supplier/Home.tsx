@@ -15,6 +15,7 @@ import {
 } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
 
 type SupplierKpi = {
   key: "activeOffers" | "totalOffers" | "closedDeals" | "inNegotiation" | "avgClosing";
@@ -177,19 +178,18 @@ export default function SupplierHome() {
   const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "Antonio";
   const firstName = userName.split(" ")[0].replace(/^./, (c) => c.toUpperCase());
   const { offers, loading } = useRealSupplierOffers();
+  const dash = useSupplierDashboard();
 
   const kpis = useMemo<SupplierKpi[]>(() => {
-    const active = offers.filter((o) => o.status === "active").length;
-    const negotiating = offers.filter((o) => o.status === "negotiating").length;
-    const closed = offers.filter((o) => o.status === "closed").length;
+    const v = (n: number | undefined) => (n === undefined ? "—" : n);
     return [
-      { key: "activeOffers", value: active, delta: 0 },
-      { key: "totalOffers", value: offers.length, delta: 0 },
-      { key: "closedDeals", value: closed, delta: 0 },
-      { key: "inNegotiation", value: negotiating, delta: 0 },
+      { key: "activeOffers", value: v(dash.activeOffers), delta: 0 },
+      { key: "totalOffers", value: v(dash.totalOffers), delta: 0 },
+      { key: "closedDeals", value: v(dash.closedDeals), delta: 0 },
+      { key: "inNegotiation", value: v(dash.inNegotiation), delta: 0 },
       { key: "avgClosing", value: "—", delta: 0 },
     ];
-  }, [offers]);
+  }, [dash.activeOffers, dash.totalOffers, dash.closedDeals, dash.inNegotiation]);
 
   const recentOffers = useMemo<HomeOfferCardData[]>(() => {
     return offers.slice(0, 3).map((o) => ({

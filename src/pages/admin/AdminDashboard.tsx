@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useAdminAnalytics } from "@/hooks/useAdminAnalytics";
+import { useAdminDashboard } from "@/hooks/useAdminDashboard";
 
 const fmtMoneyShort = (v: number) => {
   if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(2)}M`;
@@ -7,8 +8,6 @@ const fmtMoneyShort = (v: number) => {
   return `$${v}`;
 };
 const fmtMoneyExact = (v: number) => `$${v.toLocaleString("en-US")}`;
-const fmtPct = (v: number) => `${Math.round(v * 100)}%`;
-const fmtPpDelta = (v: number) => `${v > 0 ? "↑" : "↓"}${Math.abs(Math.round(v * 100))}pp`;
 const fmtPctDelta = (v: number) => `${v > 0 ? "↑" : "↓"}${Math.abs(Math.round(v * 100))}%`;
 
 function TrendChart({ data }: { data: Array<{ date: string; value: number }> }) {
@@ -58,6 +57,8 @@ function TrendChart({ data }: { data: Array<{ date: string; value: number }> }) 
 export default function AdminDashboard() {
   const { t } = useTranslation();
   const a = useAdminAnalytics();
+  const d = useAdminDashboard();
+  const fmtN = (v: number | undefined) => (v === undefined ? "—" : v.toLocaleString("en-US"));
 
   // pipeline scale
   const pipeMax = a.pipeline[0].count;
@@ -85,20 +86,24 @@ export default function AdminDashboard() {
       {/* row 1 — KPIs */}
       <div className="adm-kpis">
         <div className="adm-kpi">
-          <div className="adm-kpi-label">{t("admin.dashboard.kpi.gmv")}</div>
-          <div className="adm-kpi-value">{fmtMoneyShort(a.kpis.gmv)}<span className="adm-kpi-delta up">{fmtPctDelta(a.kpis.gmvDelta)}</span></div>
+          <div className="adm-kpi-label">Companies</div>
+          <div className="adm-kpi-value">{fmtN(d.companies)}</div>
         </div>
         <div className="adm-kpi">
-          <div className="adm-kpi-label">{t("admin.dashboard.kpi.activeDeals")}</div>
-          <div className="adm-kpi-value">{a.kpis.activeDeals}<span className="adm-kpi-delta up">↑{a.kpis.activeDealsDelta}</span></div>
+          <div className="adm-kpi-label">Active Offers</div>
+          <div className="adm-kpi-value">{fmtN(d.activeOffers)}</div>
         </div>
         <div className="adm-kpi">
-          <div className="adm-kpi-label">{t("admin.dashboard.kpi.verifications")}</div>
-          <div className="adm-kpi-value">{a.kpis.verifications}<span className="adm-kpi-delta down">{t("admin.dashboard.kpi.verificationsQueue")}</span></div>
+          <div className="adm-kpi-label">Negotiations</div>
+          <div className="adm-kpi-value">{fmtN(d.negotiations)}</div>
         </div>
         <div className="adm-kpi">
-          <div className="adm-kpi-label">{t("admin.dashboard.kpi.winRate")}</div>
-          <div className="adm-kpi-value">{fmtPct(a.kpis.winRate)}<span className="adm-kpi-delta up">{fmtPpDelta(a.kpis.winRateDelta)}</span></div>
+          <div className="adm-kpi-label">Orders</div>
+          <div className="adm-kpi-value">{fmtN(d.orders)}</div>
+        </div>
+        <div className="adm-kpi">
+          <div className="adm-kpi-label">Revenue</div>
+          <div className="adm-kpi-value">{d.revenue === undefined ? "—" : fmtMoneyShort(d.revenue)}</div>
         </div>
         <div className="adm-kpi">
           <div className="adm-kpi-label">{t("admin.dashboard.kpi.newSignups")}</div>
