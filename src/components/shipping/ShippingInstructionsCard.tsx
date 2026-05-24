@@ -223,6 +223,7 @@ export function ShippingInstructionsCard({ orderId, orderNumber = "", defaultBuy
             </span>
             <div style={{ display: "flex", gap: 6 }}>
               <button style={ghostBtn} onClick={() => setViewOpen(true)}>👁 View</button>
+              <button style={ghostBtn} onClick={() => window.open(`/shipping-instructions/print/${request.id}`, "_blank")}>📄 PDF</button>
               {!readOnly && !isApproved && (
                 <button style={primarySmallBtn} onClick={approve}>✓ Approve</button>
               )}
