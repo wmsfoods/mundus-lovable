@@ -9,7 +9,7 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
-    const { order_id, buyer_email, buyer_name, origin } = await req.json();
+    const { order_id, buyer_email, buyer_name, origin, skip_email, personal_note, cc_emails } = await req.json();
     if (!order_id || !buyer_email) {
       return new Response(JSON.stringify({ error: 'missing_fields' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -77,43 +77,44 @@ Deno.serve(async (req) => {
     // Send email via Resend (best effort)
     const RESEND_API_KEY = Deno.env.get('resend_mundus') || Deno.env.get('RESEND_API_KEY');
     let emailSent = false;
-    if (RESEND_API_KEY) {
+    if (!skip_email && RESEND_API_KEY) {
       try {
         const orderNumber = order?.order_number
           ? `M-${String(order.order_number).padStart(6, '0')}-${new Date(order.placed_at).getFullYear()}`
           : 'pending';
         const greetingName = (buyer_name && String(buyer_name).trim()) || 'Customer';
+        const noteHtml = personal_note && String(personal_note).trim()
+          ? `<p style="font-style: italic; color: #8B2252; background: #fdf2f8; padding: 12px 16px; border-radius: 6px; font-size: 14px; margin: 16px 0;">"${escapeHtml(String(personal_note))}"</p>`
+          : '';
         const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
   <div style="background: #8B2252; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
     <h1 style="color: white; margin: 0; font-size: 22px; letter-spacing: .02em;">Mundus Trade</h1>
   </div>
   <div style="padding: 32px; background: #ffffff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
-    <p style="font-size: 15px; color: #2a1a20;">Dear ${escapeHtml(greetingName)},</p>
+    <p style="font-size: 15px; color: #2a1a20;">Hi ${escapeHtml(greetingName)},</p>
     <p style="font-size: 14px; color: #2a1a20; line-height: 1.55;">
-      We need your shipping instructions to proceed with the shipment for
-      <strong>Order ${escapeHtml(orderNumber)}</strong>.
+      We need a few logistics details for <strong>Mundus Order ${escapeHtml(orderNumber)}</strong> before we can issue the Bill of Lading and book the vessel.
     </p>
-    <p style="font-size: 14px; color: #2a1a20;">Please click the button below to fill in your shipping details:</p>
+    ${noteHtml}
     <div style="text-align: center; margin: 32px 0;">
       <a href="${url}" style="background: #8B2252; color: #ffffff; padding: 14px 32px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 15px; display: inline-block;">
-        Submit Shipping Instructions →
+        → Submit shipping instructions
       </a>
     </div>
-    <p style="color: #6b7280; font-size: 13px;">This link will expire in 30 days.</p>
+    <p style="color: #6b7280; font-size: 13px;">The link expires in 30 days.</p>
     <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 24px 0;" />
-    <p style="color: #9ca3af; font-size: 12px; line-height: 1.5;">
-      This email was sent by Mundus Trade on behalf of the supplier.<br/>
-      If you have questions, please contact your supplier directly.
-    </p>
+    <p style="color: #2a1a20; font-size: 13px; margin: 0;">Best,<br/><strong>Mundus Trade</strong></p>
   </div>
 </div>`;
+        const cc = Array.isArray(cc_emails) ? cc_emails.filter((e: unknown) => typeof e === 'string' && (e as string).includes('@')) : undefined;
         const resp = await fetch('https://api.resend.com/emails', {
           method: 'POST',
           headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({
             from: 'Mundus Trade <noreply@mundustrade.com>',
             to: [buyer_email],
+            ...(cc && cc.length ? { cc } : {}),
             subject: `Shipping Instructions Required — Order ${orderNumber}`,
             html,
           }),
@@ -126,7 +127,7 @@ Deno.serve(async (req) => {
       } catch (err) {
         console.warn('Email send error:', String((err as Error)?.message ?? err));
       }
-    } else {
+    } else if (!skip_email) {
       console.warn('RESEND_API_KEY (resend_mundus) not set, skipping email');
     }
 
