@@ -14,3 +14,6 @@ verify_jwt = false
 
 [functions.negotiation-notifications]
 verify_jwt = false
+
+[functions.extract-bl]
+verify_jwt = false
