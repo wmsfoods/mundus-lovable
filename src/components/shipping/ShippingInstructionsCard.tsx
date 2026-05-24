@@ -223,6 +223,7 @@ export function ShippingInstructionsCard({ orderId, orderNumber = "", defaultBuy
             </span>
             <div style={{ display: "flex", gap: 6 }}>
               <button style={ghostBtn} onClick={() => setViewOpen(true)}>👁 View</button>
+              <button style={ghostBtn} onClick={() => window.open(`/shipping-instructions/print/${request.id}`, "_blank")}>📄 PDF</button>
               {!readOnly && !isApproved && (
                 <button style={primarySmallBtn} onClick={approve}>✓ Approve</button>
               )}
@@ -384,6 +385,9 @@ function RequestSIModal({
             <div style={{ margin: "16px 0" }}>
               <span style={{ background: "#8B2252", color: "white", padding: "10px 20px", borderRadius: 6, fontSize: 13, fontWeight: 600 }}>→ Submit shipping instructions</span>
             </div>
+            <p style={{ color: "#9ca3af", fontSize: 11, margin: "0 0 8px", wordBreak: "break-all" }}>
+              app.mundustrade.com/shipping-instructions/…
+            </p>
             <p style={{ color: "#6b7280", fontSize: 12, margin: "0 0 8px" }}>The link expires in 30 days.</p>
             <p style={{ margin: 0 }}>Best,<br /><strong>Mundus Trade</strong></p>
           </div>
@@ -430,7 +434,17 @@ function SIViewModal({ si, request, onClose }: { si: SIRecord; request: SIReques
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
           <h2 style={{ color: "#8B2252", margin: 0, fontSize: 18 }}>Shipping Instructions</h2>
-          <button className="si-btn" onClick={onClose}>✕</button>
+          <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            {request?.id && (
+              <button
+                onClick={() => window.open(`/shipping-instructions/print/${request.id}`, "_blank")}
+                style={{ background: "#8B2252", color: "white", border: "none", padding: "8px 14px", borderRadius: 6, fontSize: 13, fontWeight: 600, cursor: "pointer" }}
+              >
+                📄 Download PDF
+              </button>
+            )}
+            <button className="si-btn" onClick={onClose}>✕</button>
+          </div>
         </div>
         <Row k="Order Number" v={String(si.order_number ?? "—")} />
         <Row k="Importer Reference" v={String(si.importer_reference ?? "—")} />
