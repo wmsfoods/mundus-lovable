@@ -358,6 +358,9 @@ export function CounterOfferModal({
             side: perspective,
             type: perspective === "buyer" ? "bid" : "counter",
             message: message.trim() || null,
+            incoterm: negIncoterm,
+            freight_per_kg: negFreightPerKg,
+            insurance_per_kg: negInsurancePerKg,
           })
           .select("id")
           .single();
