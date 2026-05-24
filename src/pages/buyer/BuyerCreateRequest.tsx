@@ -242,18 +242,60 @@ export default function BuyerCreateRequest() {
                 {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
               </select>
             </div>
-            <div className="bcr-field">
+            <div className="bcr-field" ref={destRef} style={{ position: "relative" }}>
               <label>Destination country *</label>
-              <select value={countryId} onChange={(e) => setCountryId(e.target.value)}>
-                <option value="">Select country…</option>
-                {markets.map((m) => <option key={m.id} value={m.id}>{m.f} {m.n}</option>)}
-              </select>
+              <input
+                type="text"
+                className="bcr-input"
+                value={destOpen ? destSearch : destCountry}
+                onChange={(e) => { setDestSearch(e.target.value); setDestOpen(true); }}
+                onFocus={() => { setDestSearch(""); setDestOpen(true); }}
+                placeholder="Type to search country…"
+                autoComplete="off"
+              />
+              {destOpen && filteredDest.length > 0 && (
+                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+                  {filteredDest.map((m) => (
+                    <div
+                      key={m.id}
+                      onMouseDown={(e) => { e.preventDefault(); setDestCountry(m.n); setDestSearch(""); setDestOpen(false); }}
+                      style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                    >
+                      {m.f} {m.n}
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
             <div className="bcr-field">
-              <label>Incoterm *</label>
-              <select value={incoterm} onChange={(e) => setIncoterm(e.target.value as any)}>
-                {INCOTERMS.map((i) => <option key={i} value={i}>{i}</option>)}
-              </select>
+              <label>Preferred incoterms *</label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {INCOTERM_OPTIONS.map((inc) => {
+                  const on = selectedIncoterms.includes(inc);
+                  return (
+                    <button
+                      key={inc}
+                      type="button"
+                      onClick={() => toggleIncoterm(inc)}
+                      style={{
+                        padding: "6px 14px",
+                        borderRadius: 20,
+                        fontSize: 13,
+                        fontWeight: 600,
+                        border: on ? "2px solid #8B2252" : "1px solid #d1d5db",
+                        background: on ? "#fdf2f8" : "#fff",
+                        color: on ? "#8B2252" : "#374151",
+                        cursor: "pointer",
+                        fontFamily: "inherit",
+                      }}
+                    >
+                      {on && "✓ "}{inc}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
