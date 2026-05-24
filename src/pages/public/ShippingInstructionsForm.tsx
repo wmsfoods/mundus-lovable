@@ -123,7 +123,8 @@ export default function ShippingInstructionsForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!form.port_of_destination || !form.consignee_name || !form.telex_release) {
+    const effectiveConsignee = form.consignee_same_as_buyer ? form.buyer_name : form.consignee_name;
+    if (!form.port_of_destination || !effectiveConsignee || !form.telex_release) {
       alert("Please fill all required fields (*)");
       return;
     }
