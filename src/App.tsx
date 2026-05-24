@@ -78,6 +78,7 @@ import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
+import Notifications from "./pages/Notifications.tsx";
 import SupplierRespond from "./pages/public/SupplierRespond.tsx";
 import ShippingInstructionsForm from "./pages/public/ShippingInstructionsForm.tsx";
 import ShippingInstructionsPrint from "./pages/public/ShippingInstructionsPrint.tsx";
@@ -138,6 +139,7 @@ const App = () => (
               <Route path="chat/:conversationId" element={<BuyerChat />} />
               <Route path="procurement-intelligence" element={<ProcurementIntelligence />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="notifications" element={<Notifications />} />
             </Route>
             <Route
               path="/supplier"
@@ -166,6 +168,7 @@ const App = () => (
               <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
               <Route path="insights/analytics" element={<SupplierAnalytics />} />
               <Route path="profile" element={<Profile />} />
+              <Route path="notifications" element={<Notifications />} />
             </Route>
             <Route path="/admin" element={<AdminShell />}>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />

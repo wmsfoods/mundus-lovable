@@ -16,6 +16,8 @@ import { matchPath } from "react-router-dom";
 const STACK_PATHS: string[] = [
   "/buyer/profile",
   "/supplier/profile",
+  "/buyer/notifications",
+  "/supplier/notifications",
 ];
 
 /** Patterns whose match is a stack screen (uses `:param`). */
@@ -47,6 +49,7 @@ const BACK_FALLBACK: Array<{ pattern: string; to: string }> = [
   { pattern: "/buyer/chat/:conversationId", to: "/buyer/chat" },
   { pattern: "/buyer/users", to: "/buyer" },
   { pattern: "/buyer/profile", to: "/buyer" },
+  { pattern: "/buyer/notifications", to: "/buyer" },
   { pattern: "/supplier/offers/:id", to: "/supplier/offers" },
   { pattern: "/supplier/offers/new", to: "/supplier/offers" },
   { pattern: "/supplier/requests/:id", to: "/supplier/requests" },
@@ -57,6 +60,7 @@ const BACK_FALLBACK: Array<{ pattern: string; to: string }> = [
   { pattern: "/supplier/users", to: "/supplier" },
   { pattern: "/supplier/company", to: "/supplier" },
   { pattern: "/supplier/profile", to: "/supplier" },
+  { pattern: "/supplier/notifications", to: "/supplier" },
   { pattern: "/supplier/insights/price-benchmark", to: "/supplier" },
   { pattern: "/supplier/insights/analytics", to: "/supplier" },
 ];
@@ -77,6 +81,7 @@ const STACK_TITLES: Array<{ pattern: string; titleKey: string; fallback: string 
   { pattern: "/buyer/chat/:conversationId", titleKey: "shell.nav.chat", fallback: "Chat" },
   { pattern: "/buyer/users", titleKey: "shell.nav.users", fallback: "Users" },
   { pattern: "/buyer/profile", titleKey: "shell.profile", fallback: "Profile" },
+  { pattern: "/buyer/notifications", titleKey: "shell.notifications", fallback: "Notifications" },
   { pattern: "/supplier/offers/:id", titleKey: "shell.nav.myOffers", fallback: "Offer" },
   { pattern: "/supplier/offers/new", titleKey: "shell.nav.createOffer", fallback: "New offer" },
   { pattern: "/supplier/requests/:id", titleKey: "shell.nav.offerRequests", fallback: "Request" },
@@ -87,6 +92,7 @@ const STACK_TITLES: Array<{ pattern: string; titleKey: string; fallback: string 
   { pattern: "/supplier/users", titleKey: "shell.nav.users", fallback: "Users" },
   { pattern: "/supplier/company", titleKey: "shell.nav.myCompany", fallback: "My company" },
   { pattern: "/supplier/profile", titleKey: "shell.profile", fallback: "Profile" },
+  { pattern: "/supplier/notifications", titleKey: "shell.notifications", fallback: "Notifications" },
   { pattern: "/supplier/insights/price-benchmark", titleKey: "supplier.insights.nav.priceBenchmark", fallback: "Price benchmark" },
   { pattern: "/supplier/insights/analytics", titleKey: "supplier.insights.nav.analytics", fallback: "Analytics" },
 ];

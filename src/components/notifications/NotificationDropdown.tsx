@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { useNavigate } from "react-router-dom";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { BellIcon } from "@/components/icons";
 
@@ -11,6 +12,7 @@ export type NotificationItem = {
   time: string;
   unread: boolean;
   icon: string;
+  to?: string;
 };
 
 type Props = {
@@ -20,6 +22,7 @@ type Props = {
 
 export function NotificationDropdown({ notifications, ariaLabel }: Props) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const [items, setItems] = useState<NotificationItem[]>(notifications);
   const [open, setOpen] = useState(false);
   const unreadCount = useMemo(() => items.filter((n) => n.unread).length, [items]);
@@ -27,8 +30,13 @@ export function NotificationDropdown({ notifications, ariaLabel }: Props) {
   const markAllRead = () =>
     setItems((prev) => prev.map((n) => ({ ...n, unread: false })));
 
-  const markRead = (id: string) =>
-    setItems((prev) => prev.map((n) => (n.id === id ? { ...n, unread: false } : n)));
+  const handleClick = (n: NotificationItem) => {
+    setItems((prev) => prev.map((it) => (it.id === n.id ? { ...it, unread: false } : it)));
+    if (n.to) {
+      setOpen(false);
+      navigate(n.to);
+    }
+  };
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -87,7 +95,7 @@ export function NotificationDropdown({ notifications, ariaLabel }: Props) {
               <button
                 key={n.id}
                 type="button"
-                onClick={() => markRead(n.id)}
+                onClick={() => handleClick(n)}
                 className={`w-full text-left px-4 py-3 border-b border-border last:border-0 hover:bg-muted/50 transition-colors flex gap-3 ${
                   n.unread ? "bg-primary/5" : ""
                 }`}
