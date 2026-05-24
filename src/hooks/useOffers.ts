@@ -44,6 +44,8 @@ export type OfferWithDetails = {
   payment_terms: string;
   container_size: string;
   total_fcl: number | null;
+  remaining_fcl: number;
+  sold_fcl: number;
   is_halal: boolean | null;
   is_kosher: boolean | null;
   created_at: string | null;
