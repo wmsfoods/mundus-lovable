@@ -4,7 +4,7 @@
  * Type aligned with `orders` table schema so plug-in is trivial later.
  */
 
-export type SaleStatus = "AWAITING_SUPPLIER_ACCEPTANCE" | "AWAITING_PRE_PAYMENT";
+export type SaleStatus = string;
 
 export type SaleCut = {
   name: string;
