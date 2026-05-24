@@ -48,7 +48,7 @@ export default function SupplierRequests() {
       const { data: reqs } = await supabase
         .from("buyer_requests")
         .select("*")
-        .in("status", ["new", "with_responses"])
+        .in("status", ["new", "with_responses", "not_interested"])
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       const list = (reqs ?? []) as BuyerRequestRow[];
