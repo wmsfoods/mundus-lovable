@@ -390,7 +390,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
                 onClick={() => setActiveIdx(i)}
                 style={{ background: "none", border: 0, padding: 0, font: "inherit", color: "inherit", cursor: "pointer" }}
               >
-                FCL {c.position ?? i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
+                FCL {i + 1}{c.container_number ? ` · ${c.container_number}` : ""}
               </button>
               {!readOnly && containers.length > 1 && isContainerEmpty(c) && (
                 <button
@@ -425,7 +425,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       {/* Header card */}
       <section className="shp-card">
         <div className="shp-card-head">
-          <h3>🚢 Container · {current.container_number || `FCL ${current.position ?? activeIdx + 1}`}</h3>
+          <h3>🚢 Container · FCL {activeIdx + 1}</h3>
           <span className={`shp-save ${savingId === current.id ? "is-saving" : savedFlash === current.id ? "is-saved" : ""}`}>
             <span>{filledCount}/9</span>
             <span>·</span>
