@@ -727,3 +727,75 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 export default ShipmentTracker;
+
+const FIELD_LABELS: Record<string, string> = {
+  container_number: "Container",
+  seal_number: "Seal",
+  bl_number: "BL Number",
+  shipping_line: "Shipping Line",
+  vessel_name: "Vessel",
+  voyage_number: "Voyage",
+  origin_port: "Origin",
+  destination_port: "Destination",
+  origin_country: "Origin Country",
+  destination_country: "Destination Country",
+  departed_date: "ETD",
+  arrived_date: "ETA",
+  shipper_name: "Shipper",
+  consignee_name: "Consignee",
+  notify_party: "Notify Party",
+  description_of_goods: "Goods",
+  gross_weight_kg: "Gross Weight (kg)",
+  number_of_packages: "Packages",
+  package_type: "Package Type",
+  freight_terms: "Freight Terms",
+  place_of_receipt: "Place of Receipt",
+  place_of_delivery: "Place of Delivery",
+};
+
+function ExtractionReview({
+  data, formFields, onApply, onDismiss, blUrl,
+}: {
+  data: Record<string, unknown>;
+  formFields: readonly string[];
+  onApply: () => void;
+  onDismiss: () => void;
+  blUrl: string | null;
+}) {
+  const entries = Object.entries(data).filter(([, v]) => v !== null && v !== undefined && v !== "");
+  const newCount = entries.filter(([k]) => formFields.includes(k)).length;
+  return (
+    <div className="shp-ai-success">
+      <div className="shp-ai-success-head">
+        ✅ Extracted {entries.length} fields from BL — Review and confirm.
+      </div>
+      <ul className="shp-ai-fields">
+        {entries.map(([k, v]) => {
+          const isNew = formFields.includes(k);
+          return (
+            <li key={k} className={isNew ? "is-new" : "is-info"}>
+              <span className="shp-ai-key">{FIELD_LABELS[k] ?? k}:</span>
+              <span className="shp-ai-val">{String(v)}</span>
+              <span className={`shp-ai-badge ${isNew ? "is-new" : "is-info"}`}>
+                {isNew ? "✓ NEW" : "ℹ INFO"}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+      <div className="shp-ai-actions">
+        <button type="button" className="shp-carrier-btn" onClick={onApply}>
+          ✓ Apply {newCount} field{newCount === 1 ? "" : "s"}
+        </button>
+        <button type="button" className="shp-carrier-btn shp-btn-ghost" onClick={onDismiss}>
+          ✕ Dismiss
+        </button>
+        {blUrl && (
+          <a className="shp-carrier-btn shp-btn-ghost" href={blUrl} target="_blank" rel="noopener noreferrer">
+            📄 View BL
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
