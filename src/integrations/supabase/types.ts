@@ -271,6 +271,7 @@ export type Database = {
           country: string
           created_at: string | null
           deleted_at: string | null
+          est_number: string | null
           id: string
           is_admin: boolean | null
           is_buyer: boolean | null
@@ -311,6 +312,7 @@ export type Database = {
           country: string
           created_at?: string | null
           deleted_at?: string | null
+          est_number?: string | null
           id?: string
           is_admin?: boolean | null
           is_buyer?: boolean | null
@@ -351,6 +353,7 @@ export type Database = {
           country?: string
           created_at?: string | null
           deleted_at?: string | null
+          est_number?: string | null
           id?: string
           is_admin?: boolean | null
           is_buyer?: boolean | null
@@ -739,7 +742,11 @@ export type Database = {
           full_name: string | null
           id: string
           invited_at: string | null
+          job_title: string | null
           joined_at: string | null
+          last_login_at: string | null
+          notes: string | null
+          phone: string | null
           role: string | null
           role_id: string | null
           status: string | null
@@ -754,7 +761,11 @@ export type Database = {
           full_name?: string | null
           id?: string
           invited_at?: string | null
+          job_title?: string | null
           joined_at?: string | null
+          last_login_at?: string | null
+          notes?: string | null
+          phone?: string | null
           role?: string | null
           role_id?: string | null
           status?: string | null
@@ -769,7 +780,11 @@ export type Database = {
           full_name?: string | null
           id?: string
           invited_at?: string | null
+          job_title?: string | null
           joined_at?: string | null
+          last_login_at?: string | null
+          notes?: string | null
+          phone?: string | null
           role?: string | null
           role_id?: string | null
           status?: string | null

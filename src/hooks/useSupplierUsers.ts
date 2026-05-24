@@ -14,8 +14,11 @@ export type SupplierProfileType =
 
 export type SupplierUser = {
   id: string;
+  userNumber: number;
   name: string;
   jobTitle: string;
+  phone: string | null;
+  notes: string | null;
   email: string;
   profileType: SupplierProfileType;
   createdAt: string;
@@ -39,7 +42,7 @@ export function useSupplierUsers() {
     setLoading(true);
     const { data: rows, error: err } = await (supabase as any)
       .from("company_users")
-      .select("id, full_name, email, role, status, created_at, accepted_at")
+      .select("id, full_name, email, role, status, created_at, accepted_at, job_title, phone, notes, last_login_at")
       .eq("company_id", companyId)
       .order("created_at", { ascending: true });
     if (err) {
@@ -47,14 +50,17 @@ export function useSupplierUsers() {
       setData([]);
     } else {
       setData(
-        (rows || []).map((r: any) => ({
+        (rows || []).map((r: any, idx: number) => ({
           id: r.id,
+          userNumber: idx + 1,
           name: r.full_name || r.email || "—",
-          jobTitle: "",
+          jobTitle: r.job_title || "",
+          phone: r.phone || null,
+          notes: r.notes || null,
           email: r.email || "",
           profileType: (r.role || "operator") as SupplierProfileType,
           createdAt: r.created_at,
-          lastLoginAt: r.accepted_at,
+          lastLoginAt: r.last_login_at || r.accepted_at,
           status: (r.status === "pending" ? "invited" : r.status) as SupplierUser["status"],
         })),
       );

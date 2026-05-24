@@ -8,13 +8,20 @@ export const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 export type BuyerProfileType =
   | "master_buyer"
   | "procurement"
+  | "import_manager"
+  | "quality_control"
+  | "logistics"
+  // legacy
   | "finance"
   | "compliance";
 
 export type BuyerUser = {
   id: string;
+  userNumber: number;
   name: string;
   jobTitle: string;
+  phone: string | null;
+  notes: string | null;
   email: string;
   profileType: BuyerProfileType;
   createdAt: string;
@@ -38,7 +45,7 @@ export function useBuyerUsers() {
     setLoading(true);
     const { data: rows, error: err } = await (supabase as any)
       .from("company_users")
-      .select("id, full_name, email, role, status, created_at, accepted_at")
+      .select("id, full_name, email, role, status, created_at, accepted_at, job_title, phone, notes, last_login_at")
       .eq("company_id", companyId)
       .order("created_at", { ascending: true });
     if (err) {
@@ -48,14 +55,17 @@ export function useBuyerUsers() {
       setData(
         (rows || [])
           .filter((r: any) => r.full_name || r.email)
-          .map((r: any) => ({
+          .map((r: any, idx: number) => ({
             id: r.id,
+            userNumber: idx + 1,
             name: r.full_name || r.email || "—",
-            jobTitle: "",
+            jobTitle: r.job_title || "",
+            phone: r.phone || null,
+            notes: r.notes || null,
             email: r.email || "",
             profileType: (r.role || "procurement") as BuyerProfileType,
             createdAt: r.created_at,
-            lastLoginAt: r.accepted_at,
+            lastLoginAt: r.last_login_at || r.accepted_at,
             status: (r.status === "pending" ? "invited" : r.status) as BuyerUser["status"],
           })),
       );

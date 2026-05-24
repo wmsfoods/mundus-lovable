@@ -4,8 +4,7 @@ import { UsersIcon, SearchIcon, PlusIcon, EditIcon, XIcon } from "@/components/i
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { useSupplierUsers, type SupplierProfileType } from "@/hooks/useSupplierUsers";
-import { InviteUserModal } from "@/components/supplier/InviteUserModal";
-import { EditUserModal, type EditableUser } from "@/components/team/EditUserModal";
+import { UserFormModal, type UserFormUser } from "@/components/team/UserFormModal";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -47,7 +46,7 @@ export default function SupplierUsers() {
   const [profileFilter, setProfileFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [inviteOpen, setInviteOpen] = useState(false);
-  const [editing, setEditing] = useState<EditableUser | null>(null);
+  const [editing, setEditing] = useState<UserFormUser | null>(null);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -186,7 +185,19 @@ export default function SupplierUsers() {
                         type="button"
                         className="action-icon-btn"
                         aria-label="Edit"
-                        onClick={() => setEditing({ id: u.id, name: u.name, email: u.email, profileType: u.profileType, status: u.status })}
+                        onClick={() => setEditing({
+                          id: u.id,
+                          userNumber: u.userNumber,
+                          name: u.name,
+                          email: u.email,
+                          profileType: u.profileType,
+                          jobTitle: u.jobTitle,
+                          phone: u.phone,
+                          notes: u.notes,
+                          status: u.status,
+                          createdAt: u.createdAt,
+                          lastLoginAt: u.lastLoginAt,
+                        })}
                       >
                         <EditIcon size={16} />
                       </button>
@@ -232,14 +243,20 @@ export default function SupplierUsers() {
         </ListCardList>
       )}
 
-      <InviteUserModal open={inviteOpen} onClose={() => setInviteOpen(false)} onCreated={refetch} />
-      <EditUserModal
+      <UserFormModal
+        mode="invite"
+        ns="supplier"
+        open={inviteOpen}
+        onClose={() => setInviteOpen(false)}
+        onSaved={refetch}
+      />
+      <UserFormModal
+        mode="edit"
         ns="supplier"
         user={editing}
         open={!!editing}
         onClose={() => setEditing(null)}
         onSaved={refetch}
-        profileOptions={PROFILE_OPTIONS}
       />
     </>
   );
