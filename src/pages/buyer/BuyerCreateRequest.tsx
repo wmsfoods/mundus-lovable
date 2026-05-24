@@ -649,6 +649,34 @@ export default function BuyerCreateRequest() {
                 ))}
               </div>
             )}
+            {isEdit && existingAttachments.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg-muted)", marginBottom: 6 }}>
+                  EXISTING FILES
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {existingAttachments.map((f, i) => (
+                    <span key={i} style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "5px 10px", borderRadius: 999,
+                      background: "var(--g050, #fafaf9)", color: "var(--fg-muted)",
+                      fontSize: 12, border: "1px solid var(--border)",
+                    }}>
+                      <FileIcon size={12} />
+                      <a href={f.url} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</a>
+                      <button
+                        type="button"
+                        onClick={() => setExistingAttachments((prev) => prev.filter((_, j) => j !== i))}
+                        style={{ background: "transparent", border: "none", color: "var(--fg-muted)", cursor: "pointer", padding: 0, display: "inline-flex" }}
+                        aria-label="Remove file"
+                      >
+                        <XIcon size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -781,8 +809,8 @@ export default function BuyerCreateRequest() {
         </div>
         <div className="bcr-actions">
           <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>
-          <button type="button" className="bcr-btn-primary" onClick={broadcast}>
-            ↗ Broadcast request
+          <button type="button" className="bcr-btn-primary" onClick={broadcast} disabled={submitting || loadingEdit}>
+            {isEdit ? "💾 Save changes" : "↗ Broadcast request"}
           </button>
         </div>
       </footer>
