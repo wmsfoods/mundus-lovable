@@ -168,6 +168,8 @@ function groupForBuyer(rows: RealNegotiationRow[]): BuyerParentOffer[] {
       originCountry: o.origin_country,
       status: mapStatusForBuyer(r.status),
       updatedAt: r.updated_at,
+      orderId: r.order?.id ?? null,
+      orderNumber: r.order?.order_number != null ? String(r.order.order_number).padStart(7, "0") : null,
     };
     groups.get(parentId)!.bids.push(bid);
   }
@@ -205,6 +207,8 @@ function groupForSupplier(rows: RealNegotiationRow[]): ParentOffer[] {
       destinationCountry: destCountry,
       status: mapStatusForSupplier(r.status),
       updatedAt: r.updated_at,
+      orderId: r.order?.id ?? null,
+      orderNumber: r.order?.order_number != null ? String(r.order.order_number).padStart(7, "0") : null,
     };
     groups.get(parentId)!.bids.push(bid);
   }
