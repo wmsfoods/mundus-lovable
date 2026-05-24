@@ -196,3 +196,56 @@ export function ShippingStatusTracker({
     </div>
   );
 }
+
+/**
+ * Renders order status. If the order has more than one container (FCL),
+ * shows one tracker per container labeled FCL 1, FCL 2 ... using the
+ * per-container `status`. Otherwise shows a single tracker with the
+ * order-level status.
+ */
+export function OrderShippingStatus({
+  orderId,
+  orderStatus,
+}: {
+  orderId: string;
+  orderStatus: string | null | undefined;
+}) {
+  const [containers, setContainers] = useState<
+    Array<{ id: string; position: number | null; container_number: string | null; status: string | null }>
+  >([]);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancel = false;
+    (async () => {
+      const { data } = await supabase
+        .from("shipment_containers")
+        .select("id, position, container_number, status")
+        .eq("order_id", orderId)
+        .order("position", { ascending: true })
+        .order("created_at", { ascending: true });
+      if (cancel) return;
+      setContainers((data ?? []) as never);
+      setLoaded(true);
+    })();
+    return () => {
+      cancel = true;
+    };
+  }, [orderId]);
+
+  if (!loaded || containers.length <= 1) {
+    return <ShippingStatusTracker currentStatus={orderStatus} />;
+  }
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+      {containers.map((c, i) => (
+        <ShippingStatusTracker
+          key={c.id}
+          currentStatus={c.status ?? orderStatus}
+          label={`FCL ${i + 1}${c.container_number ? ` · ${c.container_number}` : ""}`}
+        />
+      ))}
+    </div>
+  );
+}
