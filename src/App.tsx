@@ -78,6 +78,7 @@ import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
+import Notifications from "./pages/Notifications.tsx";
 import SupplierRespond from "./pages/public/SupplierRespond.tsx";
 import ShippingInstructionsForm from "./pages/public/ShippingInstructionsForm.tsx";
 import ShippingInstructionsPrint from "./pages/public/ShippingInstructionsPrint.tsx";
