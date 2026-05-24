@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
-import type { Sale, SaleStatus } from "@/data/mockSales";
-
-const STATUS_MAP: Record<string, SaleStatus> = {
-  pending_supplier: "AWAITING_SUPPLIER_ACCEPTANCE",
-  awaiting_payment: "AWAITING_PRE_PAYMENT",
-  accepted: "AWAITING_PRE_PAYMENT",
-  in_production: "AWAITING_PRE_PAYMENT",
-  shipped: "AWAITING_PRE_PAYMENT",
-  delivered: "AWAITING_PRE_PAYMENT",
-};
+import type { Sale } from "@/data/mockSales";
+import { normalizeStatus } from "@/lib/orderStatus";
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
@@ -69,7 +61,7 @@ export function useSupplierSales() {
         return {
           id: r.id,
           dealId,
-          status: STATUS_MAP[r.status ?? ""] ?? "AWAITING_PRE_PAYMENT",
+          status: normalizeStatus(r.status),
           buyer: bCo?.name ?? bu?.name ?? "—",
           buyerContact: "—",
           orderDate: fmtDate(r.placed_at),
