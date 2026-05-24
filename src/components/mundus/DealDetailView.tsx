@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabPanel } from "@/components/mundus/Tabs";
 import { ShipmentTracker } from "@/components/shipment/ShipmentTracker";
+import { ShippingInstructionsCard } from "@/components/shipping/ShippingInstructionsCard";
 import {
   FileTextIcon,
   ArrowLeftIcon,
@@ -421,11 +422,17 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
 
           <TabPanel active={tab === "shipment"}>
             {data.orderId ? (
-              <ShipmentTracker
-                orderId={data.orderId}
-                fclCount={data.fcls || 1}
-                readOnly={data.shipmentReadOnly}
-              />
+              <>
+                <ShipmentTracker
+                  orderId={data.orderId}
+                  fclCount={data.fcls || 1}
+                  readOnly={data.shipmentReadOnly}
+                />
+                <ShippingInstructionsCard
+                  orderId={data.orderId}
+                  readOnly={data.shipmentReadOnly}
+                />
+              </>
             ) : (
               <Card title={tk("dealDetail.shipment.info", "SHIPMENT INFORMATION")} icon={ShipIcon}>
                 <p style={{ color: "var(--muted)", padding: "8px 0" }}>
