@@ -99,7 +99,14 @@ export function ShippingInstructionsCard({ orderId, orderNumber = "", defaultBuy
     if (request) {
       await supabase.from("shipping_instructions_requests").update({ status: "approved" }).eq("id", request.id);
     }
-    toast({ title: "Shipping instructions approved" });
+    try {
+      await supabase.functions.invoke("shipping-instructions-notify-approved", {
+        body: { shipping_instruction_id: si.id },
+      });
+    } catch (e) {
+      console.warn("notify-approved failed", e);
+    }
+    toast({ title: "Shipping instructions approved", description: "Buyer and supplier have been notified by email." });
     await load();
   }
 
