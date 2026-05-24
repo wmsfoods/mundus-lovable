@@ -159,7 +159,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       const combined = { ...target, ...patch };
       merged.status = computeStatus(combined);
     }
-    const { error } = await supabase.from("shipment_containers").update(merged).eq("id", id);
+    const { error } = await supabase.from("shipment_containers").update(merged as never).eq("id", id);
     setSavingId(null);
     if (!error) {
       patchLocal(id, merged);
