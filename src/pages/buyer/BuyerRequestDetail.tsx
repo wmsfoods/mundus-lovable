@@ -7,6 +7,7 @@ import { useBuyerRequest, type BuyerRequestStatus } from "@/hooks/useBuyerReques
 import { formatRequestNumber } from "@/lib/requestNumber";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { RequestDetailCard } from "@/components/request/RequestDetailCard";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 const STATUS_CHIP: Record<BuyerRequestStatus, string> = {
   new: "req-status-chip is-draft",
@@ -30,12 +31,15 @@ type LinkedOffer = {
   status: string | null;
   created_at: string;
 };
+type LinkedNeg = { id: string; offer_id: string; status: string; settled_total_value: number | null };
 
 export default function BuyerRequestDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { data: r, isLoading, reload } = useBuyerRequest(id);
   const [offers, setOffers] = useState<LinkedOffer[]>([]);
+  const [negotiations, setNegotiations] = useState<LinkedNeg[]>([]);
+  const { company } = useCurrentCompany();
 
   useEffect(() => {
     if (!id) return;
@@ -45,9 +49,22 @@ export default function BuyerRequestDetail() {
         .select("id, offer_number, supplier_name, status, created_at")
         .eq("request_id", id)
         .order("created_at", { ascending: false });
-      setOffers((data ?? []) as LinkedOffer[]);
+      const list = (data ?? []) as LinkedOffer[];
+      setOffers(list);
+      const ids = list.map((o) => o.id);
+      if (ids.length && company?.id) {
+        const { data: negs } = await supabase
+          .from("negotiations")
+          .select("id, offer_id, status, settled_total_value")
+          .eq("buyer_company_id", company.id)
+          .in("offer_id", ids)
+          .is("deleted_at", null);
+        setNegotiations((negs ?? []) as LinkedNeg[]);
+      } else {
+        setNegotiations([]);
+      }
     })();
-  }, [id]);
+  }, [id, company?.id]);
 
   if (isLoading) {
     return <div className="detail-empty"><p>Loading…</p></div>;
@@ -102,11 +119,13 @@ export default function BuyerRequestDetail() {
             <p style={{ color: "var(--fg-muted)", fontSize: 13, margin: 0 }}>No offers received yet.</p>
           ) : (
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {offers.map((o) => (
+              {offers.map((o) => {
+                const neg = negotiations.find((n) => n.offer_id === o.id);
+                return (
                 <button
                   key={o.id}
                   type="button"
-                  onClick={() => navigate(`/buyer/offers/${o.id}`)}
+                  onClick={() => navigate(neg ? `/buyer/negotiations/${neg.id}` : `/buyer/offers/${o.id}`)}
                   style={{
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                     padding: "10px 14px", borderRadius: 8, border: "1px solid var(--border)",
@@ -118,10 +137,24 @@ export default function BuyerRequestDetail() {
                     <div style={{ fontSize: 11, color: "var(--fg-muted)", fontFamily: "ui-monospace, monospace" }}>
                       {formatOfferNumber(o.offer_number, o.created_at)}
                     </div>
+                    {neg && (
+                      <div style={{ fontSize: 11, marginTop: 4 }}>
+                        {neg.status === "bid_accepted"
+                          ? <span style={{ color: "#166534" }}>🎉 Deal closed{neg.settled_total_value != null ? ` — $${Number(neg.settled_total_value).toLocaleString()}` : ""}</span>
+                          : neg.status === "awaiting_supplier"
+                          ? <span style={{ color: "#f59e0b" }}>⏳ Awaiting supplier response</span>
+                          : neg.status === "pending_buyer_review"
+                          ? <span style={{ color: "#3b82f6" }}>💬 Counter received — review</span>
+                          : <span style={{ color: "#6b7280" }}>📋 {neg.status}</span>}
+                      </div>
+                    )}
                   </div>
-                  <span style={{ color: "#8B2252", fontWeight: 600, fontSize: 13 }}>View →</span>
+                  <span style={{ color: "#8B2252", fontWeight: 600, fontSize: 13 }}>
+                    {neg ? "View negotiation →" : "View offer →"}
+                  </span>
                 </button>
-              ))}
+                );
+              })}
             </div>
           )}
         </div>
