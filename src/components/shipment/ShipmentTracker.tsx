@@ -425,7 +425,7 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       {/* Header card */}
       <section className="shp-card">
         <div className="shp-card-head">
-          <h3>🚢 Container · {current.container_number || `FCL ${current.position ?? activeIdx + 1}`}</h3>
+          <h3>🚢 Container · FCL {activeIdx + 1}</h3>
           <span className={`shp-save ${savingId === current.id ? "is-saving" : savedFlash === current.id ? "is-saved" : ""}`}>
             <span>{filledCount}/9</span>
             <span>·</span>
