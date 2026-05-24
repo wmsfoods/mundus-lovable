@@ -100,7 +100,8 @@ export function useBuyerOrders() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const load = async () => {
       setLoading(true);
       const { data: rows, error: qErr } = await supabase
         .from('orders')
@@ -116,8 +117,20 @@ export function useBuyerOrders() {
         setData(((rows ?? []) as unknown as OrderRow[]).map(mapRow));
       }
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    };
+    void load();
+    const channel = supabase
+      .channel('buyer-orders-list')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 400);
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      if (reloadTimer) clearTimeout(reloadTimer);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return { data, isLoading, error };
@@ -130,7 +143,9 @@ export function useBuyerOrder(id: string) {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    let orderUuid: string | null = null;
+    const load = async () => {
       setLoading(true);
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
       const isNum = /^\d+$/.test(id);
@@ -144,10 +159,26 @@ export function useBuyerOrder(id: string) {
       else {
         const list = ((rows ?? []) as unknown as OrderRow[]).map(mapRow);
         setData(list[0] ?? null);
+        orderUuid = list[0]?.id ?? null;
       }
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    };
+    void load();
+    const channel = supabase
+      .channel(`buyer-order-${id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
+        const newId = (payload.new as { id?: string } | null)?.id;
+        if (!orderUuid || newId === orderUuid) {
+          if (reloadTimer) clearTimeout(reloadTimer);
+          reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 300);
+        }
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      if (reloadTimer) clearTimeout(reloadTimer);
+      supabase.removeChannel(channel);
+    };
   }, [id]);
 
   return { data, isLoading, error };
