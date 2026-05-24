@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.shipping-instructions-submit]
 verify_jwt = false
+
+[functions.shipping-instructions-notify-approved]
+verify_jwt = false
