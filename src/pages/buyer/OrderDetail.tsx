@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { DealDetailView } from "@/components/mundus/DealDetailView";
 import { buyerOrderToDeal } from "@/lib/dealDetailAdapters";
 import { useBuyerOrder } from "@/hooks/useBuyerOrders";
+import { OrderNegotiationLink } from "@/components/negotiation/OrderNegotiationLink";
 
 export default function BuyerOrderDetail() {
   const { id = "" } = useParams<{ id: string }>();
@@ -21,5 +22,10 @@ export default function BuyerOrderDetail() {
   }
 
   const data = buyerOrderToDeal(order, (k, fb) => t(k, { defaultValue: fb }) as string);
-  return <DealDetailView data={data} />;
+  return (
+    <>
+      <OrderNegotiationLink orderId={order.id} role="buyer" />
+      <DealDetailView data={data} />
+    </>
+  );
 }
