@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { publicUrl } from "@/lib/publicUrl";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
@@ -416,7 +417,7 @@ export function CounterOfferModal({
                 max_rounds: MAX_DISPLAY_ROUNDS,
                 bid_total: counterTotal.toFixed(2),
                 asking_total: askingTotal.toFixed(2),
-                link: `${window.location.origin}/supplier/negotiations/${negotiation.id}`,
+                link: publicUrl(`/supplier/negotiations/${negotiation.id}`),
               },
             },
           }).catch(() => {});
@@ -431,7 +432,7 @@ export function CounterOfferModal({
                 round: displayRound,
                 max_rounds: MAX_DISPLAY_ROUNDS,
                 counter_total: counterTotal.toFixed(2),
-                link: `${window.location.origin}/buyer/negotiations/${negotiation.id}`,
+                link: publicUrl(`/buyer/negotiations/${negotiation.id}`),
               },
             },
           }).catch(() => {});
@@ -449,7 +450,7 @@ export function CounterOfferModal({
                 to_email: perspective === "buyer" ? "supplier@example.com" : "buyer@example.com",
                 offer_title: offerTitle,
                 total_value: settledValue.toLocaleString(undefined, { maximumFractionDigits: 2 }),
-                link: `${window.location.origin}/supplier/negotiations/${negotiation.id}`,
+                link: publicUrl(`/supplier/negotiations/${negotiation.id}`),
               },
             },
           }).catch(() => {});
