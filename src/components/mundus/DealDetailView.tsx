@@ -440,6 +440,9 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
             {data.orderId && (
               <ShippingInstructionsCard
                 orderId={data.orderId}
+                orderNumber={data.dealNumber}
+                defaultBuyerName={data.role === "supplier" ? data.party.name : undefined}
+                supplierName={data.role === "buyer" ? data.party.name : undefined}
                 readOnly={data.shipmentReadOnly}
               />
             )}
