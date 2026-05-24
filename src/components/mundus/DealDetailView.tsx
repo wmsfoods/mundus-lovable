@@ -199,7 +199,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>("overview");
-  const [containerIdx, setContainerIdx] = useState(0);
+  const [containerIdx] = useState(0);
 
   const tk = (k: string, fallback: string, opts?: Record<string, unknown>) =>
     (t(k, { defaultValue: fallback, ...opts }) as string);
@@ -242,6 +242,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
     discharged:  tk("dealDetail.journey.discharged", "Discharged"),
     delivered:   tk("dealDetail.journey.delivered", "Delivered"),
   };
+  void stageIndex; void journeyLabels;
 
   const stub = (msg: string) => () => toast({ title: msg });
 
