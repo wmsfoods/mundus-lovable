@@ -26,6 +26,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { publicUrl } from "@/lib/publicUrl";
 
 function formatNumber(n: number): string {
   return new Intl.NumberFormat("de-DE").format(Math.round(n));
@@ -156,7 +157,7 @@ export default function SupplierOfferDetail() {
                 data: {
                   buyer_email: "buyer@example.com",
                   offer_title: offerTitle,
-                  marketplace_link: `${window.location.origin}/buyer/marketplace`,
+                  marketplace_link: publicUrl("/buyer/marketplace"),
                 },
               },
             })
