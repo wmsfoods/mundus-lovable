@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabPanel } from "@/components/mundus/Tabs";
+import { ShipmentTracker } from "@/components/shipment/ShipmentTracker";
 import {
   FileTextIcon,
   ArrowLeftIcon,
@@ -127,6 +128,8 @@ export type DealDetailData = {
   documents: DealDocuments;
   backHref: string;
   fullNegotiationHref?: string;
+  orderId?: string;
+  shipmentReadOnly?: boolean;
 };
 
 type TabKey = "overview" | "negotiation" | "shipment" | "documents";
@@ -196,7 +199,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
   const { t } = useTranslation();
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>("overview");
-  const [containerIdx, setContainerIdx] = useState(0);
+  const [containerIdx] = useState(0);
 
   const tk = (k: string, fallback: string, opts?: Record<string, unknown>) =>
     (t(k, { defaultValue: fallback, ...opts }) as string);
@@ -239,6 +242,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
     discharged:  tk("dealDetail.journey.discharged", "Discharged"),
     delivered:   tk("dealDetail.journey.delivered", "Delivered"),
   };
+  void stageIndex; void journeyLabels;
 
   const stub = (msg: string) => () => toast({ title: msg });
 
@@ -416,55 +420,19 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
           </TabPanel>
 
           <TabPanel active={tab === "shipment"}>
-            {data.containers.length > 1 && (
-              <Tabs
-                variant="nested"
-                items={data.containers.map((cc, i) => ({ value: String(i), label: cc.containerNo }))}
-                value={String(containerIdx)}
-                onChange={(v) => setContainerIdx(Number(v))}
-                ariaLabel="containers"
+            {data.orderId ? (
+              <ShipmentTracker
+                orderId={data.orderId}
+                fclCount={data.fcls || 1}
+                readOnly={data.shipmentReadOnly}
               />
+            ) : (
+              <Card title={tk("dealDetail.shipment.info", "SHIPMENT INFORMATION")} icon={ShipIcon}>
+                <p style={{ color: "var(--muted)", padding: "8px 0" }}>
+                  {tk("dealDetail.shipment.unavailable", "Shipment tracking is not available for this record.")}
+                </p>
+              </Card>
             )}
-            <Card
-              title={`${tk("dealDetail.shipment.info", "SHIPMENT INFORMATION")} — ${c?.containerNo ?? ""}`}
-              icon={ShipIcon}
-            >
-              <FieldGrid>
-                <Field label={tk("dealDetail.shipment.containerNo", "Container number")} value={c?.containerNo} />
-                <Field label={tk("dealDetail.shipment.sealNo", "Seal number")} value={c?.sealNo} />
-                <Field label={tk("dealDetail.shipment.booking", "Booking #")} value={c?.booking} />
-                <Field label={tk("dealDetail.shipment.bl", "B/L number")} value={c?.blNumber} />
-                <Field label={tk("dealDetail.shipment.vessel", "Vessel")} value={c?.vessel} />
-                <Field label={tk("dealDetail.shipment.voyage", "Voyage")} value={c?.voyage} />
-                <Field label={tk("dealDetail.shipment.portLoading", "Port of loading")} value={c?.portLoading} />
-                <Field label={tk("dealDetail.shipment.portDischarge", "Port of discharge")} value={c?.portDischarge} />
-                <Field label={tk("dealDetail.shipment.etd", "ETD")} value={c?.etd} />
-                <Field label={tk("dealDetail.shipment.eta", "ETA")} value={c?.eta} />
-                <Field label={tk("dealDetail.shipment.grossWeight", "Gross weight")} value={c?.grossKg ? `${fmtKg(c.grossKg)} kg` : undefined} />
-                <Field label={tk("dealDetail.shipment.netWeight", "Net weight")} value={c?.netKg ? `${fmtKg(c.netKg)} kg` : undefined} />
-                <Field label={tk("dealDetail.shipment.temperature", "Temperature")} value={c?.temperature} />
-              </FieldGrid>
-            </Card>
-
-            <Card title={tk("dealDetail.shipment.journey", "SHIPMENT JOURNEY")} icon={ClockIcon}>
-              <ol className="ddv-journey">
-                {STAGE_ORDER.map((s, i) => {
-                  const done = i < stageIndex;
-                  const active = i === stageIndex;
-                  return (
-                    <li
-                      key={s}
-                      className={`ddv-journey-step ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
-                    >
-                      <span className="ddv-journey-dot">
-                        {done ? <CheckCircleIcon size={14} /> : <span>{i + 1}</span>}
-                      </span>
-                      <span className="ddv-journey-lbl">{journeyLabels[s]}</span>
-                    </li>
-                  );
-                })}
-              </ol>
-            </Card>
           </TabPanel>
 
           <TabPanel active={tab === "documents"}>

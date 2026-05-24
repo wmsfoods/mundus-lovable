@@ -4516,6 +4516,115 @@ export type Database = {
           },
         ]
       }
+      shipment_containers: {
+        Row: {
+          arrived_date: string | null
+          bl_number: string | null
+          container_number: string | null
+          created_at: string | null
+          delivered_date: string | null
+          departed_date: string | null
+          destination_country: string | null
+          destination_port: string | null
+          destination_port_id: string | null
+          discharged_date: string | null
+          gate_in_date: string | null
+          gate_out_date: string | null
+          id: string
+          order_id: string | null
+          origin_country: string | null
+          origin_port: string | null
+          origin_port_id: string | null
+          position: number | null
+          seal_number: string | null
+          shipping_line: string | null
+          status: string | null
+          stuffed_date: string | null
+          updated_at: string | null
+          vessel_loaded_date: string | null
+          vessel_name: string | null
+          voyage_number: string | null
+        }
+        Insert: {
+          arrived_date?: string | null
+          bl_number?: string | null
+          container_number?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          departed_date?: string | null
+          destination_country?: string | null
+          destination_port?: string | null
+          destination_port_id?: string | null
+          discharged_date?: string | null
+          gate_in_date?: string | null
+          gate_out_date?: string | null
+          id?: string
+          order_id?: string | null
+          origin_country?: string | null
+          origin_port?: string | null
+          origin_port_id?: string | null
+          position?: number | null
+          seal_number?: string | null
+          shipping_line?: string | null
+          status?: string | null
+          stuffed_date?: string | null
+          updated_at?: string | null
+          vessel_loaded_date?: string | null
+          vessel_name?: string | null
+          voyage_number?: string | null
+        }
+        Update: {
+          arrived_date?: string | null
+          bl_number?: string | null
+          container_number?: string | null
+          created_at?: string | null
+          delivered_date?: string | null
+          departed_date?: string | null
+          destination_country?: string | null
+          destination_port?: string | null
+          destination_port_id?: string | null
+          discharged_date?: string | null
+          gate_in_date?: string | null
+          gate_out_date?: string | null
+          id?: string
+          order_id?: string | null
+          origin_country?: string | null
+          origin_port?: string | null
+          origin_port_id?: string | null
+          position?: number | null
+          seal_number?: string | null
+          shipping_line?: string | null
+          status?: string | null
+          stuffed_date?: string | null
+          updated_at?: string | null
+          vessel_loaded_date?: string | null
+          vessel_name?: string | null
+          voyage_number?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shipment_containers_destination_port_id_fkey"
+            columns: ["destination_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_containers_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shipment_containers_origin_port_id_fkey"
+            columns: ["origin_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       standard_product_names: {
         Row: {
           created_at: string | null

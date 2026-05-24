@@ -26,6 +26,7 @@
 @import "./styles/mundus-auctions.css";
 @import "./styles/mundus-buyer-create-request.css";
 @import "./styles/mundus-address.css";
+@import "./styles/mundus-shipment.css";
 
 @tailwind base;
 @tailwind components;
