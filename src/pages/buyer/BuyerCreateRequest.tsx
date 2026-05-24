@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
 import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
@@ -33,10 +33,13 @@ const newRow = (): Row => ({
 
 export default function BuyerCreateRequest() {
   const navigate = useNavigate();
+  const { editId } = useParams<{ editId?: string }>();
+  const isEdit = !!editId;
   const { markets, cutsByCategory } = useSupplierOfferData();
   const { company } = useCurrentCompany();
   const { user } = useAuth();
   const [submitting, setSubmitting] = useState(false);
+  const [loadingEdit, setLoadingEdit] = useState(isEdit);
 
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Beef");
   // Destination — searchable single-select
@@ -65,6 +68,78 @@ export default function BuyerCreateRequest() {
   const [openCutFor, setOpenCutFor] = useState<string | null>(null);
   const [openMarblingFor, setOpenMarblingFor] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
+
+  // Load existing request when in edit mode
+  useEffect(() => {
+    if (!isEdit || !editId || !company?.id) return;
+    let cancelled = false;
+    (async () => {
+      const { data, error } = await supabase
+        .from("buyer_requests")
+        .select("*")
+        .eq("id", editId)
+        .eq("buyer_company_id", company.id)
+        .maybeSingle();
+      if (cancelled) return;
+      if (error || !data) {
+        toast.error("Cannot load request for editing");
+        navigate("/buyer/requests");
+        return;
+      }
+      if ((data.category as string) && (CATEGORIES as readonly string[]).includes(data.category as string)) {
+        setCategory(data.category as any);
+      }
+      setDestCountry(data.destination_country ?? "");
+      const incs = String(data.incoterm ?? "").split(",").map((s) => s.trim()).filter(Boolean);
+      if (incs.length) setSelectedIncoterms(incs);
+      setAnyOrigin(data.any_origin ?? true);
+      setOriginCountries((data.origin_countries as string[] | null) ?? []);
+      setContainerType(((data.container_size ?? "40ft").startsWith("20") ? "20" : "40") as "20" | "40");
+      setContainerCount(String(data.container_count ?? 1));
+      setShipmentWindow(data.shipment_date ?? "");
+
+      // Parse additional_info for cuts, compliance, notes
+      const info = String(data.additional_info ?? "");
+      const sections = info.split(/\n\n/);
+      let parsedRows: Row[] = [];
+      for (const sec of sections) {
+        if (sec.startsWith("Cuts:")) {
+          const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
+          parsedRows = lines.map((line) => {
+            // {cut} ({spec}) — {marbling} — {qty}kg @ ${target}/kg
+            const m = line.match(/^(.+?)(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
+            const cut = (m?.[1] ?? line).trim();
+            const match = (cutsByCategory[(data.category as string) ?? "Beef"] ?? []).find((c) => c.displayName.toLowerCase() === cut.toLowerCase());
+            return {
+              id: Math.random().toString(36).slice(2, 9),
+              cut,
+              cutImage: match?.image_url ?? null,
+              spec: (m?.[2] ?? "").trim(),
+              marbling: (m?.[3] ?? "Not specified").trim() || "Not specified",
+              qty: (m?.[4] ?? "").replace(/,/g, "").trim(),
+              target: (m?.[5] ?? "").trim(),
+            };
+          });
+        } else if (sec.startsWith("Compliance:")) {
+          const list = sec.replace(/^Compliance:\s*/, "");
+          setHalal(/halal/i.test(list));
+          setKosher(/kosher/i.test(list));
+        } else if (sec.startsWith("Notes:")) {
+          setNotes(sec.replace(/^Notes:\n?/, ""));
+        }
+      }
+      if (parsedRows.length) setRows(parsedRows);
+
+      // Pre-fill attachments as existing (display-only chips kept separately)
+      const existing = ((data.attachments as Array<{ name: string; url: string; size?: number; type?: string }> | null) ?? []);
+      setExistingAttachments(existing);
+      setLoadingEdit(false);
+    })();
+    return () => { cancelled = true; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isEdit, editId, company?.id, cutsByCategory]);
+
+  const [existingAttachments, setExistingAttachments] = useState<Array<{ name: string; url: string; size?: number; type?: string }>>([]);
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -184,35 +259,52 @@ export default function BuyerCreateRequest() {
       uploaded.push({ name: file.name, url: pub.publicUrl, size: file.size, type: file.type });
     }
 
-    const { data, error } = await supabase
-      .from("buyer_requests")
-      .insert({
-        buyer_company_id: company.id,
-        buyer_user_id: user?.id ?? null,
-        product_name: productName,
-        category,
-        specification: primary.spec || null,
-        destination_country: destCountry,
-        destination_port: null,
-        incoterm: selectedIncoterms.join(","),
-        container_size: containerType === "20" ? "20ft" : "40ft",
-        container_count: parseInt(containerCount) || 1,
-        quantity_kg: totalKg,
-        temperature: "Frozen",
-        target_price_usd: avgTarget,
-        shipment_date: shipmentWindow || null,
-        additional_info: additional || null,
-        status: "new",
-        any_origin: anyOrigin,
-        origin_countries: anyOrigin ? [] : originCountries,
-        attachments: uploaded,
-      })
-      .select("id")
-      .single();
-    setSubmitting(false);
-    if (error || !data) return toast.error(error?.message ?? "Failed to create request");
-    toast.success("Request published to suppliers");
-    navigate("/buyer/requests");
+    const payload = {
+      product_name: productName,
+      category,
+      specification: primary.spec || null,
+      destination_country: destCountry,
+      destination_port: null,
+      incoterm: selectedIncoterms.join(","),
+      container_size: containerType === "20" ? "20ft" : "40ft",
+      container_count: parseInt(containerCount) || 1,
+      quantity_kg: totalKg,
+      temperature: "Frozen",
+      target_price_usd: avgTarget,
+      shipment_date: shipmentWindow || null,
+      additional_info: additional || null,
+      any_origin: anyOrigin,
+      origin_countries: anyOrigin ? [] : originCountries,
+    };
+
+    if (isEdit && editId) {
+      const mergedAttachments = [...existingAttachments, ...uploaded];
+      const { error } = await supabase
+        .from("buyer_requests")
+        .update({ ...payload, attachments: mergedAttachments, updated_at: new Date().toISOString() })
+        .eq("id", editId)
+        .eq("buyer_company_id", company.id);
+      setSubmitting(false);
+      if (error) return toast.error(error.message);
+      toast.success("Request updated");
+      navigate(`/buyer/requests/${editId}`);
+    } else {
+      const { data, error } = await supabase
+        .from("buyer_requests")
+        .insert({
+          ...payload,
+          buyer_company_id: company.id,
+          buyer_user_id: user?.id ?? null,
+          status: "new",
+          attachments: uploaded,
+        })
+        .select("id")
+        .single();
+      setSubmitting(false);
+      if (error || !data) return toast.error(error?.message ?? "Failed to create request");
+      toast.success("Request published to suppliers");
+      navigate("/buyer/requests");
+    }
   };
 
   return (
@@ -222,8 +314,8 @@ export default function BuyerCreateRequest() {
         <div className="bcr-header-l">
           <div className="bcr-header-icon"><ClipboardIcon size={20} /></div>
           <div>
-            <h1>New offer request</h1>
-            <p>Describe what you need — suppliers will respond with offers.</p>
+            <h1>{isEdit ? "Edit request" : "New offer request"}</h1>
+            <p>{isEdit ? "Update your request details. Changes will be visible to suppliers." : "Describe what you need — suppliers will respond with offers."}</p>
           </div>
         </div>
         <button type="button" className="bcr-close" onClick={() => navigate("/buyer/requests")} aria-label="Close">
@@ -557,6 +649,34 @@ export default function BuyerCreateRequest() {
                 ))}
               </div>
             )}
+            {isEdit && existingAttachments.length > 0 && (
+              <div style={{ marginTop: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: "var(--fg-muted)", marginBottom: 6 }}>
+                  EXISTING FILES
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                  {existingAttachments.map((f, i) => (
+                    <span key={i} style={{
+                      display: "inline-flex", alignItems: "center", gap: 6,
+                      padding: "5px 10px", borderRadius: 999,
+                      background: "var(--g050, #fafaf9)", color: "var(--fg-muted)",
+                      fontSize: 12, border: "1px solid var(--border)",
+                    }}>
+                      <FileIcon size={12} />
+                      <a href={f.url} target="_blank" rel="noopener noreferrer" style={{ color: "inherit", maxWidth: 180, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{f.name}</a>
+                      <button
+                        type="button"
+                        onClick={() => setExistingAttachments((prev) => prev.filter((_, j) => j !== i))}
+                        style={{ background: "transparent", border: "none", color: "var(--fg-muted)", cursor: "pointer", padding: 0, display: "inline-flex" }}
+                        aria-label="Remove file"
+                      >
+                        <XIcon size={12} />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         </section>
 
@@ -689,8 +809,8 @@ export default function BuyerCreateRequest() {
         </div>
         <div className="bcr-actions">
           <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>
-          <button type="button" className="bcr-btn-primary" onClick={broadcast}>
-            ↗ Broadcast request
+          <button type="button" className="bcr-btn-primary" onClick={broadcast} disabled={submitting || loadingEdit}>
+            {isEdit ? "💾 Save changes" : "↗ Broadcast request"}
           </button>
         </div>
       </footer>

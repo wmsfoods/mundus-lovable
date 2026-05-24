@@ -96,6 +96,7 @@ export default function SupplierRequestDetail() {
   }
 
   const r = request;
+  const isWithdrawn = r.status === "not_interested";
   const reqNo = formatRequestNumber(r.request_number, r.created_at);
   const postedAt = new Date(r.created_at).toLocaleDateString(undefined, {
     year: "numeric", month: "short", day: "numeric",
@@ -135,6 +136,24 @@ export default function SupplierRequestDetail() {
       ]} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 12 }}>
+        {isWithdrawn && (
+          <div style={{
+            padding: "12px 16px", borderRadius: 8,
+            background: "#fee2e2", border: "1px solid #fca5a5",
+            display: "flex", alignItems: "center", gap: 10,
+          }}>
+            <span style={{ fontSize: 16 }}>⚠️</span>
+            <div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#dc2626" }}>
+                Buyer withdrew this request
+              </div>
+              <div style={{ fontSize: 12, color: "#6b7280" }}>
+                The buyer cancelled this request. You can no longer create offers from it.
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Buyer header card */}
         <div style={{ background: "#fff", border: "1px solid var(--border)", borderRadius: 12, padding: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
           <div>
@@ -198,9 +217,11 @@ export default function SupplierRequestDetail() {
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, flexWrap: "wrap" }}>
           <Link to="/supplier/requests" className="btn-tb">Not interested</Link>
-          <button type="button" className="btn-tb is-primary" onClick={handleCreateOffer}>
-            {myOffers.length > 0 ? "Create another offer →" : "Create offer from this request →"}
-          </button>
+          {!isWithdrawn && (
+            <button type="button" className="btn-tb is-primary" onClick={handleCreateOffer}>
+              {myOffers.length > 0 ? "Create another offer →" : "Create offer from this request →"}
+            </button>
+          )}
         </div>
       </div>
     </>
