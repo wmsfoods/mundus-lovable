@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import { toast } from "sonner";
 import { ArrowLeftIcon } from "@/components/icons";
@@ -99,10 +99,27 @@ export default function BuyerRequestDetail() {
         <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--fg-muted)" }}>Status</span>
           <span className={STATUS_CHIP[r.status]}>{STATUS_LABEL[r.status]}</span>
+          {hasActiveNegotiation && !hasDealClosed && (
+            <span style={{ fontSize: 11, color: "#f59e0b", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              ⚠️ Cannot edit — negotiation in progress
+            </span>
+          )}
+          {hasDealClosed && (
+            <span style={{ fontSize: 11, color: "#166534", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              ✅ Deal closed — request locked
+            </span>
+          )}
         </div>
         <div style={{ display: "flex", gap: 8 }}>
-          {r.status !== "not_interested" && r.status !== "closed" && (
-            <button type="button" className="btn-tb" onClick={onCancel}>Cancel request</button>
+          {canEdit && (
+            <button type="button" className="btn-tb" onClick={() => navigate(`/buyer/requests/${r.id}/edit`)}>
+              ✏️ Edit request
+            </button>
+          )}
+          {canCancel && (
+            <button type="button" className="btn-tb" style={{ color: "#dc2626" }} onClick={onCancel}>
+              ✕ Cancel request
+            </button>
           )}
         </div>
       </div>
