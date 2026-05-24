@@ -1169,7 +1169,15 @@ export default function SupplierCreateOffer() {
             {selInco.includes("EXW") && (
               <div className="cov4-inco-extra">
                 <span className="cov4-inco-ex-lbl">📍 EXW Pickup location</span>
-                <input className="cov4-text-in" placeholder="City, warehouse address..." value={incoExtras.exwCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, exwCity: e.target.value }))} />
+                <input
+                  className="cov4-text-in"
+                  type="text"
+                  name="exw-pickup-address"
+                  autoComplete="street-address"
+                  placeholder="City, warehouse address..."
+                  value={incoExtras.exwCity || ""}
+                  onChange={(e) => setIncoExtras((p) => ({ ...p, exwCity: e.target.value }))}
+                />
               </div>
             )}
             {selInco.includes("DDP") && (
