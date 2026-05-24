@@ -53,7 +53,7 @@ type CompanyRow = {
   is_supplier: boolean | null;
 };
 
-const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine", "Goat", "Game"];
+const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine", "Goat"];
 const INCOTERMS = ["FOB", "CFR", "CIF", "EXW", "DAP", "DDP"];
 const PAYMENT_TERMS = [
   "30% Advance, Balance TT",
