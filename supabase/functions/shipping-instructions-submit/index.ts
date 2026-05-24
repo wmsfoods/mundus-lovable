@@ -98,6 +98,71 @@ Deno.serve(async (req) => {
       .update({ status: 'received', submitted_at: new Date().toISOString() })
       .eq('id', reqRow.id);
 
+    // Notify supplier via email (best effort)
+    const RESEND_API_KEY = Deno.env.get('resend_mundus') || Deno.env.get('RESEND_API_KEY');
+    if (RESEND_API_KEY && reqRow.order_id) {
+      try {
+        const { data: order } = await supabase
+          .from('orders')
+          .select(`
+            order_number, placed_at,
+            offer:offers(supplier:companies!offers_supplier_id_fkey(id, name))
+          `)
+          .eq('id', reqRow.order_id)
+          .maybeSingle();
+        const offer = Array.isArray(order?.offer) ? order!.offer[0] : order?.offer;
+        const supplier = offer?.supplier && (Array.isArray(offer.supplier) ? offer.supplier[0] : offer.supplier);
+        let supplierEmail: string | null = null;
+        if (supplier?.id) {
+          const { data: user } = await supabase
+            .from('users')
+            .select('email')
+            .eq('company_id', supplier.id)
+            .not('email', 'is', null)
+            .limit(1)
+            .maybeSingle();
+          supplierEmail = user?.email ?? null;
+        }
+        const orderNumber = order?.order_number
+          ? `M-${String(order.order_number).padStart(6, '0')}-${new Date(order.placed_at).getFullYear()}`
+          : (fields.order_number || 'pending');
+        const docsList = Array.isArray(fields.documents_requested) ? fields.documents_requested.join(', ') : '';
+        const html = `
+<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+  <div style="background: #8B2252; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
+    <h1 style="color: white; margin: 0; font-size: 22px;">Mundus Trade</h1>
+  </div>
+  <div style="padding: 32px; background: #fff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+    <p style="font-size: 15px; color: #2a1a20;">✅ Shipping instructions have been submitted for <strong>Order ${escapeHtml(orderNumber)}</strong>.</p>
+    <table style="width: 100%; font-size: 13px; border-collapse: collapse; margin: 16px 0;">
+      <tr><td style="padding: 6px 0; color: #6b7280;">Port of Destination</td><td style="padding: 6px 0; font-weight: 600;">${escapeHtml(fields.port_of_destination || '—')}</td></tr>
+      <tr><td style="padding: 6px 0; color: #6b7280;">Consignee</td><td style="padding: 6px 0; font-weight: 600;">${escapeHtml(fields.consignee_name || '—')}</td></tr>
+      <tr><td style="padding: 6px 0; color: #6b7280;">Telex Release</td><td style="padding: 6px 0; font-weight: 600;">${escapeHtml(fields.telex_release || '—')}</td></tr>
+      <tr><td style="padding: 6px 0; color: #6b7280;">Documents</td><td style="padding: 6px 0; font-weight: 600;">${escapeHtml(docsList || '—')}</td></tr>
+    </table>
+    <p style="font-size: 14px; color: #2a1a20;">Log in to Mundus Trade to review and approve the instructions.</p>
+  </div>
+</div>`;
+        const recipients = [supplierEmail].filter(Boolean) as string[];
+        if (recipients.length > 0) {
+          const resp = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${RESEND_API_KEY}`, 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              from: 'Mundus Trade <noreply@mundustrade.com>',
+              to: recipients,
+              cc: ['docs@mundustrade.com'],
+              subject: `✅ Shipping Instructions Received — Order ${orderNumber}`,
+              html,
+            }),
+          });
+          if (!resp.ok) console.warn('Resend notify failed', resp.status, await resp.text());
+        }
+      } catch (err) {
+        console.warn('Supplier notify error:', String((err as Error)?.message ?? err));
+      }
+    }
+
     return new Response(JSON.stringify({ success: true, id: si.id, order_number: si.order_number }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
@@ -107,3 +172,7 @@ Deno.serve(async (req) => {
     });
   }
 });
+
+function escapeHtml(s: string): string {
+  return String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+}
