@@ -79,6 +79,56 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // Reference data from DB
+  const [marketCountries, setMarketCountries] = useState<
+    { id: string; name: string; flag: string }[]
+  >([]);
+  const [allPorts, setAllPorts] = useState<
+    { id: string; name: string; code: string | null; country_id: string; country_name: string; flag: string }[]
+  >([]);
+  const [allCuts, setAllCuts] = useState<{ id: string; name: string; category: string }[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const [mRes, cRes, pRes, cutsRes] = await Promise.all([
+        (supabase as any).from("markets").select("id, country_id, is_active").eq("is_active", true),
+        (supabase as any).from("countries").select("id, english_name, flag_emoji"),
+        (supabase as any).from("ports").select("id, name, code, country_id, is_active").eq("is_active", true).order("name"),
+        (supabase as any).from("cuts").select("id, name, category, is_active").eq("is_active", true).order("name"),
+      ]);
+      if (cancelled) return;
+      const countriesById = new Map<string, any>();
+      for (const c of cRes.data ?? []) countriesById.set(c.id, c);
+      const mc = ((mRes.data ?? []) as any[])
+        .map((m) => {
+          const c = countriesById.get(m.country_id);
+          if (!c) return null;
+          return { id: c.id, name: c.english_name as string, flag: (c.flag_emoji ?? "") as string };
+        })
+        .filter(Boolean)
+        .sort((a: any, b: any) => a.name.localeCompare(b.name));
+      setMarketCountries(mc as any);
+      setAllPorts(
+        ((pRes.data ?? []) as any[]).map((p) => {
+          const c = countriesById.get(p.country_id);
+          return {
+            id: p.id,
+            name: p.name,
+            code: p.code,
+            country_id: p.country_id,
+            country_name: (c?.english_name ?? "") as string,
+            flag: (c?.flag_emoji ?? "") as string,
+          };
+        }),
+      );
+      setAllCuts(((cutsRes.data ?? []) as any[]).map((c) => ({ id: c.id, name: c.name, category: c.category })));
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   useEffect(() => {
     if (!companyId) return;
     let cancelled = false;
