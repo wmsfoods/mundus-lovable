@@ -17,3 +17,12 @@ verify_jwt = false
 
 [functions.extract-bl]
 verify_jwt = false
+
+[functions.shipping-instructions-send-link]
+verify_jwt = false
+
+[functions.shipping-instructions-validate]
+verify_jwt = false
+
+[functions.shipping-instructions-submit]
+verify_jwt = false

@@ -1,0 +1,112 @@
+/* Mundus Trade — Shipping Instructions public form */
+.si-page {
+  min-height: 100vh;
+  background: #f7f5f3;
+  padding: 24px 16px 60px;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  color: #2a1a20;
+}
+.si-header {
+  max-width: 880px;
+  margin: 0 auto 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #8B2252;
+}
+.si-header h1 {
+  font-size: 22px;
+  font-weight: 600;
+  color: #8B2252;
+  margin: 0;
+}
+.si-form { max-width: 880px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.si-card {
+  background: #fff;
+  border: 1px solid #e8dfe2;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 2px rgba(139, 34, 82, 0.04);
+}
+.si-card h2 {
+  font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em;
+  color: #8B2252; margin: 0 0 14px;
+}
+.si-grid-1 { display: grid; grid-template-columns: 1fr; gap: 12px; }
+.si-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.si-span-2 { grid-column: span 2; }
+@media (max-width: 640px) {
+  .si-grid-2 { grid-template-columns: 1fr; }
+  .si-span-2 { grid-column: span 1; }
+}
+.si-field { display: flex; flex-direction: column; gap: 6px; }
+.si-field label { font-size: 12px; font-weight: 600; color: #5a4750; }
+.si-field input, .si-field textarea, .si-card textarea {
+  border: 1px solid #d8ccd1;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fff;
+  color: #2a1a20;
+  transition: border-color .15s;
+}
+.si-field input:focus, .si-field textarea:focus, .si-card textarea:focus {
+  outline: none; border-color: #8B2252; box-shadow: 0 0 0 3px rgba(139,34,82,0.12);
+}
+.si-field input:disabled { background: #faf6f7; color: #6b5860; }
+.req { color: #b91c1c; }
+.si-check-row { display: flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; padding: 4px 0; }
+.si-check-row input { accent-color: #8B2252; width: 16px; height: 16px; }
+.si-check-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 4px 16px; }
+@media (max-width: 640px) { .si-check-grid { grid-template-columns: 1fr; } }
+.si-radio-stack { display: flex; flex-direction: column; gap: 4px; }
+.si-products { margin-top: 12px; }
+.si-products label { font-size: 12px; font-weight: 600; color: #5a4750; display: block; margin-bottom: 6px; }
+.si-products ul { list-style: none; margin: 0; padding: 0; border: 1px solid #ece4e7; border-radius: 8px; }
+.si-products li { display: flex; justify-content: space-between; padding: 8px 12px; font-size: 14px; border-bottom: 1px solid #f3edef; }
+.si-products li:last-child { border-bottom: none; }
+.si-submit-row { display: flex; justify-content: flex-end; padding: 4px 0 0; }
+.si-submit {
+  background: #8B2252; color: #fff;
+  border: none; border-radius: 10px;
+  padding: 14px 28px; font-size: 15px; font-weight: 600; cursor: pointer;
+  transition: background .15s, transform .05s;
+  box-shadow: 0 4px 12px rgba(139,34,82,0.25);
+}
+.si-submit:hover { background: #731a42; }
+.si-submit:active { transform: translateY(1px); }
+.si-submit:disabled { opacity: .6; cursor: wait; }
+.si-footer { max-width: 880px; margin: 32px auto 0; text-align: center; font-size: 12px; color: #8a7780; }
+.si-success { text-align: center; padding: 40px 24px; }
+.si-check {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: #16a34a; color: #fff; font-size: 36px;
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 16px; font-weight: 700;
+}
+.si-success h2 { color: #8B2252; margin: 0 0 12px; }
+.si-success p { color: #4a3a40; margin: 6px 0; }
+.si-error-title { color: #8B2252; margin: 0 0 8px; }
+
+/* ---- Supplier-side card (Sales detail) ---- */
+.si-supplier-card { background: #fff; border: 1px solid #e8dfe2; border-radius: 12px; padding: 20px; margin-top: 16px; }
+.si-supplier-card h3 { display: flex; align-items: center; gap: 8px; margin: 0 0 14px; font-size: 14px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; color: #8B2252; }
+.si-status-pill { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; }
+.si-status-pill.is-pending { background: #fef3c7; color: #92400e; }
+.si-status-pill.is-sent { background: #dbeafe; color: #1e40af; }
+.si-status-pill.is-received { background: #dcfce7; color: #166534; }
+.si-status-pill.is-approved { background: #ede9fe; color: #6b21a8; }
+.si-status-pill.is-inactive { background: #f3f4f6; color: #6b7280; }
+.si-actions-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.si-btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1px solid #d8ccd1; background: #fff; cursor: pointer; color: #2a1a20; transition: background .15s; }
+.si-btn:hover { background: #faf6f7; }
+.si-btn.is-primary { background: #8B2252; color: #fff; border-color: #8B2252; }
+.si-btn.is-primary:hover { background: #731a42; }
+.si-btn.is-danger { color: #b91c1c; border-color: #fecaca; }
+.si-btn.is-danger:hover { background: #fef2f2; }
+.si-info-line { font-size: 13px; color: #5a4750; margin: 4px 0; }
+.si-email-row { display: flex; gap: 8px; align-items: flex-end; margin-bottom: 8px; }
+.si-email-row .si-field { flex: 1; }
+.si-link-box { background: #faf6f7; border: 1px dashed #d8ccd1; border-radius: 8px; padding: 10px 12px; font-size: 12px; word-break: break-all; color: #5a4750; margin: 8px 0; }
