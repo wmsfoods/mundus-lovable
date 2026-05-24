@@ -285,9 +285,6 @@ export default function ShippingInstructionsForm() {
                 <input value={form.consignee_fax} onChange={(e) => patch("consignee_fax", e.target.value)} /></div>
             </div>
           )}
-          {form.consignee_same_as_buyer && (
-            <input type="hidden" required value={form.buyer_name} onChange={() => patch("consignee_name", form.buyer_name)} />
-          )}
         </section>
 
         {/* Notify */}
