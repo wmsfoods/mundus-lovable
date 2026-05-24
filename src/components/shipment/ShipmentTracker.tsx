@@ -26,6 +26,9 @@ type ShipmentContainer = {
   gate_out_date: string | null;
   delivered_date: string | null;
   status: string | null;
+  bl_document_url?: string | null;
+  bl_draft_url?: string | null;
+  bl_extracted_data?: Record<string, unknown> | null;
 };
 
 type Port = { id: string; name: string; code: string; country_id: string; country?: { english_name: string | null } };
