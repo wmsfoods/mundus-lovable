@@ -21,12 +21,19 @@ import { isUuid } from "@/hooks/useRealNegotiation";
 import { getDeductionFeedback } from "@/lib/negotiationEngine";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  getEffectiveAskingPrice,
+  getIncotermBannerLabel,
+  getIncotermAddOn,
+} from "@/lib/incotermPricing";
+import { useRemainingFcl } from "@/hooks/useRemainingFcl";
 
 const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
 
 type FreightOption = {
   id: string;
   cost: number;
+  insurance?: number | null;
   port: { id: string; name: string; country: { english_name: string | null } | null } | null;
 };
 
@@ -41,6 +48,7 @@ type DraftShape = {
   portId?: string;
   message?: string;
   bids?: Record<string, number>;
+  fclCount?: number;
 };
 
 function draftKey(offerId: string) {
@@ -82,6 +90,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const [portId, setPortId] = useState<string>("");
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [fclCount, setFclCount] = useState<number>(1);
   // bids stored as $/kg
   // null = empty input (user cleared it). Numbers stored as $/kg.
   const [bids, setBids] = useState<Record<string, number | null>>(() =>
@@ -128,12 +137,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     );
     setIncoterm(draft?.incoterm ?? allowedIncoterms[0] ?? "CFR");
     setMessage(draft?.message ?? "");
+    setFclCount(draft?.fclCount ?? 1);
     hydratedRef.current = true;
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("freight_options")
-        .select("id, cost, port:ports(id, name, country:countries(english_name))")
+        .select("id, cost, insurance, port:ports(id, name, country:countries(english_name))")
         .eq("offer_id", offer.id);
       if (cancelled) return;
       const list = (data ?? []) as unknown as FreightOption[];
@@ -155,16 +165,50 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     for (const [k, v] of Object.entries(bids)) {
       if (typeof v === "number" && Number.isFinite(v)) cleanBids[k] = v;
     }
-    saveDraft(offer.id, { incoterm, portId, message, bids: cleanBids });
-  }, [open, offer.id, incoterm, portId, message, bids]);
+    saveDraft(offer.id, { incoterm, portId, message, bids: cleanBids, fclCount });
+  }, [open, offer.id, incoterm, portId, message, bids, fclCount]);
 
   const selectedFreight = freight.find((f) => f.port?.id === portId);
   const totalKg = offer.items.reduce((s, it) => s + Number(it.amount), 0);
   const freightPerKg = selectedFreight && totalKg > 0 ? Number(selectedFreight.cost) / totalKg : 0;
+  const insurancePerKg =
+    selectedFreight && selectedFreight.insurance && totalKg > 0
+      ? Number(selectedFreight.insurance) / totalKg
+      : 0;
 
-  const askingTotal = offer.items.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0);
+  // FCL allocation (Feature 2)
+  const fclAlloc = useRemainingFcl(isRealOffer ? offer.id : null, offer.total_fcl ?? 1);
+  const totalOfferFcl = Math.max(1, offer.total_fcl ?? 1);
+  // For real offers honor what's still available; for mocks fall back to total.
+  const remainingFcl = isRealOffer ? Math.max(1, fclAlloc.available) : totalOfferFcl;
+  // Clamp draft / out-of-range values once the allocation is known.
+  useEffect(() => {
+    if (fclCount > remainingFcl) setFclCount(remainingFcl);
+    if (fclCount < 1) setFclCount(1);
+  }, [remainingFcl, fclCount]);
+
+  const fclScale = fclCount / totalOfferFcl; // proportionally scales quantities
+
+  // Effective (incoterm-adjusted) asking price per item.
+  const effectiveAsking = (basePrice: number) =>
+    getEffectiveAskingPrice(basePrice, incoterm, freightPerKg, insurancePerKg);
+  const incoBanner = getIncotermBannerLabel(
+    incoterm,
+    freightPerKg,
+    insurancePerKg,
+    (v) => `${fmtPrice(v, unit)} ${pLbl}`,
+  );
+
+  const askingTotal = offer.items.reduce(
+    (s, it) => s + effectiveAsking(Number(it.price)) * Number(it.amount) * fclScale,
+    0,
+  );
   const bidTotal = offer.items.reduce(
-    (s, it) => s + (typeof bids[it.id] === "number" ? (bids[it.id] as number) : 0) * Number(it.amount),
+    (s, it) =>
+      s +
+      (typeof bids[it.id] === "number" ? (bids[it.id] as number) : 0) *
+        Number(it.amount) *
+        fclScale,
     0,
   );
   const diff = bidTotal - askingTotal;
@@ -175,7 +219,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     if (!isRealOffer) return {} as Record<string, string>;
     const out: Record<string, string> = {};
     for (const it of offer.items) {
-      const asking = Number(it.price);
+      const asking = effectiveAsking(Number(it.price));
       const min = asking * MIN_BID_PCT;
       const v = bids[it.id];
       if (v == null || !Number.isFinite(v) || v <= 0) {
@@ -195,14 +239,15 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       }
     }
     return out;
-  }, [isRealOffer, offer.items, bids, t, unit]);
+  }, [isRealOffer, offer.items, bids, t, unit, incoterm, freightPerKg, insurancePerKg]);
   const errorCount = Object.keys(errors).length;
 
   const allFilled = offer.items.every((it) => {
     const v = bids[it.id];
     return typeof v === "number" && Number.isFinite(v) && v > 0;
   });
-  const canSubmit = allFilled && (!isRealOffer || errorCount === 0);
+  const canSubmit =
+    allFilled && (!isRealOffer || (errorCount === 0 && remainingFcl > 0));
 
   async function handleSubmit() {
     if (!canSubmit || submitting) return;
@@ -238,7 +283,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           created_by_user_id: buyerUserId,
           port_id: portId || null,
           freight_cost_per_kg: freightPerKg,
-          fcl_count: offer.total_fcl ?? 1,
+          insurance_per_kg: insurancePerKg,
+          fcl_count: fclCount,
           incoterm,
           status: "awaiting_supplier",
           expires_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
@@ -257,17 +303,31 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           side: "buyer",
           type: "bid",
           message: message.trim() || null,
+          incoterm,
+          freight_per_kg: freightPerKg,
+          insurance_per_kg: insurancePerKg,
         })
         .select("id")
         .single();
       if (rpErr || !rp) throw rpErr ?? new Error("round_proposals insert failed");
 
-      const cutRows = offer.items.map((it) => ({
-        round_proposal_id: rp.id,
-        offer_item_id: it.id,
-        price_per_kg: (typeof bids[it.id] === "number" ? (bids[it.id] as number) : Number(it.price)),
-        quantity_kg: Number(it.amount),
-      }));
+      // Persist the FOB-equivalent price so it can be compared against the
+      // supplier's asking directly. The buyer's bid was entered against the
+      // *effective* (incoterm-adjusted) price, so strip the add-on back off.
+      const addOn = getIncotermAddOn(incoterm, freightPerKg, insurancePerKg);
+      const cutRows = offer.items.map((it) => {
+        const enteredEffective =
+          typeof bids[it.id] === "number"
+            ? (bids[it.id] as number)
+            : effectiveAsking(Number(it.price));
+        const fobBid = Math.max(0, enteredEffective - addOn);
+        return {
+          round_proposal_id: rp.id,
+          offer_item_id: it.id,
+          price_per_kg: fobBid,
+          quantity_kg: Number(it.amount) * fclScale,
+        };
+      });
       const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
       if (crErr) throw crErr;
 
@@ -334,12 +394,66 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             </select>
             {selectedFreight && (
               <span className="text-xs text-muted-foreground">
-                {t("buyer.bid.freightCost")}: US$ {Number(selectedFreight.cost).toLocaleString()} ({pLbl}{" "}
-                {fmtPrice(freightPerKg, unit)})
+                {t("buyer.bid.freightCost")}: US$ {Number(selectedFreight.cost).toLocaleString()} (
+                {fmtPrice(freightPerKg, unit)} {pLbl})
+                {insurancePerKg > 0 && (
+                  <> · Insurance {fmtPrice(insurancePerKg, unit)} {pLbl}</>
+                )}
               </span>
             )}
           </label>
         </div>
+
+        {/* Incoterm banner — explains what's included in the displayed prices */}
+        <div
+          className="rounded-md border px-3 py-2 mt-2 text-xs"
+          style={
+            incoBanner.tone === "warn"
+              ? { background: "#fef3c7", borderColor: "#fcd34d", color: "#92400e" }
+              : { background: "#ecfeff", borderColor: "#a5f3fc", color: "#155e75" }
+          }
+        >
+          {incoBanner.tone === "warn" ? "⚠️ " : "ℹ️ "}
+          {incoBanner.text}
+        </div>
+
+        {/* FCL allocation (Feature 2) */}
+        {totalOfferFcl > 1 && (
+          <div className="mt-3 rounded-lg border border-border p-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-xs uppercase font-semibold text-muted-foreground">
+                  Number of FCLs
+                </label>
+                <select
+                  value={fclCount}
+                  onChange={(e) => setFclCount(Number(e.target.value))}
+                  className="h-9 rounded-md border border-input bg-background px-3 text-sm tabular-nums"
+                  disabled={remainingFcl === 0}
+                >
+                  {Array.from({ length: Math.max(1, remainingFcl) }, (_, i) => i + 1).map((n) => (
+                    <option key={n} value={n}>
+                      {n} FCL{n > 1 ? "s" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div className="text-xs text-muted-foreground flex-1">
+                <span className="font-medium text-foreground">
+                  {remainingFcl}
+                </span>{" "}
+                of {totalOfferFcl} available
+                {fclAlloc.sold > 0 && <> · {fclAlloc.sold} sold</>}
+                {fclAlloc.inNegotiation > 0 && <> · {fclAlloc.inNegotiation} in negotiation</>}
+              </div>
+            </div>
+            {remainingFcl === 0 && (
+              <div className="text-xs text-destructive mt-2">
+                No FCLs available — this offer is fully claimed.
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Bulk apply — unified responsive */}
         <div className="mt-3 rounded-lg border border-border p-3">
@@ -436,13 +550,15 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
               <tr className="text-left text-xs uppercase text-muted-foreground">
                 <th className="px-3 py-2 font-medium">{t("buyer.bid.cut")}</th>
                 <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.qty", { unit: wLbl })}</th>
-                <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.asking")} ({pLbl})</th>
+                <th className="px-3 py-2 font-medium text-right">FOB ({pLbl})</th>
+                <th className="px-3 py-2 font-medium text-right">Asking ({pLbl})</th>
                 <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.yourBid")} ({pLbl})</th>
               </tr>
             </thead>
             <tbody>
               {offer.items.map((it) => {
-                const asking = Number(it.price);
+                const fob = Number(it.price);
+                const asking = effectiveAsking(fob);
                 const bidVal = bids[it.id];
                 const bid = typeof bidVal === "number" ? bidVal : asking;
                 const d = bid - asking;
@@ -455,8 +571,20 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                 return (
                   <tr key={it.id} className="border-t border-border">
                     <td className="px-3 py-2">{it.customer_product?.name ?? "—"}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{fmtWeight(Number(it.amount), unit)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{fmtPrice(asking, unit)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">
+                      {fmtWeight(Number(it.amount) * fclScale, unit)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
+                      {fmtPrice(fob, unit)}
+                    </td>
+                    <td className="px-3 py-2 text-right tabular-nums font-medium">
+                      {fmtPrice(asking, unit)}
+                      {asking !== fob && (
+                        <div className="text-[10px] text-muted-foreground font-normal">
+                          {(incoterm || "").toUpperCase()}
+                        </div>
+                      )}
+                    </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex flex-col items-end gap-0.5">
                         <Input
@@ -509,7 +637,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         {/* Cuts — mobile cards */}
         <div className="flex flex-col gap-3 mt-2 sm:hidden">
           {offer.items.map((it) => {
-            const asking = Number(it.price);
+            const fob = Number(it.price);
+            const asking = effectiveAsking(fob);
             const bidVal = bids[it.id];
             const bid = typeof bidVal === "number" ? bidVal : asking;
             const d = bid - asking;
@@ -522,13 +651,23 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             return (
               <div key={it.id} className="rounded-lg border border-border p-3">
                 <div className="font-medium text-sm mb-2">{it.customer_product?.name ?? "—"}</div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
+                <div className="grid grid-cols-3 gap-2 text-xs">
                   <div>
                     <div className="text-muted-foreground">{t("buyer.bid.qty", { unit: wLbl })}</div>
-                    <div className="font-semibold tabular-nums">{fmtWeight(Number(it.amount), unit)}</div>
+                    <div className="font-semibold tabular-nums">
+                      {fmtWeight(Number(it.amount) * fclScale, unit)}
+                    </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground">{t("buyer.bid.asking")} ({pLbl})</div>
+                    <div className="text-muted-foreground">FOB ({pLbl})</div>
+                    <div className="font-semibold tabular-nums text-muted-foreground">
+                      {fmtPrice(fob, unit)}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-muted-foreground">
+                      Asking{asking !== fob ? ` · ${(incoterm || "").toUpperCase()}` : ""} ({pLbl})
+                    </div>
                     <div className="font-semibold tabular-nums">{fmtPrice(asking, unit)}</div>
                   </div>
                 </div>
@@ -590,10 +729,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             </div>
           </div>
         </div>
-        {selectedFreight && freightPerKg > 0 && (
+        {selectedFreight && (freightPerKg > 0 || insurancePerKg > 0) && (
           <div className="text-xs text-muted-foreground mt-1">
-            Freight: US$ {Number(selectedFreight.cost).toLocaleString()} ({fmtPrice(freightPerKg, unit)} {pLbl}) · 
-            Total with freight: US$ {(bidTotal + Number(selectedFreight.cost)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            Freight US$ {Number(selectedFreight.cost).toLocaleString()} ({fmtPrice(freightPerKg, unit)} {pLbl})
+            {insurancePerKg > 0 && selectedFreight.insurance != null && (
+              <> · Insurance US$ {Number(selectedFreight.insurance).toLocaleString()} ({fmtPrice(insurancePerKg, unit)} {pLbl})</>
+            )}
+            {" · "}Totals above already reflect <strong>{(incoterm || "").toUpperCase()}</strong>.
           </div>
         )}
 
