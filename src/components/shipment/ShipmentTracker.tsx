@@ -214,6 +214,101 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
     return MILESTONES.filter((m) => m.key !== ("__transit__" as never) && current[m.key as keyof ShipmentContainer]).length;
   }, [current]);
 
+  // ------- BL upload + AI extraction -------
+  const fileToBase64 = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => {
+        const s = String(r.result || "");
+        const idx = s.indexOf(",");
+        resolve(idx >= 0 ? s.slice(idx + 1) : s);
+      };
+      r.onerror = reject;
+      r.readAsDataURL(file);
+    });
+
+  const uploadBLFile = async (file: File, kind: "final" | "draft") => {
+    if (!current) return;
+    if (file.size > 10 * 1024 * 1024) {
+      setExtractError("File exceeds 10MB limit.");
+      return;
+    }
+    setExtractError(null);
+    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
+    const path = `${orderId}/${current.id}/${kind}-${Date.now()}-${safeName}`;
+    const { error: upErr } = await supabase.storage.from("bl-documents").upload(path, file, {
+      cacheControl: "3600", upsert: false, contentType: file.type,
+    });
+    if (upErr) { setExtractError(`Upload failed: ${upErr.message}`); return; }
+    const { data: pub } = supabase.storage.from("bl-documents").getPublicUrl(path);
+    const url = pub.publicUrl;
+    const patch: Partial<ShipmentContainer> = kind === "final"
+      ? { bl_document_url: url }
+      : { bl_draft_url: url };
+    await persist(current.id, patch);
+
+    if (kind === "final") {
+      // trigger AI extraction
+      try {
+        setExtracting(true);
+        setExtractResult(null);
+        const b64 = await fileToBase64(file);
+        const { data, error } = await supabase.functions.invoke("extract-bl", {
+          body: { fileBase64: b64, mimeType: file.type },
+        });
+        if (error) throw new Error(error.message);
+        if ((data as { error?: string })?.error) throw new Error((data as { error: string }).error);
+        const extracted = (data as { extracted: Record<string, unknown> }).extracted || {};
+        setExtractResult(extracted);
+        await persist(current.id, { bl_extracted_data: extracted as unknown as ShipmentContainer["bl_extracted_data"] });
+      } catch (e) {
+        setExtractError(e instanceof Error ? e.message : "Extraction failed.");
+      } finally {
+        setExtracting(false);
+      }
+    }
+  };
+
+  const FORM_FIELDS = [
+    "container_number","seal_number","bl_number","shipping_line",
+    "vessel_name","voyage_number","origin_port","destination_port",
+    "origin_country","destination_country","departed_date","arrived_date",
+  ] as const;
+
+  const applyExtraction = async () => {
+    if (!extractResult || !current) return;
+    const patch: Partial<ShipmentContainer> = {};
+    for (const k of FORM_FIELDS) {
+      const v = extractResult[k];
+      if (v === null || v === undefined || v === "") continue;
+      if (k === "departed_date" || k === "arrived_date") {
+        const iso = fromDateInput(String(v));
+        if (iso) (patch as Record<string, unknown>)[k] = iso;
+      } else if (k === "shipping_line") {
+        const norm = SHIPPING_LINES.find((s) => s.toLowerCase() === String(v).toLowerCase());
+        if (norm) patch.shipping_line = norm;
+      } else {
+        (patch as Record<string, unknown>)[k] = String(v);
+      }
+    }
+    // Try to match ports by extracted port string
+    const matchPort = (txt: string) => {
+      const t = txt.toLowerCase();
+      return ports.find((p) => t.includes(p.code.toLowerCase()) || t.includes(p.name.toLowerCase()));
+    };
+    if (typeof extractResult.origin_port === "string") {
+      const p = matchPort(extractResult.origin_port);
+      if (p) { patch.origin_port_id = p.id; patch.origin_country = p.country?.english_name ?? patch.origin_country ?? null; }
+    }
+    if (typeof extractResult.destination_port === "string") {
+      const p = matchPort(extractResult.destination_port);
+      if (p) { patch.destination_port_id = p.id; patch.destination_country = p.country?.english_name ?? patch.destination_country ?? null; }
+    }
+    await persist(current.id, patch);
+    setExtractResult(null);
+  };
+  // ------- end BL extraction -------
+
   if (loading) return <div className="shp-empty">Loading shipment…</div>;
   if (!current) {
     return (
