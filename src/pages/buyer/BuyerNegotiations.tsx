@@ -294,6 +294,15 @@ export default function BuyerNegotiations() {
                             {b.status === "action_required" && b.expiresIn && (
                               <span className="nego-timer">⏱ {b.expiresIn}</span>
                             )}
+                            {b.status === "accepted" && b.orderNumber && (
+                              <a
+                                href={`/buyer/orders/${b.orderNumber}`}
+                                onClick={(e) => e.stopPropagation()}
+                                style={{ fontSize: 11, color: "#8B2252", fontWeight: 500, textDecoration: "none" }}
+                              >
+                                Order #{b.orderNumber} →
+                              </a>
+                            )}
                           </div>
                         </td>
                         <td data-label={t("buyer.negotiations.col.updated")}>

@@ -4,7 +4,7 @@
  * Will be replaced by a real Supabase hook later.
  */
 
-export type SupplierOfferStatus = "active" | "new" | "negotiating" | "closed" | "inactive";
+export type SupplierOfferStatus = "active" | "new" | "negotiating" | "closed" | "inactive" | "sold_out";
 
 export type SupplierOfferItem = {
   name: string;

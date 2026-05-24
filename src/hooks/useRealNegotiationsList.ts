@@ -47,6 +47,8 @@ export function useRealNegotiationsList(role: Role) {
           `
           id, offer_id, buyer_company_id, port_id, incoterm, status,
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
+          order_id,
+          order:orders!negotiations_order_id_fkey ( id, order_number ),
           offer:offers!inner (
             id, offer_number, created_at, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
@@ -166,6 +168,8 @@ function groupForBuyer(rows: RealNegotiationRow[]): BuyerParentOffer[] {
       originCountry: o.origin_country,
       status: mapStatusForBuyer(r.status),
       updatedAt: r.updated_at,
+      orderId: r.order?.id ?? null,
+      orderNumber: r.order?.order_number != null ? String(r.order.order_number).padStart(7, "0") : null,
     };
     groups.get(parentId)!.bids.push(bid);
   }
@@ -203,6 +207,8 @@ function groupForSupplier(rows: RealNegotiationRow[]): ParentOffer[] {
       destinationCountry: destCountry,
       status: mapStatusForSupplier(r.status),
       updatedAt: r.updated_at,
+      orderId: r.order?.id ?? null,
+      orderNumber: r.order?.order_number != null ? String(r.order.order_number).padStart(7, "0") : null,
     };
     groups.get(parentId)!.bids.push(bid);
   }

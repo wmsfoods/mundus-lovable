@@ -97,7 +97,7 @@ type HomeOfferCardData = {
   category: string;
   condition: string;
   cutCount: number;
-  status: "active" | "new" | "negotiating" | "closed" | "inactive";
+  status: "active" | "new" | "negotiating" | "closed" | "inactive" | "sold_out";
   title: string;
   cuts: string[];
   destinationFlag: string;

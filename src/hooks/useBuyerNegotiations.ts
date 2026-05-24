@@ -23,6 +23,8 @@ export type BuyerNegotiationBid = {
   status: BuyerNegotiationStatus;
   updatedAt: string;
   expiresIn?: string;
+  orderId?: string | null;
+  orderNumber?: string | null;
 };
 
 export type BuyerParentOffer = {

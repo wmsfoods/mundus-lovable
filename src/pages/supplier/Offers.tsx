@@ -37,6 +37,7 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   negotiating: { bg: "#fef0f0", fg: "#b6354b", dot: "#d65370" },
   closed:      { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af" },
   inactive:    { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af" },
+  sold_out:    { bg: "#dcfce7", fg: "#166534", dot: "#16a34a" },
 };
 
 function hashId(id: string): number {
@@ -82,6 +83,7 @@ function SupplierOfferCard({
       role="button"
       tabIndex={0}
       onClick={onOpen}
+      style={o.status === "sold_out" ? { opacity: 0.75 } : undefined}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onOpen(); }
       }}
@@ -111,10 +113,26 @@ function SupplierOfferCard({
           )}
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
-          <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
-            <span className="status-dot" style={{ background: status.dot }} />
-            {t(`supplier.offers.status.${o.status}`)}
-          </span>
+          {o.status === "sold_out" ? (
+            <span
+              style={{
+                padding: "2px 8px",
+                borderRadius: 10,
+                background: "#dcfce7",
+                color: "#166534",
+                fontSize: 10,
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              ✅ Sold Out
+            </span>
+          ) : (
+            <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
+              <span className="status-dot" style={{ background: status.dot }} />
+              {t(`supplier.offers.status.${o.status}`)}
+            </span>
+          )}
           {negInfo && negInfo.total > 0 ? (
             <span
               style={{
