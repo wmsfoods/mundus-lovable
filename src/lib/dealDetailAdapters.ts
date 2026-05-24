@@ -227,6 +227,8 @@ export function buyerOrderToDeal(
     documents: genDocuments(order.orderNumber, order.orderNumber, completion),
     backHref: "/buyer/orders",
     fullNegotiationHref: undefined,
+    orderId: order.id,
+    shipmentReadOnly: true,
   };
 }
 
@@ -298,5 +300,7 @@ export function supplierSaleToDeal(
     documents: genDocuments(sale.dealId, sale.dealId, completion),
     backHref: "/supplier/sales",
     fullNegotiationHref: undefined,
+    orderId: sale.id,
+    shipmentReadOnly: false,
   };
 }
