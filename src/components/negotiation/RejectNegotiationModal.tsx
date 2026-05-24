@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { publicUrl } from "@/lib/publicUrl";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 
 export interface RejectNegotiationModalProps {
@@ -72,7 +73,7 @@ export function RejectNegotiationModal({
               buyer_email: "buyer@example.com",
               offer_title: "Offer",
               reason: notes.trim() || null,
-              marketplace_link: `${window.location.origin}/buyer/marketplace`,
+              marketplace_link: publicUrl("/buyer/marketplace"),
             },
           },
         }).catch(() => {});

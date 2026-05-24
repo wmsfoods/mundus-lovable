@@ -8,6 +8,7 @@ import { PasswordRequirements } from "./PasswordRequirements";
 import { allRulesMet, checkPassword } from "./passwordRules";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
+import { publicUrl } from "@/lib/publicUrl";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 
 const MUNDUS_TRADE_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
@@ -134,7 +135,7 @@ export default function Signup() {
       email: data.email,
       password: data.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/dashboard`,
+        emailRedirectTo: publicUrl("/dashboard"),
         data: { name: data.name },
       },
     });
