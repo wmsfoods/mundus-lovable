@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 export type BuyerOrderStatus = string;
 
@@ -96,8 +97,11 @@ export function useBuyerOrders() {
   const [data, setData] = useState<BuyerOrder[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { company, loading: companyLoading } = useCurrentCompany();
 
   useEffect(() => {
+    if (companyLoading) return;
+    if (!company?.id) { setData([]); setLoading(false); return; }
     let cancelled = false;
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
     const load = async () => {
@@ -105,6 +109,7 @@ export function useBuyerOrders() {
       const { data: rows, error: qErr } = await supabase
         .from('orders')
         .select(SELECT)
+        .eq('buyer_company_id', company.id)
         .is('deleted_at', null)
         .order('placed_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
@@ -130,7 +135,7 @@ export function useBuyerOrders() {
       if (reloadTimer) clearTimeout(reloadTimer);
       supabase.removeChannel(channel);
     };
-  }, []);
+  }, [company?.id, companyLoading]);
 
   return { data, isLoading, error };
 }
@@ -139,8 +144,11 @@ export function useBuyerOrder(id: string) {
   const [data, setData] = useState<BuyerOrder | null>(null);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { company, loading: companyLoading } = useCurrentCompany();
 
   useEffect(() => {
+    if (companyLoading) return;
+    if (!company?.id) { setData(null); setLoading(false); return; }
     let cancelled = false;
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
     let orderUuid: string | null = null;
@@ -148,7 +156,9 @@ export function useBuyerOrder(id: string) {
       setLoading(true);
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
       const isNum = /^\d+$/.test(id);
-      let q = supabase.from('orders').select(SELECT).is('deleted_at', null);
+      let q = supabase.from('orders').select(SELECT)
+        .eq('buyer_company_id', company.id)
+        .is('deleted_at', null);
       if (isUuid) q = q.eq('id', id);
       else if (isNum) q = q.eq('order_number', Number(id));
       else q = q.eq('id', '00000000-0000-0000-0000-000000000000');
@@ -178,7 +188,7 @@ export function useBuyerOrder(id: string) {
       if (reloadTimer) clearTimeout(reloadTimer);
       supabase.removeChannel(channel);
     };
-  }, [id]);
+  }, [id, company?.id, companyLoading]);
 
   return { data, isLoading, error };
 }

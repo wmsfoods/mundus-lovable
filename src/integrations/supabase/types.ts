@@ -3871,6 +3871,7 @@ export type Database = {
       }
       orders: {
         Row: {
+          buyer_company_id: string | null
           buyer_id: string
           buyer_rating: number | null
           created_at: string | null
@@ -3889,6 +3890,7 @@ export type Database = {
           status: string | null
         }
         Insert: {
+          buyer_company_id?: string | null
           buyer_id: string
           buyer_rating?: number | null
           created_at?: string | null
@@ -3907,6 +3909,7 @@ export type Database = {
           status?: string | null
         }
         Update: {
+          buyer_company_id?: string | null
           buyer_id?: string
           buyer_rating?: number | null
           created_at?: string | null
@@ -3925,6 +3928,13 @@ export type Database = {
           status?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "orders_buyer_company_id_fkey"
+            columns: ["buyer_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "orders_buyer_id_fkey"
             columns: ["buyer_id"]
