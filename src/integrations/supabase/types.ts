@@ -4769,7 +4769,6 @@ export type Database = {
           created_at: string
           expires_at: string
           id: string
-          notes: string | null
           offer_id: string | null
           order_id: string | null
           sent_at: string | null
@@ -4785,7 +4784,6 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
-          notes?: string | null
           offer_id?: string | null
           order_id?: string | null
           sent_at?: string | null
@@ -4801,7 +4799,6 @@ export type Database = {
           created_at?: string
           expires_at?: string
           id?: string
-          notes?: string | null
           offer_id?: string | null
           order_id?: string | null
           sent_at?: string | null
