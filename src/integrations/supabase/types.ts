@@ -260,6 +260,86 @@ export type Database = {
           },
         ]
       }
+      buyer_requests: {
+        Row: {
+          additional_info: string | null
+          buyer_company_id: string
+          buyer_user_id: string | null
+          category: string | null
+          container_count: number | null
+          container_size: string | null
+          created_at: string | null
+          deleted_at: string | null
+          destination_country: string
+          destination_port: string | null
+          id: string
+          incoterm: string | null
+          product_name: string
+          quantity_kg: number
+          request_number: number
+          shipment_date: string | null
+          specification: string | null
+          status: string | null
+          target_price_usd: number | null
+          temperature: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          additional_info?: string | null
+          buyer_company_id: string
+          buyer_user_id?: string | null
+          category?: string | null
+          container_count?: number | null
+          container_size?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          destination_country: string
+          destination_port?: string | null
+          id?: string
+          incoterm?: string | null
+          product_name: string
+          quantity_kg: number
+          request_number?: number
+          shipment_date?: string | null
+          specification?: string | null
+          status?: string | null
+          target_price_usd?: number | null
+          temperature?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          additional_info?: string | null
+          buyer_company_id?: string
+          buyer_user_id?: string | null
+          category?: string | null
+          container_count?: number | null
+          container_size?: string | null
+          created_at?: string | null
+          deleted_at?: string | null
+          destination_country?: string
+          destination_port?: string | null
+          id?: string
+          incoterm?: string | null
+          product_name?: string
+          quantity_kg?: number
+          request_number?: number
+          shipment_date?: string | null
+          specification?: string | null
+          status?: string | null
+          target_price_usd?: number | null
+          temperature?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buyer_requests_buyer_company_id_fkey"
+            columns: ["buyer_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       companies: {
         Row: {
           address: string
@@ -3581,6 +3661,7 @@ export type Database = {
           origin_port: string
           payment_terms: string
           price: number | null
+          request_id: string | null
           shipment_month: number
           shipment_year: number
           status: string | null
@@ -3606,6 +3687,7 @@ export type Database = {
           origin_port: string
           payment_terms: string
           price?: number | null
+          request_id?: string | null
           shipment_month: number
           shipment_year: number
           status?: string | null
@@ -3631,6 +3713,7 @@ export type Database = {
           origin_port?: string
           payment_terms?: string
           price?: number | null
+          request_id?: string | null
           shipment_month?: number
           shipment_year?: number
           status?: string | null
@@ -3646,6 +3729,13 @@ export type Database = {
             columns: ["office_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "buyer_requests"
             referencedColumns: ["id"]
           },
           {

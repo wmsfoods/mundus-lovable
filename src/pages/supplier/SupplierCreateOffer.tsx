@@ -596,6 +596,7 @@ export default function SupplierCreateOffer() {
             exw_pickup_location: selInco.includes("EXW")
               ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
               : null,
+            request_id: fromRequest?.requestId ?? null,
           })
           .select("id, offer_number")
           .single();
@@ -803,6 +804,12 @@ export default function SupplierCreateOffer() {
       }
 
       toast.success(`Offer ${formatOfferNumber(offer.offer_number)} published successfully!`);
+      if (fromRequest?.requestId) {
+        await supabase
+          .from("buyer_requests")
+          .update({ status: "with_responses", updated_at: new Date().toISOString() })
+          .eq("id", fromRequest.requestId);
+      }
       navigate("/supplier/offers");
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed to publish offer";

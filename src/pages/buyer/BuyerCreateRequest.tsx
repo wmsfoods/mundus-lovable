@@ -6,6 +6,9 @@ import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
 import RequestPasteImport, { type ParsedRow } from "@/components/buyer/RequestPasteImport";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
+import { supabase } from "@/integrations/supabase/client";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useAuth } from "@/contexts/AuthContext";
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
 const INCOTERMS = ["CFR", "CIF", "FOB"] as const;
@@ -30,6 +33,9 @@ const newRow = (): Row => ({
 export default function BuyerCreateRequest() {
   const navigate = useNavigate();
   const { markets, cutsByCategory } = useSupplierOfferData();
+  const { company } = useCurrentCompany();
+  const { user } = useAuth();
+  const [submitting, setSubmitting] = useState(false);
 
   const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Beef");
   const [countryId, setCountryId] = useState("");
@@ -81,10 +87,54 @@ export default function BuyerCreateRequest() {
     });
   };
 
-  const broadcast = () => {
+  const broadcast = async () => {
+    if (!company?.id) return toast.error("No company linked");
     if (!countryId) return toast.error("Select a destination country");
     if (filledRows === 0) return toast.error("Add at least one cut");
-    toast.success("Request broadcasted to suppliers (mock).");
+    const country = markets.find((m) => m.id === countryId);
+    const valid = rows.filter((r) => r.cut.trim());
+    const primary = valid[0];
+    const productName = valid.length === 1
+      ? primary.cut
+      : `${primary.cut} + ${valid.length - 1} more cut(s)`;
+    const specs = valid.map((r) => `${r.cut}${r.spec ? ` (${r.spec})` : ""}${r.marbling && r.marbling !== "Not specified" ? ` — ${r.marbling}` : ""}${r.qty ? ` — ${r.qty}kg` : ""}${r.target ? ` @ $${r.target}/kg` : ""}`).join("\n");
+    const targets = valid.map((r) => parseFloat(r.target)).filter((n) => Number.isFinite(n) && n > 0);
+    const avgTarget = targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : null;
+    const compliance: string[] = [];
+    if (halal) compliance.push("Halal");
+    if (kosher) compliance.push("Kosher");
+    const additional = [
+      specs ? `Cuts:\n${specs}` : "",
+      compliance.length ? `Compliance: ${compliance.join(", ")}` : "",
+      notes ? `Notes:\n${notes}` : "",
+    ].filter(Boolean).join("\n\n");
+
+    setSubmitting(true);
+    const { data, error } = await supabase
+      .from("buyer_requests")
+      .insert({
+        buyer_company_id: company.id,
+        buyer_user_id: user?.id ?? null,
+        product_name: productName,
+        category,
+        specification: primary.spec || null,
+        destination_country: country?.n ?? "",
+        destination_port: null,
+        incoterm,
+        container_size: containerType === "20" ? "20ft" : "40ft",
+        container_count: parseInt(containerCount) || 1,
+        quantity_kg: totalKg,
+        temperature: "Frozen",
+        target_price_usd: avgTarget,
+        shipment_date: shipmentWindow || null,
+        additional_info: additional || null,
+        status: "new",
+      })
+      .select("id")
+      .single();
+    setSubmitting(false);
+    if (error || !data) return toast.error(error?.message ?? "Failed to create request");
+    toast.success("Request published to suppliers");
     navigate("/buyer/requests");
   };
 
