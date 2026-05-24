@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { detectPriceIntent, type DetectableItem, type DetectedPrice } from "@/lib/priceIntentDetector";
 
 type OfferItem = { id: string; name: string; price: number; amount: number };
 
@@ -47,6 +48,7 @@ function fmtUsd(n: number) {
 export function NegotiationChat({
   negotiationId,
   perspective,
+  offerItems,
   enabled,
   rounds,
   agreedItems,
@@ -57,6 +59,8 @@ export function NegotiationChat({
   const [sending, setSending] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [actingOn, setActingOn] = useState<string | null>(null);
+  const [detected, setDetected] = useState<DetectedPrice[]>([]);
+  const [dismissedFor, setDismissedFor] = useState<string>("");
   // Mobile collapsible: panel collapsed by default below 720px.
   const [isMobile, setIsMobile] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 720px)").matches : false,
@@ -169,6 +173,20 @@ export function NegotiationChat({
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [feed.length, open]);
 
+  // Detect embedded price proposals as the user types.
+  const detectables: DetectableItem[] = useMemo(
+    () => (offerItems ?? []).map((oi) => ({ itemId: oi.id, itemName: oi.name, askingPrice: Number(oi.price) || 0 })),
+    [offerItems],
+  );
+  useEffect(() => {
+    if (!input.trim() || input.trim() === dismissedFor) {
+      setDetected([]);
+      return;
+    }
+    const found = detectPriceIntent(input, detectables);
+    setDetected(found);
+  }, [input, detectables, dismissedFor]);
+
   async function send() {
     const text = input.trim();
     if (!text || sending) return;
@@ -185,6 +203,41 @@ export function NegotiationChat({
         content: text,
       });
       setInput("");
+      setDetected([]);
+      setDismissedFor("");
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function sendAsProposal() {
+    if (sending || detected.length === 0) return;
+    setSending(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id ?? null;
+      if (!userId) return;
+      const items = detected.map((d) => {
+        const oi = offerItems.find((x) => x.id === d.itemId);
+        return {
+          name: d.itemName,
+          quantity_kg: Number(oi?.amount ?? 0),
+          price_per_kg: d.price,
+        };
+      });
+      const total = items.reduce((s, it) => s + it.price_per_kg * it.quantity_kg, 0);
+      await supabase.from("negotiation_messages").insert({
+        negotiation_id: negotiationId,
+        sender_user_id: userId,
+        sender_side: perspective,
+        message_type: "proposal",
+        content: input.trim(),
+        structured_data: { items, total_usd: total, note: input.trim() } as never,
+        proposal_status: "pending",
+      });
+      setInput("");
+      setDetected([]);
+      setDismissedFor("");
     } finally {
       setSending(false);
     }
@@ -380,6 +433,57 @@ export function NegotiationChat({
               )}
             </div>
 
+            <div style={{
+              display: "flex", gap: 8, padding: "12px 16px",
+              borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--muted))",
+              paddingBottom: isMobile ? "calc(12px + env(safe-area-inset-bottom))" : 12,
+            }}>
+            </div>
+            {detected.length > 0 && (
+              <div style={{
+                padding: "10px 16px",
+                borderTop: "1px solid hsl(var(--border))",
+                background: "#fef9c3",
+                color: "#713f12",
+                fontSize: 12,
+              }}>
+                <div style={{ fontWeight: 700, marginBottom: 6 }}>
+                  💡 We detected {detected.length === 1 ? "a price" : `${detected.length} prices`} in your message
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 3, marginBottom: 8 }}>
+                  {detected.map((d) => (
+                    <div key={d.itemId} style={{ display: "flex", justifyContent: "space-between" }}>
+                      <span>{d.itemName}</span>
+                      <span style={{ fontWeight: 600 }}>
+                        {fmtUsd(d.price)}/kg
+                        {d.askingPrice > 0 && (
+                          <span style={{ marginLeft: 6, color: "#92400e", fontWeight: 400 }}>
+                            (asking {fmtUsd(d.askingPrice)})
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: 6 }}>
+                  <button
+                    type="button"
+                    onClick={sendAsProposal}
+                    disabled={sending}
+                    style={{ flex: 1, padding: "8px 10px", fontSize: 12, fontWeight: 700, background: "#16a34a", color: "white", border: "none", borderRadius: 8, cursor: "pointer" }}
+                  >
+                    Send as formal proposal
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setDismissedFor(input.trim())}
+                    style={{ padding: "8px 10px", fontSize: 12, fontWeight: 600, background: "transparent", color: "#713f12", border: "1px solid #d6b86a", borderRadius: 8, cursor: "pointer" }}
+                  >
+                    Send as text only
+                  </button>
+                </div>
+              </div>
+            )}
             <div style={{
               display: "flex", gap: 8, padding: "12px 16px",
               borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--muted))",
