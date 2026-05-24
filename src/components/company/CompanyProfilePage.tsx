@@ -856,6 +856,7 @@ export function ChipTagInput({
 }
 
 const PHONE_FLAGS = [
+  // keep existing list
   { code: "+55", flag: "🇧🇷", label: "Brazil" },
   { code: "+1", flag: "🇺🇸", label: "USA" },
   { code: "+86", flag: "🇨🇳", label: "China" },
