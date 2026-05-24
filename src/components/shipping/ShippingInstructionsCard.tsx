@@ -418,68 +418,6 @@ function Labeled({ label, children }: { label: string; children: React.ReactNode
     </div>
   );
 }
-  return (
-    <div className="si-supplier-card">
-      <h3>📋 Shipping Instructions {statusPill()}</h3>
-
-      {!readOnly && (status === "not_requested" || status === "inactive") && (
-        <>
-          <div className="si-email-row">
-            <div className="si-field" style={{ flex: 1 }}>
-              <label>Buyer Email</label>
-              <input value={buyerEmail} onChange={(e) => setBuyerEmail(e.target.value)} placeholder="buyer@company.com" />
-            </div>
-            <div className="si-field" style={{ flex: 1 }}>
-              <label>Buyer Name (optional)</label>
-              <input value={buyerName} onChange={(e) => setBuyerName(e.target.value)} placeholder="Contact name" />
-            </div>
-          </div>
-          <div className="si-actions-row">
-            <button className="si-btn is-primary" onClick={sendLink} disabled={sending}>
-              {sending ? "Generating…" : "📧 Generate Link"}
-            </button>
-          </div>
-        </>
-      )}
-
-      {request && status === "link_sent" && !readOnly && (
-        <>
-          <p className="si-info-line">✅ Link sent to <strong>{request.buyer_email}</strong> on {fmtDate(request.sent_at)}</p>
-          <p className="si-info-line">Link expires: {fmtDate(request.expires_at)}</p>
-          <div className="si-link-box">{window.location.origin}/shipping-instructions/{request.token}</div>
-          <div className="si-actions-row">
-            <button className="si-btn" onClick={copyLink}>📋 Copy Link</button>
-            <button className="si-btn" onClick={sendLink} disabled={sending}>🔄 Resend</button>
-            <button className="si-btn is-danger" onClick={inactivate}>✕ Inactivate</button>
-          </div>
-        </>
-      )}
-
-      {request && (status === "received" || status === "approved") && si && (
-        <>
-          <p className="si-info-line">
-            ✅ Shipping Instructions {status === "approved" ? "Approved" : "Received"} on {fmtDate(status === "approved" ? si.approved_at : request.submitted_at)}
-          </p>
-          <div className="si-actions-row">
-            <button className="si-btn" onClick={() => setViewOpen(true)}>👁 View Instructions</button>
-            {!readOnly && status === "received" && (
-              <button className="si-btn is-primary" onClick={approve}>✓ Approve</button>
-            )}
-          </div>
-        </>
-      )}
-
-      {readOnly && status === "not_requested" && (
-        <p className="si-info-line">No shipping instructions have been requested yet.</p>
-      )}
-
-      {viewOpen && si && (
-        <SIViewModal si={si} request={request} onClose={() => setViewOpen(false)} />
-      )}
-    </div>
-  );
-}
-
 function SIViewModal({ si, request, onClose }: { si: SIRecord; request: SIRequest | null; onClose: () => void }) {
   return (
     <div style={{
