@@ -28,8 +28,6 @@ import {
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
 
-const MOCK_BUYER_USER_ID = "c3000001-0000-0000-0000-000000000001";
-
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
 
@@ -318,7 +316,7 @@ export function CounterOfferModal({
     setSubmitting(true);
     try {
       const { data: authData, error: authError } = await supabase.auth.getUser();
-      const userId = authData.user?.id ?? (perspective === "buyer" ? MOCK_BUYER_USER_ID : null);
+      const userId = authData.user?.id ?? null;
       if (authError || !userId) {
         throw new Error("Please sign in again before sending a counter-offer.");
       }

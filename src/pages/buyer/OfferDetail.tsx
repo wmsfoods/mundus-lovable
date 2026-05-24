@@ -18,8 +18,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
 
-const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
-
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
@@ -70,7 +68,7 @@ export default function BuyerOfferDetail() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [bidOpen, setBidOpen] = useState(false);
   const { company } = useCurrentCompany();
-  const currentCompanyId = company?.id ?? MOCK_BUYER_COMPANY_ID;
+  const currentCompanyId = company?.id ?? null;
 
   const { data: myNegotiation } = useQuery({
     queryKey: ["my-negotiation", id, currentCompanyId],

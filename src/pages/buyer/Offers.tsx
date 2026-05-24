@@ -26,8 +26,7 @@ import {
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
 import { formatOfferNumber } from "@/lib/offerNumber";
-
-const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -298,13 +297,17 @@ export default function BuyerOffers() {
   const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
+  const { company } = useCurrentCompany();
+  const buyerCompanyId = company?.id ?? null;
+
   const { data: myNegotiations } = useQuery({
-    queryKey: ["my-negotiations-map", MOCK_BUYER_COMPANY_ID],
+    queryKey: ["my-negotiations-map", buyerCompanyId],
+    enabled: !!buyerCompanyId,
     queryFn: async () => {
       const { data } = await supabase
         .from("negotiations")
         .select("id, offer_id, status")
-        .eq("buyer_company_id", MOCK_BUYER_COMPANY_ID)
+        .eq("buyer_company_id", buyerCompanyId!)
         .not("status", "in", "(expired,offer_withdrawn)")
         .is("deleted_at", null);
       return data || [];
