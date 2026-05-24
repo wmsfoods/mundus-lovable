@@ -729,10 +729,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             </div>
           </div>
         </div>
-        {selectedFreight && freightPerKg > 0 && (
+        {selectedFreight && (freightPerKg > 0 || insurancePerKg > 0) && (
           <div className="text-xs text-muted-foreground mt-1">
-            Freight: US$ {Number(selectedFreight.cost).toLocaleString()} ({fmtPrice(freightPerKg, unit)} {pLbl}) · 
-            Total with freight: US$ {(bidTotal + Number(selectedFreight.cost)).toLocaleString(undefined, { maximumFractionDigits: 2 })}
+            Freight US$ {Number(selectedFreight.cost).toLocaleString()} ({fmtPrice(freightPerKg, unit)} {pLbl})
+            {insurancePerKg > 0 && selectedFreight.insurance != null && (
+              <> · Insurance US$ {Number(selectedFreight.insurance).toLocaleString()} ({fmtPrice(insurancePerKg, unit)} {pLbl})</>
+            )}
+            {" · "}Totals above already reflect <strong>{(incoterm || "").toUpperCase()}</strong>.
           </div>
         )}
 
