@@ -282,7 +282,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           created_by_user_id: buyerUserId,
           port_id: portId || null,
           freight_cost_per_kg: freightPerKg,
-          fcl_count: offer.total_fcl ?? 1,
+          insurance_per_kg: insurancePerKg,
+          fcl_count: fclCount,
           incoterm,
           status: "awaiting_supplier",
           expires_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
@@ -301,17 +302,31 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           side: "buyer",
           type: "bid",
           message: message.trim() || null,
+          incoterm,
+          freight_per_kg: freightPerKg,
+          insurance_per_kg: insurancePerKg,
         })
         .select("id")
         .single();
       if (rpErr || !rp) throw rpErr ?? new Error("round_proposals insert failed");
 
-      const cutRows = offer.items.map((it) => ({
-        round_proposal_id: rp.id,
-        offer_item_id: it.id,
-        price_per_kg: (typeof bids[it.id] === "number" ? (bids[it.id] as number) : Number(it.price)),
-        quantity_kg: Number(it.amount),
-      }));
+      // Persist the FOB-equivalent price so it can be compared against the
+      // supplier's asking directly. The buyer's bid was entered against the
+      // *effective* (incoterm-adjusted) price, so strip the add-on back off.
+      const addOn = getIncotermAddOn(incoterm, freightPerKg, insurancePerKg);
+      const cutRows = offer.items.map((it) => {
+        const enteredEffective =
+          typeof bids[it.id] === "number"
+            ? (bids[it.id] as number)
+            : effectiveAsking(Number(it.price));
+        const fobBid = Math.max(0, enteredEffective - addOn);
+        return {
+          round_proposal_id: rp.id,
+          offer_item_id: it.id,
+          price_per_kg: fobBid,
+          quantity_kg: Number(it.amount) * fclScale,
+        };
+      });
       const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
       if (crErr) throw crErr;
 
