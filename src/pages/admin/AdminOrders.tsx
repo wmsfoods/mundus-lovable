@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Package, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { ORDER_STATUSES, getStatusConfig, getStatusLabel } from "@/lib/orderStatus";
+import { useToast } from "@/hooks/use-toast";
 
 type OrderRow = {
   id: string;
@@ -12,17 +14,6 @@ type OrderRow = {
   buyer_name: string;
   offer_number: number | null;
   offer_created_at: string | null;
-};
-
-const STATUS_COLORS: Record<string, string> = {
-  pending_supplier: "bg-amber-100 text-amber-800",
-  accepted: "bg-blue-100 text-blue-800",
-  awaiting_payment: "bg-amber-100 text-amber-800",
-  in_production: "bg-blue-100 text-blue-800",
-  shipped: "bg-indigo-100 text-indigo-800",
-  delivered: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-  cancelled: "bg-zinc-200 text-zinc-700",
 };
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -40,6 +31,7 @@ function fmtDate(iso: string): string {
 }
 
 export default function AdminOrders() {
+  const { toast } = useToast();
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +101,38 @@ export default function AdminOrders() {
     });
   }, [rows, statusFilter, search]);
 
+  const updateStatus = async (id: string, newStatus: string) => {
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
+    const { error } = await supabase
+      .from("orders")
+      .update({ status: newStatus, updated_at: new Date().toISOString() } as never)
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: `Status updated to ${getStatusLabel(newStatus)}` });
+    }
+  };
+
+  const StatusSelect = ({ id, status }: { id: string; status: string | null }) => {
+    const cfg = getStatusConfig(status);
+    return (
+      <select
+        value={cfg.value}
+        onChange={(e) => updateStatus(id, e.target.value)}
+        style={{
+          padding: "4px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+          background: cfg.bg, color: cfg.color,
+          border: `1px solid ${cfg.color}55`, cursor: "pointer",
+        }}
+      >
+        {ORDER_STATUSES.map((s) => (
+          <option key={s.value} value={s.value}>{s.icon} {s.label}</option>
+        ))}
+      </select>
+    );
+  };
+
   return (
     <div className="adm-body">
       <div className="adm-page-header">
@@ -128,14 +152,9 @@ export default function AdminOrders() {
       <div className="flex flex-wrap gap-2 mt-2">
         <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
           <option value="all">All statuses</option>
-          <option value="pending_supplier">Pending Supplier</option>
-          <option value="accepted">Accepted</option>
-          <option value="awaiting_payment">Awaiting Payment</option>
-          <option value="in_production">In Production</option>
-          <option value="shipped">Shipped</option>
-          <option value="delivered">Delivered</option>
-          <option value="rejected">Rejected</option>
-          <option value="cancelled">Cancelled</option>
+          {ORDER_STATUSES.map((s) => (
+            <option key={s.value} value={s.value}>{s.icon} {s.label}</option>
+          ))}
         </select>
         <input
           type="text"
@@ -181,11 +200,7 @@ export default function AdminOrders() {
                       <td style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{r.offer_number != null ? formatOfferNumber(r.offer_number, r.offer_created_at) : "—"}</td>
                       <td>{r.supplier_name}</td>
                       <td>{r.buyer_name}</td>
-                      <td>
-                        <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[r.status ?? ""] ?? "bg-zinc-200 text-zinc-700"}`}>
-                          {(r.status ?? "—").replace(/_/g, " ")}
-                        </span>
-                      </td>
+                      <td><StatusSelect id={r.id} status={r.status} /></td>
                       <td style={{ color: "#6b7280", fontSize: 12 }}>{fmtDate(r.placed_at)}</td>
                     </tr>
                   ))}
@@ -197,11 +212,9 @@ export default function AdminOrders() {
           <div className="adm-only-mobile adm-cards-stack">
             {filtered.map(r => (
               <div key={r.id} className="adm-panel" style={{ padding: 12 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8 }}>
                   <strong>#{String(r.order_number).padStart(7, "0")}</strong>
-                  <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[r.status ?? ""] ?? "bg-zinc-200 text-zinc-700"}`}>
-                    {(r.status ?? "—").replace(/_/g, " ")}
-                  </span>
+                  <StatusSelect id={r.id} status={r.status} />
                 </div>
                 <div style={{ fontSize: 13, marginBottom: 4 }}>{r.supplier_name} → {r.buyer_name}</div>
                 <div style={{ fontSize: 12, color: "#6b7280" }}>{fmtDate(r.placed_at)}</div>

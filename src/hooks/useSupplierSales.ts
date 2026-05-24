@@ -1,16 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
-import type { Sale, SaleStatus } from "@/data/mockSales";
-
-const STATUS_MAP: Record<string, SaleStatus> = {
-  pending_supplier: "AWAITING_SUPPLIER_ACCEPTANCE",
-  awaiting_payment: "AWAITING_PRE_PAYMENT",
-  accepted: "AWAITING_PRE_PAYMENT",
-  in_production: "AWAITING_PRE_PAYMENT",
-  shipped: "AWAITING_PRE_PAYMENT",
-  delivered: "AWAITING_PRE_PAYMENT",
-};
+import type { Sale } from "@/data/mockSales";
+import { normalizeStatus } from "@/lib/orderStatus";
 
 function fmtDate(iso: string): string {
   const d = new Date(iso);
@@ -26,7 +18,8 @@ export function useSupplierSales() {
     if (companyLoading) return;
     if (!company?.id) { setData([]); setLoading(false); return; }
     let cancelled = false;
-    (async () => {
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const load = async () => {
       setLoading(true);
       const { data: offerRows } = await supabase
         .from("offers")
@@ -69,7 +62,7 @@ export function useSupplierSales() {
         return {
           id: r.id,
           dealId,
-          status: STATUS_MAP[r.status ?? ""] ?? "AWAITING_PRE_PAYMENT",
+          status: normalizeStatus(r.status),
           buyer: bCo?.name ?? bu?.name ?? "—",
           buyerContact: "—",
           orderDate: fmtDate(r.placed_at),
@@ -102,8 +95,20 @@ export function useSupplierSales() {
       });
       setData(list);
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    };
+    void load();
+    const channel = supabase
+      .channel(`supplier-sales-${company.id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "orders" }, () => {
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 400);
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      if (reloadTimer) clearTimeout(reloadTimer);
+      supabase.removeChannel(channel);
+    };
   }, [company?.id, companyLoading, company?.name]);
 
   return { data, isLoading };

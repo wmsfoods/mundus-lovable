@@ -5,6 +5,9 @@ import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabPanel } from "@/components/mundus/Tabs";
 import { ShipmentTracker } from "@/components/shipment/ShipmentTracker";
 import { ShippingInstructionsCard } from "@/components/shipping/ShippingInstructionsCard";
+import { StatusBadge, ShippingStatusTracker, getStatusConfig } from "@/lib/orderStatus";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 import {
   FileTextIcon,
   ArrowLeftIcon,
@@ -112,6 +115,8 @@ export type DealDetailData = {
   product: string;
   totalValueUsd: number;
   status: DealStatus;
+  rawStatus?: string;
+  statusUpdatedAt?: string;
   party: DealParty;
   overview: {
     date: string;
@@ -205,6 +210,32 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
   const { toast } = useToast();
   const [tab, setTab] = useState<TabKey>("overview");
   const [containerIdx] = useState(0);
+  const [liveStatus, setLiveStatus] = useState<string | undefined>(data.rawStatus);
+  const [liveUpdatedAt, setLiveUpdatedAt] = useState<string | undefined>(data.statusUpdatedAt);
+
+  useEffect(() => {
+    setLiveStatus(data.rawStatus);
+    setLiveUpdatedAt(data.statusUpdatedAt);
+  }, [data.rawStatus, data.statusUpdatedAt]);
+
+  useEffect(() => {
+    if (!data.orderId) return;
+    const channel = supabase
+      .channel(`deal-status-${data.orderId}`)
+      .on(
+        "postgres_changes",
+        { event: "UPDATE", schema: "public", table: "orders", filter: `id=eq.${data.orderId}` },
+        (payload) => {
+          const row = payload.new as { status?: string; updated_at?: string } | null;
+          if (row?.status) setLiveStatus(row.status);
+          if (row?.updated_at) setLiveUpdatedAt(row.updated_at);
+        },
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [data.orderId]);
+
+  const currentStatus = liveStatus ?? data.rawStatus;
 
   const tk = (k: string, fallback: string, opts?: Record<string, unknown>) =>
     (t(k, { defaultValue: fallback, ...opts }) as string);
@@ -288,9 +319,13 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
           </p>
         </div>
         <div className="ddv-head-right">
-          <span className={`ddv-status ddv-status--${data.status.tone}`}>
-            {data.status.label}
-          </span>
+          {currentStatus ? (
+            <StatusBadge status={currentStatus} />
+          ) : (
+            <span className={`ddv-status ddv-status--${data.status.tone}`}>
+              {data.status.label}
+            </span>
+          )}
           <span className="ddv-head-total">{fmtUsd(data.totalValueUsd)}</span>
         </div>
       </header>
@@ -305,6 +340,27 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
       <div className="ddv-layout">
         <div className="ddv-main">
           <TabPanel active={tab === "overview"}>
+            {currentStatus && (() => {
+              const cfg = getStatusConfig(currentStatus);
+              return (
+                <div style={{
+                  display: "flex", alignItems: "center", gap: 12,
+                  padding: "12px 16px", borderRadius: 8,
+                  background: cfg.bg, border: `1px solid ${cfg.color}33`,
+                  marginBottom: 16,
+                }}>
+                  <span style={{ fontSize: 20 }}>{cfg.icon}</span>
+                  <div>
+                    <div style={{ fontSize: 14, fontWeight: 600, color: cfg.color }}>{cfg.label}</div>
+                    {liveUpdatedAt && (
+                      <div style={{ fontSize: 12, color: "#6b7280" }}>
+                        Last updated: {new Date(liveUpdatedAt).toLocaleString()}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
             <Card title={`${recordLabel.toUpperCase()} ${tk("dealDetail.section.details", "DETAILS")}`} icon={FileTextIcon}>
               <FieldGrid>
                 <Field label={partyHeaderLabel.toUpperCase()} value={data.party.name} />
@@ -481,6 +537,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
           </TabPanel>
 
           <TabPanel active={tab === "shipment"}>
+            <ShippingStatusTracker currentStatus={currentStatus} />
             {data.orderId ? (
               <ShipmentTracker
                 orderId={data.orderId}

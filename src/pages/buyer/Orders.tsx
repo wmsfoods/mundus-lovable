@@ -8,26 +8,14 @@ import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import {
   useBuyerOrders,
   type BuyerOrder,
-  type BuyerOrderStatus,
 } from "@/hooks/useBuyerOrders";
+import { StatusBadge, getStatusLabel } from "@/lib/orderStatus";
 import { DealsFilterBar } from "@/components/marketplace/DealsFilterBar";
 import {
   EMPTY_FILTER,
   useDealsFilter,
   type DealsFilterState,
 } from "@/hooks/useDealsFilter";
-
-const STATUS_CLASS: Record<BuyerOrderStatus, string> = {
-  awaiting_supplier_acceptance: "pill-pending",
-  awaiting_pre_payment: "pill-info",
-  pre_payment_confirmed: "pill-info",
-  in_production: "pill-info",
-  awaiting_balance_payment: "pill-pending",
-  shipped: "pill-info",
-  delivered: "pill-info",
-  completed: "pill-active",
-  rejected: "pill-inactive",
-};
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -87,7 +75,7 @@ export default function BuyerOrders() {
 
   const statusOptions = options.statuses.map((s) => ({
     value: s,
-    label: t(`buyer.orders.status.${s}`, { defaultValue: s }),
+    label: getStatusLabel(s),
   }));
 
   return (
@@ -162,9 +150,7 @@ export default function BuyerOrders() {
                   </button>
                 </td>
                 <td>
-                  <span className={`pill pill-status ${STATUS_CLASS[o.status]}`}>
-                    {t(`buyer.orders.status.${o.status}`)}
-                  </span>
+                  <StatusBadge status={o.status} />
                 </td>
                 <td>{o.supplierName}</td>
                 <td>{fmtDate(o.orderDate)}</td>
@@ -191,8 +177,8 @@ export default function BuyerOrders() {
               title={o.orderNumber}
               subtitle={o.supplierName}
               chip={{
-                label: t(`buyer.orders.status.${o.status}`),
-                className: `pill-status ${STATUS_CLASS[o.status]}`,
+                label: getStatusLabel(o.status),
+                className: "pill-status",
               }}
               meta={[
                 { label: t("buyer.orders.col.orderDate"), value: fmtDate(o.orderDate) },

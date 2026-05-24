@@ -1,21 +1,13 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
-export type BuyerOrderStatus =
-  | 'awaiting_supplier_acceptance'
-  | 'awaiting_pre_payment'
-  | 'pre_payment_confirmed'
-  | 'in_production'
-  | 'awaiting_balance_payment'
-  | 'shipped'
-  | 'delivered'
-  | 'completed'
-  | 'rejected';
+export type BuyerOrderStatus = string;
 
 export type BuyerOrder = {
   id: string;
   orderNumber: string;
   status: BuyerOrderStatus;
+  updatedAt?: string;
   supplierName: string;
   orderDate: string;
   origin: string;
@@ -42,6 +34,7 @@ type OrderRow = {
   freight_cost: number | null;
   placed_at: string | null;
   created_at: string | null;
+  updated_at?: string | null;
   offer: {
     supplier_name: string | null;
     origin_country: string | null;
@@ -72,7 +65,8 @@ function mapRow(r: OrderRow): BuyerOrder {
   return {
     id: r.id,
     orderNumber: String(r.order_number ?? r.id.slice(0, 7)).padStart(7, '0'),
-    status: (r.status as BuyerOrderStatus) ?? 'awaiting_supplier_acceptance',
+    status: r.status ?? 'pending_supplier',
+    updatedAt: r.updated_at ?? r.placed_at ?? r.created_at ?? undefined,
     supplierName: offer?.supplier_name ?? '—',
     orderDate: r.placed_at ?? r.created_at ?? new Date().toISOString(),
     origin: offer?.origin_country ?? '—',
@@ -90,7 +84,7 @@ function mapRow(r: OrderRow): BuyerOrder {
 }
 
 const SELECT = `
-  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at,
+  id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at, updated_at,
   offer:offers (
     supplier_name, origin_country, shipment_month, shipment_year,
     payment_terms, container_size, total_fcl,
@@ -106,7 +100,8 @@ export function useBuyerOrders() {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    const load = async () => {
       setLoading(true);
       const { data: rows, error: qErr } = await supabase
         .from('orders')
@@ -122,8 +117,20 @@ export function useBuyerOrders() {
         setData(((rows ?? []) as unknown as OrderRow[]).map(mapRow));
       }
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    };
+    void load();
+    const channel = supabase
+      .channel('buyer-orders-list')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        if (reloadTimer) clearTimeout(reloadTimer);
+        reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 400);
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      if (reloadTimer) clearTimeout(reloadTimer);
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   return { data, isLoading, error };
@@ -136,7 +143,9 @@ export function useBuyerOrder(id: string) {
 
   useEffect(() => {
     let cancelled = false;
-    (async () => {
+    let reloadTimer: ReturnType<typeof setTimeout> | null = null;
+    let orderUuid: string | null = null;
+    const load = async () => {
       setLoading(true);
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
       const isNum = /^\d+$/.test(id);
@@ -150,10 +159,26 @@ export function useBuyerOrder(id: string) {
       else {
         const list = ((rows ?? []) as unknown as OrderRow[]).map(mapRow);
         setData(list[0] ?? null);
+        orderUuid = list[0]?.id ?? null;
       }
       setLoading(false);
-    })();
-    return () => { cancelled = true; };
+    };
+    void load();
+    const channel = supabase
+      .channel(`buyer-order-${id}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'orders' }, (payload) => {
+        const newId = (payload.new as { id?: string } | null)?.id;
+        if (!orderUuid || newId === orderUuid) {
+          if (reloadTimer) clearTimeout(reloadTimer);
+          reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 300);
+        }
+      })
+      .subscribe();
+    return () => {
+      cancelled = true;
+      if (reloadTimer) clearTimeout(reloadTimer);
+      supabase.removeChannel(channel);
+    };
   }, [id]);
 
   return { data, isLoading, error };

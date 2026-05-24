@@ -7,7 +7,8 @@ import { PageTitle } from "@/components/mundus/PageTitle";
 import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 import { Pagination } from "@/components/mundus/Pagination";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
-import type { Sale, SaleStatus } from "@/data/mockSales";
+import type { Sale } from "@/data/mockSales";
+import { StatusBadge, getStatusLabel } from "@/lib/orderStatus";
 import { useSupplierSales } from "@/hooks/useSupplierSales";
 import { DealsFilterBar } from "@/components/marketplace/DealsFilterBar";
 import {
@@ -17,11 +18,6 @@ import {
 } from "@/hooks/useDealsFilter";
 
 const PAGE_SIZE = 10;
-
-const STATUS_CLASS: Record<SaleStatus, string> = {
-  AWAITING_SUPPLIER_ACCEPTANCE: "pill-pending",
-  AWAITING_PRE_PAYMENT: "pill-info",
-};
 
 export default function SupplierSales() {
   const { t } = useTranslation();
@@ -74,7 +70,7 @@ export default function SupplierSales() {
 
   const statusOptions = options.statuses.map((s) => ({
     value: s,
-    label: t(`supplier.sales.status.${s}`, { defaultValue: s }),
+    label: getStatusLabel(s),
   }));
 
   return (
@@ -160,9 +156,7 @@ export default function SupplierSales() {
                   </button>
                 </td>
                 <td>
-                  <span className={`pill pill-status ${STATUS_CLASS[s.status]}`}>
-                    {t(`supplier.sales.status.${s.status}`)}
-                  </span>
+                  <StatusBadge status={s.status} />
                 </td>
                 <td>{s.buyer}</td>
                 <td>{s.orderDate}</td>
@@ -189,8 +183,8 @@ export default function SupplierSales() {
               title={s.dealId}
               subtitle={s.buyer}
               chip={{
-                label: t(`supplier.sales.status.${s.status}`),
-                className: `pill-status ${STATUS_CLASS[s.status]}`,
+                label: getStatusLabel(s.status),
+                className: "pill-status",
               }}
               meta={[
                 { label: t("supplier.sales.col.orderDate"), value: s.orderDate },
