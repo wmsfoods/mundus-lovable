@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabPanel } from "@/components/mundus/Tabs";
+import { ShipmentTracker } from "@/components/shipment/ShipmentTracker";
 import {
   FileTextIcon,
   ArrowLeftIcon,
@@ -127,6 +128,8 @@ export type DealDetailData = {
   documents: DealDocuments;
   backHref: string;
   fullNegotiationHref?: string;
+  orderId?: string;
+  shipmentReadOnly?: boolean;
 };
 
 type TabKey = "overview" | "negotiation" | "shipment" | "documents";
