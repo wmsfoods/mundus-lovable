@@ -172,17 +172,19 @@ export function buyerOrderToDeal(
   t: (k: string, fallback: string) => string,
 ): DealDetailData {
   const totalValueUsd = order.quantityKg * order.pricePerKg;
-  const completion = ({
-    awaiting_supplier_acceptance: 0,
-    awaiting_pre_payment: 0.1,
-    pre_payment_confirmed: 0.2,
+  const COMPLETION_MAP: Record<string, number> = {
+    pending_supplier: 0, awaiting_supplier_acceptance: 0,
+    supplier_accepted: 0.05,
+    awaiting_pre_payment: 0.1, awaiting_payment: 0.1,
+    pre_payment_received: 0.2, pre_payment_confirmed: 0.2,
     in_production: 0.3,
-    awaiting_balance_payment: 0.45,
-    shipped: 0.7,
-    delivered: 0.9,
-    completed: 1,
-    rejected: 0,
-  } as const)[order.status];
+    ready_to_ship: 0.4, booked: 0.5, stuffed: 0.55,
+    awaiting_balance_payment: 0.45, awaiting_balance: 0.45,
+    shipped: 0.7, in_transit: 0.75, arrived: 0.8, customs_clearance: 0.85,
+    delivered: 0.9, completed: 1,
+    rejected: 0, cancelled: 0, on_hold: 0.1,
+  };
+  const completion = COMPLETION_MAP[order.status] ?? 0;
   const stage = BUYER_STAGE[order.status];
   return {
     role: "buyer",
@@ -236,13 +238,19 @@ export function buyerOrderToDeal(
 
 /* ============== SUPPLIER SALE → DealDetailData ============== */
 
-const SUPPLIER_STATUS_TONE: Record<SaleStatus, DealStatus["tone"]> = {
-  AWAITING_SUPPLIER_ACCEPTANCE: "pending",
-  AWAITING_PRE_PAYMENT: "info",
+const SUPPLIER_STATUS_TONE: Record<string, DealStatus["tone"]> = {
+  pending_supplier: "pending",
+  awaiting_pre_payment: "info",
+  supplier_accepted: "info",
+  in_production: "info",
+  shipped: "info",
+  delivered: "success",
+  completed: "success",
+  cancelled: "danger",
 };
 
 function supplierTimeline(sale: Sale, t: (k: string, fallback: string) => string): DealTimelineStage[] {
-  const isAwaitingAcc = sale.status === "AWAITING_SUPPLIER_ACCEPTANCE";
+  const isAwaitingAcc = sale.status === "pending_supplier";
   return [
     { key: "created", label: t("dealDetail.timeline.created", "Created"), value: sale.orderDate, tone: "info" },
     { key: "pre_payment", label: t("dealDetail.timeline.prePayment", "Pre-payment"),
@@ -258,7 +266,7 @@ export function supplierSaleToDeal(
   sale: Sale,
   t: (k: string, fallback: string) => string,
 ): DealDetailData {
-  const completion = sale.status === "AWAITING_SUPPLIER_ACCEPTANCE" ? 0 : 0.15;
+  const completion = sale.status === "pending_supplier" ? 0 : 0.15;
   return {
     role: "supplier",
     dealNumber: sale.dealId,
