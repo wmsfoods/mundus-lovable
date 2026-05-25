@@ -1575,3 +1575,16 @@ button.od-thumb.on {
     padding: 14px;
   }
 }
+
+/* Buyer card actions row (below items card) */
+.od2-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+@media (max-width: 640px) {
+  .od2-card-actions { flex-direction: column; }
+  .od2-card-actions .btn-tb { width: 100%; justify-content: center; }
+}

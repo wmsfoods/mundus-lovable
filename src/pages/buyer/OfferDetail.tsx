@@ -12,6 +12,17 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
 import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { OfferDetailLayout, type OfferItemRow } from "@/components/offer/OfferDetailLayout";
+import { notifyCompanyUsers } from "@/lib/notifications";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -42,6 +53,7 @@ export default function BuyerOfferDetail() {
   const { t } = useTranslation();
   const { offer, loading, error, notFound } = useOffer(id);
   const [bidOpen, setBidOpen] = useState(false);
+  const [closeDealOpen, setCloseDealOpen] = useState(false);
   const { company } = useCurrentCompany();
   const currentCompanyId = company?.id ?? null;
 
@@ -107,6 +119,23 @@ export default function BuyerOfferDetail() {
     setBidOpen(true);
   };
 
+  const handleConfirmCloseDeal = async () => {
+    if (!offer) return;
+    setCloseDealOpen(false);
+    await notifyCompanyUsers({
+      companyId: offer.supplier_id,
+      title: "Close Deal request",
+      body: `${company?.name ?? "A buyer"} has requested to close a deal on offer ${offer.offer_number ?? ""}.`,
+      icon: "check",
+      category: "negotiations",
+      linkUrl: `/supplier/offers/${offer.id}`,
+      linkLabel: "View offer",
+      relatedType: "offer",
+      relatedId: offer.id,
+    });
+    toast.success(t("buyer.offerDetail.closeDealToast"));
+  };
+
   if (loading) {
     return (
       <>
@@ -145,9 +174,26 @@ export default function BuyerOfferDetail() {
         offer={offer}
         navigate={navigate}
         onNegotiate={handleNegotiate}
+        onCloseDeal={() => setCloseDealOpen(true)}
         myNegotiation={myNegotiation ?? null}
       />
       <BidModal open={bidOpen} onOpenChange={setBidOpen} offer={offer} />
+      <AlertDialog open={closeDealOpen} onOpenChange={setCloseDealOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t("buyer.offerDetail.closeDealConfirmTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t("buyer.offerDetail.closeDealConfirmBody")}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t("buyer.offerDetail.closeDealCancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmCloseDeal}>
+              {t("buyer.offerDetail.closeDealConfirm")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
@@ -173,11 +219,13 @@ function OfferDetailContent({
   offer,
   navigate,
   onNegotiate,
+  onCloseDeal,
   myNegotiation,
 }: {
   offer: OfferDetailed;
   navigate: (path: string) => void;
   onNegotiate: () => void;
+  onCloseDeal: () => void;
   myNegotiation: { id: string; status: string } | null;
 }) {
   const { t } = useTranslation();
@@ -229,8 +277,8 @@ function OfferDetailContent({
     priceKg: Number(it.price ?? 0),
   }));
 
-  const topActions = (
-    <>
+  const cardActions = (
+    <div className="od2-card-actions">
       {!myNegotiation && (
         <button
           type="button"
@@ -275,7 +323,21 @@ function OfferDetailContent({
           💬 View Negotiation
         </button>
       )}
-    </>
+      {isActive && !negIsDealClosed && (
+        <button
+          type="button"
+          className="btn-tb"
+          onClick={onCloseDeal}
+          style={{
+            background: "#fff",
+            color: "#15803d",
+            borderColor: "#86efac",
+          }}
+        >
+          ✅ {t("buyer.offerDetail.closeDeal")}
+        </button>
+      )}
+    </div>
   );
 
   const banners = !isActive ? (
@@ -349,8 +411,8 @@ function OfferDetailContent({
         createdAt={offer.created_at}
         galleryImages={galleryImages}
         illustrativeLabel={t("buyer.offerDetail.illustrative")}
-        topActions={topActions}
         banners={banners}
+        belowItems={cardActions}
       />
     </>
   );
