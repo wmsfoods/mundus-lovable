@@ -15,6 +15,7 @@ export type OfferDetailItem = {
   condition: string;
   meat_specification: number | null;
   aging_method: string | null;
+  packaging: string | null;
   customer_product: {
     id: string;
     name: string;
@@ -115,6 +116,7 @@ export function useOffer(id: string | undefined): UseOfferResult {
             condition,
             meat_specification,
             aging_method,
+            packaging,
             customer_product:customer_products (
               id,
               name,
