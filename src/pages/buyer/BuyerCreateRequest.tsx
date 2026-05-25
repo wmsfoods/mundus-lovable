@@ -151,6 +151,9 @@ export default function BuyerCreateRequest() {
       if (incs.length) setSelectedIncoterms(incs);
       setAnyOrigin(data.any_origin ?? true);
       setOriginCountries((data.origin_countries as string[] | null) ?? []);
+      if ((data as any).cut_region === "us" || (data as any).cut_region === "global") {
+        setCutRegion((data as any).cut_region);
+      }
       setContainerType(((data.container_size ?? "40ft").startsWith("20") ? "20" : "40") as "20" | "40");
       setContainerCount(String(data.container_count ?? 1));
       setShipmentWindow(data.shipment_date ?? "");
