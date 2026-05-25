@@ -246,7 +246,7 @@
       "created": "Created",
       "cutsTitle": "Cuts requested",
       "col": {
-        "cut": "Cut",
+        "cut": "PRODUCT / CUT",
         "qty": "Qty ({{unit}})",
         "asking": "Asking",
         "buyerBid": "Buyer's Bid",
@@ -339,7 +339,7 @@
         "apply": "Apply"
       },
       "col": {
-        "cut": "Cut",
+        "cut": "PRODUCT / CUT",
         "qty": "Qty ({{unit}})",
         "minBid": "Min Bid",
         "yourBid": "Your Bid"
