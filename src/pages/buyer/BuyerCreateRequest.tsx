@@ -1197,7 +1197,7 @@ export default function BuyerCreateRequest() {
       {/* FOOTER */}
       <footer className="bcr-footer">
         <div className="bcr-summary">
-          <strong>{filledRows}</strong> cuts · <strong>{totalKg.toLocaleString()}</strong> kg · {containerCount}×{containerType}ft
+          <strong>{filledRows}</strong> product / cuts · <strong>{totalKg.toLocaleString()}</strong> kg · {containerCount}×{containerType}ft
         </div>
         <div className="bcr-actions">
           <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>
