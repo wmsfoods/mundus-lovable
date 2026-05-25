@@ -95,6 +95,10 @@ export default function BuyerNegotiationDetail() {
   const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
 
   const handleCounter = () => {
+    if (offerInactive) {
+      toast.error("The supplier has deactivated this offer.");
+      return;
+    }
     if (isReal && rawNeg) {
       setCounterOpen(true);
     } else {
@@ -102,6 +106,10 @@ export default function BuyerNegotiationDetail() {
     }
   };
   const handleAccept = async () => {
+    if (offerInactive) {
+      toast.error("The supplier has deactivated this offer.");
+      return;
+    }
     if (isReal && rawNeg) {
       const ok = await acceptNegotiation(rawNeg, "buyer");
       if (ok) refetch();
