@@ -177,7 +177,7 @@ function AboutSection({ data, profile, canEdit }: { data: CompanyAbout | null; p
           <FieldRow label={t("supplier.company.about.tradeMarkets", "Trade markets")}>
             <InlineText canEdit={canEdit} value={csv(data?.trade_markets)} placeholder="MERCOSUR, EU…" onSave={(v) => save({ trade_markets: csvParse(v) })} />
           </FieldRow>
-          <FieldRow label={t("supplier.company.about.mainSpecies", "Main species")}>
+          <FieldRow label={t("supplier.company.about.mainSpecies", "Main PROTEINS")}>
             {canEdit ? (
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {SPECIES.map((s) => {

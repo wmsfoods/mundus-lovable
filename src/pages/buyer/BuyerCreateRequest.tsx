@@ -721,12 +721,12 @@ export default function BuyerCreateRequest() {
                       display: "flex", alignItems: "center", gap: 4,
                     }}
                   >
-                    🔄 Reset cuts
+                    🔄 Reset Product / Cuts
                   </button>
                 )}
                 {filledRows > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF" }}>
-                    {cutRegion === "us" ? "🇺🇸 US Beef Cuts" : "🌐 Global Beef Cuts"} · {filledRows} cut{filledRows > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 US Beef Product / Cuts" : "🌐 Global Beef Product / Cuts"} · {filledRows} Product / Cut{filledRows > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
@@ -1276,7 +1276,7 @@ export default function BuyerCreateRequest() {
       {/* FOOTER */}
       <footer className="bcr-footer">
         <div className="bcr-summary">
-          <strong>{filledRows}</strong> product / cuts · <strong>{fmtWeight(totalKg, unit)}</strong> {weightLabel(unit)} · {containerCount}×{containerType}ft
+          <strong>{filledRows}</strong> Product / Cuts · <strong>{fmtWeight(totalKg, unit)}</strong> {weightLabel(unit)} · {containerCount}×{containerType}ft
         </div>
         <div className="bcr-actions">
           <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>

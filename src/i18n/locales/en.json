@@ -1660,7 +1660,7 @@
         "extractedMock": "Extracted (mock) — form pre-fill coming in next iteration",
         "emptyError": "Please paste some text first."
       },
-      "placeholder": "Form fields (offer name, species, cuts, routes & freight) coming next.",
+      "placeholder": "Form fields (offer name, PROTEINS, Product / Cuts, routes & freight) coming next.",
       "cancel": "Cancel",
       "saveDraft": "Save draft",
       "publish": "Publish offer",

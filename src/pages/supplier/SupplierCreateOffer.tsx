@@ -1880,12 +1880,12 @@ export default function SupplierCreateOffer() {
                       gap: 4,
                     }}
                   >
-                    🔄 Reset cuts
+                    🔄 Reset Product / Cuts
                   </button>
                 )}
                 {cuts.length > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
-                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} product / cut{cuts.length > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
