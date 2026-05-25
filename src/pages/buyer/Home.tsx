@@ -5,18 +5,10 @@ import {
   ArrowsLeftRightIcon,
   FileTextIcon,
   TagIcon,
-  ArrowTopRightIcon,
   ArrowRightIcon,
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
-import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
-import { useBuyerOrders, type BuyerOrder } from "@/hooks/useBuyerOrders";
-import { OfferCard } from "@/pages/buyer/Offers";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "react-router-dom";
-import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
 
