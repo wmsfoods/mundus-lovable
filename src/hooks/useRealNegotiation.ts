@@ -34,6 +34,7 @@ export type RealNegotiationRow = {
     created_at?: string | null;
     supplier_id: string;
     supplier_name: string;
+    status?: string | null;
     origin_country: string;
     origin_port: string;
     payment_terms: string;
@@ -104,7 +105,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           order_id,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
           offer:offers (
-            id, offer_number, created_at, supplier_id, supplier_name, origin_country, origin_port,
+            id, offer_number, created_at, supplier_id, supplier_name, status, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
             items:offer_items (
               id, amount, price, minimum_price, plant_number,

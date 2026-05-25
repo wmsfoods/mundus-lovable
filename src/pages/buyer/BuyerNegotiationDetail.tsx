@@ -95,6 +95,10 @@ export default function BuyerNegotiationDetail() {
   const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
 
   const handleCounter = () => {
+    if (offerInactive) {
+      toast.error("The supplier has deactivated this offer.");
+      return;
+    }
     if (isReal && rawNeg) {
       setCounterOpen(true);
     } else {
@@ -102,6 +106,10 @@ export default function BuyerNegotiationDetail() {
     }
   };
   const handleAccept = async () => {
+    if (offerInactive) {
+      toast.error("The supplier has deactivated this offer.");
+      return;
+    }
     if (isReal && rawNeg) {
       const ok = await acceptNegotiation(rawNeg, "buyer");
       if (ok) refetch();
@@ -124,6 +132,7 @@ export default function BuyerNegotiationDetail() {
   const realExpired = !!rawNeg && isNegotiationExpired(rawNeg);
   const realAccepted = !!rawNeg && rawNeg.status === "bid_accepted";
   const counterAllowed = !isReal || (!realExhausted && !realExpired && !realAccepted);
+  const offerInactive = !!rawNeg && (rawNeg.offer?.status ?? "active") !== "active";
   const maxRoundShown = Math.min(3, Math.max(...d.rounds.map((r) => r.round), 1));
 
   return (
@@ -252,6 +261,31 @@ export default function BuyerNegotiationDetail() {
         </div>
       )}
 
+      {isReal && offerInactive && rawNeg?.status !== "offer_withdrawn" && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: 8,
+            background: "#fef3cd",
+            border: "1px solid #ffc107",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          <span style={{ fontSize: 16 }}>⚠️</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#856404" }}>
+              Offer deactivated by supplier
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>
+              The supplier has deactivated this offer. This negotiation can no longer proceed.
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="nd-grid">
         {/* LEFT */}
         <div>
@@ -323,17 +357,17 @@ export default function BuyerNegotiationDetail() {
 
             {showActions ? (
               <div className="nd-actions">
-                <button type="button" className="btn-accept" onClick={handleAccept} disabled={isReal && realExpired}>
+                <button type="button" className="btn-accept" onClick={handleAccept} disabled={(isReal && realExpired) || offerInactive}>
                   <CheckIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("buyer.negotiations.detail.actions.acceptCounter")}
                 </button>
-                {counterAllowed && (
+                {counterAllowed && !offerInactive && (
                   <button type="button" className="btn-counter" onClick={handleCounter} disabled={realExpired}>
                     <ArrowsLeftRightIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                     {t("buyer.negotiations.detail.actions.counterBack")}
                   </button>
                 )}
-                <button type="button" className="btn-reject" onClick={handleReject} disabled={isReal && realExpired}>
+                <button type="button" className="btn-reject" onClick={handleReject} disabled={(isReal && realExpired) || offerInactive}>
                   <XIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("buyer.negotiations.detail.actions.reject")}
                 </button>

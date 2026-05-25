@@ -104,6 +104,10 @@ export default function BuyerOfferDetail() {
   }, [id, company?.id]);
 
   const handleNegotiate = async () => {
+    if (offer && (offer.status ?? "active") !== "active") {
+      toast.error("This offer has been deactivated by the supplier.");
+      return;
+    }
     if (id && company?.id) {
       const { data: existingNeg } = await supabase
         .from("negotiations")
@@ -252,6 +256,8 @@ function OfferDetailContent({
   const status = statusFor(offer.status);
   const statusLabel = t(`buyer.offers.status.${status.key}`);
 
+  const isActive = (offer.status ?? "active") === "active";
+
   const negStatus = myNegotiation?.status ?? null;
   const negIsDealClosed = negStatus === "bid_accepted";
   const negIsBiddable = negStatus === "awaiting_supplier" || negStatus === "pending_buyer_review";
@@ -286,6 +292,30 @@ function OfferDetailContent({
         />
 
         <div className="od-right">
+          {!isActive && (
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: 8,
+                background: "#fee2e2",
+                border: "1px solid #fca5a5",
+                display: "flex",
+                alignItems: "center",
+                gap: 10,
+                marginBottom: 16,
+              }}
+            >
+              <span style={{ fontSize: 16 }}>🚫</span>
+              <div>
+                <div style={{ fontSize: 13, fontWeight: 600, color: "#dc2626" }}>
+                  Offer deactivated
+                </div>
+                <div style={{ fontSize: 12, color: "#6b7280" }}>
+                  This offer has been deactivated by the supplier and is no longer available for negotiation.
+                </div>
+              </div>
+            </div>
+          )}
           <div className="od-title-row">
             <span className="oc-chip">
               <TagIcon size={18} />
@@ -505,10 +535,16 @@ function OfferDetailContent({
               type="button"
               className="btn-od btn-od-outline"
               onClick={onNegotiate}
-              disabled={!!myNegotiation && !negIsBiddable}
-              style={!!myNegotiation && !negIsBiddable ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+              disabled={!isActive || (!!myNegotiation && !negIsBiddable)}
+              style={
+                !isActive || (!!myNegotiation && !negIsBiddable)
+                  ? { opacity: 0.5, cursor: "not-allowed" }
+                  : undefined
+              }
             >
-              {myNegotiation
+              {!isActive
+                ? "Offer Inactive"
+                : myNegotiation
                 ? (negIsBiddable ? "Update Bid" : negIsDealClosed ? "Deal closed" : "Negotiation in progress")
                 : t("buyer.offerDetail.negotiate")}
             </button>
