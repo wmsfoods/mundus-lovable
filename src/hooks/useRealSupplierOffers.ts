@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 const COUNTRY_CODE: Record<string, string> = {
   argentina: "AR", brazil: "BR", canada: "CA", chile: "CL", china: "CN",
@@ -22,6 +23,10 @@ export function useRealSupplierOffers() {
   const [error, setError] = useState<string | null>(null);
   const { company, loading: companyLoading } = useCurrentCompany();
   const supplierId = company?.id ?? null;
+  const [refreshKey, setRefreshKey] = useState(0);
+  const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
+  useRealtimeRefresh({ table: "offers", onRefresh: bump, enabled: !!supplierId });
+  useRealtimeRefresh({ table: "negotiations", onRefresh: bump, enabled: !!supplierId });
 
   useEffect(() => {
     let cancelled = false;
@@ -132,7 +137,7 @@ export function useRealSupplierOffers() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [supplierId, companyLoading]);
+  }, [supplierId, companyLoading, refreshKey]);
 
   return { offers, loading, error };
 }
