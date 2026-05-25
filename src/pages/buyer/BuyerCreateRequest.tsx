@@ -925,29 +925,69 @@ export default function BuyerCreateRequest() {
                   <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8 }}>
                     💡 We suggest US Beef Cuts (IMPS) to facilitate for American suppliers
                   </div>
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                     <button
                       type="button"
-                      onClick={() => setCutRegion("us")}
+                      onClick={() => {
+                        if (filledRows === 0) setCutRegion("us");
+                      }}
+                      disabled={filledRows > 0 && cutRegion !== "us"}
                       style={{
-                        padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12,
+                        padding: "6px 12px", borderRadius: 8, fontSize: 12,
                         border: cutRegion === "us" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                        background: cutRegion === "us" ? "#F5E6EC" : "white",
+                        background: cutRegion === "us" ? "#F5E6EC" : (filledRows > 0 && cutRegion !== "us") ? "#F3F4F6" : "white",
                         fontWeight: cutRegion === "us" ? 700 : 400,
-                        color: cutRegion === "us" ? "#8B1A3A" : "#6B7280",
+                        color: cutRegion === "us" ? "#8B1A3A" : (filledRows > 0 && cutRegion !== "us") ? "#D1D5DB" : "#6B7280",
+                        cursor: (filledRows > 0 && cutRegion !== "us") ? "not-allowed" : "pointer",
+                        opacity: (filledRows > 0 && cutRegion !== "us") ? 0.5 : 1,
                       }}
                     >🇺🇸 US Beef Cuts (IMPS)</button>
                     <button
                       type="button"
-                      onClick={() => setCutRegion("global")}
+                      onClick={() => {
+                        if (filledRows === 0) setCutRegion("global");
+                      }}
+                      disabled={filledRows > 0 && cutRegion !== "global"}
                       style={{
-                        padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12,
+                        padding: "6px 12px", borderRadius: 8, fontSize: 12,
                         border: cutRegion === "global" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                        background: cutRegion === "global" ? "#F5E6EC" : "white",
+                        background: cutRegion === "global" ? "#F5E6EC" : (filledRows > 0 && cutRegion !== "global") ? "#F3F4F6" : "white",
                         fontWeight: cutRegion === "global" ? 700 : 400,
-                        color: cutRegion === "global" ? "#8B1A3A" : "#6B7280",
+                        color: cutRegion === "global" ? "#8B1A3A" : (filledRows > 0 && cutRegion !== "global") ? "#D1D5DB" : "#6B7280",
+                        cursor: (filledRows > 0 && cutRegion !== "global") ? "not-allowed" : "pointer",
+                        opacity: (filledRows > 0 && cutRegion !== "global") ? 0.5 : 1,
                       }}
                     >🌐 Global Beef Cuts</button>
+                    {filledRows > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (window.confirm("Remove all added cuts and start over?")) {
+                            setRows([newRow()]);
+                          }
+                        }}
+                        style={{
+                          padding: "5px 12px",
+                          borderRadius: 8,
+                          border: "1.5px solid #EF4444",
+                          background: "white",
+                          color: "#EF4444",
+                          cursor: "pointer",
+                          fontSize: 11,
+                          fontWeight: 600,
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 4,
+                        }}
+                      >
+                        🔄 Reset cuts
+                      </button>
+                    )}
+                    {filledRows > 0 && (
+                      <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
+                        {cutRegion === "us" ? "🇺🇸 Using US Beef Cuts (IMPS)" : "🌐 Using Global Beef Cuts"} · {filledRows} cut{filledRows > 1 ? "s" : ""} added
+                      </span>
+                    )}
                   </div>
                 </div>
               )}
