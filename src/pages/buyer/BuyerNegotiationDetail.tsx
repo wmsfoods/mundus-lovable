@@ -261,6 +261,31 @@ export default function BuyerNegotiationDetail() {
         </div>
       )}
 
+      {isReal && offerInactive && rawNeg?.status !== "offer_withdrawn" && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: 8,
+            background: "#fef3cd",
+            border: "1px solid #ffc107",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 16,
+          }}
+        >
+          <span style={{ fontSize: 16 }}>⚠️</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#856404" }}>
+              Offer deactivated by supplier
+            </div>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>
+              The supplier has deactivated this offer. This negotiation can no longer proceed.
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="nd-grid">
         {/* LEFT */}
         <div>
