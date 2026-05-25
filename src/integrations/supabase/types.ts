@@ -330,6 +330,7 @@ export type Database = {
           container_count: number | null
           container_size: string | null
           created_at: string | null
+          cut_region: string
           deleted_at: string | null
           destination_country: string
           destination_port: string | null
@@ -357,6 +358,7 @@ export type Database = {
           container_count?: number | null
           container_size?: string | null
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           destination_country: string
           destination_port?: string | null
@@ -384,6 +386,7 @@ export type Database = {
           container_count?: number | null
           container_size?: string | null
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           destination_country?: string
           destination_port?: string | null
@@ -3807,6 +3810,7 @@ export type Database = {
         Row: {
           container_size: string
           created_at: string | null
+          cut_region: string
           deleted_at: string | null
           exw_pickup_location: string | null
           id: string
@@ -3833,6 +3837,7 @@ export type Database = {
         Insert: {
           container_size: string
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           exw_pickup_location?: string | null
           id?: string
@@ -3859,6 +3864,7 @@ export type Database = {
         Update: {
           container_size?: string
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           exw_pickup_location?: string | null
           id?: string
