@@ -5,6 +5,7 @@ import {
   ArrowsLeftRightIcon,
   FileTextIcon,
   TagIcon,
+  ArrowTopRightIcon,
   ArrowRightIcon,
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
