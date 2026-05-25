@@ -188,7 +188,7 @@
     }
   },
   "shell": {
-    "postingAs": "Posting as",
+    "postingAs": "\n",
     "unit": "kg",
     "unitToggle": "Toggle weight unit (kg / lbs)",
     "notifications": "Notifications",
