@@ -705,8 +705,8 @@ export default function BuyerCreateRequest() {
               )}
               <div className="bcr-vol">
                 <span className="bcr-vol-l">TOTAL VOLUME</span>
-                <strong>{totalKg.toLocaleString()}</strong>
-                <span className="bcr-vol-u">kg</span>
+                <strong>{fmtWeight(totalKg, unit)}</strong>
+                <span className="bcr-vol-u">{weightLabel(unit)}</span>
               </div>
             </div>
 
@@ -715,7 +715,7 @@ export default function BuyerCreateRequest() {
             </div>
             <div className="bcr-progress-meta">
               <span>{Math.round(pctOfCapacity)}% of container</span>
-              <span>{totalKg.toLocaleString()} / {capacity.toLocaleString()} kg</span>
+              <span>{fmtWeight(totalKg, unit)} / {fmtWeight(capacity, unit)} {weightLabel(unit)}</span>
             </div>
 
             {/* desktop table */}
@@ -729,8 +729,8 @@ export default function BuyerCreateRequest() {
                     <th style={{ width: 110 }}>Bone</th>
                     <th>Spec (optional)</th>
                     <th>{"\n"}</th>
-                    <th style={{ width: 110 }}>Qty (kg)</th>
-                    <th style={{ width: 120 }}>Target $/kg</th>
+                    <th style={{ width: 110 }}>Qty ({weightLabel(unit)})</th>
+                    <th style={{ width: 120 }}>Target {priceLabel(unit)}</th>
                     <th style={{ width: 32 }}></th>
                   </tr>
                 </thead>
@@ -815,8 +815,13 @@ export default function BuyerCreateRequest() {
                         <input
                           className="bcr-input bcr-input-num"
                           type="number" inputMode="decimal" min="0"
-                          value={r.qty}
-                          onChange={(e) => update(r.id, { qty: e.target.value })}
+                          value={unit === "kg" ? r.qty : (r.qty ? String(Math.round(toDisplay(Number(r.qty), "weight", unit))) : "")}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (!raw) { update(r.id, { qty: "" }); return; }
+                            const inKg = unit === "kg" ? raw : String(fromDisplay(parseFloat(raw) || 0, "weight", unit));
+                            update(r.id, { qty: inKg });
+                          }}
                           placeholder="0"
                         />
                       </td>
@@ -824,8 +829,13 @@ export default function BuyerCreateRequest() {
                         <input
                           className="bcr-input bcr-input-num"
                           type="number" inputMode="decimal" step="0.01" min="0"
-                          value={r.target}
-                          onChange={(e) => update(r.id, { target: e.target.value })}
+                          value={unit === "kg" ? r.target : (r.target ? toDisplay(Number(r.target), "price", unit).toFixed(2) : "")}
+                          onChange={(e) => {
+                            const raw = e.target.value;
+                            if (!raw) { update(r.id, { target: "" }); return; }
+                            const inKg = unit === "kg" ? raw : String(fromDisplay(parseFloat(raw) || 0, "price", unit));
+                            update(r.id, { target: inKg });
+                          }}
                           placeholder="optional"
                         />
                       </td>
