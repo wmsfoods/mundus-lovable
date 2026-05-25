@@ -1628,14 +1628,119 @@ export default function SupplierCreateOffer() {
                       />
                     </td>
                     <td><span className="cov4-cut-nm">{c.cat} {c.cut}</span></td>
-                    <td><span className="cov4-tag">{c.spec}</span></td>
-                    <td><span className="cov4-tag">{c.pkg}</span></td>
-                    <td><span className="cov4-tag">{c.gr !== "Not Classified" ? c.gr : "—"}</span></td>
-                    <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
-                    <td><span className="cov4-tag">{c.plant || "—"}</span></td>
-                    <td className="num">{fmtWeight(Number(c.qty) || 0, unit)}</td>
-                    <td className="num">{fmtPrice(Number(c.ask) || 0, unit)}</td>
-                    <td className="num cov4-floor">{c.floor ? fmtPrice(Number(c.floor) || 0, unit) : "—"}</td>
+                    <td>
+                      <select
+                        className="cov4-inline-edit"
+                        value={c.spec}
+                        onChange={(e) => updateCutField(c.id, "spec", e.target.value)}
+                      >
+                        {SPECS.map((x) => <option key={x}>{x}</option>)}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className="cov4-inline-edit"
+                        value={c.pkg}
+                        onChange={(e) => updateCutField(c.id, "pkg", e.target.value)}
+                      >
+                        {PKGS.map((x) => <option key={x}>{x}</option>)}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className="cov4-inline-edit"
+                        value={c.gr}
+                        onChange={(e) => updateCutField(c.id, "gr", e.target.value)}
+                      >
+                        {GRADES.map((x) => <option key={x}>{x}</option>)}
+                      </select>
+                    </td>
+                    <td>
+                      <select
+                        className="cov4-inline-edit"
+                        value={c.ag}
+                        onChange={(e) => updateCutField(c.id, "ag", e.target.value)}
+                      >
+                        {AGINGS.map((x) => <option key={x}>{x}</option>)}
+                      </select>
+                    </td>
+                    <td>
+                      <input
+                        type="text"
+                        className="cov4-inline-edit"
+                        value={c.plant || ""}
+                        placeholder="—"
+                        onChange={(e) => updateCutField(c.id, "plant", e.target.value)}
+                        style={{ width: 70 }}
+                      />
+                    </td>
+                    <td className="num">
+                      <input
+                        type="number"
+                        step="1"
+                        className="cov4-inline-edit num"
+                        value={
+                          unit === "kg"
+                            ? c.qty
+                            : toDisplay(parseFloat(c.qty) || 0, "weight", unit).toFixed(0)
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const kg =
+                            unit === "kg"
+                              ? v
+                              : String(fromDisplay(parseFloat(v) || 0, "weight", unit));
+                          updateCutField(c.id, "qty", kg);
+                        }}
+                        style={{ width: 80, textAlign: "right" }}
+                      />
+                    </td>
+                    <td className="num">
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="cov4-inline-edit num"
+                        value={
+                          unit === "kg"
+                            ? c.ask
+                            : toDisplay(parseFloat(c.ask) || 0, "price", unit).toFixed(2)
+                        }
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          const kg =
+                            unit === "kg"
+                              ? v
+                              : String(fromDisplay(parseFloat(v) || 0, "price", unit));
+                          updateCutField(c.id, "ask", kg);
+                        }}
+                        style={{ width: 80, textAlign: "right" }}
+                      />
+                    </td>
+                    <td className="num cov4-floor">
+                      <input
+                        type="number"
+                        step="0.01"
+                        className="cov4-inline-edit num"
+                        value={
+                          !c.floor
+                            ? ""
+                            : unit === "kg"
+                              ? c.floor
+                              : toDisplay(parseFloat(c.floor) || 0, "price", unit).toFixed(2)
+                        }
+                        placeholder="—"
+                        onChange={(e) => {
+                          const v = e.target.value;
+                          if (!v) { updateCutField(c.id, "floor", ""); return; }
+                          const kg =
+                            unit === "kg"
+                              ? v
+                              : String(fromDisplay(parseFloat(v) || 0, "price", unit));
+                          updateCutField(c.id, "floor", kg);
+                        }}
+                        style={{ width: 80, textAlign: "right" }}
+                      />
+                    </td>
                     {multiInco && secondaryIncos.map((s) => {
                       const ovr = cutIncoOverrides[c.id]?.[s];
                       const adj = parseFloat(incoAdjustments[s] || "0") || 0;
@@ -1675,7 +1780,16 @@ export default function SupplierCreateOffer() {
                         </Fragment>
                       );
                     })}
-                    <td><span className="cov4-notes-cell">{c.notes || "—"}</span></td>
+                    <td>
+                      <input
+                        type="text"
+                        className="cov4-inline-edit"
+                        value={c.notes || ""}
+                        placeholder="—"
+                        onChange={(e) => updateCutField(c.id, "notes", e.target.value)}
+                        style={{ minWidth: 100 }}
+                      />
+                    </td>
                     <td>
                       <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label="Remove cut">✕</button>
                     </td>
