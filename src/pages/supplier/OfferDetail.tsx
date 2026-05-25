@@ -3,19 +3,14 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
-  TagIcon,
   ArrowLeftIcon,
-  ChevronDownIcon,
-  MapPinIcon,
   CopyIcon,
   ShareIcon,
-  FlagSVG,
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
-import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
 import { useOfferImages } from "@/hooks/useOfferImages";
 import {
   Dialog,
@@ -28,14 +23,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { publicUrl } from "@/lib/publicUrl";
 import { notifyCompanyUsers } from "@/lib/notifications";
-import { useOfferDestinationPorts, OfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
-
-function formatNumber(n: number): string {
-  return new Intl.NumberFormat("de-DE").format(Math.round(n));
-}
-function formatPrice(n: number): string {
-  return new Intl.NumberFormat("de-DE", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
+import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
+import { OfferDetailLayout, type OfferItemRow } from "@/components/offer/OfferDetailLayout";
 
 export default function SupplierOfferDetail() {
   const { id = "" } = useParams<{ id: string }>();
