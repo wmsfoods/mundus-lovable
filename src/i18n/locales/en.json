@@ -516,7 +516,7 @@
         },
         "err": {
           "title": "Title is required",
-          "cuts": "Select at least one cut",
+          "cuts": "Select at least one Product / Cut",
           "price": "Target price is required",
           "volume": "Target volume is required",
           "market": "Select a destination market",
@@ -561,8 +561,8 @@
       "loadError": "Couldn't load offers: {{error}}",
       "empty": "No offers yet. Suppliers haven't published any matching offers.",
       "card": {
-        "cuts": "{{count}} cuts",
-        "mixedTitle": "Mixed ({{count}} cuts)",
+        "cuts": "{{count}} Product / Cuts",
+        "mixedTitle": "Mixed ({{count}} Product / Cuts)",
         "moreCuts": "+{{count}} more",
         "origin": "Origin",
         "destination": "Destination",
@@ -648,15 +648,15 @@
       "errors": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
-        "summary_one": "{{count}} product / cut has validation errors",
-        "summary_other": "{{count}} product / cuts have validation errors"
+        "summary_one": "{{count}} PRODUCT / CUT has validation errors",
+        "summary_other": "{{count}} PRODUCT / CUTS have validation errors"
       },
       "validation": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
         "belowInitial": "Cannot bid below your initial bid of ${{min}}",
-        "summary_one": "{{count}} product / cut has validation errors",
-        "summary_other": "{{count}} product / cuts have validation errors"
+        "summary_one": "{{count}} PRODUCT / CUT has validation errors",
+        "summary_other": "{{count}} PRODUCT / CUTS have validation errors"
       },
       "bulk": {
         "label": "Quick fill",
