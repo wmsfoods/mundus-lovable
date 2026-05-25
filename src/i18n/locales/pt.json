@@ -593,7 +593,7 @@
       "illustrative": "IMAGEM ILUSTRATIVA",
       "perFcl": "Valor total (preço inicial) por FCL",
       "cutsHead": {
-        "cut": "CORTE",
+        "cut": "PRODUTO / CORTE",
         "marbling": "MARBLING / GRADE",
         "qty": "QTD POR ITEM",
         "price": "PREÇO POR KG"
@@ -1607,7 +1607,7 @@
         "cloneComingSoon": "Clonar Oferta — em breve",
         "shareComingSoon": "Compartilhar oferta — em breve",
         "cutsHead": {
-          "cut": "CORTE",
+          "cut": "PRODUTO / CORTE",
           "marbling": "MARBLING / GRADE",
           "qty": "QTD POR ITEM",
           "price": "PREÇO POR KG",
