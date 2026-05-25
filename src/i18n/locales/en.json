@@ -3011,7 +3011,7 @@
           "Ovine": "Ovine"
         },
         "cols": {
-          "name": "Cut name",
+          "name": "Product / cut name",
           "pn": "PN",
           "category": "Category",
           "translations": "Translations",
