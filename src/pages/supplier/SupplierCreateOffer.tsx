@@ -2,6 +2,7 @@ import { Fragment, useCallback, useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
@@ -818,6 +819,29 @@ export default function SupplierCreateOffer() {
           .from("buyer_requests")
           .update({ status: "with_responses", updated_at: new Date().toISOString() })
           .eq("id", fromRequest.requestId);
+
+        // Notify the buyer that a supplier responded to their request
+        try {
+          const { data: req } = await supabase
+            .from("buyer_requests")
+            .select("buyer_company_id")
+            .eq("id", fromRequest.requestId)
+            .maybeSingle();
+          if (req?.buyer_company_id) {
+            notifyCompanyUsers({
+              companyId: req.buyer_company_id as string,
+              title: "Supplier responded to your request",
+              body: `${company?.name ?? "A supplier"} submitted an offer for ${fromRequest.product || "your request"}`,
+              icon: "package",
+              category: "requests",
+              linkUrl: `/buyer/requests/${fromRequest.requestId}`,
+              relatedType: "request",
+              relatedId: fromRequest.requestId,
+            }).catch(() => {});
+          }
+        } catch (e) {
+          console.warn("[notifications] supplier-response notification failed", e);
+        }
       }
       navigate("/supplier/offers");
     } catch (e: unknown) {
