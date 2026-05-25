@@ -248,6 +248,9 @@ export default function BuyerCreateRequest() {
     if (!destCountry) return toast.error("Select a destination country");
     if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
     if (filledRows === 0) return toast.error("Add at least one cut");
+    if (distribution === "specific" && !targetSupplierId) {
+      return toast.error("Select a supplier or switch to marketplace distribution");
+    }
     const valid = rows.filter((r) => r.cut.trim());
     const primary = valid[0];
     const productName = valid.length === 1
@@ -299,6 +302,7 @@ export default function BuyerCreateRequest() {
       additional_info: additional || null,
       any_origin: anyOrigin,
       origin_countries: anyOrigin ? [] : originCountries,
+      target_supplier_id: distribution === "specific" ? targetSupplierId : null,
     };
 
     if (isEdit && editId) {
