@@ -36,6 +36,7 @@ export type BuyerRequestRow = {
   any_origin?: boolean | null;
   attachments?: Array<{ name: string; url: string; size?: number; type?: string }> | null;
   target_supplier_id?: string | null;
+  cut_region?: string | null;
 };
 
 export function useBuyerRequests() {
