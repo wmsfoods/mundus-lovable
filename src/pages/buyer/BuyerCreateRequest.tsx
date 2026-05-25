@@ -907,6 +907,46 @@ export default function BuyerCreateRequest() {
                   )}
                 </>
               )}
+              {category === "Beef" && !anyOrigin && originCountries.includes("United States") && (
+                <div style={{
+                  padding: 12,
+                  background: "#EFF6FF",
+                  border: "1px solid #93C5FD",
+                  borderRadius: 8,
+                  marginTop: 8,
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                    Which cut nomenclature?
+                  </div>
+                  <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8 }}>
+                    💡 We suggest US Beef Cuts (IMPS) to facilitate for American suppliers
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => setCutRegion("us")}
+                      style={{
+                        padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12,
+                        border: cutRegion === "us" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
+                        background: cutRegion === "us" ? "#F5E6EC" : "white",
+                        fontWeight: cutRegion === "us" ? 700 : 400,
+                        color: cutRegion === "us" ? "#8B1A3A" : "#6B7280",
+                      }}
+                    >🇺🇸 US Beef Cuts (IMPS)</button>
+                    <button
+                      type="button"
+                      onClick={() => setCutRegion("global")}
+                      style={{
+                        padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12,
+                        border: cutRegion === "global" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
+                        background: cutRegion === "global" ? "#F5E6EC" : "white",
+                        fontWeight: cutRegion === "global" ? 700 : 400,
+                        color: cutRegion === "global" ? "#8B1A3A" : "#6B7280",
+                      }}
+                    >🌐 Global Beef Cuts</button>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="bcr-side-block">
