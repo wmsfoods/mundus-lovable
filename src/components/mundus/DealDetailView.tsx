@@ -376,7 +376,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
               </FieldGrid>
             </Card>
 
-            <Card title={tk("dealDetail.section.cutsIncluded", "CUTS INCLUDED")} icon={KnifeForkIcon}>
+            <Card title={tk("dealDetail.section.cutsIncluded", "PRODUCT / CUTS INCLUDED")} icon={KnifeForkIcon}>
               {data.cuts.map((cut, i) => (
                 <div key={i} className="ddv-cut-row">
                   <span className="dot-bullet" />
