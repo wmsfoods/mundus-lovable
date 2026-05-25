@@ -595,7 +595,7 @@
       "cutsHead": {
         "cut": "CORTE",
         "marbling": "MARBLING / GRADE",
-        "qty": "CANT POR CORTE",
+        "qty": "CANT POR ITEM",
         "price": "PRECIO POR KG"
       },
       "totalWeight": "Peso total",
@@ -1609,7 +1609,7 @@
         "cutsHead": {
           "cut": "CORTE",
           "marbling": "MARMOREO",
-          "qty": "CANT POR CORTE",
+          "qty": "CANT POR ITEM",
           "price": "PRECIO POR KG",
           "asking": "PEDIDO / KG",
           "floor": "MÍNIMO / KG"

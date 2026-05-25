@@ -595,7 +595,7 @@
       "cutsHead": {
         "cut": "CORTE",
         "marbling": "MARBLING / GRADE",
-        "qty": "QTD POR CORTE",
+        "qty": "QTD POR ITEM",
         "price": "PREÇO POR KG"
       },
       "totalWeight": "Peso total",
@@ -1609,7 +1609,7 @@
         "cutsHead": {
           "cut": "CORTE",
           "marbling": "MARBLING / GRADE",
-          "qty": "QTD POR CORTE",
+          "qty": "QTD POR ITEM",
           "price": "PREÇO POR KG",
           "asking": "PEDIDO / KG",
           "floor": "MÍNIMO / KG"

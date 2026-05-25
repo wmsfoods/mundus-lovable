@@ -590,7 +590,7 @@
       "cutsHead": {
         "cut": "部位",
         "marbling": "MARBLING / GRADE",
-        "qty": "每个部位数量",
+        "qty": "每项数量",
         "price": "每公斤价格"
       },
       "totalWeight": "总重量",
@@ -1599,7 +1599,7 @@
         "cutsHead": {
           "cut": "部位",
           "marbling": "MARBLING / GRADE",
-          "qty": "每部位数量",
+          "qty": "每项数量",
           "price": "每公斤价格",
           "asking": "要价/公斤",
           "floor": "底价/公斤"

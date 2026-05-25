@@ -590,7 +590,7 @@
       "cutsHead": {
         "cut": "DÉCOUPE",
         "marbling": "MARBLING / GRADE",
-        "qty": "QTÉ PAR DÉCOUPE",
+        "qty": "QTÉ PAR ARTICLE",
         "price": "PRIX AU KG"
       },
       "totalWeight": "Poids total",
@@ -1599,7 +1599,7 @@
         "cutsHead": {
           "cut": "DÉCOUPE",
           "marbling": "MARBLING / GRADE",
-          "qty": "QTÉ PAR DÉCOUPE",
+          "qty": "QTÉ PAR ARTICLE",
           "price": "PRIX PAR KG",
           "asking": "DEMANDÉ / KG",
           "floor": "PLANCHER / KG"
