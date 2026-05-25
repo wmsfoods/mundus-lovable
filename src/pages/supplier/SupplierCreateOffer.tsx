@@ -34,7 +34,7 @@ import {
 type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
-const GRADES = ["\n", "Low", "Medium", "High", "Prime"];
+const GRADES = ["Not specified", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
 // Primary destination markets shown as chips (in this order).
