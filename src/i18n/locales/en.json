@@ -1107,7 +1107,7 @@
       "step": {
         "window": "Set auction window (opens & closes)",
         "markets": "Select at least one destination market",
-        "cuts": "Add at least one product cut",
+        "cuts": "Add at least one PRODUCT / CUT",
         "inco": "Choose an incoterm"
       }
     },
@@ -1689,8 +1689,8 @@
           "title": "Container & cuts",
           "subtitle": "Define what goes inside the container.",
           "loadType": "Load type",
-          "fullContainer": "Full container (single cut)",
-          "mixedLoad": "Mixed load (multiple cuts)",
+          "fullContainer": "Full container (single Product / Cut)",
+          "mixedLoad": "Mixed load (multiple Product / Cuts)",
           "capacity": "Container capacity (25t FCL)",
           "overCapacity": "Over capacity",
           "remaining": "remaining",
@@ -1800,7 +1800,7 @@
         "noMarkets": "No markets found",
         "incoConflict": "Not compatible with the selected incoterm",
         "pickCut": "Pick a product / cut…",
-        "searchCutsPh": "Search product / cuts…",
+        "searchCutsPh": "Search Product / Cuts…",
         "noCuts": "No product / cuts found"
       }
     },
