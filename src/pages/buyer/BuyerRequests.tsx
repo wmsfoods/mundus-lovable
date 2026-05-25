@@ -6,6 +6,8 @@ import { PageTitle } from "@/components/mundus/PageTitle";
 import { useBuyerRequests, type BuyerRequestStatus, type BuyerRequestRow } from "@/hooks/useBuyerRequests";
 import { formatRequestNumber } from "@/lib/requestNumber";
 import { supabase } from "@/integrations/supabase/client";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, priceLabel } from "@/lib/units";
 
 const STATUS_CHIP: Record<BuyerRequestStatus, string> = {
   new: "req-status-chip is-draft",
@@ -33,6 +35,7 @@ function fmtDate(iso: string) {
 export default function BuyerRequests() {
   const navigate = useNavigate();
   const { data, counts, isLoading } = useBuyerRequests();
+  const { unit } = useWeightUnit();
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
   const [responseOffers, setResponseOffers] = useState<Array<{ id: string; request_id: string | null }>>([]);
