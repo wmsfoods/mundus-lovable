@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export type OfferItem = {
   id: string;
