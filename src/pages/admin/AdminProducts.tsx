@@ -216,6 +216,15 @@ export default function AdminProducts() {
                       <span className="adm-chip" style={{ background: c.bg, color: c.text, borderColor: c.border }}>
                         {t(`admin.marketplace.cuts.categories.${r.category}`)}
                       </span>
+                      {r.region === "us" ? (
+                        <span className="adm-chip" style={{ background: "#DBEAFE", color: "#1E40AF", borderColor: "#93C5FD" }}>
+                          🇺🇸 IMPS {r.imps_number ?? ""}
+                        </span>
+                      ) : (
+                        <span className="adm-chip" style={{ background: "#F3F4F6", color: "#374151", borderColor: "#E5E7EB" }}>
+                          🌐 Global
+                        </span>
+                      )}
                       <span className="adm-chip" style={{ background: r.bone_spec === "Bone-In" ? "#FEF3C7" : r.bone_spec === "Offals" ? "#FCE7F3" : "#ECFDF5", color: r.bone_spec === "Bone-In" ? "#92400E" : r.bone_spec === "Offals" ? "#9D174D" : "#065F46", borderColor: r.bone_spec === "Bone-In" ? "#FDE68A" : r.bone_spec === "Offals" ? "#FBCFE8" : "#A7F3D0" }}>
                         {r.bone_spec}
                       </span>
