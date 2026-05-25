@@ -200,6 +200,7 @@ export default function SupplierCreateOffer() {
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
   const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
   const [temp, setTemp] = useState<"Frozen" | "Chilled">("Frozen");
+  const [containerCount, setContainerCount] = useState(1);
 
   const [selInco, setSelInco] = useState<string[]>([]);
   const [incoExtras, setIncoExtras] = useState<IncoExtras>({});
@@ -331,7 +332,7 @@ export default function SupplierCreateOffer() {
       if (sec.startsWith("Cuts:")) {
         const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
         for (const line of lines) {
-          const m = line.match(/^(.+?)(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)\s*kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
+          const m = line.match(/^(.+?)(?:\s*\(([^)]+)\))?\s*—\s*(?:([^—\d][^—]*?)—\s*)?([\d.,]+)\s*kg\s*@\s*\$([\d.]+)\/kg$/);
           const cutName = (m?.[1] ?? line).trim();
           const spec = (m?.[2] ?? "").trim() || fromRequest.specification || "Boneless";
           const marbling = (m?.[3] ?? "Not Classified").trim();
@@ -350,13 +351,9 @@ export default function SupplierCreateOffer() {
             pkg: "Vacuum Pack",
             gr: marbling && marbling !== "Not specified" ? marbling : "Not Classified",
             ag: "None",
-            qty: qty || (fromRequest.quantity ? String(fromRequest.quantity) : ""),
-            ask: target || (fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : ""),
-            floor: target
-              ? (parseFloat(target) * 0.98).toFixed(2)
-              : fromRequest.targetPrice
-              ? (fromRequest.targetPrice * 0.98).toFixed(2)
-              : "",
+            qty: qty || "",
+            ask: target || "",
+            floor: target ? (parseFloat(target) * 0.98).toFixed(2) : "",
             notes: "",
             plant: "",
           });
