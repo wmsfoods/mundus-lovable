@@ -562,10 +562,9 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           <table className="w-full text-sm">
             <thead className="bg-muted/50">
               <tr className="text-left text-xs uppercase text-muted-foreground">
-                <th className="px-3 py-2 font-medium">{t("buyer.bid.cut")}</th>
+                <th className="px-3 py-2 font-medium">Product / Cut</th>
                 <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.qty", { unit: wLbl })}</th>
-                <th className="px-3 py-2 font-medium text-right">FOB ({pLbl})</th>
-                <th className="px-3 py-2 font-medium text-right">Asking ({pLbl})</th>
+                <th className="px-3 py-2 font-medium text-right">Asking ({pLbl}) · {incoterm}</th>
                 <th className="px-3 py-2 font-medium text-right">{t("buyer.bid.yourBid")} ({pLbl})</th>
               </tr>
             </thead>
@@ -588,16 +587,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                     <td className="px-3 py-2 text-right tabular-nums">
                       {fmtWeight(Number(it.amount) * fclScale, unit)}
                     </td>
-                    <td className="px-3 py-2 text-right tabular-nums text-muted-foreground">
-                      {fmtPrice(fob, unit)}
-                    </td>
                     <td className="px-3 py-2 text-right tabular-nums font-medium">
                       {fmtPrice(asking, unit)}
-                      {asking !== fob && (
-                        <div className="text-[10px] text-muted-foreground font-normal">
-                          {(incoterm || "").toUpperCase()}
-                        </div>
-                      )}
                     </td>
                     <td className="px-3 py-2 text-right">
                       <div className="flex flex-col items-end gap-0.5">
@@ -665,7 +656,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             return (
               <div key={it.id} className="rounded-lg border border-border p-3">
                 <div className="font-medium text-sm mb-2">{it.customer_product?.name ?? "—"}</div>
-                <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="grid grid-cols-2 gap-2 text-xs">
                   <div>
                     <div className="text-muted-foreground">{t("buyer.bid.qty", { unit: wLbl })}</div>
                     <div className="font-semibold tabular-nums">
@@ -673,14 +664,8 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                     </div>
                   </div>
                   <div>
-                    <div className="text-muted-foreground">FOB ({pLbl})</div>
-                    <div className="font-semibold tabular-nums text-muted-foreground">
-                      {fmtPrice(fob, unit)}
-                    </div>
-                  </div>
-                  <div>
                     <div className="text-muted-foreground">
-                      Asking{asking !== fob ? ` · ${(incoterm || "").toUpperCase()}` : ""} ({pLbl})
+                      Asking · {(incoterm || "").toUpperCase()} ({pLbl})
                     </div>
                     <div className="font-semibold tabular-nums">{fmtPrice(asking, unit)}</div>
                   </div>
