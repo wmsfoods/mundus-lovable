@@ -914,3 +914,29 @@
   min-width: 0;
   box-sizing: border-box;
 }
+
+/* Inline-editable cells in finalized cuts table */
+.cov4-tbl .cov4-inline-edit {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 6px;
+  padding: 4px 6px;
+  font: inherit;
+  color: inherit;
+  font-size: 12px;
+  transition: background 120ms, border-color 120ms;
+}
+.cov4-tbl .cov4-inline-edit:hover {
+  background: rgba(0, 0, 0, 0.025);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+.cov4-tbl .cov4-inline-edit:focus {
+  outline: none;
+  background: #fff;
+  border-color: #8B2252;
+  box-shadow: 0 0 0 2px rgba(139, 34, 82, 0.12);
+}
+.cov4-tbl .cov4-inline-edit.num {
+  font-variant-numeric: tabular-nums;
+}
