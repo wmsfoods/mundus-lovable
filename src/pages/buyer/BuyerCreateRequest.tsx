@@ -77,6 +77,13 @@ export default function BuyerCreateRequest() {
   const supplierRef = useRef<HTMLDivElement | null>(null);
   const [suppliers, setSuppliers] = useState<Array<{ id: string; name: string; country?: string | null }>>([]);
 
+  // Ports state
+  const [ports, setPorts] = useState<Array<{ id: string; name: string; code: string; country: string }>>([]);
+  const [destPort, setDestPort] = useState("");
+  const [portSearch, setPortSearch] = useState("");
+  const [portOpen, setPortOpen] = useState(false);
+  const portRef = useRef<HTMLDivElement | null>(null);
+
   useEffect(() => {
     supabase
       .from("companies")
@@ -85,6 +92,16 @@ export default function BuyerCreateRequest() {
       .is("deleted_at", null)
       .order("name")
       .then(({ data }) => setSuppliers((data ?? []) as any));
+  }, []);
+
+  // Fetch ports
+  useEffect(() => {
+    supabase
+      .from("ports")
+      .select("id, name, code, country")
+      .is("deleted_at", null)
+      .order("name")
+      .then(({ data }) => setPorts((data ?? []) as any));
   }, []);
 
   // Load existing request when in edit mode
@@ -108,6 +125,7 @@ export default function BuyerCreateRequest() {
         setCategory(data.category as any);
       }
       setDestCountry(data.destination_country ?? "");
+      setDestPort(data.destination_port ?? "");
       const incs = String(data.incoterm ?? "").split(",").map((s) => s.trim()).filter(Boolean);
       if (incs.length) setSelectedIncoterms(incs);
       setAnyOrigin(data.any_origin ?? true);
@@ -170,10 +188,30 @@ export default function BuyerCreateRequest() {
       if (destRef.current && !destRef.current.contains(e.target as Node)) setDestOpen(false);
       if (originRef.current && !originRef.current.contains(e.target as Node)) setOriginOpen(false);
       if (supplierRef.current && !supplierRef.current.contains(e.target as Node)) setSupplierDropdownOpen(false);
+      if (portRef.current && !portRef.current.contains(e.target as Node)) setPortOpen(false);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
   }, []);
+
+  // Reset port when country changes
+  useEffect(() => {
+    setDestPort("");
+    setPortSearch("");
+  }, [destCountry]);
+
+  const filteredPorts = useMemo(() => {
+    if (!destCountry) return [];
+    return ports.filter((p) => p.country?.toLowerCase() === destCountry.toLowerCase());
+  }, [ports, destCountry]);
+
+  const searchedPorts = useMemo(() => {
+    const q = portSearch.trim().toLowerCase();
+    if (!q) return filteredPorts;
+    return filteredPorts.filter((p) =>
+      p.name.toLowerCase().includes(q) || p.code.toLowerCase().includes(q)
+    );
+  }, [filteredPorts, portSearch]);
 
   const filteredDest = useMemo(() => {
     const q = destSearch.trim().toLowerCase();
@@ -291,7 +329,7 @@ export default function BuyerCreateRequest() {
       category,
       specification: primary.spec || null,
       destination_country: destCountry,
-      destination_port: null,
+      destination_port: destPort || null,
       incoterm: selectedIncoterms.join(","),
       container_size: containerType === "20" ? "20ft" : "40ft",
       container_count: parseInt(containerCount) || 1,
@@ -389,6 +427,46 @@ export default function BuyerCreateRequest() {
                 </div>
               )}
             </div>
+            {destCountry && filteredPorts.length > 0 && (
+              <div className="bcr-field" ref={portRef} style={{ position: "relative" }}>
+                <label>Destination Port</label>
+                <input
+                  type="text"
+                  className="bcr-input"
+                  value={portOpen ? portSearch : destPort}
+                  onChange={(e) => { setPortSearch(e.target.value); setPortOpen(true); }}
+                  onFocus={() => { setPortSearch(""); setPortOpen(true); }}
+                  placeholder={`Search ports in ${destCountry}...`}
+                  autoComplete="off"
+                />
+                {portOpen && searchedPorts.length > 0 && (
+                  <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+                    {searchedPorts.map((p) => (
+                      <div
+                        key={p.id}
+                        onMouseDown={(e) => {
+                          e.preventDefault();
+                          setDestPort(`${p.name} (${p.code})`);
+                          setPortSearch("");
+                          setPortOpen(false);
+                        }}
+                        style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
+                        onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                        onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                      >
+                        <div style={{ fontWeight: 500 }}>{p.name}</div>
+                        <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>{p.code} · {p.country}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {destCountry && filteredPorts.length === 0 && (
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)", marginTop: 4 }}>
+                    No ports found for {destCountry}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="bcr-field">
               <label>Preferred incoterms *</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
