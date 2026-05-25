@@ -3027,8 +3027,8 @@
           "body": "Try clearing filters or searching with another term."
         },
         "modal": {
-          "title": "Edit cut",
-          "name": "Cut name",
+          "title": "Edit product / cut",
+          "name": "Product / cut name",
           "productNumber": "Product number",
           "category": "Category",
           "uploadImage": "Upload image",
