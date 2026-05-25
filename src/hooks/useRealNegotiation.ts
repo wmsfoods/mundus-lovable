@@ -34,6 +34,7 @@ export type RealNegotiationRow = {
     created_at?: string | null;
     supplier_id: string;
     supplier_name: string;
+    status?: string | null;
     origin_country: string;
     origin_port: string;
     payment_terms: string;
