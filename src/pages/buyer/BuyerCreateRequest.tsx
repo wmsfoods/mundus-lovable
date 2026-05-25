@@ -624,15 +624,15 @@ export default function BuyerCreateRequest() {
                 <button
                   type="button"
                   onClick={() => { if (filledRows === 0) setCutRegion("global"); }}
-                  disabled={filledRows > 0 && cutRegion !== "global"}
+                  disabled={filledRows > 0 && String(cutRegion) !== "global"}
                   style={{
                     padding: "8px 16px", borderRadius: 8, fontSize: 13,
                     border: cutRegion === "global" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                    background: cutRegion === "global" ? "#F5E6EC" : (filledRows > 0 && cutRegion !== "global") ? "#F3F4F6" : "white",
+                    background: cutRegion === "global" ? "#F5E6EC" : (filledRows > 0 && String(cutRegion) !== "global") ? "#F3F4F6" : "white",
                     fontWeight: cutRegion === "global" ? 700 : 400,
-                    color: cutRegion === "global" ? "#8B1A3A" : (filledRows > 0 && cutRegion !== "global") ? "#D1D5DB" : "#6B7280",
-                    cursor: (filledRows > 0 && cutRegion !== "global") ? "not-allowed" : "pointer",
-                    opacity: (filledRows > 0 && cutRegion !== "global") ? 0.5 : 1,
+                    color: cutRegion === "global" ? "#8B1A3A" : (filledRows > 0 && String(cutRegion) !== "global") ? "#D1D5DB" : "#6B7280",
+                    cursor: (filledRows > 0 && String(cutRegion) !== "global") ? "not-allowed" : "pointer",
+                    opacity: (filledRows > 0 && String(cutRegion) !== "global") ? 0.5 : 1,
                   }}
                 >
                   🌐 Global Beef Cuts
