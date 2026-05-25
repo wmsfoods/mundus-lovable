@@ -91,6 +91,28 @@ export function useAdminCuts() {
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "cuts"] }),
   });
 
+  const createMutation = useMutation({
+    mutationFn: async (input: { name: string; product_number: number | null; category: CutCategory; bone_spec: "Bone-In" | "Boneless" | "Offals"; unit_weight: "Kg" | "Lb"; region: "global" | "us"; imps_number: string | null }) => {
+      const { data, error } = await supabase
+        .from("cuts")
+        .insert({
+          name: input.name,
+          product_number: input.product_number,
+          category: input.category,
+          bone_spec: input.bone_spec,
+          unit_weight: input.unit_weight,
+          region: input.region,
+          imps_number: input.imps_number,
+          is_active: true,
+        })
+        .select("id")
+        .single();
+      if (error) throw error;
+      return data.id as string;
+    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "cuts"] }),
+  });
+
   const upsertTranslationMutation = useMutation({
     mutationFn: async (input: { cut_id: string; locale: string; name: string }) => {
       const { error } = await supabase
@@ -140,6 +162,7 @@ export function useAdminCuts() {
     toggleCutActive: (id: string, isActive: boolean) => toggleMutation.mutateAsync({ id, isActive }),
     updateCut: (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless" | "Offals"; unit_weight: "Kg" | "Lb" }) => updateMutation.mutateAsync(input),
     deleteCut: (id: string) => deleteMutation.mutateAsync(id),
+    createCut: (input: { name: string; product_number: number | null; category: CutCategory; bone_spec: "Bone-In" | "Boneless" | "Offals"; unit_weight: "Kg" | "Lb"; region: "global" | "us"; imps_number: string | null }) => createMutation.mutateAsync(input),
     upsertTranslation: (input: { cut_id: string; locale: string; name: string }) => upsertTranslationMutation.mutateAsync(input),
     deleteTranslation: (id: string) => deleteTranslationMutation.mutateAsync(id),
     uploadCutImage: uploadImage,
