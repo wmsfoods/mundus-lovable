@@ -193,7 +193,7 @@ export default function RequestPasteImport({ open, onOpenChange, category, known
                     <th className="p-2 w-8"></th>
                     <th className="p-2 text-left">PRODUCT / CUT</th>
                     <th className="p-2 text-left">Spec</th>
-                    <th className="p-2 text-left">MARBLING / GRADE</th>
+                    <th className="p-2 text-left">{"\n"}</th>
                     <th className="p-2 text-right">Qty (kg)</th>
                     <th className="p-2 text-right">Target $/kg</th>
                   </tr>

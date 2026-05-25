@@ -629,7 +629,7 @@ export default function SupplierCreateAuction() {
                   <th>PRODUCT / CUT</th>
                   <th>Spec</th>
                   <th>Packaging</th>
-                  <th>MARBLING / GRADE</th>
+                  <th>{"\n"}</th>
                   <th>Aging</th>
                   <th className="num">{qLbl}</th>
                   <th className="num">Start {pLbl}</th>

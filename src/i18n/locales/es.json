@@ -594,14 +594,14 @@
       "perFcl": "Valor total (precio inicial) por FCL",
       "cutsHead": {
         "cut": "CORTE",
-        "marbling": "MARBLING / GRADE",
+        "marbling": "\n",
         "qty": "CANT POR ITEM",
         "price": "PRECIO POR KG",
         "packing": "PACKING"
       },
       "totalWeight": "Peso total",
       "fields": {
-        "marbling": "MARBLING / GRADE",
+        "marbling": "\n",
         "originPortCountry": "Origen (puerto / país)",
         "condition": "Condición",
         "destination": "Destino",

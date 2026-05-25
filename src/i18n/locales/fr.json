@@ -589,14 +589,14 @@
       "perFcl": "Valeur totale (prix de départ) par FCL",
       "cutsHead": {
         "cut": "DÉCOUPE",
-        "marbling": "MARBLING / GRADE",
+        "marbling": "\n",
         "qty": "QTÉ PAR ARTICLE",
         "price": "PRIX AU KG",
         "packing": "PACKING"
       },
       "totalWeight": "Poids total",
       "fields": {
-        "marbling": "MARBLING / GRADE",
+        "marbling": "\n",
         "originPortCountry": "Origine (port / pays)",
         "condition": "Condition",
         "destination": "Destination",
@@ -1600,7 +1600,7 @@
         "shareComingSoon": "Partager cette offre — bientôt disponible",
         "cutsHead": {
           "cut": "DÉCOUPE",
-          "marbling": "MARBLING / GRADE",
+          "marbling": "\n",
           "qty": "QTÉ PAR ARTICLE",
           "price": "PRIX PAR KG",
           "asking": "DEMANDÉ / KG",
@@ -1608,7 +1608,7 @@
           "packing": "PACKING"
         },
         "fields": {
-          "marbling": "MARBLING / GRADE",
+          "marbling": "\n",
           "originPortCountry": "Origine (port / pays)",
           "condition": "Condition",
           "destination": "Destination",
