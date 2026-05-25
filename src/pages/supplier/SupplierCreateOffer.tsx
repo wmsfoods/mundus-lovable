@@ -1906,7 +1906,13 @@ export default function SupplierCreateOffer() {
                               <CommandList className="max-h-[320px]">
                                 <CommandEmpty>{tm("noCuts")}</CommandEmpty>
                                 <CommandGroup>
-                                  {(cutsByCategory[nf.cat] || []).map((c) => (
+                                  {(cutsByCategory[nf.cat] || [])
+                                    .filter((c) => {
+                                      if (nf.cat !== "Beef") return c.region === "global";
+                                      if (cutRegion === "us") return c.region === "us" || c.bone_spec === "Offals";
+                                      return c.region === "global";
+                                    })
+                                    .map((c) => (
                                     <CommandItem
                                       key={c.id}
                                       value={c.displayName}
