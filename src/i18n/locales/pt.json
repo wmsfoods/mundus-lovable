@@ -3044,9 +3044,9 @@
           "translationRemoved": "Tradução removida",
           "saved": "Produto / corte salvo",
           "delete": "Excluir",
-          "deleted": "Corte excluído",
-          "confirmDeleteTitle": "Excluir este corte?",
-          "confirmDeleteBody": "Isso removerá permanentemente o corte e suas traduções."
+          "deleted": "Produto / corte excluído",
+          "confirmDeleteTitle": "Excluir este produto / corte?",
+          "confirmDeleteBody": "Isso removerá permanentemente o produto / corte e suas traduções."
         }
       }
     },
