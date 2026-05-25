@@ -594,13 +594,13 @@
       "perFcl": "Valor total (precio inicial) por FCL",
       "cutsHead": {
         "cut": "CORTE",
-        "marbling": "MARMOLEO",
+        "marbling": "\n",
         "qty": "CANT POR CORTE",
         "price": "PRECIO POR KG"
       },
       "totalWeight": "Peso total",
       "fields": {
-        "marbling": "Marmoleo",
+        "marbling": "\n",
         "originPortCountry": "Origen (puerto / país)",
         "condition": "Condición",
         "destination": "Destino",

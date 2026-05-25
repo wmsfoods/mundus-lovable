@@ -594,7 +594,7 @@
       "perFcl": "Total Value (Starting price) per FCL",
       "cutsHead": {
         "cut": "CUT",
-        "marbling": "MARBLING",
+        "marbling": "\n",
         "qty": "QTY PER CUT",
         "price": "PRICE PER KG"
       },
@@ -1608,7 +1608,7 @@
         "shareComingSoon": "Share this offer — coming soon",
         "cutsHead": {
           "cut": "CUT",
-          "marbling": "MARBLING",
+          "marbling": "\n",
           "qty": "QTY PER CUT",
           "price": "PRICE PER KG",
           "asking": "ASKING / KG",
