@@ -533,7 +533,7 @@ export default function BuyerCreateRequest() {
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
             <div className="bcr-field" style={{ gridColumn: "1 / -1" }}>
-              <label>Species *</label>
+              <label>PROTEINS*</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {buyerProteins.map((p) => {
                   const on = selectedCategories.includes(p);
