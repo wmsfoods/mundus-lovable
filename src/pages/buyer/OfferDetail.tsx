@@ -216,6 +216,7 @@ function OfferDetailContent({
   myNegotiation: { id: string; status: string } | null;
 }) {
   const { t } = useTranslation();
+  const { unit } = useWeightUnit();
   const destinationPorts = useOfferDestinationPorts(offer.id);
   const items = offer.items ?? [];
   const mixed = items.length > 1;
