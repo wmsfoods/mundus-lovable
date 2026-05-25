@@ -10,6 +10,7 @@ import { transformedPublicUrl } from "@/lib/imageOptimization";
 const PAGE_SIZE = 25;
 const CATS: ("all" | CutCategory)[] = ["all", "Beef", "Pork", "Poultry", "Ovine"];
 type ActiveKey = "all" | "active" | "inactive";
+type RegionKey = "all" | "global" | "us";
 
 export default function AdminProducts() {
   const { t } = useTranslation();
@@ -22,6 +23,7 @@ export default function AdminProducts() {
   const [search, setSearch] = useState("");
   const [catF, setCatF] = useState<"all" | CutCategory>("all");
   const [activeF, setActiveF] = useState<ActiveKey>("all");
+  const [regionF, setRegionF] = useState<RegionKey>("all");
   const [page, setPage] = useState(1);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
@@ -36,14 +38,16 @@ export default function AdminProducts() {
     if (catF !== "all") list = list.filter((r) => r.category === catF);
     if (activeF === "active") list = list.filter((r) => r.is_active);
     else if (activeF === "inactive") list = list.filter((r) => !r.is_active);
+    if (regionF !== "all") list = list.filter((r) => r.region === regionF);
     if (search) {
       list = list.filter((r) =>
         r.name.toLowerCase().includes(search) ||
-        (r.product_number != null && String(r.product_number).includes(search)),
+        (r.product_number != null && String(r.product_number).includes(search)) ||
+        (r.imps_number != null && r.imps_number.toLowerCase().includes(search)),
       );
     }
     return list;
-  }, [rows, catF, activeF, search]);
+  }, [rows, catF, activeF, regionF, search]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
@@ -104,6 +108,11 @@ export default function AdminProducts() {
           <option value="all">{t("admin.marketplace.cuts.filters.all")}</option>
           <option value="active">{t("admin.marketplace.cuts.filters.activeOnly")}</option>
           <option value="inactive">{t("admin.marketplace.cuts.filters.inactiveOnly")}</option>
+        </select>
+        <select className="crm-select" value={regionF} onChange={(e) => { setRegionF(e.target.value as RegionKey); setPage(1); }}>
+          <option value="all">All regions</option>
+          <option value="global">🌐 Global</option>
+          <option value="us">🇺🇸 US Beef (IMPS)</option>
         </select>
       </div>
 
