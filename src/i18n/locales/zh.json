@@ -595,7 +595,7 @@
       },
       "totalWeight": "总重量",
       "fields": {
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "originPortCountry": "原产地（港口/国家）",
         "condition": "条件",
         "destination": "目的地",
