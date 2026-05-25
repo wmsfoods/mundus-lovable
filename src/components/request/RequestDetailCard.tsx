@@ -182,6 +182,13 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
           )}
         </KV>
         <KV label="Shipment">{r.shipment_date ?? "—"}</KV>
+        <KV label="Distribution">
+          {r.target_supplier_id ? (
+            <span>🎯 Sent to specific supplier</span>
+          ) : (
+            <span>🌐 Marketplace (all suppliers)</span>
+          )}
+        </KV>
       </div>
 
       {/* Attachments */}
