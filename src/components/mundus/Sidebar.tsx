@@ -141,7 +141,11 @@ export function Sidebar({
       />
       <aside className={`sb ${mobileOpen ? "is-open" : ""} ${collapsed ? "is-collapsed" : ""}`.trim()}>
         <div className="sb-logo">
-          <Logo />
+          {collapsed ? (
+            <span className="sb-monogram" aria-label="Mundus">M</span>
+          ) : (
+            <Logo />
+          )}
           {rolePill && !collapsed && <span className="sb-role-pill">{rolePill}</span>}
           {onToggleCollapsed && (
             <button
