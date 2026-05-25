@@ -21,7 +21,7 @@ type Row = {
   cut: string;
   cutImage?: string | null;
   spec: string;
-  boneSpec: "Bone-In" | "Boneless";
+  boneSpec: "Bone-In" | "Boneless" | "Offals";
   marbling: string;
   qty: string;
   target: string;
@@ -170,7 +170,7 @@ export default function BuyerCreateRequest() {
             const cut = (m?.[1] ?? line).trim();
             const match = (cutsByCategory[(data.category as string) ?? "Beef"] ?? []).find((c) => c.displayName.toLowerCase() === cut.toLowerCase());
             const boneRaw = (m?.[2] ?? "").trim();
-            const boneSpec: "Bone-In" | "Boneless" = boneRaw === "Bone-In" ? "Bone-In" : boneRaw === "Boneless" ? "Boneless" : (match?.bone_spec ?? "Boneless");
+            const boneSpec: "Bone-In" | "Boneless" | "Offals" = boneRaw === "Bone-In" ? "Bone-In" : boneRaw === "Boneless" ? "Boneless" : (match?.bone_spec ?? "Boneless");
             return {
               id: Math.random().toString(36).slice(2, 9),
               cut,
@@ -620,7 +620,7 @@ export default function BuyerCreateRequest() {
                         <select
                           className="bcr-input"
                           value={r.boneSpec}
-                          onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" })}
+                          onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" | "Offals" })}
                         >
                           <option value="Boneless">Boneless</option>
                           <option value="Bone-In">Bone-In</option>
@@ -699,7 +699,7 @@ export default function BuyerCreateRequest() {
                     </div>
                     <div>
                       <label>Bone</label>
-                      <select className="bcr-input" value={r.boneSpec} onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" })}>
+                      <select className="bcr-input" value={r.boneSpec} onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" | "Offals" })}>
                         <option value="Boneless">Boneless</option>
                         <option value="Bone-In">Bone-In</option>
                       </select>

@@ -9,7 +9,7 @@ export type OfferCut = {
   name: string;
   displayName: string;
   image_url: string | null;
-  bone_spec: "Bone-In" | "Boneless";
+  bone_spec: "Bone-In" | "Boneless" | "Offals";
 };
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
