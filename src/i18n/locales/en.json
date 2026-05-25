@@ -1570,7 +1570,7 @@
         "inactive": "Inactive"
       },
       "card": {
-        "cuts": "{{count}} CUTS",
+        "cuts": "{{count}} PRODUCT / CUTS",
         "moreCuts": "+{{count}} more",
         "origin": "Origin",
         "destination": "Destination",
