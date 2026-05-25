@@ -316,7 +316,7 @@ export default function BuyerCreateRequest() {
     const productName = valid.length === 1
       ? primary.cut
       : `${primary.cut} + ${valid.length - 1} more cut(s)`;
-    const specs = valid.map((r) => `${r.cut}${r.spec ? ` (${r.spec})` : ""}${r.marbling && r.marbling !== "Not specified" ? ` — ${r.marbling}` : ""}${r.qty ? ` — ${r.qty}kg` : ""}${r.target ? ` @ $${r.target}/kg` : ""}`).join("\n");
+    const specs = valid.map((r) => `${r.cut} [${r.boneSpec}]${r.spec ? ` (${r.spec})` : ""}${r.marbling && r.marbling !== "Not specified" ? ` — ${r.marbling}` : ""}${r.qty ? ` — ${r.qty}kg` : ""}${r.target ? ` @ $${r.target}/kg` : ""}`).join("\n");
     const targets = valid.map((r) => parseFloat(r.target)).filter((n) => Number.isFinite(n) && n > 0);
     const avgTarget = targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : null;
     const compliance: string[] = [];
