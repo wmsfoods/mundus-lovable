@@ -371,6 +371,7 @@ export default function BuyerCreateRequest() {
       any_origin: anyOrigin,
       origin_countries: anyOrigin ? [] : originCountries,
       target_supplier_id: distribution === "specific" ? targetSupplierId : null,
+      cut_region: cutRegion,
     };
 
     if (isEdit && editId) {
