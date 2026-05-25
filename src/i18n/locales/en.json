@@ -597,7 +597,7 @@
         "marbling": "\n",
         "qty": "QTY PER ITEM",
         "price": "PRICE PER KG",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "totalWeight": "Total weight",
       "fields": {
@@ -607,7 +607,7 @@
         "destination": "Destination",
         "terms": "Terms",
         "shipment": "Shipment",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "fcl_one": "{{count}} Available FCL",
       "fcl_other": "{{count}} Available FCLs",
@@ -1615,7 +1615,7 @@
           "price": "PRICE PER KG",
           "asking": "ASKING / KG",
           "floor": "FLOOR / KG",
-          "packing": "PACKING"
+          "packing": "\n"
         },
         "fields": {
           "marbling": "\n",
@@ -1624,7 +1624,7 @@
           "destination": "Destination",
           "terms": "Terms",
           "shipment": "Shipment",
-          "packing": "PACKING"
+          "packing": "\n"
         }
       }
     },
