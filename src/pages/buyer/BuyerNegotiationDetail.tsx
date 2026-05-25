@@ -357,17 +357,17 @@ export default function BuyerNegotiationDetail() {
 
             {showActions ? (
               <div className="nd-actions">
-                <button type="button" className="btn-accept" onClick={handleAccept} disabled={isReal && realExpired}>
+                <button type="button" className="btn-accept" onClick={handleAccept} disabled={(isReal && realExpired) || offerInactive}>
                   <CheckIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("buyer.negotiations.detail.actions.acceptCounter")}
                 </button>
-                {counterAllowed && (
+                {counterAllowed && !offerInactive && (
                   <button type="button" className="btn-counter" onClick={handleCounter} disabled={realExpired}>
                     <ArrowsLeftRightIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                     {t("buyer.negotiations.detail.actions.counterBack")}
                   </button>
                 )}
-                <button type="button" className="btn-reject" onClick={handleReject} disabled={isReal && realExpired}>
+                <button type="button" className="btn-reject" onClick={handleReject} disabled={(isReal && realExpired) || offerInactive}>
                   <XIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("buyer.negotiations.detail.actions.reject")}
                 </button>
