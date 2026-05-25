@@ -75,6 +75,7 @@ export default function Profile() {
         .eq("id", user.id);
       if (updErr) throw updErr;
       setAvatarUrl(url);
+      window.dispatchEvent(new CustomEvent("profile:avatar-updated", { detail: { url } }));
       setCropOpen(false);
       if (pickedSrc) URL.revokeObjectURL(pickedSrc);
       setPickedSrc(null);
