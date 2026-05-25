@@ -9,6 +9,7 @@ export type SupplierOfferStatus = "active" | "new" | "negotiating" | "closed" | 
 export type SupplierOfferItem = {
   name: string;
   marbling: string;
+  packaging?: string | null;
   qtyKg: number;
   pricePerKgUsd: number;
 };
