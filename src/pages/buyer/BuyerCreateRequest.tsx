@@ -291,6 +291,7 @@ export default function BuyerCreateRequest() {
         cut: p.cut,
         cutImage: match?.image_url ?? null,
         spec: p.spec ?? "",
+        boneSpec: match?.bone_spec ?? "Boneless",
         marbling: p.marbling ?? "Not specified",
         qty: String(p.qty_kg ?? ""),
         target: p.target_price_per_kg != null ? String(p.target_price_per_kg) : "",
