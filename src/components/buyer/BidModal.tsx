@@ -188,8 +188,6 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     if (fclCount < 1) setFclCount(1);
   }, [remainingFcl, fclCount]);
 
-  const fclScale = fclCount / totalOfferFcl; // proportionally scales quantities
-
   // Effective (incoterm-adjusted) asking price per item.
   const effectiveAsking = (basePrice: number) =>
     getEffectiveAskingPrice(basePrice, incoterm, freightPerKg, insurancePerKg);
@@ -200,18 +198,19 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     (v) => `${fmtPrice(v, unit)} ${pLbl}`,
   );
 
-  const askingTotal = offer.items.reduce(
-    (s, it) => s + effectiveAsking(Number(it.price)) * Number(it.amount) * fclScale,
-    0,
-  );
-  const bidTotal = offer.items.reduce(
-    (s, it) =>
-      s +
-      (typeof bids[it.id] === "number" ? (bids[it.id] as number) : 0) *
-        Number(it.amount) *
-        fclScale,
-    0,
-  );
+  const askingTotal =
+    offer.items.reduce(
+      (s, it) => s + effectiveAsking(Number(it.price)) * Number(it.amount),
+      0,
+    ) * fclCount;
+  const bidTotal =
+    offer.items.reduce(
+      (s, it) =>
+        s +
+        (typeof bids[it.id] === "number" ? (bids[it.id] as number) : 0) *
+          Number(it.amount),
+      0,
+    ) * fclCount;
   const diff = bidTotal - askingTotal;
   const diffPct = askingTotal > 0 ? (diff / askingTotal) * 100 : 0;
 
@@ -326,7 +325,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           round_proposal_id: rp.id,
           offer_item_id: it.id,
           price_per_kg: fobBid,
-          quantity_kg: Number(it.amount) * fclScale,
+          quantity_kg: Number(it.amount),
         };
       });
       const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
