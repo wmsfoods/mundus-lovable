@@ -1195,10 +1195,11 @@ export default function BuyerCreateRequest() {
             </div>
 
             <div className="bcr-side-block">
-              <label className="bcr-side-label">COMPLIANCE</label>
-              <div className="bcr-checks">
-                <label><input type="checkbox" checked={halal} onChange={(e) => setHalal(e.target.checked)} /> Halal</label>
-                <label><input type="checkbox" checked={kosher} onChange={(e) => setKosher(e.target.checked)} /> Kosher</label>
+              <label className="bcr-side-label">SLAUGHTER CERTIFICATE</label>
+              <div className="bcr-pills">
+                <button type="button" className={`bcr-pill ${slaughterCert === "none" ? "on" : ""}`} onClick={() => setSlaughterCert("none")}>None</button>
+                <button type="button" className={`bcr-pill ${slaughterCert === "halal" ? "on" : ""}`} onClick={() => setSlaughterCert("halal")}>Halal</button>
+                <button type="button" className={`bcr-pill ${slaughterCert === "kosher" ? "on" : ""}`} onClick={() => setSlaughterCert("kosher")}>Kosher</button>
               </div>
             </div>
 
