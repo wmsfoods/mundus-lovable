@@ -21,6 +21,7 @@ type Row = {
   cut: string;
   cutImage?: string | null;
   spec: string;
+  boneSpec: "Bone-In" | "Boneless";
   marbling: string;
   qty: string;
   target: string;
@@ -28,7 +29,7 @@ type Row = {
 
 const newRow = (): Row => ({
   id: Math.random().toString(36).slice(2, 9),
-  cut: "", cutImage: null, spec: "", marbling: "Not specified", qty: "", target: "",
+  cut: "", cutImage: null, spec: "", boneSpec: "Boneless", marbling: "Not specified", qty: "", target: "",
 });
 
 export default function BuyerCreateRequest() {
