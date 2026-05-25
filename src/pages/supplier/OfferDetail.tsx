@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { publicUrl } from "@/lib/publicUrl";
+import { notifyCompanyUsers } from "@/lib/notifications";
 
 function formatNumber(n: number): string {
   return new Intl.NumberFormat("de-DE").format(Math.round(n));
@@ -162,6 +163,24 @@ export default function SupplierOfferDetail() {
               },
             })
             .catch(() => {});
+        }
+
+        // In-app notifications to each negotiating buyer company (best-effort)
+        const uniqueBuyerCompanyIds = Array.from(
+          new Set(negs.map((n) => n.buyer_company_id).filter(Boolean) as string[]),
+        );
+        for (const buyerCompanyId of uniqueBuyerCompanyIds) {
+          const neg = negs.find((n) => n.buyer_company_id === buyerCompanyId);
+          notifyCompanyUsers({
+            companyId: buyerCompanyId,
+            title: "Offer deactivated",
+            body: `The offer "${offerTitle}" you were negotiating was deactivated by the supplier`,
+            icon: "alert",
+            category: "offers",
+            linkUrl: neg ? `/buyer/negotiations/${neg.id}` : "/buyer/marketplace",
+            relatedType: neg ? "negotiation" : "offer",
+            relatedId: neg?.id ?? id,
+          }).catch(() => {});
         }
       }
 

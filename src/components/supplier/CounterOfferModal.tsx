@@ -31,6 +31,7 @@ import {
   getIncotermAddOn,
   getIncotermBannerLabel,
 } from "@/lib/incotermPricing";
+import { notifyCompanyUsers } from "@/lib/notifications";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
@@ -411,6 +412,67 @@ export function CounterOfferModal({
       if (nErr) throw nErr;
 
       toast.success(t(`${perspective}.counter.successToast`));
+
+      // In-app notifications (best-effort, non-blocking)
+      try {
+        const supplierCompanyId = negotiation.offer?.supplier_id;
+        const supplierName = negotiation.offer?.supplier_name ?? "Supplier";
+        const buyerCompanyId = negotiation.buyer_company_id;
+        const offerNum = negotiation.offer?.offer_number;
+        const label = offerNum ? `offer #${offerNum}` : "your negotiation";
+
+        if (allLockedNow) {
+          // Deal closed — notify both sides
+          if (supplierCompanyId) {
+            notifyCompanyUsers({
+              companyId: supplierCompanyId,
+              title: "🎉 Deal closed!",
+              body: `Negotiation on ${label} accepted — order created`,
+              icon: "check",
+              category: "orders",
+              linkUrl: `/supplier/negotiations/${negotiation.id}`,
+              relatedType: "negotiation",
+              relatedId: negotiation.id,
+            }).catch(() => {});
+          }
+          if (buyerCompanyId) {
+            notifyCompanyUsers({
+              companyId: buyerCompanyId,
+              title: "🎉 Deal closed!",
+              body: `Negotiation on ${label} accepted — order created`,
+              icon: "check",
+              category: "orders",
+              linkUrl: `/buyer/negotiations/${negotiation.id}`,
+              relatedType: "negotiation",
+              relatedId: negotiation.id,
+            }).catch(() => {});
+          }
+        } else if (perspective === "buyer" && supplierCompanyId) {
+          notifyCompanyUsers({
+            companyId: supplierCompanyId,
+            title: "New bid received",
+            body: `Buyer sent a new bid on ${label} (round ${displayRound})`,
+            icon: "dollar",
+            category: "negotiations",
+            linkUrl: `/supplier/negotiations/${negotiation.id}`,
+            relatedType: "negotiation",
+            relatedId: negotiation.id,
+          }).catch(() => {});
+        } else if (perspective === "supplier" && buyerCompanyId) {
+          notifyCompanyUsers({
+            companyId: buyerCompanyId,
+            title: "Counter-offer received",
+            body: `${supplierName} sent a counter on ${label} (round ${displayRound})`,
+            icon: "dollar",
+            category: "negotiations",
+            linkUrl: `/buyer/negotiations/${negotiation.id}`,
+            relatedType: "negotiation",
+            relatedId: negotiation.id,
+          }).catch(() => {});
+        }
+      } catch (e) {
+        console.warn("[notifications] counter notification failed", e);
+      }
 
       // Fire email notification (best-effort, non-blocking)
       try {
