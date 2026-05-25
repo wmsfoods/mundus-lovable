@@ -17,6 +17,7 @@ export type AdminCutRow = {
   category: CutCategory;
   image_url: string | null;
   is_active: boolean;
+  bone_spec: "Bone-In" | "Boneless";
   translations: CutTranslation[];
 };
 
@@ -27,7 +28,7 @@ export function useAdminCuts() {
     queryKey: ["admin", "cuts"],
     queryFn: async () => {
       const [cutsRes, trRes] = await Promise.all([
-        supabase.from("cuts").select("id, name, product_number, category, image_url, is_active").order("category").order("name"),
+        supabase.from("cuts").select("id, name, product_number, category, image_url, is_active, bone_spec").order("category").order("name"),
         supabase.from("cut_translations").select("id, cut_id, locale, name"),
       ]);
       if (cutsRes.error) throw cutsRes.error;
@@ -45,6 +46,7 @@ export function useAdminCuts() {
         category: c.category as CutCategory,
         image_url: c.image_url,
         is_active: !!c.is_active,
+        bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : "Boneless"),
         translations: trByCut.get(c.id) ?? [],
       }));
       return {
@@ -65,10 +67,10 @@ export function useAdminCuts() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null }) => {
+    mutationFn: async (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless" }) => {
       const { error } = await supabase
         .from("cuts")
-        .update({ name: input.name, product_number: input.product_number, category: input.category, image_url: input.image_url })
+        .update({ name: input.name, product_number: input.product_number, category: input.category, image_url: input.image_url, bone_spec: input.bone_spec })
         .eq("id", input.id);
       if (error) throw error;
     },
