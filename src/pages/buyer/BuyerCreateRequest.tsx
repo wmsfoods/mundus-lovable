@@ -166,17 +166,20 @@ export default function BuyerCreateRequest() {
           const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
           parsedRows = lines.map((line) => {
             // {cut} ({spec}) — {marbling} — {qty}kg @ ${target}/kg
-            const m = line.match(/^(.+?)(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
+            const m = line.match(/^(.+?)(?:\s*\[([^\]]+)\])?(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
             const cut = (m?.[1] ?? line).trim();
             const match = (cutsByCategory[(data.category as string) ?? "Beef"] ?? []).find((c) => c.displayName.toLowerCase() === cut.toLowerCase());
+            const boneRaw = (m?.[2] ?? "").trim();
+            const boneSpec: "Bone-In" | "Boneless" = boneRaw === "Bone-In" ? "Bone-In" : boneRaw === "Boneless" ? "Boneless" : (match?.bone_spec ?? "Boneless");
             return {
               id: Math.random().toString(36).slice(2, 9),
               cut,
               cutImage: match?.image_url ?? null,
-              spec: (m?.[2] ?? "").trim(),
-              marbling: (m?.[3] ?? "Not specified").trim() || "Not specified",
-              qty: (m?.[4] ?? "").replace(/,/g, "").trim(),
-              target: (m?.[5] ?? "").trim(),
+              spec: (m?.[3] ?? "").trim(),
+              boneSpec,
+              marbling: (m?.[4] ?? "Not specified").trim() || "Not specified",
+              qty: (m?.[5] ?? "").replace(/,/g, "").trim(),
+              target: (m?.[6] ?? "").trim(),
             };
           });
         } else if (sec.startsWith("Compliance:")) {
