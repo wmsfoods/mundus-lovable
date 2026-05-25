@@ -69,6 +69,24 @@ export default function BuyerCreateRequest() {
   const [openMarblingFor, setOpenMarblingFor] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
 
+  // Distribution: marketplace (all suppliers) vs specific supplier
+  const [distribution, setDistribution] = useState<"marketplace" | "specific">("marketplace");
+  const [targetSupplierId, setTargetSupplierId] = useState<string>("");
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [supplierDropdownOpen, setSupplierDropdownOpen] = useState(false);
+  const supplierRef = useRef<HTMLDivElement | null>(null);
+  const [suppliers, setSuppliers] = useState<Array<{ id: string; name: string; country?: string | null }>>([]);
+
+  useEffect(() => {
+    supabase
+      .from("companies")
+      .select("id, name, country")
+      .eq("is_supplier", true)
+      .is("deleted_at", null)
+      .order("name")
+      .then(({ data }) => setSuppliers((data ?? []) as any));
+  }, []);
+
   // Load existing request when in edit mode
   useEffect(() => {
     if (!isEdit || !editId || !company?.id) return;
@@ -97,6 +115,11 @@ export default function BuyerCreateRequest() {
       setContainerType(((data.container_size ?? "40ft").startsWith("20") ? "20" : "40") as "20" | "40");
       setContainerCount(String(data.container_count ?? 1));
       setShipmentWindow(data.shipment_date ?? "");
+
+      if ((data as any).target_supplier_id) {
+        setDistribution("specific");
+        setTargetSupplierId((data as any).target_supplier_id);
+      }
 
       // Parse additional_info for cuts, compliance, notes
       const info = String(data.additional_info ?? "");
@@ -146,6 +169,7 @@ export default function BuyerCreateRequest() {
     const onDown = (e: MouseEvent) => {
       if (destRef.current && !destRef.current.contains(e.target as Node)) setDestOpen(false);
       if (originRef.current && !originRef.current.contains(e.target as Node)) setOriginOpen(false);
+      if (supplierRef.current && !supplierRef.current.contains(e.target as Node)) setSupplierDropdownOpen(false);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
