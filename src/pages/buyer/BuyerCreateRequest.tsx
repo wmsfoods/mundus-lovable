@@ -624,6 +624,7 @@ export default function BuyerCreateRequest() {
                         >
                           <option value="Boneless">Boneless</option>
                           <option value="Bone-In">Bone-In</option>
+                          <option value="Offals">Offals</option>
                         </select>
                       </td>
                       <td>
@@ -702,6 +703,7 @@ export default function BuyerCreateRequest() {
                       <select className="bcr-input" value={r.boneSpec} onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" | "Offals" })}>
                         <option value="Boneless">Boneless</option>
                         <option value="Bone-In">Bone-In</option>
+                        <option value="Offals">Offals</option>
                       </select>
                     </div>
                     <div>
