@@ -341,7 +341,7 @@ export default function SupplierCreateOffer() {
         for (const line of lines) {
           const m = line.match(/^(.+?)(?:\s*\(([^)]+)\))?\s*—\s*(?:([^—\d][^—]*?)—\s*)?([\d.,]+)\s*kg\s*@\s*\$([\d.]+)\/kg$/);
           const cutName = (m?.[1] ?? line).trim();
-          const marbling = (m?.[3] ?? "Not Classified").trim();
+          const marbling = (m?.[3] ?? "\n").trim();
           const qty = (m?.[4] ?? "").replace(/,/g, "");
           const target = m?.[5] ?? "";
           const matched = (cutsByCategory[cat0] || []).find(
@@ -356,7 +356,7 @@ export default function SupplierCreateOffer() {
             cutImage: matched?.image_url ?? null,
             spec,
             pkg: "Vacuum Pack",
-            gr: marbling && marbling !== "Not specified" ? marbling : "Not Classified",
+            gr: marbling && marbling !== "Not specified" ? marbling : "\n",
             ag: "None",
             qty: qty || "",
             ask: target || "",
