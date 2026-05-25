@@ -47,7 +47,7 @@ export function useAdminCuts() {
         category: c.category as CutCategory,
         image_url: c.image_url,
         is_active: !!c.is_active,
-        bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : "Boneless"),
+        bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : c.bone_spec === "Offals" ? "Offals" : "Boneless"),
         unit_weight: (c.unit_weight === "Lb" ? "Lb" : "Kg"),
         translations: trByCut.get(c.id) ?? [],
       }));
