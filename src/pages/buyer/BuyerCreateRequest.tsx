@@ -532,38 +532,70 @@ export default function BuyerCreateRequest() {
         {/* LEFT: what you need */}
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
-            <div className="bcr-field">
-              <label>Species</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value as any)}>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="bcr-field" ref={destRef} style={{ position: "relative" }}>
-              <label>Destination country *</label>
-              <input
-                type="text"
-                className="bcr-input"
-                value={destOpen ? destSearch : destCountry}
-                onChange={(e) => { setDestSearch(e.target.value); setDestOpen(true); }}
-                onFocus={() => { setDestSearch(""); setDestOpen(true); }}
-                placeholder="Type to search country…"
-                autoComplete="off"
-              />
-              {destOpen && filteredDest.length > 0 && (
-                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
-                  {filteredDest.map((m) => (
-                    <div
-                      key={m.id}
-                      onMouseDown={(e) => { e.preventDefault(); setDestCountry(m.n); setDestSearch(""); setDestOpen(false); }}
-                      style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+            <div className="bcr-field" style={{ gridColumn: "1 / -1" }}>
+              <label>Species *</label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {buyerProteins.map((p) => {
+                  const on = selectedCategories.includes(p);
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategories((prev) =>
+                          on ? (prev.length === 1 ? prev : prev.filter((x) => x !== p)) : [...prev, p]
+                        );
+                      }}
+                      style={{
+                        padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600,
+                        border: on ? "2px solid #8B2252" : "1px solid #d1d5db",
+                        background: on ? "#fdf2f8" : "#fff",
+                        color: on ? "#8B2252" : "#374151",
+                        cursor: "pointer", fontFamily: "inherit",
+                      }}
                     >
-                      {m.f} {m.n}
-                    </div>
-                  ))}
-                </div>
-              )}
+                      {on && "✓ "}{p}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="bcr-field">
+              <label>Destination country *</label>
+              <Popover open={destOpen} onOpenChange={setDestOpen}>
+                <PopoverTrigger asChild>
+                  <button type="button" className="bcr-input" style={{ textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                    {destCountry ? (
+                      <>
+                        <span>{countryFlag(destCountry)}</span>
+                        <span>{destCountry}</span>
+                      </>
+                    ) : (
+                      <span style={{ color: "var(--fg-muted)" }}>Select destination country…</span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[280px]" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search country…" />
+                    <CommandList>
+                      <CommandEmpty>No country found</CommandEmpty>
+                      <CommandGroup>
+                        {markets.map((m) => (
+                          <CommandItem
+                            key={m.id}
+                            value={m.n}
+                            onSelect={() => { setDestCountry(m.n); setDestOpen(false); }}
+                          >
+                            <span style={{ marginRight: 8 }}>{m.f}</span>
+                            <span style={{ flex: 1 }}>{m.n}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             {destCountry && filteredPorts.length > 0 && (
               <div className="bcr-field" ref={portRef} style={{ position: "relative" }}>
