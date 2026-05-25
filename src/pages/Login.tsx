@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, setRememberMe } from "@/contexts/AuthContext";
+import { getPersistedValue } from "@/lib/authStorage";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import mundusLogo from "@/assets/mundus-logo.png";
@@ -25,11 +26,15 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPwd, setShowPwd] = useState(false);
-  const [remember, setRemember] = useState<boolean>(() => {
-    try { return localStorage.getItem("mundus.rememberMe") !== "0"; } catch { return true; }
-  });
+  const [remember, setRemember] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [slide, setSlide] = useState(0);
+
+  useEffect(() => {
+    getPersistedValue("mundus.rememberMe").then((v) => {
+      if (v === "0") setRemember(false);
+    });
+  }, []);
 
   useEffect(() => {
     if (!authLoading && user) navigate("/", { replace: true });
@@ -44,7 +49,7 @@ export default function Login() {
     e.preventDefault();
     if (!email || !password) return;
     setSubmitting(true);
-    setRememberMe(remember);
+    await setRememberMe(remember);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setSubmitting(false);
     if (error) {
