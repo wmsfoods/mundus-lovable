@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Beef, Search, Check, Languages, Tag, Pencil, Upload, ImagePlus } from "lucide-react";
+import { Beef, Search, Check, Languages, Tag, Pencil, Upload, ImagePlus, Plus } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { useAdminCuts, CATEGORY_COLORS, type AdminCutRow, type CutCategory } from "@/hooks/useAdminCuts";
 import EditCutModal from "@/components/admin/EditCutModal";
+import CreateCutModal from "@/components/admin/CreateCutModal";
 import { transformedPublicUrl } from "@/lib/imageOptimization";
 
 const PAGE_SIZE = 25;
@@ -16,7 +17,7 @@ export default function AdminProducts() {
   const { t } = useTranslation();
   const {
     rows, total, active, translationsCount, loading, error,
-    toggleCutActive, updateCut, deleteCut, uploadCutImage, upsertTranslation, deleteTranslation, isMutating,
+    toggleCutActive, updateCut, deleteCut, createCut, uploadCutImage, upsertTranslation, deleteTranslation, isMutating,
   } = useAdminCuts();
 
   const [searchInput, setSearchInput] = useState("");
@@ -27,6 +28,7 @@ export default function AdminProducts() {
   const [page, setPage] = useState(1);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
 
   useEffect(() => {
     const tm = setTimeout(() => { setSearch(searchInput.trim().toLowerCase()); setPage(1); }, 300);
@@ -78,6 +80,14 @@ export default function AdminProducts() {
             <span className="adm-page-subtle">{t("admin.marketplace.cuts.subtitle")}</span>
           </div>
         </div>
+        <button
+          type="button"
+          className="crm-btn-primary"
+          onClick={() => setCreateOpen(true)}
+          style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 6 }}
+        >
+          <Plus size={14} /> Add cut
+        </button>
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginTop: 12 }}>
@@ -273,6 +283,14 @@ export default function AdminProducts() {
         onUploadImage={uploadCutImage}
         onUpsertTranslation={upsertTranslation}
         onDeleteTranslation={deleteTranslation}
+        isMutating={isMutating}
+      />
+
+      <CreateCutModal
+        open={createOpen}
+        onOpenChange={setCreateOpen}
+        onCreate={createCut}
+        onUploadImage={uploadCutImage}
         isMutating={isMutating}
       />
     </div>
