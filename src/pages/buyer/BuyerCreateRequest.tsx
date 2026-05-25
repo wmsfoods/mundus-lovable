@@ -668,7 +668,7 @@ export default function BuyerCreateRequest() {
           </div>
 
           {/* Cut nomenclature toggle */}
-          {category === "Beef" && (
+          {selectedCategories.includes("Beef") && (
             <div className="bcr-card" style={{ padding: "12px 16px" }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "#374151" }}>
                 Cut Nomenclature
@@ -773,15 +773,14 @@ export default function BuyerCreateRequest() {
               <table className="bcr-table">
                 <thead>
                   <tr>
-                    <th style={{ width: 28 }}>#</th>
+                    <th style={{ width: 32 }}>#</th>
                     <th style={{ width: 44 }} aria-label="img"></th>
-                <th>PRODUCT / CUT</th>
-                    <th style={{ width: 110 }}>Bone</th>
-                    <th>Spec (optional)</th>
-                    <th>{"\n"}</th>
+                    <th>PRODUCT / CUT</th>
+                    <th style={{ width: 100 }}>Bone</th>
+                    <th style={{ width: 130 }}>Spec</th>
                     <th style={{ width: 110 }}>Qty ({weightLabel(unit)})</th>
                     <th style={{ width: 120 }}>Target {priceLabel(unit)}</th>
-                    <th style={{ width: 32 }}></th>
+                    <th style={{ width: 36 }}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -849,16 +848,6 @@ export default function BuyerCreateRequest() {
                           <option value="Boneless">Boneless</option>
                           <option value="Bone-In">Bone-In</option>
                           <option value="Offals">Offals</option>
-                        </select>
-                      </td>
-                      <td>
-                        <select
-                          className="bcr-input"
-                          value={r.marbling}
-                          onChange={(e) => update(r.id, { marbling: e.target.value })}
-                          style={{ visibility: "hidden" }}
-                        >
-                          {MARBLINGS.map((m) => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </td>
                       <td>
