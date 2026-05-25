@@ -104,6 +104,10 @@ export default function BuyerOfferDetail() {
   }, [id, company?.id]);
 
   const handleNegotiate = async () => {
+    if (offer && (offer.status ?? "active") !== "active") {
+      toast.error("This offer has been deactivated by the supplier.");
+      return;
+    }
     if (id && company?.id) {
       const { data: existingNeg } = await supabase
         .from("negotiations")
