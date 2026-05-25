@@ -591,7 +591,8 @@
         "cut": "DÉCOUPE",
         "marbling": "MARBLING / GRADE",
         "qty": "QTÉ PAR ARTICLE",
-        "price": "PRIX AU KG"
+        "price": "PRIX AU KG",
+        "packing": "PACKING"
       },
       "totalWeight": "Poids total",
       "fields": {
@@ -600,7 +601,8 @@
         "condition": "Condition",
         "destination": "Destination",
         "terms": "Conditions",
-        "shipment": "Expédition"
+        "shipment": "Expédition",
+        "packing": "PACKING"
       },
       "fcl_one": "{{count}} FCL disponible",
       "fcl_other": "{{count}} FCLs disponibles",
@@ -1602,7 +1604,8 @@
           "qty": "QTÉ PAR ARTICLE",
           "price": "PRIX PAR KG",
           "asking": "DEMANDÉ / KG",
-          "floor": "PLANCHER / KG"
+          "floor": "PLANCHER / KG",
+          "packing": "PACKING"
         },
         "fields": {
           "marbling": "MARBLING / GRADE",
@@ -1610,7 +1613,8 @@
           "condition": "Condition",
           "destination": "Destination",
           "terms": "Conditions",
-          "shipment": "Expédition"
+          "shipment": "Expédition",
+          "packing": "PACKING"
         }
       },
       "heroTitle": "Suivez vos commandes facilement et rapidement.",
