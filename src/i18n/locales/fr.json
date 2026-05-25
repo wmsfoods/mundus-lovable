@@ -595,7 +595,7 @@
       },
       "totalWeight": "Poids total",
       "fields": {
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "originPortCountry": "Origine (port / pays)",
         "condition": "Condition",
         "destination": "Destination",
