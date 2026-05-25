@@ -30,7 +30,7 @@ export default function SupplierRequestDetail() {
     (async () => {
       const { data: r } = await supabase.from("buyer_requests").select("*").eq("id", id).maybeSingle();
       if (cancelled) return;
-      const row = r as BuyerRequestRow | null;
+      const row = r as unknown as BuyerRequestRow | null;
       setRequest(row);
       if (row?.buyer_company_id) {
         const { data: co } = await supabase
