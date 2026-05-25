@@ -1073,3 +1073,26 @@
   width: 28px;
   height: 28px;
 }
+
+/* ===== Pull to refresh (mobile) ===== */
+.ptr-indicator {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--wine, #6b1f2a);
+  z-index: 5;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+@keyframes ptr-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
