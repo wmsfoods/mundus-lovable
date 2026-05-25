@@ -56,6 +56,7 @@ function renderItem(
       to={item.to}
       end={item.end}
       onClick={onClose}
+      title={item.label}
       className={({ isActive }) =>
         `sb-item ${isActive ? "is-active" : ""} ${item.accent ? "is-accent" : ""}`.trim()
       }
@@ -98,6 +99,7 @@ function SectionGroup({
         className="sb-section-header"
         onClick={() => setOpen((o) => !o)}
         aria-expanded={open}
+        title={section.label}
       >
         {SI && <SI size={18} />}
         <span className="sb-section-label">{section.label}</span>
