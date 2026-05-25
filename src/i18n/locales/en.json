@@ -400,7 +400,7 @@
       "title": "My offer requests",
       "newRequest": "New offer request",
       "searchPlaceholder": "Search requests…",
-      "speciesAll": "All species",
+      "speciesAll": "All PROTEINS",
       "statusAll": "All",
       "offersCount": "{{n}} offers",
       "empty": "No requests match your filters.",
@@ -420,7 +420,7 @@
       },
       "col": {
         "title": "Title",
-        "species": "Species",
+        "species": "PROTEINS",
         "destination": "Destination",
         "target": "Target $/kg",
         "volume": "Volume",
@@ -1672,14 +1672,14 @@
       "form": {
         "basicInfo": {
           "title": "Basic info",
-          "subtitle": "Name your offer and choose the species."
+          "subtitle": "Name your offer and choose the PROTEINS."
         },
         "offerName": {
           "label": "Offer name",
           "placeholder": "e.g. Premium Beef Product / Cuts — Asia FCL #1"
         },
         "species": {
-          "label": "Species",
+          "label": "PROTEINS",
           "beef": "Beef",
           "pork": "Pork",
           "poultry": "Poultry",
@@ -1899,7 +1899,7 @@
         "title": "About",
         "description": "WMS Foods is a leading Brazilian exporter of premium beef cuts, serving 28 countries across Asia, the Middle East, Africa and the Americas. We operate three plants with combined capacity of 4,600 MT/month, all approved by USDA, Halal authorities and key Asian markets.",
         "tradeMarkets": "Trade markets",
-        "mainSpecies": "Main species",
+        "mainSpecies": "Main PROTEINS",
         "yearsExporting": "Years exporting",
         "fclsDelivered": "FCLs delivered",
         "countriesServed": "Countries served"
@@ -1990,7 +1990,7 @@
             },
             "alerts": {
               "title": "Price-drop & demand alerts",
-              "body": "Get notified the moment a competitor undercuts you or demand spikes in a region."
+              "body": "Get notified when prices drop on product / cuts you buy, when contracts expire, or when a category gets risky."
             },
             "suggested": {
               "title": "AI-suggested target price",
@@ -2068,7 +2068,7 @@
       "container": "Container",
       "totalVolume": "Total volume",
       "shipmentMonth": "Shipment month",
-      "speciesTemp": "Species · Temp"
+      "speciesTemp": "PROTEINS · Temp"
     },
     "cuts": {
       "cut": "Product / Cut",
