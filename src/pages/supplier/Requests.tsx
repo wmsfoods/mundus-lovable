@@ -43,6 +43,7 @@ export default function SupplierRequests() {
   const [myNegs, setMyNegs] = useState<MyNeg[]>([]);
 
   useEffect(() => {
+    if (!company?.id) return;
     let cancelled = false;
     (async () => {
       const { data: reqs } = await supabase
@@ -50,8 +51,9 @@ export default function SupplierRequests() {
         .select("*")
         .in("status", ["new", "with_responses", "not_interested"])
         .is("deleted_at", null)
+        .or(`target_supplier_id.is.null,target_supplier_id.eq.${company.id}`)
         .order("created_at", { ascending: false });
-      const list = (reqs ?? []) as BuyerRequestRow[];
+      const list = (reqs ?? []) as unknown as BuyerRequestRow[];
       const companyIds = Array.from(new Set(list.map((r) => r.buyer_company_id)));
       let companyMap = new Map<string, string>();
       if (companyIds.length) {
@@ -66,7 +68,7 @@ export default function SupplierRequests() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [company?.id]);
 
   useEffect(() => {
     if (!company?.id) return;
@@ -207,6 +209,18 @@ export default function SupplierRequests() {
                   <button type="button" className="link-action" onClick={() => navigate(`/supplier/requests/${r.id}`)}>
                     {formatRequestNumber(r.request_number, r.created_at)}
                   </button>
+                  {r.target_supplier_id && (
+                    <div style={{ marginTop: 4 }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        padding: "3px 8px", borderRadius: 999,
+                        background: "#dbeafe", color: "#1e40af",
+                        fontSize: 10, fontWeight: 700,
+                      }}>
+                        🎯 Direct request
+                      </span>
+                    </div>
+                  )}
                   {withdrawn && (
                     <div style={{ marginTop: 4 }}>
                       <span style={{
