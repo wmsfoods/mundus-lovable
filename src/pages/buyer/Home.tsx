@@ -2,10 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   SparkleIcon,
-  FlagIcon,
-  CheckCircleIcon,
   ArrowsLeftRightIcon,
-  CartIcon,
   FileTextIcon,
   TagIcon,
   ArrowTopRightIcon,
@@ -67,27 +64,6 @@ function MiniSkeleton() {
   );
 }
 
-// =========================================================================
-// Stat card
-// =========================================================================
-type StatCardProps = {
-  label: string;
-  value: string;
-  icon: React.ComponentType<{ size?: number }>;
-  dark?: boolean;
-};
-
-function StatCard({ label, value, icon: I, dark }: StatCardProps) {
-  return (
-    <div className={`stat ${dark ? "is-dark" : ""}`.trim()}>
-      <span className="label">{label}</span>
-      <span className="value">{value}</span>
-      <span className="ic">
-        <I size={28} />
-      </span>
-    </div>
-  );
-}
 
 // =========================================================================
 // Action card (links to a sub-route)
@@ -133,7 +109,6 @@ export default function BuyerHome() {
   const { company } = useCurrentCompany();
   const buyerCompanyId = company?.id ?? null;
   const dash = useBuyerDashboard();
-  const fmt = (v: number | undefined) => (v === undefined ? "—" : String(v));
   const { user } = useAuth();
   const greetingKey = useGreetingKey();
   const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "there";
@@ -216,13 +191,6 @@ export default function BuyerHome() {
         </div>
       </section>
 
-      <div className="stats">
-        <StatCard label="Marketplace offers" value={fmt(dash.marketplaceOffers)} icon={SparkleIcon} />
-        <StatCard label="Active negotiations" value={fmt(dash.negotiations)} icon={ArrowsLeftRightIcon} />
-        <StatCard label="Closed deals" value={fmt(dash.closedDeals)} icon={CheckCircleIcon} />
-        <StatCard label="My orders" value={fmt(dash.orders)} icon={FileTextIcon} />
-        <StatCard label="My requests" value={fmt(dash.requests)} icon={FlagIcon} dark />
-      </div>
 
       <div className="action-row">
         <ActionCard
