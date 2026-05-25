@@ -640,15 +640,15 @@ export default function BuyerCreateRequest() {
                 <button
                   type="button"
                   onClick={() => { if (filledRows === 0) setCutRegion("us"); }}
-                  disabled={filledRows > 0 && cutRegion !== "us"}
+                  disabled={filledRows > 0 && String(cutRegion) !== "us"}
                   style={{
                     padding: "8px 16px", borderRadius: 8, fontSize: 13,
                     border: cutRegion === "us" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                    background: cutRegion === "us" ? "#F5E6EC" : (filledRows > 0 && cutRegion !== "us") ? "#F3F4F6" : "white",
+                    background: cutRegion === "us" ? "#F5E6EC" : (filledRows > 0 && String(cutRegion) !== "us") ? "#F3F4F6" : "white",
                     fontWeight: cutRegion === "us" ? 700 : 400,
-                    color: cutRegion === "us" ? "#8B1A3A" : (filledRows > 0 && cutRegion !== "us") ? "#D1D5DB" : "#6B7280",
-                    cursor: (filledRows > 0 && cutRegion !== "us") ? "not-allowed" : "pointer",
-                    opacity: (filledRows > 0 && cutRegion !== "us") ? 0.5 : 1,
+                    color: cutRegion === "us" ? "#8B1A3A" : (filledRows > 0 && String(cutRegion) !== "us") ? "#D1D5DB" : "#6B7280",
+                    cursor: (filledRows > 0 && String(cutRegion) !== "us") ? "not-allowed" : "pointer",
+                    opacity: (filledRows > 0 && String(cutRegion) !== "us") ? 0.5 : 1,
                   }}
                 >
                   🇺🇸 US Beef Cuts (IMPS)
