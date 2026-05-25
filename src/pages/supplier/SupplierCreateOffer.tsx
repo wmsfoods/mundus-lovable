@@ -34,7 +34,7 @@ import {
 type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
-const GRADES = ["Not Classified", "Low", "Medium", "High", "Prime"];
+const GRADES = ["\n", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
 // Primary destination markets shown as chips (in this order).
@@ -143,7 +143,7 @@ function validatePricePair(ask: string | number | null | undefined, floor: strin
 }
 
 const EMPTY_NF: Omit<Cut, "id"> = {
-  cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None",
+  cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "\n", ag: "None",
   qty: "", ask: "", floor: "", notes: "", plant: "",
 };
 
@@ -341,7 +341,7 @@ export default function SupplierCreateOffer() {
         for (const line of lines) {
           const m = line.match(/^(.+?)(?:\s*\(([^)]+)\))?\s*—\s*(?:([^—\d][^—]*?)—\s*)?([\d.,]+)\s*kg\s*@\s*\$([\d.]+)\/kg$/);
           const cutName = (m?.[1] ?? line).trim();
-          const marbling = (m?.[3] ?? "Not Classified").trim();
+          const marbling = (m?.[3] ?? "\n").trim();
           const qty = (m?.[4] ?? "").replace(/,/g, "");
           const target = m?.[5] ?? "";
           const matched = (cutsByCategory[cat0] || []).find(
@@ -356,7 +356,7 @@ export default function SupplierCreateOffer() {
             cutImage: matched?.image_url ?? null,
             spec,
             pkg: "Vacuum Pack",
-            gr: marbling && marbling !== "Not specified" ? marbling : "Not Classified",
+            gr: marbling && marbling !== "Not specified" ? marbling : "\n",
             ag: "None",
             qty: qty || "",
             ask: target || "",
@@ -398,7 +398,7 @@ export default function SupplierCreateOffer() {
         cutImage: matched?.image_url ?? null,
         spec: matched?.bone_spec || fromRequest.specification || "Boneless",
         pkg: "Vacuum Pack",
-        gr: "Not Classified",
+        gr: "\n",
         ag: "None",
         qty,
         ask,
@@ -544,7 +544,7 @@ export default function SupplierCreateOffer() {
     setAiProcessing(true);
     setTimeout(() => {
       const mockParsed: Cut[] = [
-        { id: Date.now().toString(), cat: "Beef", cut: "Forequarter", spec: "Boneless", pkg: "Vacuum Pack", gr: "Not Classified", ag: "None", qty: "14000", ask: "6.40", floor: "5.80", notes: "98 VL", plant: "" },
+        { id: Date.now().toString(), cat: "Beef", cut: "Forequarter", spec: "Boneless", pkg: "Vacuum Pack", gr: "\n", ag: "None", qty: "14000", ask: "6.40", floor: "5.80", notes: "98 VL", plant: "" },
         { id: (Date.now() + 1).toString(), cat: "Beef", cut: "Brisket", spec: "Boneless", pkg: "Carton Box", gr: "Medium", ag: "Wet Aged", qty: "13000", ask: "4.35", floor: "3.90", notes: "", plant: "" },
       ];
       setCuts((prev) => [...prev, ...mockParsed]);

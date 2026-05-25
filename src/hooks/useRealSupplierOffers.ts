@@ -126,7 +126,7 @@ export function useRealSupplierOffers() {
           exwPickupLocation: o.exw_pickup_location ?? null,
           items: items.map((it) => ({
             name: it.customer_product?.name ?? "Item",
-            marbling: "Not Classified",
+            marbling: "\n",
             qtyKg: Number(it.amount ?? 0),
             pricePerKgUsd: Number(it.price ?? 0),
           })),
