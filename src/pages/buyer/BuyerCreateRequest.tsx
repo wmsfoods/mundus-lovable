@@ -209,6 +209,71 @@ export default function BuyerCreateRequest() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isEdit, editId, company?.id, cutsByCategory]);
 
+  // Hydrate from a cloned request (navigation state from "Clone request" button).
+  const clonedRef = useRef(false);
+  useEffect(() => {
+    if (clonedRef.current) return;
+    if (isEdit) return;
+    if (!cloneFrom) return;
+    if (!cutsByCategory || Object.keys(cutsByCategory).length === 0) return;
+    clonedRef.current = true;
+    const data = cloneFrom;
+    if ((data.category as string) && (CATEGORIES as readonly string[]).includes(data.category as string)) {
+      setCategory(data.category as any);
+    }
+    setDestCountry(data.destination_country ?? "");
+    setDestPort(data.destination_port ?? "");
+    const incs = String(data.incoterm ?? "").split(",").map((s: string) => s.trim()).filter(Boolean);
+    if (incs.length) setSelectedIncoterms(incs);
+    setAnyOrigin(data.any_origin ?? true);
+    setOriginCountries((data.origin_countries as string[] | null) ?? []);
+    if ((data as any).cut_region === "us" || (data as any).cut_region === "global") {
+      setCutRegion((data as any).cut_region);
+    }
+    setContainerType(((data.container_size ?? "40ft").startsWith("20") ? "20" : "40") as "20" | "40");
+    setContainerCount(String(data.container_count ?? 1));
+    setShipmentWindow(data.shipment_date ?? "");
+    if ((data as any).target_supplier_id) {
+      setDistribution("specific");
+      setTargetSupplierId((data as any).target_supplier_id);
+    }
+
+    const info = String(data.additional_info ?? "");
+    const sections = info.split(/\n\n/);
+    let parsedRows: Row[] = [];
+    for (const sec of sections) {
+      if (sec.startsWith("Cuts:")) {
+        const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
+        parsedRows = lines.map((line) => {
+          const m = line.match(/^(.+?)(?:\s*\[([^\]]+)\])?(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
+          const cut = (m?.[1] ?? line).trim();
+          const match = (cutsByCategory[(data.category as string) ?? "Beef"] ?? []).find((c) => c.displayName.toLowerCase() === cut.toLowerCase());
+          const boneRaw = (m?.[2] ?? "").trim();
+          const boneSpec: "Bone-In" | "Boneless" | "Offals" = boneRaw === "Bone-In" ? "Bone-In" : boneRaw === "Boneless" ? "Boneless" : (match?.bone_spec ?? "Boneless");
+          return {
+            id: Math.random().toString(36).slice(2, 9),
+            cut,
+            cutImage: match?.image_url ?? null,
+            spec: (m?.[3] ?? "").trim(),
+            boneSpec,
+            marbling: (m?.[4] ?? "Not specified").trim() || "Not specified",
+            qty: (m?.[5] ?? "").replace(/,/g, "").trim(),
+            target: (m?.[6] ?? "").trim(),
+          };
+        });
+      } else if (sec.startsWith("Compliance:")) {
+        const list = sec.replace(/^Compliance:\s*/, "");
+        setHalal(/halal/i.test(list));
+        setKosher(/kosher/i.test(list));
+      } else if (sec.startsWith("Notes:")) {
+        setNotes(sec.replace(/^Notes:\n?/, ""));
+      }
+    }
+    if (parsedRows.length) setRows(parsedRows);
+    toast.success("Cloned — review changes and submit");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cloneFrom, cutsByCategory, isEdit]);
+
   const [existingAttachments, setExistingAttachments] = useState<Array<{ name: string; url: string; size?: number; type?: string }>>([]);
 
   // Close dropdowns on outside click
