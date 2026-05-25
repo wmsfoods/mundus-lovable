@@ -683,6 +683,7 @@ export default function SupplierCreateOffer() {
               ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
               : null,
             request_id: fromRequest?.requestId ?? null,
+            cut_region: cutRegion,
           })
           .select("id, offer_number")
           .single();
