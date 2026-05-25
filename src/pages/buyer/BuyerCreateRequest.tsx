@@ -476,6 +476,22 @@ export default function BuyerCreateRequest() {
 
   return (
     <div className="bcr">
+      {cloneFrom && !isEdit && (
+        <div
+          className="rounded-lg p-4 mb-4 flex items-start gap-3"
+          style={{ background: "#ECFDF5", border: "1px solid #A7F3D0" }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>📋</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#065F46" }}>
+              Cloning request
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 14, color: "#047857" }}>
+              Review and submit as a new request.
+            </p>
+          </div>
+        </div>
+      )}
       {/* HEADER */}
       <header className="bcr-header">
         <div className="bcr-header-l">
