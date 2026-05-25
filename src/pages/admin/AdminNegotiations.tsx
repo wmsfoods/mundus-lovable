@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Handshake, AlertCircle } from "lucide-react";
+import { Handshake, AlertCircle, ChevronRight } from "lucide-react";
 import { toast } from "sonner";
 import {
   useAdminNegotiations,
@@ -91,6 +91,33 @@ export default function AdminNegotiations() {
     return rows.filter((r) => r.status === filter);
   }, [rows, filter]);
 
+  // Group negotiations by their parent offer for visual tree
+  const grouped = useMemo(() => {
+    const map = new Map<string, { key: string; offer_number: number | null; offer_created_at: string; product_name: string | null; supplier_name: string | null; rows: AdminNegotiationRow[] }>();
+    for (const r of filtered) {
+      const key = `${r.offer_number ?? "x"}-${r.offer_created_at ?? ""}-${r.supplier_name ?? ""}`;
+      const g = map.get(key);
+      if (g) {
+        g.rows.push(r);
+      } else {
+        map.set(key, {
+          key,
+          offer_number: r.offer_number,
+          offer_created_at: r.offer_created_at,
+          product_name: r.product_name,
+          supplier_name: r.supplier_name,
+          rows: [r],
+        });
+      }
+    }
+    return Array.from(map.values());
+  }, [filtered]);
+
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const toggleGroup = (k: string) =>
+    setOpenGroups((s) => ({ ...s, [k]: s[k] === false ? true : !s[k] }));
+  const isGroupOpen = (k: string) => openGroups[k] !== false; // default open
+
   const filters: { key: FilterKey; label: string }[] = [
     { key: "all", label: t("admin.negotiations.filter.all") },
     { key: "awaiting_supplier", label: t("admin.negotiations.filter.awaiting_supplier") },
@@ -174,15 +201,41 @@ export default function AdminNegotiations() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filtered.map((r) => {
-                    const gap = r.latest_buyer_bid != null && r.latest_supplier_counter != null
-                      ? r.latest_supplier_counter - r.latest_buyer_bid
-                      : null;
-                    const gapPct = gap != null && r.latest_buyer_bid
-                      ? (gap / r.latest_buyer_bid) * 100
-                      : null;
-                    return (
-                      <tr key={r.id} onClick={() => handleRowClick(r)} style={{ cursor: "pointer" }}>
+                  {grouped.flatMap((g) => {
+                    const isOpen = isGroupOpen(g.key);
+                    const parent = (
+                      <tr
+                        key={`p-${g.key}`}
+                        className={`nego-row-parent ${isOpen ? "is-open" : ""}`.trim()}
+                        onClick={() => toggleGroup(g.key)}
+                      >
+                        <td colSpan={12}>
+                          <span className="group-title">
+                            <ChevronRight size={14} className="chev" />
+                            <strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>
+                              {formatOfferNumber(g.offer_number, g.offer_created_at)}
+                            </strong>
+                            <span style={{ color: "#374151" }}>{g.product_name ?? "—"}</span>
+                            <span style={{ color: "#6b7280", fontSize: 12 }}>· {g.supplier_name ?? "—"}</span>
+                            <span className="bids-count">{g.rows.length} {g.rows.length === 1 ? "negotiation" : "negotiations"}</span>
+                          </span>
+                        </td>
+                      </tr>
+                    );
+                    const children = g.rows.map((r) => {
+                      const gap = r.latest_buyer_bid != null && r.latest_supplier_counter != null
+                        ? r.latest_supplier_counter - r.latest_buyer_bid
+                        : null;
+                      const gapPct = gap != null && r.latest_buyer_bid
+                        ? (gap / r.latest_buyer_bid) * 100
+                        : null;
+                      return (
+                        <tr
+                          key={r.id}
+                          className={`nego-row-child ${isOpen ? "" : "hidden"}`.trim()}
+                          onClick={() => handleRowClick(r)}
+                          style={{ cursor: "pointer" }}
+                        >
                         <td><strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.offer_created_at)}</strong></td>
                         <td>
                           {r.product_name ? (
@@ -216,6 +269,8 @@ export default function AdminNegotiations() {
                         <td style={{ color: "#6b7280", fontSize: 12 }}>{fmtRelative(r.updated_at, locale)}</td>
                       </tr>
                     );
+                    });
+                    return [parent, ...children];
                   })}
                 </tbody>
               </table>
