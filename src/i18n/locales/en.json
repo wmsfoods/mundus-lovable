@@ -244,7 +244,7 @@
       "payment": "Payment terms",
       "container": "Container",
       "created": "Created",
-      "cutsTitle": "Cuts requested",
+      "cutsTitle": "Product / Cuts requested",
       "col": {
         "cut": "PRODUCT / CUT",
         "qty": "Qty ({{unit}})",
@@ -494,14 +494,14 @@
         "selectAll": "Select all",
         "clearAll": "Clear all",
         "loading": "Loading…",
-        "noCuts": "No cuts available",
+        "noCuts": "No product / cuts available",
         "selectMarket": "Select a market…",
         "selectPort": "Select a port…",
         "noPorts": "This market has no ports configured.",
         "fields": {
           "title": "Title",
           "category": "Category",
-          "cuts": "Cuts",
+          "cuts": "Product / Cuts",
           "targetPrice": "Target price (USD/kg)",
           "targetVolume": "Target volume (kg)",
           "market": "Destination market",
@@ -630,7 +630,7 @@
       "incoterm": "Incoterm",
       "destination": "Destination",
       "freightCost": "Freight",
-      "cut": "Cut",
+      "cut": "Product / Cut",
       "qty": "Qty ({{unit}})",
       "asking": "Asking",
       "yourBid": "Your Bid",
@@ -744,7 +744,7 @@
         "totalValue": "Total Value"
       },
       "cuts": {
-        "header": "Cuts",
+        "header": "Product / Cuts",
         "weight": "Weight",
         "pricePerKg": "Price per kg",
         "totalPrice": "Total price"
@@ -1034,7 +1034,7 @@
         "submittedAt": "Submitted",
         "status": "Status",
         "action": "Action",
-        "cut": "Cut",
+        "cut": "Product / Cut",
         "qty": "Qty",
         "bidPerKg": "Bid",
         "total": "Total"
@@ -1475,7 +1475,7 @@
           "originPort": "Origin Port"
         },
         "cuts": {
-          "cut": "Cuts",
+          "cut": "Product / Cuts",
           "weight": "Weight",
           "pricePerKg": "Price per kg",
           "totalPrice": "Total Price"
@@ -1690,7 +1690,7 @@
           "capacity": "Container capacity (25t FCL)",
           "overCapacity": "Over capacity",
           "remaining": "remaining",
-          "addCut": "Add cut",
+          "addCut": "Add product / cut",
           "removeRow": "Remove this cut",
           "col": {
             "product": "Product",
@@ -1795,9 +1795,9 @@
         "searchMarketsPh": "Search countries…",
         "noMarkets": "No markets found",
         "incoConflict": "Not compatible with the selected incoterm",
-        "pickCut": "Pick a cut…",
-        "searchCutsPh": "Search cuts…",
-        "noCuts": "No cuts found"
+        "pickCut": "Pick a product / cut…",
+        "searchCutsPh": "Search product / cuts…",
+        "noCuts": "No product / cuts found"
       }
     },
     "home": {
@@ -2053,7 +2053,7 @@
     },
     "section": {
       "details": "DETAILS",
-      "cutsIncluded": "CUTS INCLUDED"
+      "cutsIncluded": "PRODUCT / CUTS INCLUDED"
     },
     "fields": {
       "date": "Date",
@@ -2067,7 +2067,7 @@
       "speciesTemp": "Species · Temp"
     },
     "cuts": {
-      "cut": "Cut",
+      "cut": "Product / Cut",
       "qty": "Qty",
       "asking": "Asking",
       "finalKg": "Final $/kg",
@@ -2095,7 +2095,7 @@
       "buyerBid": "Buyer bid",
       "supplierCounter": "Supplier counter",
       "yourCounter": "Your counter",
-      "finalPerCut": "FINAL PRICE PER CUT",
+      "finalPerCut": "FINAL PRICE PER PRODUCT / CUT",
       "totals": "TOTALS",
       "initialAsking": "Initial asking",
       "firstBuyerBid": "First buyer bid",
@@ -2774,7 +2774,7 @@
         "supplier": "Supplier",
         "bothRoleNote": "When a company is both Buyer and Supplier, each role must use different email addresses. Only Mundus admins can switch between roles.",
         "proteinProfile": "Protein profile",
-        "preferredCuts": "Preferred cuts",
+        "preferredCuts": "Preferred product / cuts",
         "companyName": "Company name",
         "licenses": "Business licenses or certificates",
         "licensesHint": "Upload coming soon",

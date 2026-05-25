@@ -246,7 +246,7 @@
       "created": "Creado",
       "cutsTitle": "Cortes solicitados",
       "col": {
-        "cut": "Corte",
+        "cut": "Producto / Corte",
         "qty": "Cant ({{unit}})",
         "asking": "Pedido",
         "buyerBid": "Oferta del comprador",
@@ -339,7 +339,7 @@
         "apply": "Aplicar"
       },
       "col": {
-        "cut": "Corte",
+        "cut": "Producto / Corte",
         "qty": "Cant. ({{unit}})",
         "minBid": "Oferta Mín.",
         "yourBid": "Tu Oferta"
@@ -501,7 +501,7 @@
         "fields": {
           "title": "Título",
           "category": "Categoría",
-          "cuts": "Cortes",
+          "cuts": "Productos / Cortes",
           "targetPrice": "Precio objetivo (US$/kg)",
           "targetVolume": "Volumen objetivo (kg)",
           "market": "Mercado de destino",
@@ -630,7 +630,7 @@
       "incoterm": "Incoterm",
       "destination": "Destino",
       "freightCost": "Flete",
-      "cut": "Corte",
+      "cut": "Producto / Corte",
       "qty": "Cant ({{unit}})",
       "asking": "Pedido",
       "yourBid": "Tu Oferta",
@@ -744,7 +744,7 @@
         "totalValue": "Valor total"
       },
       "cuts": {
-        "header": "Cortes",
+        "header": "Productos / Cortes",
         "weight": "Peso",
         "pricePerKg": "Precio por kg",
         "totalPrice": "Precio total"
@@ -1049,7 +1049,7 @@
         "submittedAt": "Enviado",
         "status": "Estado",
         "action": "Acción",
-        "cut": "Corte",
+        "cut": "Producto / Corte",
         "qty": "Cant.",
         "bidPerKg": "Oferta",
         "total": "Total"
@@ -1475,7 +1475,7 @@
           "originPort": "Puerto de Origen"
         },
         "cuts": {
-          "cut": "Cortes",
+          "cut": "Productos / Cortes",
           "weight": "Peso",
           "pricePerKg": "Precio por kg",
           "totalPrice": "Precio Total"
@@ -2067,7 +2067,7 @@
       "speciesTemp": "Especie · Temp"
     },
     "cuts": {
-      "cut": "Corte",
+      "cut": "Producto / Corte",
       "qty": "Cant.",
       "asking": "Pedido",
       "finalKg": "Final $/kg",

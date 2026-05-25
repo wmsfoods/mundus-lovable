@@ -246,7 +246,7 @@
       "created": "创建日期",
       "cutsTitle": "要求部位",
       "col": {
-        "cut": "部位",
+        "cut": "产品 / 部位",
         "qty": "数量 ({{unit}})",
         "asking": "询价",
         "buyerBid": "买家投标",
@@ -339,7 +339,7 @@
         "apply": "应用"
       },
       "col": {
-        "cut": "部位",
+        "cut": "产品 / 部位",
         "qty": "数量 ({{unit}})",
         "minBid": "最低投标",
         "yourBid": "您的投标"
@@ -496,7 +496,7 @@
         "fields": {
           "title": "标题",
           "category": "类别",
-          "cuts": "部位",
+          "cuts": "产品 / 部位",
           "targetPrice": "目标价格 (美元/公斤)",
           "targetVolume": "目标销量 (公斤)",
           "market": "目的地市场",
@@ -588,7 +588,7 @@
       "illustrative": "示意图",
       "perFcl": "每个集装箱（FCL）的总价值（起拍价）",
       "cutsHead": {
-        "cut": "部位",
+        "cut": "产品 / 部位",
         "marbling": "MARBLING / GRADE",
         "qty": "每项数量",
         "price": "每公斤价格"
@@ -625,7 +625,7 @@
       "incoterm": "Incoterm",
       "destination": "目的地",
       "freightCost": "运费",
-      "cut": "部位",
+      "cut": "产品 / 部位",
       "qty": "数量 ({{unit}})",
       "asking": "询价",
       "yourBid": "您的投标",
@@ -739,7 +739,7 @@
         "totalValue": "总价值"
       },
       "cuts": {
-        "header": "部位",
+        "header": "产品 / 部位",
         "weight": "重量",
         "pricePerKg": "每公斤价格",
         "totalPrice": "总价"
@@ -1029,7 +1029,7 @@
         "submittedAt": "提交时间",
         "status": "状态",
         "action": "操作",
-        "cut": "部位",
+        "cut": "产品 / 部位",
         "qty": "数量",
         "bidPerKg": "投标",
         "total": "总计"
@@ -1470,7 +1470,7 @@
           "originPort": "起运港"
         },
         "cuts": {
-          "cut": "部位",
+          "cut": "产品 / 部位",
           "weight": "重量",
           "pricePerKg": "每公斤价格",
           "totalPrice": "总价"
@@ -1597,7 +1597,7 @@
         "cloneComingSoon": "复制报价 — 即将推出",
         "shareComingSoon": "分享此报价 — 即将推出",
         "cutsHead": {
-          "cut": "部位",
+          "cut": "产品 / 部位",
           "marbling": "MARBLING / GRADE",
           "qty": "每项数量",
           "price": "每公斤价格",
@@ -1744,7 +1744,7 @@
       "preview": {
         "title": "实时预览",
         "hint": "买家将如何看到您的报价",
-        "cuts": "部位",
+        "cuts": "产品 / 部位",
         "destinations": "目的地",
         "incoterm": "贸易术语",
         "shipment": "装运",
@@ -1848,7 +1848,7 @@
       "recentOffers": "最新报价",
       "recentSales": "最新销售",
       "seeAll": "查看全部",
-      "cuts": "部位",
+      "cuts": "产品 / 部位",
       "more": "更多",
       "mt": "公吨",
       "statusAvailable": "有货",
@@ -2122,7 +2122,7 @@
       "speciesTemp": "物种 · 温度"
     },
     "cuts": {
-      "cut": "部位",
+      "cut": "产品 / 部位",
       "qty": "数量",
       "asking": "询价",
       "finalKg": "最终 $/kg",
