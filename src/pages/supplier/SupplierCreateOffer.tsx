@@ -1056,7 +1056,11 @@ export default function SupplierCreateOffer() {
         throw new Error(`Step 6 failed: freight_options — ${m}`);
       }
 
-      toast.success(`Offer ${formatOfferNumber(offer.offer_number)} published successfully!`);
+      toast.success(
+        isEditing
+          ? `Offer ${formatOfferNumber(offer.offer_number)} updated successfully!`
+          : `Offer ${formatOfferNumber(offer.offer_number)} published successfully!`,
+      );
       if (fromRequest?.requestId) {
         await supabase
           .from("buyer_requests")
@@ -1086,7 +1090,11 @@ export default function SupplierCreateOffer() {
           console.warn("[notifications] supplier-response notification failed", e);
         }
       }
-      navigate("/supplier/offers");
+      if (isEditing && editOffer) {
+        navigate(`/supplier/offers/${editOffer.offerId}`);
+      } else {
+        navigate("/supplier/offers");
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed to publish offer";
       toast.error(msg);
