@@ -898,12 +898,37 @@ export default function BuyerCreateRequest() {
                       </select>
                     </div>
                     <div>
-                      <label>Qty (kg)</label>
-                      <input className="bcr-input" type="number" inputMode="decimal" value={r.qty} onChange={(e) => update(r.id, { qty: e.target.value })} placeholder="0" />
+                      <label>Qty ({weightLabel(unit)})</label>
+                      <input
+                        className="bcr-input"
+                        type="number"
+                        inputMode="decimal"
+                        value={unit === "kg" ? r.qty : (r.qty ? String(Math.round(toDisplay(Number(r.qty), "weight", unit))) : "")}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (!raw) { update(r.id, { qty: "" }); return; }
+                          const inKg = unit === "kg" ? raw : String(fromDisplay(parseFloat(raw) || 0, "weight", unit));
+                          update(r.id, { qty: inKg });
+                        }}
+                        placeholder="0"
+                      />
                     </div>
                     <div>
-                      <label>Target $/kg</label>
-                      <input className="bcr-input" type="number" inputMode="decimal" step="0.01" value={r.target} onChange={(e) => update(r.id, { target: e.target.value })} placeholder="optional" />
+                      <label>Target {priceLabel(unit)}</label>
+                      <input
+                        className="bcr-input"
+                        type="number"
+                        inputMode="decimal"
+                        step="0.01"
+                        value={unit === "kg" ? r.target : (r.target ? toDisplay(Number(r.target), "price", unit).toFixed(2) : "")}
+                        onChange={(e) => {
+                          const raw = e.target.value;
+                          if (!raw) { update(r.id, { target: "" }); return; }
+                          const inKg = unit === "kg" ? raw : String(fromDisplay(parseFloat(raw) || 0, "price", unit));
+                          update(r.id, { target: inKg });
+                        }}
+                        placeholder="optional"
+                      />
                     </div>
                   </div>
                 </div>
