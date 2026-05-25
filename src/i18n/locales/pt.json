@@ -594,7 +594,7 @@
       "perFcl": "Valor total (preço inicial) por FCL",
       "cutsHead": {
         "cut": "CORTE",
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "qty": "QTD POR CORTE",
         "price": "PREÇO POR KG"
       },
