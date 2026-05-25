@@ -2986,7 +2986,7 @@
         }
       },
       "cuts": {
-        "title": "Produtos & Cortes",
+        "title": "Produtos & Produto / Cortes",
         "subtitle": "Gerencie o catálogo de cortes de carne do marketplace",
         "searchPlaceholder": "Buscar nome do corte ou número do produto...",
         "allCategories": "Todas as categorias",
