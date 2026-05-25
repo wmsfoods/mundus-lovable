@@ -225,6 +225,10 @@ export default function SupplierCreateOffer() {
   const [newImgPrev, setNewImgPrev] = useState<string | null>(null);
   const [nf, setNf] = useState<Omit<Cut, "id">>({ ...EMPTY_NF });
 
+  // Cut nomenclature region (only meaningful when company is US-based and category is Beef)
+  const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+  const isUsCompany = (company?.country ?? "").trim().toLowerCase() === "united states";
+
   const [distMarketplace, setDistMarketplace] = useState(true);
   const [distAllCustomers, setDistAllCustomers] = useState(false);
   const [distSpecific, setDistSpecific] = useState(false);
@@ -679,6 +683,7 @@ export default function SupplierCreateOffer() {
               ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
               : null,
             request_id: fromRequest?.requestId ?? null,
+            cut_region: cutRegion,
           })
           .select("id, offer_number")
           .single();
@@ -1595,6 +1600,42 @@ export default function SupplierCreateOffer() {
 
           {/* Cuts table */}
           <div id="sec-cuts" className="cov4-tblw">
+            {isUsCompany && (
+              <div style={{ display: "flex", gap: 8, marginBottom: 12, flexWrap: "wrap" }}>
+                <button
+                  type="button"
+                  onClick={() => setCutRegion("global")}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: 8,
+                    border: cutRegion === "global" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
+                    background: cutRegion === "global" ? "#F5E6EC" : "white",
+                    fontWeight: cutRegion === "global" ? 700 : 400,
+                    color: cutRegion === "global" ? "#8B1A3A" : "#6B7280",
+                    cursor: "pointer",
+                    fontSize: 13,
+                  }}
+                >
+                  🌐 Global Beef Cuts
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCutRegion("us")}
+                  style={{
+                    padding: "8px 16px",
+                    borderRadius: 8,
+                    border: cutRegion === "us" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
+                    background: cutRegion === "us" ? "#F5E6EC" : "white",
+                    fontWeight: cutRegion === "us" ? 700 : 400,
+                    color: cutRegion === "us" ? "#8B1A3A" : "#6B7280",
+                    cursor: "pointer",
+                    fontSize: 13,
+                  }}
+                >
+                  🇺🇸 US Beef Cuts (IMPS)
+                </button>
+              </div>
+            )}
             <table className="cov4-tbl">
               <thead>
                 <tr>
@@ -1866,7 +1907,13 @@ export default function SupplierCreateOffer() {
                               <CommandList className="max-h-[320px]">
                                 <CommandEmpty>{tm("noCuts")}</CommandEmpty>
                                 <CommandGroup>
-                                  {(cutsByCategory[nf.cat] || []).map((c) => (
+                                  {(cutsByCategory[nf.cat] || [])
+                                    .filter((c) => {
+                                      if (nf.cat !== "Beef") return c.region === "global";
+                                      if (cutRegion === "us") return c.region === "us" || c.bone_spec === "Offals";
+                                      return c.region === "global";
+                                    })
+                                    .map((c) => (
                                     <CommandItem
                                       key={c.id}
                                       value={c.displayName}

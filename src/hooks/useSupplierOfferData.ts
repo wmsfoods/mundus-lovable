@@ -10,6 +10,8 @@ export type OfferCut = {
   displayName: string;
   image_url: string | null;
   bone_spec: "Bone-In" | "Boneless" | "Offals";
+  region: "global" | "us";
+  imps_number: string | null;
 };
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
@@ -26,7 +28,7 @@ export function useSupplierOfferData() {
         supabase.from("countries").select("id, english_name, portuguese_name, spanish_name, french_name, chinese_name, flag_emoji, iso_code"),
         supabase.from("ports").select("id, name, code, country_id, is_active").eq("is_active", true).order("name"),
         supabase.from("port_sharing").select("country_id, uses_ports_from_country_id"),
-        supabase.from("cuts").select("id, name, category, image_url, is_active, bone_spec").eq("is_active", true).order("name"),
+        supabase.from("cuts").select("id, name, category, image_url, is_active, bone_spec, region, imps_number").eq("is_active", true).order("name"),
         supabase.from("cut_translations").select("cut_id, locale, name"),
       ]);
 
@@ -91,12 +93,17 @@ export function useSupplierOfferData() {
       for (const cat of CATEGORIES) cutsByCategory[cat] = [];
       for (const c of cutsRes.data ?? []) {
         const arr = cutsByCategory[c.category] ?? (cutsByCategory[c.category] = []);
+        const region: "global" | "us" = c.region === "us" ? "us" : "global";
+        const baseName = trByCut.get(c.id) || c.name;
+        const displayName = region === "us" && c.imps_number ? `IMPS ${c.imps_number} — ${baseName}` : baseName;
         arr.push({
           id: c.id,
           name: c.name,
-          displayName: trByCut.get(c.id) || c.name,
+          displayName,
           image_url: c.image_url,
           bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : c.bone_spec === "Offals" ? "Offals" : "Boneless"),
+          region,
+          imps_number: c.imps_number ?? null,
         });
       }
       for (const cat of Object.keys(cutsByCategory)) {

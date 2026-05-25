@@ -7,6 +7,7 @@ export type CurrentCompany = {
   name: string;
   is_buyer: boolean;
   is_supplier: boolean;
+  country: string | null;
 };
 
 type State = {
@@ -59,7 +60,7 @@ export function useCurrentCompany(): State {
 
       const { data: companyRow, error: companyErr } = await supabase
         .from("companies")
-        .select("id, name, is_buyer, is_supplier")
+        .select("id, name, is_buyer, is_supplier, country")
         .eq("id", companyId)
         .maybeSingle();
 
@@ -79,6 +80,7 @@ export function useCurrentCompany(): State {
           name: companyRow.name,
           is_buyer: Boolean(companyRow.is_buyer),
           is_supplier: Boolean(companyRow.is_supplier),
+          country: (companyRow as any).country ?? null,
         },
         loading: false,
         error: null,

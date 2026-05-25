@@ -70,6 +70,9 @@ export default function BuyerCreateRequest() {
   const [openMarblingFor, setOpenMarblingFor] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
 
+  // Cut nomenclature region (global vs US IMPS). Suggested when US is in origin.
+  const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+
   // Distribution: marketplace (all suppliers) vs specific supplier
   const [distribution, setDistribution] = useState<"marketplace" | "specific">("marketplace");
   const [targetSupplierId, setTargetSupplierId] = useState<string>("");
@@ -148,6 +151,9 @@ export default function BuyerCreateRequest() {
       if (incs.length) setSelectedIncoterms(incs);
       setAnyOrigin(data.any_origin ?? true);
       setOriginCountries((data.origin_countries as string[] | null) ?? []);
+      if ((data as any).cut_region === "us" || (data as any).cut_region === "global") {
+        setCutRegion((data as any).cut_region);
+      }
       setContainerType(((data.container_size ?? "40ft").startsWith("20") ? "20" : "40") as "20" | "40");
       setContainerCount(String(data.container_count ?? 1));
       setShipmentWindow(data.shipment_date ?? "");
@@ -266,7 +272,12 @@ export default function BuyerCreateRequest() {
     setFiles((prev) => [...prev, ...valid].slice(0, 10));
   };
 
-  const cuts = cutsByCategory[category] ?? [];
+  const allCuts = cutsByCategory[category] ?? [];
+  const cuts = useMemo(() => {
+    if (category !== "Beef") return allCuts.filter((c) => (c as any).region !== "us");
+    if (cutRegion === "us") return allCuts.filter((c) => (c as any).region === "us" || c.bone_spec === "Offals");
+    return allCuts.filter((c) => (c as any).region !== "us");
+  }, [allCuts, category, cutRegion]);
   const knownCutNames = useMemo(() => cuts.map((c) => c.displayName), [cuts]);
 
   const totalKg = useMemo(
@@ -363,6 +374,7 @@ export default function BuyerCreateRequest() {
       any_origin: anyOrigin,
       origin_countries: anyOrigin ? [] : originCountries,
       target_supplier_id: distribution === "specific" ? targetSupplierId : null,
+      cut_region: cutRegion,
     };
 
     if (isEdit && editId) {
@@ -898,6 +910,46 @@ export default function BuyerCreateRequest() {
                     </div>
                   )}
                 </>
+              )}
+              {category === "Beef" && !anyOrigin && originCountries.includes("United States") && (
+                <div style={{
+                  padding: 12,
+                  background: "#EFF6FF",
+                  border: "1px solid #93C5FD",
+                  borderRadius: 8,
+                  marginTop: 8,
+                }}>
+                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                    Which cut nomenclature?
+                  </div>
+                  <div style={{ fontSize: 12, color: "#6B7280", marginBottom: 8 }}>
+                    💡 We suggest US Beef Cuts (IMPS) to facilitate for American suppliers
+                  </div>
+                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                    <button
+                      type="button"
+                      onClick={() => setCutRegion("us")}
+                      style={{
+                        padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12,
+                        border: cutRegion === "us" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
+                        background: cutRegion === "us" ? "#F5E6EC" : "white",
+                        fontWeight: cutRegion === "us" ? 700 : 400,
+                        color: cutRegion === "us" ? "#8B1A3A" : "#6B7280",
+                      }}
+                    >🇺🇸 US Beef Cuts (IMPS)</button>
+                    <button
+                      type="button"
+                      onClick={() => setCutRegion("global")}
+                      style={{
+                        padding: "6px 12px", borderRadius: 8, cursor: "pointer", fontSize: 12,
+                        border: cutRegion === "global" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
+                        background: cutRegion === "global" ? "#F5E6EC" : "white",
+                        fontWeight: cutRegion === "global" ? 700 : 400,
+                        color: cutRegion === "global" ? "#8B1A3A" : "#6B7280",
+                      }}
+                    >🌐 Global Beef Cuts</button>
+                  </div>
+                </div>
               )}
             </div>
 

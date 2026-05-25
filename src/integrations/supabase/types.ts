@@ -330,6 +330,7 @@ export type Database = {
           container_count: number | null
           container_size: string | null
           created_at: string | null
+          cut_region: string
           deleted_at: string | null
           destination_country: string
           destination_port: string | null
@@ -357,6 +358,7 @@ export type Database = {
           container_count?: number | null
           container_size?: string | null
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           destination_country: string
           destination_port?: string | null
@@ -384,6 +386,7 @@ export type Database = {
           container_count?: number | null
           container_size?: string | null
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           destination_country?: string
           destination_port?: string | null
@@ -2503,10 +2506,17 @@ export type Database = {
           created_at: string | null
           id: string
           image_url: string | null
+          imps_number: string | null
           is_active: boolean | null
           name: string
           product_number: number | null
+          region: string
           unit_weight: string
+          weight_range_a: string | null
+          weight_range_b: string | null
+          weight_range_c: string | null
+          weight_range_d: string | null
+          weight_range_e: string | null
         }
         Insert: {
           bone_spec?: string
@@ -2514,10 +2524,17 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url?: string | null
+          imps_number?: string | null
           is_active?: boolean | null
           name: string
           product_number?: number | null
+          region?: string
           unit_weight?: string
+          weight_range_a?: string | null
+          weight_range_b?: string | null
+          weight_range_c?: string | null
+          weight_range_d?: string | null
+          weight_range_e?: string | null
         }
         Update: {
           bone_spec?: string
@@ -2525,10 +2542,17 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url?: string | null
+          imps_number?: string | null
           is_active?: boolean | null
           name?: string
           product_number?: number | null
+          region?: string
           unit_weight?: string
+          weight_range_a?: string | null
+          weight_range_b?: string | null
+          weight_range_c?: string | null
+          weight_range_d?: string | null
+          weight_range_e?: string | null
         }
         Relationships: []
       }
@@ -3786,6 +3810,7 @@ export type Database = {
         Row: {
           container_size: string
           created_at: string | null
+          cut_region: string
           deleted_at: string | null
           exw_pickup_location: string | null
           id: string
@@ -3812,6 +3837,7 @@ export type Database = {
         Insert: {
           container_size: string
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           exw_pickup_location?: string | null
           id?: string
@@ -3838,6 +3864,7 @@ export type Database = {
         Update: {
           container_size?: string
           created_at?: string | null
+          cut_region?: string
           deleted_at?: string | null
           exw_pickup_location?: string | null
           id?: string

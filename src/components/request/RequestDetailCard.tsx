@@ -79,6 +79,18 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
         <h2 style={{ margin: 0, fontSize: 20, fontWeight: 700, color: "#1c1917" }}>
           🏷️ {r.product_name}
         </h2>
+        {r.cut_region === "us" && (
+          <span style={{
+            background: "#DBEAFE",
+            color: "#1E40AF",
+            padding: "2px 8px",
+            borderRadius: 6,
+            fontSize: 11,
+            fontWeight: 600,
+          }}>
+            🇺🇸 IMPS
+          </span>
+        )}
       </div>
       <div style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 16 }}>
         <span style={{ fontFamily: "ui-monospace, monospace", color: "#8B2252", fontWeight: 600 }}>{reqNo}</span>
