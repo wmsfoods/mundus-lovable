@@ -177,6 +177,30 @@ export default function SupplierCreateOffer() {
         additionalInfo: string | null;
       }
     | undefined;
+  const cloneFrom = (location.state as any)?.cloneFrom as
+    | {
+        category: string;
+        condition: "Frozen" | "Chilled";
+        containerSize: string;
+        containerCount: number;
+        paymentTerms: string;
+        isHalal: boolean;
+        isKosher: boolean;
+        cutRegion: "global" | "us";
+        exwCity?: string;
+        destinationCountries: string[];
+        incoterms: string[];
+        items: Array<{
+          name: string;
+          productNumber: number | null;
+          amount: number;
+          price: number;
+          minimumPrice: number;
+          condition: string;
+          agingMethod: string | null;
+        }>;
+      }
+    | undefined;
   const prefilledRef = useRef(false);
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
