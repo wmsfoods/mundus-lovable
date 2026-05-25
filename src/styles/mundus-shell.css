@@ -1003,6 +1003,54 @@
     justify-content: center;
     padding: 10px 0;
   }
+
+  /* ── Tooltips for collapsed sidebar items ── */
+  .sb.is-collapsed .sb-item,
+  .sb.is-collapsed .sb-section-header {
+    position: relative;
+  }
+  .sb.is-collapsed .sb-item:hover::after,
+  .sb.is-collapsed .sb-section-header:hover::after,
+  .sb.is-collapsed .sb-item:focus-visible::after,
+  .sb.is-collapsed .sb-section-header:focus-visible::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--fg, #1a1a1a);
+    color: #fff;
+    padding: 7px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    z-index: 100;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    opacity: 0;
+    animation: sb-tooltip-show 0.18s ease 0.05s forwards;
+  }
+  /* Tooltip arrow */
+  .sb.is-collapsed .sb-item:hover::before,
+  .sb.is-collapsed .sb-section-header:hover::before,
+  .sb.is-collapsed .sb-item:focus-visible::before,
+  .sb.is-collapsed .sb-section-header:focus-visible::before {
+    content: "";
+    position: absolute;
+    left: calc(100% + 5px);
+    top: 50%;
+    transform: translateY(-50%);
+    border: 6px solid transparent;
+    border-right-color: var(--fg, #1a1a1a);
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    animation: sb-tooltip-show 0.18s ease 0.05s forwards;
+  }
+  @keyframes sb-tooltip-show {
+    to { opacity: 1; }
+  }
 }
 .sb-collapse-toggle {
   margin-left: auto;
