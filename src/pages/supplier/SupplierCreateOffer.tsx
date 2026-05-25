@@ -552,6 +552,14 @@ export default function SupplierCreateOffer() {
     }, 1500);
   }, []);
 
+  /* Inline-edit a finalized cut row */
+  const updateCutField = useCallback(
+    (cutId: string, field: keyof Cut, value: string) => {
+      setCuts((prev) => prev.map((x) => (x.id === cutId ? { ...x, [field]: value } : x)));
+    },
+    []
+  );
+
   const toggleCustomer = useCallback((id: string) => {
     setSelectedCustomers((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
   }, []);
