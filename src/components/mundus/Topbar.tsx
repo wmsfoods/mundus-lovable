@@ -14,6 +14,8 @@ import { Logo } from "@/components/Logo";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { OfficeSwitcher } from "./OfficeSwitcher";
+import { supabase } from "@/integrations/supabase/client";
+import { transformedPublicUrl } from "@/lib/imageOptimization";
 
 type TopbarProps = {
   onMenuClick?: () => void;
@@ -29,6 +31,31 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
   const [langOpen, setLangOpen] = useState(false);
   const langRef = useRef<HTMLDivElement | null>(null);
   const { unit, toggle: toggleUnit } = useWeightUnit();
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user?.id) { setAvatarUrl(null); return; }
+    let cancelled = false;
+    const fetchAvatar = async () => {
+      const { data } = await supabase
+        .from("users")
+        .select("avatar_url")
+        .eq("id", user.id)
+        .maybeSingle();
+      if (!cancelled) setAvatarUrl((data?.avatar_url as string | null) ?? null);
+    };
+    fetchAvatar();
+    const onUpdated = (e: Event) => {
+      const detail = (e as CustomEvent<{ url: string | null }>).detail;
+      if (detail && typeof detail.url !== "undefined") setAvatarUrl(detail.url);
+      else fetchAvatar();
+    };
+    window.addEventListener("profile:avatar-updated", onUpdated as EventListener);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("profile:avatar-updated", onUpdated as EventListener);
+    };
+  }, [user?.id]);
 
   useEffect(() => {
     const onDocClick = (e: MouseEvent) => {
@@ -174,7 +201,16 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
         onClick={goToProfile}
         aria-label={t("shell.nav.profile", { defaultValue: "Profile" })}
       >
-        <span className="av">{initials}</span>
+        {avatarUrl ? (
+          <img
+            className="av av-img"
+            src={transformedPublicUrl(avatarUrl, { width: 64, height: 64, quality: 80 })}
+            alt=""
+            draggable={false}
+          />
+        ) : (
+          <span className="av">{initials}</span>
+        )}
       </button>
     </div>
   );
