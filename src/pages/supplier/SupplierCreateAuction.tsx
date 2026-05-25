@@ -688,7 +688,7 @@ export default function SupplierCreateAuction() {
                                       key={cu.id}
                                       value={cu.displayName}
                                       onSelect={() => {
-                                        setNf((p) => ({ ...p, cut: cu.displayName, cutId: cu.id, cutImage: cu.image_url ?? null }));
+                                        setNf((p) => ({ ...p, cut: cu.displayName, cutId: cu.id, cutImage: cu.image_url ?? null, spec: cu.bone_spec ?? p.spec }));
                                         setCutPickerOpen(false);
                                       }}
                                     >

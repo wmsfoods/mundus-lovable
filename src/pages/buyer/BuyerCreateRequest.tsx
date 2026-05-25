@@ -21,6 +21,7 @@ type Row = {
   cut: string;
   cutImage?: string | null;
   spec: string;
+  boneSpec: "Bone-In" | "Boneless";
   marbling: string;
   qty: string;
   target: string;
@@ -28,7 +29,7 @@ type Row = {
 
 const newRow = (): Row => ({
   id: Math.random().toString(36).slice(2, 9),
-  cut: "", cutImage: null, spec: "", marbling: "Not specified", qty: "", target: "",
+  cut: "", cutImage: null, spec: "", boneSpec: "Boneless", marbling: "Not specified", qty: "", target: "",
 });
 
 export default function BuyerCreateRequest() {
@@ -165,17 +166,20 @@ export default function BuyerCreateRequest() {
           const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
           parsedRows = lines.map((line) => {
             // {cut} ({spec}) — {marbling} — {qty}kg @ ${target}/kg
-            const m = line.match(/^(.+?)(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
+            const m = line.match(/^(.+?)(?:\s*\[([^\]]+)\])?(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
             const cut = (m?.[1] ?? line).trim();
             const match = (cutsByCategory[(data.category as string) ?? "Beef"] ?? []).find((c) => c.displayName.toLowerCase() === cut.toLowerCase());
+            const boneRaw = (m?.[2] ?? "").trim();
+            const boneSpec: "Bone-In" | "Boneless" = boneRaw === "Bone-In" ? "Bone-In" : boneRaw === "Boneless" ? "Boneless" : (match?.bone_spec ?? "Boneless");
             return {
               id: Math.random().toString(36).slice(2, 9),
               cut,
               cutImage: match?.image_url ?? null,
-              spec: (m?.[2] ?? "").trim(),
-              marbling: (m?.[3] ?? "Not specified").trim() || "Not specified",
-              qty: (m?.[4] ?? "").replace(/,/g, "").trim(),
-              target: (m?.[5] ?? "").trim(),
+              spec: (m?.[3] ?? "").trim(),
+              boneSpec,
+              marbling: (m?.[4] ?? "Not specified").trim() || "Not specified",
+              qty: (m?.[5] ?? "").replace(/,/g, "").trim(),
+              target: (m?.[6] ?? "").trim(),
             };
           });
         } else if (sec.startsWith("Compliance:")) {
@@ -287,6 +291,7 @@ export default function BuyerCreateRequest() {
         cut: p.cut,
         cutImage: match?.image_url ?? null,
         spec: p.spec ?? "",
+        boneSpec: match?.bone_spec ?? "Boneless",
         marbling: p.marbling ?? "Not specified",
         qty: String(p.qty_kg ?? ""),
         target: p.target_price_per_kg != null ? String(p.target_price_per_kg) : "",
@@ -311,7 +316,7 @@ export default function BuyerCreateRequest() {
     const productName = valid.length === 1
       ? primary.cut
       : `${primary.cut} + ${valid.length - 1} more cut(s)`;
-    const specs = valid.map((r) => `${r.cut}${r.spec ? ` (${r.spec})` : ""}${r.marbling && r.marbling !== "Not specified" ? ` — ${r.marbling}` : ""}${r.qty ? ` — ${r.qty}kg` : ""}${r.target ? ` @ $${r.target}/kg` : ""}`).join("\n");
+    const specs = valid.map((r) => `${r.cut} [${r.boneSpec}]${r.spec ? ` (${r.spec})` : ""}${r.marbling && r.marbling !== "Not specified" ? ` — ${r.marbling}` : ""}${r.qty ? ` — ${r.qty}kg` : ""}${r.target ? ` @ $${r.target}/kg` : ""}`).join("\n");
     const targets = valid.map((r) => parseFloat(r.target)).filter((n) => Number.isFinite(n) && n > 0);
     const avgTarget = targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : null;
     const compliance: string[] = [];
@@ -547,6 +552,7 @@ export default function BuyerCreateRequest() {
                     <th style={{ width: 28 }}>#</th>
                     <th style={{ width: 44 }} aria-label="img"></th>
                     <th>PRODUCT / CUT</th>
+                    <th style={{ width: 110 }}>Bone</th>
                     <th>Spec (optional)</th>
                     <th>Marbling</th>
                     <th style={{ width: 110 }}>Qty (kg)</th>
@@ -588,7 +594,7 @@ export default function BuyerCreateRequest() {
                                     <CommandItem
                                       key={c.id}
                                       value={c.displayName}
-                                      onSelect={() => { update(r.id, { cut: c.displayName, cutImage: c.image_url ?? null }); setOpenCutFor(null); }}
+                                      onSelect={() => { update(r.id, { cut: c.displayName, cutImage: c.image_url ?? null, boneSpec: c.bone_spec ?? "Boneless" }); setOpenCutFor(null); }}
                                     >
                                       <span className="bcr-pick-thumb">
                                         {c.image_url ? <img src={c.image_url} alt="" /> : <span>📷</span>}
@@ -609,6 +615,16 @@ export default function BuyerCreateRequest() {
                           onChange={(e) => update(r.id, { spec: e.target.value })}
                           placeholder="e.g. 7-9 lb"
                         />
+                      </td>
+                      <td>
+                        <select
+                          className="bcr-input"
+                          value={r.boneSpec}
+                          onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" })}
+                        >
+                          <option value="Boneless">Boneless</option>
+                          <option value="Bone-In">Bone-In</option>
+                        </select>
                       </td>
                       <td>
                         <select
@@ -667,7 +683,7 @@ export default function BuyerCreateRequest() {
                       onChange={(e) => {
                         const v = e.target.value;
                         const match = cuts.find((c) => c.displayName.toLowerCase() === v.toLowerCase());
-                        update(r.id, { cut: v, cutImage: match?.image_url ?? null });
+                        update(r.id, { cut: v, cutImage: match?.image_url ?? null, ...(match ? { boneSpec: match.bone_spec ?? "Boneless" } : {}) });
                       }}
                       placeholder="Pick or type cut…"
                       list={`cuts-${category}`}
@@ -680,6 +696,13 @@ export default function BuyerCreateRequest() {
                     <div>
                       <label>Spec</label>
                       <input className="bcr-input" value={r.spec} onChange={(e) => update(r.id, { spec: e.target.value })} placeholder="7-9 lb" />
+                    </div>
+                    <div>
+                      <label>Bone</label>
+                      <select className="bcr-input" value={r.boneSpec} onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" })}>
+                        <option value="Boneless">Boneless</option>
+                        <option value="Bone-In">Bone-In</option>
+                      </select>
                     </div>
                     <div>
                       <label>Marbling</label>

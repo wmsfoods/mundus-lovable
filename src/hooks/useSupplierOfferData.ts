@@ -9,6 +9,7 @@ export type OfferCut = {
   name: string;
   displayName: string;
   image_url: string | null;
+  bone_spec: "Bone-In" | "Boneless";
 };
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
@@ -25,7 +26,7 @@ export function useSupplierOfferData() {
         supabase.from("countries").select("id, english_name, portuguese_name, spanish_name, french_name, chinese_name, flag_emoji, iso_code"),
         supabase.from("ports").select("id, name, code, country_id, is_active").eq("is_active", true).order("name"),
         supabase.from("port_sharing").select("country_id, uses_ports_from_country_id"),
-        supabase.from("cuts").select("id, name, category, image_url, is_active").eq("is_active", true).order("name"),
+        supabase.from("cuts").select("id, name, category, image_url, is_active, bone_spec").eq("is_active", true).order("name"),
         supabase.from("cut_translations").select("cut_id, locale, name"),
       ]);
 
@@ -95,6 +96,7 @@ export function useSupplierOfferData() {
           name: c.name,
           displayName: trByCut.get(c.id) || c.name,
           image_url: c.image_url,
+          bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : "Boneless"),
         });
       }
       for (const cat of Object.keys(cutsByCategory)) {

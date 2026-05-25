@@ -337,13 +337,13 @@ export default function SupplierCreateOffer() {
         for (const line of lines) {
           const m = line.match(/^(.+?)(?:\s*\(([^)]+)\))?\s*—\s*(?:([^—\d][^—]*?)—\s*)?([\d.,]+)\s*kg\s*@\s*\$([\d.]+)\/kg$/);
           const cutName = (m?.[1] ?? line).trim();
-          const spec = (m?.[2] ?? "").trim() || fromRequest.specification || "Boneless";
           const marbling = (m?.[3] ?? "Not Classified").trim();
           const qty = (m?.[4] ?? "").replace(/,/g, "");
           const target = m?.[5] ?? "";
           const matched = (cutsByCategory[cat0] || []).find(
             (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
           );
+          const spec = (m?.[2] ?? "").trim() || matched?.bone_spec || fromRequest.specification || "Boneless";
           parsedCuts.push({
             id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
             cat: cat0,
@@ -392,7 +392,7 @@ export default function SupplierCreateOffer() {
         cut: matched?.displayName || cutName,
         cutId: matched?.id,
         cutImage: matched?.image_url ?? null,
-        spec: fromRequest.specification || "Boneless",
+        spec: matched?.bone_spec || fromRequest.specification || "Boneless",
         pkg: "Vacuum Pack",
         gr: "Not Classified",
         ag: "None",
@@ -1876,6 +1876,7 @@ export default function SupplierCreateOffer() {
                                           cutId: c.id,
                                           cut: c.displayName,
                                           cutImage: c.image_url ?? null,
+                                          spec: c.bone_spec ?? p.spec,
                                         }));
                                         if (c.image_url) setNewImgPrev(c.image_url);
                                         setCutPickerOpen(false);

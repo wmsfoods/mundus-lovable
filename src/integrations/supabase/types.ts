@@ -2498,6 +2498,7 @@ export type Database = {
       }
       cuts: {
         Row: {
+          bone_spec: string
           category: string
           created_at: string | null
           id: string
@@ -2507,6 +2508,7 @@ export type Database = {
           product_number: number | null
         }
         Insert: {
+          bone_spec?: string
           category: string
           created_at?: string | null
           id?: string
@@ -2516,6 +2518,7 @@ export type Database = {
           product_number?: number | null
         }
         Update: {
+          bone_spec?: string
           category?: string
           created_at?: string | null
           id?: string
