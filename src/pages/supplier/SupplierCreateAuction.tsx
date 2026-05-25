@@ -23,7 +23,7 @@ import "@/styles/mundus-create-offer-v2.css";
    Static catalogs (kept in sync with SupplierCreateOffer)
    ────────────────────────────────────────────────────────── */
 type Market = OfferMarket;
-const SPECS = ["Boneless", "Bone-In", "Semi-Boneless"];
+const SPECS = ["Boneless", "Bone-In"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
 const GRADES = ["Not Classified", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
