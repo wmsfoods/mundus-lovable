@@ -14,7 +14,7 @@ interface Props {
   cut: AdminCutRow | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSave: (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless"; unit_weight: "Kg" | "Lb" }) => Promise<void>;
+  onSave: (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless" | "Offals"; unit_weight: "Kg" | "Lb" }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onUploadImage: (cutId: string, file: File) => Promise<string>;
   onUpsertTranslation: (input: { cut_id: string; locale: string; name: string }) => Promise<void>;
@@ -27,7 +27,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
   const [name, setName] = useState("");
   const [pn, setPn] = useState<string>("");
   const [category, setCategory] = useState<CutCategory>("Beef");
-  const [boneSpec, setBoneSpec] = useState<"Bone-In" | "Boneless">("Boneless");
+  const [boneSpec, setBoneSpec] = useState<"Bone-In" | "Boneless" | "Offals">("Boneless");
   const [unitWeight, setUnitWeight] = useState<"Kg" | "Lb">("Kg");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -215,9 +215,10 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
 
             <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
               <span style={{ fontWeight: 600 }}>{t("admin.marketplace.cuts.modal.boneSpec", { defaultValue: "Bone SPEC" })}</span>
-              <select className="crm-select" value={boneSpec} onChange={(e) => setBoneSpec(e.target.value as "Bone-In" | "Boneless")}>
+              <select className="crm-select" value={boneSpec} onChange={(e) => setBoneSpec(e.target.value as "Bone-In" | "Boneless" | "Offals")}>
                 <option value="Boneless">Boneless</option>
                 <option value="Bone-In">Bone-In</option>
+                <option value="Offals">Offals</option>
               </select>
               <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>
                 {t("admin.marketplace.cuts.modal.boneSpecHint", { defaultValue: "Default applied when this cut is added to an offer, auction or request." })}

@@ -17,7 +17,7 @@ export type AdminCutRow = {
   category: CutCategory;
   image_url: string | null;
   is_active: boolean;
-  bone_spec: "Bone-In" | "Boneless";
+  bone_spec: "Bone-In" | "Boneless" | "Offals";
   unit_weight: "Kg" | "Lb";
   translations: CutTranslation[];
 };
@@ -47,7 +47,7 @@ export function useAdminCuts() {
         category: c.category as CutCategory,
         image_url: c.image_url,
         is_active: !!c.is_active,
-        bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : "Boneless"),
+        bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : c.bone_spec === "Offals" ? "Offals" : "Boneless"),
         unit_weight: (c.unit_weight === "Lb" ? "Lb" : "Kg"),
         translations: trByCut.get(c.id) ?? [],
       }));
@@ -69,7 +69,7 @@ export function useAdminCuts() {
   });
 
   const updateMutation = useMutation({
-    mutationFn: async (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless"; unit_weight: "Kg" | "Lb" }) => {
+    mutationFn: async (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless" | "Offals"; unit_weight: "Kg" | "Lb" }) => {
       const { error } = await supabase
         .from("cuts")
         .update({ name: input.name, product_number: input.product_number, category: input.category, image_url: input.image_url, bone_spec: input.bone_spec, unit_weight: input.unit_weight })
@@ -134,7 +134,7 @@ export function useAdminCuts() {
     loading: query.isLoading,
     error: query.error ? (query.error as Error).message : null,
     toggleCutActive: (id: string, isActive: boolean) => toggleMutation.mutateAsync({ id, isActive }),
-    updateCut: (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless"; unit_weight: "Kg" | "Lb" }) => updateMutation.mutateAsync(input),
+    updateCut: (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless" | "Offals"; unit_weight: "Kg" | "Lb" }) => updateMutation.mutateAsync(input),
     deleteCut: (id: string) => deleteMutation.mutateAsync(id),
     upsertTranslation: (input: { cut_id: string; locale: string; name: string }) => upsertTranslationMutation.mutateAsync(input),
     deleteTranslation: (id: string) => deleteTranslationMutation.mutateAsync(id),
