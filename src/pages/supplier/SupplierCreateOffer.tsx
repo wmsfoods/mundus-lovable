@@ -454,42 +454,43 @@ export default function SupplierCreateOffer() {
   const clonedRef = useRef(false);
   useEffect(() => {
     if (clonedRef.current) return;
-    if (!cloneFrom) return;
+    if (!hydrateSource) return;
     if (!MARKETS || MARKETS.length === 0) return;
     if (!cutsByCategory || Object.keys(cutsByCategory).length === 0) return;
     clonedRef.current = true;
 
     setUnit("kg");
 
-    const cat0 = cloneFrom.category || "Beef";
-    setCsize((cloneFrom.containerSize?.startsWith("20") ? "20ft" : "40ft"));
-    setContainerCount(Math.max(1, Number(cloneFrom.containerCount) || 1));
-    if (cloneFrom.condition === "Frozen" || cloneFrom.condition === "Chilled") {
-      setTemp(cloneFrom.condition);
+    const src = hydrateSource;
+    const cat0 = src.category || "Beef";
+    setCsize((src.containerSize?.startsWith("20") ? "20ft" : "40ft"));
+    setContainerCount(Math.max(1, Number(src.containerCount) || 1));
+    if (src.condition === "Frozen" || src.condition === "Chilled") {
+      setTemp(src.condition);
     }
-    if (cloneFrom.paymentTerms && (PAY_TERMS as readonly string[]).includes(cloneFrom.paymentTerms)) {
-      setPayTerm(cloneFrom.paymentTerms);
+    if (src.paymentTerms && (PAY_TERMS as readonly string[]).includes(src.paymentTerms)) {
+      setPayTerm(src.paymentTerms);
     }
     const certs: string[] = [];
-    if (cloneFrom.isHalal) certs.push("Halal");
-    if (cloneFrom.isKosher) certs.push("Kosher");
+    if (src.isHalal) certs.push("Halal");
+    if (src.isKosher) certs.push("Kosher");
     setCertifications(certs);
-    if (cloneFrom.cutRegion === "us" || cloneFrom.cutRegion === "global") {
-      setCutRegion(cloneFrom.cutRegion);
+    if (src.cutRegion === "us" || src.cutRegion === "global") {
+      setCutRegion(src.cutRegion);
     }
 
     // Incoterms
-    const incos = (cloneFrom.incoterms ?? []).filter(Boolean);
+    const incos = (src.incoterms ?? []).filter(Boolean);
     if (incos.length) {
       setSelInco(incos);
       setPrimaryInco(incos[0]);
-      if (cloneFrom.exwCity && incos.includes("EXW")) {
-        setIncoExtras((prev) => ({ ...prev, exwCity: cloneFrom.exwCity }));
+      if (src.exwCity && incos.includes("EXW")) {
+        setIncoExtras((prev) => ({ ...prev, exwCity: src.exwCity }));
       }
     }
 
     // Destination markets by country names
-    const matchedMarkets = (cloneFrom.destinationCountries ?? [])
+    const matchedMarkets = (src.destinationCountries ?? [])
       .map((cn) => {
         const w = cn.trim().toLowerCase();
         return (
@@ -516,7 +517,7 @@ export default function SupplierCreateOffer() {
     const catalog = cutsByCategory[cat0] || [];
     const newCuts: Cut[] = [];
     const imgs: Record<string, string> = {};
-    for (const it of cloneFrom.items ?? []) {
+    for (const it of src.items ?? []) {
       const nameL = (it.name || "").trim().toLowerCase();
       const matched =
         (it.productNumber != null
@@ -548,8 +549,8 @@ export default function SupplierCreateOffer() {
       if (Object.keys(imgs).length) setCutImgs(imgs);
     }
 
-    toast.success("Cloned — review changes and publish");
-  }, [cloneFrom, MARKETS, cutsByCategory, setUnit]);
+    toast.success(isEditing ? "Editing offer — make your changes and save" : "Cloned — review changes and publish");
+  }, [hydrateSource, isEditing, MARKETS, cutsByCategory, setUnit]);
 
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
