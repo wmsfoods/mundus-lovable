@@ -592,7 +592,7 @@
         "marbling": "\n",
         "qty": "每项数量",
         "price": "每公斤价格",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "totalWeight": "总重量",
       "fields": {
@@ -602,7 +602,7 @@
         "destination": "目的地",
         "terms": "条款",
         "shipment": "装运",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "fcl_one": "{{count}} 个可用集装箱",
       "fcl_other": "{{count}} 个可用集装箱",
@@ -1605,7 +1605,7 @@
           "price": "每公斤价格",
           "asking": "要价/公斤",
           "floor": "底价/公斤",
-          "packing": "PACKING"
+          "packing": "\n"
         },
         "fields": {
           "marbling": "\n",
@@ -1614,7 +1614,7 @@
           "destination": "目的地",
           "terms": "条款",
           "shipment": "装运",
-          "packing": "PACKING"
+          "packing": "\n"
         }
       },
       "heroTitle": "轻松快速跟踪您的订单。",

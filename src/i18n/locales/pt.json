@@ -597,7 +597,7 @@
         "marbling": "\n",
         "qty": "QTD POR ITEM",
         "price": "PREÇO POR KG",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "totalWeight": "Peso total",
       "fields": {
@@ -607,7 +607,7 @@
         "destination": "Destino",
         "terms": "Termos",
         "shipment": "Embarque",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "fcl_one": "{{count}} FCL disponível",
       "fcl_other": "{{count}} FCLs disponíveis",
@@ -1615,7 +1615,7 @@
           "price": "PREÇO POR KG",
           "asking": "PEDIDO / KG",
           "floor": "MÍNIMO / KG",
-          "packing": "PACKING"
+          "packing": "\n"
         },
         "fields": {
           "marbling": "\n",
@@ -1624,7 +1624,7 @@
           "destination": "Destino",
           "terms": "Condições",
           "shipment": "Embarque",
-          "packing": "PACKING"
+          "packing": "\n"
         }
       }
     },

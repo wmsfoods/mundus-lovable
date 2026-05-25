@@ -592,7 +592,7 @@
         "marbling": "\n",
         "qty": "QTÉ PAR ARTICLE",
         "price": "PRIX AU KG",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "totalWeight": "Poids total",
       "fields": {
@@ -602,7 +602,7 @@
         "destination": "Destination",
         "terms": "Conditions",
         "shipment": "Expédition",
-        "packing": "PACKING"
+        "packing": "\n"
       },
       "fcl_one": "{{count}} FCL disponible",
       "fcl_other": "{{count}} FCLs disponibles",
@@ -1605,7 +1605,7 @@
           "price": "PRIX PAR KG",
           "asking": "DEMANDÉ / KG",
           "floor": "PLANCHER / KG",
-          "packing": "PACKING"
+          "packing": "\n"
         },
         "fields": {
           "marbling": "\n",
@@ -1614,7 +1614,7 @@
           "destination": "Destination",
           "terms": "Conditions",
           "shipment": "Expédition",
-          "packing": "PACKING"
+          "packing": "\n"
         }
       },
       "heroTitle": "Suivez vos commandes facilement et rapidement.",
