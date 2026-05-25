@@ -10,6 +10,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
 import { countryFlag } from "@/lib/countryFlags";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { toDisplay, fromDisplay, weightLabel, priceLabel, fmtWeight } from "@/lib/units";
 
 const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
 const INCOTERM_OPTIONS = ["FOB", "CFR", "CIF", "EXW"] as const;
@@ -41,6 +43,7 @@ export default function BuyerCreateRequest() {
   const { markets, cutsByCategory } = useSupplierOfferData();
   const { company } = useCurrentCompany();
   const { user } = useAuth();
+  const { unit } = useWeightUnit();
   const [submitting, setSubmitting] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(isEdit);
 
