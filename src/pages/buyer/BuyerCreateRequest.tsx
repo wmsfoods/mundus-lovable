@@ -618,7 +618,7 @@ export default function BuyerCreateRequest() {
             <div className="bcr-cuts-head">
               <div className="bcr-cuts-title">
                 <span className="bcr-ic-sq" aria-hidden>▦</span>
-                <strong>Cuts requested</strong>
+                <strong>Product / Cuts requested</strong>
                 <span className="bcr-count">· {filledRows}</span>
               </div>
               <button type="button" className="bcr-ai-pill" onClick={() => setShowImport(true)}>
@@ -1197,7 +1197,7 @@ export default function BuyerCreateRequest() {
       {/* FOOTER */}
       <footer className="bcr-footer">
         <div className="bcr-summary">
-          <strong>{filledRows}</strong> cuts · <strong>{totalKg.toLocaleString()}</strong> kg · {containerCount}×{containerType}ft
+          <strong>{filledRows}</strong> product / cuts · <strong>{totalKg.toLocaleString()}</strong> kg · {containerCount}×{containerType}ft
         </div>
         <div className="bcr-actions">
           <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>

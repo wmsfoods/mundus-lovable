@@ -108,7 +108,7 @@ export function useSupplierOutreach() {
 
     const mappedOffers: OutreachOffer[] = offerList.map((o: any) => {
       const items = (o.offer_items || []).map((it: any) => ({
-        name: it.customer_products?.name || "Cut",
+        name: it.customer_products?.name || "Product / Cut",
         amount: it.amount || 0,
         price: it.price || 0,
       }));

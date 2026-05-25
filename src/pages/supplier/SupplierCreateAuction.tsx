@@ -606,7 +606,7 @@ export default function SupplierCreateAuction() {
         {/* ═══════════ CENTER PANEL: Cuts & Pricing ═══════════ */}
         <main className="cov4-panel cov4-panel-c">
           <div className="cov4-center-head">
-            <SectionHeader icon="🥩" t="Cuts & pricing" s="Products, specs, starting & floor price" />
+            <SectionHeader icon="🥩" t="Product / Cuts & pricing" s="Products, specs, starting & floor price" />
           </div>
 
           <div className="cov4-cap">
@@ -759,10 +759,10 @@ export default function SupplierCreateAuction() {
           </div>
 
           {!addRow && (
-            <button type="button" className="cov4-add-row-btn" onClick={() => setAddRow(true)}>+ Add cut</button>
+            <button type="button" className="cov4-add-row-btn" onClick={() => setAddRow(true)}>+ Add product / cut</button>
           )}
           {cuts.length === 0 && !addRow && (
-            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add the cuts you want to auction</p></div>
+            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add the product / cuts you want to auction</p></div>
           )}
         </main>
 

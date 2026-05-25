@@ -246,7 +246,7 @@
       "created": "Créé",
       "cutsTitle": "Découpes demandées",
       "col": {
-        "cut": "Découpe",
+        "cut": "Produit / Découpe",
         "qty": "Qté ({{unit}})",
         "asking": "Demande",
         "buyerBid": "Enchère Acheteur",
@@ -339,7 +339,7 @@
         "apply": "Appliquer"
       },
       "col": {
-        "cut": "Découpe",
+        "cut": "Produit / Découpe",
         "qty": "Qté ({{unit}})",
         "minBid": "Offre Min.",
         "yourBid": "Votre Offre"
@@ -496,7 +496,7 @@
         "fields": {
           "title": "Titre",
           "category": "Catégorie",
-          "cuts": "Découpes",
+          "cuts": "Produits / Découpes",
           "targetPrice": "Prix cible (USD/kg)",
           "targetVolume": "Volume cible (kg)",
           "market": "Marché de destination",
@@ -625,7 +625,7 @@
       "incoterm": "Incoterm",
       "destination": "Destination",
       "freightCost": "Fret",
-      "cut": "Découpe",
+      "cut": "Produit / Découpe",
       "qty": "Qté ({{unit}})",
       "asking": "Prix demandé",
       "yourBid": "Votre enchère",
@@ -739,7 +739,7 @@
         "totalValue": "Valeur Totale"
       },
       "cuts": {
-        "header": "Découpes",
+        "header": "Produits / Découpes",
         "weight": "Poids",
         "pricePerKg": "Prix au kg",
         "totalPrice": "Prix total"
@@ -1029,7 +1029,7 @@
         "submittedAt": "Soumis le",
         "status": "Statut",
         "action": "Action",
-        "cut": "Découpe",
+        "cut": "Produit / Découpe",
         "qty": "Quantité",
         "bidPerKg": "Enchère",
         "total": "Total"
@@ -1470,7 +1470,7 @@
           "originPort": "Port d'origine"
         },
         "cuts": {
-          "cut": "Découpes",
+          "cut": "Produits / Découpes",
           "weight": "Poids",
           "pricePerKg": "Prix par kg",
           "totalPrice": "Prix total"
@@ -2122,7 +2122,7 @@
       "speciesTemp": "Espèce · Température"
     },
     "cuts": {
-      "cut": "Découpe",
+      "cut": "Produit / Découpe",
       "qty": "Qté",
       "asking": "Demande",
       "finalKg": "Prix final $/kg",

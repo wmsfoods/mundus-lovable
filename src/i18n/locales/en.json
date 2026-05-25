@@ -244,7 +244,7 @@
       "payment": "Payment terms",
       "container": "Container",
       "created": "Created",
-      "cutsTitle": "Cuts requested",
+      "cutsTitle": "Product / Cuts requested",
       "col": {
         "cut": "PRODUCT / CUT",
         "qty": "Qty ({{unit}})",
@@ -385,7 +385,7 @@
           },
           "marketAlerts": {
             "title": "Smart procurement alerts",
-            "body": "Get notified when prices drop on cuts you buy, when contracts expire, or when a category gets risky."
+            "body": "Get notified when prices drop on product / cuts you buy, when contracts expire, or when a category gets risky."
           }
         },
         "perks": [
@@ -494,14 +494,14 @@
         "selectAll": "Select all",
         "clearAll": "Clear all",
         "loading": "Loading…",
-        "noCuts": "No cuts available",
+        "noCuts": "No product / cuts available",
         "selectMarket": "Select a market…",
         "selectPort": "Select a port…",
         "noPorts": "This market has no ports configured.",
         "fields": {
           "title": "Title",
           "category": "Category",
-          "cuts": "Cuts",
+          "cuts": "Product / Cuts",
           "targetPrice": "Target price (USD/kg)",
           "targetVolume": "Target volume (kg)",
           "market": "Destination market",
@@ -593,7 +593,7 @@
       "illustrative": "ILLUSTRATIVE IMAGE",
       "perFcl": "Total Value (Starting price) per FCL",
       "cutsHead": {
-        "cut": "CUT",
+        "cut": "PRODUCT / CUT",
         "marbling": "MARBLING / GRADE",
         "qty": "QTY PER ITEM",
         "price": "PRICE PER KG"
@@ -630,7 +630,7 @@
       "incoterm": "Incoterm",
       "destination": "Destination",
       "freightCost": "Freight",
-      "cut": "Cut",
+      "cut": "Product / Cut",
       "qty": "Qty ({{unit}})",
       "asking": "Asking",
       "yourBid": "Your Bid",
@@ -646,15 +646,15 @@
       "errors": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
-        "summary_one": "{{count}} cut has validation errors",
-        "summary_other": "{{count}} cuts have validation errors"
+        "summary_one": "{{count}} product / cut has validation errors",
+        "summary_other": "{{count}} product / cuts have validation errors"
       },
       "validation": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
         "belowInitial": "Cannot bid below your initial bid of ${{min}}",
-        "summary_one": "{{count}} cut has validation errors",
-        "summary_other": "{{count}} cuts have validation errors"
+        "summary_one": "{{count}} product / cut has validation errors",
+        "summary_other": "{{count}} product / cuts have validation errors"
       },
       "bulk": {
         "label": "Quick fill",
@@ -744,7 +744,7 @@
         "totalValue": "Total Value"
       },
       "cuts": {
-        "header": "Cuts",
+        "header": "Product / Cuts",
         "weight": "Weight",
         "pricePerKg": "Price per kg",
         "totalPrice": "Total price"
@@ -1008,8 +1008,8 @@
       "cancelledToast": "Auction cancelled",
       "award": "Award",
       "winner": "Winner",
-      "viewCuts": "View cut breakdown",
-      "hideCuts": "Hide cut breakdown",
+      "viewCuts": "View product / cut breakdown",
+      "hideCuts": "Hide product / cut breakdown",
       "awardToast": "Auction awarded to {{buyer}}!",
       "awardedBanner": "Awarded to {{buyer}}",
       "contractIssued": "Contract issued — buyer notified",
@@ -1034,7 +1034,7 @@
         "submittedAt": "Submitted",
         "status": "Status",
         "action": "Action",
-        "cut": "Cut",
+        "cut": "Product / Cut",
         "qty": "Qty",
         "bidPerKg": "Bid",
         "total": "Total"
@@ -1475,7 +1475,7 @@
           "originPort": "Origin Port"
         },
         "cuts": {
-          "cut": "Cuts",
+          "cut": "Product / Cuts",
           "weight": "Weight",
           "pricePerKg": "Price per kg",
           "totalPrice": "Total Price"
@@ -1607,7 +1607,7 @@
         "cloneComingSoon": "Clone Offer — coming soon",
         "shareComingSoon": "Share this offer — coming soon",
         "cutsHead": {
-          "cut": "CUT",
+          "cut": "PRODUCT / CUT",
           "marbling": "MARBLING / GRADE",
           "qty": "QTY PER ITEM",
           "price": "PRICE PER KG",
@@ -1672,7 +1672,7 @@
         },
         "offerName": {
           "label": "Offer name",
-          "placeholder": "e.g. Premium Beef Cuts — Asia FCL #1"
+          "placeholder": "e.g. Premium Beef Product / Cuts — Asia FCL #1"
         },
         "species": {
           "label": "Species",
@@ -1690,7 +1690,7 @@
           "capacity": "Container capacity (25t FCL)",
           "overCapacity": "Over capacity",
           "remaining": "remaining",
-          "addCut": "Add cut",
+          "addCut": "Add product / cut",
           "removeRow": "Remove this cut",
           "col": {
             "product": "Product",
@@ -1795,9 +1795,9 @@
         "searchMarketsPh": "Search countries…",
         "noMarkets": "No markets found",
         "incoConflict": "Not compatible with the selected incoterm",
-        "pickCut": "Pick a cut…",
-        "searchCutsPh": "Search cuts…",
-        "noCuts": "No cuts found"
+        "pickCut": "Pick a product / cut…",
+        "searchCutsPh": "Search product / cuts…",
+        "noCuts": "No product / cuts found"
       }
     },
     "home": {
@@ -1946,7 +1946,7 @@
       "priceBenchmark": {
         "eyebrow": "PREMIUM · MARKET INTELLIGENCE",
         "title": "Price benchmark · {{cut}}",
-        "subtitle": "See how your offer compares against all {{count}} anonymized offers of the same cut + origin. Competitors are never named.",
+        "subtitle": "See how your offer compares against all {{count}} anonymized offers of the same product / cut + origin. Competitors are never named.",
         "yourPrice": "Your price",
         "hero": {
           "before": "Your offer is priced",
@@ -1978,7 +1978,7 @@
           "bullets": {
             "distribution": {
               "title": "Live market distribution",
-              "body": "Histogram of every competing offer for your cut + origin, refreshed every 24h."
+              "body": "Histogram of every competing offer for your product / cut + origin, refreshed every 24h."
             },
             "ranking": {
               "title": "Anonymized competitor ranking",
@@ -1996,7 +1996,7 @@
           "perks": [
             "Weekly market report (PDF) for each of your active cuts",
             "Slack and email alerts on competitor price changes",
-            "12-month historical price trend per cut and origin"
+            "12-month historical price trend per product / cut and origin"
           ]
         },
         "analytics": {
@@ -2053,7 +2053,7 @@
     },
     "section": {
       "details": "DETAILS",
-      "cutsIncluded": "CUTS INCLUDED"
+      "cutsIncluded": "PRODUCT / CUTS INCLUDED"
     },
     "fields": {
       "date": "Date",
@@ -2067,7 +2067,7 @@
       "speciesTemp": "Species · Temp"
     },
     "cuts": {
-      "cut": "Cut",
+      "cut": "Product / Cut",
       "qty": "Qty",
       "asking": "Asking",
       "finalKg": "Final $/kg",
@@ -2095,7 +2095,7 @@
       "buyerBid": "Buyer bid",
       "supplierCounter": "Supplier counter",
       "yourCounter": "Your counter",
-      "finalPerCut": "FINAL PRICE PER CUT",
+      "finalPerCut": "FINAL PRICE PER PRODUCT / CUT",
       "totals": "TOTALS",
       "initialAsking": "Initial asking",
       "firstBuyerBid": "First buyer bid",
@@ -2774,7 +2774,7 @@
         "supplier": "Supplier",
         "bothRoleNote": "When a company is both Buyer and Supplier, each role must use different email addresses. Only Mundus admins can switch between roles.",
         "proteinProfile": "Protein profile",
-        "preferredCuts": "Preferred cuts",
+        "preferredCuts": "Preferred product / cuts",
         "companyName": "Company name",
         "licenses": "Business licenses or certificates",
         "licensesHint": "Upload coming soon",
@@ -2987,7 +2987,7 @@
       },
       "cuts": {
         "title": "Products & Product / Cuts",
-        "subtitle": "Manage the meat cuts catalog for the marketplace",
+        "subtitle": "Manage the meat product / cuts catalog for the marketplace",
         "searchPlaceholder": "Search product / cut name or product number...",
         "allCategories": "All categories",
         "next": "Next",
@@ -3011,7 +3011,7 @@
           "Ovine": "Ovine"
         },
         "cols": {
-          "name": "Product / cut name",
+          "name": "Product / Cut name",
           "pn": "PN",
           "category": "Category",
           "translations": "Translations",
@@ -3019,16 +3019,16 @@
           "actions": "Actions"
         },
         "toggle": {
-          "activated": "Cut {{name}} activated",
-          "deactivated": "Cut {{name}} deactivated"
+          "activated": "Product / Cut {{name}} activated",
+          "deactivated": "Product / Cut {{name}} deactivated"
         },
         "empty": {
-          "title": "No cuts match these filters",
+          "title": "No product / cuts match these filters",
           "body": "Try clearing filters or searching with another term."
         },
         "modal": {
           "title": "Edit product / cut",
-          "name": "Product / cut name",
+          "name": "Product / Cut name",
           "productNumber": "Product number",
           "category": "Category",
           "uploadImage": "Upload image",
@@ -3042,9 +3042,9 @@
           "translatedName": "Translated name",
           "translationAdded": "Translation added",
           "translationRemoved": "Translation removed",
-          "saved": "Product / cut saved",
+          "saved": "Product / Cut saved",
           "delete": "Delete",
-          "deleted": "Product / cut deleted",
+          "deleted": "Product / Cut deleted",
           "confirmDeleteTitle": "Delete this product / cut?",
           "confirmDeleteBody": "This will permanently remove the product / cut and its translations."
         }

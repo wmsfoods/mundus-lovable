@@ -239,7 +239,7 @@ export function OfferCard({
           <div className="cut-chips">
             {items.slice(0, 3).map((it) => (
               <span key={it.id} className="cut-chip">
-                {(it.customer_product?.name ?? "Cut").split(",")[0]}
+                {(it.customer_product?.name ?? "Product / Cut").split(",")[0]}
               </span>
             ))}
             {items.length > 3 && (
