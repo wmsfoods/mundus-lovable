@@ -392,7 +392,7 @@ export default function SupplierCreateOffer() {
         cut: matched?.displayName || cutName,
         cutId: matched?.id,
         cutImage: matched?.image_url ?? null,
-        spec: fromRequest.specification || "Boneless",
+        spec: matched?.bone_spec || fromRequest.specification || "Boneless",
         pkg: "Vacuum Pack",
         gr: "Not Classified",
         ag: "None",
