@@ -594,13 +594,13 @@
       "perFcl": "Valor total (preço inicial) por FCL",
       "cutsHead": {
         "cut": "CORTE",
-        "marbling": "MARMOREIO",
+        "marbling": "\n",
         "qty": "QTD POR CORTE",
         "price": "PREÇO POR KG"
       },
       "totalWeight": "Peso total",
       "fields": {
-        "marbling": "Marmoreio",
+        "marbling": "\n",
         "originPortCountry": "Origem (porto / país)",
         "condition": "Condição",
         "destination": "Destino",
@@ -1608,14 +1608,14 @@
         "shareComingSoon": "Compartilhar oferta — em breve",
         "cutsHead": {
           "cut": "CORTE",
-          "marbling": "MARMOREIO",
+          "marbling": "\n",
           "qty": "QTD POR CORTE",
           "price": "PREÇO POR KG",
           "asking": "PEDIDO / KG",
           "floor": "MÍNIMO / KG"
         },
         "fields": {
-          "marbling": "Marmoreio",
+          "marbling": "\n",
           "originPortCountry": "Origem (porto / país)",
           "condition": "Condição",
           "destination": "Destino",

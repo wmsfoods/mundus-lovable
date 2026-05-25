@@ -1684,7 +1684,7 @@ export default function SupplierCreateOffer() {
                   <th>PRODUCT / CUT</th>
                   <th>Spec</th>
                   <th>Packaging</th>
-                  <th>Grading</th>
+                  <th>{"\n"}</th>
                   <th>Aging</th>
                   <th title="USDA/SIF establishment number">Plant #</th>
                   <th className="num">{qLbl}</th>

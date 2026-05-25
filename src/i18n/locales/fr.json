@@ -589,13 +589,13 @@
       "perFcl": "Valeur totale (prix de départ) par FCL",
       "cutsHead": {
         "cut": "DÉCOUPE",
-        "marbling": "MARBRURE",
+        "marbling": "\n",
         "qty": "QTÉ PAR DÉCOUPE",
         "price": "PRIX AU KG"
       },
       "totalWeight": "Poids total",
       "fields": {
-        "marbling": "Marbrure",
+        "marbling": "\n",
         "originPortCountry": "Origine (port / pays)",
         "condition": "Condition",
         "destination": "Destination",
@@ -1598,14 +1598,14 @@
         "shareComingSoon": "Partager cette offre — bientôt disponible",
         "cutsHead": {
           "cut": "DÉCOUPE",
-          "marbling": "MARBRAGE",
+          "marbling": "\n",
           "qty": "QTÉ PAR DÉCOUPE",
           "price": "PRIX PAR KG",
           "asking": "DEMANDÉ / KG",
           "floor": "PLANCHER / KG"
         },
         "fields": {
-          "marbling": "Marbrage",
+          "marbling": "\n",
           "originPortCountry": "Origine (port / pays)",
           "condition": "Condition",
           "destination": "Destination",

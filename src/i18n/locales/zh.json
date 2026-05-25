@@ -589,13 +589,13 @@
       "perFcl": "每个集装箱（FCL）的总价值（起拍价）",
       "cutsHead": {
         "cut": "部位",
-        "marbling": "脂肪纹",
+        "marbling": "\n",
         "qty": "每个部位数量",
         "price": "每公斤价格"
       },
       "totalWeight": "总重量",
       "fields": {
-        "marbling": "脂肪纹",
+        "marbling": "\n",
         "originPortCountry": "原产地（港口/国家）",
         "condition": "条件",
         "destination": "目的地",
@@ -1598,14 +1598,14 @@
         "shareComingSoon": "分享此报价 — 即将推出",
         "cutsHead": {
           "cut": "部位",
-          "marbling": "脂肪纹理",
+          "marbling": "\n",
           "qty": "每部位数量",
           "price": "每公斤价格",
           "asking": "要价/公斤",
           "floor": "底价/公斤"
         },
         "fields": {
-          "marbling": "脂肪纹理",
+          "marbling": "\n",
           "originPortCountry": "原产地（港口/国家）",
           "condition": "条件",
           "destination": "目的地",
