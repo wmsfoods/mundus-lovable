@@ -3011,7 +3011,7 @@
           "Ovine": "Ovino"
         },
         "cols": {
-          "name": "Nome do corte",
+          "name": "Nome do produto / corte",
           "pn": "PN",
           "category": "Categoria",
           "translations": "Traduções",
