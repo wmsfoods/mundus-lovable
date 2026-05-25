@@ -186,11 +186,58 @@ export default function SupplierHome() {
   return (
     <>
       <section className="hero sh-hero">
+        <span className="sh-hero-glow sh-hero-glow--a" aria-hidden />
+        <span className="sh-hero-glow sh-hero-glow--b" aria-hidden />
         <div className="sh-hero-inner">
-          <span className="sh-greeting">
-            <span className="dot" /> {t(`supplier.home.greeting.${greetingKey}`, { name: firstName })}
-          </span>
-          <h2>{t("supplier.home.heroTitle")}</h2>
+          <div className="sh-hero-main">
+            <span className="sh-greeting">
+              <span className="sh-greeting-pulse">
+                <span className="ping" />
+                <span className="dot" />
+              </span>
+              {t(`supplier.home.greeting.${greetingKey}`, { name: firstName })}
+            </span>
+            <h2>
+              <span className="sh-hero-title-lead">{t("supplier.home.heroTitle")}</span>
+            </h2>
+            <p className="sh-hero-sub">
+              {t("supplier.home.heroSub", {
+                defaultValue: "Your operations are running smoothly. Here's a quick snapshot of your activity.",
+              })}
+            </p>
+          </div>
+
+          <div className="sh-hero-stats" aria-hidden={false}>
+            <div className="sh-hero-stat">
+              <div className="sh-hero-stat-row">
+                <div>
+                  <p className="sh-hero-stat-label">{t("supplier.home.stats.activeOffers")}</p>
+                  <p className="sh-hero-stat-value">{dash.activeOffers ?? "—"}</p>
+                </div>
+                <span className="sh-hero-stat-ic sh-hero-stat-ic--primary">
+                  <SparkleIcon size={18} />
+                </span>
+              </div>
+              <div className="sh-hero-stat-bar">
+                <span className="sh-hero-stat-bar-fill sh-hero-stat-bar-fill--primary" style={{ width: "72%" }} />
+              </div>
+            </div>
+
+            <div className="sh-hero-stat">
+              <div className="sh-hero-stat-row">
+                <div>
+                  <p className="sh-hero-stat-label">{t("supplier.home.stats.closedDeals")}</p>
+                  <p className="sh-hero-stat-value">{dash.closedDeals ?? "—"}</p>
+                </div>
+                <span className="sh-hero-stat-ic sh-hero-stat-ic--success">
+                  <CheckCircleIcon size={18} />
+                </span>
+              </div>
+              <div className="sh-hero-stat-bar">
+                <span className="sh-hero-stat-bar-fill sh-hero-stat-bar-fill--success" style={{ width: "100%" }} />
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
