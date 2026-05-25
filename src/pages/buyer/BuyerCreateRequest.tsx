@@ -269,7 +269,12 @@ export default function BuyerCreateRequest() {
     setFiles((prev) => [...prev, ...valid].slice(0, 10));
   };
 
-  const cuts = cutsByCategory[category] ?? [];
+  const allCuts = cutsByCategory[category] ?? [];
+  const cuts = useMemo(() => {
+    if (category !== "Beef") return allCuts.filter((c) => (c as any).region !== "us");
+    if (cutRegion === "us") return allCuts.filter((c) => (c as any).region === "us" || c.bone_spec === "Offals");
+    return allCuts.filter((c) => (c as any).region !== "us");
+  }, [allCuts, category, cutRegion]);
   const knownCutNames = useMemo(() => cuts.map((c) => c.displayName), [cuts]);
 
   const totalKg = useMemo(
