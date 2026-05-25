@@ -595,7 +595,7 @@
       "cutsHead": {
         "cut": "CORTE",
         "marbling": "MARBLING / GRADE",
-        "qty": "CANT POR CORTE",
+        "qty": "CANT POR ITEM",
         "price": "PRECIO POR KG"
       },
       "totalWeight": "Peso total",
