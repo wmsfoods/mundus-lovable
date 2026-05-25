@@ -235,8 +235,8 @@
   .nego-row-parent td { padding: 12px; }
   /* disable tree connectors on mobile (stacked layout) */
   .nego-row-child td:first-child { padding-left: 12px !important; }
-  .nego-row-child td:first-child::before,
-  .nego-row-child td:first-child::after { display: none; }
+  .nego-row-child td:first-child::before { background: transparent; width: 0; }
+  .nego-row-child td:first-child::after  { background: transparent; width: 0; }
   .nego-row-child td::before {
     content: attr(data-label);
     display: inline-block;
