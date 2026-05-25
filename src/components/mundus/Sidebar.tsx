@@ -4,6 +4,7 @@ import { Logo } from "@/components/Logo";
 import { XIcon, ChevronDownIcon } from "@/components/icons";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProBadge } from "@/components/mundus/ProBadge";
+import mundusMonogram from "@/assets/mundus-monogram.png";
 
 export type SidebarItem = {
   to: string;
@@ -146,7 +147,7 @@ export function Sidebar({
       <aside className={`sb ${mobileOpen ? "is-open" : ""} ${collapsed ? "is-collapsed" : ""}`.trim()}>
         <div className="sb-logo">
           {collapsed ? (
-            <span className="sb-monogram" aria-label="Mundus">M</span>
+            <img src={mundusMonogram} alt="Mundus" className="sb-monogram" draggable={false} />
           ) : (
             <Logo />
           )}

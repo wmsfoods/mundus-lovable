@@ -950,16 +950,9 @@
   .sb.is-collapsed .sb-monogram {
     width: 32px;
     height: 32px;
-    border-radius: 10px;
-    background: var(--p800);
-    color: #fff;
-    font-weight: 700;
-    font-size: 16px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    letter-spacing: 0;
-    font-family: var(--font-display, inherit);
+    object-fit: contain;
+    display: block;
+    user-select: none;
   }
   .sb.is-collapsed .sb-nav {
     padding: 10px 0;
