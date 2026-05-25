@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
 import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
@@ -36,6 +36,8 @@ export default function BuyerCreateRequest() {
   const navigate = useNavigate();
   const { editId } = useParams<{ editId?: string }>();
   const isEdit = !!editId;
+  const location = useLocation();
+  const cloneFrom = (location.state as any)?.cloneFrom as Record<string, any> | undefined;
   const { markets, cutsByCategory } = useSupplierOfferData();
   const { company } = useCurrentCompany();
   const { user } = useAuth();
