@@ -596,7 +596,8 @@
         "cut": "PRODUCT / CUT",
         "marbling": "MARBLING / GRADE",
         "qty": "QTY PER ITEM",
-        "price": "PRICE PER KG"
+        "price": "PRICE PER KG",
+        "packing": "PACKING"
       },
       "totalWeight": "Total weight",
       "fields": {
@@ -605,7 +606,8 @@
         "condition": "Condition",
         "destination": "Destination",
         "terms": "Terms",
-        "shipment": "Shipment"
+        "shipment": "Shipment",
+        "packing": "PACKING"
       },
       "fcl_one": "{{count}} Available FCL",
       "fcl_other": "{{count}} Available FCLs",
@@ -1612,7 +1614,8 @@
           "qty": "QTY PER ITEM",
           "price": "PRICE PER KG",
           "asking": "ASKING / KG",
-          "floor": "FLOOR / KG"
+          "floor": "FLOOR / KG",
+          "packing": "PACKING"
         },
         "fields": {
           "marbling": "MARBLING / GRADE",
@@ -1620,7 +1623,8 @@
           "condition": "Condition",
           "destination": "Destination",
           "terms": "Terms",
-          "shipment": "Shipment"
+          "shipment": "Shipment",
+          "packing": "PACKING"
         }
       }
     },

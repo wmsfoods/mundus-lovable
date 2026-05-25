@@ -591,7 +591,8 @@
         "cut": "产品 / 部位",
         "marbling": "MARBLING / GRADE",
         "qty": "每项数量",
-        "price": "每公斤价格"
+        "price": "每公斤价格",
+        "packing": "PACKING"
       },
       "totalWeight": "总重量",
       "fields": {
@@ -600,7 +601,8 @@
         "condition": "条件",
         "destination": "目的地",
         "terms": "条款",
-        "shipment": "装运"
+        "shipment": "装运",
+        "packing": "PACKING"
       },
       "fcl_one": "{{count}} 个可用集装箱",
       "fcl_other": "{{count}} 个可用集装箱",
@@ -1602,7 +1604,8 @@
           "qty": "每项数量",
           "price": "每公斤价格",
           "asking": "要价/公斤",
-          "floor": "底价/公斤"
+          "floor": "底价/公斤",
+          "packing": "PACKING"
         },
         "fields": {
           "marbling": "MARBLING / GRADE",
@@ -1610,7 +1613,8 @@
           "condition": "条件",
           "destination": "目的地",
           "terms": "条款",
-          "shipment": "装运"
+          "shipment": "装运",
+          "packing": "PACKING"
         }
       },
       "heroTitle": "轻松快速跟踪您的订单。",

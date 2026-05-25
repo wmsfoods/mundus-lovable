@@ -596,7 +596,8 @@
         "cut": "PRODUTO / CORTE",
         "marbling": "MARBLING / GRADE",
         "qty": "QTD POR ITEM",
-        "price": "PREÇO POR KG"
+        "price": "PREÇO POR KG",
+        "packing": "PACKING"
       },
       "totalWeight": "Peso total",
       "fields": {
@@ -605,7 +606,8 @@
         "condition": "Condição",
         "destination": "Destino",
         "terms": "Termos",
-        "shipment": "Embarque"
+        "shipment": "Embarque",
+        "packing": "PACKING"
       },
       "fcl_one": "{{count}} FCL disponível",
       "fcl_other": "{{count}} FCLs disponíveis",
@@ -1612,7 +1614,8 @@
           "qty": "QTD POR ITEM",
           "price": "PREÇO POR KG",
           "asking": "PEDIDO / KG",
-          "floor": "MÍNIMO / KG"
+          "floor": "MÍNIMO / KG",
+          "packing": "PACKING"
         },
         "fields": {
           "marbling": "MARBLING / GRADE",
@@ -1620,7 +1623,8 @@
           "condition": "Condição",
           "destination": "Destino",
           "terms": "Condições",
-          "shipment": "Embarque"
+          "shipment": "Embarque",
+          "packing": "PACKING"
         }
       }
     },

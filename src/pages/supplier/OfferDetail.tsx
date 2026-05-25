@@ -514,7 +514,7 @@ export default function SupplierOfferDetail() {
           <div className="od-cuts">
             <div className="od-cuts-head">
               <span>{t("supplier.offers.detail.cutsHead.cut")}</span>
-              <span>{t("supplier.offers.detail.cutsHead.marbling")}</span>
+              <span>{t("supplier.offers.detail.cutsHead.packing")}</span>
               <span className="num">{t("supplier.offers.detail.cutsHead.qty")}</span>
               <span className="num">{t("supplier.offers.detail.cutsHead.price")}</span>
               <span className="num">{t("supplier.offers.detail.cutsHead.asking")}</span>
@@ -530,7 +530,7 @@ export default function SupplierOfferDetail() {
                     </span>
                   )}
                 </span>
-                <span>{it.marbling}</span>
+                <span>{(it as any).packaging ?? "—"}</span>
                 <span className="num">{formatNumber(it.qtyKg)} kg</span>
                 <span className="num">US$ {formatPrice(it.pricePerKgUsd)}/kg</span>
                 <span className="num">US$ {formatPrice(it.pricePerKgUsd * 1.05)}/kg</span>
@@ -546,8 +546,8 @@ export default function SupplierOfferDetail() {
 
           <div className="od-meta-row">
             <div className="od-meta-item">
-              <span className="od-meta-label">{t("supplier.offers.detail.fields.marbling")}</span>
-              <span className="od-meta-value">{offer.items[0]?.marbling ?? "—"}</span>
+              <span className="od-meta-label">{t("supplier.offers.detail.fields.packing")}</span>
+              <span className="od-meta-value">{(offer.items[0] as any)?.packaging ?? "—"}</span>
             </div>
             <div className="od-meta-item">
               <span className="od-meta-label">{t("supplier.offers.detail.fields.originPortCountry")}</span>

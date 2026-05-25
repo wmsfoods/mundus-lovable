@@ -596,7 +596,8 @@
         "cut": "CORTE",
         "marbling": "MARBLING / GRADE",
         "qty": "CANT POR ITEM",
-        "price": "PRECIO POR KG"
+        "price": "PRECIO POR KG",
+        "packing": "PACKING"
       },
       "totalWeight": "Peso total",
       "fields": {
@@ -605,7 +606,8 @@
         "condition": "Condición",
         "destination": "Destino",
         "terms": "Términos",
-        "shipment": "Embarque"
+        "shipment": "Embarque",
+        "packing": "PACKING"
       },
       "fcl_one": "{{count}} FCL disponible",
       "fcl_other": "{{count}} FCLs disponibles",
@@ -1612,7 +1614,8 @@
           "qty": "CANT POR ITEM",
           "price": "PRECIO POR KG",
           "asking": "PEDIDO / KG",
-          "floor": "MÍNIMO / KG"
+          "floor": "MÍNIMO / KG",
+          "packing": "PACKING"
         },
         "fields": {
           "marbling": "Marmoreo",
@@ -1620,7 +1623,8 @@
           "condition": "Condición",
           "destination": "Destino",
           "terms": "Términos",
-          "shipment": "Embarque"
+          "shipment": "Embarque",
+          "packing": "PACKING"
         }
       }
     },

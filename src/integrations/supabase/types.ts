@@ -3617,6 +3617,7 @@ export type Database = {
           minimum_amount: number
           minimum_price: number
           offer_id: string
+          packaging: string | null
           plant_number: string | null
           price: number
         }
@@ -3632,6 +3633,7 @@ export type Database = {
           minimum_amount: number
           minimum_price: number
           offer_id: string
+          packaging?: string | null
           plant_number?: string | null
           price: number
         }
@@ -3647,6 +3649,7 @@ export type Database = {
           minimum_amount?: number
           minimum_price?: number
           offer_id?: string
+          packaging?: string | null
           plant_number?: string | null
           price?: number
         }
