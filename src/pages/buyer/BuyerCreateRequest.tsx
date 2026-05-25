@@ -750,7 +750,7 @@ export default function BuyerCreateRequest() {
               </button>
               {cutRegion === "us" && (
                 <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 360 }}>
-                  🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Cuts</strong> button above to switch.
+                  🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Product / Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Product / Cuts</strong> button above to switch.
                 </span>
               )}
               <div className="bcr-vol">
@@ -1150,7 +1150,7 @@ export default function BuyerCreateRequest() {
               )}
               {category === "Beef" && !anyOrigin && originCountries.includes("United States") && cutRegion === "global" && (
                 <div style={{ fontSize: 11, color: "#2563EB", marginTop: 4 }}>
-                  💡 Tip: Consider using 🇺🇸 US Beef Cuts (IMPS) above to match American supplier nomenclature
+                  💡 Tip: Consider using 🇺🇸 US Beef Product / Cuts (IMPS) above to match American supplier nomenclature
                 </div>
               )}
             </div>
