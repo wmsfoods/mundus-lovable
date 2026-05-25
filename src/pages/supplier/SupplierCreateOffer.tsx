@@ -866,6 +866,7 @@ export default function SupplierCreateOffer() {
         amount: number; price: number; minimum_price: number;
         minimum_amount: number; maximum_amount: number;
         condition: string; aging_method: string | null;
+        packaging: string | null;
       };
       const itemsRows: OfferItemInsert[] = [];
       try {
@@ -974,6 +975,7 @@ export default function SupplierCreateOffer() {
             maximum_amount: qty,
             condition: temp,
             aging_method: c.ag === "None" ? null : c.ag,
+            packaging: c.pkg || null,
           });
         }
       } catch (e) {
