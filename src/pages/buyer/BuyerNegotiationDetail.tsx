@@ -191,7 +191,7 @@ export default function BuyerNegotiationDetail() {
         </span>
         <span className="chip">
           <span className="chip-label">{t("buyer.negotiations.detail.meta.weight")}:</span>
-          <span className="chip-value">{fmtKg(d.totalWeightKg)} kg</span>
+          <span className="chip-value">{fmtWeight(d.totalWeightKg, unit)} {weightLabel(unit)}</span>
         </span>
       </div>
 
@@ -387,7 +387,7 @@ export default function BuyerNegotiationDetail() {
               <dt>{t("buyer.negotiations.detail.supplier.avgReplyTime")}</dt>
               <dd>{t("buyer.negotiations.detail.supplier.avgReplyDays", { days: d.avgReplyDays })}</dd>
               <dt>{t("buyer.negotiations.detail.supplier.fclsWeight")}</dt>
-              <dd>{d.fclCount} · {fmtKg(d.totalWeightKg)} kg</dd>
+              <dd>{d.fclCount} · {fmtWeight(d.totalWeightKg, unit)} {weightLabel(unit)}</dd>
               <dt>{t("buyer.negotiations.detail.supplier.valuePerFcl")}</dt>
               <dd>${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(d.valuePerFclUsd)}</dd>
               <dt>{t("buyer.negotiations.detail.supplier.movement")}</dt>

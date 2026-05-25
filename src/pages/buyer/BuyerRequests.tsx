@@ -6,6 +6,8 @@ import { PageTitle } from "@/components/mundus/PageTitle";
 import { useBuyerRequests, type BuyerRequestStatus, type BuyerRequestRow } from "@/hooks/useBuyerRequests";
 import { formatRequestNumber } from "@/lib/requestNumber";
 import { supabase } from "@/integrations/supabase/client";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, priceLabel } from "@/lib/units";
 
 const STATUS_CHIP: Record<BuyerRequestStatus, string> = {
   new: "req-status-chip is-draft",
@@ -33,6 +35,7 @@ function fmtDate(iso: string) {
 export default function BuyerRequests() {
   const navigate = useNavigate();
   const { data, counts, isLoading } = useBuyerRequests();
+  const { unit } = useWeightUnit();
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
   const [responseOffers, setResponseOffers] = useState<Array<{ id: string; request_id: string | null }>>([]);
@@ -126,7 +129,7 @@ export default function BuyerRequests() {
               <th>Request</th>
               <th>Product</th>
               <th>Destination</th>
-              <th>Target $/kg</th>
+              <th>Target {priceLabel(unit)}</th>
               <th>Volume</th>
               <th>Shipment</th>
               <th>Status</th>
@@ -153,8 +156,8 @@ export default function BuyerRequests() {
                     {r.destination_country}
                     {r.destination_port && <div style={{ fontSize: "var(--fs-xs)", color: "var(--fg-muted)" }}>{r.destination_port}</div>}
                   </td>
-                  <td>{r.target_price_usd != null ? `$${Number(r.target_price_usd).toFixed(2)}` : "—"}</td>
-                  <td>{fmtKg(Number(r.quantity_kg))} kg</td>
+                  <td>{r.target_price_usd != null ? `$${fmtPrice(Number(r.target_price_usd), unit)}` : "—"}</td>
+                  <td>{fmtWeight(Number(r.quantity_kg), unit)} {weightLabel(unit)}</td>
                   <td>{r.shipment_date ?? "—"}</td>
                   <td><span className={STATUS_CHIP[r.status]}>{STATUS_LABEL[r.status]}</span></td>
                   <td>
