@@ -284,6 +284,7 @@ export type Database = {
           specification: string | null
           status: string | null
           target_price_usd: number | null
+          target_supplier_id: string | null
           temperature: string | null
           updated_at: string | null
         }
@@ -310,6 +311,7 @@ export type Database = {
           specification?: string | null
           status?: string | null
           target_price_usd?: number | null
+          target_supplier_id?: string | null
           temperature?: string | null
           updated_at?: string | null
         }
@@ -336,6 +338,7 @@ export type Database = {
           specification?: string | null
           status?: string | null
           target_price_usd?: number | null
+          target_supplier_id?: string | null
           temperature?: string | null
           updated_at?: string | null
         }
@@ -343,6 +346,13 @@ export type Database = {
           {
             foreignKeyName: "buyer_requests_buyer_company_id_fkey"
             columns: ["buyer_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_requests_target_supplier_id_fkey"
+            columns: ["target_supplier_id"]
             isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
