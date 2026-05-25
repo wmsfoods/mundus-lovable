@@ -216,8 +216,7 @@ export function OfferDetailLayout(props: OfferDetailLayoutProps) {
                 </div>
                 {visiblePorts.length > 0 && (
                   <div className="od2-side-sub">
-                    📍 {visiblePorts.map((p) => p.name).join(", ")}
-                    {extraPorts > 0 && ` +${extraPorts} more`}
+                    {"\n"}
                   </div>
                 )}
                 {destinationPorts.length > 3 && (
