@@ -759,10 +759,10 @@ export default function SupplierCreateAuction() {
           </div>
 
           {!addRow && (
-            <button type="button" className="cov4-add-row-btn" onClick={() => setAddRow(true)}>+ Add cut</button>
+            <button type="button" className="cov4-add-row-btn" onClick={() => setAddRow(true)}>+ Add product / cut</button>
           )}
           {cuts.length === 0 && !addRow && (
-            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add the cuts you want to auction</p></div>
+            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add the product / cuts you want to auction</p></div>
           )}
         </main>
 
