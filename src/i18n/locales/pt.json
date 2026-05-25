@@ -3027,8 +3027,8 @@
           "body": "Tente limpar os filtros ou buscar por outro termo."
         },
         "modal": {
-          "title": "Editar corte",
-          "name": "Nome do corte",
+          "title": "Editar produto / corte",
+          "name": "Nome do produto / corte",
           "productNumber": "Número do produto",
           "category": "Categoria",
           "uploadImage": "Enviar imagem",
