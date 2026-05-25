@@ -90,7 +90,7 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontSize: 28, fontWeight: 700, color: "#8B2252", lineHeight: 1.1 }}>{fmtUsd(totalValue)}</div>
           <div style={{ fontSize: 12, color: "var(--fg-muted)", marginTop: 2 }}>
-            Target price · buyer's desired total ({fmtUsd(target!)}/kg × {totalKg.toLocaleString()} kg)
+            Target Value per FCL
           </div>
         </div>
       )}
