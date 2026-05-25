@@ -1,10 +1,20 @@
-import { useQuery } from "@tanstack/react-query";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export function useSupplierDashboard() {
   const { company } = useCurrentCompany();
   const companyId = company?.id ?? null;
+  const qc = useQueryClient();
+  const invalidate = useCallback(() => {
+    qc.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("sup-dash-") });
+  }, [qc]);
+  useRealtimeRefresh({ table: "offers", onRefresh: invalidate, enabled: !!companyId });
+  useRealtimeRefresh({ table: "negotiations", onRefresh: invalidate, enabled: !!companyId });
+  useRealtimeRefresh({ table: "orders", onRefresh: invalidate, enabled: !!companyId });
+  useRealtimeRefresh({ table: "buyer_requests", onRefresh: invalidate, enabled: !!companyId });
 
   const activeOffers = useQuery({
     queryKey: ["sup-dash-active-offers", companyId],
