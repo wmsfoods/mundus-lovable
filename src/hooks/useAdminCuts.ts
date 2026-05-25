@@ -19,6 +19,8 @@ export type AdminCutRow = {
   is_active: boolean;
   bone_spec: "Bone-In" | "Boneless" | "Offals";
   unit_weight: "Kg" | "Lb";
+  region: "global" | "us";
+  imps_number: string | null;
   translations: CutTranslation[];
 };
 
@@ -29,7 +31,7 @@ export function useAdminCuts() {
     queryKey: ["admin", "cuts"],
     queryFn: async () => {
       const [cutsRes, trRes] = await Promise.all([
-        supabase.from("cuts").select("id, name, product_number, category, image_url, is_active, bone_spec, unit_weight").order("category").order("name"),
+        supabase.from("cuts").select("id, name, product_number, category, image_url, is_active, bone_spec, unit_weight, region, imps_number").order("category").order("name"),
         supabase.from("cut_translations").select("id, cut_id, locale, name"),
       ]);
       if (cutsRes.error) throw cutsRes.error;
@@ -49,6 +51,8 @@ export function useAdminCuts() {
         is_active: !!c.is_active,
         bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : c.bone_spec === "Offals" ? "Offals" : "Boneless"),
         unit_weight: (c.unit_weight === "Lb" ? "Lb" : "Kg"),
+        region: (c.region === "us" ? "us" : "global"),
+        imps_number: c.imps_number ?? null,
         translations: trByCut.get(c.id) ?? [],
       }));
       return {
