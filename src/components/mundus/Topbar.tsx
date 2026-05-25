@@ -5,8 +5,7 @@ import {
   GlobeIcon,
   ChevronDownIcon,
 } from "@/components/icons";
-import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
-import { supplierNotifications, buyerNotifications } from "@/data/mockNotifications";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { Menu as MenuIcon, Bell as BellLucide } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -57,8 +56,6 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
     SUPPORTED_LANGUAGES[0];
 
   const isSupplierPath = location.pathname.startsWith("/supplier");
-  const notifList = isSupplierPath ? supplierNotifications : buyerNotifications;
-  const notifUnreadCount = notifList.filter((n) => n.unread).length;
   const goToNotifications = () =>
     navigate(isSupplierPath ? "/supplier/notifications" : "/buyer/notifications");
 
@@ -167,33 +164,9 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
           aria-label={t("shell.notifications", { defaultValue: "Notifications" })}
         >
           <BellLucide size={18} />
-          {notifUnreadCount > 0 && (
-            <span
-              className="dot"
-              style={{
-                width: 16,
-                height: 16,
-                top: 4,
-                right: 4,
-                background: "#dc2626",
-                color: "#fff",
-                fontSize: 9,
-                fontWeight: 700,
-                display: "inline-flex",
-                alignItems: "center",
-                justifyContent: "center",
-                lineHeight: 1,
-              }}
-            >
-              {notifUnreadCount > 9 ? "9+" : notifUnreadCount}
-            </span>
-          )}
         </button>
       ) : (
-        <NotificationDropdown
-          notifications={notifList}
-          ariaLabel={t("shell.notifications")}
-        />
+        <NotificationBell />
       )}
       <button
         className="tb-avatar"
