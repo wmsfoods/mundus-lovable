@@ -935,9 +935,9 @@ export default function BuyerCreateRequest() {
                       style={{
                         padding: "6px 12px", borderRadius: 8, fontSize: 12,
                         border: cutRegion === "us" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                        background: cutRegion === "us" ? "#F5E6EC" : (filledRows > 0 && cutRegion !== "us") ? "#F3F4F6" : "white",
+                        background: cutRegion === "us" ? "#F5E6EC" : filledRows > 0 ? "#F3F4F6" : "white",
                         fontWeight: cutRegion === "us" ? 700 : 400,
-                        color: cutRegion === "us" ? "#8B1A3A" : (filledRows > 0 && cutRegion !== "us") ? "#D1D5DB" : "#6B7280",
+                        color: cutRegion === "us" ? "#8B1A3A" : filledRows > 0 ? "#D1D5DB" : "#6B7280",
                         cursor: (filledRows > 0 && cutRegion !== "us") ? "not-allowed" : "pointer",
                         opacity: (filledRows > 0 && cutRegion !== "us") ? 0.5 : 1,
                       }}
@@ -951,9 +951,9 @@ export default function BuyerCreateRequest() {
                       style={{
                         padding: "6px 12px", borderRadius: 8, fontSize: 12,
                         border: cutRegion === "global" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                        background: cutRegion === "global" ? "#F5E6EC" : (filledRows > 0 && cutRegion !== "global") ? "#F3F4F6" : "white",
+                        background: cutRegion === "global" ? "#F5E6EC" : filledRows > 0 ? "#F3F4F6" : "white",
                         fontWeight: cutRegion === "global" ? 700 : 400,
-                        color: cutRegion === "global" ? "#8B1A3A" : (filledRows > 0 && cutRegion !== "global") ? "#D1D5DB" : "#6B7280",
+                        color: cutRegion === "global" ? "#8B1A3A" : filledRows > 0 ? "#D1D5DB" : "#6B7280",
                         cursor: (filledRows > 0 && cutRegion !== "global") ? "not-allowed" : "pointer",
                         opacity: (filledRows > 0 && cutRegion !== "global") ? 0.5 : 1,
                       }}
