@@ -1079,6 +1079,22 @@ export default function SupplierCreateOffer() {
           </div>
         </div>
       )}
+      {cloneFrom && (
+        <div
+          className="rounded-lg p-4 mb-4 flex items-start gap-3"
+          style={{ background: "#ECFDF5", border: "1px solid #A7F3D0" }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>📋</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#065F46" }}>
+              Cloning offer
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 14, color: "#047857" }}>
+              All details pre-filled. Review and publish as a new offer.
+            </p>
+          </div>
+        </div>
+      )}
       {/* HEADER */}
       <header className="cov4-header">
         <div className="cov4-hdr-l">
