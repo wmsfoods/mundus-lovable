@@ -191,6 +191,22 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   // Effective (incoterm-adjusted) asking price per item.
   const effectiveAsking = (basePrice: number) =>
     getEffectiveAskingPrice(basePrice, incoterm, freightPerKg, insurancePerKg);
+
+  // Sync bids with effective asking whenever incoterm or freight inputs change.
+  // This runs after hydration so the initial draft load wins on first open,
+  // and re-syncs whenever the buyer flips incoterm or freight stabilizes.
+  useEffect(() => {
+    if (!open || !hydratedRef.current) return;
+    setBids(
+      Object.fromEntries(
+        offer.items.map((it) => [
+          it.id,
+          getEffectiveAskingPrice(Number(it.price), incoterm, freightPerKg, insurancePerKg),
+        ]),
+      ),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [incoterm, freightPerKg, insurancePerKg, open]);
   const incoBanner = getIncotermBannerLabel(
     incoterm,
     freightPerKg,
