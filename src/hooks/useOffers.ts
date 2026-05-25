@@ -125,7 +125,7 @@ export function useOffers(): UseOffersResult {
         `
         )
         .is("deleted_at", null)
-        .neq("status", "sold_out")
+        .eq("status", "active")
         .order("created_at", { ascending: false });
 
       if (cancelled) return;
