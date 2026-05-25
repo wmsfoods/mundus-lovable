@@ -17,6 +17,7 @@ const CATEGORIES = ["Beef", "Pork", "Poultry", "Ovine"] as const;
 const INCOTERM_OPTIONS = ["FOB", "CFR", "CIF", "EXW"] as const;
 const MARBLINGS = ["Not specified", "Low", "Medium", "High", "Prime"] as const;
 const CONTAINER_KG = { "20": 14000, "40": 28000 } as const;
+const DEFAULT_PROTEINS = ["Beef", "Pork", "Poultry", "Ovine"] as const;
 
 type Row = {
   id: string;
@@ -47,12 +48,12 @@ export default function BuyerCreateRequest() {
   const [submitting, setSubmitting] = useState(false);
   const [loadingEdit, setLoadingEdit] = useState(isEdit);
 
-  const [category, setCategory] = useState<(typeof CATEGORIES)[number]>("Beef");
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(["Beef"]);
+  const category = selectedCategories[0] ?? "Beef";
+  const [buyerProteins, setBuyerProteins] = useState<string[]>([...DEFAULT_PROTEINS]);
   // Destination — searchable single-select
   const [destCountry, setDestCountry] = useState("");
-  const [destSearch, setDestSearch] = useState("");
   const [destOpen, setDestOpen] = useState(false);
-  const destRef = useRef<HTMLDivElement | null>(null);
   // Incoterm — multi-select
   const [selectedIncoterms, setSelectedIncoterms] = useState<string[]>(["CFR"]);
   // Origin — multi-select with "any origin"
@@ -67,8 +68,7 @@ export default function BuyerCreateRequest() {
   const [containerType, setContainerType] = useState<"20" | "40">("40");
   const [containerCount, setContainerCount] = useState("1");
   const [shipmentWindow, setShipmentWindow] = useState("");
-  const [halal, setHalal] = useState(false);
-  const [kosher, setKosher] = useState(false);
+  const [slaughterCert, setSlaughterCert] = useState<"none" | "halal" | "kosher">("none");
   const [notes, setNotes] = useState("");
   const [rows, setRows] = useState<Row[]>([newRow()]);
   const [openCutFor, setOpenCutFor] = useState<string | null>(null);
@@ -102,6 +102,20 @@ export default function BuyerCreateRequest() {
       .order("name")
       .then(({ data }) => setSuppliers((data ?? []) as any));
   }, []);
+
+  // Load buyer's protein profile from company
+  useEffect(() => {
+    if (!company?.id) return;
+    supabase
+      .from("companies")
+      .select("buyer_protein_profile")
+      .eq("id", company.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        const prots = (data as any)?.buyer_protein_profile as string[] | null;
+        setBuyerProteins(prots && prots.length ? prots : [...DEFAULT_PROTEINS]);
+      });
+  }, [company?.id]);
 
   // Fetch ports with country names via join through countries table
   useEffect(() => {
@@ -148,7 +162,8 @@ export default function BuyerCreateRequest() {
         return;
       }
       if ((data.category as string) && (CATEGORIES as readonly string[]).includes(data.category as string)) {
-        setCategory(data.category as any);
+        const cats = String(data.category).split(",").map((s) => s.trim()).filter(Boolean);
+        if (cats.length) setSelectedCategories(cats);
       }
       setDestCountry(data.destination_country ?? "");
       setDestPort(data.destination_port ?? "");
@@ -195,8 +210,9 @@ export default function BuyerCreateRequest() {
           });
         } else if (sec.startsWith("Compliance:")) {
           const list = sec.replace(/^Compliance:\s*/, "");
-          setHalal(/halal/i.test(list));
-          setKosher(/kosher/i.test(list));
+          if (/halal/i.test(list)) setSlaughterCert("halal");
+          else if (/kosher/i.test(list)) setSlaughterCert("kosher");
+          else setSlaughterCert("none");
         } else if (sec.startsWith("Notes:")) {
           setNotes(sec.replace(/^Notes:\n?/, ""));
         }
@@ -222,7 +238,8 @@ export default function BuyerCreateRequest() {
     clonedRef.current = true;
     const data = cloneFrom;
     if ((data.category as string) && (CATEGORIES as readonly string[]).includes(data.category as string)) {
-      setCategory(data.category as any);
+      const cats = String(data.category).split(",").map((s: string) => s.trim()).filter(Boolean);
+      if (cats.length) setSelectedCategories(cats);
     }
     setDestCountry(data.destination_country ?? "");
     setDestPort(data.destination_port ?? "");
@@ -266,8 +283,9 @@ export default function BuyerCreateRequest() {
         });
       } else if (sec.startsWith("Compliance:")) {
         const list = sec.replace(/^Compliance:\s*/, "");
-        setHalal(/halal/i.test(list));
-        setKosher(/kosher/i.test(list));
+        if (/halal/i.test(list)) setSlaughterCert("halal");
+        else if (/kosher/i.test(list)) setSlaughterCert("kosher");
+        else setSlaughterCert("none");
       } else if (sec.startsWith("Notes:")) {
         setNotes(sec.replace(/^Notes:\n?/, ""));
       }
@@ -282,7 +300,6 @@ export default function BuyerCreateRequest() {
   // Close dropdowns on outside click
   useEffect(() => {
     const onDown = (e: MouseEvent) => {
-      if (destRef.current && !destRef.current.contains(e.target as Node)) setDestOpen(false);
       if (originRef.current && !originRef.current.contains(e.target as Node)) setOriginOpen(false);
       if (supplierRef.current && !supplierRef.current.contains(e.target as Node)) setSupplierDropdownOpen(false);
       if (portRef.current && !portRef.current.contains(e.target as Node)) setPortOpen(false);
@@ -310,12 +327,6 @@ export default function BuyerCreateRequest() {
     );
   }, [filteredPorts, portSearch]);
 
-  const filteredDest = useMemo(() => {
-    const q = destSearch.trim().toLowerCase();
-    if (!q) return markets;
-    return markets.filter((m) => m.n.toLowerCase().includes(q));
-  }, [markets, destSearch]);
-
   const filteredOrigin = useMemo(() => {
     const q = originSearch.trim().toLowerCase();
     const base = markets.filter((m) => !originCountries.includes(m.n));
@@ -342,12 +353,19 @@ export default function BuyerCreateRequest() {
     setFiles((prev) => [...prev, ...valid].slice(0, 10));
   };
 
-  const allCuts = cutsByCategory[category] ?? [];
+  const allCuts = useMemo(() => {
+    const acc: any[] = [];
+    for (const cat of selectedCategories) {
+      acc.push(...((cutsByCategory as any)[cat] ?? []));
+    }
+    return acc;
+  }, [cutsByCategory, selectedCategories]);
   const cuts = useMemo(() => {
-    if (category !== "Beef") return allCuts.filter((c) => (c as any).region !== "us");
+    const hasBeef = selectedCategories.includes("Beef");
+    if (!hasBeef) return allCuts.filter((c) => (c as any).region !== "us");
     if (cutRegion === "us") return allCuts.filter((c) => (c as any).region === "us" || c.bone_spec === "Offals");
     return allCuts.filter((c) => (c as any).region !== "us");
-  }, [allCuts, category, cutRegion]);
+  }, [allCuts, selectedCategories, cutRegion]);
   const knownCutNames = useMemo(() => cuts.map((c) => c.displayName), [cuts]);
 
   const totalKg = useMemo(
@@ -401,8 +419,8 @@ export default function BuyerCreateRequest() {
     const targets = valid.map((r) => parseFloat(r.target)).filter((n) => Number.isFinite(n) && n > 0);
     const avgTarget = targets.length ? targets.reduce((a, b) => a + b, 0) / targets.length : null;
     const compliance: string[] = [];
-    if (halal) compliance.push("Halal");
-    if (kosher) compliance.push("Kosher");
+    if (slaughterCert === "halal") compliance.push("Halal");
+    if (slaughterCert === "kosher") compliance.push("Kosher");
     const additional = [
       specs ? `Cuts:\n${specs}` : "",
       compliance.length ? `Compliance: ${compliance.join(", ")}` : "",
@@ -429,7 +447,7 @@ export default function BuyerCreateRequest() {
 
     const payload = {
       product_name: productName,
-      category,
+      category: selectedCategories.join(","),
       specification: primary.spec || null,
       destination_country: destCountry,
       destination_port: destPort || null,
@@ -514,38 +532,70 @@ export default function BuyerCreateRequest() {
         {/* LEFT: what you need */}
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
-            <div className="bcr-field">
-              <label>Species</label>
-              <select value={category} onChange={(e) => setCategory(e.target.value as any)}>
-                {CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
-            </div>
-            <div className="bcr-field" ref={destRef} style={{ position: "relative" }}>
-              <label>Destination country *</label>
-              <input
-                type="text"
-                className="bcr-input"
-                value={destOpen ? destSearch : destCountry}
-                onChange={(e) => { setDestSearch(e.target.value); setDestOpen(true); }}
-                onFocus={() => { setDestSearch(""); setDestOpen(true); }}
-                placeholder="Type to search country…"
-                autoComplete="off"
-              />
-              {destOpen && filteredDest.length > 0 && (
-                <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
-                  {filteredDest.map((m) => (
-                    <div
-                      key={m.id}
-                      onMouseDown={(e) => { e.preventDefault(); setDestCountry(m.n); setDestSearch(""); setDestOpen(false); }}
-                      style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
-                      onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
-                      onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+            <div className="bcr-field" style={{ gridColumn: "1 / -1" }}>
+              <label>Species *</label>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                {buyerProteins.map((p) => {
+                  const on = selectedCategories.includes(p);
+                  return (
+                    <button
+                      key={p}
+                      type="button"
+                      onClick={() => {
+                        setSelectedCategories((prev) =>
+                          on ? (prev.length === 1 ? prev : prev.filter((x) => x !== p)) : [...prev, p]
+                        );
+                      }}
+                      style={{
+                        padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600,
+                        border: on ? "2px solid #8B2252" : "1px solid #d1d5db",
+                        background: on ? "#fdf2f8" : "#fff",
+                        color: on ? "#8B2252" : "#374151",
+                        cursor: "pointer", fontFamily: "inherit",
+                      }}
                     >
-                      {m.f} {m.n}
-                    </div>
-                  ))}
-                </div>
-              )}
+                      {on && "✓ "}{p}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            <div className="bcr-field">
+              <label>Destination country *</label>
+              <Popover open={destOpen} onOpenChange={setDestOpen}>
+                <PopoverTrigger asChild>
+                  <button type="button" className="bcr-input" style={{ textAlign: "left", cursor: "pointer", display: "flex", alignItems: "center", gap: 6 }}>
+                    {destCountry ? (
+                      <>
+                        <span>{countryFlag(destCountry)}</span>
+                        <span>{destCountry}</span>
+                      </>
+                    ) : (
+                      <span style={{ color: "var(--fg-muted)" }}>Select destination country…</span>
+                    )}
+                  </button>
+                </PopoverTrigger>
+                <PopoverContent className="p-0 w-[280px]" align="start">
+                  <Command>
+                    <CommandInput placeholder="Search country…" />
+                    <CommandList>
+                      <CommandEmpty>No country found</CommandEmpty>
+                      <CommandGroup>
+                        {markets.map((m) => (
+                          <CommandItem
+                            key={m.id}
+                            value={m.n}
+                            onSelect={() => { setDestCountry(m.n); setDestOpen(false); }}
+                          >
+                            <span style={{ marginRight: 8 }}>{m.f}</span>
+                            <span style={{ flex: 1 }}>{m.n}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             {destCountry && filteredPorts.length > 0 && (
               <div className="bcr-field" ref={portRef} style={{ position: "relative" }}>
@@ -618,7 +668,7 @@ export default function BuyerCreateRequest() {
           </div>
 
           {/* Cut nomenclature toggle */}
-          {category === "Beef" && (
+          {selectedCategories.includes("Beef") && (
             <div className="bcr-card" style={{ padding: "12px 16px" }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "#374151" }}>
                 Cut Nomenclature
@@ -723,15 +773,14 @@ export default function BuyerCreateRequest() {
               <table className="bcr-table">
                 <thead>
                   <tr>
-                    <th style={{ width: 28 }}>#</th>
+                    <th style={{ width: 32 }}>#</th>
                     <th style={{ width: 44 }} aria-label="img"></th>
-                <th>PRODUCT / CUT</th>
+                    <th>PRODUCT / CUT</th>
+                    <th style={{ width: 130 }}>Spec</th>
                     <th style={{ width: 110 }}>Bone</th>
-                    <th>Spec (optional)</th>
-                    <th>{"\n"}</th>
                     <th style={{ width: 110 }}>Qty ({weightLabel(unit)})</th>
                     <th style={{ width: 120 }}>Target {priceLabel(unit)}</th>
-                    <th style={{ width: 32 }}></th>
+                    <th style={{ width: 36 }}></th>
                   </tr>
                 </thead>
                 <tbody>
@@ -799,16 +848,6 @@ export default function BuyerCreateRequest() {
                           <option value="Boneless">Boneless</option>
                           <option value="Bone-In">Bone-In</option>
                           <option value="Offals">Offals</option>
-                        </select>
-                      </td>
-                      <td>
-                        <select
-                          className="bcr-input"
-                          value={r.marbling}
-                          onChange={(e) => update(r.id, { marbling: e.target.value })}
-                          style={{ visibility: "hidden" }}
-                        >
-                          {MARBLINGS.map((m) => <option key={m} value={m}>{m}</option>)}
                         </select>
                       </td>
                       <td>
@@ -1145,10 +1184,11 @@ export default function BuyerCreateRequest() {
             </div>
 
             <div className="bcr-side-block">
-              <label className="bcr-side-label">COMPLIANCE</label>
-              <div className="bcr-checks">
-                <label><input type="checkbox" checked={halal} onChange={(e) => setHalal(e.target.checked)} /> Halal</label>
-                <label><input type="checkbox" checked={kosher} onChange={(e) => setKosher(e.target.checked)} /> Kosher</label>
+              <label className="bcr-side-label">SLAUGHTER CERTIFICATE</label>
+              <div className="bcr-pills">
+                <button type="button" className={`bcr-pill ${slaughterCert === "none" ? "on" : ""}`} onClick={() => setSlaughterCert("none")}>None</button>
+                <button type="button" className={`bcr-pill ${slaughterCert === "halal" ? "on" : ""}`} onClick={() => setSlaughterCert("halal")}>Halal</button>
+                <button type="button" className={`bcr-pill ${slaughterCert === "kosher" ? "on" : ""}`} onClick={() => setSlaughterCert("kosher")}>Kosher</button>
               </div>
             </div>
 
