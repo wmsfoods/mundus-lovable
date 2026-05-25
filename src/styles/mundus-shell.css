@@ -326,6 +326,12 @@
   align-items: center;
   justify-content: center;
 }
+.tb-avatar .av-img {
+  object-fit: cover;
+  display: block;
+  background: var(--g100);
+  border: 1px solid var(--border);
+}
 
 /* --- Posting-as indicator (left side of topbar) ----------------- */
 .tb-posting-as {
