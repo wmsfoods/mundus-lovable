@@ -1615,7 +1615,7 @@
           "floor": "MÍNIMO / KG"
         },
         "fields": {
-          "marbling": "\n",
+          "marbling": "MARBLING / GRADE",
           "originPortCountry": "Origem (porto / país)",
           "condition": "Condição",
           "destination": "Destino",
