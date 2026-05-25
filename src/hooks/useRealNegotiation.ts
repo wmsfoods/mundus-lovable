@@ -89,7 +89,17 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
       .channel(`neg-row-${negotiationId}-${Math.random().toString(36).slice(2)}`)
       .on(
         "postgres_changes",
-        { event: "UPDATE", schema: "public", table: "negotiations", filter: `id=eq.${negotiationId}` },
+        { event: "*", schema: "public", table: "negotiations", filter: `id=eq.${negotiationId}` },
+        () => setTick((n) => n + 1),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "round_proposals", filter: `negotiation_id=eq.${negotiationId}` },
+        () => setTick((n) => n + 1),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "negotiation_messages", filter: `negotiation_id=eq.${negotiationId}` },
         () => setTick((n) => n + 1),
       )
       .subscribe();
