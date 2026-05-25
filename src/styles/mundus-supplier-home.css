@@ -194,8 +194,8 @@
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     gap: 10px;
-    padding: 2px 16px;
-    margin: 0 -16px 20px;
+    padding: 2px 0;
+    margin: 0 0 20px;
     scrollbar-width: none;
   }
   .stats::-webkit-scrollbar { display: none; }
@@ -213,8 +213,8 @@
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
     gap: 12px;
-    padding: 2px 16px 6px;
-    margin: 0 -16px 24px;
+    padding: 2px 0 6px;
+    margin: 0 0 24px;
     scrollbar-width: none;
   }
   .sh-card-row::-webkit-scrollbar { display: none; }
