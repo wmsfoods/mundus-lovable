@@ -114,6 +114,22 @@ const App = () => (
               }
             />
             <Route
+              path="/notifications"
+              element={
+                <RequireAuth>
+                  <Notifications />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings/notifications"
+              element={
+                <RequireAuth>
+                  <NotificationPreferences />
+                </RequireAuth>
+              }
+            />
+            <Route
               path="/buyer"
               element={
                 <RequireAuth>
