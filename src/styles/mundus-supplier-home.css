@@ -175,3 +175,53 @@
   .sh-hero h2 { font-size: 19px; }
   .sh-hero-sub { font-size: var(--fs-xs); }
 }
+
+/* =========================================================================
+   MOBILE — Supplier Home: compact hero, KPI carousel, horizontal rows
+   ========================================================================= */
+@media (max-width: 768px) {
+  /* Compact hero */
+  .sh-hero { padding: 18px 20px 16px; min-height: auto; }
+  .sh-hero h2 { font-size: 18px; margin: 0; line-height: 1.25; }
+  .sh-greeting { margin-bottom: 8px; padding: 3px 10px; font-size: 11px; }
+  .sh-hero-sub, .sh-hero-cta { display: none; }
+
+  /* KPI carousel */
+  .stats {
+    display: flex;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 10px;
+    padding: 2px 16px;
+    margin: 0 -16px 20px;
+    scrollbar-width: none;
+  }
+  .stats::-webkit-scrollbar { display: none; }
+  .stats .stat {
+    flex: 0 0 64%;
+    max-width: 220px;
+    scroll-snap-align: start;
+  }
+
+  /* Recent offers / sales — horizontal scroll rows */
+  .sh-card-row {
+    display: flex;
+    grid-template-columns: none;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    gap: 12px;
+    padding: 2px 16px 6px;
+    margin: 0 -16px 24px;
+    scrollbar-width: none;
+  }
+  .sh-card-row::-webkit-scrollbar { display: none; }
+  .sh-card-row > * {
+    flex: 0 0 86%;
+    max-width: 320px;
+    scroll-snap-align: start;
+  }
+  .sh-card-row .empty-state { flex: 1 1 auto; max-width: none; }
+}
