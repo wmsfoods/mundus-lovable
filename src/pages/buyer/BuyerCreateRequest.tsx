@@ -695,6 +695,11 @@ export default function BuyerCreateRequest() {
               <button type="button" className="bcr-ai-pill" onClick={() => setShowImport(true)}>
                 <SparkleIcon size={13} /> Paste / Import with AI
               </button>
+              {cutRegion === "us" && (
+                <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 360 }}>
+                  🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Cuts</strong> button above to switch.
+                </span>
+              )}
               <div className="bcr-vol">
                 <span className="bcr-vol-l">TOTAL VOLUME</span>
                 <strong>{totalKg.toLocaleString()}</strong>
