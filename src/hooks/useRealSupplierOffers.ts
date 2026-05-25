@@ -51,7 +51,7 @@ export function useRealSupplierOffers() {
           id, offer_number, status, origin_country, origin_port,
           shipment_month, shipment_year, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location,
-          items:offer_items ( id, amount, price, minimum_price, condition,
+          items:offer_items ( id, amount, price, minimum_price, condition, packaging,
             customer_product:customer_products ( id, name ) ),
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
           incoterms:offer_allowed_incoterms ( incoterm_type )
@@ -127,6 +127,7 @@ export function useRealSupplierOffers() {
           items: items.map((it) => ({
             name: it.customer_product?.name ?? "Item",
             marbling: "\n",
+            packaging: it.packaging ?? null,
             qtyKg: Number(it.amount ?? 0),
             pricePerKgUsd: Number(it.price ?? 0),
           })),
