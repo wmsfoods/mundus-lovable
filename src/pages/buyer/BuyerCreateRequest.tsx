@@ -776,8 +776,8 @@ export default function BuyerCreateRequest() {
                     <th style={{ width: 32 }}>#</th>
                     <th style={{ width: 44 }} aria-label="img"></th>
                     <th>PRODUCT / CUT</th>
-                    <th style={{ width: 100 }}>Bone</th>
                     <th style={{ width: 130 }}>Spec</th>
+                    <th style={{ width: 110 }}>Bone</th>
                     <th style={{ width: 110 }}>Qty ({weightLabel(unit)})</th>
                     <th style={{ width: 120 }}>Target {priceLabel(unit)}</th>
                     <th style={{ width: 36 }}></th>
