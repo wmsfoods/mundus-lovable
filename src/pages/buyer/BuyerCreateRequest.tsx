@@ -644,6 +644,7 @@ export default function BuyerCreateRequest() {
                           className="bcr-input"
                           value={r.marbling}
                           onChange={(e) => update(r.id, { marbling: e.target.value })}
+                          style={{ visibility: "hidden" }}
                         >
                           {MARBLINGS.map((m) => <option key={m} value={m}>{m}</option>)}
                         </select>
