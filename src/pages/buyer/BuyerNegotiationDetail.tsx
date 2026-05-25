@@ -124,6 +124,7 @@ export default function BuyerNegotiationDetail() {
   const realExpired = !!rawNeg && isNegotiationExpired(rawNeg);
   const realAccepted = !!rawNeg && rawNeg.status === "bid_accepted";
   const counterAllowed = !isReal || (!realExhausted && !realExpired && !realAccepted);
+  const offerInactive = !!rawNeg && (rawNeg.offer?.status ?? "active") !== "active";
   const maxRoundShown = Math.min(3, Math.max(...d.rounds.map((r) => r.round), 1));
 
   return (
