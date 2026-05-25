@@ -626,7 +626,7 @@ export default function SupplierCreateAuction() {
             <table className="cov4-tbl">
               <thead>
                 <tr>
-                  <th>Cut</th>
+                  <th>Product / Cut</th>
                   <th>Spec</th>
                   <th>Packaging</th>
                   <th>Grading</th>

@@ -101,7 +101,7 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
             <thead>
               <tr style={{ textAlign: "left", color: "var(--fg-muted)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
-                <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)" }}>Cut</th>
+                <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)" }}>Product / Cut</th>
                 <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)" }}>Marbling</th>
                 <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)", textAlign: "right" }}>Qty per cut</th>
                 <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)", textAlign: "right" }}>Target $/kg</th>

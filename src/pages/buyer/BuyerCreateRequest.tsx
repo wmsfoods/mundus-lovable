@@ -546,7 +546,7 @@ export default function BuyerCreateRequest() {
                   <tr>
                     <th style={{ width: 28 }}>#</th>
                     <th style={{ width: 44 }} aria-label="img"></th>
-                    <th>Cut</th>
+                    <th>Product / Cut</th>
                     <th>Spec (optional)</th>
                     <th>Marbling</th>
                     <th style={{ width: 110 }}>Qty (kg)</th>
@@ -656,7 +656,7 @@ export default function BuyerCreateRequest() {
                     <span className="bcr-rcard-n">#{i + 1}</span>
                     <button type="button" className="bcr-rm" onClick={() => remove(r.id)} aria-label="Remove"><XIcon size={14} /></button>
                   </div>
-                  <label>Cut</label>
+                  <label>Product / Cut</label>
                   <div className="bcr-cut-row-m">
                     <span className="bcr-thumb">
                       {r.cutImage ? <img src={r.cutImage} alt="" /> : <span>📷</span>}
