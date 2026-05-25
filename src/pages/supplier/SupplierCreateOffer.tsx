@@ -1339,6 +1339,13 @@ export default function SupplierCreateOffer() {
                 </div>
                 {selInco
                   .filter((s) => s !== primaryInco)
+                  .filter((s) => {
+                    // CIF = CFR + Insurance (handled by CIF Insurance field).
+                    // Hide CIF row when CFR is also selected; hide CFR row when primary is CIF.
+                    if (s === "CIF" && selInco.includes("CFR")) return false;
+                    if (s === "CFR" && primaryInco === "CIF") return false;
+                    return true;
+                  })
                   .map((s) => {
                     const primaryIsFreight = primaryInco === "CFR" || primaryInco === "CIF";
                     const op =
