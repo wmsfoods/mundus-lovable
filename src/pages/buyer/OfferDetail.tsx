@@ -356,7 +356,7 @@ function OfferDetailContent({
             {items.map((it) => (
               <div key={it.id} className="od-cuts-row">
                 <span>{it.customer_product?.name ?? "—"}</span>
-                <span>{it.packaging ?? "—"}</span>
+                <span>{it.packaging === "Vacuum Pack" ? "\n" : (it.packaging ?? "—")}</span>
                 <span className="num">{formatNumber(Number(it.amount))} kg</span>
                 <span className="num">US$ {formatPrice(Number(it.price))}/kg</span>
               </div>
@@ -371,7 +371,7 @@ function OfferDetailContent({
           <div className="od-meta-row">
             <div className="od-meta-item">
               <span className="od-meta-label">{t("buyer.offerDetail.fields.packing")}</span>
-              <span className="od-meta-value">{firstItem?.packaging ?? "—"}</span>
+              <span className="od-meta-value">{firstItem?.packaging === "Vacuum Pack" ? "\n" : (firstItem?.packaging ?? "—")}</span>
             </div>
             <div className="od-meta-item">
               <span className="od-meta-label">{t("buyer.offerDetail.fields.originPortCountry")}</span>
