@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export type BuyerRequestStatus =
   | "new"
@@ -42,6 +43,9 @@ export function useBuyerRequests() {
   const [data, setData] = useState<BuyerRequestRow[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+  const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
+  useRealtimeRefresh({ table: "buyer_requests", onRefresh: bump, enabled: !!company?.id });
 
   useEffect(() => {
     if (!company?.id) return;
@@ -62,7 +66,7 @@ export function useBuyerRequests() {
     return () => {
       cancelled = true;
     };
-  }, [company?.id]);
+  }, [company?.id, refreshKey]);
 
   const counts = {
     all: data.length,

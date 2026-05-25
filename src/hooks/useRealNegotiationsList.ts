@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
+import { useRealtimeRefresh } from "./useRealtimeRefresh";
 import {
   countryToCode,
   initialsOf,
@@ -31,6 +32,10 @@ export function useRealNegotiationsList(role: Role) {
   const { company, loading: companyLoading } = useCurrentCompany();
   // Buyers always see all negotiations regardless of supplier office.
   const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
+  const [refreshKey, setRefreshKey] = useState(0);
+  const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
+  useRealtimeRefresh({ table: "negotiations", onRefresh: bump, enabled: !!company?.id });
+  useRealtimeRefresh({ table: "round_proposals", onRefresh: bump, enabled: !!company?.id });
 
   useEffect(() => {
     let cancelled = false;
@@ -102,7 +107,7 @@ export function useRealNegotiationsList(role: Role) {
     return () => {
       cancelled = true;
     };
-  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading]);
+  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, refreshKey]);
 
   if (role === "buyer") {
     const offerCount = buyerGroups.length;
