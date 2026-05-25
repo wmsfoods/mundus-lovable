@@ -1615,7 +1615,7 @@
           "floor": "FLOOR / KG"
         },
         "fields": {
-          "marbling": "\n",
+          "marbling": "MARBLING / GRADE",
           "originPortCountry": "Origin (port / country)",
           "condition": "Condition",
           "destination": "Destination",
