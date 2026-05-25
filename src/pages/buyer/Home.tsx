@@ -2,13 +2,9 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   SparkleIcon,
-  FlagIcon,
-  CheckCircleIcon,
   ArrowsLeftRightIcon,
-  CartIcon,
   FileTextIcon,
   TagIcon,
-  ArrowTopRightIcon,
   ArrowRightIcon,
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
