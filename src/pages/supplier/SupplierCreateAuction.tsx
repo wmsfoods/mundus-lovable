@@ -240,7 +240,7 @@ export default function SupplierCreateAuction() {
   const publishSteps = [
     { key: "window",  label: ta("step.window",  "Set auction window (opens & closes)"), done: windowOk,           anchor: "sec-window" },
     { key: "markets", label: ta("step.markets", "Select at least one destination market"), done: selMarkets.length > 0, anchor: "sec-markets" },
-    { key: "cuts",    label: ta("step.cuts",    "Add at least one product cut"),       done: cuts.length > 0,     anchor: "sec-cuts" },
+    { key: "cuts",    label: ta("step.cuts",    "Add at least one PRODUCT / CUT"),       done: cuts.length > 0,     anchor: "sec-cuts" },
     { key: "inco",    label: ta("step.inco",    "Choose an incoterm"),                  done: selInco.length > 0,  anchor: "sec-inco" },
   ];
   const stepsDone = publishSteps.filter((s) => s.done).length;
@@ -626,7 +626,7 @@ export default function SupplierCreateAuction() {
             <table className="cov4-tbl">
               <thead>
                 <tr>
-                  <th>Product / Cut</th>
+                  <th>PRODUCT / CUT</th>
                   <th>Spec</th>
                   <th>Packaging</th>
                   <th>Grading</th>
