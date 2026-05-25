@@ -79,6 +79,7 @@ import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
 import Notifications from "./pages/Notifications.tsx";
+import NotificationPreferences from "./pages/settings/NotificationPreferences.tsx";
 import SupplierRespond from "./pages/public/SupplierRespond.tsx";
 import ShippingInstructionsForm from "./pages/public/ShippingInstructionsForm.tsx";
 import ShippingInstructionsPrint from "./pages/public/ShippingInstructionsPrint.tsx";
@@ -109,6 +110,22 @@ const App = () => (
               element={
                 <RequireAuth>
                   <Dashboard />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/notifications"
+              element={
+                <RequireAuth>
+                  <Notifications />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/settings/notifications"
+              element={
+                <RequireAuth>
+                  <NotificationPreferences />
                 </RequireAuth>
               }
             />
