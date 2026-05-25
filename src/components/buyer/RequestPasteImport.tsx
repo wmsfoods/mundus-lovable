@@ -206,7 +206,7 @@ export default function RequestPasteImport({ open, onOpenChange, category, known
                       </td>
                       <td className="p-2 font-medium">{r.cut}</td>
                       <td className="p-2 text-muted-foreground">{r.spec || "—"}</td>
-                      <td className="p-2 text-muted-foreground" style={{ visibility: "hidden" }}>{r.marbling}</td>
+                      <td className="p-2 text-muted-foreground">{r.marbling}</td>
                       <td className="p-2 text-right">{r.qty_kg.toLocaleString()}</td>
                       <td className="p-2 text-right">{r.target_price_per_kg != null ? `$${r.target_price_per_kg.toFixed(2)}` : "—"}</td>
                     </tr>
