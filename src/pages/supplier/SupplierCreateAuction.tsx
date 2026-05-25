@@ -651,7 +651,7 @@ export default function SupplierCreateAuction() {
                      </td>
                     <td><span className="cov4-tag">{c.spec}</span></td>
                     <td><span className="cov4-tag">{c.pkg}</span></td>
-                    <td><span className="cov4-tag">{c.gr !== "\n" ? c.gr : "—"}</span></td>
+                    <td><span className="cov4-tag">{c.gr !== "Not specified" ? c.gr : "—"}</span></td>
                     <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
                     <td className="num">{fmtWeight(Number(c.qty) || 0, unit)}</td>
                     <td className="num">{fmtPrice(Number(c.ask) || 0, unit)}</td>
