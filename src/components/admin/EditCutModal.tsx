@@ -14,7 +14,7 @@ interface Props {
   cut: AdminCutRow | null;
   open: boolean;
   onOpenChange: (o: boolean) => void;
-  onSave: (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless" }) => Promise<void>;
+  onSave: (input: { id: string; name: string; product_number: number | null; category: CutCategory; image_url: string | null; bone_spec: "Bone-In" | "Boneless"; unit_weight: "Kg" | "Lb" }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   onUploadImage: (cutId: string, file: File) => Promise<string>;
   onUpsertTranslation: (input: { cut_id: string; locale: string; name: string }) => Promise<void>;
@@ -28,6 +28,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
   const [pn, setPn] = useState<string>("");
   const [category, setCategory] = useState<CutCategory>("Beef");
   const [boneSpec, setBoneSpec] = useState<"Bone-In" | "Boneless">("Boneless");
+  const [unitWeight, setUnitWeight] = useState<"Kg" | "Lb">("Kg");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [confirmDel, setConfirmDel] = useState(false);
@@ -43,6 +44,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
       setPn(cut.product_number != null ? String(cut.product_number) : "");
       setCategory(cut.category);
       setBoneSpec(cut.bone_spec ?? "Boneless");
+      setUnitWeight(cut.unit_weight ?? "Kg");
       setImageUrl(cut.image_url);
       setTrEdits(Object.fromEntries(cut.translations.map((t) => [t.id, t.name])));
       setNewLocale("");
@@ -67,7 +69,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
 
   const handleSave = async () => {
     try {
-      await onSave({ id: cut.id, name: name.trim(), product_number: pn ? Number(pn) : null, category, image_url: imageUrl, bone_spec: boneSpec });
+      await onSave({ id: cut.id, name: name.trim(), product_number: pn ? Number(pn) : null, category, image_url: imageUrl, bone_spec: boneSpec, unit_weight: unitWeight });
       // save translation edits that changed
       for (const tr of cut.translations) {
         const val = trEdits[tr.id]?.trim();
@@ -219,6 +221,17 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
               </select>
               <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>
                 {t("admin.marketplace.cuts.modal.boneSpecHint", { defaultValue: "Default applied when this cut is added to an offer, auction or request." })}
+              </span>
+            </label>
+
+            <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
+              <span style={{ fontWeight: 600 }}>{t("admin.marketplace.cuts.modal.unitWeight", { defaultValue: "Unit weight" })}</span>
+              <select className="crm-select" value={unitWeight} onChange={(e) => setUnitWeight(e.target.value as "Kg" | "Lb")}>
+                <option value="Kg">Kg</option>
+                <option value="Lb">Lb</option>
+              </select>
+              <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>
+                {t("admin.marketplace.cuts.modal.unitWeightHint", { defaultValue: "Default unit used when pricing this cut in offers, auctions and requests." })}
               </span>
             </label>
 
