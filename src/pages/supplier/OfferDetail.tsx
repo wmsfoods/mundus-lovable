@@ -288,7 +288,7 @@ export default function SupplierOfferDetail() {
                     agingMethod: it.aging_method ?? null,
                   })),
                 };
-                navigate("/supplier/offers/create", { state: { editOffer } });
+                navigate("/supplier/offers/new", { state: { editOffer } });
               } catch (e) {
                 const msg = e instanceof Error ? e.message : "Failed to load offer for editing";
                 toast.error(msg);
@@ -357,7 +357,7 @@ export default function SupplierOfferDetail() {
                     agingMethod: it.aging_method ?? null,
                   })),
                 };
-                navigate("/supplier/offers/create", { state: { cloneFrom } });
+                navigate("/supplier/offers/new", { state: { cloneFrom } });
                 toast.success("Offer data loaded — review and publish as a new offer");
               } catch (e) {
                 const msg = e instanceof Error ? e.message : "Failed to clone offer";
