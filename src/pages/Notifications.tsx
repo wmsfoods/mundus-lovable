@@ -224,33 +224,3 @@ export default function Notifications() {
     </div>
   );
 }
-        {items.length === 0 ? (
-          <div className="text-sm text-muted-foreground" style={{ textAlign: "center", padding: 32 }}>
-            {t("notifications.empty", { defaultValue: "No notifications yet" })}
-          </div>
-        ) : (
-          items.map((n) => (
-            <button
-              key={n.id}
-              type="button"
-              onClick={() => handleClick(n)}
-              className={`w-full text-left px-4 py-3 rounded-lg border border-border hover:bg-muted/50 transition-colors flex gap-3 ${
-                n.unread ? "bg-primary/5" : "bg-card"
-              }`}
-            >
-              <div className="text-xl leading-none mt-0.5 shrink-0">{n.icon}</div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="font-medium text-sm">{n.title}</div>
-                  {n.unread && <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
-                </div>
-                <div className="text-xs text-muted-foreground mt-0.5">{n.body}</div>
-                <div className="text-[11px] text-muted-foreground/70 mt-1">{n.time}</div>
-              </div>
-            </button>
-          ))
-        )}
-      </div>
-    </div>
-  );
-}
