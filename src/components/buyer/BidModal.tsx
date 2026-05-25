@@ -27,6 +27,7 @@ import {
   getIncotermAddOn,
 } from "@/lib/incotermPricing";
 import { useRemainingFcl } from "@/hooks/useRemainingFcl";
+import { notifyCompanyUsers } from "@/lib/notifications";
 
 const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
 
@@ -340,6 +341,19 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
 
       toast.success(t("buyer.bid.successToast"));
       clearDraft(offer.id);
+
+      // Fire in-app notification to supplier company (best-effort)
+      notifyCompanyUsers({
+        companyId: offer.supplier_id,
+        title: "New bid received",
+        body: `${company?.name ?? "A buyer"} placed a bid on offer #${offer.offer_number}`,
+        icon: "dollar",
+        category: "negotiations",
+        linkUrl: `/supplier/negotiations/${neg.id}`,
+        relatedType: "negotiation",
+        relatedId: neg.id,
+      }).catch(() => {});
+
       onOpenChange(false);
       navigate("/buyer/negotiations");
     } catch (e: any) {
