@@ -34,6 +34,7 @@ export type BuyerRequestRow = {
   origin_countries?: string[] | null;
   any_origin?: boolean | null;
   attachments?: Array<{ name: string; url: string; size?: number; type?: string }> | null;
+  target_supplier_id?: string | null;
 };
 
 export function useBuyerRequests() {
@@ -55,7 +56,7 @@ export function useBuyerRequests() {
         .order("created_at", { ascending: false });
       if (cancelled) return;
       if (error) setError(error.message);
-      else setData((data ?? []) as BuyerRequestRow[]);
+      else setData((data ?? []) as unknown as BuyerRequestRow[]);
       setLoading(false);
     })();
     return () => {
@@ -92,7 +93,7 @@ export function useBuyerRequest(id: string) {
         .maybeSingle();
       if (cancelled) return;
       if (error) setError(error.message);
-      setData((data ?? null) as BuyerRequestRow | null);
+      setData((data ?? null) as unknown as BuyerRequestRow | null);
       setLoading(false);
     })();
     return () => {

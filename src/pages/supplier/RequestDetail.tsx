@@ -30,7 +30,7 @@ export default function SupplierRequestDetail() {
     (async () => {
       const { data: r } = await supabase.from("buyer_requests").select("*").eq("id", id).maybeSingle();
       if (cancelled) return;
-      const row = r as BuyerRequestRow | null;
+      const row = r as unknown as BuyerRequestRow | null;
       setRequest(row);
       if (row?.buyer_company_id) {
         const { data: co } = await supabase
@@ -136,6 +136,18 @@ export default function SupplierRequestDetail() {
       ]} />
 
       <div style={{ display: "flex", flexDirection: "column", gap: 16, marginTop: 12 }}>
+        {r.target_supplier_id && (
+          <div style={{
+            padding: "10px 14px", borderRadius: 8,
+            background: "#eff6ff", border: "1px solid #bfdbfe",
+            display: "flex", alignItems: "center", gap: 8,
+          }}>
+            <span>🎯</span>
+            <div style={{ fontSize: 13 }}>
+              <strong>Direct request</strong> — This buyer sent this request specifically to you.
+            </div>
+          </div>
+        )}
         {isWithdrawn && (
           <div style={{
             padding: "12px 16px", borderRadius: 8,

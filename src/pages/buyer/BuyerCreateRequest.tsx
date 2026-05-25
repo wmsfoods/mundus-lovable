@@ -69,6 +69,24 @@ export default function BuyerCreateRequest() {
   const [openMarblingFor, setOpenMarblingFor] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
 
+  // Distribution: marketplace (all suppliers) vs specific supplier
+  const [distribution, setDistribution] = useState<"marketplace" | "specific">("marketplace");
+  const [targetSupplierId, setTargetSupplierId] = useState<string>("");
+  const [supplierSearch, setSupplierSearch] = useState("");
+  const [supplierDropdownOpen, setSupplierDropdownOpen] = useState(false);
+  const supplierRef = useRef<HTMLDivElement | null>(null);
+  const [suppliers, setSuppliers] = useState<Array<{ id: string; name: string; country?: string | null }>>([]);
+
+  useEffect(() => {
+    supabase
+      .from("companies")
+      .select("id, name, country")
+      .eq("is_supplier", true)
+      .is("deleted_at", null)
+      .order("name")
+      .then(({ data }) => setSuppliers((data ?? []) as any));
+  }, []);
+
   // Load existing request when in edit mode
   useEffect(() => {
     if (!isEdit || !editId || !company?.id) return;
@@ -97,6 +115,11 @@ export default function BuyerCreateRequest() {
       setContainerType(((data.container_size ?? "40ft").startsWith("20") ? "20" : "40") as "20" | "40");
       setContainerCount(String(data.container_count ?? 1));
       setShipmentWindow(data.shipment_date ?? "");
+
+      if ((data as any).target_supplier_id) {
+        setDistribution("specific");
+        setTargetSupplierId((data as any).target_supplier_id);
+      }
 
       // Parse additional_info for cuts, compliance, notes
       const info = String(data.additional_info ?? "");
@@ -146,6 +169,7 @@ export default function BuyerCreateRequest() {
     const onDown = (e: MouseEvent) => {
       if (destRef.current && !destRef.current.contains(e.target as Node)) setDestOpen(false);
       if (originRef.current && !originRef.current.contains(e.target as Node)) setOriginOpen(false);
+      if (supplierRef.current && !supplierRef.current.contains(e.target as Node)) setSupplierDropdownOpen(false);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
@@ -224,6 +248,9 @@ export default function BuyerCreateRequest() {
     if (!destCountry) return toast.error("Select a destination country");
     if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
     if (filledRows === 0) return toast.error("Add at least one cut");
+    if (distribution === "specific" && !targetSupplierId) {
+      return toast.error("Select a supplier or switch to marketplace distribution");
+    }
     const valid = rows.filter((r) => r.cut.trim());
     const primary = valid[0];
     const productName = valid.length === 1
@@ -275,6 +302,7 @@ export default function BuyerCreateRequest() {
       additional_info: additional || null,
       any_origin: anyOrigin,
       origin_countries: anyOrigin ? [] : originCountries,
+      target_supplier_id: distribution === "specific" ? targetSupplierId : null,
     };
 
     if (isEdit && editId) {
@@ -797,6 +825,74 @@ export default function BuyerCreateRequest() {
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder="Quality preferences, certifications, timing…"
               />
+            </div>
+
+            <div className="bcr-side-block" ref={supplierRef} style={{ position: "relative" }}>
+              <label className="bcr-side-label">DISTRIBUTION</label>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, cursor: "pointer", marginBottom: 8 }}>
+                <input
+                  type="radio"
+                  checked={distribution === "marketplace"}
+                  onChange={() => { setDistribution("marketplace"); setTargetSupplierId(""); }}
+                  style={{ marginTop: 3 }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600 }}>🌐 All suppliers (marketplace)</div>
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Visible to every supplier on the platform</div>
+                </div>
+              </label>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  checked={distribution === "specific"}
+                  onChange={() => setDistribution("specific")}
+                  style={{ marginTop: 3 }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600 }}>🎯 Specific supplier</div>
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Only the selected supplier will see this request</div>
+                </div>
+              </label>
+
+              {distribution === "specific" && (
+                <div style={{ marginTop: 8, position: "relative" }}>
+                  <input
+                    type="text"
+                    className="bcr-input"
+                    value={supplierDropdownOpen ? supplierSearch : (suppliers.find((s) => s.id === targetSupplierId)?.name || "")}
+                    onChange={(e) => { setSupplierSearch(e.target.value); setSupplierDropdownOpen(true); }}
+                    onFocus={() => { setSupplierSearch(""); setSupplierDropdownOpen(true); }}
+                    placeholder="Search supplier…"
+                    autoComplete="off"
+                  />
+                  {supplierDropdownOpen && (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+                      {suppliers
+                        .filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase()))
+                        .slice(0, 50)
+                        .map((s) => (
+                          <div
+                            key={s.id}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setTargetSupplierId(s.id);
+                              setSupplierSearch("");
+                              setSupplierDropdownOpen(false);
+                            }}
+                            style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                          >
+                            {countryFlag(s.country || "")} {s.name}
+                          </div>
+                        ))}
+                      {suppliers.filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
+                        <div style={{ padding: "8px 12px", fontSize: 12, color: "var(--fg-muted)" }}>No suppliers found</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </aside>
