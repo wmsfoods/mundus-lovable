@@ -1128,7 +1128,23 @@ export default function SupplierCreateOffer() {
           </div>
         </div>
       )}
-      {cloneFrom && (
+      {isEditing && editOffer && (
+        <div
+          className="rounded-lg p-4 mb-4 flex items-start gap-3"
+          style={{ background: "#FFFBEB", border: "1px solid #FDE68A" }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>✏️</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#92400E" }}>
+              Editing offer {formatOfferNumber(editOffer.offerNumber)}
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 14, color: "#A16207" }}>
+              Make your changes and save. The offer number stays the same.
+            </p>
+          </div>
+        </div>
+      )}
+      {cloneFrom && !isEditing && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
           style={{ background: "#ECFDF5", border: "1px solid #A7F3D0" }}
@@ -1148,7 +1164,7 @@ export default function SupplierCreateOffer() {
       <header className="cov4-header">
         <div className="cov4-hdr-l">
           <div>
-            <h1>Create new offer</h1>
+            <h1>{isEditing && editOffer ? `Edit offer ${formatOfferNumber(editOffer.offerNumber)}` : "Create new offer"}</h1>
             <p>Markets · Products · Pricing · Distribution</p>
           </div>
         </div>
@@ -2484,9 +2500,9 @@ export default function SupplierCreateOffer() {
               if (!canPublish && nextStep) { scrollToSection(nextStep.anchor); return; }
               handlePublish();
             }}
-            title={nextStep ? `Next: ${nextStep.label}` : "Review & publish your offer"}
+            title={nextStep ? `Next: ${nextStep.label}` : (isEditing ? "Save changes" : "Review & publish your offer")}
           >
-            Review &amp; publish →
+            {isEditing ? "Save changes →" : "Review & publish →"}
           </button>
         </div>
       </footer>
