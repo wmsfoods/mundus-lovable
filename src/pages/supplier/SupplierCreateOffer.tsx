@@ -201,6 +201,12 @@ export default function SupplierCreateOffer() {
         }>;
       }
     | undefined;
+  const editOffer = (location.state as any)?.editOffer as
+    | (NonNullable<typeof cloneFrom> & { offerId: string; offerNumber: number })
+    | undefined;
+  const isEditing = !!editOffer;
+  // Reuse the clone hydration flow for editing — both pre-fill the same fields.
+  const hydrateSource = editOffer ?? cloneFrom;
   const prefilledRef = useRef(false);
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
