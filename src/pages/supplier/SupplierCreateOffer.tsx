@@ -1566,7 +1566,7 @@ export default function SupplierCreateOffer() {
               <thead>
                 <tr>
                   <th style={{ width: 44 }}>Photo</th>
-                  <th>Product / Cut</th>
+                  <th>PRODUCT / CUT</th>
                   <th>Spec</th>
                   <th>Packaging</th>
                   <th>Grading</th>
