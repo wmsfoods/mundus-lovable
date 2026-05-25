@@ -159,7 +159,7 @@
 
 /* TABLE */
 .bcr-table-wrap { overflow-x: auto; }
-.bcr-table { width: 100%; border-collapse: collapse; }
+.bcr-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .bcr-table thead th {
   text-align: left;
   font-size: 10px; font-weight: 700;
