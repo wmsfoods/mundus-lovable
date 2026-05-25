@@ -2986,7 +2986,7 @@
         }
       },
       "cuts": {
-        "title": "Products & Cuts",
+        "title": "Products & Product / Cuts",
         "subtitle": "Manage the meat cuts catalog for the marketplace",
         "searchPlaceholder": "Search cut name or product number...",
         "allCategories": "All categories",
