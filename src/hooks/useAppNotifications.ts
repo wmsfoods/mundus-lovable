@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export type AppNotification = {
   id: string;
@@ -70,6 +71,18 @@ export function useAppNotifications(opts: { limit?: number } = {}) {
     const t = setInterval(refreshCount, POLL_MS);
     return () => clearInterval(t);
   }, [userId, refreshCount]);
+
+  const onRealtimeChange = useCallback(() => {
+    refreshCount();
+    loadNotifications();
+  }, [refreshCount, loadNotifications]);
+
+  useRealtimeRefresh({
+    table: "app_notifications",
+    filter: userId ? `user_id=eq.${userId}` : undefined,
+    onRefresh: onRealtimeChange,
+    enabled: !!userId,
+  });
 
   const markRead = useCallback(
     async (id: string) => {
