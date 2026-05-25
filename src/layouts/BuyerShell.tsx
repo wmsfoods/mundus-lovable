@@ -6,6 +6,7 @@ import { Topbar } from "@/components/mundus/Topbar";
 import { BottomNav, type BottomNavItem } from "@/components/mundus/BottomNav";
 import { MobileDrawer } from "@/components/mundus/MobileDrawer";
 import { StackHeader } from "@/components/mundus/StackHeader";
+import { PullToRefresh } from "@/components/mundus/PullToRefresh";
 import { StackHeaderProvider } from "@/contexts/StackHeaderContext";
 import { isStackRoute } from "@/lib/mobile-nav";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -107,7 +108,13 @@ function BuyerShellInner() {
         />
         {stackMode ? <StackHeader /> : <Topbar onMenuClick={() => setDrawerOpen(true)} />}
         <main className="app-main">
-          <Outlet />
+          {isMobile ? (
+            <PullToRefresh>
+              <Outlet />
+            </PullToRefresh>
+          ) : (
+            <Outlet />
+          )}
         </main>
         {isMobile && !stackMode && <BottomNav items={BUYER_BOTTOM} />}
         {isMobile && (
