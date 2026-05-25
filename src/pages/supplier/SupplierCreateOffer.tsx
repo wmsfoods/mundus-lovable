@@ -225,6 +225,10 @@ export default function SupplierCreateOffer() {
   const [newImgPrev, setNewImgPrev] = useState<string | null>(null);
   const [nf, setNf] = useState<Omit<Cut, "id">>({ ...EMPTY_NF });
 
+  // Cut nomenclature region (only meaningful when company is US-based and category is Beef)
+  const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+  const isUsCompany = (company?.country ?? "").trim().toLowerCase() === "united states";
+
   const [distMarketplace, setDistMarketplace] = useState(true);
   const [distAllCustomers, setDistAllCustomers] = useState(false);
   const [distSpecific, setDistSpecific] = useState(false);
