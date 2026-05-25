@@ -617,6 +617,12 @@
       "negotiate": "Negotiate",
       "placeOrder": "Place Order",
       "comingSoonFlow": "{{action}} flow — coming soon",
+      "closeDeal": "Close Deal",
+      "closeDealConfirmTitle": "Close Deal",
+      "closeDealConfirmBody": "Are you sure? You can't undo this action afterwards.",
+      "closeDealCancel": "Cancel",
+      "closeDealConfirm": "Close Deal",
+      "closeDealToast": "Request sent to supplier. You'll hear back about this negotiation soon.",
       "marbling": {
         "0": "\n",
         "1": "Low",
