@@ -1497,7 +1497,7 @@ export default function SupplierCreateOffer() {
         {/* ═══════════ CENTER PANEL ═══════════ */}
         <main className="cov4-panel cov4-panel-c">
           <div className="cov4-center-head">
-            <SectionHeader icon="🥩" t="Cuts & pricing" s="Products, specs, photos, ask & floor price" />
+            <SectionHeader icon="🥩" t="PRODUCT / CUT & pricing" s="Products, specs, photos, ask & floor price" />
             <button type="button" className="cov4-ai-btn" onClick={() => setShowAiImport((v) => !v)}>
               ✨ AI Import
             </button>
