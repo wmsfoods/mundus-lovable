@@ -1,52 +1,72 @@
-# Plano: campo Bone SPEC no catálogo de cortes
+# Plan — Buyer Offer Detail: relocate Negotiate + add Close Deal
 
-## Objetivo
-Cada corte do catálogo (admin) passa a ter um atributo **Bone SPEC** com duas opções: **Bone-In** ou **Boneless**. Default = **Boneless** (também aplicado a todos os cortes já cadastrados). Esse valor é puxado automaticamente quando o supplier cria oferta/leilão ou o buyer cria request — e continua editável linha a linha.
+## 1. Move action buttons out of the top bar
 
----
+In `src/pages/buyer/OfferDetail.tsx`:
+- Stop passing `topActions` to `OfferDetailLayout` (no more buttons in the upper-right corner on desktop).
+- Render the action buttons in a new row placed **below the hero card** by passing them through the existing `belowItems` slot of `OfferDetailLayout` (already supported in `OfferDetailLayout.tsx`), wrapped in a small container styled like a card-actions row (flex, gap, right-aligned on desktop, full-width stacked on mobile).
+- The same logic that currently chooses between "🤝 Negotiate", "💬 View Negotiation", and "✅ Deal Closed" stays — only its position changes.
 
-## 1. Banco de dados (migration)
-Tabela `cuts`:
-- Adiciona coluna `bone_spec text not null default 'Boneless'` com check `bone_spec in ('Bone-In','Boneless')`.
-- Backfill: todos os cortes existentes ficam `Boneless`.
+## 2. Add a "Close Deal" button (buyer only)
 
-## 2. Admin — cadastro do corte
-- `src/hooks/useAdminCuts.ts`: incluir `bone_spec` no `AdminCutRow`, no SELECT e no `updateMutation`.
-- `src/components/admin/EditCutModal.tsx`: novo campo dropdown **"Bone SPEC"** com opções `Boneless` / `Bone-In`, posicionado ao lado de "Category". Estado local `boneSpec`, inicializado no `useEffect` a partir de `cut.bone_spec`, e enviado no `onSave`.
-- `src/pages/admin/AdminProducts.tsx`: nova coluna "Bone" na tabela desktop e badge "Boneless"/"Bone-In" nos cards mobile, para visualização rápida.
+Next to the Negotiate button, render a secondary "✅ Close Deal" button. Visible only when:
+- The offer is `active`, AND
+- The buyer has no active negotiation that is already `bid_accepted` (no "Deal Closed" state).
 
-## 3. Catálogo compartilhado (hook usado por offer / auction / request)
-- `src/hooks/useSupplierOfferData.ts`:
-  - `OfferCut` ganha `bone_spec: 'Bone-In' | 'Boneless'`.
-  - SELECT em `cuts` inclui `bone_spec`.
-  - Propaga no mapeamento de `cutsByCategory`.
+On click, open a confirmation dialog using the existing `AlertDialog` from `@/components/ui/alert-dialog`:
+- Title: "Close Deal"
+- Description: "Are you sure? You can't undo this action afterwards."
+- Buttons: "Cancel" and "Close Deal" (destructive style).
 
-## 4. Supplier — Create Offer
-`src/pages/supplier/SupplierCreateOffer.tsx`
-- Quando o usuário seleciona um corte na linha, o `spec` da linha é setado automaticamente para `cut.bone_spec` (sobrescrevendo o default "Boneless").
-- O dropdown `SPECS` existente (`Boneless` / `Bone-In` / `Semi-Boneless`) continua editável.
-- O parser do `fromRequest` também respeita o `bone_spec` do corte quando a linha não trouxer spec explícito.
+On confirm:
+- Send an in-app notification to the supplier company using the existing `notifyCompanyUsers` helper from `src/lib/notifications.ts` (target = `offer.supplier_id`), with a `close_deal_request` type, a link back to the offer, and the buyer company name in the payload.
+- Close the dialog.
+- Show a success toast (sonner) with the message: "Request sent to supplier. You'll hear back about this negotiation soon."
 
-## 5. Supplier — Create Auction
-`src/pages/supplier/SupplierCreateAuction.tsx`
-- Mesma lógica: ao escolher o corte, preenche `spec` com `cut.bone_spec`. Mantém dropdown editável.
+No database schema changes. No persistent "close deal request" table for now — it is just a notification + toast, matching the user's "função simples" requirement.
 
-## 6. Buyer — Create Request
-`src/pages/buyer/BuyerCreateRequest.tsx`
-- Hoje o campo `spec` é texto livre (ex.: "7-9 lb"). **Não vamos sobrescrever isso.**
-- Adicionar um novo campo na linha: `boneSpec: 'Bone-In' | 'Boneless'` (default `Boneless`), exibido como um dropdown compacto ao lado do corte tanto no layout desktop quanto no mobile.
-- Ao selecionar o corte, `boneSpec` é setado a partir de `cut.bone_spec`.
-- O `boneSpec` é incluído no texto enviado em `additional_info` (linha de cuts) no formato `Cut (Boneless) — ...` para que o supplier veja ao responder. O parser em `SupplierCreateOffer` já lê o conteúdo entre parênteses como `spec`, então a integração ponta-a-ponta funciona sem mudanças adicionais.
+## 3. Internationalization
 
-## 7. Mobile
-- EditCutModal: dropdown empilhado verticalmente em telas estreitas (já segue padrão do modal).
-- AdminProducts: badge "Bone" exibido nos cards mobile.
-- BuyerCreateRequest: dropdown Bone SPEC entra no card de cada linha (mobile) logo abaixo do nome do corte, com toque confortável (altura 40px).
+Add new translation keys under `buyer.offerDetail` in all 5 locale files (`en.json`, `pt.json`, `es.json`, `fr.json`, `zh.json`):
 
----
+- `closeDeal` — button label
+- `closeDealConfirmTitle` — "Close Deal"
+- `closeDealConfirmBody` — "Are you sure? You can't undo this action afterwards."
+- `closeDealCancel` — "Cancel"
+- `closeDealConfirm` — "Close Deal"
+- `closeDealToast` — "Request sent to supplier. You'll hear back about this negotiation soon."
 
-## Resumo técnico (curto)
-- 1 migration adicionando `cuts.bone_spec` (default `Boneless`).
-- 2 hooks atualizados (`useAdminCuts`, `useSupplierOfferData`).
-- 5 telas tocadas: EditCutModal, AdminProducts, SupplierCreateOffer, SupplierCreateAuction, BuyerCreateRequest.
-- Nenhuma quebra: campos `spec` existentes nas linhas continuam funcionando; só passa a ser pré-preenchido a partir do catálogo.
+Portuguese version uses the exact phrasing provided by the user:
+- `closeDealToast` (pt) = "Solicitação enviada ao supplier. Em breve você terá um retorno sobre essa negociação."
+
+The existing "Negotiate" / "View Negotiation" / "Deal Closed" labels already use translation keys — no change needed there.
+
+## 4. Styling
+
+Add a small CSS rule (in `src/styles/mundus-offers.css`) for the new actions row, e.g.:
+
+```text
+.od2-card-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 12px 0 0;
+}
+@media (max-width: 640px) {
+  .od2-card-actions { flex-direction: column; }
+  .od2-card-actions .btn-tb { width: 100%; justify-content: center; }
+}
+```
+
+The buttons keep the existing `btn-tb` styling, so Negotiate stays burgundy (`#8B2252`) and Close Deal gets a neutral/outline style to differentiate it visually.
+
+## Files touched
+
+- `src/pages/buyer/OfferDetail.tsx` — move buttons, add Close Deal handler + AlertDialog.
+- `src/styles/mundus-offers.css` — `.od2-card-actions` helper.
+- `src/i18n/locales/{en,pt,es,fr,zh}.json` — new translation keys.
+
+## Out of scope
+
+- Supplier offer detail page (Edit Offer button stays where it is — user only mentioned the buyer view).
+- No DB migrations, no new tables, no edge function.
