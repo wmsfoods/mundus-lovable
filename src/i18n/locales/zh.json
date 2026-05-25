@@ -589,7 +589,7 @@
       "perFcl": "每个集装箱（FCL）的总价值（起拍价）",
       "cutsHead": {
         "cut": "部位",
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "qty": "每个部位数量",
         "price": "每公斤价格"
       },
