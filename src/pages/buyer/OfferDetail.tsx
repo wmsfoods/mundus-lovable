@@ -17,6 +17,7 @@ import { BidModal } from "@/components/buyer/BidModal";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
+import { useOfferDestinationPorts, OfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -212,6 +213,7 @@ function OfferDetailContent({
   myNegotiation: { id: string; status: string } | null;
 }) {
   const { t } = useTranslation();
+  const destinationPorts = useOfferDestinationPorts(offer.id);
   const marblingLabel = (code: number | null | undefined): string => {
     if (code == null) return t("buyer.offerDetail.marbling.default");
     const key = `buyer.offerDetail.marbling.${code}`;
@@ -403,6 +405,7 @@ function OfferDetailContent({
                   {destCode && <FlagSVG code={destCode} size={13} />}
                   {firstDest}
                 </span>
+                <OfferDestinationPorts ports={destinationPorts} />
               </div>
             )}
           </div>
@@ -467,7 +470,7 @@ function OfferDetailContent({
           </button>
           {moreOpen && (
             <div className="od-more-content">
-              {offer.observation ? offer.observation : t("buyer.offerDetail.noMoreInfo")}
+              <BuyerMoreInfoBlock offer={offer} />
             </div>
           )}
 
@@ -559,5 +562,54 @@ function OfferDetailContent({
         </div>
       </div>
     </>
+  );
+}
+
+function BuyerMoreInfoBlock({ offer }: { offer: OfferDetailed }) {
+  const isHalal = !!offer.is_halal;
+  const isKosher = !!offer.is_kosher;
+  const paymentTerms = offer.payment_terms;
+  const observation = offer.observation;
+  const createdAt = offer.created_at;
+  const offerNumber = formatOfferNumber(offer.offer_number, offer.created_at);
+  const hasAny = !!observation || isHalal || isKosher || !!paymentTerms;
+  if (!hasAny) {
+    return (
+      <div style={{ color: "#9ca3af", fontStyle: "italic", fontSize: 13 }}>
+        No additional information
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: "grid", gap: 10, fontSize: 13, color: "#374151" }}>
+      {(isHalal || isKosher) && (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {isHalal && (
+            <span style={{ padding: "2px 8px", borderRadius: 10, background: "#dcfce7", color: "#15803d", fontSize: 11, fontWeight: 600 }}>
+              ☪ Halal
+            </span>
+          )}
+          {isKosher && (
+            <span style={{ padding: "2px 8px", borderRadius: 10, background: "#dbeafe", color: "#1d4ed8", fontSize: 11, fontWeight: 600 }}>
+              ✡ Kosher
+            </span>
+          )}
+        </div>
+      )}
+      {paymentTerms && (
+        <div><strong>Payment terms:</strong> {paymentTerms}</div>
+      )}
+      {observation && (
+        <div><strong>Notes:</strong> {observation}</div>
+      )}
+      {offerNumber && (
+        <div style={{ color: "#6b7280", fontSize: 12 }}>Offer #: {offerNumber}</div>
+      )}
+      {createdAt && (
+        <div style={{ color: "#6b7280", fontSize: 12 }}>
+          Created: {new Date(createdAt).toLocaleDateString()}
+        </div>
+      )}
+    </div>
   );
 }
