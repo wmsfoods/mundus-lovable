@@ -2503,10 +2503,17 @@ export type Database = {
           created_at: string | null
           id: string
           image_url: string | null
+          imps_number: string | null
           is_active: boolean | null
           name: string
           product_number: number | null
+          region: string
           unit_weight: string
+          weight_range_a: string | null
+          weight_range_b: string | null
+          weight_range_c: string | null
+          weight_range_d: string | null
+          weight_range_e: string | null
         }
         Insert: {
           bone_spec?: string
@@ -2514,10 +2521,17 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url?: string | null
+          imps_number?: string | null
           is_active?: boolean | null
           name: string
           product_number?: number | null
+          region?: string
           unit_weight?: string
+          weight_range_a?: string | null
+          weight_range_b?: string | null
+          weight_range_c?: string | null
+          weight_range_d?: string | null
+          weight_range_e?: string | null
         }
         Update: {
           bone_spec?: string
@@ -2525,10 +2539,17 @@ export type Database = {
           created_at?: string | null
           id?: string
           image_url?: string | null
+          imps_number?: string | null
           is_active?: boolean | null
           name?: string
           product_number?: number | null
+          region?: string
           unit_weight?: string
+          weight_range_a?: string | null
+          weight_range_b?: string | null
+          weight_range_c?: string | null
+          weight_range_d?: string | null
+          weight_range_e?: string | null
         }
         Relationships: []
       }
