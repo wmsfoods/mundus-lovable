@@ -1,5 +1,5 @@
-import { useMemo, type ComponentType } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useMemo, useState, type ComponentType } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   SparkleIcon,
@@ -7,12 +7,13 @@ import {
   CheckCircleIcon,
   ArrowsLeftRightIcon,
   CartIcon,
-  TagIcon,
   ArrowRightIcon,
 } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
+import { SupplierOfferCard } from "@/components/supplier/OfferCard";
+import { supabase } from "@/integrations/supabase/client";
 
 type SupplierKpi = {
   key: "activeOffers" | "totalOffers" | "closedDeals" | "inNegotiation" | "avgClosing";
@@ -67,86 +68,9 @@ function StatCard({ k, t }: { k: SupplierKpi; t: TFn }) {
   );
 }
 
-type HomeOfferCardData = {
-  id: string;
-  category: string;
-  condition: string;
-  cutCount: number;
-  status: "active" | "new" | "negotiating" | "closed" | "inactive" | "sold_out";
-  title: string;
-  cuts: string[];
-  destinationFlag: string;
-  destination: string;
-  incoterm: string;
-  shipment: string;
-  volumeMt: number;
-  qtyMt: number;
-};
-
-function HomeOfferCard({ o, t }: { o: HomeOfferCardData; t: TFn }) {
-  const statusClass = o.status === "active" ? "pill-active" : "pill-pending";
-  const visibleCuts = o.cuts.slice(0, 3);
-  const moreCount = Math.max(0, o.cuts.length - visibleCuts.length);
-  return (
-    <Link to="/supplier/offers" className="oc">
-      <div className="oc-head">
-        <div className="oc-head-l">
-          <span className="oc-chip"><TagIcon size={14} /></span>
-          <span className="oc-cat">{o.category}</span>
-          <span className="dot-sep" />
-          <span className="oc-temp">{o.condition}</span>
-          {o.cutCount > 1 && (
-            <>
-              <span className="dot-sep" />
-              <span className="oc-temp">{o.cutCount} {t("supplier.home.cuts")}</span>
-            </>
-          )}
-        </div>
-        <span className={`pill ${statusClass}`}>
-          {o.status === "active" ? t("supplier.home.statusAvailable") : t("supplier.home.statusNew")}
-        </span>
-      </div>
-      <div className="oc-title-block">
-        <div className="oc-title">{o.title}</div>
-        {visibleCuts.length > 0 && (
-          <div className="cut-chips">
-            {visibleCuts.map((c) => <span key={c} className="cut-chip">{c}</span>)}
-            {moreCount > 0 && <span className="cut-chip is-more">+{moreCount} {t("supplier.home.more")}</span>}
-          </div>
-        )}
-      </div>
-      <div className="oc-meta-tight">
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.destination")}</span>
-          <span className="cm-value">{o.destinationFlag} {o.destination}</span>
-        </div>
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.incoterm")}</span>
-          <span className="cm-value">{o.incoterm}</span>
-        </div>
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.shipment")}</span>
-          <span className="cm-value">{o.shipment}</span>
-        </div>
-        <div className="cm">
-          <span className="cm-label">{t("supplier.home.card.volume")}</span>
-          <span className="cm-value">{o.volumeMt} {t("supplier.home.mt")}</span>
-        </div>
-      </div>
-      <div className="oc-footer">
-        <div className="oc-qty">
-          <span className="cur">{t("supplier.home.card.qty")}</span>
-          <span className="amt">{o.qtyMt}</span>
-          <span className="unit">{t("supplier.home.mt")}</span>
-        </div>
-        <span className="oc-cta">{t("supplier.home.card.openOffer")} <ArrowRightIcon size={12} /></span>
-      </div>
-    </Link>
-  );
-}
-
 export default function SupplierHome() {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { user } = useAuth();
   const greetingKey = useGreetingKey();
   const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "Antonio";
@@ -165,23 +89,33 @@ export default function SupplierHome() {
     ];
   }, [dash.activeOffers, dash.totalOffers, dash.closedDeals, dash.inNegotiation]);
 
-  const recentOffers = useMemo<HomeOfferCardData[]>(() => {
-    return offers.slice(0, 3).map((o) => ({
-      id: o.id,
-      category: o.category,
-      condition: o.condition,
-      cutCount: o.items.length,
-      status: o.status,
-      title: o.title,
-      cuts: o.items.map((it) => it.name),
-      destinationFlag: o.destinations[0]?.code ?? "",
-      destination: o.destinations[0]?.name ?? "—",
-      incoterm: o.incoterms[0] ?? "—",
-      shipment: o.shipmentLabel,
-      volumeMt: Math.round(o.totalKg / 1000),
-      qtyMt: Math.round(o.totalKg / 1000),
-    }));
-  }, [offers]);
+  const recentOffers = useMemo(() => offers.slice(0, 3), [offers]);
+
+  const [negCounts, setNegCounts] = useState<Record<string, { total: number; companies: number }>>({});
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select("offer_id, buyer_company_id")
+        .not("status", "in", "(expired,offer_withdrawn,bid_accepted)")
+        .is("deleted_at", null);
+      if (cancelled) return;
+      const byOffer: Record<string, { total: number; companies: Set<string> }> = {};
+      (data ?? []).forEach((n: { offer_id: string; buyer_company_id: string }) => {
+        const e = byOffer[n.offer_id] ?? { total: 0, companies: new Set<string>() };
+        e.total += 1;
+        if (n.buyer_company_id) e.companies.add(n.buyer_company_id);
+        byOffer[n.offer_id] = e;
+      });
+      const counts: Record<string, { total: number; companies: number }> = {};
+      Object.entries(byOffer).forEach(([k, v]) => {
+        counts[k] = { total: v.total, companies: v.companies.size };
+      });
+      setNegCounts(counts);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   return (
     <>
@@ -257,7 +191,15 @@ export default function SupplierHome() {
         ) : recentOffers.length === 0 ? (
           <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>{t("supplier.home.emptyOffers", { defaultValue: "No offers yet." })}</div>
         ) : (
-          recentOffers.map((o) => <HomeOfferCard key={o.id} o={o} t={t} />)
+          recentOffers.map((o) => (
+            <SupplierOfferCard
+              key={o.id}
+              o={o}
+              t={t}
+              negInfo={negCounts[o.id]}
+              onOpen={() => navigate(`/supplier/offers/${o.id}`)}
+            />
+          ))
         )}
       </div>
 
