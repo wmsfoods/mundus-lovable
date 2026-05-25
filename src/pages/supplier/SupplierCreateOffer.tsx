@@ -456,8 +456,6 @@ export default function SupplierCreateOffer() {
     setUnit("kg");
 
     const cat0 = cloneFrom.category || "Beef";
-    if ((CATEGORIES as readonly string[]).includes(cat0)) setCategory(cat0 as any);
-
     setCsize((cloneFrom.containerSize?.startsWith("20") ? "20ft" : "40ft"));
     setContainerCount(Math.max(1, Number(cloneFrom.containerCount) || 1));
     if (cloneFrom.condition === "Frozen" || cloneFrom.condition === "Chilled") {
