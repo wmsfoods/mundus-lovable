@@ -24,7 +24,7 @@ import "@/styles/mundus-create-offer-v2.css";
    ────────────────────────────────────────────────────────── */
 type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In"];
-const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
+const PKGS = ["\n", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
 const GRADES = ["Not specified", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
@@ -89,7 +89,7 @@ type Cut = {
 };
 
 const EMPTY_NF: Omit<Cut, "id"> = {
-  cat: "Beef", cut: "", spec: "Boneless", pkg: "Vacuum Pack", gr: "\n", ag: "None",
+  cat: "Beef", cut: "", spec: "Boneless", pkg: "\n", gr: "\n", ag: "None",
   qty: "", ask: "", floor: "", notes: "", cutImage: null,
 };
 
