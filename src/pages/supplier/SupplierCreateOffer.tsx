@@ -654,7 +654,7 @@ export default function SupplierCreateOffer() {
 
       // Total FCL from kg / container capacity
       const totalKg = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
-      const totalFcl = Math.max(1, Math.ceil(totalKg / cap));
+      const totalFcl = containerCount;
 
       // 1. Create offer
       let offer: { id: string; offer_number: number };
