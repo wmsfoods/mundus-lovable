@@ -826,6 +826,74 @@ export default function BuyerCreateRequest() {
                 placeholder="Quality preferences, certifications, timing…"
               />
             </div>
+
+            <div className="bcr-side-block" ref={supplierRef} style={{ position: "relative" }}>
+              <label className="bcr-side-label">DISTRIBUTION</label>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, cursor: "pointer", marginBottom: 8 }}>
+                <input
+                  type="radio"
+                  checked={distribution === "marketplace"}
+                  onChange={() => { setDistribution("marketplace"); setTargetSupplierId(""); }}
+                  style={{ marginTop: 3 }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600 }}>🌐 All suppliers (marketplace)</div>
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Visible to every supplier on the platform</div>
+                </div>
+              </label>
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 8, fontSize: 13, cursor: "pointer" }}>
+                <input
+                  type="radio"
+                  checked={distribution === "specific"}
+                  onChange={() => setDistribution("specific")}
+                  style={{ marginTop: 3 }}
+                />
+                <div>
+                  <div style={{ fontWeight: 600 }}>🎯 Specific supplier</div>
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Only the selected supplier will see this request</div>
+                </div>
+              </label>
+
+              {distribution === "specific" && (
+                <div style={{ marginTop: 8, position: "relative" }}>
+                  <input
+                    type="text"
+                    className="bcr-input"
+                    value={supplierDropdownOpen ? supplierSearch : (suppliers.find((s) => s.id === targetSupplierId)?.name || "")}
+                    onChange={(e) => { setSupplierSearch(e.target.value); setSupplierDropdownOpen(true); }}
+                    onFocus={() => { setSupplierSearch(""); setSupplierDropdownOpen(true); }}
+                    placeholder="Search supplier…"
+                    autoComplete="off"
+                  />
+                  {supplierDropdownOpen && (
+                    <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
+                      {suppliers
+                        .filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase()))
+                        .slice(0, 50)
+                        .map((s) => (
+                          <div
+                            key={s.id}
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              setTargetSupplierId(s.id);
+                              setSupplierSearch("");
+                              setSupplierDropdownOpen(false);
+                            }}
+                            style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
+                            onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
+                            onMouseLeave={(e) => (e.currentTarget.style.background = "#fff")}
+                          >
+                            {countryFlag(s.country || "")} {s.name}
+                          </div>
+                        ))}
+                      {suppliers.filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
+                        <div style={{ padding: "8px 12px", fontSize: 12, color: "var(--fg-muted)" }}>No suppliers found</div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </aside>
       </div>
