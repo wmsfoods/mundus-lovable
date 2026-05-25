@@ -47,6 +47,65 @@ export type Database = {
         }
         Relationships: []
       }
+      app_notifications: {
+        Row: {
+          body: string | null
+          category: string
+          company_id: string | null
+          created_at: string
+          icon: string
+          id: string
+          link_label: string | null
+          link_url: string | null
+          read: boolean
+          read_at: string | null
+          related_id: string | null
+          related_type: string | null
+          title: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          icon?: string
+          id?: string
+          link_label?: string | null
+          link_url?: string | null
+          read?: boolean
+          read_at?: string | null
+          related_id?: string | null
+          related_type?: string | null
+          title: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          category?: string
+          company_id?: string | null
+          created_at?: string
+          icon?: string
+          id?: string
+          link_label?: string | null
+          link_url?: string | null
+          read?: boolean
+          read_at?: string | null
+          related_id?: string | null
+          related_type?: string | null
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "app_notifications_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auction_bids: {
         Row: {
           auction_id: string
@@ -3334,6 +3393,57 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          deal_closed: boolean
+          email: boolean
+          id: string
+          in_app: boolean
+          negotiation_rounds: boolean
+          new_buyer_request: boolean
+          new_chat_message: boolean
+          new_request_response: boolean
+          offer_deactivated: boolean
+          order_status_changes: boolean
+          shipping_instructions: boolean
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deal_closed?: boolean
+          email?: boolean
+          id?: string
+          in_app?: boolean
+          negotiation_rounds?: boolean
+          new_buyer_request?: boolean
+          new_chat_message?: boolean
+          new_request_response?: boolean
+          offer_deactivated?: boolean
+          order_status_changes?: boolean
+          shipping_instructions?: boolean
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deal_closed?: boolean
+          email?: boolean
+          id?: string
+          in_app?: boolean
+          negotiation_rounds?: boolean
+          new_buyer_request?: boolean
+          new_chat_message?: boolean
+          new_request_response?: boolean
+          offer_deactivated?: boolean
+          order_status_changes?: boolean
+          shipping_instructions?: boolean
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       notifications: {
         Row: {
