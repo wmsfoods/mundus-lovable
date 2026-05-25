@@ -339,7 +339,7 @@
         "apply": "Aplicar"
       },
       "col": {
-        "cut": "Corte",
+        "cut": "PRODUTO / CORTE",
         "qty": "Qtd ({{unit}})",
         "minBid": "Lance Mín.",
         "yourBid": "Seu Lance"
