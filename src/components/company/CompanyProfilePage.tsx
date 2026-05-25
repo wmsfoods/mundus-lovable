@@ -516,7 +516,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
               onChange={(v) => patchCompany({ buyer_protein_profile: v })}
             />
           </FieldLabel>
-          <FieldLabel label="Preferred Cuts">
+          <FieldLabel label="Preferred Product / Cuts">
             <SearchableChipInput
               value={company.preferred_cuts || []}
               onChange={(v) => patchCompany({ preferred_cuts: v })}

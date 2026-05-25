@@ -606,7 +606,7 @@ export default function SupplierCreateAuction() {
         {/* ═══════════ CENTER PANEL: Cuts & Pricing ═══════════ */}
         <main className="cov4-panel cov4-panel-c">
           <div className="cov4-center-head">
-            <SectionHeader icon="🥩" t="Cuts & pricing" s="Products, specs, starting & floor price" />
+            <SectionHeader icon="🥩" t="Product / Cuts & pricing" s="Products, specs, starting & floor price" />
           </div>
 
           <div className="cov4-cap">

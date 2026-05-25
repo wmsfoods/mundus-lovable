@@ -244,7 +244,7 @@
       "payment": "Payment terms",
       "container": "Container",
       "created": "Created",
-      "cutsTitle": "Product / Cuts requested",
+      "cutsTitle": "Product / Product / Cuts requested",
       "col": {
         "cut": "PRODUCT / CUT",
         "qty": "Qty ({{unit}})",
@@ -385,7 +385,7 @@
           },
           "marketAlerts": {
             "title": "Smart procurement alerts",
-            "body": "Get notified when prices drop on cuts you buy, when contracts expire, or when a category gets risky."
+            "body": "Get notified when prices drop on product / cuts you buy, when contracts expire, or when a category gets risky."
           }
         },
         "perks": [
@@ -494,7 +494,7 @@
         "selectAll": "Select all",
         "clearAll": "Clear all",
         "loading": "Loading…",
-        "noCuts": "No product / cuts available",
+        "noCuts": "No product / product / cuts available",
         "selectMarket": "Select a market…",
         "selectPort": "Select a port…",
         "noPorts": "This market has no ports configured.",
@@ -646,15 +646,15 @@
       "errors": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
-        "summary_one": "{{count}} cut has validation errors",
-        "summary_other": "{{count}} cuts have validation errors"
+        "summary_one": "{{count}} product / cut has validation errors",
+        "summary_other": "{{count}} product / cuts have validation errors"
       },
       "validation": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
         "belowInitial": "Cannot bid below your initial bid of ${{min}}",
-        "summary_one": "{{count}} cut has validation errors",
-        "summary_other": "{{count}} cuts have validation errors"
+        "summary_one": "{{count}} product / cut has validation errors",
+        "summary_other": "{{count}} product / cuts have validation errors"
       },
       "bulk": {
         "label": "Quick fill",
@@ -1008,8 +1008,8 @@
       "cancelledToast": "Auction cancelled",
       "award": "Award",
       "winner": "Winner",
-      "viewCuts": "View cut breakdown",
-      "hideCuts": "Hide cut breakdown",
+      "viewCuts": "View product / cut breakdown",
+      "hideCuts": "Hide product / cut breakdown",
       "awardToast": "Auction awarded to {{buyer}}!",
       "awardedBanner": "Awarded to {{buyer}}",
       "contractIssued": "Contract issued — buyer notified",
@@ -1672,7 +1672,7 @@
         },
         "offerName": {
           "label": "Offer name",
-          "placeholder": "e.g. Premium Beef Cuts — Asia FCL #1"
+          "placeholder": "e.g. Premium Beef Product / Cuts — Asia FCL #1"
         },
         "species": {
           "label": "Species",
@@ -1797,7 +1797,7 @@
         "incoConflict": "Not compatible with the selected incoterm",
         "pickCut": "Pick a product / cut…",
         "searchCutsPh": "Search product / cuts…",
-        "noCuts": "No product / cuts found"
+        "noCuts": "No product / product / cuts found"
       }
     },
     "home": {
@@ -1946,7 +1946,7 @@
       "priceBenchmark": {
         "eyebrow": "PREMIUM · MARKET INTELLIGENCE",
         "title": "Price benchmark · {{cut}}",
-        "subtitle": "See how your offer compares against all {{count}} anonymized offers of the same cut + origin. Competitors are never named.",
+        "subtitle": "See how your offer compares against all {{count}} anonymized offers of the same product / cut + origin. Competitors are never named.",
         "yourPrice": "Your price",
         "hero": {
           "before": "Your offer is priced",
@@ -1978,7 +1978,7 @@
           "bullets": {
             "distribution": {
               "title": "Live market distribution",
-              "body": "Histogram of every competing offer for your cut + origin, refreshed every 24h."
+              "body": "Histogram of every competing offer for your product / cut + origin, refreshed every 24h."
             },
             "ranking": {
               "title": "Anonymized competitor ranking",
@@ -1996,7 +1996,7 @@
           "perks": [
             "Weekly market report (PDF) for each of your active cuts",
             "Slack and email alerts on competitor price changes",
-            "12-month historical price trend per cut and origin"
+            "12-month historical price trend per product / cut and origin"
           ]
         },
         "analytics": {
@@ -2987,8 +2987,8 @@
       },
       "cuts": {
         "title": "Products & Product / Cuts",
-        "subtitle": "Manage the meat cuts catalog for the marketplace",
-        "searchPlaceholder": "Search product / cut name or product number...",
+        "subtitle": "Manage the meat product / cuts catalog for the marketplace",
+        "searchPlaceholder": "Search product / product / cut name or product number...",
         "allCategories": "All categories",
         "next": "Next",
         "showing": "Showing {{from}}-{{to}} of {{total}} results",
@@ -3011,7 +3011,7 @@
           "Ovine": "Ovine"
         },
         "cols": {
-          "name": "Product / cut name",
+          "name": "Product / product / cut name",
           "pn": "PN",
           "category": "Category",
           "translations": "Translations",
@@ -3019,16 +3019,16 @@
           "actions": "Actions"
         },
         "toggle": {
-          "activated": "Cut {{name}} activated",
-          "deactivated": "Cut {{name}} deactivated"
+          "activated": "Product / Cut {{name}} activated",
+          "deactivated": "Product / Cut {{name}} deactivated"
         },
         "empty": {
-          "title": "No cuts match these filters",
+          "title": "No product / cuts match these filters",
           "body": "Try clearing filters or searching with another term."
         },
         "modal": {
           "title": "Edit product / cut",
-          "name": "Product / cut name",
+          "name": "Product / product / cut name",
           "productNumber": "Product number",
           "category": "Category",
           "uploadImage": "Upload image",
@@ -3042,11 +3042,11 @@
           "translatedName": "Translated name",
           "translationAdded": "Translation added",
           "translationRemoved": "Translation removed",
-          "saved": "Product / cut saved",
+          "saved": "Product / product / cut saved",
           "delete": "Delete",
-          "deleted": "Product / cut deleted",
+          "deleted": "Product / product / cut deleted",
           "confirmDeleteTitle": "Delete this product / cut?",
-          "confirmDeleteBody": "This will permanently remove the product / cut and its translations."
+          "confirmDeleteBody": "This will permanently remove the product / product / cut and its translations."
         }
       }
     },

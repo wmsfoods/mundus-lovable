@@ -618,7 +618,7 @@ export default function BuyerCreateRequest() {
             <div className="bcr-cuts-head">
               <div className="bcr-cuts-title">
                 <span className="bcr-ic-sq" aria-hidden>▦</span>
-                <strong>Cuts requested</strong>
+                <strong>Product / Cuts requested</strong>
                 <span className="bcr-count">· {filledRows}</span>
               </div>
               <button type="button" className="bcr-ai-pill" onClick={() => setShowImport(true)}>

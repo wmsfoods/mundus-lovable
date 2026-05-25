@@ -1826,7 +1826,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global Beef Cuts
+                  🌐 Global Beef Product / Cuts
                 </button>
                 <button
                   type="button"
@@ -1846,7 +1846,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US Beef Cuts (IMPS)
+                  🇺🇸 US Beef Product / Cuts (IMPS)
                 </button>
                 {cuts.length > 0 && (
                   <button
@@ -1878,7 +1878,7 @@ export default function SupplierCreateOffer() {
                 )}
                 {cuts.length > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
-                    {cutRegion === "us" ? "🇺🇸 Using US Beef Cuts (IMPS)" : "🌐 Using Global Beef Cuts"} · {cuts.length} cut{cuts.length > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} cut{cuts.length > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
@@ -2379,7 +2379,7 @@ export default function SupplierCreateOffer() {
               </div>
               {cuts.length > 0 && (
                 <div className="cov4-prev-cuts">
-                  <div className="cov4-prev-cuts-t">Cuts included</div>
+                  <div className="cov4-prev-cuts-t">Product / Cuts included</div>
                   {cuts.map((c) => (
                     <div key={c.id} className="cov4-prev-cut-row">
                       <span>
