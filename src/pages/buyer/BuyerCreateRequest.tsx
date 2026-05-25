@@ -593,7 +593,7 @@ export default function BuyerCreateRequest() {
                                     <CommandItem
                                       key={c.id}
                                       value={c.displayName}
-                                      onSelect={() => { update(r.id, { cut: c.displayName, cutImage: c.image_url ?? null }); setOpenCutFor(null); }}
+                                      onSelect={() => { update(r.id, { cut: c.displayName, cutImage: c.image_url ?? null, boneSpec: c.bone_spec ?? "Boneless" }); setOpenCutFor(null); }}
                                     >
                                       <span className="bcr-pick-thumb">
                                         {c.image_url ? <img src={c.image_url} alt="" /> : <span>📷</span>}
@@ -672,7 +672,7 @@ export default function BuyerCreateRequest() {
                       onChange={(e) => {
                         const v = e.target.value;
                         const match = cuts.find((c) => c.displayName.toLowerCase() === v.toLowerCase());
-                        update(r.id, { cut: v, cutImage: match?.image_url ?? null });
+                        update(r.id, { cut: v, cutImage: match?.image_url ?? null, ...(match ? { boneSpec: match.bone_spec ?? "Boneless" } : {}) });
                       }}
                       placeholder="Pick or type cut…"
                       list={`cuts-${category}`}
