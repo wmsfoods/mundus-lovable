@@ -82,7 +82,6 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
       {!isMobile && company?.name && (
         <div className="tb-posting-as">
           <span className="dot" aria-hidden="true" />
-          <span className="tb-posting-label">{t("shell.postingAs")}</span>
           <span className="tb-posting-name">{company.name}</span>
         </div>
       )}
