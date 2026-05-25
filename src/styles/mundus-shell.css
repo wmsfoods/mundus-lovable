@@ -940,15 +940,48 @@
   .app-shell.is-sidebar-collapsed { grid-template-columns: 64px 1fr; }
   .sb.is-collapsed { width: 64px; }
   .sb.is-collapsed .sb-logo {
-    padding: 0 12px;
+    flex-direction: column;
+    padding: 12px 0;
+    gap: 8px;
     justify-content: center;
+    align-items: center;
+    flex-wrap: nowrap;
   }
-  .sb.is-collapsed .sb-logo img { height: 24px; }
+  .sb.is-collapsed .sb-monogram {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: var(--p800);
+    color: #fff;
+    font-weight: 700;
+    font-size: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: 0;
+    font-family: var(--font-display, inherit);
+  }
+  .sb.is-collapsed .sb-nav {
+    padding: 10px 0;
+    align-items: center;
+  }
   .sb.is-collapsed .sb-item,
   .sb.is-collapsed .sb-section-header {
+    width: 40px;
+    height: 40px;
+    margin: 2px auto;
+    padding: 0;
     justify-content: center;
-    padding-left: 0;
-    padding-right: 0;
+    border-radius: 10px;
+    gap: 0;
+  }
+  .sb.is-collapsed .sb-item svg,
+  .sb.is-collapsed .sb-section-header svg {
+    width: 20px;
+    height: 20px;
+  }
+  .sb.is-collapsed .sb-item.is-accent {
+    margin: 6px auto;
   }
   .sb.is-collapsed .sb-item-label,
   .sb.is-collapsed .sb-section-label,
@@ -956,14 +989,19 @@
   .sb.is-collapsed .sb-section-header > svg:last-child,
   .sb.is-collapsed .sb-item-badge,
   .sb.is-collapsed .nav-new-badge,
+  .sb.is-collapsed .pro-badge,
   .sb.is-collapsed .sb-user-meta,
   .sb.is-collapsed .sb-role-pill {
     display: none !important;
   }
-  .sb.is-collapsed .sb-section-body { padding-left: 0; }
+  .sb.is-collapsed .sb-section-body {
+    padding: 0;
+    margin-left: 0;
+    border-left: none;
+  }
   .sb.is-collapsed .sb-user {
     justify-content: center;
-    padding: 12px 8px;
+    padding: 10px 0;
   }
 }
 .sb-collapse-toggle {
@@ -983,4 +1021,8 @@
 @media (max-width: 1023px) {
   .sb-collapse-toggle { display: none; }
 }
-.sb.is-collapsed .sb-collapse-toggle { margin: 0 auto; }
+.sb.is-collapsed .sb-collapse-toggle {
+  margin: 0 auto;
+  width: 28px;
+  height: 28px;
+}
