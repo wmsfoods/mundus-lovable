@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { publicUrl } from "@/lib/publicUrl";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { useOfferDestinationPorts, OfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 
 function formatNumber(n: number): string {
   return new Intl.NumberFormat("de-DE").format(Math.round(n));
@@ -77,6 +78,7 @@ export default function SupplierOfferDetail() {
   );
 
   const galleryImages = useOfferImages(offer?.items ?? []);
+  const destinationPorts = useOfferDestinationPorts(id);
 
   if (offersLoading && !offer) {
     return <div className="empty-state"><p>{t("supplier.offers.loading", "Loading…")}</p></div>;
@@ -234,6 +236,29 @@ export default function SupplierOfferDetail() {
           {isActive ? t("supplier.offers.detail.deactivate") : t("supplier.offers.detail.activate")}
         </button>
         <div className="so-detail-actions">
+        {negotiations.length === 0 ? (
+          <button
+            type="button"
+            className="btn-tb"
+            onClick={() =>
+              alert(
+                "Edit functionality coming soon. For now, you can clone this offer and deactivate the original.",
+              )
+            }
+          >
+            ✏️ Edit Offer
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn-tb"
+            disabled
+            title="Cannot edit — active negotiations in progress"
+            style={{ opacity: 0.5, cursor: "not-allowed" }}
+          >
+            ✏️ Edit Offer
+          </button>
+        )}
           <button
             type="button"
             className="btn-tb"
@@ -445,6 +470,7 @@ export default function SupplierOfferDetail() {
                   <FlagSVG code={firstDest.code} size={13} />
                   {firstDest.name}
                 </span>
+                <OfferDestinationPorts ports={destinationPorts} />
               </div>
             )}
           </div>
@@ -504,11 +530,88 @@ export default function SupplierOfferDetail() {
           </button>
           {moreOpen && (
             <div className="od-more-content">
-              {offer.observation || t("supplier.offers.detail.noMoreInfo")}
+              <MoreInfoBlock
+                observation={offer.observation}
+                isHalal={!!(offer as any).isHalal}
+                isKosher={!!(offer as any).isKosher}
+                paymentTerms={offer.paymentTerms}
+                plants={Array.from(
+                  new Set(
+                    offer.items
+                      .map((it: any) => it.plant)
+                      .filter((p: any) => p),
+                  ),
+                ) as string[]}
+                createdAt={offer.createdAt}
+                offerNumber={formatOfferNumber(offer.offerNumber, offer.createdAt)}
+              />
             </div>
           )}
         </div>
       </div>
     </>
+  );
+}
+
+function MoreInfoBlock({
+  observation,
+  isHalal,
+  isKosher,
+  paymentTerms,
+  plants,
+  createdAt,
+  offerNumber,
+}: {
+  observation?: string | null;
+  isHalal?: boolean;
+  isKosher?: boolean;
+  paymentTerms?: string | null;
+  plants?: string[];
+  createdAt?: string | null;
+  offerNumber?: string;
+}) {
+  const hasAny =
+    !!observation || isHalal || isKosher || !!paymentTerms || (plants && plants.length > 0) || !!createdAt || !!offerNumber;
+  if (!hasAny) {
+    return (
+      <div style={{ color: "#9ca3af", fontStyle: "italic", fontSize: 13 }}>
+        No additional information
+      </div>
+    );
+  }
+  return (
+    <div style={{ display: "grid", gap: 10, fontSize: 13, color: "#374151" }}>
+      {(isHalal || isKosher) && (
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+          {isHalal && (
+            <span style={{ padding: "2px 8px", borderRadius: 10, background: "#dcfce7", color: "#15803d", fontSize: 11, fontWeight: 600 }}>
+              ☪ Halal
+            </span>
+          )}
+          {isKosher && (
+            <span style={{ padding: "2px 8px", borderRadius: 10, background: "#dbeafe", color: "#1d4ed8", fontSize: 11, fontWeight: 600 }}>
+              ✡ Kosher
+            </span>
+          )}
+        </div>
+      )}
+      {paymentTerms && (
+        <div><strong>Payment terms:</strong> {paymentTerms}</div>
+      )}
+      {plants && plants.length > 0 && (
+        <div><strong>Plant numbers:</strong> {plants.join(", ")}</div>
+      )}
+      {observation && (
+        <div><strong>Notes:</strong> {observation}</div>
+      )}
+      {offerNumber && (
+        <div style={{ color: "#6b7280", fontSize: 12 }}>Offer #: {offerNumber}</div>
+      )}
+      {createdAt && (
+        <div style={{ color: "#6b7280", fontSize: 12 }}>
+          Created: {new Date(createdAt).toLocaleDateString()}
+        </div>
+      )}
+    </div>
   );
 }
