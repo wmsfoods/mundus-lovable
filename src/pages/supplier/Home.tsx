@@ -7,11 +7,8 @@ import {
   CheckCircleIcon,
   ArrowsLeftRightIcon,
   CartIcon,
-  FileTextIcon,
   TagIcon,
-  PlusIcon,
   ArrowRightIcon,
-  ArrowTopRightIcon,
 } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
@@ -66,29 +63,6 @@ function StatCard({ k, t }: { k: SupplierKpi; t: TFn }) {
         </span>
       )}
       <span className="ic"><I size={28} /></span>
-    </div>
-  );
-}
-
-function ActionCard(props: {
-  icon: IconCmp;
-  title: string;
-  desc: string;
-  ctaLabel: string;
-  to: string;
-  primary?: boolean;
-}) {
-  const I = props.icon;
-  return (
-    <div className={`action-card ${props.primary ? "is-primary" : ""}`.trim()}>
-      <div className="head">
-        <span className="ic-chip"><I size={18} /></span>
-        <span className="title">{props.title}</span>
-      </div>
-      <p className="desc">{props.desc}</p>
-      <Link to={props.to} className="btn-block">
-        {props.ctaLabel} <ArrowTopRightIcon size={14} />
-      </Link>
     </div>
   );
 }
@@ -217,45 +191,11 @@ export default function SupplierHome() {
             <span className="dot" /> {t(`supplier.home.greeting.${greetingKey}`, { name: firstName })}
           </span>
           <h2>{t("supplier.home.heroTitle")}</h2>
-          <p className="sh-hero-sub">{t("supplier.home.heroSubtitle")}</p>
-          <div className="sh-hero-cta">
-            <Link to="/supplier/offers/new" className="btn-hero is-light">
-              <PlusIcon size={14} /> {t("supplier.home.cta.newOffer")}
-            </Link>
-            <Link to="/supplier/offers" className="btn-hero is-ghost">
-              {t("supplier.home.cta.viewMyOffers")} <ArrowRightIcon size={14} />
-            </Link>
-          </div>
         </div>
       </section>
 
       <div className="stats">
         {kpis.map((k) => <StatCard key={k.key} k={k} t={t} />)}
-      </div>
-
-      <div className="sh-action-row">
-        <ActionCard
-          icon={FileTextIcon}
-          title={t("supplier.home.actions.salesTitle")}
-          desc={t("supplier.home.actions.salesDesc")}
-          ctaLabel={t("supplier.home.actions.salesCta")}
-          to="/supplier/sales"
-        />
-        <ActionCard
-          icon={TagIcon}
-          title={t("supplier.home.actions.offersTitle")}
-          desc={t("supplier.home.actions.offersDesc")}
-          ctaLabel={t("supplier.home.actions.offersCta")}
-          to="/supplier/offers"
-        />
-        <ActionCard
-          icon={PlusIcon}
-          title={t("supplier.home.actions.newOfferTitle")}
-          desc={t("supplier.home.actions.newOfferDesc")}
-          ctaLabel={t("supplier.home.actions.newOfferCta")}
-          to="/supplier/offers/new"
-          primary
-        />
       </div>
 
       <div className="sec-head">
