@@ -46,7 +46,7 @@ const PRIMARY_MARKETS = [
 ];
 
 // Incoterms that are mutually exclusive (selecting one disables the others).
-const INCO_EXCLUSIVE_GROUPS: string[][] = [["CIF", "CFR"]];
+const INCO_EXCLUSIVE_GROUPS: string[][] = [];
 
 type Incoterm = { id: string; name: string; extra: null | "insurance" | "city" };
 const INCOTERMS: Incoterm[] = [
@@ -584,7 +584,14 @@ export default function SupplierCreateOffer() {
   const totalPriceUsd = cuts.reduce((s, c) => s + (parseFloat(c.ask) || 0) * (parseFloat(c.qty) || 0), 0);
 
   /* Secondary incoterms (everything in selInco except the primary one) */
-  const secondaryIncos = selInco.filter((i) => i !== primaryInco);
+  const secondaryIncos = selInco
+    .filter((i) => i !== primaryInco)
+    .filter((s) => {
+      // CIF = CFR + Insurance — avoid redundant column when both selected.
+      if (s === "CIF" && selInco.includes("CFR")) return false;
+      if (s === "CFR" && primaryInco === "CIF") return false;
+      return true;
+    });
   const multiInco = selInco.length > 1 && !!primaryInco;
   const cifInsuranceNum = parseFloat(incoExtras.cifInsurance || "0") || 0;
 
