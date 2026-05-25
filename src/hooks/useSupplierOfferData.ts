@@ -96,7 +96,7 @@ export function useSupplierOfferData() {
           name: c.name,
           displayName: trByCut.get(c.id) || c.name,
           image_url: c.image_url,
-          bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : "Boneless"),
+          bone_spec: (c.bone_spec === "Bone-In" ? "Bone-In" : c.bone_spec === "Offals" ? "Offals" : "Boneless"),
         });
       }
       for (const cat of Object.keys(cutsByCategory)) {
