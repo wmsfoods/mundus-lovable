@@ -191,7 +191,7 @@ export default function RequestPasteImport({ open, onOpenChange, category, known
                 <thead className="bg-muted/50">
                   <tr>
                     <th className="p-2 w-8"></th>
-                    <th className="p-2 text-left">Product / Cut</th>
+                    <th className="p-2 text-left">PRODUCT / CUT</th>
                     <th className="p-2 text-left">Spec</th>
                     <th className="p-2 text-right">Qty (kg)</th>
                     <th className="p-2 text-right">Target $/kg</th>
