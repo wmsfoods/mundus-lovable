@@ -214,12 +214,6 @@ function OfferDetailContent({
 }) {
   const { t } = useTranslation();
   const destinationPorts = useOfferDestinationPorts(offer.id);
-  const marblingLabel = (code: number | null | undefined): string => {
-    if (code == null) return t("buyer.offerDetail.marbling.default");
-    const key = `buyer.offerDetail.marbling.${code}`;
-    const val = t(key);
-    return val === key ? t("buyer.offerDetail.marbling.default") : val;
-  };
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
@@ -245,11 +239,6 @@ function OfferDetailContent({
     .filter((x): x is string => !!x);
   const firstDest = destinations[0] ?? null;
   const destCode = countryToCode(firstDest);
-
-  const marbling =
-    firstItem?.customer_product?.beef_marbling != null
-      ? marblingLabel(firstItem.customer_product.beef_marbling)
-      : t("buyer.offerDetail.marbling.default");
 
   const condition = firstItem?.condition ?? "—";
 
