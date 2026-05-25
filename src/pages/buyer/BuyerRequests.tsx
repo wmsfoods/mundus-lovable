@@ -129,7 +129,7 @@ export default function BuyerRequests() {
               <th>Request</th>
               <th>Product</th>
               <th>Destination</th>
-              <th>Target $/kg</th>
+              <th>Target {priceLabel(unit)}</th>
               <th>Volume</th>
               <th>Shipment</th>
               <th>Status</th>
@@ -156,8 +156,8 @@ export default function BuyerRequests() {
                     {r.destination_country}
                     {r.destination_port && <div style={{ fontSize: "var(--fs-xs)", color: "var(--fg-muted)" }}>{r.destination_port}</div>}
                   </td>
-                  <td>{r.target_price_usd != null ? `$${Number(r.target_price_usd).toFixed(2)}` : "—"}</td>
-                  <td>{fmtKg(Number(r.quantity_kg))} kg</td>
+                  <td>{r.target_price_usd != null ? `$${fmtPrice(Number(r.target_price_usd), unit)}` : "—"}</td>
+                  <td>{fmtWeight(Number(r.quantity_kg), unit)} {weightLabel(unit)}</td>
                   <td>{r.shipment_date ?? "—"}</td>
                   <td><span className={STATUS_CHIP[r.status]}>{STATUS_LABEL[r.status]}</span></td>
                   <td>
