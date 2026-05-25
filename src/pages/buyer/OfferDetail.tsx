@@ -18,6 +18,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { toast } from "sonner";
 import { useOfferDestinationPorts, OfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, priceLabel } from "@/lib/units";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -65,6 +67,7 @@ export default function BuyerOfferDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { unit } = useWeightUnit();
   const { offer, loading, error, notFound } = useOffer(id);
   const [moreOpen, setMoreOpen] = useState(false);
   const [bidOpen, setBidOpen] = useState(false);
@@ -357,14 +360,14 @@ function OfferDetailContent({
               <div key={it.id} className="od-cuts-row">
                 <span>{it.customer_product?.name ?? "—"}</span>
                 <span>{it.packaging === "Vacuum Pack" ? "\n" : (it.packaging ?? "—")}</span>
-                <span className="num">{formatNumber(Number(it.amount))} kg</span>
-                <span className="num">US$ {formatPrice(Number(it.price))}/kg</span>
+                <span className="num">{fmtWeight(Number(it.amount), unit)} {weightLabel(unit)}</span>
+                <span className="num">US$ {fmtPrice(Number(it.price), unit)}{unit === "kg" ? "/kg" : "/lb"}</span>
               </div>
             ))}
           </div>
 
           <div className="od-total-weight">
-            <span className="amt">{formatNumber(totalKg)} kg</span>
+            <span className="amt">{fmtWeight(totalKg, unit)} {weightLabel(unit)}</span>
             <span className="lbl">{t("buyer.offerDetail.totalWeight")}</span>
           </div>
 
