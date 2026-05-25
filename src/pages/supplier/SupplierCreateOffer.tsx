@@ -288,6 +288,9 @@ export default function SupplierCreateOffer() {
     if (fromRequest.temperature === "Frozen" || fromRequest.temperature === "Chilled") {
       setTemp(fromRequest.temperature);
     }
+    if (fromRequest.containerCount && fromRequest.containerCount > 0) {
+      setContainerCount(fromRequest.containerCount);
+    }
 
     if (fromRequest.incoterms) {
       const incos = fromRequest.incoterms.split(",").map((s) => s.trim()).filter(Boolean);
@@ -1000,6 +1003,17 @@ export default function SupplierCreateOffer() {
                   <button key={opt} type="button" className={temp === opt ? "on" : ""} onClick={() => setTemp(opt)}>{opt}</button>
                 ))}
               </div>
+            </div>
+            <div className="cov4-cfg-g">
+              <span className="cov4-cfg-l">FCL(s)</span>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={containerCount}
+                onChange={(e) => setContainerCount(Math.max(1, parseInt(e.target.value) || 1))}
+                style={{ width: 60, padding: "6px 8px", border: "1.5px solid #D1D5DB", borderRadius: 8, fontSize: 14, fontWeight: 600, textAlign: "center" }}
+              />
             </div>
           </div>
 
