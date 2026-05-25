@@ -984,7 +984,7 @@ export default function BuyerCreateRequest() {
         <div className="bcr-actions">
           <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>
           <button type="button" className="bcr-btn-primary" onClick={broadcast} disabled={submitting || loadingEdit}>
-            {isEdit ? "💾 Save changes" : "↗ Broadcast request"}
+            {isEdit ? "💾 Save changes" : "✓ Submit request"}
           </button>
         </div>
       </footer>
