@@ -67,7 +67,6 @@ export default function BuyerOfferDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { unit } = useWeightUnit();
   const { offer, loading, error, notFound } = useOffer(id);
   const [moreOpen, setMoreOpen] = useState(false);
   const [bidOpen, setBidOpen] = useState(false);
