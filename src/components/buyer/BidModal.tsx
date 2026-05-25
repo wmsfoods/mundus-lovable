@@ -584,7 +584,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                   <tr key={it.id} className="border-t border-border">
                     <td className="px-3 py-2">{it.customer_product?.name ?? "—"}</td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {fmtWeight(Number(it.amount) * fclScale, unit)}
+                      {fmtWeight(Number(it.amount), unit)}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums font-medium">
                       {fmtPrice(asking, unit)}
@@ -659,7 +659,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                   <div>
                     <div className="text-muted-foreground">{t("buyer.bid.qty", { unit: wLbl })}</div>
                     <div className="font-semibold tabular-nums">
-                      {fmtWeight(Number(it.amount) * fclScale, unit)}
+                      {fmtWeight(Number(it.amount), unit)}
                     </div>
                   </div>
                   <div>
