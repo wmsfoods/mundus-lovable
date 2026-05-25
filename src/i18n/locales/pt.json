@@ -1570,7 +1570,7 @@
         "inactive": "Inativa"
       },
       "card": {
-        "cuts": "{{count}} CORTES",
+        "cuts": "{{count}} PRODUTO / CORTES",
         "moreCuts": "+{{count}} mais",
         "origin": "Origem",
         "destination": "Destino",
