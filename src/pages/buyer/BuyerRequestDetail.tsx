@@ -120,6 +120,13 @@ export default function BuyerRequestDetail() {
               ✏️ Edit request
             </button>
           )}
+          <button
+            type="button"
+            className="btn-tb"
+            onClick={() => navigate("/buyer/requests/create", { state: { cloneFrom: r } })}
+          >
+            📋 Clone request
+          </button>
           {canCancel && (
             <button type="button" className="btn-tb" style={{ color: "#dc2626" }} onClick={onCancel}>
               ✕ Cancel request
