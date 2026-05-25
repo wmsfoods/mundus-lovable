@@ -794,7 +794,40 @@ export default function SupplierCreateOffer() {
 
       // 1. Create offer
       let offer: { id: string; offer_number: number };
-      try {
+      if (isEditing && editOffer) {
+        try {
+          const { error } = await supabase
+            .from("offers")
+            .update({
+              status: "active",
+              shipment_month,
+              shipment_year,
+              payment_terms: payTerm,
+              container_size: csize,
+              total_fcl: totalFcl,
+              is_halal: certifications.includes("Halal"),
+              is_kosher: certifications.includes("Kosher"),
+              exw_pickup_location: selInco.includes("EXW")
+                ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
+                : null,
+              cut_region: cutRegion,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", editOffer.offerId);
+          if (error) throw error;
+          offer = { id: editOffer.offerId, offer_number: editOffer.offerNumber };
+
+          // Wipe child rows so we can re-insert with the same logic below.
+          await supabase.from("offer_items").delete().eq("offer_id", editOffer.offerId);
+          await supabase.from("offer_allowed_incoterms").delete().eq("offer_id", editOffer.offerId);
+          await supabase.from("offer_markets").delete().eq("offer_id", editOffer.offerId);
+          await supabase.from("freight_options").delete().eq("offer_id", editOffer.offerId);
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Update offer failed: ${m}`);
+        }
+      } else {
+        try {
         const { data, error } = await supabase
           .from("offers")
           .insert({
@@ -821,9 +854,10 @@ export default function SupplierCreateOffer() {
           .single();
         if (error || !data) throw error ?? new Error("no data returned");
         offer = data;
-      } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
-        throw new Error(`Step 1 failed: offer insert — ${m}`);
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Step 1 failed: offer insert — ${m}`);
+        }
       }
 
       // 2. Resolve/create customer_products per cut, then insert offer_items
