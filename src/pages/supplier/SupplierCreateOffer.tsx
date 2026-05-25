@@ -1876,6 +1876,7 @@ export default function SupplierCreateOffer() {
                                           cutId: c.id,
                                           cut: c.displayName,
                                           cutImage: c.image_url ?? null,
+                                          spec: c.bone_spec ?? p.spec,
                                         }));
                                         if (c.image_url) setNewImgPrev(c.image_url);
                                         setCutPickerOpen(false);
