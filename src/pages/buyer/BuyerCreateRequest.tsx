@@ -533,7 +533,7 @@ export default function BuyerCreateRequest() {
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
             <div className="bcr-field" style={{ gridColumn: "1 / -1" }}>
-              <label>Species *</label>
+              <label>PROTEINS*</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {buyerProteins.map((p) => {
                   const on = selectedCategories.includes(p);
@@ -721,12 +721,12 @@ export default function BuyerCreateRequest() {
                       display: "flex", alignItems: "center", gap: 4,
                     }}
                   >
-                    🔄 Reset cuts
+                    🔄 Reset Product / Cuts
                   </button>
                 )}
                 {filledRows > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF" }}>
-                    {cutRegion === "us" ? "🇺🇸 US Beef Cuts" : "🌐 Global Beef Cuts"} · {filledRows} cut{filledRows > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 US Beef Product / Cuts" : "🌐 Global Beef Product / Cuts"} · {filledRows} Product / Cut{filledRows > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
@@ -750,7 +750,7 @@ export default function BuyerCreateRequest() {
               </button>
               {cutRegion === "us" && (
                 <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 360 }}>
-                  🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Cuts</strong> button above to switch.
+                  🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Product / Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Product / Cuts</strong> button above to switch.
                 </span>
               )}
               <div className="bcr-vol">
@@ -1150,7 +1150,7 @@ export default function BuyerCreateRequest() {
               )}
               {category === "Beef" && !anyOrigin && originCountries.includes("United States") && cutRegion === "global" && (
                 <div style={{ fontSize: 11, color: "#2563EB", marginTop: 4 }}>
-                  💡 Tip: Consider using 🇺🇸 US Beef Cuts (IMPS) above to match American supplier nomenclature
+                  💡 Tip: Consider using 🇺🇸 US Beef Product / Cuts (IMPS) above to match American supplier nomenclature
                 </div>
               )}
             </div>
@@ -1276,7 +1276,7 @@ export default function BuyerCreateRequest() {
       {/* FOOTER */}
       <footer className="bcr-footer">
         <div className="bcr-summary">
-          <strong>{filledRows}</strong> product / cuts · <strong>{fmtWeight(totalKg, unit)}</strong> {weightLabel(unit)} · {containerCount}×{containerType}ft
+          <strong>{filledRows}</strong> Product / Cuts · <strong>{fmtWeight(totalKg, unit)}</strong> {weightLabel(unit)} · {containerCount}×{containerType}ft
         </div>
         <div className="bcr-actions">
           <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>

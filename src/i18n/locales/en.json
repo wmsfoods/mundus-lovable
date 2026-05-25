@@ -400,7 +400,7 @@
       "title": "My offer requests",
       "newRequest": "New offer request",
       "searchPlaceholder": "Search requests…",
-      "speciesAll": "All species",
+      "speciesAll": "All PROTEINS",
       "statusAll": "All",
       "offersCount": "{{n}} offers",
       "empty": "No requests match your filters.",
@@ -420,7 +420,7 @@
       },
       "col": {
         "title": "Title",
-        "species": "Species",
+        "species": "PROTEINS",
         "destination": "Destination",
         "target": "Target $/kg",
         "volume": "Volume",
@@ -516,7 +516,7 @@
         },
         "err": {
           "title": "Title is required",
-          "cuts": "Select at least one cut",
+          "cuts": "Select at least one Product / Cut",
           "price": "Target price is required",
           "volume": "Target volume is required",
           "market": "Select a destination market",
@@ -561,8 +561,8 @@
       "loadError": "Couldn't load offers: {{error}}",
       "empty": "No offers yet. Suppliers haven't published any matching offers.",
       "card": {
-        "cuts": "{{count}} cuts",
-        "mixedTitle": "Mixed ({{count}} cuts)",
+        "cuts": "{{count}} Product / Cuts",
+        "mixedTitle": "Mixed ({{count}} Product / Cuts)",
         "moreCuts": "+{{count}} more",
         "origin": "Origin",
         "destination": "Destination",
@@ -648,15 +648,15 @@
       "errors": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
-        "summary_one": "{{count}} product / cut has validation errors",
-        "summary_other": "{{count}} product / cuts have validation errors"
+        "summary_one": "{{count}} PRODUCT / CUT has validation errors",
+        "summary_other": "{{count}} PRODUCT / CUTS have validation errors"
       },
       "validation": {
         "required": "Enter a bid greater than 0",
         "minPct": "Minimum bid is ${{min}} (90% of asking)",
         "belowInitial": "Cannot bid below your initial bid of ${{min}}",
-        "summary_one": "{{count}} product / cut has validation errors",
-        "summary_other": "{{count}} product / cuts have validation errors"
+        "summary_one": "{{count}} PRODUCT / CUT has validation errors",
+        "summary_other": "{{count}} PRODUCT / CUTS have validation errors"
       },
       "bulk": {
         "label": "Quick fill",
@@ -1107,7 +1107,7 @@
       "step": {
         "window": "Set auction window (opens & closes)",
         "markets": "Select at least one destination market",
-        "cuts": "Add at least one product cut",
+        "cuts": "Add at least one PRODUCT / CUT",
         "inco": "Choose an incoterm"
       }
     },
@@ -1660,7 +1660,7 @@
         "extractedMock": "Extracted (mock) — form pre-fill coming in next iteration",
         "emptyError": "Please paste some text first."
       },
-      "placeholder": "Form fields (offer name, species, cuts, routes & freight) coming next.",
+      "placeholder": "Form fields (offer name, PROTEINS, Product / Cuts, routes & freight) coming next.",
       "cancel": "Cancel",
       "saveDraft": "Save draft",
       "publish": "Publish offer",
@@ -1672,14 +1672,14 @@
       "form": {
         "basicInfo": {
           "title": "Basic info",
-          "subtitle": "Name your offer and choose the species."
+          "subtitle": "Name your offer and choose the PROTEINS."
         },
         "offerName": {
           "label": "Offer name",
           "placeholder": "e.g. Premium Beef Product / Cuts — Asia FCL #1"
         },
         "species": {
-          "label": "Species",
+          "label": "PROTEINS",
           "beef": "Beef",
           "pork": "Pork",
           "poultry": "Poultry",
@@ -1689,8 +1689,8 @@
           "title": "Container & cuts",
           "subtitle": "Define what goes inside the container.",
           "loadType": "Load type",
-          "fullContainer": "Full container (single cut)",
-          "mixedLoad": "Mixed load (multiple cuts)",
+          "fullContainer": "Full container (single Product / Cut)",
+          "mixedLoad": "Mixed load (multiple Product / Cuts)",
           "capacity": "Container capacity (25t FCL)",
           "overCapacity": "Over capacity",
           "remaining": "remaining",
@@ -1800,7 +1800,7 @@
         "noMarkets": "No markets found",
         "incoConflict": "Not compatible with the selected incoterm",
         "pickCut": "Pick a product / cut…",
-        "searchCutsPh": "Search product / cuts…",
+        "searchCutsPh": "Search Product / Cuts…",
         "noCuts": "No product / cuts found"
       }
     },
@@ -1899,7 +1899,7 @@
         "title": "About",
         "description": "WMS Foods is a leading Brazilian exporter of premium beef cuts, serving 28 countries across Asia, the Middle East, Africa and the Americas. We operate three plants with combined capacity of 4,600 MT/month, all approved by USDA, Halal authorities and key Asian markets.",
         "tradeMarkets": "Trade markets",
-        "mainSpecies": "Main species",
+        "mainSpecies": "Main PROTEINS",
         "yearsExporting": "Years exporting",
         "fclsDelivered": "FCLs delivered",
         "countriesServed": "Countries served"
@@ -1990,7 +1990,7 @@
             },
             "alerts": {
               "title": "Price-drop & demand alerts",
-              "body": "Get notified the moment a competitor undercuts you or demand spikes in a region."
+              "body": "Get notified when prices drop on product / cuts you buy, when contracts expire, or when a category gets risky."
             },
             "suggested": {
               "title": "AI-suggested target price",
@@ -2068,7 +2068,7 @@
       "container": "Container",
       "totalVolume": "Total volume",
       "shipmentMonth": "Shipment month",
-      "speciesTemp": "Species · Temp"
+      "speciesTemp": "PROTEINS · Temp"
     },
     "cuts": {
       "cut": "Product / Cut",

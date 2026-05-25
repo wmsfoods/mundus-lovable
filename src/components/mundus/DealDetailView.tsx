@@ -372,7 +372,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
                 <Field label={tk("dealDetail.fields.container", "Container")} value={data.overview.container} />
                 <Field label={tk("dealDetail.fields.totalVolume", "Total volume")} value={data.overview.totalVolume} />
                 <Field label={tk("dealDetail.fields.shipmentMonth", "Shipment month")} value={data.overview.shipmentMonth || "—"} />
-                <Field label={tk("dealDetail.fields.speciesTemp", "Species · Temp")} value={`${data.overview.species ?? "—"} · ${data.overview.temperature ?? "—"}`} />
+                <Field label={tk("dealDetail.fields.speciesTemp", "PROTEINS · Temp")} value={`${data.overview.species ?? "—"} · ${data.overview.temperature ?? "—"}`} />
               </FieldGrid>
             </Card>
 

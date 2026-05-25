@@ -1749,7 +1749,7 @@ export default function SupplierCreateOffer() {
             </button>
             {cutRegion === "us" && (
               <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 380, marginLeft: 8 }}>
-                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Cuts</strong> button above to switch.
+                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Product / Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Product / Cuts</strong> button above to switch.
               </span>
             )}
           </div>
@@ -1880,12 +1880,12 @@ export default function SupplierCreateOffer() {
                       gap: 4,
                     }}
                   >
-                    🔄 Reset cuts
+                    🔄 Reset Product / Cuts
                   </button>
                 )}
                 {cuts.length > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
-                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} product / cut{cuts.length > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
