@@ -246,7 +246,7 @@
       "created": "Criado em",
       "cutsTitle": "Cortes solicitados",
       "col": {
-        "cut": "Corte",
+        "cut": "PRODUTO / CORTE",
         "qty": "Qtd ({{unit}})",
         "asking": "Pedido",
         "buyerBid": "Proposta do comprador",
