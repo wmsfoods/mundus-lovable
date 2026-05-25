@@ -77,7 +77,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
           await onUpsertTranslation({ cut_id: cut.id, locale: tr.locale, name: val });
         }
       }
-      toast.success(t("admin.marketplace.cuts.modal.saved", { defaultValue: "Cut saved" }));
+      toast.success(t("admin.marketplace.cuts.modal.saved", { defaultValue: "Product / Cut saved" }));
       onOpenChange(false);
     } catch (e: any) {
       toast.error(e?.message || "Save failed");
@@ -194,7 +194,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
             </div>
 
             <label style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
-              <span style={{ fontWeight: 600 }}>{t("admin.marketplace.cuts.modal.name", { defaultValue: "Cut name" })}</span>
+              <span style={{ fontWeight: 600 }}>{t("admin.marketplace.cuts.modal.name", { defaultValue: "Product / Cut name" })}</span>
               <Input value={name} onChange={(e) => setName(e.target.value)} />
             </label>
 
@@ -296,9 +296,9 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
       <AlertDialog open={confirmDel} onOpenChange={setConfirmDel}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("admin.marketplace.cuts.modal.confirmDeleteTitle", { defaultValue: "Delete this cut?" })}</AlertDialogTitle>
+            <AlertDialogTitle>{t("admin.marketplace.cuts.modal.confirmDeleteTitle", { defaultValue: "Delete this product / cut?" })}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("admin.marketplace.cuts.modal.confirmDeleteBody", { defaultValue: "This will permanently remove the cut and its translations." })}
+              {t("admin.marketplace.cuts.modal.confirmDeleteBody", { defaultValue: "This will permanently remove the product / cut and its translations." })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -307,7 +307,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
               onClick={async () => {
                 try {
                   await onDelete(cut.id);
-                  toast.success(t("admin.marketplace.cuts.modal.deleted", { defaultValue: "Cut deleted" }));
+                  toast.success(t("admin.marketplace.cuts.modal.deleted", { defaultValue: "Product / Cut deleted" }));
                   setConfirmDel(false);
                   onOpenChange(false);
                 } catch (e: any) { toast.error(e?.message || "Delete failed"); }
