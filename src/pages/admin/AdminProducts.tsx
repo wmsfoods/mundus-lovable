@@ -128,6 +128,7 @@ export default function AdminProducts() {
                     <th>{t("admin.marketplace.cuts.cols.pn")}</th>
                     <th>{t("admin.marketplace.cuts.cols.category")}</th>
                     <th>{t("admin.marketplace.cuts.cols.bone", { defaultValue: "Bone" })}</th>
+                    <th>{t("admin.marketplace.cuts.cols.unit", { defaultValue: "Unit" })}</th>
                     <th>{t("admin.marketplace.cuts.cols.translations")}</th>
                     <th>{t("admin.marketplace.cuts.cols.active")}</th>
                     <th style={{ width: 70 }}>{t("admin.marketplace.cuts.cols.actions")}</th>
@@ -149,6 +150,11 @@ export default function AdminProducts() {
                         <td>
                           <span className="adm-chip" style={{ background: r.bone_spec === "Bone-In" ? "#FEF3C7" : "#ECFDF5", color: r.bone_spec === "Bone-In" ? "#92400E" : "#065F46", borderColor: r.bone_spec === "Bone-In" ? "#FDE68A" : "#A7F3D0" }}>
                             {r.bone_spec}
+                          </span>
+                        </td>
+                        <td>
+                          <span className="adm-chip" style={{ background: "#EEF2FF", color: "#3730A3", borderColor: "#C7D2FE" }}>
+                            {r.unit_weight}
                           </span>
                         </td>
                         <td style={{ fontSize: 12 }}>
@@ -191,6 +197,9 @@ export default function AdminProducts() {
                       </span>
                       <span className="adm-chip" style={{ background: r.bone_spec === "Bone-In" ? "#FEF3C7" : "#ECFDF5", color: r.bone_spec === "Bone-In" ? "#92400E" : "#065F46", borderColor: r.bone_spec === "Bone-In" ? "#FDE68A" : "#A7F3D0" }}>
                         {r.bone_spec}
+                      </span>
+                      <span className="adm-chip" style={{ background: "#EEF2FF", color: "#3730A3", borderColor: "#C7D2FE" }}>
+                        {r.unit_weight}
                       </span>
                       {r.translations.length > 0 && (
                         <span className="adm-chip">

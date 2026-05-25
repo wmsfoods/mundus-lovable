@@ -2506,6 +2506,7 @@ export type Database = {
           is_active: boolean | null
           name: string
           product_number: number | null
+          unit_weight: string
         }
         Insert: {
           bone_spec?: string
@@ -2516,6 +2517,7 @@ export type Database = {
           is_active?: boolean | null
           name: string
           product_number?: number | null
+          unit_weight?: string
         }
         Update: {
           bone_spec?: string
@@ -2526,6 +2528,7 @@ export type Database = {
           is_active?: boolean | null
           name?: string
           product_number?: number | null
+          unit_weight?: string
         }
         Relationships: []
       }
