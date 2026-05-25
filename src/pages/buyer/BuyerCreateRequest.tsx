@@ -94,14 +94,31 @@ export default function BuyerCreateRequest() {
       .then(({ data }) => setSuppliers((data ?? []) as any));
   }, []);
 
-  // Fetch ports
+  // Fetch ports with country names via join through countries table
   useEffect(() => {
-    supabase
-      .from("ports")
-      .select("id, name, code, country")
-      .is("deleted_at", null)
-      .order("name")
-      .then(({ data }) => setPorts((data ?? []) as any));
+    (async () => {
+      const { data: portsData } = await supabase
+        .from("ports")
+        .select("id, name, code, country_id, is_active")
+        .eq("is_active", true)
+        .order("name");
+      const { data: countriesData } = await supabase
+        .from("countries")
+        .select("id, english_name");
+
+      const countryMap = new Map<string, string>();
+      for (const c of (countriesData ?? [])) {
+        countryMap.set(c.id, c.english_name ?? "");
+      }
+
+      const mapped = (portsData ?? []).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        code: p.code,
+        country: countryMap.get(p.country_id) ?? "",
+      }));
+      setPorts(mapped);
+    })();
   }, []);
 
   // Load existing request when in edit mode
