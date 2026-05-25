@@ -200,6 +200,7 @@ export default function SupplierCreateOffer() {
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
   const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
   const [temp, setTemp] = useState<"Frozen" | "Chilled">("Frozen");
+  const [containerCount, setContainerCount] = useState(1);
 
   const [selInco, setSelInco] = useState<string[]>([]);
   const [incoExtras, setIncoExtras] = useState<IncoExtras>({});
@@ -287,6 +288,9 @@ export default function SupplierCreateOffer() {
     if (fromRequest.temperature === "Frozen" || fromRequest.temperature === "Chilled") {
       setTemp(fromRequest.temperature);
     }
+    if (fromRequest.containerCount && fromRequest.containerCount > 0) {
+      setContainerCount(fromRequest.containerCount);
+    }
 
     if (fromRequest.incoterms) {
       const incos = fromRequest.incoterms.split(",").map((s) => s.trim()).filter(Boolean);
@@ -331,7 +335,7 @@ export default function SupplierCreateOffer() {
       if (sec.startsWith("Cuts:")) {
         const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
         for (const line of lines) {
-          const m = line.match(/^(.+?)(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)\s*kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
+          const m = line.match(/^(.+?)(?:\s*\(([^)]+)\))?\s*—\s*(?:([^—\d][^—]*?)—\s*)?([\d.,]+)\s*kg\s*@\s*\$([\d.]+)\/kg$/);
           const cutName = (m?.[1] ?? line).trim();
           const spec = (m?.[2] ?? "").trim() || fromRequest.specification || "Boneless";
           const marbling = (m?.[3] ?? "Not Classified").trim();
@@ -350,13 +354,9 @@ export default function SupplierCreateOffer() {
             pkg: "Vacuum Pack",
             gr: marbling && marbling !== "Not specified" ? marbling : "Not Classified",
             ag: "None",
-            qty: qty || (fromRequest.quantity ? String(fromRequest.quantity) : ""),
-            ask: target || (fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : ""),
-            floor: target
-              ? (parseFloat(target) * 0.98).toFixed(2)
-              : fromRequest.targetPrice
-              ? (fromRequest.targetPrice * 0.98).toFixed(2)
-              : "",
+            qty: qty || "",
+            ask: target || "",
+            floor: target ? (parseFloat(target) * 0.98).toFixed(2) : "",
             notes: "",
             plant: "",
           });
@@ -654,7 +654,7 @@ export default function SupplierCreateOffer() {
 
       // Total FCL from kg / container capacity
       const totalKg = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
-      const totalFcl = Math.max(1, Math.ceil(totalKg / cap));
+      const totalFcl = containerCount;
 
       // 1. Create offer
       let offer: { id: string; offer_number: number };
@@ -1003,6 +1003,17 @@ export default function SupplierCreateOffer() {
                   <button key={opt} type="button" className={temp === opt ? "on" : ""} onClick={() => setTemp(opt)}>{opt}</button>
                 ))}
               </div>
+            </div>
+            <div className="cov4-cfg-g">
+              <span className="cov4-cfg-l">FCL(s)</span>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={containerCount}
+                onChange={(e) => setContainerCount(Math.max(1, parseInt(e.target.value) || 1))}
+                style={{ width: 60, padding: "6px 8px", border: "1.5px solid #D1D5DB", borderRadius: 8, fontSize: 14, fontWeight: 600, textAlign: "center" }}
+              />
             </div>
           </div>
 
