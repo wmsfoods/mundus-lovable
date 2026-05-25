@@ -177,6 +177,30 @@ export default function SupplierCreateOffer() {
         additionalInfo: string | null;
       }
     | undefined;
+  const cloneFrom = (location.state as any)?.cloneFrom as
+    | {
+        category: string;
+        condition: "Frozen" | "Chilled";
+        containerSize: string;
+        containerCount: number;
+        paymentTerms: string;
+        isHalal: boolean;
+        isKosher: boolean;
+        cutRegion: "global" | "us";
+        exwCity?: string;
+        destinationCountries: string[];
+        incoterms: string[];
+        items: Array<{
+          name: string;
+          productNumber: number | null;
+          amount: number;
+          price: number;
+          minimumPrice: number;
+          condition: string;
+          agingMethod: string | null;
+        }>;
+      }
+    | undefined;
   const prefilledRef = useRef(false);
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
@@ -419,6 +443,107 @@ export default function SupplierCreateOffer() {
     );
     if (customer) setSelectedCustomers([customer.id]);
   }, [fromRequest, MARKETS, cutsByCategory, setUnit]);
+
+  /* Prefill from an existing offer (Clone Offer). */
+  const clonedRef = useRef(false);
+  useEffect(() => {
+    if (clonedRef.current) return;
+    if (!cloneFrom) return;
+    if (!MARKETS || MARKETS.length === 0) return;
+    if (!cutsByCategory || Object.keys(cutsByCategory).length === 0) return;
+    clonedRef.current = true;
+
+    setUnit("kg");
+
+    const cat0 = cloneFrom.category || "Beef";
+    setCsize((cloneFrom.containerSize?.startsWith("20") ? "20ft" : "40ft"));
+    setContainerCount(Math.max(1, Number(cloneFrom.containerCount) || 1));
+    if (cloneFrom.condition === "Frozen" || cloneFrom.condition === "Chilled") {
+      setTemp(cloneFrom.condition);
+    }
+    if (cloneFrom.paymentTerms && (PAY_TERMS as readonly string[]).includes(cloneFrom.paymentTerms)) {
+      setPayTerm(cloneFrom.paymentTerms);
+    }
+    const certs: string[] = [];
+    if (cloneFrom.isHalal) certs.push("Halal");
+    if (cloneFrom.isKosher) certs.push("Kosher");
+    setCertifications(certs);
+    if (cloneFrom.cutRegion === "us" || cloneFrom.cutRegion === "global") {
+      setCutRegion(cloneFrom.cutRegion);
+    }
+
+    // Incoterms
+    const incos = (cloneFrom.incoterms ?? []).filter(Boolean);
+    if (incos.length) {
+      setSelInco(incos);
+      setPrimaryInco(incos[0]);
+      if (cloneFrom.exwCity && incos.includes("EXW")) {
+        setIncoExtras((prev) => ({ ...prev, exwCity: cloneFrom.exwCity }));
+      }
+    }
+
+    // Destination markets by country names
+    const matchedMarkets = (cloneFrom.destinationCountries ?? [])
+      .map((cn) => {
+        const w = cn.trim().toLowerCase();
+        return (
+          MARKETS.find((m) => m.n.trim().toLowerCase() === w) ||
+          MARKETS.find((m) => m.n.trim().toLowerCase().includes(w))
+        );
+      })
+      .filter(Boolean) as typeof MARKETS;
+    if (matchedMarkets.length) {
+      setSelMarkets(matchedMarkets);
+      const cfg: Record<string, MktCfg> = {};
+      for (const m of matchedMarkets) {
+        cfg[m.id] = {
+          sp: m.p.map((p) => p.id),
+          sm: true,
+          gf: "",
+          pf: Object.fromEntries(m.p.map((p) => [p.id, ""])),
+        };
+      }
+      setMktCfg(cfg);
+    }
+
+    // Cuts
+    const catalog = cutsByCategory[cat0] || [];
+    const newCuts: Cut[] = [];
+    const imgs: Record<string, string> = {};
+    for (const it of cloneFrom.items ?? []) {
+      const nameL = (it.name || "").trim().toLowerCase();
+      const matched =
+        (it.productNumber != null
+          ? catalog.find((c) => (c as any).product_number === it.productNumber)
+          : undefined) ||
+        catalog.find((c) => c.displayName.toLowerCase() === nameL) ||
+        catalog.find((c) => c.displayName.toLowerCase().includes(nameL));
+      const id = Date.now().toString() + Math.random().toString(36).slice(2, 6);
+      newCuts.push({
+        id,
+        cat: cat0,
+        cut: matched?.displayName || it.name,
+        cutId: matched?.id,
+        cutImage: matched?.image_url ?? null,
+        spec: matched?.bone_spec || "Boneless",
+        pkg: "Vacuum Pack",
+        gr: "\n",
+        ag: it.agingMethod || "None",
+        qty: it.amount ? String(it.amount) : "",
+        ask: it.price ? Number(it.price).toFixed(2) : "",
+        floor: it.minimumPrice ? Number(it.minimumPrice).toFixed(2) : "",
+        notes: "",
+        plant: "",
+      });
+      if (matched?.image_url) imgs[id] = matched.image_url;
+    }
+    if (newCuts.length) {
+      setCuts(newCuts);
+      if (Object.keys(imgs).length) setCutImgs(imgs);
+    }
+
+    toast.success("Cloned — review changes and publish");
+  }, [cloneFrom, MARKETS, cutsByCategory, setUnit]);
 
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
