@@ -3044,9 +3044,9 @@
           "translationRemoved": "Translation removed",
           "saved": "Product / cut saved",
           "delete": "Delete",
-          "deleted": "Cut deleted",
-          "confirmDeleteTitle": "Delete this cut?",
-          "confirmDeleteBody": "This will permanently remove the cut and its translations."
+          "deleted": "Product / cut deleted",
+          "confirmDeleteTitle": "Delete this product / cut?",
+          "confirmDeleteBody": "This will permanently remove the product / cut and its translations."
         }
       }
     },
