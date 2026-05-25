@@ -101,6 +101,7 @@ function BuyerShellInner() {
       >
         <Sidebar
           items={BUYER_NAV}
+          rolePill={t("shell.buyer")}
           userName={userName}
           userSubtitle={company?.name}
         />

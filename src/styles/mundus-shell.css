@@ -29,12 +29,14 @@
   z-index: 40;
 }
 .sb-logo {
-  height: 64px;
+  min-height: 64px;
   display: flex;
   align-items: center;
-  padding: 0 24px;
+  padding: 8px 24px;
   border-bottom: 1px solid hsl(var(--border));
   gap: 8px;
+  flex-wrap: wrap;
+  row-gap: 4px;
 }
 .sb-logo img { height: 32px; }
 .sb-role-pill {
