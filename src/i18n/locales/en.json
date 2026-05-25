@@ -616,12 +616,12 @@
       "placeOrder": "Place Order",
       "comingSoonFlow": "{{action}} flow — coming soon",
       "marbling": {
-        "0": "Not Classified",
+        "0": "\n",
         "1": "Low",
         "2": "Medium",
         "3": "High",
         "4": "Premium",
-        "default": "Not Classified"
+        "default": "\n"
       }
     },
     "bid": {
