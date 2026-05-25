@@ -70,6 +70,9 @@ export default function BuyerCreateRequest() {
   const [openMarblingFor, setOpenMarblingFor] = useState<string | null>(null);
   const [showImport, setShowImport] = useState(false);
 
+  // Cut nomenclature region (global vs US IMPS). Suggested when US is in origin.
+  const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+
   // Distribution: marketplace (all suppliers) vs specific supplier
   const [distribution, setDistribution] = useState<"marketplace" | "specific">("marketplace");
   const [targetSupplierId, setTargetSupplierId] = useState<string>("");
