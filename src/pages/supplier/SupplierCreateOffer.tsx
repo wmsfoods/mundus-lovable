@@ -289,8 +289,11 @@ export default function SupplierCreateOffer() {
     }
 
     if (fromRequest.incoterms) {
-      setSelInco([fromRequest.incoterms]);
-      setPrimaryInco(fromRequest.incoterms);
+      const incos = fromRequest.incoterms.split(",").map((s) => s.trim()).filter(Boolean);
+      if (incos.length) {
+        setSelInco(incos);
+        setPrimaryInco(incos[0]);
+      }
     }
 
     // Match destination market by country name (case-insensitive).
@@ -317,37 +320,91 @@ export default function SupplierCreateOffer() {
       });
     }
 
-    // Prefill the editable "add row" with requested product data so every
-    // field (category, cut, spec, qty, ask, floor, notes) remains editable.
-    // The supplier can adjust any value and then click "Add" to confirm.
-    const ask = fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : "";
-    const floor = fromRequest.targetPrice
-      ? (fromRequest.targetPrice * 0.98).toFixed(2)
-      : "";
-    const qty = fromRequest.quantity ? String(fromRequest.quantity) : "";
-    const cat = fromRequest.category || "Beef";
-    const cutName = fromRequest.product || "";
-    // Try to resolve a matching cut id for the cut picker so the image loads.
-    const matched = (cutsByCategory[cat] || []).find(
-      (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
-    );
-    setNf({
-      cat,
-      cut: matched?.displayName || cutName,
-      cutId: matched?.id,
-      cutImage: matched?.image_url ?? null,
-      spec: fromRequest.specification || "Boneless",
-      pkg: "Vacuum Pack",
-      gr: "Not Classified",
-      ag: "None",
-      qty,
-      ask,
-      floor,
-      notes: fromRequest.additionalInfo || "",
-      plant: "",
-    });
-    if (matched?.image_url) setNewImgPrev(matched.image_url);
-    setAddRow(true);
+    // Parse cuts from additionalInfo (may contain multiple cuts + compliance + notes)
+    const info = fromRequest.additionalInfo || "";
+    const sections = info.split(/\n\n/);
+    const parsedCuts: Cut[] = [];
+    let notesText = "";
+    const cat0 = fromRequest.category || "Beef";
+
+    for (const sec of sections) {
+      if (sec.startsWith("Cuts:")) {
+        const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
+        for (const line of lines) {
+          const m = line.match(/^(.+?)(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)\s*kg)?(?:\s*@\s*\$([\d.]+)\/kg)?$/);
+          const cutName = (m?.[1] ?? line).trim();
+          const spec = (m?.[2] ?? "").trim() || fromRequest.specification || "Boneless";
+          const marbling = (m?.[3] ?? "Not Classified").trim();
+          const qty = (m?.[4] ?? "").replace(/,/g, "");
+          const target = m?.[5] ?? "";
+          const matched = (cutsByCategory[cat0] || []).find(
+            (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
+          );
+          parsedCuts.push({
+            id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
+            cat: cat0,
+            cut: matched?.displayName || cutName,
+            cutId: matched?.id,
+            cutImage: matched?.image_url ?? null,
+            spec,
+            pkg: "Vacuum Pack",
+            gr: marbling && marbling !== "Not specified" ? marbling : "Not Classified",
+            ag: "None",
+            qty: qty || (fromRequest.quantity ? String(fromRequest.quantity) : ""),
+            ask: target || (fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : ""),
+            floor: target
+              ? (parseFloat(target) * 0.98).toFixed(2)
+              : fromRequest.targetPrice
+              ? (fromRequest.targetPrice * 0.98).toFixed(2)
+              : "",
+            notes: "",
+            plant: "",
+          });
+        }
+      } else if (sec.startsWith("Compliance:")) {
+        const list = sec.replace(/^Compliance:\s*/, "");
+        const certs: string[] = [];
+        if (/halal/i.test(list)) certs.push("Halal");
+        if (/kosher/i.test(list)) certs.push("Kosher");
+        setCertifications(certs);
+      } else if (sec.startsWith("Notes:")) {
+        notesText = sec.replace(/^Notes:\n?/, "").trim();
+      }
+    }
+
+    if (parsedCuts.length > 0) {
+      setCuts(parsedCuts);
+      const imgs: Record<string, string> = {};
+      for (const c of parsedCuts) {
+        if (c.cutImage) imgs[c.id] = c.cutImage;
+      }
+      if (Object.keys(imgs).length) setCutImgs(imgs);
+    } else {
+      const ask = fromRequest.targetPrice ? fromRequest.targetPrice.toFixed(2) : "";
+      const floor = fromRequest.targetPrice ? (fromRequest.targetPrice * 0.98).toFixed(2) : "";
+      const qty = fromRequest.quantity ? String(fromRequest.quantity) : "";
+      const cutName = fromRequest.product || "";
+      const matched = (cutsByCategory[cat0] || []).find(
+        (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
+      );
+      setNf({
+        cat: cat0,
+        cut: matched?.displayName || cutName,
+        cutId: matched?.id,
+        cutImage: matched?.image_url ?? null,
+        spec: fromRequest.specification || "Boneless",
+        pkg: "Vacuum Pack",
+        gr: "Not Classified",
+        ag: "None",
+        qty,
+        ask,
+        floor,
+        notes: notesText,
+        plant: "",
+      });
+      if (matched?.image_url) setNewImgPrev(matched.image_url);
+      setAddRow(true);
+    }
 
     // Distribution: pre-check Marketplace + Specific Customers and select requester.
     setDistMarketplace(true);
