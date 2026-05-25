@@ -25,7 +25,7 @@ import "@/styles/mundus-create-offer-v2.css";
 type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
-const GRADES = ["\n", "Low", "Medium", "High", "Prime"];
+const GRADES = ["Not specified", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
 const PRIMARY_MARKETS = [
@@ -629,7 +629,7 @@ export default function SupplierCreateAuction() {
                   <th>PRODUCT / CUT</th>
                   <th>Spec</th>
                   <th>Packaging</th>
-                  <th>{"\n"}</th>
+                  <th>MARBLING / GRADE</th>
                   <th>Aging</th>
                   <th className="num">{qLbl}</th>
                   <th className="num">Start {pLbl}</th>
@@ -651,7 +651,7 @@ export default function SupplierCreateAuction() {
                      </td>
                     <td><span className="cov4-tag">{c.spec}</span></td>
                     <td><span className="cov4-tag">{c.pkg}</span></td>
-                    <td><span className="cov4-tag">{c.gr !== "\n" ? c.gr : "—"}</span></td>
+                    <td><span className="cov4-tag">{c.gr !== "Not specified" ? c.gr : "—"}</span></td>
                     <td><span className="cov4-tag">{c.ag !== "None" ? c.ag : "—"}</span></td>
                     <td className="num">{fmtWeight(Number(c.qty) || 0, unit)}</td>
                     <td className="num">{fmtPrice(Number(c.ask) || 0, unit)}</td>

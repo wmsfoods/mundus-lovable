@@ -566,7 +566,7 @@ export default function BuyerCreateRequest() {
                 <th>PRODUCT / CUT</th>
                     <th style={{ width: 110 }}>Bone</th>
                     <th>Spec (optional)</th>
-                    <th>\n</th>
+                    <th>MARBLING / GRADE</th>
                     <th style={{ width: 110 }}>Qty (kg)</th>
                     <th style={{ width: 120 }}>Target $/kg</th>
                     <th style={{ width: 32 }}></th>
@@ -719,8 +719,8 @@ export default function BuyerCreateRequest() {
                         <option value="Offals">Offals</option>
                       </select>
                     </div>
-                    <div style={{ display: "none" }}>
-                      <label>{"\n"}</label>
+                    <div>
+                      <label>MARBLING / GRADE</label>
                       <select className="bcr-input" value={r.marbling} onChange={(e) => update(r.id, { marbling: e.target.value })}>
                         {MARBLINGS.map((m) => <option key={m} value={m}>{m}</option>)}
                       </select>

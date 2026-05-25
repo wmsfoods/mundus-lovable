@@ -193,7 +193,7 @@ export default function RequestPasteImport({ open, onOpenChange, category, known
                     <th className="p-2 w-8"></th>
                     <th className="p-2 text-left">PRODUCT / CUT</th>
                     <th className="p-2 text-left">Spec</th>
-                    <th className="p-2 text-left">\n</th>
+                    <th className="p-2 text-left">MARBLING / GRADE</th>
                     <th className="p-2 text-right">Qty (kg)</th>
                     <th className="p-2 text-right">Target $/kg</th>
                   </tr>
@@ -206,7 +206,7 @@ export default function RequestPasteImport({ open, onOpenChange, category, known
                       </td>
                       <td className="p-2 font-medium">{r.cut}</td>
                       <td className="p-2 text-muted-foreground">{r.spec || "—"}</td>
-                      <td className="p-2 text-muted-foreground" style={{ visibility: "hidden" }}>{r.marbling}</td>
+                      <td className="p-2 text-muted-foreground">{r.marbling}</td>
                       <td className="p-2 text-right">{r.qty_kg.toLocaleString()}</td>
                       <td className="p-2 text-right">{r.target_price_per_kg != null ? `$${r.target_price_per_kg.toFixed(2)}` : "—"}</td>
                     </tr>

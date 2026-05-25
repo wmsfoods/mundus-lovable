@@ -246,7 +246,7 @@
       "created": "Criado em",
       "cutsTitle": "Cortes solicitados",
       "col": {
-        "cut": "Corte",
+        "cut": "PRODUTO / CORTE",
         "qty": "Qtd ({{unit}})",
         "asking": "Pedido",
         "buyerBid": "Proposta do comprador",
@@ -339,7 +339,7 @@
         "apply": "Aplicar"
       },
       "col": {
-        "cut": "Corte",
+        "cut": "PRODUTO / CORTE",
         "qty": "Qtd ({{unit}})",
         "minBid": "Lance Mín.",
         "yourBid": "Seu Lance"
@@ -594,13 +594,13 @@
       "perFcl": "Valor total (preço inicial) por FCL",
       "cutsHead": {
         "cut": "CORTE",
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "qty": "QTD POR CORTE",
         "price": "PREÇO POR KG"
       },
       "totalWeight": "Peso total",
       "fields": {
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "originPortCountry": "Origem (porto / país)",
         "condition": "Condição",
         "destination": "Destino",
@@ -1570,7 +1570,7 @@
         "inactive": "Inativa"
       },
       "card": {
-        "cuts": "{{count}} CORTES",
+        "cuts": "{{count}} PRODUTO / CORTES",
         "moreCuts": "+{{count}} mais",
         "origin": "Origem",
         "destination": "Destino",
@@ -1608,14 +1608,14 @@
         "shareComingSoon": "Compartilhar oferta — em breve",
         "cutsHead": {
           "cut": "CORTE",
-          "marbling": "\n",
+          "marbling": "MARBLING / GRADE",
           "qty": "QTD POR CORTE",
           "price": "PREÇO POR KG",
           "asking": "PEDIDO / KG",
           "floor": "MÍNIMO / KG"
         },
         "fields": {
-          "marbling": "\n",
+          "marbling": "MARBLING / GRADE",
           "originPortCountry": "Origem (porto / país)",
           "condition": "Condição",
           "destination": "Destino",
@@ -2183,7 +2183,7 @@
         "find_people": "Buscar Pessoas",
         "lists": "Listas",
         "marketplace": "Marketplace",
-        "products": "Produtos & cortes",
+        "products": "Produtos & produto / cortes",
         "markets": "Mercados",
         "ports": "Portos",
         "finance": "Financeiro",
@@ -2986,9 +2986,9 @@
         }
       },
       "cuts": {
-        "title": "Produtos & Cortes",
+        "title": "Produtos & Produto / Cortes",
         "subtitle": "Gerencie o catálogo de cortes de carne do marketplace",
-        "searchPlaceholder": "Buscar nome do corte ou número do produto...",
+        "searchPlaceholder": "Buscar nome do produto / corte ou número do produto...",
         "allCategories": "Todas as categorias",
         "next": "Próximo",
         "showing": "Mostrando {{from}}-{{to}} de {{total}} resultados",
@@ -3011,7 +3011,7 @@
           "Ovine": "Ovino"
         },
         "cols": {
-          "name": "Nome do corte",
+          "name": "Nome do produto / corte",
           "pn": "PN",
           "category": "Categoria",
           "translations": "Traduções",
@@ -3027,8 +3027,8 @@
           "body": "Tente limpar os filtros ou buscar por outro termo."
         },
         "modal": {
-          "title": "Editar corte",
-          "name": "Nome do corte",
+          "title": "Editar produto / corte",
+          "name": "Nome do produto / corte",
           "productNumber": "Número do produto",
           "category": "Categoria",
           "uploadImage": "Enviar imagem",
@@ -3042,11 +3042,11 @@
           "translatedName": "Nome traduzido",
           "translationAdded": "Tradução adicionada",
           "translationRemoved": "Tradução removida",
-          "saved": "Corte salvo",
+          "saved": "Produto / corte salvo",
           "delete": "Excluir",
-          "deleted": "Corte excluído",
-          "confirmDeleteTitle": "Excluir este corte?",
-          "confirmDeleteBody": "Isso removerá permanentemente o corte e suas traduções."
+          "deleted": "Produto / corte excluído",
+          "confirmDeleteTitle": "Excluir este produto / corte?",
+          "confirmDeleteBody": "Isso removerá permanentemente o produto / corte e suas traduções."
         }
       }
     },

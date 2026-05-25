@@ -34,7 +34,7 @@ import {
 type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In"];
 const PKGS = ["Vacuum Pack", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
-const GRADES = ["\n", "Low", "Medium", "High", "Prime"];
+const GRADES = ["Not specified", "Low", "Medium", "High", "Prime"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
 // Primary destination markets shown as chips (in this order).
@@ -1684,7 +1684,7 @@ export default function SupplierCreateOffer() {
                   <th>PRODUCT / CUT</th>
                   <th>Spec</th>
                   <th>Packaging</th>
-                  <th>{"\n"}</th>
+                  <th>MARBLING / GRADE</th>
                   <th>Aging</th>
                   <th title="USDA/SIF establishment number">Plant #</th>
                   <th className="num">{qLbl}</th>

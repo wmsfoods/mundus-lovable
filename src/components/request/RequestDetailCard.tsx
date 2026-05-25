@@ -114,7 +114,7 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
             <thead>
               <tr style={{ textAlign: "left", color: "var(--fg-muted)", fontSize: 10, textTransform: "uppercase", letterSpacing: "0.06em" }}>
                 <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)" }}>PRODUCT / CUT</th>
-                <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)" }}>\n</th>
+                <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)" }}>MARBLING / GRADE</th>
                 <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)", textAlign: "right" }}>Qty per cut</th>
                 <th style={{ padding: "8px 6px", borderBottom: "1px solid var(--border)", textAlign: "right" }}>Target $/kg</th>
               </tr>
@@ -123,7 +123,7 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
               {cuts.map((c, i) => (
                 <tr key={i}>
                   <td style={{ padding: "8px 6px", borderBottom: "1px solid #f5f4f3", fontWeight: 600 }}>{c.cut}</td>
-                  <td style={{ padding: "8px 6px", borderBottom: "1px solid #f5f4f3", color: "var(--fg-muted)", visibility: "hidden" }}>{c.marbling}</td>
+                  <td style={{ padding: "8px 6px", borderBottom: "1px solid #f5f4f3", color: "var(--fg-muted)" }}>{c.marbling}</td>
                   <td style={{ padding: "8px 6px", borderBottom: "1px solid #f5f4f3", textAlign: "right" }}>
                     {c.qtyKg != null ? `${c.qtyKg.toLocaleString()} kg` : "—"}
                   </td>

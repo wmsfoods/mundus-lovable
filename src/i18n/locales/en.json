@@ -594,13 +594,13 @@
       "perFcl": "Total Value (Starting price) per FCL",
       "cutsHead": {
         "cut": "CUT",
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "qty": "QTY PER CUT",
         "price": "PRICE PER KG"
       },
       "totalWeight": "Total weight",
       "fields": {
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "originPortCountry": "Origin (port / country)",
         "condition": "Condition",
         "destination": "Destination",
@@ -1570,7 +1570,7 @@
         "inactive": "Inactive"
       },
       "card": {
-        "cuts": "{{count}} CUTS",
+        "cuts": "{{count}} PRODUCT / CUTS",
         "moreCuts": "+{{count}} more",
         "origin": "Origin",
         "destination": "Destination",
@@ -1608,14 +1608,14 @@
         "shareComingSoon": "Share this offer — coming soon",
         "cutsHead": {
           "cut": "CUT",
-          "marbling": "\n",
+          "marbling": "MARBLING / GRADE",
           "qty": "QTY PER CUT",
           "price": "PRICE PER KG",
           "asking": "ASKING / KG",
           "floor": "FLOOR / KG"
         },
         "fields": {
-          "marbling": "\n",
+          "marbling": "MARBLING / GRADE",
           "originPortCountry": "Origin (port / country)",
           "condition": "Condition",
           "destination": "Destination",
@@ -2183,7 +2183,7 @@
         "find_people": "Find People",
         "lists": "Lists",
         "marketplace": "Marketplace",
-        "products": "Products & cuts",
+        "products": "Products & product / cuts",
         "markets": "Markets",
         "ports": "Ports",
         "finance": "Finance",
@@ -2986,9 +2986,9 @@
         }
       },
       "cuts": {
-        "title": "Products & Cuts",
+        "title": "Products & Product / Cuts",
         "subtitle": "Manage the meat cuts catalog for the marketplace",
-        "searchPlaceholder": "Search cut name or product number...",
+        "searchPlaceholder": "Search product / cut name or product number...",
         "allCategories": "All categories",
         "next": "Next",
         "showing": "Showing {{from}}-{{to}} of {{total}} results",
@@ -3011,7 +3011,7 @@
           "Ovine": "Ovine"
         },
         "cols": {
-          "name": "Cut name",
+          "name": "Product / cut name",
           "pn": "PN",
           "category": "Category",
           "translations": "Translations",
@@ -3027,8 +3027,8 @@
           "body": "Try clearing filters or searching with another term."
         },
         "modal": {
-          "title": "Edit cut",
-          "name": "Cut name",
+          "title": "Edit product / cut",
+          "name": "Product / cut name",
           "productNumber": "Product number",
           "category": "Category",
           "uploadImage": "Upload image",
@@ -3042,11 +3042,11 @@
           "translatedName": "Translated name",
           "translationAdded": "Translation added",
           "translationRemoved": "Translation removed",
-          "saved": "Cut saved",
+          "saved": "Product / cut saved",
           "delete": "Delete",
-          "deleted": "Cut deleted",
-          "confirmDeleteTitle": "Delete this cut?",
-          "confirmDeleteBody": "This will permanently remove the cut and its translations."
+          "deleted": "Product / cut deleted",
+          "confirmDeleteTitle": "Delete this product / cut?",
+          "confirmDeleteBody": "This will permanently remove the product / cut and its translations."
         }
       }
     },
