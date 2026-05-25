@@ -589,7 +589,7 @@
       "perFcl": "Valeur totale (prix de départ) par FCL",
       "cutsHead": {
         "cut": "DÉCOUPE",
-        "marbling": "\n",
+        "marbling": "MARBLING / GRADE",
         "qty": "QTÉ PAR DÉCOUPE",
         "price": "PRIX AU KG"
       },
