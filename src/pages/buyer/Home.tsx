@@ -21,6 +21,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
+import { useAuth } from "@/contexts/AuthContext";
+
+function useGreetingKey(): "morning" | "afternoon" | "evening" {
+  const h = new Date().getHours();
+  if (h < 12) return "morning";
+  if (h < 18) return "afternoon";
+  return "evening";
+}
 
 const MONTH_NAMES = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
@@ -126,6 +134,10 @@ export default function BuyerHome() {
   const buyerCompanyId = company?.id ?? null;
   const dash = useBuyerDashboard();
   const fmt = (v: number | undefined) => (v === undefined ? "—" : String(v));
+  const { user } = useAuth();
+  const greetingKey = useGreetingKey();
+  const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "there";
+  const firstName = userName.split(" ")[0].replace(/^./, (c) => c.toUpperCase());
 
   const { data: myNegotiations } = useQuery({
     queryKey: ["my-negotiations-map", buyerCompanyId],
@@ -148,8 +160,60 @@ export default function BuyerHome() {
   const proteinKeys = ["beef", "pork", "poultry", "ovine"] as const;
   return (
     <>
-      <section className="hero">
-        <h2>{t("buyer.home.hero")}</h2>
+      <section className="hero sh-hero">
+        <span className="sh-hero-glow sh-hero-glow--a" aria-hidden />
+        <span className="sh-hero-glow sh-hero-glow--b" aria-hidden />
+        <div className="sh-hero-inner">
+          <div className="sh-hero-main">
+            <span className="sh-greeting">
+              <span className="sh-greeting-pulse">
+                <span className="ping" />
+                <span className="dot" />
+              </span>
+              {t(`supplier.home.greeting.${greetingKey}`, { name: firstName, defaultValue: `Good ${greetingKey}, ${firstName}` })}
+            </span>
+            <h2>
+              <span className="sh-hero-title-lead">{t("buyer.home.hero")}</span>
+            </h2>
+            <p className="sh-hero-sub">
+              {t("buyer.home.heroSub", {
+                defaultValue: "Here's a quick snapshot of your sourcing activity.",
+              })}
+            </p>
+          </div>
+
+          <div className="sh-hero-stats" aria-hidden={false}>
+            <div className="sh-hero-stat">
+              <div className="sh-hero-stat-row">
+                <div>
+                  <p className="sh-hero-stat-label">{t("buyer.home.stats.activeOffers", { defaultValue: "Marketplace offers" })}</p>
+                  <p className="sh-hero-stat-value">{dash.marketplaceOffers ?? "—"}</p>
+                </div>
+                <span className="sh-hero-stat-ic sh-hero-stat-ic--primary">
+                  <SparkleIcon size={18} />
+                </span>
+              </div>
+              <div className="sh-hero-stat-bar">
+                <span className="sh-hero-stat-bar-fill sh-hero-stat-bar-fill--primary" style={{ width: "72%" }} />
+              </div>
+            </div>
+
+            <div className="sh-hero-stat">
+              <div className="sh-hero-stat-row">
+                <div>
+                  <p className="sh-hero-stat-label">{t("buyer.home.stats.inNegotiation", { defaultValue: "Active negotiations" })}</p>
+                  <p className="sh-hero-stat-value">{dash.negotiations ?? "—"}</p>
+                </div>
+                <span className="sh-hero-stat-ic sh-hero-stat-ic--success">
+                  <ArrowsLeftRightIcon size={18} />
+                </span>
+              </div>
+              <div className="sh-hero-stat-bar">
+                <span className="sh-hero-stat-bar-fill sh-hero-stat-bar-fill--success" style={{ width: "100%" }} />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <div className="stats">
@@ -212,11 +276,11 @@ export default function BuyerHome() {
         </Link>
       </div>
       {offersLoading ? (
-        <div className="card-row"><MiniSkeleton /></div>
+        <div className="card-row sh-card-row"><MiniSkeleton /></div>
       ) : recentOffers.length === 0 ? (
         <div className="card-row-empty">{t("buyer.home.emptyOffers")}</div>
       ) : (
-        <div className="card-row">
+        <div className="card-row sh-card-row">
           {recentOffers.map((o) => (
             <OfferCard
               key={o.id}
@@ -235,11 +299,11 @@ export default function BuyerHome() {
         </Link>
       </div>
       {ordersLoading ? (
-        <div className="card-row"><MiniSkeleton /></div>
+        <div className="card-row sh-card-row"><MiniSkeleton /></div>
       ) : recentOrders.length === 0 ? (
         <div className="card-row-empty">{t("buyer.home.emptyOrders")}</div>
       ) : (
-        <div className="card-row">
+        <div className="card-row sh-card-row">
           {recentOrders.map((o) => <RecentOrderCard key={o.id} o={o} />)}
         </div>
       )}
