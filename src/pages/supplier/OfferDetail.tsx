@@ -240,11 +240,60 @@ export default function SupplierOfferDetail() {
           <button
             type="button"
             className="btn-tb"
-            onClick={() =>
-              alert(
-                "Edit functionality coming soon. For now, you can clone this offer and deactivate the original.",
-              )
-            }
+            onClick={async () => {
+              if (!offer) return;
+              try {
+                const { data: row, error } = await supabase
+                  .from("offers")
+                  .select(`
+                    id, container_size, total_fcl, payment_terms,
+                    is_halal, is_kosher, cut_region, exw_pickup_location,
+                    items:offer_items (
+                      amount, price, minimum_price, condition, aging_method,
+                      customer_product:customer_products (
+                        name,
+                        standard_product:standard_products ( product_number )
+                      )
+                    ),
+                    markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
+                    incoterms:offer_allowed_incoterms ( incoterm_type )
+                  `)
+                  .eq("id", offer.id)
+                  .maybeSingle();
+                if (error || !row) throw error ?? new Error("Offer not found");
+
+                const editOffer = {
+                  offerId: offer.id,
+                  offerNumber: offer.offerNumber,
+                  category: offer.category,
+                  condition: offer.condition,
+                  containerSize: (row as any).container_size ?? offer.containerSize ?? "40ft",
+                  containerCount: Number((row as any).total_fcl ?? offer.fclCount ?? 1) || 1,
+                  paymentTerms: (row as any).payment_terms ?? offer.paymentTerms ?? "",
+                  isHalal: !!(row as any).is_halal,
+                  isKosher: !!(row as any).is_kosher,
+                  cutRegion: ((row as any).cut_region as "global" | "us") ?? "global",
+                  exwCity: (row as any).exw_pickup_location ?? "",
+                  destinationCountries: ((row as any).markets ?? [])
+                    .map((m: any) => m?.market?.country?.english_name)
+                    .filter(Boolean) as string[],
+                  incoterms: ((row as any).incoterms ?? []).map((i: any) => i.incoterm_type) as string[],
+                  items: ((row as any).items ?? []).map((it: any) => ({
+                    name: it.customer_product?.name ?? "",
+                    productNumber: it.customer_product?.standard_product?.product_number ?? null,
+                    amount: Number(it.amount ?? 0),
+                    price: Number(it.price ?? 0),
+                    minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
+                    condition: it.condition ?? offer.condition,
+                    agingMethod: it.aging_method ?? null,
+                  })),
+                };
+                navigate("/supplier/offers/create", { state: { editOffer } });
+              } catch (e) {
+                const msg = e instanceof Error ? e.message : "Failed to load offer for editing";
+                toast.error(msg);
+              }
+            }}
           >
             ✏️ Edit Offer
           </button>

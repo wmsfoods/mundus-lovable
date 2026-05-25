@@ -201,6 +201,12 @@ export default function SupplierCreateOffer() {
         }>;
       }
     | undefined;
+  const editOffer = (location.state as any)?.editOffer as
+    | (NonNullable<typeof cloneFrom> & { offerId: string; offerNumber: number })
+    | undefined;
+  const isEditing = !!editOffer;
+  // Reuse the clone hydration flow for editing — both pre-fill the same fields.
+  const hydrateSource = editOffer ?? cloneFrom;
   const prefilledRef = useRef(false);
   const { t } = useTranslation();
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
@@ -448,42 +454,43 @@ export default function SupplierCreateOffer() {
   const clonedRef = useRef(false);
   useEffect(() => {
     if (clonedRef.current) return;
-    if (!cloneFrom) return;
+    if (!hydrateSource) return;
     if (!MARKETS || MARKETS.length === 0) return;
     if (!cutsByCategory || Object.keys(cutsByCategory).length === 0) return;
     clonedRef.current = true;
 
     setUnit("kg");
 
-    const cat0 = cloneFrom.category || "Beef";
-    setCsize((cloneFrom.containerSize?.startsWith("20") ? "20ft" : "40ft"));
-    setContainerCount(Math.max(1, Number(cloneFrom.containerCount) || 1));
-    if (cloneFrom.condition === "Frozen" || cloneFrom.condition === "Chilled") {
-      setTemp(cloneFrom.condition);
+    const src = hydrateSource;
+    const cat0 = src.category || "Beef";
+    setCsize((src.containerSize?.startsWith("20") ? "20ft" : "40ft"));
+    setContainerCount(Math.max(1, Number(src.containerCount) || 1));
+    if (src.condition === "Frozen" || src.condition === "Chilled") {
+      setTemp(src.condition);
     }
-    if (cloneFrom.paymentTerms && (PAY_TERMS as readonly string[]).includes(cloneFrom.paymentTerms)) {
-      setPayTerm(cloneFrom.paymentTerms);
+    if (src.paymentTerms && (PAY_TERMS as readonly string[]).includes(src.paymentTerms)) {
+      setPayTerm(src.paymentTerms);
     }
     const certs: string[] = [];
-    if (cloneFrom.isHalal) certs.push("Halal");
-    if (cloneFrom.isKosher) certs.push("Kosher");
+    if (src.isHalal) certs.push("Halal");
+    if (src.isKosher) certs.push("Kosher");
     setCertifications(certs);
-    if (cloneFrom.cutRegion === "us" || cloneFrom.cutRegion === "global") {
-      setCutRegion(cloneFrom.cutRegion);
+    if (src.cutRegion === "us" || src.cutRegion === "global") {
+      setCutRegion(src.cutRegion);
     }
 
     // Incoterms
-    const incos = (cloneFrom.incoterms ?? []).filter(Boolean);
+    const incos = (src.incoterms ?? []).filter(Boolean);
     if (incos.length) {
       setSelInco(incos);
       setPrimaryInco(incos[0]);
-      if (cloneFrom.exwCity && incos.includes("EXW")) {
-        setIncoExtras((prev) => ({ ...prev, exwCity: cloneFrom.exwCity }));
+      if (src.exwCity && incos.includes("EXW")) {
+        setIncoExtras((prev) => ({ ...prev, exwCity: src.exwCity }));
       }
     }
 
     // Destination markets by country names
-    const matchedMarkets = (cloneFrom.destinationCountries ?? [])
+    const matchedMarkets = (src.destinationCountries ?? [])
       .map((cn) => {
         const w = cn.trim().toLowerCase();
         return (
@@ -510,7 +517,7 @@ export default function SupplierCreateOffer() {
     const catalog = cutsByCategory[cat0] || [];
     const newCuts: Cut[] = [];
     const imgs: Record<string, string> = {};
-    for (const it of cloneFrom.items ?? []) {
+    for (const it of src.items ?? []) {
       const nameL = (it.name || "").trim().toLowerCase();
       const matched =
         (it.productNumber != null
@@ -542,8 +549,8 @@ export default function SupplierCreateOffer() {
       if (Object.keys(imgs).length) setCutImgs(imgs);
     }
 
-    toast.success("Cloned — review changes and publish");
-  }, [cloneFrom, MARKETS, cutsByCategory, setUnit]);
+    toast.success(isEditing ? "Editing offer — make your changes and save" : "Cloned — review changes and publish");
+  }, [hydrateSource, isEditing, MARKETS, cutsByCategory, setUnit]);
 
   useEffect(() => {
     if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
@@ -787,7 +794,40 @@ export default function SupplierCreateOffer() {
 
       // 1. Create offer
       let offer: { id: string; offer_number: number };
-      try {
+      if (isEditing && editOffer) {
+        try {
+          const { error } = await supabase
+            .from("offers")
+            .update({
+              status: "active",
+              shipment_month,
+              shipment_year,
+              payment_terms: payTerm,
+              container_size: csize,
+              total_fcl: totalFcl,
+              is_halal: certifications.includes("Halal"),
+              is_kosher: certifications.includes("Kosher"),
+              exw_pickup_location: selInco.includes("EXW")
+                ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
+                : null,
+              cut_region: cutRegion,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", editOffer.offerId);
+          if (error) throw error;
+          offer = { id: editOffer.offerId, offer_number: editOffer.offerNumber };
+
+          // Wipe child rows so we can re-insert with the same logic below.
+          await supabase.from("offer_items").delete().eq("offer_id", editOffer.offerId);
+          await supabase.from("offer_allowed_incoterms").delete().eq("offer_id", editOffer.offerId);
+          await supabase.from("offer_markets").delete().eq("offer_id", editOffer.offerId);
+          await supabase.from("freight_options").delete().eq("offer_id", editOffer.offerId);
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Update offer failed: ${m}`);
+        }
+      } else {
+        try {
         const { data, error } = await supabase
           .from("offers")
           .insert({
@@ -814,9 +854,10 @@ export default function SupplierCreateOffer() {
           .single();
         if (error || !data) throw error ?? new Error("no data returned");
         offer = data;
-      } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
-        throw new Error(`Step 1 failed: offer insert — ${m}`);
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Step 1 failed: offer insert — ${m}`);
+        }
       }
 
       // 2. Resolve/create customer_products per cut, then insert offer_items
@@ -1015,7 +1056,11 @@ export default function SupplierCreateOffer() {
         throw new Error(`Step 6 failed: freight_options — ${m}`);
       }
 
-      toast.success(`Offer ${formatOfferNumber(offer.offer_number)} published successfully!`);
+      toast.success(
+        isEditing
+          ? `Offer ${formatOfferNumber(offer.offer_number)} updated successfully!`
+          : `Offer ${formatOfferNumber(offer.offer_number)} published successfully!`,
+      );
       if (fromRequest?.requestId) {
         await supabase
           .from("buyer_requests")
@@ -1045,7 +1090,11 @@ export default function SupplierCreateOffer() {
           console.warn("[notifications] supplier-response notification failed", e);
         }
       }
-      navigate("/supplier/offers");
+      if (isEditing && editOffer) {
+        navigate(`/supplier/offers/${editOffer.offerId}`);
+      } else {
+        navigate("/supplier/offers");
+      }
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Failed to publish offer";
       toast.error(msg);
@@ -1079,7 +1128,23 @@ export default function SupplierCreateOffer() {
           </div>
         </div>
       )}
-      {cloneFrom && (
+      {isEditing && editOffer && (
+        <div
+          className="rounded-lg p-4 mb-4 flex items-start gap-3"
+          style={{ background: "#FFFBEB", border: "1px solid #FDE68A" }}
+        >
+          <span style={{ fontSize: 18, lineHeight: 1 }}>✏️</span>
+          <div>
+            <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: "#92400E" }}>
+              Editing offer {formatOfferNumber(editOffer.offerNumber)}
+            </p>
+            <p style={{ margin: "2px 0 0", fontSize: 14, color: "#A16207" }}>
+              Make your changes and save. The offer number stays the same.
+            </p>
+          </div>
+        </div>
+      )}
+      {cloneFrom && !isEditing && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
           style={{ background: "#ECFDF5", border: "1px solid #A7F3D0" }}
@@ -1099,7 +1164,7 @@ export default function SupplierCreateOffer() {
       <header className="cov4-header">
         <div className="cov4-hdr-l">
           <div>
-            <h1>Create new offer</h1>
+            <h1>{isEditing && editOffer ? `Edit offer ${formatOfferNumber(editOffer.offerNumber)}` : "Create new offer"}</h1>
             <p>Markets · Products · Pricing · Distribution</p>
           </div>
         </div>
@@ -2435,9 +2500,9 @@ export default function SupplierCreateOffer() {
               if (!canPublish && nextStep) { scrollToSection(nextStep.anchor); return; }
               handlePublish();
             }}
-            title={nextStep ? `Next: ${nextStep.label}` : "Review & publish your offer"}
+            title={nextStep ? `Next: ${nextStep.label}` : (isEditing ? "Save changes" : "Review & publish your offer")}
           >
-            Review &amp; publish →
+            {isEditing ? "Save changes →" : "Review & publish →"}
           </button>
         </div>
       </footer>
