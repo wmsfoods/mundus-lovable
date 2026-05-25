@@ -244,7 +244,7 @@
       "payment": "Payment terms",
       "container": "Container",
       "created": "Created",
-      "cutsTitle": "Product / Product / Cuts requested",
+      "cutsTitle": "Product / Cuts requested",
       "col": {
         "cut": "PRODUCT / CUT",
         "qty": "Qty ({{unit}})",
@@ -494,7 +494,7 @@
         "selectAll": "Select all",
         "clearAll": "Clear all",
         "loading": "Loading…",
-        "noCuts": "No product / product / cuts available",
+        "noCuts": "No product / cuts available",
         "selectMarket": "Select a market…",
         "selectPort": "Select a port…",
         "noPorts": "This market has no ports configured.",
@@ -1797,7 +1797,7 @@
         "incoConflict": "Not compatible with the selected incoterm",
         "pickCut": "Pick a product / cut…",
         "searchCutsPh": "Search product / cuts…",
-        "noCuts": "No product / product / cuts found"
+        "noCuts": "No product / cuts found"
       }
     },
     "home": {
@@ -2988,7 +2988,7 @@
       "cuts": {
         "title": "Products & Product / Cuts",
         "subtitle": "Manage the meat product / cuts catalog for the marketplace",
-        "searchPlaceholder": "Search product / product / cut name or product number...",
+        "searchPlaceholder": "Search product / cut name or product number...",
         "allCategories": "All categories",
         "next": "Next",
         "showing": "Showing {{from}}-{{to}} of {{total}} results",
@@ -3011,7 +3011,7 @@
           "Ovine": "Ovine"
         },
         "cols": {
-          "name": "Product / product / cut name",
+          "name": "Product / Cut name",
           "pn": "PN",
           "category": "Category",
           "translations": "Translations",
@@ -3028,7 +3028,7 @@
         },
         "modal": {
           "title": "Edit product / cut",
-          "name": "Product / product / cut name",
+          "name": "Product / Cut name",
           "productNumber": "Product number",
           "category": "Category",
           "uploadImage": "Upload image",
@@ -3042,11 +3042,11 @@
           "translatedName": "Translated name",
           "translationAdded": "Translation added",
           "translationRemoved": "Translation removed",
-          "saved": "Product / product / cut saved",
+          "saved": "Product / Cut saved",
           "delete": "Delete",
-          "deleted": "Product / product / cut deleted",
+          "deleted": "Product / Cut deleted",
           "confirmDeleteTitle": "Delete this product / cut?",
-          "confirmDeleteBody": "This will permanently remove the product / product / cut and its translations."
+          "confirmDeleteBody": "This will permanently remove the product / cut and its translations."
         }
       }
     },
