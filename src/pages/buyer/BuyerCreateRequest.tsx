@@ -619,6 +619,16 @@ export default function BuyerCreateRequest() {
                       <td>
                         <select
                           className="bcr-input"
+                          value={r.boneSpec}
+                          onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" })}
+                        >
+                          <option value="Boneless">Boneless</option>
+                          <option value="Bone-In">Bone-In</option>
+                        </select>
+                      </td>
+                      <td>
+                        <select
+                          className="bcr-input"
                           value={r.marbling}
                           onChange={(e) => update(r.id, { marbling: e.target.value })}
                         >
@@ -686,6 +696,13 @@ export default function BuyerCreateRequest() {
                     <div>
                       <label>Spec</label>
                       <input className="bcr-input" value={r.spec} onChange={(e) => update(r.id, { spec: e.target.value })} placeholder="7-9 lb" />
+                    </div>
+                    <div>
+                      <label>Bone</label>
+                      <select className="bcr-input" value={r.boneSpec} onChange={(e) => update(r.id, { boneSpec: e.target.value as "Bone-In" | "Boneless" })}>
+                        <option value="Boneless">Boneless</option>
+                        <option value="Bone-In">Bone-In</option>
+                      </select>
                     </div>
                     <div>
                       <label>Marbling</label>
