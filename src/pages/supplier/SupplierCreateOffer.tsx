@@ -703,7 +703,7 @@ export default function SupplierCreateOffer() {
   const distOk = distMarketplace || distAllCustomers || (distSpecific && selectedCustomers.length > 0);
   const publishSteps = [
     { key: "markets",  label: "Select at least one destination market", done: selMarkets.length > 0, anchor: "sec-markets" },
-    { key: "cuts",     label: "Add at least one product cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
+    { key: "cuts",     label: "Add at least one product / cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
     { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
     { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
   ];
@@ -1878,7 +1878,7 @@ export default function SupplierCreateOffer() {
                 )}
                 {cuts.length > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
-                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} cut{cuts.length > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} product / cut{cuts.length > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
@@ -2349,7 +2349,7 @@ export default function SupplierCreateOffer() {
             </button>
           </div>
           {cuts.length === 0 && !addRow && !showAiImport && (
-            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add cuts manually or use AI Import</p></div>
+            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add product / cuts manually or use AI Import</p></div>
           )}
         </main>
 
@@ -2485,7 +2485,7 @@ export default function SupplierCreateOffer() {
                 ))}
               </ul>
               <div className="cov4-ready-foot">
-                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} cut{cuts.length !== 1 ? "s" : ""} · {fmtWeight(tw, unit)} {wLbl}
+                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} product / cut{cuts.length !== 1 ? "s" : ""} · {fmtWeight(tw, unit)} {wLbl}
               </div>
             </PopoverContent>
           </Popover>
