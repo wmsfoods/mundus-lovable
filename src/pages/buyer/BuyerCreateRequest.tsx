@@ -719,7 +719,7 @@ export default function BuyerCreateRequest() {
                         <option value="Offals">Offals</option>
                       </select>
                     </div>
-                    <div>
+                    <div style={{ display: "none" }}>
                       <label>Marbling</label>
                       <select className="bcr-input" value={r.marbling} onChange={(e) => update(r.id, { marbling: e.target.value })}>
                         {MARBLINGS.map((m) => <option key={m} value={m}>{m}</option>)}
