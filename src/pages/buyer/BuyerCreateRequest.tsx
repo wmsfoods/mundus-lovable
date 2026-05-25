@@ -566,7 +566,7 @@ export default function BuyerCreateRequest() {
                 <th>PRODUCT / CUT</th>
                     <th style={{ width: 110 }}>Bone</th>
                     <th>Spec (optional)</th>
-                    <th>\n</th>
+                    <th>MARBLING / GRADE</th>
                     <th style={{ width: 110 }}>Qty (kg)</th>
                     <th style={{ width: 120 }}>Target $/kg</th>
                     <th style={{ width: 32 }}></th>
