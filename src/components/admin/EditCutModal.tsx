@@ -218,6 +218,7 @@ export default function EditCutModal({ cut, open, onOpenChange, onSave, onDelete
               <select className="crm-select" value={boneSpec} onChange={(e) => setBoneSpec(e.target.value as "Bone-In" | "Boneless" | "Offals")}>
                 <option value="Boneless">Boneless</option>
                 <option value="Bone-In">Bone-In</option>
+                <option value="Offals">Offals</option>
               </select>
               <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>
                 {t("admin.marketplace.cuts.modal.boneSpecHint", { defaultValue: "Default applied when this cut is added to an offer, auction or request." })}
