@@ -42,7 +42,7 @@ export function OfferDestinationPorts({ ports }: { ports: Port[] }) {
   const summary = visible.map((p) => p.name).join(", ");
   const label = (
     <span style={{ fontSize: 11, color: "#6B7280", cursor: extra > 0 ? "pointer" : "default" }}>
-      📍 {summary}{extra > 0 ? ` +${extra} more` : ""}
+      {"\n"}
     </span>
   );
   if (extra === 0) {
