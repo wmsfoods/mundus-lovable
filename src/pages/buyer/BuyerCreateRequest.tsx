@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
+import { Check } from "lucide-react";
 import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
 import RequestPasteImport, { type ParsedRow } from "@/components/buyer/RequestPasteImport";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
