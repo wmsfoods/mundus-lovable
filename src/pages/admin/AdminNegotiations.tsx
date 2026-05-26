@@ -20,6 +20,17 @@ type SortKey = "recent" | "oldest" | "value" | "rounds";
 
 const PAGE_SIZE = 20;
 
+const INPUT_STYLE: React.CSSProperties = {
+  height: 34,
+  padding: "0 10px",
+  borderRadius: 8,
+  border: "1px solid #e5e7eb",
+  background: "white",
+  fontSize: 13,
+  color: "#0f172a",
+  outline: "none",
+};
+
 const STATUS_STYLES: Record<NegotiationStatus, string> = {
   awaiting_supplier: "bg-red-100 text-red-800 border border-red-200",
   pending_buyer_review: "bg-yellow-100 text-yellow-800 border border-yellow-200",
