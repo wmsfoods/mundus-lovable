@@ -199,8 +199,11 @@ export function useAdminNegotiations() {
           product_category,
           total_qty_kg,
           original_value,
-          current_round: maxRoundByNeg.get(n.id) ?? 0,
-          round_count: (roundsRes.data ?? []).filter((r) => r.negotiation_id === n.id).length,
+          // Convert raw round (1..8) to display round (1..4).
+          current_round: Math.ceil((maxRoundByNeg.get(n.id) ?? 0) / 2),
+          round_count: Math.ceil(
+            (roundsRes.data ?? []).filter((r) => r.negotiation_id === n.id).length / 2,
+          ),
           latest_buyer_bid: latestBuyer.get(n.id)?.price ?? null,
           latest_supplier_counter: latestSupplier.get(n.id)?.price ?? null,
         };

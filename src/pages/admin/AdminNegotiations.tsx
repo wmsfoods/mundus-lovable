@@ -12,6 +12,7 @@ import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice } from "@/lib/units";
 import { countryFlag } from "@/lib/countryFlags";
 import { Pagination } from "@/components/mundus/Pagination";
+import { MAX_DISPLAY_ROUNDS } from "@/lib/negotiationEngine";
 
 type FilterKey = "all" | "awaiting_supplier" | "pending_buyer_review" | "bid_accepted" | "rejected" | "expired";
 type ProteinKey = "all" | "beef" | "pork" | "poultry" | "lamb";
@@ -59,7 +60,7 @@ function fmtRelative(iso: string, locale: string): string {
 function RoundDots({ current }: { current: number }) {
   return (
     <div className="inline-flex items-center gap-1">
-      {[1, 2, 3].map((n) => {
+      {Array.from({ length: MAX_DISPLAY_ROUNDS }, (_, i) => i + 1).map((n) => {
         const filled = n <= current;
         const isCurrent = n === current && current > 0;
         return (
@@ -409,7 +410,7 @@ function NegotiationRow({
         </td>
         <td className="text-right" style={{ fontSize: 12 }}>{r.total_qty_kg ? fmtWeight(r.total_qty_kg, unit) : "—"}</td>
         <td className="text-right" style={{ fontSize: 12, fontWeight: 600 }}>{fmtMoney(totalValue)}</td>
-        <td style={{ fontSize: 12 }}>{r.current_round || 0}{r.round_count ? ` of ${r.round_count}` : ""}</td>
+        <td style={{ fontSize: 12 }}>{r.current_round || 0} of {MAX_DISPLAY_ROUNDS}</td>
         <td><StatusBadge status={r.status} t={t} /></td>
         <td className="text-right" style={{ fontSize: 12 }}>
           {gap != null ? (

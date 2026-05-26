@@ -41,4 +41,10 @@ export const NEGOTIATION_PARAMETERS = {
   THIRD_ROUND_GOOD_DISCOUNT_AMOUNT: 0.3,
 } as const;
 
+/**
+ * MAX_ROUNDS aplica-se APENAS ao engine automático (propose-counter).
+ * A negociação MANUAL (frontend + RPC submit_negotiation_round) usa
+ * MAX_DISPLAY_ROUNDS = 4 (8 raw proposals = 4 buyer bids + 4 supplier counters).
+ * Ver: src/lib/negotiationEngine.ts
+ */
 export const MAX_ROUNDS = 3 as const;
