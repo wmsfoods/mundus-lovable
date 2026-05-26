@@ -986,9 +986,29 @@ export default function SupplierCreateOffer() {
                 if (fuzzy && fuzzy.length >= 1) cutRow = fuzzy[0];
               }
             }
+
+            // 4) Resolve through the in-memory catalog the user picked from
+            if (!cutRow) {
+              const catCuts = (cutsByCategory[c.cat] || Object.values(cutsByCategory).flat()) as Array<{ id: string; displayName: string }>;
+              const matched =
+                catCuts.find((cc) => cc.displayName.toLowerCase() === cleaned.toLowerCase()) ||
+                catCuts.find(
+                  (cc) =>
+                    cc.displayName.toLowerCase().includes(cleaned.toLowerCase()) ||
+                    cleaned.toLowerCase().includes(cc.displayName.toLowerCase()),
+                );
+              if (matched?.id) {
+                const { data } = await supabase
+                  .from("cuts")
+                  .select("id, name, product_number, category")
+                  .eq("id", matched.id)
+                  .maybeSingle();
+                cutRow = data ?? null;
+              }
+            }
           }
           if (!cutRow) {
-            console.warn("[publish] could not resolve cut:", c.cut, c.cutId);
+            console.warn("[publish] could not resolve cut:", c.cut, c.cutId, "— skipping");
             continue;
           }
           cutId = cutRow.id;
