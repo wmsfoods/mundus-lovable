@@ -191,11 +191,11 @@ export default function AdminNegotiations() {
             placeholder="Search offer, buyer, supplier, ID…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            className="adm-input"
+            style={INPUT_STYLE}
             style={{ paddingLeft: 30, width: "100%" }}
           />
         </div>
-        <select className="adm-input" value={filter} onChange={(e) => { setFilter(e.target.value as FilterKey); setPage(1); }}>
+        <select style={INPUT_STYLE} value={filter} onChange={(e) => { setFilter(e.target.value as FilterKey); setPage(1); }}>
           <option value="all">All statuses</option>
           <option value="awaiting_supplier">Awaiting Supplier</option>
           <option value="pending_buyer_review">Awaiting Buyer</option>
@@ -203,20 +203,20 @@ export default function AdminNegotiations() {
           <option value="rejected">Rejected</option>
           <option value="expired">Expired</option>
         </select>
-        <select className="adm-input" value={protein} onChange={(e) => { setProtein(e.target.value as ProteinKey); setPage(1); }}>
+        <select style={INPUT_STYLE} value={protein} onChange={(e) => { setProtein(e.target.value as ProteinKey); setPage(1); }}>
           <option value="all">All proteins</option>
           <option value="beef">Beef</option>
           <option value="pork">Pork</option>
           <option value="poultry">Poultry</option>
           <option value="lamb">Lamb</option>
         </select>
-        <select className="adm-input" value={dateRange} onChange={(e) => { setDateRange(e.target.value as DateRangeKey); setPage(1); }}>
+        <select style={INPUT_STYLE} value={dateRange} onChange={(e) => { setDateRange(e.target.value as DateRangeKey); setPage(1); }}>
           <option value="all">All time</option>
           <option value="7d">Last 7 days</option>
           <option value="30d">Last 30 days</option>
           <option value="90d">Last 90 days</option>
         </select>
-        <select className="adm-input" value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
+        <select style={INPUT_STYLE} value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
           <option value="recent">Most Recent</option>
           <option value="oldest">Oldest</option>
           <option value="value">Highest Value</option>
