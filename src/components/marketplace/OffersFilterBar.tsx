@@ -1,11 +1,24 @@
-import { useMemo, useState, type ReactNode } from "react";
-import { Check, ChevronDown, Search as SearchIcon, X } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
+import {
+  Check,
+  ChevronDown,
+  Search as SearchIcon,
+  SlidersHorizontal,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+} from "@/components/ui/sheet";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { FlagSVG } from "@/components/icons";
 import { countryToCode } from "@/lib/countryCodes";
 
@@ -73,6 +86,7 @@ export function OffersFilterBar({
   showHalalKosher = true,
   searchPlaceholder = "Search products, ports...",
 }: Props) {
+  const isMobile = useIsMobileShell();
   const update = (patch: Partial<OffersFilterState>) =>
     onChange({ ...value, ...patch });
 
@@ -80,6 +94,166 @@ export function OffersFilterBar({
   const tempsList = options.temps ?? ALL_TEMPS;
 
   const clearAll = () => onChange({ ...DEFAULT_OFFERS_FILTER });
+
+  // --- Mobile bottom sheet (draft state, commit on Apply) ---
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [draft, setDraft] = useState<OffersFilterState>(value);
+  useEffect(() => {
+    if (sheetOpen) setDraft(value);
+  }, [sheetOpen, value]);
+  const draftActive = countActiveOfferFilters(draft);
+  const updateDraft = (patch: Partial<OffersFilterState>) =>
+    setDraft((d) => ({ ...d, ...patch }));
+  const applyDraft = () => {
+    onChange(draft);
+    setSheetOpen(false);
+  };
+  const resetDraft = () => setDraft({ ...DEFAULT_OFFERS_FILTER, search: draft.search });
+
+  if (isMobile) {
+    // Filters that move into the sheet (everything except search & protein)
+    const sheetActive =
+      (value.temp !== "all" ? 1 : 0) +
+      value.origins.length +
+      value.incoterms.length +
+      value.markets.length +
+      (value.halal !== "any" ? 1 : 0) +
+      (value.kosher !== "any" ? 1 : 0);
+
+    return (
+      <div className="ofb ofb-mobile">
+        {proteinNode && <div className="ofb-mobile-protein">{proteinNode}</div>}
+        <div className="ofb-mobile-row">
+          <div className="ofb-search">
+            <SearchIcon size={15} aria-hidden />
+            <input
+              type="search"
+              value={value.search}
+              onChange={(e) => update({ search: e.target.value })}
+              placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
+            />
+            {value.search && (
+              <button
+                type="button"
+                className="ofb-search-clear"
+                onClick={() => update({ search: "" })}
+                aria-label="Clear search"
+              >
+                <X size={13} />
+              </button>
+            )}
+          </div>
+          <button
+            type="button"
+            className={cn("ofb-mobile-trigger", sheetActive > 0 && "is-active")}
+            onClick={() => setSheetOpen(true)}
+            aria-label="Open filters"
+          >
+            <SlidersHorizontal size={16} />
+            <span>Filters</span>
+            {sheetActive > 0 && (
+              <span className="ofb-mobile-badge">{sheetActive}</span>
+            )}
+          </button>
+        </div>
+        {rightSlot && <div className="ofb-mobile-right">{rightSlot}</div>}
+
+        <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
+          <SheetContent side="bottom" className="ofb-sheet">
+            <div className="ofb-sheet-handle" aria-hidden />
+            <SheetHeader className="ofb-sheet-head">
+              <SheetTitle>Filters</SheetTitle>
+              {draftActive > 0 && (
+                <button
+                  type="button"
+                  className="ofb-sheet-clear"
+                  onClick={resetDraft}
+                >
+                  Clear
+                </button>
+              )}
+            </SheetHeader>
+
+            <div className="ofb-sheet-body">
+              <Section title="Temperature">
+                <PillGroup
+                  value={draft.temp}
+                  options={[
+                    { v: "all", label: "All" },
+                    ...tempsList.map((t) => ({ v: t, label: t })),
+                  ]}
+                  onChange={(v) => updateDraft({ temp: v as TempValue })}
+                />
+              </Section>
+
+              <Section title="Origins">
+                <CheckList
+                  selected={draft.origins}
+                  options={options.origins}
+                  onChange={(v) => updateDraft({ origins: v })}
+                  withFlags
+                />
+              </Section>
+
+              <Section title="Incoterms">
+                <CheckList
+                  selected={draft.incoterms}
+                  options={options.incoterms}
+                  onChange={(v) => updateDraft({ incoterms: v })}
+                />
+              </Section>
+
+              <Section title="Markets">
+                <CheckList
+                  selected={draft.markets}
+                  options={options.markets}
+                  onChange={(v) => updateDraft({ markets: v })}
+                  withFlags
+                />
+              </Section>
+
+              {showHalalKosher && (
+                <>
+                  <Section title="Halal">
+                    <PillGroup
+                      value={draft.halal}
+                      options={TRI.map((v) => ({ v, label: v[0].toUpperCase() + v.slice(1) }))}
+                      onChange={(v) => updateDraft({ halal: v as TriValue })}
+                    />
+                  </Section>
+                  <Section title="Kosher">
+                    <PillGroup
+                      value={draft.kosher}
+                      options={TRI.map((v) => ({ v, label: v[0].toUpperCase() + v.slice(1) }))}
+                      onChange={(v) => updateDraft({ kosher: v as TriValue })}
+                    />
+                  </Section>
+                </>
+              )}
+            </div>
+
+            <div className="ofb-sheet-foot">
+              <button
+                type="button"
+                className="ofb-sheet-btn is-ghost"
+                onClick={() => setSheetOpen(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="ofb-sheet-btn is-primary"
+                onClick={applyDraft}
+              >
+                Apply{draftActive > 0 ? ` (${draftActive})` : ""}
+              </button>
+            </div>
+          </SheetContent>
+        </Sheet>
+      </div>
+    );
+  }
 
   return (
     <div className="ofb">
@@ -363,6 +537,104 @@ function Segmented({
             {opt.charAt(0).toUpperCase() + opt.slice(1)}
           </button>
         ))}
+      </div>
+    </div>
+  );
+}
+
+/* ---- Mobile sheet sub-components ---- */
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="ofb-sheet-section">
+      <div className="ofb-sheet-section-title">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function PillGroup({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { v: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="ofb-sheet-pills">
+      {options.map((o) => (
+        <button
+          key={o.v}
+          type="button"
+          className={cn("ofb-sheet-pill", value === o.v && "is-active")}
+          onClick={() => onChange(o.v)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CheckList({
+  selected,
+  options,
+  onChange,
+  withFlags = false,
+}: {
+  selected: string[];
+  options: string[];
+  onChange: (v: string[]) => void;
+  withFlags?: boolean;
+}) {
+  const [q, setQ] = useState("");
+  const filtered = useMemo(() => {
+    const sorted = [...options].sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
+    const qq = q.trim().toLowerCase();
+    if (!qq) return sorted;
+    return sorted.filter((o) => o.toLowerCase().includes(qq));
+  }, [options, q]);
+  const toggle = (val: string) => {
+    if (selected.includes(val)) onChange(selected.filter((x) => x !== val));
+    else onChange([...selected, val]);
+  };
+  return (
+    <div className="ofb-sheet-checklist">
+      {options.length > 6 && (
+        <input
+          type="search"
+          className="ofb-sheet-search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search…"
+        />
+      )}
+      <div className="ofb-sheet-checks">
+        {filtered.length === 0 && (
+          <div className="ofb-pop-empty">No options</div>
+        )}
+        {filtered.map((opt) => {
+          const on = selected.includes(opt);
+          const code = withFlags ? countryToCode(opt) : "";
+          return (
+            <button
+              type="button"
+              key={opt}
+              className={cn("ofb-sheet-check", on && "is-on")}
+              onClick={() => toggle(opt)}
+            >
+              <span className={cn("ofb-pop-check is-box", on && "is-on")}>
+                {on && <Check size={12} />}
+              </span>
+              {code && <FlagSVG code={code} size={14} />}
+              <span>{opt}</span>
+            </button>
+          );
+        })}
       </div>
     </div>
   );
