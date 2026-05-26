@@ -23,20 +23,29 @@ export interface AdminNegotiationRow {
   offer_number: number | null;
   offer_created_at: string | null;
   supplier_name: string | null;
+  supplier_country: string | null;
+  container_size: string | null;
+  total_fcl: number | null;
   origin_port: string | null;
   // buyer
   buyer_company_id: string;
   buyer_name: string | null;
+  buyer_country: string | null;
   // destination
   destination_port: string | null;
   // product (first item)
   product_name: string | null;
   product_amount: number | null;
   product_condition: string | null;
+  // aggregated
+  cut_names: string[];
+  product_category: string | null; // beef/pork/poultry/lamb (heuristic)
+  total_qty_kg: number;
   // value
   original_value: number;
   // rounds
   current_round: number;
+  round_count: number;
   // bids
   latest_buyer_bid: number | null;
   latest_supplier_counter: number | null;
@@ -72,8 +81,8 @@ export function useAdminNegotiations() {
       const negIds = negs.map((n) => n.id);
 
       const [offersRes, buyersRes, portsRes, itemsRes, roundsRes] = await Promise.all([
-        supabase.from("offers").select("id, offer_number, created_at, supplier_name, origin_port").in("id", offerIds),
-        supabase.from("companies").select("id, name").in("id", buyerIds),
+        supabase.from("offers").select("id, offer_number, created_at, supplier_name, supplier_id, origin_port, container_size, total_fcl").in("id", offerIds),
+        supabase.from("companies").select("id, name, country").in("id", buyerIds),
         portIds.length
           ? supabase.from("ports").select("id, name").in("id", portIds as string[])
           : Promise.resolve({ data: [], error: null }),
@@ -85,6 +94,11 @@ export function useAdminNegotiations() {
       const productIds = [...new Set(items.map((i) => i.customer_product_id).filter(Boolean))];
       const productsRes = productIds.length
         ? await supabase.from("customer_products").select("id, name").in("id", productIds as string[])
+        : { data: [], error: null };
+
+      const supplierIds = [...new Set((offersRes.data ?? []).map((o: any) => o.supplier_id).filter(Boolean))];
+      const suppliersRes = supplierIds.length
+        ? await supabase.from("companies").select("id, country").in("id", supplierIds as string[])
         : { data: [], error: null };
 
       const roundIds = (roundsRes.data ?? []).map((r) => r.id);
@@ -100,6 +114,7 @@ export function useAdminNegotiations() {
       const buyersMap = new Map((buyersRes.data ?? []).map((b) => [b.id, b]));
       const portsMap = new Map((portsRes.data ?? []).map((p) => [p.id, p]));
       const productsMap = new Map((productsRes.data ?? []).map((p) => [p.id, p]));
+      const suppliersMap = new Map((suppliersRes.data ?? []).map((s: any) => [s.id, s]));
       const itemsByOffer = new Map<string, typeof items>();
       items.forEach((it) => {
         const arr = itemsByOffer.get(it.offer_id) ?? [];
@@ -135,13 +150,27 @@ export function useAdminNegotiations() {
       });
 
       const out: AdminNegotiationRow[] = negs.map((n) => {
-        const offer = offersMap.get(n.offer_id);
+        const offer = offersMap.get(n.offer_id) as any;
         const buyer = buyersMap.get(n.buyer_company_id);
         const port = n.port_id ? portsMap.get(n.port_id) : null;
         const offerItems = itemsByOffer.get(n.offer_id) ?? [];
         const firstItem = offerItems[0];
         const product = firstItem?.customer_product_id ? productsMap.get(firstItem.customer_product_id) : null;
         const original_value = offerItems.reduce((s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0), 0);
+        const cut_names = offerItems
+          .map((it) => {
+            const p = it.customer_product_id ? productsMap.get(it.customer_product_id) : null;
+            return (p as any)?.name ?? null;
+          })
+          .filter(Boolean) as string[];
+        const total_qty_kg = offerItems.reduce((s, it) => s + Number(it.amount ?? 0), 0);
+        const supplier = offer?.supplier_id ? suppliersMap.get(offer.supplier_id) : null;
+        const allText = cut_names.join(" ").toLowerCase();
+        let product_category: string | null = null;
+        if (/\bpork\b|loin|ham|belly/.test(allText)) product_category = "pork";
+        else if (/chicken|poultry|wing|drumstick|breast/.test(allText)) product_category = "poultry";
+        else if (/lamb|mutton/.test(allText)) product_category = "lamb";
+        else if (/beef|brisket|ribeye|sirloin|tender|rump|shoulder clod|chuck|round/.test(allText)) product_category = "beef";
         return {
           id: n.id,
           status: n.status as NegotiationStatus,
@@ -153,17 +182,25 @@ export function useAdminNegotiations() {
           updated_at: n.updated_at,
           offer_id: n.offer_id,
           offer_number: offer?.offer_number ?? null,
-          offer_created_at: (offer as { created_at?: string | null } | undefined)?.created_at ?? null,
+          offer_created_at: offer?.created_at ?? null,
           supplier_name: offer?.supplier_name ?? null,
+          supplier_country: (supplier as any)?.country ?? null,
+          container_size: offer?.container_size ?? null,
+          total_fcl: offer?.total_fcl ?? null,
           origin_port: offer?.origin_port ?? null,
           buyer_company_id: n.buyer_company_id,
           buyer_name: buyer?.name ?? null,
+          buyer_country: (buyer as any)?.country ?? null,
           destination_port: port?.name ?? null,
           product_name: product?.name ?? null,
           product_amount: firstItem?.amount ? Number(firstItem.amount) : null,
           product_condition: firstItem?.condition ?? null,
+          cut_names,
+          product_category,
+          total_qty_kg,
           original_value,
           current_round: maxRoundByNeg.get(n.id) ?? 0,
+          round_count: (roundsRes.data ?? []).filter((r) => r.negotiation_id === n.id).length,
           latest_buyer_bid: latestBuyer.get(n.id)?.price ?? null,
           latest_supplier_counter: latestSupplier.get(n.id)?.price ?? null,
         };
