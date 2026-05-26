@@ -318,7 +318,7 @@ export default function SupplierRequests() {
             <ListCard
             key={r.id}
             onClick={() => navigate(`/supplier/requests/${r.id}`)}
-            title={(<span style={{ display: "inline-flex", alignItems: "center" }}><CutThumb src={cutImgs[r.product_name]} />{r.product_name}</span>) as unknown as string}
+            title={<span style={{ display: "inline-flex", alignItems: "center" }}><CutThumb src={cutImgs[r.product_name]} />{r.product_name}</span>}
             subtitle={`${formatRequestNumber(r.request_number, r.created_at)} · ${r.buyer_company_name ?? "Buyer"}`}
             meta={[
               { label: "Destination", value: r.destination_country },
