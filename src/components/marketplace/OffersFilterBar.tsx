@@ -541,3 +541,101 @@ function Segmented({
     </div>
   );
 }
+
+/* ---- Mobile sheet sub-components ---- */
+
+function Section({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div className="ofb-sheet-section">
+      <div className="ofb-sheet-section-title">{title}</div>
+      {children}
+    </div>
+  );
+}
+
+function PillGroup({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: { v: string; label: string }[];
+  onChange: (v: string) => void;
+}) {
+  return (
+    <div className="ofb-sheet-pills">
+      {options.map((o) => (
+        <button
+          key={o.v}
+          type="button"
+          className={cn("ofb-sheet-pill", value === o.v && "is-active")}
+          onClick={() => onChange(o.v)}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function CheckList({
+  selected,
+  options,
+  onChange,
+  withFlags = false,
+}: {
+  selected: string[];
+  options: string[];
+  onChange: (v: string[]) => void;
+  withFlags?: boolean;
+}) {
+  const [q, setQ] = useState("");
+  const filtered = useMemo(() => {
+    const sorted = [...options].sort((a, b) =>
+      a.localeCompare(b, undefined, { sensitivity: "base" }),
+    );
+    const qq = q.trim().toLowerCase();
+    if (!qq) return sorted;
+    return sorted.filter((o) => o.toLowerCase().includes(qq));
+  }, [options, q]);
+  const toggle = (val: string) => {
+    if (selected.includes(val)) onChange(selected.filter((x) => x !== val));
+    else onChange([...selected, val]);
+  };
+  return (
+    <div className="ofb-sheet-checklist">
+      {options.length > 6 && (
+        <input
+          type="search"
+          className="ofb-sheet-search"
+          value={q}
+          onChange={(e) => setQ(e.target.value)}
+          placeholder="Search…"
+        />
+      )}
+      <div className="ofb-sheet-checks">
+        {filtered.length === 0 && (
+          <div className="ofb-pop-empty">No options</div>
+        )}
+        {filtered.map((opt) => {
+          const on = selected.includes(opt);
+          const code = withFlags ? countryToCode(opt) : "";
+          return (
+            <button
+              type="button"
+              key={opt}
+              className={cn("ofb-sheet-check", on && "is-on")}
+              onClick={() => toggle(opt)}
+            >
+              <span className={cn("ofb-pop-check is-box", on && "is-on")}>
+                {on && <Check size={12} />}
+              </span>
+              {code && <FlagSVG code={code} size={14} />}
+              <span>{opt}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
