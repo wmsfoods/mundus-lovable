@@ -606,7 +606,7 @@ export default function BuyerCreateRequest() {
         {/* LEFT: what you need */}
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
-            <div className="bcr-field" style={{ gridColumn: "1 / -1" }}>
+            <div id="sec-protein" className="bcr-field" style={{ gridColumn: "1 / -1" }}>
               <label>PROTEINS*</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {buyerProteins.map((p) => {
@@ -634,7 +634,7 @@ export default function BuyerCreateRequest() {
                 })}
               </div>
             </div>
-            <div className="bcr-field">
+            <div id="sec-destination" className="bcr-field">
               <label>Destination country *</label>
               <Popover open={destOpen} onOpenChange={setDestOpen}>
                 <PopoverTrigger asChild>
@@ -711,7 +711,7 @@ export default function BuyerCreateRequest() {
                 )}
               </div>
             )}
-            <div className="bcr-field">
+            <div id="sec-incoterms" className="bcr-field">
               <label>Preferred incoterms *</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {INCOTERM_OPTIONS.map((inc) => {
