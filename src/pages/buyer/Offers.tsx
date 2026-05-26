@@ -27,6 +27,7 @@ import {
 } from "@/components/marketplace/OffersFilterBar";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -110,6 +111,7 @@ export function OfferCard({
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
+  const cutImgs = useCutImages(items.map((it) => (it.customer_product?.name ?? "").split(",")[0]));
 
   const category =
     firstItem?.customer_product?.standard_product?.product_category?.name_en ??
@@ -238,7 +240,8 @@ export function OfferCard({
         {mixed ? (
           <div className="cut-chips">
             {items.slice(0, 3).map((it) => (
-              <span key={it.id} className="cut-chip">
+              <span key={it.id} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
+                <CutThumb src={cutImgs[(it.customer_product?.name ?? "").split(",")[0]]} size={20} />
                 {(it.customer_product?.name ?? "Product / Cut").split(",")[0]}
               </span>
             ))}
@@ -249,7 +252,8 @@ export function OfferCard({
             )}
           </div>
         ) : (
-          <div className="oc-cut-text">
+          <div className="oc-cut-text" style={{ display: "inline-flex", alignItems: "center" }}>
+            <CutThumb src={cutImgs[(firstItem?.customer_product?.name ?? "").split(",")[0]]} size={20} />
             {firstItem?.customer_product?.name ?? offer.supplier_name}
           </div>
         )}

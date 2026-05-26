@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatRequestNumber } from "@/lib/requestNumber";
 import type { BuyerRequestRow } from "@/hooks/useBuyerRequests";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 
 const PAGE_SIZE = 10;
 
@@ -131,6 +132,7 @@ export default function SupplierRequests() {
   const from = total === 0 ? 0 : (pageSafe - 1) * PAGE_SIZE + 1;
   const to = Math.min(pageSafe * PAGE_SIZE, total);
   const slice = filtered.slice(from === 0 ? 0 : from - 1, to);
+  const cutImgs = useCutImages(slice.map((r) => r.product_name));
 
   const handleCreateOffer = (r: Row) => {
     navigate(`/supplier/offers/new?from=${r.id}`, {
@@ -235,7 +237,12 @@ export default function SupplierRequests() {
                   )}
                 </td>
                 <td>{r.buyer_company_name ?? "—"}</td>
-                <td>{r.product_name}</td>
+                <td>
+                  <span style={{ display: "inline-flex", alignItems: "center" }}>
+                    <CutThumb src={cutImgs[r.product_name]} />
+                    {r.product_name}
+                  </span>
+                </td>
                 <td>{r.destination_country}{r.destination_port ? ` · ${r.destination_port}` : ""}</td>
                 <td>{r.incoterm ?? "—"}</td>
                 <td>{fmtKg(Number(r.quantity_kg))} kg</td>
@@ -311,7 +318,7 @@ export default function SupplierRequests() {
             <ListCard
             key={r.id}
             onClick={() => navigate(`/supplier/requests/${r.id}`)}
-            title={r.product_name}
+            title={<span style={{ display: "inline-flex", alignItems: "center" }}><CutThumb src={cutImgs[r.product_name]} />{r.product_name}</span>}
             subtitle={`${formatRequestNumber(r.request_number, r.created_at)} · ${r.buyer_company_name ?? "Buyer"}`}
             meta={[
               { label: "Destination", value: r.destination_country },
