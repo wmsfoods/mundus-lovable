@@ -186,10 +186,23 @@ export function CounterOfferModal({
     const v = parseFloat(bulkValue);
     if (!Number.isFinite(v) || v <= 0) return;
     const valKg = bulkMode === "amount" ? fromDisplay(v, "price", unit) : v;
+    // Supplier "self" anchor must respect the ceiling (previous counter) on R2+.
+    const supplierPrevCounter = new Map<string, number>();
+    if (perspective === "supplier") {
+      const supplierRoundsAll = rounds.filter((r) => r.round % 2 === 0);
+      const lastSupplierRound = supplierRoundsAll[supplierRoundsAll.length - 1];
+      for (const c of lastSupplierRound?.cut_rounds ?? []) {
+        supplierPrevCounter.set(c.offer_item_id, Number(c.price_per_kg));
+      }
+    }
     setAllCounters((it) => {
       const asking = Number(it.price);
+      const selfBase =
+        perspective === "supplier"
+          ? Math.min(asking, supplierPrevCounter.get(it.id) ?? asking)
+          : asking;
       const their = theirPrices.get(it.id) ?? asking;
-      return priceFromDelta(perspective, bulkAnchor, bulkMode, valKg, asking, their);
+      return priceFromDelta(perspective, bulkAnchor, bulkMode, valKg, selfBase, their);
     });
     clearShortcut();
   };
