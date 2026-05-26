@@ -481,12 +481,14 @@ export default function BuyerOffers() {
         <b>{t("buyer.offers.title")}</b>
       </div>
 
-      <div className="page-title">
-        <span className="chip">
-          <TagIcon size={20} />
-        </span>
-        <h1>{t("buyer.offers.title")}</h1>
-      </div>
+      {!isMobile && (
+        <div className="page-title">
+          <span className="chip">
+            <TagIcon size={20} />
+          </span>
+          <h1>{t("buyer.offers.title")}</h1>
+        </div>
+      )}
 
       <div className="bo-filterbar">
         {!isMobile && (
