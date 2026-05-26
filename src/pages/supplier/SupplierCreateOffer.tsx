@@ -576,6 +576,33 @@ export default function SupplierCreateOffer() {
   const fp = Math.min((tw / cap) * 100, 100);
   const fc = fp > 95 ? "#16a34a" : fp > 70 ? "#ca8a04" : "var(--p800)";
 
+  // ─── Container/quantity rules (max 20 FCL, max 28,000 kg per container) ──
+  const ccCount = Math.max(1, Math.min(20, containerCount || 1));
+  const perContainerKg = tw / ccCount;
+  const fitsIn20 = perContainerKg <= 14000;
+  const exceedsHardCap = perContainerKg > 28000;
+  const oversized40Note =
+    csize === "40ft" && tw > 0 && fitsIn20
+      ? "Quantity fits in a 20' FCL — supplier offered a 40' FCL."
+      : "";
+
+  useEffect(() => {
+    if (csize === "20ft" && tw > 0 && !fitsIn20) {
+      setCsize("40ft");
+      toast.message("Switched to 40' FCL", {
+        description: "Quantity exceeds a 20' FCL capacity (14,000 kg per container).",
+      });
+    }
+  }, [csize, tw, fitsIn20]);
+
+  const pickCsize = (next: "20ft" | "40ft") => {
+    if (next === "20ft" && tw > 0 && !fitsIn20) {
+      toast.error("Due to the quantity, this must be a 40' FCL container.");
+      return;
+    }
+    setCsize(next);
+  };
+
   /* Markets */
   const toggleMarket = useCallback((id: string) => {
     const m = MARKETS.find((x) => x.id === id);
