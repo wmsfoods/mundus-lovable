@@ -17,6 +17,7 @@ import {
   type DealsFilterState,
 } from "@/hooks/useDealsFilter";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { MobileTechHeader } from "@/components/mundus/MobileTechHeader";
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -75,6 +76,16 @@ export default function BuyerOrders() {
   const from = total === 0 ? 0 : 1;
   const to = total;
 
+  const activeCount = useMemo(
+    () =>
+      (orders ?? []).filter((o) => {
+        const s = (o.status ?? "").toLowerCase();
+        return s !== "delivered" && s !== "cancelled" && s !== "completed";
+      }).length,
+    [orders],
+  );
+  const totalCount = orders?.length ?? 0;
+
   const statusOptions = options.statuses.map((s) => ({
     value: s,
     label: getStatusLabel(s),
@@ -82,6 +93,20 @@ export default function BuyerOrders() {
 
   return (
     <>
+      {isMobile && (
+        <MobileTechHeader
+          icon={FileTextIcon}
+          eyebrow="Buyer · Workspace"
+          title={t("buyer.orders.title")}
+          subtitle={t("buyer.orders.heroTitle")}
+          stats={[
+            { label: "Total", value: totalCount, accent: "primary" },
+            { label: "Active", value: activeCount, accent: "success" },
+            { label: "Filtered", value: total, accent: "muted" },
+          ]}
+        />
+      )}
+
       {!isMobile && (
         <section className="hero" style={{ marginBottom: 24 }}>
           <h2>{t("buyer.orders.heroTitle")}</h2>
