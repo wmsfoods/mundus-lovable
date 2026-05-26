@@ -371,9 +371,60 @@
     opacity: 1;
   }
   .action-row {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
   }
-  .action-card { padding: 18px; }
+  .action-card {
+    padding: 14px 12px;
+    gap: 8px;
+    min-height: 0;
+  }
+  .action-card .head { gap: 8px; }
+  .action-card .head .ic-chip {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+  .action-card .head .ic-chip svg { width: 16px; height: 16px; }
+  .action-card .title { font-size: 13px; }
+  .action-card .desc { display: none; }
+  .action-card .btn-block {
+    padding: 7px 10px;
+    font-size: 11px;
+    gap: 4px;
+    border-radius: 8px;
+    margin-top: 4px;
+  }
+}
+@media (max-width: 480px) {
+  .action-row {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .action-card {
+    padding: 12px 10px;
+    gap: 6px;
+    border-radius: 12px;
+  }
+  .action-card .head .ic-chip {
+    width: 28px;
+    height: 28px;
+  }
+  .action-card .head .ic-chip svg { width: 14px; height: 14px; }
+  .action-card .title { font-size: 12px; }
+  .action-card .btn-block {
+    padding: 6px 8px;
+    font-size: 10px;
+    border-radius: 6px;
+  }
+}
+@media (max-width: 360px) {
+  .action-card .title { font-size: 11px; }
+  .action-card .btn-block {
+    font-size: 9px;
+    padding: 5px 6px;
+  }
 }
 @media (max-width: 480px) {
   .hero h2 { font-size: 18px; }
