@@ -29,23 +29,69 @@ export function useCutImages(names: Array<string | null | undefined>): Record<st
       return;
     }
     let cancelled = false;
-    supabase
-      .from("cuts")
-      .select("name, image_url")
-      .in("name", missing)
-      .then(({ data }) => {
-        if (cancelled) return;
-        for (const n of missing) cache.set(n, null);
-        for (const row of (data ?? []) as Array<{ name: string; image_url: string | null }>) {
-          cache.set(row.name, row.image_url ?? null);
+    (async () => {
+      // 1) Exact match on requested names
+      const { data: exactRows } = await supabase
+        .from("cuts")
+        .select("name, image_url")
+        .in("name", missing);
+      const exactByLower = new Map<string, string>();
+      for (const row of (exactRows ?? []) as Array<{ name: string; image_url: string | null }>) {
+        if (row.image_url) exactByLower.set(row.name.toLowerCase(), row.image_url);
+      }
+
+      // 2) For anything still missing, do a fuzzy lookup across all cuts that have images
+      const stillMissing = missing.filter((n) => !exactByLower.has(n.toLowerCase()));
+      let allWithImages: Array<{ name: string; image_url: string }> = [];
+      if (stillMissing.length > 0) {
+        const { data } = await supabase
+          .from("cuts")
+          .select("name, image_url")
+          .not("image_url", "is", null);
+        allWithImages = ((data ?? []) as Array<{ name: string; image_url: string | null }>)
+          .filter((r) => !!r.image_url)
+          .map((r) => ({ name: r.name, image_url: r.image_url as string }));
+      }
+
+      if (cancelled) return;
+
+      const resolve = (n: string): string | null => {
+        const lower = n.toLowerCase().trim();
+        const exact = exactByLower.get(lower);
+        if (exact) return exact;
+        // Strip bracketed bone spec like "[Boneless]" and trailing spec in parens
+        const cleaned = lower.replace(/\s*\[[^\]]*\]\s*/g, " ").replace(/\s*\([^)]*\)\s*/g, " ").replace(/\s+/g, " ").trim();
+        if (cleaned !== lower) {
+          const exact2 = exactByLower.get(cleaned);
+          if (exact2) return exact2;
         }
-        const next: Record<string, string> = {};
-        for (const n of unique) {
-          const v = cache.get(n);
-          if (v) next[n] = v;
+        // Substring either direction
+        let m = allWithImages.find((d) => d.name.toLowerCase() === cleaned);
+        if (!m) {
+          m = allWithImages.find((d) => {
+            const dn = d.name.toLowerCase();
+            return cleaned.includes(dn) || dn.includes(cleaned);
+          });
         }
-        setMap(next);
-      });
+        // Last 2 meaningful words
+        if (!m) {
+          const words = cleaned.split(/[\s,]+/).filter((w) => w.length > 2);
+          const tail = words.slice(-2).join(" ");
+          if (tail) m = allWithImages.find((d) => d.name.toLowerCase().includes(tail));
+        }
+        return m?.image_url ?? null;
+      };
+
+      for (const n of missing) {
+        cache.set(n, resolve(n));
+      }
+      const next: Record<string, string> = {};
+      for (const n of unique) {
+        const v = cache.get(n);
+        if (v) next[n] = v;
+      }
+      setMap(next);
+    })();
     return () => {
       cancelled = true;
     };
