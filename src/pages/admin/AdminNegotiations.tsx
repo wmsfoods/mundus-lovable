@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Handshake, AlertCircle, Search, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
@@ -262,7 +262,7 @@ export default function AdminNegotiations() {
                     const isCluster = group.length > 1;
                     const clusterCollapsed = collapsedGroups[head.offer_id];
                     return (
-                      <>
+                      <Fragment key={`g-${head.offer_id}`}>
                         {isCluster && (
                           <tr
                             key={`grp-${head.offer_id}`}
@@ -296,7 +296,7 @@ export default function AdminNegotiations() {
                             isLast={idx === group.length - 1}
                           />
                         ))}
-                      </>
+                       </Fragment>
                     );
                   })}
                 </tbody>
