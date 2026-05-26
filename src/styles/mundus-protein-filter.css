@@ -153,3 +153,43 @@
   padding: 0 6px; height: 28px;
 }
 .bo-chip-clear:hover { color: #111827; }
+/* Mobile compaction for buyer offers top filter row */
+@media (max-width: 720px) {
+  .bo-filterbar { gap: 8px; margin-bottom: 10px; }
+  .bo-filter-row { gap: 8px; flex-wrap: nowrap; }
+  .bo-filter-row .auct-info-link {
+    flex-shrink: 0;
+    padding: 6px 8px;
+    text-decoration: none;
+    border: 1px solid var(--g200, #e5e7eb);
+    border-radius: 999px;
+    height: 32px;
+    color: var(--g600, #4b5563);
+  }
+  .bo-filter-row .auct-info-link span,
+  .bo-filter-row .auct-info-link::after { display: none; }
+  /* Hide the text node by clipping — keep icon visible */
+  .bo-filter-row .auct-info-link {
+    font-size: 0;
+    width: 32px;
+    justify-content: center;
+    padding: 0;
+  }
+  .bo-filter-row .auct-info-link svg { width: 16px; height: 16px; }
+  .bo-filter-row .bo-filter-pill {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+  .bo-filter-row .mini-select-wrap {
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  .bo-filter-row .mini-select {
+    height: 32px;
+    font-size: 12px;
+    padding: 0 26px 0 10px;
+    max-width: 140px;
+  }
+}
