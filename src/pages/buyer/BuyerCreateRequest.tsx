@@ -376,6 +376,46 @@ export default function BuyerCreateRequest() {
   const pctOfCapacity = capacity > 0 ? Math.min(100, (totalKg / capacity) * 100) : 0;
   const filledRows = rows.filter((r) => r.cut.trim()).length;
 
+  // ─── Container/quantity rules ──────────────────────────────────────────────
+  const ccNum = Math.max(1, Math.min(20, parseInt(containerCount) || 1));
+  const perContainerKg = totalKg / ccNum;
+  const fitsIn20 = perContainerKg <= CONTAINER_KG["20"];
+  const exceedsHardCap = perContainerKg > CONTAINER_KG["40"];
+  const oversized40Note =
+    containerType === "40" && totalKg > 0 && fitsIn20
+      ? "Quantity fits in a 20' FCL — 40' FCL was selected. The supplier will see this note."
+      : "";
+
+  // Auto upgrade 20' → 40' when the load doesn't fit a 20'
+  useEffect(() => {
+    if (containerType === "20" && totalKg > 0 && !fitsIn20) {
+      setContainerType("40");
+      toast.message("Switched to 40' FCL", {
+        description: "Quantity exceeds a 20' FCL capacity (14,000 kg per container).",
+      });
+    }
+  }, [containerType, totalKg, fitsIn20]);
+
+  const handlePickContainer = (next: "20" | "40") => {
+    if (next === "20" && totalKg > 0 && !fitsIn20) {
+      toast.error("Due to the quantity, this must be a 40' FCL container.");
+      return;
+    }
+    setContainerType(next);
+  };
+
+  const handleContainerCount = (raw: string) => {
+    if (raw === "") { setContainerCount(""); return; }
+    const n = parseInt(raw);
+    if (!Number.isFinite(n)) return;
+    if (n > 20) {
+      toast.error("Maximum is 20 containers per request.");
+      setContainerCount("20");
+      return;
+    }
+    setContainerCount(String(Math.max(1, n)));
+  };
+
   const update = (id: string, patch: Partial<Row>) =>
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   const remove = (id: string) =>
@@ -407,6 +447,11 @@ export default function BuyerCreateRequest() {
     if (!destCountry) return toast.error("Select a destination country");
     if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
     if (filledRows === 0) return toast.error("Add at least one cut");
+    if (exceedsHardCap) {
+      return toast.error(
+        `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg/container). Increase container count or reduce quantities.`,
+      );
+    }
     if (distribution === "specific" && !targetSupplierId) {
       return toast.error("Select a supplier or switch to marketplace distribution");
     }
@@ -424,6 +469,7 @@ export default function BuyerCreateRequest() {
     const additional = [
       specs ? `Cuts:\n${specs}` : "",
       compliance.length ? `Compliance: ${compliance.join(", ")}` : "",
+      oversized40Note ? `Container note: ${oversized40Note}` : "",
       notes ? `Notes:\n${notes}` : "",
     ].filter(Boolean).join("\n\n");
 
@@ -1158,19 +1204,29 @@ export default function BuyerCreateRequest() {
             <div className="bcr-side-block">
               <label className="bcr-side-label">CONTAINER</label>
               <div className="bcr-pills">
-                <button type="button" className={`bcr-pill ${containerType === "20" ? "on" : ""}`} onClick={() => setContainerType("20")}>20' FCL</button>
-                <button type="button" className={`bcr-pill ${containerType === "40" ? "on" : ""}`} onClick={() => setContainerType("40")}>40' FCL</button>
+                <button type="button" className={`bcr-pill ${containerType === "20" ? "on" : ""}`} onClick={() => handlePickContainer("20")}>20' FCL</button>
+                <button type="button" className={`bcr-pill ${containerType === "40" ? "on" : ""}`} onClick={() => handlePickContainer("40")}>40' FCL</button>
               </div>
               <div className="bcr-count-row">
                 <span>×</span>
                 <input
-                  type="number" min="1"
+                  type="number" min="1" max="20"
                   value={containerCount}
-                  onChange={(e) => setContainerCount(e.target.value)}
+                  onChange={(e) => handleContainerCount(e.target.value)}
                   className="bcr-input bcr-input-tiny"
                 />
                 <span className="bcr-muted">FCL</span>
               </div>
+              {oversized40Note && (
+                <div style={{ fontSize: 11, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "6px 8px", marginTop: 6 }}>
+                  ⚠ {oversized40Note}
+                </div>
+              )}
+              {exceedsHardCap && (
+                <div style={{ fontSize: 11, color: "#991b1b", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "6px 8px", marginTop: 6 }}>
+                  ✕ Per-container quantity exceeds 28,000 kg. Add more containers or reduce qty.
+                </div>
+              )}
             </div>
 
             <div className="bcr-side-block">

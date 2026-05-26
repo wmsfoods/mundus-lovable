@@ -40,7 +40,7 @@ export const qtyLabel = (unit: WeightUnit) => (unit === "kg" ? "Qty (kg)" : "Qty
 
 /** Container capacities — always stored in kg. */
 export function containerCapacityKg(size: "20ft" | "40ft") {
-  return size === "40ft" ? 28000 : 13000;
+  return size === "40ft" ? 28000 : 14000;
 }
 
 /* ─── Formatters ─── */

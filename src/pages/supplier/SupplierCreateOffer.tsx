@@ -576,6 +576,33 @@ export default function SupplierCreateOffer() {
   const fp = Math.min((tw / cap) * 100, 100);
   const fc = fp > 95 ? "#16a34a" : fp > 70 ? "#ca8a04" : "var(--p800)";
 
+  // ─── Container/quantity rules (max 20 FCL, max 28,000 kg per container) ──
+  const ccCount = Math.max(1, Math.min(20, containerCount || 1));
+  const perContainerKg = tw / ccCount;
+  const fitsIn20 = perContainerKg <= 14000;
+  const exceedsHardCap = perContainerKg > 28000;
+  const oversized40Note =
+    csize === "40ft" && tw > 0 && fitsIn20
+      ? "Quantity fits in a 20' FCL — supplier offered a 40' FCL."
+      : "";
+
+  useEffect(() => {
+    if (csize === "20ft" && tw > 0 && !fitsIn20) {
+      setCsize("40ft");
+      toast.message("Switched to 40' FCL", {
+        description: "Quantity exceeds a 20' FCL capacity (14,000 kg per container).",
+      });
+    }
+  }, [csize, tw, fitsIn20]);
+
+  const pickCsize = (next: "20ft" | "40ft") => {
+    if (next === "20ft" && tw > 0 && !fitsIn20) {
+      toast.error("Due to the quantity, this must be a 40' FCL container.");
+      return;
+    }
+    setCsize(next);
+  };
+
   /* Markets */
   const toggleMarket = useCallback((id: string) => {
     const m = MARKETS.find((x) => x.id === id);
@@ -776,6 +803,12 @@ export default function SupplierCreateOffer() {
     }
     if (selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
       toast.error("Please enter the EXW pickup location");
+      return;
+    }
+    if (exceedsHardCap) {
+      toast.error(
+        `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg). Increase container count or reduce quantities.`,
+      );
       return;
     }
     setPublishing(true);
@@ -1205,7 +1238,7 @@ export default function SupplierCreateOffer() {
               <span className="cov4-cfg-l">Container</span>
               <div className="cov4-tgl">
                 {(["20ft", "40ft"] as const).map((opt) => (
-                  <button key={opt} type="button" className={csize === opt ? "on" : ""} onClick={() => setCsize(opt)}>{opt}</button>
+                  <button key={opt} type="button" className={csize === opt ? "on" : ""} onClick={() => pickCsize(opt)}>{opt}</button>
                 ))}
               </div>
             </div>
@@ -1222,13 +1255,31 @@ export default function SupplierCreateOffer() {
               <input
                 type="number"
                 min={1}
-                max={10}
+                max={20}
                 value={containerCount}
-                onChange={(e) => setContainerCount(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => {
+                  const n = parseInt(e.target.value) || 1;
+                  if (n > 20) { toast.error("Maximum is 20 containers per offer."); setContainerCount(20); return; }
+                  setContainerCount(Math.max(1, n));
+                }}
                 style={{ width: 60, padding: "6px 8px", border: "1.5px solid #D1D5DB", borderRadius: 8, fontSize: 14, fontWeight: 600, textAlign: "center" }}
               />
             </div>
           </div>
+          {(oversized40Note || exceedsHardCap) && (
+            <div style={{ marginTop: 4 }}>
+              {oversized40Note && (
+                <div style={{ fontSize: 11, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "6px 8px", marginBottom: 4 }}>
+                  ⚠ {oversized40Note}
+                </div>
+              )}
+              {exceedsHardCap && (
+                <div style={{ fontSize: 11, color: "#991b1b", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "6px 8px" }}>
+                  ✕ Per-container quantity exceeds 28,000 kg. Add more containers or reduce qty.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Market chips */}
           <div id="sec-markets" className="cov4-chips">
