@@ -82,19 +82,25 @@ export default function BuyerOrders() {
 
   return (
     <>
-      <section className="hero" style={{ marginBottom: 24 }}>
-        <h2>{t("buyer.orders.heroTitle")}</h2>
-        <div className="hero-photo" aria-hidden="true" />
-      </section>
+      {!isMobile && (
+        <section className="hero" style={{ marginBottom: 24 }}>
+          <h2>{t("buyer.orders.heroTitle")}</h2>
+          <div className="hero-photo" aria-hidden="true" />
+        </section>
+      )}
 
-      <Crumbs
-        items={[
-          { label: t("buyer.offers.crumbHome"), to: "/buyer" },
-          { label: t("buyer.orders.title") },
-        ]}
-      />
+      {!isMobile && (
+        <Crumbs
+          items={[
+            { label: t("buyer.offers.crumbHome"), to: "/buyer" },
+            { label: t("buyer.orders.title") },
+          ]}
+        />
+      )}
 
-      <PageTitle icon={FileTextIcon} title={t("buyer.orders.title")} />
+      {!isMobile && (
+        <PageTitle icon={FileTextIcon} title={t("buyer.orders.title")} />
+      )}
 
       <DealsFilterBar
         value={filter}
