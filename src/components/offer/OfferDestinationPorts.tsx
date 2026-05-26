@@ -40,31 +40,21 @@ export function OfferDestinationPorts({ ports }: { ports: Port[] }) {
   const visible = ports.slice(0, 3);
   const extra = ports.length - visible.length;
   const summary = visible.map((p) => p.name).join(", ");
-  const text = extra > 0 ? `📍 ${summary} +${extra} more` : `📍 ${summary}`;
   const label = (
-    <span
-      style={{
-        fontSize: 11,
-        color: "#6B7280",
-        cursor: "pointer",
-        textDecoration: "underline dotted",
-        textUnderlineOffset: 2,
-      }}
-    >
-      {text}
+    <span style={{ fontSize: 11, color: "#6B7280", cursor: extra > 0 ? "pointer" : "default" }}>
+      📍 {summary}{extra > 0 ? ` +${extra} more` : ""}
     </span>
   );
+  if (extra === 0) {
+    return <div style={{ marginTop: 2 }}>{label}</div>;
+  }
   return (
-    <div style={{ marginTop: 4 }}>
-      <HoverCard openDelay={100}>
-        <HoverCardTrigger asChild>
-          <button type="button" style={{ background: "none", border: 0, padding: 0, cursor: "pointer" }}>
-            {label}
-          </button>
-        </HoverCardTrigger>
+    <div style={{ marginTop: 2 }}>
+      <HoverCard>
+        <HoverCardTrigger asChild>{label}</HoverCardTrigger>
         <HoverCardContent className="w-64">
           <div style={{ fontSize: 12, fontWeight: 600, marginBottom: 6 }}>
-            All destination ports ({ports.length})
+            All destination ports
           </div>
           <ul style={{ fontSize: 12, color: "#374151", margin: 0, paddingLeft: 16 }}>
             {ports.map((p) => (

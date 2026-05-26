@@ -612,12 +612,6 @@
       "negotiate": "Négocier",
       "placeOrder": "Passer la commande",
       "comingSoonFlow": "Flux {{action}} — bientôt disponible",
-      "closeDeal": "Conclure l'Affaire",
-      "closeDealConfirmTitle": "Conclure l'Affaire",
-      "closeDealConfirmBody": "Êtes-vous sûr ? Vous ne pourrez pas annuler cette action ensuite.",
-      "closeDealCancel": "Annuler",
-      "closeDealConfirm": "Conclure l'Affaire",
-      "closeDealToast": "Demande envoyée au fournisseur. Vous aurez bientôt un retour sur cette négociation.",
       "marbling": {
         "0": "Non classifié",
         "1": "Faible",

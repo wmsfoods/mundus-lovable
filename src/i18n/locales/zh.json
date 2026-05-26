@@ -612,12 +612,6 @@
       "negotiate": "谈判",
       "placeOrder": "下订单",
       "comingSoonFlow": "{{action}} 流程 — 即将推出",
-      "closeDeal": "完成交易",
-      "closeDealConfirmTitle": "完成交易",
-      "closeDealConfirmBody": "您确定吗？此操作之后无法撤销。",
-      "closeDealCancel": "取消",
-      "closeDealConfirm": "完成交易",
-      "closeDealToast": "请求已发送给供应商。您很快就会收到关于此次谈判的回复。",
       "marbling": {
         "0": "未分类",
         "1": "低",

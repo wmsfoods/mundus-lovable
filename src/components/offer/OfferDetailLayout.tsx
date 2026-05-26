@@ -214,7 +214,13 @@ export function OfferDetailLayout(props: OfferDetailLayoutProps) {
                     <span className="od2-side-extra">+{extraDests}</span>
                   )}
                 </div>
-                {destinationPorts.length > 0 && (
+                {visiblePorts.length > 0 && (
+                  <div className="od2-side-sub">
+                    📍 {visiblePorts.map((p) => p.name).join(", ")}
+                    {extraPorts > 0 && ` +${extraPorts} more`}
+                  </div>
+                )}
+                {destinationPorts.length > 3 && (
                   <OfferDestinationPorts ports={destinationPorts} />
                 )}
               </>

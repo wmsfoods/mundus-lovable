@@ -617,12 +617,6 @@
       "negotiate": "Negociar",
       "placeOrder": "Realizar Pedido",
       "comingSoonFlow": "Flujo de {{action}} — próximamente",
-      "closeDeal": "Cerrar Trato",
-      "closeDealConfirmTitle": "Cerrar Trato",
-      "closeDealConfirmBody": "¿Estás seguro? No podrás deshacer esta acción después.",
-      "closeDealCancel": "Cancelar",
-      "closeDealConfirm": "Cerrar Trato",
-      "closeDealToast": "Solicitud enviada al proveedor. Pronto tendrás una respuesta sobre esta negociación.",
       "marbling": {
         "0": "No Clasificado",
         "1": "Bajo",

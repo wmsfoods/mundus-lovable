@@ -127,37 +127,6 @@
 .nego-row-child td { padding-left: 24px; }
 .nego-row-child.hidden { display: none; }
 
-/* --- Tree connector lines (desktop) ------------------------------ */
-.nego-row-child td:first-child {
-  position: relative;
-  padding-left: 44px !important;
-}
-/* vertical line: full height for middle children, half-height for last */
-.nego-row-child td:first-child::before {
-  content: "";
-  position: absolute;
-  left: 22px;
-  top: 0;
-  bottom: 0;
-  width: 1px;
-  background: #d1b3bd; /* rose-tinted */
-}
-/* horizontal branch at vertical center */
-.nego-row-child td:first-child::after {
-  content: "";
-  position: absolute;
-  left: 22px;
-  top: 50%;
-  width: 14px;
-  height: 1px;
-  background: #d1b3bd;
-}
-/* L-shape on the last child of a group (no sibling child below) */
-.nego-row-child:not(:has(+ .nego-row-child)) td:first-child::before {
-  bottom: auto;
-  height: 50%;
-}
-
 .nego-avatar {
   display: inline-flex;
   align-items: center;
@@ -233,10 +202,6 @@
   .nego-table tbody td { display: block; padding: 6px 12px; border-bottom: none; }
   .nego-table tbody tr { display: block; border-bottom: 1px solid #f1f1f4; padding: 8px 0; }
   .nego-row-parent td { padding: 12px; }
-  /* disable tree connectors on mobile (stacked layout) */
-  .nego-row-child td:first-child { padding-left: 12px !important; }
-  .nego-row-child td:first-child::before { background: transparent; width: 0; }
-  .nego-row-child td:first-child::after  { background: transparent; width: 0; }
   .nego-row-child td::before {
     content: attr(data-label);
     display: inline-block;
