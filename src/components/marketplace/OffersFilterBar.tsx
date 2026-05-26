@@ -124,7 +124,6 @@ export function OffersFilterBar({
 
     return (
       <div className="ofb ofb-mobile">
-        {proteinNode && <div className="ofb-mobile-protein">{proteinNode}</div>}
         <div className="ofb-mobile-row">
           <div className="ofb-search">
             <SearchIcon size={15} aria-hidden />
@@ -159,6 +158,7 @@ export function OffersFilterBar({
             )}
           </button>
         </div>
+        {proteinNode && <div className="ofb-mobile-protein">{proteinNode}</div>}
         {rightSlot && <div className="ofb-mobile-right">{rightSlot}</div>}
 
         <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
