@@ -812,7 +812,7 @@ export default function BuyerCreateRequest() {
             </div>
           )}
 
-          <div className="bcr-card">
+          <div id="sec-cuts" className="bcr-card">
             <div className="bcr-cuts-head">
               <div className="bcr-cuts-title">
                 <span className="bcr-ic-sq" aria-hidden>▦</span>
@@ -835,10 +835,18 @@ export default function BuyerCreateRequest() {
             </div>
 
             <div className="bcr-progress">
-              <div className="bcr-progress-bar" style={{ width: `${pctOfCapacity}%` }} />
+              <div
+                className="bcr-progress-bar"
+                style={{
+                  width: `${pctOfCapacity}%`,
+                  background: totalKg > capacity ? "#dc2626" : undefined,
+                }}
+              />
             </div>
             <div className="bcr-progress-meta">
-              <span>{Math.round(pctOfCapacity)}% of container</span>
+              <span style={totalKg > capacity ? { color: "#dc2626", fontWeight: 600 } : undefined}>
+                {Math.round(pctOfCapacity)}% of container{totalKg > capacity ? " — overfilled" : ""}
+              </span>
               <span>{fmtWeight(totalKg, unit)} / {fmtWeight(capacity, unit)} {weightLabel(unit)}</span>
             </div>
 
