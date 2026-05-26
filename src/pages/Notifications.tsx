@@ -12,10 +12,9 @@ import {
 } from "@/components/icons";
 import { useAppNotifications, type AppNotification } from "@/hooks/useAppNotifications";
 import { formatTimeAgo } from "@/lib/notifications";
+import "@/styles/mundus-notifications.css";
 
 const WINE = "#8B2252";
-const WINE_TINT = "#FBEAF0";
-const WINE_BG = "#fdf8fa";
 
 const ICON_MAP: Record<string, (p: { size?: number; style?: React.CSSProperties }) => JSX.Element> = {
   bell: BellIcon,
@@ -56,98 +55,39 @@ export default function Notifications() {
     category === "all" ? notifications : notifications.filter((n) => n.category === category);
 
   return (
-    <div style={{ maxWidth: 800, margin: "0 auto", padding: "16px 16px 48px" }}>
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          marginBottom: 16,
-          gap: 12,
-          flexWrap: "wrap",
-        }}
-      >
-        <h1 style={{ fontSize: 24, fontWeight: 700, margin: 0 }}>Notifications</h1>
-        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+    <div className="ntf-page">
+      <div className="ntf-header">
+        <h1>Notifications</h1>
+        <div className="ntf-actions">
           {unreadCount > 0 && (
-            <button
-              type="button"
-              onClick={markAllRead}
-              style={{
-                fontSize: 13,
-                color: WINE,
-                background: "none",
-                border: "none",
-                cursor: "pointer",
-                fontWeight: 600,
-              }}
-            >
+            <button type="button" onClick={markAllRead}>
               Mark all read
             </button>
           )}
-          <Link
-            to="/settings/notifications"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 4,
-              fontSize: 13,
-              color: "var(--fg-muted)",
-              textDecoration: "none",
-            }}
-          >
+          <Link to="/settings/notifications">
             <SettingsIcon size={14} /> Preferences
           </Link>
         </div>
       </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 6,
-          marginBottom: 12,
-          overflowX: "auto",
-          paddingBottom: 4,
-        }}
-      >
-        {CATEGORIES.map((c) => {
-          const active = category === c.id;
-          return (
-            <button
-              key={c.id}
-              type="button"
-              onClick={() => setCategory(c.id)}
-              style={{
-                padding: "6px 12px",
-                fontSize: 12,
-                fontWeight: 600,
-                borderRadius: 999,
-                border: "1px solid",
-                borderColor: active ? WINE : "hsl(var(--border))",
-                background: active ? WINE_TINT : "#fff",
-                color: active ? WINE : "var(--fg)",
-                cursor: "pointer",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {c.label}
-            </button>
-          );
-        })}
+      <div className="ntf-chips">
+        {CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            onClick={() => setCategory(c.id)}
+            className={`ntf-chip ${category === c.id ? "is-active" : ""}`}
+          >
+            {c.label}
+          </button>
+        ))}
       </div>
 
-      <div
-        style={{
-          border: "1px solid hsl(var(--border))",
-          borderRadius: 12,
-          overflow: "hidden",
-          background: "#fff",
-        }}
-      >
+      <div className="ntf-list">
         {loading && notifications.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--fg-muted)" }}>Loading…</div>
+          <div className="ntf-empty">Loading…</div>
         ) : filtered.length === 0 ? (
-          <div style={{ padding: 40, textAlign: "center", color: "var(--fg-muted)" }}>
+          <div className="ntf-empty">
             No notifications {category !== "all" ? "in this category" : "yet"}
           </div>
         ) : (
@@ -158,63 +98,18 @@ export default function Notifications() {
                 key={n.id}
                 type="button"
                 onClick={() => handleClick(n)}
-                style={{
-                  width: "100%",
-                  textAlign: "left",
-                  padding: "14px 16px",
-                  cursor: "pointer",
-                  background: n.read ? "#fff" : WINE_BG,
-                  borderBottom: "1px solid #f5f4f3",
-                  display: "flex",
-                  gap: 12,
-                  border: "none",
-                  borderLeft: n.read ? "none" : `3px solid ${WINE}`,
-                }}
+                className={`ntf-row ${!n.read ? "is-unread" : ""}`}
               >
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: "50%",
-                    background: WINE_TINT,
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    flexShrink: 0,
-                  }}
-                >
+                <div className="ntf-icon-wrap">
                   <Icon size={18} style={{ color: WINE }} />
                 </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 14, fontWeight: n.read ? 400 : 600 }}>{n.title}</div>
-                  {n.body && (
-                    <div style={{ fontSize: 13, color: "var(--fg-muted)", marginTop: 2 }}>
-                      {n.body}
-                    </div>
-                  )}
+                <div className="ntf-body">
+                  <div className="ntf-title">{n.title}</div>
+                  {n.body && <div className="ntf-desc">{n.body}</div>}
                 </div>
-                <div
-                  style={{
-                    fontSize: 12,
-                    color: "var(--fg-muted)",
-                    whiteSpace: "nowrap",
-                    textAlign: "right",
-                  }}
-                >
+                <div className="ntf-meta">
                   {formatTimeAgo(n.created_at)}
-                  {!n.read && (
-                    <span
-                      style={{
-                        display: "block",
-                        width: 8,
-                        height: 8,
-                        borderRadius: "50%",
-                        background: WINE,
-                        marginTop: 4,
-                        marginLeft: "auto",
-                      }}
-                    />
-                  )}
+                  {!n.read && <span className="ntf-dot" />}
                 </div>
               </button>
             );
