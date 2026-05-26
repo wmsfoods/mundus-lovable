@@ -191,8 +191,7 @@ export default function AdminNegotiations() {
             placeholder="Search offer, buyer, supplier, ID…"
             value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-            style={INPUT_STYLE}
-            style={{ paddingLeft: 30, width: "100%" }}
+            style={{ ...INPUT_STYLE, paddingLeft: 30, width: "100%" }}
           />
         </div>
         <select style={INPUT_STYLE} value={filter} onChange={(e) => { setFilter(e.target.value as FilterKey); setPage(1); }}>
