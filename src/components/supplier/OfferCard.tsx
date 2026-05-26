@@ -9,6 +9,7 @@ import {
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
@@ -55,6 +56,7 @@ export function SupplierOfferCard({
   const visibleCuts = o.items.slice(0, 3);
   const moreCuts = Math.max(0, o.items.length - visibleCuts.length);
   const d = derive(o);
+  const cutImgs = useCutImages(o.items.map((it) => it.name));
 
   return (
     <article
@@ -137,13 +139,21 @@ export function SupplierOfferCard({
         <div className="oc-title">{o.title}</div>
         {o.mixed ? (
           <div className="cut-chips">
-            {visibleCuts.map((it) => <span key={it.name} className="cut-chip">{it.name}</span>)}
+            {visibleCuts.map((it) => (
+              <span key={it.name} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
+                <CutThumb src={cutImgs[it.name]} size={20} />
+                {it.name}
+              </span>
+            ))}
             {moreCuts > 0 && (
               <span className="cut-chip is-more">{t("supplier.offers.card.moreCuts", { count: moreCuts })}</span>
             )}
           </div>
         ) : (
-          <div className="oc-cut-text">{o.cutsLabel}</div>
+          <div className="oc-cut-text" style={{ display: "inline-flex", alignItems: "center" }}>
+            <CutThumb src={cutImgs[o.items[0]?.name ?? ""]} size={20} />
+            {o.cutsLabel}
+          </div>
         )}
       </div>
 
