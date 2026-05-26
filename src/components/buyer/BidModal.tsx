@@ -142,9 +142,16 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   useEffect(() => {
     if (!open) return;
     const draft = loadDraft(offer.id);
-    setBids(
+    const initial: Record<string, number> = Object.fromEntries(
+      offer.items.map((it) => [it.id, draft?.bids?.[it.id] ?? Number(it.price)]),
+    );
+    setBids(initial);
+    setBidDrafts(
       Object.fromEntries(
-        offer.items.map((it) => [it.id, draft?.bids?.[it.id] ?? Number(it.price)]),
+        Object.entries(initial).map(([id, kg]) => [
+          id,
+          toDisplay(kg, "price", unit).toFixed(2),
+        ]),
       ),
     );
     setIncoterm(draft?.incoterm ?? allowedIncoterms[0] ?? "CFR");
@@ -208,11 +215,18 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   // and re-syncs whenever the buyer flips incoterm or freight stabilizes.
   useEffect(() => {
     if (!open || !hydratedRef.current) return;
-    setBids(
+    const next: Record<string, number> = Object.fromEntries(
+      offer.items.map((it) => [
+        it.id,
+        getEffectiveAskingPrice(Number(it.price), incoterm, freightPerKg, insurancePerKg),
+      ]),
+    );
+    setBids(next);
+    setBidDrafts(
       Object.fromEntries(
-        offer.items.map((it) => [
-          it.id,
-          getEffectiveAskingPrice(Number(it.price), incoterm, freightPerKg, insurancePerKg),
+        Object.entries(next).map(([id, kg]) => [
+          id,
+          toDisplay(kg, "price", unit).toFixed(2),
         ]),
       ),
     );
