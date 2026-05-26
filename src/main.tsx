@@ -6,27 +6,19 @@ import { initCapacitor } from "./capacitor";
 
 void initCapacitor();
 
-// PWA service worker registration — production only, never in iframe or Lovable preview
+// Cleanup any previously-registered service workers + caches.
+// We rely on manifest.json + apple-touch-icon for "Add to Home Screen"
+// (no SW needed) and Capacitor handles the native mobile shell.
 (() => {
-  if (typeof window === "undefined" || !("serviceWorker" in navigator)) return;
-  const isInIframe = (() => {
-    try { return window.self !== window.top; } catch { return true; }
-  })();
-  const host = window.location.hostname;
-  const isPreviewHost =
-    host.includes("lovableproject.com") ||
-    host.includes("lovableproject-dev.com") ||
-    host.includes("id-preview--") ||
-    host.includes("preview--");
-  if (isInIframe || isPreviewHost || import.meta.env.DEV) {
+  if (typeof window === "undefined") return;
+  if ("serviceWorker" in navigator) {
     navigator.serviceWorker.getRegistrations().then((regs) => {
       regs.forEach((r) => r.unregister());
     }).catch(() => {});
-    return;
   }
-  import("virtual:pwa-register")
-    .then(({ registerSW }) => registerSW({ immediate: true }))
-    .catch(() => {});
+  if ("caches" in window) {
+    caches.keys().then((keys) => keys.forEach((k) => caches.delete(k))).catch(() => {});
+  }
 })();
 
 createRoot(document.getElementById("root")!).render(<App />);
