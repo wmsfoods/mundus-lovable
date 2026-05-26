@@ -60,7 +60,7 @@ function fmtRelative(iso: string, locale: string): string {
 function RoundDots({ current }: { current: number }) {
   return (
     <div className="inline-flex items-center gap-1">
-      {[1, 2, 3].map((n) => {
+      {Array.from({ length: MAX_DISPLAY_ROUNDS }, (_, i) => i + 1).map((n) => {
         const filled = n <= current;
         const isCurrent = n === current && current > 0;
         return (
