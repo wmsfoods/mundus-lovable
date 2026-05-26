@@ -370,21 +370,22 @@ export default function SupplierCreateOffer() {
         const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
         for (const line of lines) {
           // Buyer format: `${cut} [${boneSpec}]${spec ? ` (${spec})` : ""}${marbling !== "Not specified" ? ` — ${marbling}` : ""}${qty ? ` — ${qty}kg` : ""}${target ? ` @ $${target}/kg` : ""}`
-          const boneMatch = line.match(/^(.+?)\s*\[([^\]]+)\]\s*(.*)$/);
-          const cutName = (boneMatch?.[1] ?? line.split(/[—(]/)[0] ?? line).trim();
-          const boneSpec = boneMatch?.[2]?.trim();
-          const rest = boneMatch?.[3] ?? line;
-          const m = rest.match(/^(?:\s*\(([^)]+)\))?\s*(?:—\s*([^—\d][^—]*?)—\s*)?(?:([\d.,]+)\s*kg)?\s*(?:@\s*\$([\d.]+)\/kg)?\s*$/);
-          const marbling = (m?.[2] ?? "\n").trim();
-          const qty = (m?.[3] ?? "").replace(/,/g, "");
-          const target = m?.[4] ?? "";
+          // Unified parser (matches the buyer-side regex) — handles all optional
+          // sections so qty/target are not lost when marbling is absent.
+          const m = line.match(/^(.+?)(?:\s*\[([^\]]+)\])?(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)\s*kg)?(?:\s*@\s*\$([\d.]+)\/kg)?\s*$/);
+          const cutName = (m?.[1] ?? line).trim();
+          const boneSpec = (m?.[2] ?? "").trim();
+          const specInner = (m?.[3] ?? "").trim();
+          const marbling = (m?.[4] ?? "").trim();
+          const qty = (m?.[5] ?? "").replace(/,/g, "").trim();
+          const target = (m?.[6] ?? "").trim();
           const matched = (cutsByCategory[cat0] || []).find(
             (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
           ) || (cutsByCategory[cat0] || []).find(
             (c) => c.displayName.toLowerCase().includes(cutName.toLowerCase()) ||
                    cutName.toLowerCase().includes(c.displayName.toLowerCase())
           );
-          const spec = (m?.[1] ?? "").trim() || boneSpec || matched?.bone_spec || fromRequest.specification || "Boneless";
+          const spec = specInner || boneSpec || matched?.bone_spec || fromRequest.specification || "Boneless";
           parsedCuts.push({
             id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
             cat: cat0,
