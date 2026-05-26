@@ -418,6 +418,27 @@ export default function BuyerCreateRequest() {
     setContainerCount(String(Math.max(1, n)));
   };
 
+  // ── Publishing checklist ──────────────────────────────────────────────────
+  const filledQtyRows = rows.filter((r) => r.cut.trim());
+  const publishSteps = [
+    { key: "protein",     label: "Select at least one protein",              done: selectedCategories.length > 0,                            anchor: "sec-protein" },
+    { key: "destination", label: "Select a destination country",             done: !!destCountry,                                            anchor: "sec-destination" },
+    { key: "incoterms",   label: "Choose at least one incoterm",             done: selectedIncoterms.length > 0,                             anchor: "sec-incoterms" },
+    { key: "cuts",        label: "Add at least one product / cut",           done: filledQtyRows.length > 0,                                 anchor: "sec-cuts" },
+    { key: "qty",         label: "Enter quantity for all cuts",              done: filledQtyRows.length > 0 && filledQtyRows.every((r) => Number(r.qty) > 0), anchor: "sec-cuts" },
+    { key: "container",   label: "Container is overfilled — remove items or switch to 40ft FCL", done: totalKg > 0 && totalKg <= capacity, anchor: "sec-container" },
+  ];
+  const stepsDone = publishSteps.filter((s) => s.done).length;
+  const nextStep = publishSteps.find((s) => !s.done);
+  const canPublish = !nextStep;
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("cov4-pulse");
+    window.setTimeout(() => el.classList.remove("cov4-pulse"), 1400);
+  }, []);
+
   const update = (id: string, patch: Partial<Row>) =>
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   const remove = (id: string) =>
