@@ -101,7 +101,7 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
         supabase.from("negotiations").select("id, status, offer_id, buyer_company_id, settled_total_value, created_at, updated_at, deleted_at").is("deleted_at", null),
         supabase.from("orders").select("id, status, created_at, deleted_at").is("deleted_at", null),
         supabase.from("companies").select("id, name, country, is_supplier, is_buyer, created_at, deleted_at").is("deleted_at", null),
-        supabase.from("negotiation_rounds").select("id, negotiation_id, round_number"),
+        supabase.from("round_proposals").select("id, negotiation_id, round"),
         supabase.from("negotiations").select("id, status, updated_at, buyer_company_id, offer_id").is("deleted_at", null).order("updated_at", { ascending: false }).limit(10),
         supabase.from("offer_items").select("id, offer_id, category, quantity_kg, price_per_kg"),
         supabase.from("buyer_requests").select("id, destination_country, created_at, status").is("deleted_at", null),
@@ -208,8 +208,9 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
 
       const maxRounds: Record<string, number> = {};
       for (const r of rounds) {
-        if (!maxRounds[r.negotiation_id] || r.round_number > maxRounds[r.negotiation_id]) {
-          maxRounds[r.negotiation_id] = r.round_number;
+        const rn = Number(r.round ?? 0);
+        if (!maxRounds[r.negotiation_id] || rn > maxRounds[r.negotiation_id]) {
+          maxRounds[r.negotiation_id] = rn;
         }
       }
       const roundCounts = Object.values(maxRounds);
