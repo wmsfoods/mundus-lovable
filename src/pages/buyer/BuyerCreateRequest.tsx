@@ -1204,19 +1204,29 @@ export default function BuyerCreateRequest() {
             <div className="bcr-side-block">
               <label className="bcr-side-label">CONTAINER</label>
               <div className="bcr-pills">
-                <button type="button" className={`bcr-pill ${containerType === "20" ? "on" : ""}`} onClick={() => setContainerType("20")}>20' FCL</button>
-                <button type="button" className={`bcr-pill ${containerType === "40" ? "on" : ""}`} onClick={() => setContainerType("40")}>40' FCL</button>
+                <button type="button" className={`bcr-pill ${containerType === "20" ? "on" : ""}`} onClick={() => handlePickContainer("20")}>20' FCL</button>
+                <button type="button" className={`bcr-pill ${containerType === "40" ? "on" : ""}`} onClick={() => handlePickContainer("40")}>40' FCL</button>
               </div>
               <div className="bcr-count-row">
                 <span>×</span>
                 <input
-                  type="number" min="1"
+                  type="number" min="1" max="20"
                   value={containerCount}
-                  onChange={(e) => setContainerCount(e.target.value)}
+                  onChange={(e) => handleContainerCount(e.target.value)}
                   className="bcr-input bcr-input-tiny"
                 />
                 <span className="bcr-muted">FCL</span>
               </div>
+              {oversized40Note && (
+                <div style={{ fontSize: 11, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "6px 8px", marginTop: 6 }}>
+                  ⚠ {oversized40Note}
+                </div>
+              )}
+              {exceedsHardCap && (
+                <div style={{ fontSize: 11, color: "#991b1b", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "6px 8px", marginTop: 6 }}>
+                  ✕ Per-container quantity exceeds 28,000 kg. Add more containers or reduce qty.
+                </div>
+              )}
             </div>
 
             <div className="bcr-side-block">
