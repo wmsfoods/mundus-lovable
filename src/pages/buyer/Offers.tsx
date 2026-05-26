@@ -29,6 +29,7 @@ import { formatOfferNumber } from "@/lib/offerNumber";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { MobileTechHeader } from "@/components/mundus/MobileTechHeader";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -473,6 +474,20 @@ export default function BuyerOffers() {
 
   return (
     <>
+      {isMobile && (
+        <MobileTechHeader
+          icon={TagIcon}
+          eyebrow="Buyer · Marketplace"
+          title={t("buyer.offers.title")}
+          subtitle={`${total} ${total === 1 ? "offer" : "offers"} available now`}
+          stats={[
+            { label: "Offers", value: total, accent: "primary" },
+            { label: "Volume MT", value: totalMT >= 100 ? Math.round(totalMT) : totalMT.toFixed(1), accent: "success" },
+            { label: "Origins", value: filterOptions.origins.length, accent: "muted" },
+          ]}
+        />
+      )}
+
       <div className="crumbs">
         <a onClick={(e) => { e.preventDefault(); navigate("/buyer"); }} href="/buyer">
           {t("buyer.offers.crumbHome")}
