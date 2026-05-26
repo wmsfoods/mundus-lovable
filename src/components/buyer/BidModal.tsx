@@ -97,14 +97,25 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const [bids, setBids] = useState<Record<string, number | null>>(() =>
     Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])),
   );
+  // Per-item editable text buffer for the bid input. Stays decoupled from
+  // the numeric `bids` state so typing doesn't fight reformatting.
+  const [bidDrafts, setBidDrafts] = useState<Record<string, string>>({});
   const hydratedRef = useRef(false);
   const [bulkMode, setBulkMode] = useState<"amount" | "percent">("amount");
   const [bulkValue, setBulkValue] = useState<string>("");
 
   const applyAllBids = (priceFor: (askingKg: number) => number) => {
-    setBids(
+    const next: Record<string, number> = Object.fromEntries(
+      offer.items.map((it) => [it.id, +priceFor(Number(it.price)).toFixed(4)]),
+    );
+    setBids(next);
+    // Re-sync the text buffers so the inputs reflect the new values.
+    setBidDrafts(
       Object.fromEntries(
-        offer.items.map((it) => [it.id, +priceFor(Number(it.price)).toFixed(4)]),
+        Object.entries(next).map(([id, kg]) => [
+          id,
+          toDisplay(kg, "price", unit).toFixed(2),
+        ]),
       ),
     );
   };
