@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatRequestNumber } from "@/lib/requestNumber";
 import type { BuyerRequestRow } from "@/hooks/useBuyerRequests";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 
 const PAGE_SIZE = 10;
 
@@ -156,6 +157,7 @@ export default function SupplierRequests() {
       },
     });
   };
+
 
   return (
     <>
