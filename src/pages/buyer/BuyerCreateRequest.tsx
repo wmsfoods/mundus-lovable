@@ -376,6 +376,46 @@ export default function BuyerCreateRequest() {
   const pctOfCapacity = capacity > 0 ? Math.min(100, (totalKg / capacity) * 100) : 0;
   const filledRows = rows.filter((r) => r.cut.trim()).length;
 
+  // ─── Container/quantity rules ──────────────────────────────────────────────
+  const ccNum = Math.max(1, Math.min(20, parseInt(containerCount) || 1));
+  const perContainerKg = totalKg / ccNum;
+  const fitsIn20 = perContainerKg <= CONTAINER_KG["20"];
+  const exceedsHardCap = perContainerKg > CONTAINER_KG["40"];
+  const oversized40Note =
+    containerType === "40" && totalKg > 0 && fitsIn20
+      ? "Quantity fits in a 20' FCL — 40' FCL was selected. The supplier will see this note."
+      : "";
+
+  // Auto upgrade 20' → 40' when the load doesn't fit a 20'
+  useEffect(() => {
+    if (containerType === "20" && totalKg > 0 && !fitsIn20) {
+      setContainerType("40");
+      toast.message("Switched to 40' FCL", {
+        description: "Quantity exceeds a 20' FCL capacity (14,000 kg per container).",
+      });
+    }
+  }, [containerType, totalKg, fitsIn20]);
+
+  const handlePickContainer = (next: "20" | "40") => {
+    if (next === "20" && totalKg > 0 && !fitsIn20) {
+      toast.error("Due to the quantity, this must be a 40' FCL container.");
+      return;
+    }
+    setContainerType(next);
+  };
+
+  const handleContainerCount = (raw: string) => {
+    if (raw === "") { setContainerCount(""); return; }
+    const n = parseInt(raw);
+    if (!Number.isFinite(n)) return;
+    if (n > 20) {
+      toast.error("Maximum is 20 containers per request.");
+      setContainerCount("20");
+      return;
+    }
+    setContainerCount(String(Math.max(1, n)));
+  };
+
   const update = (id: string, patch: Partial<Row>) =>
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   const remove = (id: string) =>
@@ -407,6 +447,11 @@ export default function BuyerCreateRequest() {
     if (!destCountry) return toast.error("Select a destination country");
     if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
     if (filledRows === 0) return toast.error("Add at least one cut");
+    if (exceedsHardCap) {
+      return toast.error(
+        `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg/container). Increase container count or reduce quantities.`,
+      );
+    }
     if (distribution === "specific" && !targetSupplierId) {
       return toast.error("Select a supplier or switch to marketplace distribution");
     }
@@ -424,6 +469,7 @@ export default function BuyerCreateRequest() {
     const additional = [
       specs ? `Cuts:\n${specs}` : "",
       compliance.length ? `Compliance: ${compliance.join(", ")}` : "",
+      oversized40Note ? `Container note: ${oversized40Note}` : "",
       notes ? `Notes:\n${notes}` : "",
     ].filter(Boolean).join("\n\n");
 
