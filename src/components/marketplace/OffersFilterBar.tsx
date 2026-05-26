@@ -72,6 +72,7 @@ type Props = {
   rightSlot?: ReactNode;
   showHalalKosher?: boolean;
   searchPlaceholder?: string;
+  extraSheetSections?: ReactNode;
 };
 
 const ALL_TEMPS: TempValue[] = ["Frozen", "Chilled", "Fresh"];
@@ -85,6 +86,7 @@ export function OffersFilterBar({
   rightSlot,
   showHalalKosher = true,
   searchPlaceholder = "Search products, ports...",
+  extraSheetSections,
 }: Props) {
   const isMobile = useIsMobileShell();
   const update = (patch: Partial<OffersFilterState>) =>
@@ -176,6 +178,7 @@ export function OffersFilterBar({
             </SheetHeader>
 
             <div className="ofb-sheet-body">
+              {extraSheetSections}
               <Section title="Temperature">
                 <PillGroup
                   value={draft.temp}
