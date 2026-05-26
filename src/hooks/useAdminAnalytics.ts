@@ -1,3 +1,6 @@
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+
 export interface AdminAnalytics {
   kpis: {
     gmv: number;
@@ -35,105 +38,277 @@ export interface AdminAnalytics {
   }>;
 }
 
-// Seeded PRNG (mulberry32) for determinism
-function rng(seed: number) {
-  let a = seed >>> 0;
-  return () => {
-    a = (a + 0x6D2B79F5) >>> 0;
-    let t = a;
-    t = Math.imul(t ^ (t >>> 15), t | 1);
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
-  };
-}
-
-function buildGmvTrend(): Array<{ date: string; value: number }> {
-  const r = rng(42);
+function emptyTrend(): Array<{ date: string; value: number }> {
   const out: Array<{ date: string; value: number }> = [];
   const today = new Date();
   for (let i = 29; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
-    const trend = 60000 + ((29 - i) / 29) * 35000; // 60k -> 95k
-    const noise = (r() - 0.5) * 22000;
-    const value = Math.max(55000, Math.min(115000, Math.round(trend + noise)));
-    out.push({ date: d.toISOString().slice(0, 10), value });
+    out.push({ date: d.toISOString().slice(0, 10), value: 0 });
   }
   return out;
 }
 
-const DATA: AdminAnalytics = {
-  kpis: {
-    gmv: 2_420_000, gmvDelta: 0.18,
-    activeDeals: 142, activeDealsDelta: 12,
-    verifications: 8,
-    winRate: 0.34, winRateDelta: 0.03,
-    newSignups: 17, newSignupsDelta: 5,
-    avgCycle: 18, avgCycleDelta: -2,
-    avgDealSize: 128_000, avgDealSizeDelta: 0.04,
-    liquidity: 2.4,
-  },
-  gmvTrend: buildGmvTrend(),
-  pipeline: [
-    { stage: "Offers live", key: "offers", count: 312 },
-    { stage: "Negotiating", key: "negotiating", count: 204 },
-    { stage: "Ordered", key: "ordered", count: 98 },
-    { stage: "Shipped", key: "shipped", count: 56 },
-    { stage: "Delivered", key: "delivered", count: 28 },
-  ],
-  topBuyers: [
-    { name: "Delta Imports", initials: "DI", country: "CN", gmv: 612_000 },
-    { name: "Gamma Buyers", initials: "GB", country: "HK", gmv: 487_000 },
-    { name: "Seoul Wagyu Co.", initials: "SW", country: "KR", gmv: 342_000 },
-    { name: "Atrides Mt", initials: "AM", country: "BR", gmv: 298_000 },
-    { name: "Tema Frozen", initials: "TF", country: "GH", gmv: 234_000 },
-  ],
-  topSuppliers: [
-    { name: "WMS Foods", initials: "WF", country: "BR", gmv: 891_000 },
-    { name: "Marfrig Global", initials: "MG", country: "BR", gmv: 654_000 },
-    { name: "Pampa Beef", initials: "PB", country: "UY", gmv: 423_000 },
-    { name: "Argentina Beef Co", initials: "AB", country: "AR", gmv: 356_000 },
-    { name: "Tyson Brasil", initials: "TB", country: "BR", gmv: 287_000 },
-  ],
-  productsMix: { beef: 62, pork: 18, poultry: 14, lamb: 6 },
-  destinations: [
-    { name: "China", flag: "🇨🇳", gmv: 1_120_000 },
-    { name: "Hong Kong", flag: "🇭🇰", gmv: 342_000 },
-    { name: "Singapore", flag: "🇸🇬", gmv: 234_000 },
-    { name: "Korea, Republic of", flag: "🇰🇷", gmv: 198_000 },
-    { name: "UAE", flag: "🇦🇪", gmv: 156_000 },
-    { name: "Argentina", flag: "🇦🇷", gmv: 98_000 },
-  ],
-  negotiationRounds: { r1: 42, r2: 38, r3: 20 },
-  originPorts: [
-    { name: "Santos", country: "BR", tons: 42_000, share: 38 },
-    { name: "Itajaí", country: "BR", tons: 28_000, share: 25 },
-    { name: "Buenos Aires", country: "AR", tons: 18_000, share: 16 },
-    { name: "Montevideo", country: "UY", tons: 14_000, share: 13 },
-    { name: "Veracruz", country: "MX", tons: 9_000, share: 8 },
-  ],
-  activity: [
-    { id: "a1", type: "success", body: "WMS Foods accepted bid $124,510", refId: "#bb-01", when: "2m" },
-    { id: "a2", type: "warning", body: "Delta Imports submitted KYC", when: "14m" },
-    { id: "a3", type: "info", body: "New offer published", refId: "#0066", when: "37m" },
-    { id: "a4", type: "danger", body: "Dispute opened Tyson ↔ Seoul Wagyu", when: "1h" },
-    { id: "a5", type: "success", body: "Order shipped from Santos", refId: "#0000045", when: "2h" },
-    { id: "a6", type: "secondary", body: "Marfrig published 3 new offers", when: "4h" },
-    { id: "a7", type: "danger", body: "Pampa Beef cert expired", refId: "#00112", when: "6h" },
-    { id: "a8", type: "info", body: "New buyer signup: Hanoi Premium Foods", when: "8h" },
-  ],
-  sla: { onTime: 4, atRisk: 2, overdue: 2 },
-  timeToAcceptance: { lt3: 34, d3to7: 41, d8to14: 18, gte15: 7 },
-  avgByProduct: { beef: 142_000, pork: 98_000, poultry: 86_000, lamb: 124_000 },
-  opsQueue: [
-    { initials: "DI", name: "Delta Imports", country: "CN", code: "#00091", role: "buyer", issue: "issueKyc", issueLevel: "warn", age: "2d 4h", owner: "FN" },
-    { initials: "PB", name: "Pampa Beef", country: "UY", code: "#00112", role: "supplier", issue: "issueCert", issueLevel: "danger", age: "1d 8h" },
-    { initials: "SW", name: "Seoul Wagyu Co.", country: "KR", code: "#00043", role: "buyer", issue: "issuePayment", issueLevel: "warn", age: "22h", owner: "MS" },
-    { initials: "TF", name: "Tema Frozen", country: "GH", code: "#00078", role: "buyer", issue: "issueDocs", issueLevel: "warn", age: "16h", owner: "FN" },
-    { initials: "AB", name: "Argentina Beef Co", country: "AR", code: "#00134", role: "supplier", issue: "issueOnboarding", issueLevel: "ok" },
-  ],
-};
+function emptyPipeline(): AdminAnalytics["pipeline"] {
+  return [
+    { stage: "Offers live", key: "offers", count: 0 },
+    { stage: "Negotiating", key: "negotiating", count: 0 },
+    { stage: "Ordered", key: "ordered", count: 0 },
+    { stage: "Shipped", key: "shipped", count: 0 },
+    { stage: "Delivered", key: "delivered", count: 0 },
+  ];
+}
 
-export function useAdminAnalytics(): AdminAnalytics {
-  return DATA;
+function getEmpty(): AdminAnalytics {
+  return {
+    kpis: { gmv: 0, gmvDelta: 0, activeDeals: 0, activeDealsDelta: 0, verifications: 0, winRate: 0, winRateDelta: 0, newSignups: 0, newSignupsDelta: 0, avgCycle: 0, avgCycleDelta: 0, avgDealSize: 0, avgDealSizeDelta: 0, liquidity: 0 },
+    gmvTrend: emptyTrend(),
+    pipeline: emptyPipeline(),
+    topBuyers: [],
+    topSuppliers: [],
+    productsMix: { beef: 0, pork: 0, poultry: 0, lamb: 0 },
+    destinations: [],
+    negotiationRounds: { r1: 0, r2: 0, r3: 0 },
+    originPorts: [],
+    activity: [],
+    sla: { onTime: 0, atRisk: 0, overdue: 0 },
+    timeToAcceptance: { lt3: 0, d3to7: 0, d8to14: 0, gte15: 0 },
+    avgByProduct: { beef: 0, pork: 0, poultry: 0, lamb: 0 },
+    opsQueue: [],
+  };
+}
+
+function getRelativeTime(iso: string | null | undefined): string {
+  if (!iso) return "";
+  const diff = Date.now() - new Date(iso).getTime();
+  const mins = Math.floor(diff / 60000);
+  if (mins < 60) return `${Math.max(mins, 0)}m`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `${hours}h`;
+  const days = Math.floor(hours / 24);
+  return `${days}d`;
+}
+
+export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-analytics-live"],
+    queryFn: async (): Promise<AdminAnalytics> => {
+      const [
+        offersRes, negsRes, ordersRes, companiesRes,
+        negRoundsRes, recentNegsRes, offerItemsRes, buyerReqsRes, marketsRes,
+      ] = await Promise.all([
+        supabase.from("offers").select("id, status, supplier_id, created_at, deleted_at").is("deleted_at", null),
+        supabase.from("negotiations").select("id, status, offer_id, buyer_company_id, settled_total_value, created_at, updated_at, deleted_at").is("deleted_at", null),
+        supabase.from("orders").select("id, status, created_at, deleted_at").is("deleted_at", null),
+        supabase.from("companies").select("id, name, country, is_supplier, is_buyer, created_at, deleted_at").is("deleted_at", null),
+        supabase.from("negotiation_rounds").select("id, negotiation_id, round_number"),
+        supabase.from("negotiations").select("id, status, updated_at, buyer_company_id, offer_id").is("deleted_at", null).order("updated_at", { ascending: false }).limit(10),
+        supabase.from("offer_items").select("id, offer_id, category, quantity_kg, price_per_kg"),
+        supabase.from("buyer_requests").select("id, destination_country, created_at, status").is("deleted_at", null),
+        supabase.from("offer_markets").select("offer_id, country_name"),
+      ]);
+
+      const offers = (offersRes.data ?? []) as any[];
+      const negs = (negsRes.data ?? []) as any[];
+      const orders = (ordersRes.data ?? []) as any[];
+      const companies = (companiesRes.data ?? []) as any[];
+      const rounds = (negRoundsRes.data ?? []) as any[];
+      const recentNegs = (recentNegsRes.data ?? []) as any[];
+      const items = (offerItemsRes.data ?? []) as any[];
+      const requests = (buyerReqsRes.data ?? []) as any[];
+      const offerMarkets = (marketsRes.data ?? []) as any[];
+
+      const closedDeals = negs.filter(n => n.status === "bid_accepted");
+      const gmv = closedDeals.reduce((s, n) => s + Number(n.settled_total_value ?? 0), 0);
+      const inactiveStatuses = ["bid_accepted", "bid_rejected", "expired", "offer_withdrawn"];
+      const activeDeals = negs.filter(n => !inactiveStatuses.includes(n.status ?? "")).length;
+      const totalNegs = negs.length;
+      const winRate = totalNegs > 0 ? closedDeals.length / totalNegs : 0;
+
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
+      const newSignups = companies.filter(c => c.created_at && c.created_at >= thirtyDaysAgo).length;
+      const avgDealSize = closedDeals.length > 0 ? gmv / closedDeals.length : 0;
+
+      const cycles = closedDeals.map(n => {
+        const created = new Date(n.created_at).getTime();
+        const updated = new Date(n.updated_at).getTime();
+        return (updated - created) / 86400000;
+      }).filter(d => d > 0);
+      const avgCycle = cycles.length > 0 ? Math.round(cycles.reduce((a, b) => a + b, 0) / cycles.length) : 0;
+
+      const activeOffers = offers.filter(o => o.status === "active").length;
+      const negotiating = activeDeals;
+      const ordered = orders.filter(o => !["delivered", "cancelled"].includes(o.status ?? "")).length;
+      const shipped = orders.filter(o => o.status === "shipped").length;
+      const delivered = orders.filter(o => o.status === "delivered").length;
+
+      const buyerGmv: Record<string, number> = {};
+      for (const n of closedDeals) {
+        if (n.buyer_company_id) {
+          buyerGmv[n.buyer_company_id] = (buyerGmv[n.buyer_company_id] ?? 0) + Number(n.settled_total_value ?? 0);
+        }
+      }
+      const topBuyers = Object.entries(buyerGmv)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([id, g]) => {
+          const co = companies.find(c => c.id === id);
+          const name = co?.name ?? "Unknown";
+          return { name, initials: name.slice(0, 2).toUpperCase(), country: co?.country ?? "", gmv: g };
+        });
+
+      const supplierGmv: Record<string, number> = {};
+      for (const n of closedDeals) {
+        const offer = offers.find(o => o.id === n.offer_id);
+        if (offer?.supplier_id) {
+          supplierGmv[offer.supplier_id] = (supplierGmv[offer.supplier_id] ?? 0) + Number(n.settled_total_value ?? 0);
+        }
+      }
+      const topSuppliers = Object.entries(supplierGmv)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5)
+        .map(([id, g]) => {
+          const co = companies.find(c => c.id === id);
+          const name = co?.name ?? "Unknown";
+          return { name, initials: name.slice(0, 2).toUpperCase(), country: co?.country ?? "", gmv: g };
+        });
+
+      const catCounts: Record<string, number> = { beef: 0, pork: 0, poultry: 0, lamb: 0 };
+      for (const item of items) {
+        const cat = (item.category ?? "").toLowerCase();
+        if (cat in catCounts) catCounts[cat] += Number(item.quantity_kg ?? 0);
+      }
+      const totalCatKg = Object.values(catCounts).reduce((a, b) => a + b, 0) || 1;
+      const productsMix = {
+        beef: Math.round((catCounts.beef / totalCatKg) * 100),
+        pork: Math.round((catCounts.pork / totalCatKg) * 100),
+        poultry: Math.round((catCounts.poultry / totalCatKg) * 100),
+        lamb: Math.round((catCounts.lamb / totalCatKg) * 100),
+      };
+
+      const destGmv: Record<string, number> = {};
+      for (const n of closedDeals) {
+        const mks = offerMarkets.filter(m => m.offer_id === n.offer_id);
+        const val = Number(n.settled_total_value ?? 0);
+        for (const m of mks) {
+          if (m.country_name) {
+            destGmv[m.country_name] = (destGmv[m.country_name] ?? 0) + (val / Math.max(mks.length, 1));
+          }
+        }
+      }
+      for (const r of requests) {
+        if (r.destination_country && !(r.destination_country in destGmv)) {
+          destGmv[r.destination_country] = 0;
+        }
+      }
+      const destinations = Object.entries(destGmv)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([name, g]) => ({ name, flag: "", gmv: g }));
+
+      const maxRounds: Record<string, number> = {};
+      for (const r of rounds) {
+        if (!maxRounds[r.negotiation_id] || r.round_number > maxRounds[r.negotiation_id]) {
+          maxRounds[r.negotiation_id] = r.round_number;
+        }
+      }
+      const roundCounts = Object.values(maxRounds);
+      const r1 = roundCounts.filter(r => r === 1).length;
+      const r2 = roundCounts.filter(r => r === 2).length;
+      const r3 = roundCounts.filter(r => r >= 3).length;
+
+      const gmvTrend: Array<{ date: string; value: number }> = [];
+      for (let i = 29; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().slice(0, 10);
+        const dayGmv = closedDeals
+          .filter(n => n.updated_at && n.updated_at.slice(0, 10) === dateStr)
+          .reduce((s, n) => s + Number(n.settled_total_value ?? 0), 0);
+        gmvTrend.push({ date: dateStr, value: dayGmv });
+      }
+
+      const activity: AdminAnalytics["activity"] = [];
+      for (const n of recentNegs.slice(0, 8)) {
+        const buyerCo = companies.find(c => c.id === n.buyer_company_id);
+        const typeMap: Record<string, "success" | "warning" | "info" | "danger"> = {
+          bid_accepted: "success",
+          counter_pending: "warning",
+          awaiting_supplier: "info",
+          bid_rejected: "danger",
+          expired: "danger",
+        };
+        const type = typeMap[n.status ?? ""] ?? "info";
+        const statusLabel = (n.status ?? "").replace(/_/g, " ");
+        activity.push({
+          id: n.id,
+          type,
+          body: `${buyerCo?.name ?? "Buyer"} — ${statusLabel}`,
+          refId: n.id.slice(0, 8),
+          when: getRelativeTime(n.updated_at),
+        });
+      }
+
+      const sla = { onTime: ordered, atRisk: 0, overdue: 0 };
+      const timeToAcceptance = {
+        lt3: cycles.filter(d => d < 3).length,
+        d3to7: cycles.filter(d => d >= 3 && d < 8).length,
+        d8to14: cycles.filter(d => d >= 8 && d < 15).length,
+        gte15: cycles.filter(d => d >= 15).length,
+      };
+
+      const catValues: Record<string, number[]> = { beef: [], pork: [], poultry: [], lamb: [] };
+      for (const n of closedDeals) {
+        const offerItems = items.filter(i => i.offer_id === n.offer_id);
+        for (const item of offerItems) {
+          const cat = (item.category ?? "").toLowerCase();
+          if (cat in catValues) {
+            catValues[cat].push(Number(item.quantity_kg ?? 0) * Number(item.price_per_kg ?? 0));
+          }
+        }
+      }
+      const avgByProduct = {
+        beef: catValues.beef.length ? Math.round(catValues.beef.reduce((a, b) => a + b, 0) / catValues.beef.length) : 0,
+        pork: catValues.pork.length ? Math.round(catValues.pork.reduce((a, b) => a + b, 0) / catValues.pork.length) : 0,
+        poultry: catValues.poultry.length ? Math.round(catValues.poultry.reduce((a, b) => a + b, 0) / catValues.poultry.length) : 0,
+        lamb: catValues.lamb.length ? Math.round(catValues.lamb.reduce((a, b) => a + b, 0) / catValues.lamb.length) : 0,
+      };
+
+      return {
+        kpis: {
+          gmv, gmvDelta: 0,
+          activeDeals, activeDealsDelta: 0,
+          verifications: 0,
+          winRate, winRateDelta: 0,
+          newSignups, newSignupsDelta: 0,
+          avgCycle, avgCycleDelta: 0,
+          avgDealSize, avgDealSizeDelta: 0,
+          liquidity: totalNegs > 0 ? +(activeOffers / Math.max(totalNegs, 1)).toFixed(1) : 0,
+        },
+        gmvTrend,
+        pipeline: [
+          { stage: "Offers live", key: "offers", count: activeOffers },
+          { stage: "Negotiating", key: "negotiating", count: negotiating },
+          { stage: "Ordered", key: "ordered", count: ordered },
+          { stage: "Shipped", key: "shipped", count: shipped },
+          { stage: "Delivered", key: "delivered", count: delivered },
+        ],
+        topBuyers,
+        topSuppliers,
+        productsMix,
+        destinations,
+        negotiationRounds: { r1, r2, r3 },
+        originPorts: [],
+        activity,
+        sla,
+        timeToAcceptance,
+        avgByProduct,
+        opsQueue: [],
+      };
+    },
+    staleTime: 60_000,
+    refetchInterval: 120_000,
+  });
+
+  return { ...(data ?? getEmpty()), loading: isLoading };
 }
