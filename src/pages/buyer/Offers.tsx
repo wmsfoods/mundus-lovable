@@ -238,7 +238,8 @@ export function OfferCard({
         {mixed ? (
           <div className="cut-chips">
             {items.slice(0, 3).map((it) => (
-              <span key={it.id} className="cut-chip">
+              <span key={it.id} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
+                <CutThumb src={cutImgs[(it.customer_product?.name ?? "").split(",")[0]]} size={20} />
                 {(it.customer_product?.name ?? "Product / Cut").split(",")[0]}
               </span>
             ))}
@@ -249,7 +250,8 @@ export function OfferCard({
             )}
           </div>
         ) : (
-          <div className="oc-cut-text">
+          <div className="oc-cut-text" style={{ display: "inline-flex", alignItems: "center" }}>
+            <CutThumb src={cutImgs[(firstItem?.customer_product?.name ?? "").split(",")[0]]} size={20} />
             {firstItem?.customer_product?.name ?? offer.supplier_name}
           </div>
         )}
