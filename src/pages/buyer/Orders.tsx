@@ -16,6 +16,7 @@ import {
   useDealsFilter,
   type DealsFilterState,
 } from "@/hooks/useDealsFilter";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
