@@ -1,48 +1,36 @@
-# Plano — Corrigir negociação manual
+## Problem
 
-Regras confirmadas:
-- **4 rounds visíveis × 2 lados = 8 propostas** (1 round visível = buyer bid + supplier counter)
-- **Accept** sempre fecha pelo **último valor da contraparte** (buyer aceita → fecha no counter do supplier; supplier aceita → fecha no bid do buyer)
-- **Chat libera no round 3** (display)
-- Direção de preço: buyer só sobe, supplier só desce
+In `src/components/buyer/BidModal.tsx`, the "Your Bid" inputs (desktop table and mobile cards) bind `value` directly to `displayBid.toFixed(2)`. On every keystroke the number is parsed → converted to kg → converted back → re-formatted to 2 decimals. This causes:
 
-## O que está quebrado hoje
+- Cursor jumps to the end while typing.
+- Cannot delete the last digit cleanly (e.g. typing `12` instantly shows `12.00`, deleting a digit re-formats).
+- In lbs mode every keystroke runs a round-trip kg/lb conversion which loses precision and "fights" the user.
+- Decimal separator (`,` vs `.`) is awkward — the input forces `.` formatting after each key.
 
-1. **Prefill do supplier no round 2+** estava puxando `asking price` em vez do counter anterior → erro de validação imediato (ceiling). Já corrigido em `CounterOfferModal.tsx` mas precisa validar fim-a-fim.
-2. **`current_round` na tabela `negotiations`** é atualizado pelo modal do supplier mas não pelo `BidModal` do buyer → AdminNegotiations e badges mostram round desatualizado.
-3. **Confusão display vs raw**: alguns lugares mostram "Round 2 de 4" (display), outros logam raw (1–8). Usuário só deve ver display.
-4. **Accept-in-the-middle**: confirmar que `accept_negotiation` (RPC) está usando o **último round salvo** da contraparte. Hoje pega `MAX(round)` independente de quem criou — se o usuário aceita logo após enviar seu próprio round, fecharia pelo valor dele mesmo (errado).
-5. **`MAX_ROUNDS = 3`** no engine das edge functions (`supabase/functions/_shared/negotiation/parameters.ts`) está dessincronizado do `MAX_DISPLAY_ROUNDS = 4` do frontend.
+## Fix
 
-## Mudanças
+Introduce a per-item **string draft** for the bid input so the field behaves like a normal text input while typing, and only commits to the numeric `bids` state on blur / Enter / bulk-apply.
 
-### Frontend
-- **`BidModal.tsx` (buyer)**: ao submeter bid, atualizar `negotiations.current_round = displayRound` (mesmo padrão do `CounterOfferModal`).
-- **`CounterOfferActions.ts`**: antes de chamar `rpc("accept_negotiation")`, validar que o último `round_proposal` foi criado pela **contraparte**, não pelo próprio usuário. Se foi o próprio, bloquear com toast ("Aguarde a resposta da contraparte para aceitar").
-- **Badges de round**: auditar `useRealNegotiationsList.ts`, `AdminNegotiations.tsx`, `BuyerNegotiations.tsx`, `SupplierNegotiations.tsx` — garantir que todos usam `displayRoundFor(raw)` e nunca o raw direto.
-- **`CounterOfferModal.tsx`**: confirmar fix do prefill (previous counter como ceiling) e que o atalho "− my asking" usa `min(asking, previousCounter)`.
+### Changes in `src/components/buyer/BidModal.tsx`
 
-### Backend (RPC)
-- **`accept_negotiation`**: adicionar validação — `v_last_round.created_by_user_id <> p_user_id`. Se igual, retornar erro `cannot_accept_own_round`.
-- **`submit_negotiation_round`**: já está OK com `v_next_round > 8`, mas atualizar comentário/constante implícita para refletir "8 raw = 4 display".
+1. Add new state `bidDrafts: Record<string, string>` next to `bids`.
+2. Initialize / re-sync `bidDrafts` whenever `bids` change from external sources (hydration, bulk apply, incoterm change, accept asking, asking ±%). Format with `toFixed(2)` only at sync time, never during typing.
+3. Replace both `<Input type="number">` blocks (desktop row + mobile card) with:
+   - `type="text"` + `inputMode="decimal"` + `pattern="[0-9.,]*"` (keeps numeric keypad on mobile, prevents iOS zoom because font-size rule already applies).
+   - `value={bidDrafts[it.id] ?? ""}`.
+   - `onChange`: accept the raw string, normalize `,` → `.`, allow empty / partial values like `"12."` or `""`; store as-is in `bidDrafts`. Only parse to a finite number and update `bids` if the string is a valid complete number; otherwise set `bids[it.id] = null` so validation still shows "required".
+   - `onBlur`: parse final value, clamp to 0+, format back to 2 decimals into `bidDrafts`, and write the kg-converted number to `bids`.
+   - `onKeyDown` Enter → blur the input to commit.
+4. Keep all existing display logic (diff line, error line) reading from the committed `bids` value, unchanged.
+5. Select-all on focus (`onFocus={(e) => e.currentTarget.select()}`) so tapping the field makes it easy to overwrite.
 
-### Edge functions (auto-negotiation)
-- **`supabase/functions/_shared/negotiation/parameters.ts`**: atualizar `MAX_ROUNDS` de `3` para `4` e estender strategies (`firstRound`, `secondRound`, `thirdRound` + novo `fourthRound`) **OU** documentar que o engine automático opera em 3 rounds enquanto a negociação manual aceita 4. Recomendo **manter 3 no engine automático** e só ajustar o manual — engine auto convergir em 3 já é desejado. Vou adicionar um comentário explícito separando os dois mundos.
+### Out of scope
 
-### UI
-- Garantir que nenhum lugar mostra "round 5/8" ou "round 6". Tudo em "Round N de 4".
+- No business-logic / validation changes.
+- No styling overhaul beyond the input itself.
+- CounterOfferModal / AuctionBidModal are not part of this request.
 
-## Não muda
-- `MAX_DISPLAY_ROUNDS = 4` ✅
-- `MAX_RAW_ROUNDS = 8` ✅
-- `CHAT_ENABLED_FROM_ROUND = 3` ✅
-- `EXPIRATION_HOURS = 24` ✅
-- Direção de preço (buyer sobe, supplier desce) ✅
-- Order creation + sold_out já corrigidos em turno anterior ✅
+### Technical notes
 
-## Resultado esperado
-- Buyer e supplier veem o mesmo número de round sempre.
-- Não dá pra aceitar a própria proposta.
-- Accept fecha sempre pelo último valor da contraparte.
-- Round 2+ do supplier prefilla com o counter anterior (não com o asking).
-- Auto-negotiation continua em 3 rounds; manual em 4.
+- `fromDisplay` / `toDisplay` and `useWeightUnit` continue to gate the kg↔display conversion, but conversion now happens once on blur (or on external sync) rather than on every keystroke.
+- The draft string is the single source of truth for what's rendered, so the caret no longer jumps.
