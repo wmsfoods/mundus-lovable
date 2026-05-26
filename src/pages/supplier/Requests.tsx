@@ -159,48 +159,6 @@ export default function SupplierRequests() {
   };
 
   return (
-    <RequestsInner
-      slice={slice}
-      responseMap={responseMap}
-      loading={loading}
-      navigate={navigate}
-      handleCreateOffer={handleCreateOffer}
-      setDismissed={setDismissed}
-      search={search}
-      setSearch={setSearch}
-      setPage={setPage}
-      from={from}
-      to={to}
-      total={total}
-      pageSafe={pageSafe}
-      totalPages={totalPages}
-    />
-  );
-}
-
-type InnerProps = {
-  slice: Row[];
-  responseMap: Record<string, ResponseInfo>;
-  loading: boolean;
-  navigate: ReturnType<typeof useNavigate>;
-  handleCreateOffer: (r: Row) => void;
-  setDismissed: React.Dispatch<React.SetStateAction<Set<string>>>;
-  search: string;
-  setSearch: React.Dispatch<React.SetStateAction<string>>;
-  setPage: React.Dispatch<React.SetStateAction<number>>;
-  from: number;
-  to: number;
-  total: number;
-  pageSafe: number;
-  totalPages: number;
-};
-
-function RequestsInner({
-  slice, responseMap, loading, navigate, handleCreateOffer, setDismissed,
-  search, setSearch, setPage, from, to, total, pageSafe, totalPages,
-}: InnerProps) {
-  const cutImgs = useCutImages(slice.map((r) => r.product_name));
-  return (
     <>
       <Crumbs items={[{ label: "Home", to: "/supplier" }, { label: "Requests" }]} />
       <PageTitle icon={ClipboardIcon} title="Buyer Requests" subtitle="Active requests from buyers — create an offer to respond." />
