@@ -372,13 +372,14 @@ export default function BuyerCreateRequest() {
     () => rows.reduce((s, r) => s + (parseFloat(r.qty) || 0), 0),
     [rows]
   );
-  const capacity = CONTAINER_KG[containerType] * (parseInt(containerCount) || 0);
+  // Quantities entered per cut are PER CONTAINER. Capacity bar reflects a single FCL.
+  const capacity = CONTAINER_KG[containerType];
   const pctOfCapacity = capacity > 0 ? Math.min(100, (totalKg / capacity) * 100) : 0;
   const filledRows = rows.filter((r) => r.cut.trim()).length;
 
   // ─── Container/quantity rules ──────────────────────────────────────────────
   const ccNum = Math.max(1, Math.min(20, parseInt(containerCount) || 1));
-  const perContainerKg = totalKg / ccNum;
+  const perContainerKg = totalKg; // quantities are already per container
   const fitsIn20 = perContainerKg <= CONTAINER_KG["20"];
   const exceedsHardCap = perContainerKg > CONTAINER_KG["40"];
   const oversized40Note =
