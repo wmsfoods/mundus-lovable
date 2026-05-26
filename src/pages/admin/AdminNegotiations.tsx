@@ -12,6 +12,7 @@ import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice } from "@/lib/units";
 import { countryFlag } from "@/lib/countryFlags";
 import { Pagination } from "@/components/mundus/Pagination";
+import { MAX_DISPLAY_ROUNDS } from "@/lib/negotiationEngine";
 
 type FilterKey = "all" | "awaiting_supplier" | "pending_buyer_review" | "bid_accepted" | "rejected" | "expired";
 type ProteinKey = "all" | "beef" | "pork" | "poultry" | "lamb";
