@@ -369,15 +369,22 @@ export default function SupplierCreateOffer() {
       if (sec.startsWith("Cuts:")) {
         const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
         for (const line of lines) {
-          const m = line.match(/^(.+?)(?:\s*\(([^)]+)\))?\s*—\s*(?:([^—\d][^—]*?)—\s*)?([\d.,]+)\s*kg\s*@\s*\$([\d.]+)\/kg$/);
-          const cutName = (m?.[1] ?? line).trim();
-          const marbling = (m?.[3] ?? "\n").trim();
-          const qty = (m?.[4] ?? "").replace(/,/g, "");
-          const target = m?.[5] ?? "";
+          // Buyer format: `${cut} [${boneSpec}]${spec ? ` (${spec})` : ""}${marbling !== "Not specified" ? ` — ${marbling}` : ""}${qty ? ` — ${qty}kg` : ""}${target ? ` @ $${target}/kg` : ""}`
+          const boneMatch = line.match(/^(.+?)\s*\[([^\]]+)\]\s*(.*)$/);
+          const cutName = (boneMatch?.[1] ?? line.split(/[—(]/)[0] ?? line).trim();
+          const boneSpec = boneMatch?.[2]?.trim();
+          const rest = boneMatch?.[3] ?? line;
+          const m = rest.match(/^(?:\s*\(([^)]+)\))?\s*(?:—\s*([^—\d][^—]*?)—\s*)?(?:([\d.,]+)\s*kg)?\s*(?:@\s*\$([\d.]+)\/kg)?\s*$/);
+          const marbling = (m?.[2] ?? "\n").trim();
+          const qty = (m?.[3] ?? "").replace(/,/g, "");
+          const target = m?.[4] ?? "";
           const matched = (cutsByCategory[cat0] || []).find(
             (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
+          ) || (cutsByCategory[cat0] || []).find(
+            (c) => c.displayName.toLowerCase().includes(cutName.toLowerCase()) ||
+                   cutName.toLowerCase().includes(c.displayName.toLowerCase())
           );
-          const spec = (m?.[2] ?? "").trim() || matched?.bone_spec || fromRequest.specification || "Boneless";
+          const spec = (m?.[1] ?? "").trim() || boneSpec || matched?.bone_spec || fromRequest.specification || "Boneless";
           parsedCuts.push({
             id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
             cat: cat0,
