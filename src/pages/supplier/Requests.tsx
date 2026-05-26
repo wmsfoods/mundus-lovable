@@ -159,15 +159,6 @@ export default function SupplierRequests() {
   };
 
   return (
-    (() => null)() ?? <RequestsView />
-  );
-}
-
-function RequestsView() { return null; }
-
-/* eslint-disable */
-function _unused() {
-  return (
     <>
       <Crumbs items={[{ label: "Home", to: "/supplier" }, { label: "Requests" }]} />
       <PageTitle icon={ClipboardIcon} title="Buyer Requests" subtitle="Active requests from buyers — create an offer to respond." />
