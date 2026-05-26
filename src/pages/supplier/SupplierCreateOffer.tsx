@@ -805,6 +805,12 @@ export default function SupplierCreateOffer() {
       toast.error("Please enter the EXW pickup location");
       return;
     }
+    if (exceedsHardCap) {
+      toast.error(
+        `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg). Increase container count or reduce quantities.`,
+      );
+      return;
+    }
     setPublishing(true);
     const supplierId = company.id;
     const supplierName = company.name || "Mundus Supplier";
