@@ -409,7 +409,7 @@ function NegotiationRow({
         </td>
         <td className="text-right" style={{ fontSize: 12 }}>{r.total_qty_kg ? fmtWeight(r.total_qty_kg, unit) : "—"}</td>
         <td className="text-right" style={{ fontSize: 12, fontWeight: 600 }}>{fmtMoney(totalValue)}</td>
-        <td style={{ fontSize: 12 }}>{r.current_round || 0}{r.round_count ? ` of ${r.round_count}` : ""}</td>
+        <td style={{ fontSize: 12 }}>{r.current_round || 0} of {MAX_DISPLAY_ROUNDS}</td>
         <td><StatusBadge status={r.status} t={t} /></td>
         <td className="text-right" style={{ fontSize: 12 }}>
           {gap != null ? (
