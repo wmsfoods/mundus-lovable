@@ -633,23 +633,37 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                     <td className="px-3 py-2 text-right">
                       <div className="flex flex-col items-end gap-0.5">
                         <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={isEmpty ? "" : (Number.isFinite(displayBid) ? displayBid.toFixed(2) : "")}
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9.,]*"
+                          value={bidDrafts[it.id] ?? ""}
+                          onFocus={(e) => e.currentTarget.select()}
                           onChange={(e) => {
-                            const raw = e.target.value;
-                            if (raw === "") {
+                            const raw = e.target.value.replace(",", ".");
+                            // Allow empty / partial inputs while typing.
+                            if (!/^\d*\.?\d*$/.test(raw)) return;
+                            setBidDrafts((prev) => ({ ...prev, [it.id]: raw }));
+                            if (raw === "" || raw === ".") {
                               setBids((prev) => ({ ...prev, [it.id]: null }));
                               return;
                             }
                             const v = parseFloat(raw);
-                            if (!Number.isFinite(v)) {
+                            if (!Number.isFinite(v)) return;
+                            setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
+                          }}
+                          onBlur={(e) => {
+                            const raw = e.currentTarget.value.replace(",", ".");
+                            const v = parseFloat(raw);
+                            if (!Number.isFinite(v) || v < 0) {
+                              setBidDrafts((prev) => ({ ...prev, [it.id]: "" }));
                               setBids((prev) => ({ ...prev, [it.id]: null }));
                               return;
                             }
-                            const kg = fromDisplay(v, "price", unit);
-                            setBids((prev) => ({ ...prev, [it.id]: kg }));
+                            setBidDrafts((prev) => ({ ...prev, [it.id]: v.toFixed(2) }));
+                            setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur();
                           }}
                           className={
                             "h-9 w-24 text-right tabular-nums focus-visible:ring-[#8B2252]" +
