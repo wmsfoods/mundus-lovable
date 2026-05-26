@@ -2,43 +2,22 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 
-/** Sum of latest *bid* round (odd round) — used for accept totals. */
-function latestBidTotal(neg: RealNegotiationRow): number {
-  const bidRounds = (neg.rounds ?? []).filter((r) => r.round % 2 === 1);
-  const last = bidRounds[bidRounds.length - 1];
-  if (!last) return 0;
-  return (last.cut_rounds ?? []).reduce(
-    (s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg),
-    0,
-  );
-}
-
-/** Sum of latest *counter* round (even round). */
-function latestCounterTotal(neg: RealNegotiationRow): number {
-  const counters = (neg.rounds ?? []).filter((r) => r.round % 2 === 0);
-  const last = counters[counters.length - 1];
-  if (!last) return 0;
-  return (last.cut_rounds ?? []).reduce(
-    (s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg),
-    0,
-  );
-}
-
 export async function acceptNegotiation(
   neg: RealNegotiationRow,
-  perspective: "supplier" | "buyer" = "supplier",
+  _perspective: "supplier" | "buyer" = "supplier",
 ): Promise<boolean> {
-  // Supplier accepts buyer's latest bid; buyer accepts supplier's latest counter.
-  const settled = perspective === "supplier" ? latestBidTotal(neg) : latestCounterTotal(neg);
-  const { error } = await supabase
-    .from("negotiations")
-    .update({
-      status: "bid_accepted",
-      settled_total_value: settled,
-      expires_at: null,
-      updated_at: new Date().toISOString(),
-    })
-    .eq("id", neg.id);
+  // Use the RPC so the order/order_items are created atomically and
+  // the offer is marked sold_out when FCLs run out.
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const userId = authData.user?.id ?? null;
+  if (authError || !userId) {
+    toast.error("Please sign in again before accepting.");
+    return false;
+  }
+  const { error } = await supabase.rpc("accept_negotiation", {
+    p_negotiation_id: neg.id,
+    p_user_id: userId,
+  });
   if (error) {
     toast.error(error.message);
     return false;
@@ -48,10 +27,17 @@ export async function acceptNegotiation(
 }
 
 export async function rejectNegotiation(neg: RealNegotiationRow): Promise<boolean> {
-  const { error } = await supabase
-    .from("negotiations")
-    .update({ status: "offer_rejected", updated_at: new Date().toISOString() })
-    .eq("id", neg.id);
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const userId = authData.user?.id ?? null;
+  if (authError || !userId) {
+    toast.error("Please sign in again before rejecting.");
+    return false;
+  }
+  const { error } = await supabase.rpc("reject_negotiation", {
+    p_negotiation_id: neg.id,
+    p_user_id: userId,
+    p_reason: null,
+  });
   if (error) {
     toast.error(error.message);
     return false;
