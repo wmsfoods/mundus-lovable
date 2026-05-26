@@ -948,12 +948,44 @@ export default function SupplierCreateOffer() {
             cutRow = data ?? null;
           }
           if (!cutRow && c.cut) {
-            const { data } = await supabase
+            // 1) Exact (case-insensitive) match
+            const cleaned = c.cut.replace(/\s*\[[^\]]+\]\s*/g, " ").replace(/\s+/g, " ").trim();
+            const { data: exact } = await supabase
               .from("cuts")
               .select("id, name, product_number, category")
-              .ilike("name", c.cut)
+              .ilike("name", cleaned)
               .maybeSingle();
-            cutRow = data ?? null;
+            cutRow = exact ?? null;
+
+            // 2) Substring match (DB name contains the typed cut, or vice versa)
+            if (!cutRow) {
+              const { data: partials } = await supabase
+                .from("cuts")
+                .select("id, name, product_number, category")
+                .ilike("name", `%${cleaned}%`)
+                .limit(5);
+              if (partials && partials.length === 1) {
+                cutRow = partials[0];
+              } else if (partials && partials.length > 1) {
+                cutRow =
+                  partials.find((p) => p.name.toLowerCase() === cleaned.toLowerCase()) ||
+                  partials[0];
+              }
+            }
+
+            // 3) Last-resort fuzzy match on the trailing 2 words
+            if (!cutRow) {
+              const tokens = cleaned.split(/\s+/);
+              const tail = tokens.slice(-2).join(" ");
+              if (tail.length >= 4) {
+                const { data: fuzzy } = await supabase
+                  .from("cuts")
+                  .select("id, name, product_number, category")
+                  .ilike("name", `%${tail}%`)
+                  .limit(3);
+                if (fuzzy && fuzzy.length >= 1) cutRow = fuzzy[0];
+              }
+            }
           }
           if (!cutRow) {
             console.warn("[publish] could not resolve cut:", c.cut, c.cutId);
