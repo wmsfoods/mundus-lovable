@@ -327,8 +327,8 @@ export const ClipboardIcon = (props: IconProps) => (
 );
 export const TagIcon = (props: IconProps) => (
   <Icon {...props}>
-    <path d="M19.6 12.4 12 20a2 2 0 0 1-2.8 0L2 12.8V2h10.8L20 9.2a2 2 0 0 1 0 2.8z" />
-    <circle cx="6.5" cy="6.5" r="1.4" fill="currentColor" stroke="none" />
+    <path d="M20.6 13.4 13 21a2 2 0 0 1-2.8 0L3 13.8V3h10.8L21 10.2a2 2 0 0 1 0 2.8z" />
+    <circle cx="7.5" cy="7.5" r="1.4" fill="currentColor" stroke="none" />
   </Icon>
 );
 export const MessageIcon = (props: IconProps) => (
