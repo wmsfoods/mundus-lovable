@@ -577,8 +577,9 @@ export default function SupplierCreateOffer() {
   const fc = fp > 95 ? "#16a34a" : fp > 70 ? "#ca8a04" : "var(--p800)";
 
   // ─── Container/quantity rules (max 20 FCL, max 28,000 kg per container) ──
+  // Quantities entered per cut are PER CONTAINER (one FCL). Do NOT divide by ccCount.
   const ccCount = Math.max(1, Math.min(20, containerCount || 1));
-  const perContainerKg = tw / ccCount;
+  const perContainerKg = tw;
   const fitsIn20 = perContainerKg <= 14000;
   const exceedsHardCap = perContainerKg > 28000;
   const oversized40Note =
