@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
+import { Check } from "lucide-react";
 import { useSupplierOfferData } from "@/hooks/useSupplierOfferData";
 import RequestPasteImport, { type ParsedRow } from "@/components/buyer/RequestPasteImport";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -417,6 +418,27 @@ export default function BuyerCreateRequest() {
     setContainerCount(String(Math.max(1, n)));
   };
 
+  // ── Publishing checklist ──────────────────────────────────────────────────
+  const filledQtyRows = rows.filter((r) => r.cut.trim());
+  const publishSteps = [
+    { key: "protein",     label: "Select at least one protein",              done: selectedCategories.length > 0,                            anchor: "sec-protein" },
+    { key: "destination", label: "Select a destination country",             done: !!destCountry,                                            anchor: "sec-destination" },
+    { key: "incoterms",   label: "Choose at least one incoterm",             done: selectedIncoterms.length > 0,                             anchor: "sec-incoterms" },
+    { key: "cuts",        label: "Add at least one product / cut",           done: filledQtyRows.length > 0,                                 anchor: "sec-cuts" },
+    { key: "qty",         label: "Enter quantity for all cuts",              done: filledQtyRows.length > 0 && filledQtyRows.every((r) => Number(r.qty) > 0), anchor: "sec-cuts" },
+    { key: "container",   label: "Container is overfilled — remove items or switch to 40ft FCL", done: totalKg > 0 && totalKg <= capacity, anchor: "sec-container" },
+  ];
+  const stepsDone = publishSteps.filter((s) => s.done).length;
+  const nextStep = publishSteps.find((s) => !s.done);
+  const canPublish = !nextStep;
+  const scrollToSection = useCallback((id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+    el.classList.add("cov4-pulse");
+    window.setTimeout(() => el.classList.remove("cov4-pulse"), 1400);
+  }, []);
+
   const update = (id: string, patch: Partial<Row>) =>
     setRows((rs) => rs.map((r) => (r.id === id ? { ...r, ...patch } : r)));
   const remove = (id: string) =>
@@ -444,6 +466,11 @@ export default function BuyerCreateRequest() {
   };
 
   const broadcast = async () => {
+    if (!canPublish) {
+      toast.error("Please complete all required fields before submitting.");
+      if (nextStep) scrollToSection(nextStep.anchor);
+      return;
+    }
     if (!company?.id) return toast.error("No company linked");
     if (!destCountry) return toast.error("Select a destination country");
     if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
@@ -579,7 +606,7 @@ export default function BuyerCreateRequest() {
         {/* LEFT: what you need */}
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
-            <div className="bcr-field" style={{ gridColumn: "1 / -1" }}>
+            <div id="sec-protein" className="bcr-field" style={{ gridColumn: "1 / -1" }}>
               <label>PROTEINS*</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {buyerProteins.map((p) => {
@@ -607,7 +634,7 @@ export default function BuyerCreateRequest() {
                 })}
               </div>
             </div>
-            <div className="bcr-field">
+            <div id="sec-destination" className="bcr-field">
               <label>Destination country *</label>
               <Popover open={destOpen} onOpenChange={setDestOpen}>
                 <PopoverTrigger asChild>
@@ -684,7 +711,7 @@ export default function BuyerCreateRequest() {
                 )}
               </div>
             )}
-            <div className="bcr-field">
+            <div id="sec-incoterms" className="bcr-field">
               <label>Preferred incoterms *</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {INCOTERM_OPTIONS.map((inc) => {
@@ -785,7 +812,7 @@ export default function BuyerCreateRequest() {
             </div>
           )}
 
-          <div className="bcr-card">
+          <div id="sec-cuts" className="bcr-card">
             <div className="bcr-cuts-head">
               <div className="bcr-cuts-title">
                 <span className="bcr-ic-sq" aria-hidden>▦</span>
@@ -808,10 +835,18 @@ export default function BuyerCreateRequest() {
             </div>
 
             <div className="bcr-progress">
-              <div className="bcr-progress-bar" style={{ width: `${pctOfCapacity}%` }} />
+              <div
+                className="bcr-progress-bar"
+                style={{
+                  width: `${pctOfCapacity}%`,
+                  background: totalKg > capacity ? "#dc2626" : undefined,
+                }}
+              />
             </div>
             <div className="bcr-progress-meta">
-              <span>{Math.round(pctOfCapacity)}% of container</span>
+              <span style={totalKg > capacity ? { color: "#dc2626", fontWeight: 600 } : undefined}>
+                {Math.round(pctOfCapacity)}% of container{totalKg > capacity ? " — overfilled" : ""}
+              </span>
               <span>{fmtWeight(totalKg, unit)} / {fmtWeight(capacity, unit)} {weightLabel(unit)}</span>
             </div>
 
@@ -1202,7 +1237,7 @@ export default function BuyerCreateRequest() {
               )}
             </div>
 
-            <div className="bcr-side-block">
+            <div id="sec-container" className="bcr-side-block">
               <label className="bcr-side-label">CONTAINER</label>
               <div className="bcr-pills">
                 <button type="button" className={`bcr-pill ${containerType === "20" ? "on" : ""}`} onClick={() => handlePickContainer("20")}>20' FCL</button>
@@ -1330,15 +1365,76 @@ export default function BuyerCreateRequest() {
         </aside>
       </div>
 
-      {/* FOOTER */}
-      <footer className="bcr-footer">
-        <div className="bcr-summary">
-          <strong>{filledRows}</strong> Product / Cuts · <strong>{fmtWeight(totalKg, unit)}</strong> {weightLabel(unit)} · {containerCount}×{containerType}ft
+      {/* FOOTER — publishing checklist */}
+      <footer className="cov4-footer">
+        <div className="cov4-ft-l">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={`cov4-ready-pill ${canPublish ? "ready" : ""}`}
+                aria-label="Publishing checklist"
+              >
+                <span className="cov4-ready-ring" aria-hidden>
+                  <svg viewBox="0 0 36 36" width="22" height="22">
+                    <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="3" />
+                    <circle
+                      cx="18" cy="18" r="15" fill="none"
+                      stroke="currentColor" strokeWidth="3" strokeLinecap="round"
+                      strokeDasharray={`${(stepsDone / publishSteps.length) * 94.25} 94.25`}
+                      transform="rotate(-90 18 18)"
+                      style={{ transition: "stroke-dasharray .35s ease" }}
+                    />
+                  </svg>
+                </span>
+                <span className="cov4-ready-txt">
+                  {canPublish
+                    ? "Ready to submit"
+                    : `${stepsDone} of ${publishSteps.length} ready · ${nextStep?.label.split(" ").slice(0, 4).join(" ")}…`}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="start" className="cov4-ready-pop p-0 w-[320px]">
+              <div className="cov4-ready-head">
+                {canPublish ? "All set — you can submit 🎉" : "A few things left"}
+              </div>
+              <ul className="cov4-ready-list">
+                {publishSteps.map((s) => (
+                  <li key={s.key}>
+                    <button
+                      type="button"
+                      className={`cov4-ready-item ${s.done ? "done" : ""}`}
+                      onClick={() => !s.done && scrollToSection(s.anchor)}
+                      disabled={s.done}
+                    >
+                      <span className={`cov4-ready-dot ${s.done ? "done" : ""}`}>
+                        {s.done ? <Check size={12} /> : ""}
+                      </span>
+                      <span className="cov4-ready-lbl">{s.label}</span>
+                      {!s.done && <span className="cov4-ready-go">→</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="cov4-ready-foot">
+                {filledRows} Product / Cut{filledRows !== 1 ? "s" : ""} · {fmtWeight(totalKg, unit)} {weightLabel(unit)} · {containerCount}×{containerType}ft
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
-        <div className="bcr-actions">
-          <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>
-          <button type="button" className="bcr-btn-primary" onClick={broadcast} disabled={submitting || loadingEdit}>
-            {isEdit ? "💾 Save changes" : "✓ Submit request"}
+        <div className="cov4-ft-r">
+          <button type="button" className="cov4-btn-s" onClick={() => navigate("/buyer/requests")}>Cancel</button>
+          <button
+            type="button"
+            className="cov4-btn-p"
+            disabled={submitting || loadingEdit}
+            onClick={() => {
+              if (!canPublish && nextStep) { scrollToSection(nextStep.anchor); return; }
+              broadcast();
+            }}
+            title={nextStep ? `Next: ${nextStep.label}` : (isEdit ? "Save changes" : "Submit your request")}
+          >
+            {isEdit ? "Save changes →" : "Submit request →"}
           </button>
         </div>
       </footer>
