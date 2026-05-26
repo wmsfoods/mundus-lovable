@@ -811,9 +811,23 @@ export default function SupplierCreateOffer() {
       );
       return;
     }
+    // Pre-validate that at least one cut has a resolvable name or cutId
+    const hasResolvableCut = cuts.some(c => c.cutId || c.cut.trim().length > 0);
+    if (!hasResolvableCut) {
+      toast.error("Please add at least one product/cut with a valid name before publishing.");
+      return;
+    }
+    // Ensure cuts have qty and price
+    const invalidCuts = cuts.filter(c => !(parseFloat(c.qty) > 0) || !(parseFloat(c.ask) > 0));
+    if (invalidCuts.length > 0) {
+      toast.error(`${invalidCuts.length} cut(s) have missing quantity or price. Please fill all fields.`);
+      return;
+    }
     setPublishing(true);
     const supplierId = company.id;
     const supplierName = company.name || "Mundus Supplier";
+    let offerCreated = false;
+    let offerId = "";
     try {
       // Derive shipment month/year (next calendar month if not specified)
       const now = new Date();
@@ -891,6 +905,10 @@ export default function SupplierCreateOffer() {
           const m = e instanceof Error ? e.message : String(e);
           throw new Error(`Step 1 failed: offer insert — ${m}`);
         }
+      }
+      if (!isEditing) {
+        offerCreated = true;
+        offerId = offer.id;
       }
 
       // 2. Resolve/create customer_products per cut, then insert offer_items
@@ -1016,7 +1034,15 @@ export default function SupplierCreateOffer() {
         throw new Error(`Step 2 failed: customer_products — ${m}`);
       }
 
-      if (itemsRows.length === 0) throw new Error("Step 3 failed: offer_items — no valid cuts (qty, price, and a matchable cut name are required)");
+      if (itemsRows.length === 0) {
+        // ROLLBACK: Delete the offer we just created since no items could be resolved
+        if (offerCreated && offerId) {
+          console.error("[publish] No items resolved — rolling back offer", offer.id);
+          await supabase.from("offers").delete().eq("id", offer.id);
+          offerCreated = false;
+        }
+        throw new Error("No valid cuts could be resolved. Please ensure each cut has a quantity, price, and matches a product in our catalog. Try selecting cuts from the dropdown instead of typing manually.");
+      }
       try {
         const { error } = await supabase.from("offer_items").insert(itemsRows);
         if (error) throw error;
@@ -1131,6 +1157,15 @@ export default function SupplierCreateOffer() {
         navigate("/supplier/offers");
       }
     } catch (e: unknown) {
+      // If we created an offer but something failed afterward, clean it up
+      if (offerCreated && offerId && !isEditing) {
+        console.error("[publish] Rolling back offer due to error:", offerId);
+        await supabase.from("offer_items").delete().eq("offer_id", offerId);
+        await supabase.from("offer_allowed_incoterms").delete().eq("offer_id", offerId);
+        await supabase.from("offer_markets").delete().eq("offer_id", offerId);
+        await supabase.from("freight_options").delete().eq("offer_id", offerId);
+        await supabase.from("offers").delete().eq("id", offerId);
+      }
       const msg = e instanceof Error ? e.message : "Failed to publish offer";
       toast.error(msg);
     } finally {
