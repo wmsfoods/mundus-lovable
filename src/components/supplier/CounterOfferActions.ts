@@ -19,7 +19,12 @@ export async function acceptNegotiation(
     p_user_id: userId,
   });
   if (error) {
-    toast.error(error.message);
+    const msg = String(error.message ?? "");
+    if (msg.includes("cannot_accept_own_round")) {
+      toast.error("You can't accept your own last proposal — wait for the counterparty's response.");
+    } else {
+      toast.error(msg || "Failed to accept");
+    }
     return false;
   }
   toast.success("Bid accepted! Order will be created.");
