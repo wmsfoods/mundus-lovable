@@ -1,8 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { FileIcon } from "@/components/icons";
 import { countryFlag } from "@/lib/countryFlags";
 import { formatRequestNumber } from "@/lib/requestNumber";
-import { supabase } from "@/integrations/supabase/client";
+import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 import type { BuyerRequestRow } from "@/hooks/useBuyerRequests";
 
 type CutLine = {
@@ -53,24 +53,7 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
   const cuts = useMemo(() => parseCuts(r.additional_info), [r.additional_info]);
   const extraNotes = useMemo(() => stripCutsBlock(r.additional_info), [r.additional_info]);
   const [moreOpen, setMoreOpen] = useState(false);
-  const [cutImages, setCutImages] = useState<Record<string, string>>({});
-
-  useEffect(() => {
-    const names = cuts.map((c) => c.cut).filter(Boolean);
-    if (names.length === 0) return;
-    supabase
-      .from("cuts")
-      .select("name, image_url")
-      .in("name", names)
-      .then(({ data }) => {
-        if (!data) return;
-        const map: Record<string, string> = {};
-        for (const row of data as Array<{ name: string; image_url: string | null }>) {
-          if (row.image_url) map[row.name] = row.image_url;
-        }
-        setCutImages(map);
-      });
-  }, [cuts]);
+  const cutImages = useCutImages(cuts.map((c) => c.cut));
 
   const totalKg = Number(r.quantity_kg) || 0;
   const target = r.target_price_usd != null ? Number(r.target_price_usd) : null;
@@ -143,24 +126,7 @@ export function RequestDetailCard({ r }: { r: BuyerRequestRow }) {
                 <tr key={i}>
                   <td style={{ padding: "8px 6px", borderBottom: "1px solid #f5f4f3", fontWeight: 600 }}>
                     <span style={{ display: "inline-flex", alignItems: "center" }}>
-                      <span style={{
-                        display: "inline-flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        width: 24,
-                        height: 24,
-                        borderRadius: 6,
-                        overflow: "hidden",
-                        background: "#F3F4F6",
-                        flexShrink: 0,
-                        marginRight: 8,
-                      }}>
-                        {cutImages[c.cut] ? (
-                          <img src={cutImages[c.cut]} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                        ) : (
-                          <span style={{ fontSize: 10, color: "#9CA3AF" }}>🥩</span>
-                        )}
-                      </span>
+                      <CutThumb src={cutImages[c.cut]} />
                       {c.cut}
                     </span>
                   </td>
