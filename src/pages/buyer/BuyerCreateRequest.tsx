@@ -466,6 +466,11 @@ export default function BuyerCreateRequest() {
   };
 
   const broadcast = async () => {
+    if (!canPublish) {
+      toast.error("Please complete all required fields before submitting.");
+      if (nextStep) scrollToSection(nextStep.anchor);
+      return;
+    }
     if (!company?.id) return toast.error("No company linked");
     if (!destCountry) return toast.error("Select a destination country");
     if (selectedIncoterms.length === 0) return toast.error("Select at least one incoterm");
