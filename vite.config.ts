@@ -24,6 +24,7 @@ export default defineConfig(({ mode }) => ({
       includeAssets: ["favicon.png", "apple-touch-icon.png", "manifest.json"],
       workbox: {
         navigateFallbackDenylist: [/^\/~oauth/, /^\/api/],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.mode === "navigate",
