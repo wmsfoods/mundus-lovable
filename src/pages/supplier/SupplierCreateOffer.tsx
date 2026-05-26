@@ -369,16 +369,50 @@ export default function SupplierCreateOffer() {
       if (sec.startsWith("Cuts:")) {
         const lines = sec.replace(/^Cuts:\n?/, "").split("\n").filter(Boolean);
         for (const line of lines) {
-          // Buyer format: `${cut} [${boneSpec}]${spec ? ` (${spec})` : ""}${marbling !== "Not specified" ? ` — ${marbling}` : ""}${qty ? ` — ${qty}kg` : ""}${target ? ` @ $${target}/kg` : ""}`
-          // Unified parser (matches the buyer-side regex) — handles all optional
-          // sections so qty/target are not lost when marbling is absent.
-          const m = line.match(/^(.+?)(?:\s*\[([^\]]+)\])?(?:\s*\(([^)]*)\))?(?:\s*—\s*([^—]+?))?(?:\s*—\s*([\d.,]+)\s*kg)?(?:\s*@\s*\$([\d.]+)\/kg)?\s*$/);
-          const cutName = (m?.[1] ?? line).trim();
-          const boneSpec = (m?.[2] ?? "").trim();
-          const specInner = (m?.[3] ?? "").trim();
-          const marbling = (m?.[4] ?? "").trim();
-          const qty = (m?.[5] ?? "").replace(/,/g, "").trim();
-          const target = (m?.[6] ?? "").trim();
+          // Buyer format (all sections after cut name are optional):
+          //   "CutName [BoneSpec] (Spec) — Marbling — 14000kg @ $6.40/kg"
+          // Parse via successive extractions so missing fields never swallow qty/target.
+          let remaining = line.trim();
+
+          // qty: any "<number>kg" anywhere in the line
+          let qty = "";
+          const qtyMatch = remaining.match(/([\d.,]+)\s*kg\b/i);
+          if (qtyMatch) {
+            qty = qtyMatch[1].replace(/,/g, "");
+            remaining = (remaining.slice(0, qtyMatch.index!) + remaining.slice(qtyMatch.index! + qtyMatch[0].length)).trim();
+          }
+
+          // target price: "@ $X/kg" or "@ $X" or "$X/kg"
+          let target = "";
+          const priceMatch = remaining.match(/@?\s*\$\s*([\d.]+)\s*(?:\/kg)?/i);
+          if (priceMatch && parseFloat(priceMatch[1]) > 0) {
+            target = priceMatch[1];
+            remaining = (remaining.slice(0, priceMatch.index!) + remaining.slice(priceMatch.index! + priceMatch[0].length)).trim();
+          }
+
+          // bone spec: [Boneless] / [Bone-In] / [Offals]
+          let boneSpec = "";
+          const boneMatch = remaining.match(/\[(Boneless|Bone-In|Offals)\]/i);
+          if (boneMatch) {
+            boneSpec = boneMatch[1];
+            remaining = (remaining.slice(0, boneMatch.index!) + remaining.slice(boneMatch.index! + boneMatch[0].length)).trim();
+          }
+
+          // spec in parens: (7-9 lb), (Defatted), ...
+          let specInner = "";
+          const specMatch = remaining.match(/\(([^)]+)\)/);
+          if (specMatch) {
+            specInner = specMatch[1];
+            remaining = (remaining.slice(0, specMatch.index!) + remaining.slice(specMatch.index! + specMatch[0].length)).trim();
+          }
+
+          // Split remainder on em-dashes: first chunk = cut name, rest = marbling
+          const parts = remaining.split(/\s*—\s*/).map((p) => p.trim()).filter(Boolean);
+          const cutName = parts.shift() || "";
+          let marbling = parts.join(" ").trim();
+          if (!cutName) continue;
+          if (marbling === "Not specified") marbling = "";
+
           const matched = (cutsByCategory[cat0] || []).find(
             (c) => c.displayName.toLowerCase() === cutName.toLowerCase()
           ) || (cutsByCategory[cat0] || []).find(
@@ -394,7 +428,7 @@ export default function SupplierCreateOffer() {
             cutImage: matched?.image_url ?? null,
             spec,
             pkg: "\n",
-            gr: marbling && marbling !== "Not specified" ? marbling : "\n",
+            gr: marbling || "\n",
             ag: "None",
             qty: qty || "",
             ask: target || "",
