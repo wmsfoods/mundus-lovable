@@ -1232,7 +1232,7 @@ export default function SupplierCreateOffer() {
               <span className="cov4-cfg-l">Container</span>
               <div className="cov4-tgl">
                 {(["20ft", "40ft"] as const).map((opt) => (
-                  <button key={opt} type="button" className={csize === opt ? "on" : ""} onClick={() => setCsize(opt)}>{opt}</button>
+                  <button key={opt} type="button" className={csize === opt ? "on" : ""} onClick={() => pickCsize(opt)}>{opt}</button>
                 ))}
               </div>
             </div>
@@ -1249,13 +1249,31 @@ export default function SupplierCreateOffer() {
               <input
                 type="number"
                 min={1}
-                max={10}
+                max={20}
                 value={containerCount}
-                onChange={(e) => setContainerCount(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => {
+                  const n = parseInt(e.target.value) || 1;
+                  if (n > 20) { toast.error("Maximum is 20 containers per offer."); setContainerCount(20); return; }
+                  setContainerCount(Math.max(1, n));
+                }}
                 style={{ width: 60, padding: "6px 8px", border: "1.5px solid #D1D5DB", borderRadius: 8, fontSize: 14, fontWeight: 600, textAlign: "center" }}
               />
             </div>
           </div>
+          {(oversized40Note || exceedsHardCap) && (
+            <div style={{ marginTop: 4 }}>
+              {oversized40Note && (
+                <div style={{ fontSize: 11, color: "#92400e", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 6, padding: "6px 8px", marginBottom: 4 }}>
+                  ⚠ {oversized40Note}
+                </div>
+              )}
+              {exceedsHardCap && (
+                <div style={{ fontSize: 11, color: "#991b1b", background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 6, padding: "6px 8px" }}>
+                  ✕ Per-container quantity exceeds 28,000 kg. Add more containers or reduce qty.
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Market chips */}
           <div id="sec-markets" className="cov4-chips">
