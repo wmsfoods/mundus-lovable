@@ -27,6 +27,7 @@ import {
 } from "@/components/marketplace/OffersFilterBar";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -110,6 +111,7 @@ export function OfferCard({
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
+  const cutImgs = useCutImages(items.map((it) => (it.customer_product?.name ?? "").split(",")[0]));
 
   const category =
     firstItem?.customer_product?.standard_product?.product_category?.name_en ??
