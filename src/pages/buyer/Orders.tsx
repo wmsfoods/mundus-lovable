@@ -30,6 +30,7 @@ type SortKey = "recent" | "oldest" | "status";
 export default function BuyerOrders() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isMobile = useIsMobileShell();
   const { data: orders } = useBuyerOrders();
   const [sortBy, setSortBy] = useState<SortKey>("recent");
   const [filter, setFilter] = useState<DealsFilterState>(EMPTY_FILTER);
