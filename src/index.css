@@ -33,6 +33,28 @@
 @tailwind utilities;
 
 /* =========================================================================
+   Mobile: disable all zoom (pinch + focus-zoom on inputs)
+   - iOS Safari ignores user-scalable=no in some versions; the only reliable
+     way to prevent focus-zoom is to ensure form controls render at >= 16px.
+   - touch-action: manipulation kills double-tap zoom while keeping taps/scrolls.
+   ========================================================================= */
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  touch-action: manipulation;
+}
+@media (max-width: 1023px) {
+  input,
+  select,
+  textarea,
+  .input,
+  .phone-input,
+  .url-input {
+    font-size: 16px !important;
+  }
+}
+
+/* =========================================================================
    Mundus Trade — Design System Foundation
    Layer A: shadcn-compat HSL tokens (drives existing shadcn components)
    Layer B: full named token system (drives ported design CSS)
