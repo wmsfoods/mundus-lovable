@@ -1365,15 +1365,76 @@ export default function BuyerCreateRequest() {
         </aside>
       </div>
 
-      {/* FOOTER */}
-      <footer className="bcr-footer">
-        <div className="bcr-summary">
-          <strong>{filledRows}</strong> Product / Cuts · <strong>{fmtWeight(totalKg, unit)}</strong> {weightLabel(unit)} · {containerCount}×{containerType}ft
+      {/* FOOTER — publishing checklist */}
+      <footer className="cov4-footer">
+        <div className="cov4-ft-l">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className={`cov4-ready-pill ${canPublish ? "ready" : ""}`}
+                aria-label="Publishing checklist"
+              >
+                <span className="cov4-ready-ring" aria-hidden>
+                  <svg viewBox="0 0 36 36" width="22" height="22">
+                    <circle cx="18" cy="18" r="15" fill="none" stroke="currentColor" strokeOpacity="0.18" strokeWidth="3" />
+                    <circle
+                      cx="18" cy="18" r="15" fill="none"
+                      stroke="currentColor" strokeWidth="3" strokeLinecap="round"
+                      strokeDasharray={`${(stepsDone / publishSteps.length) * 94.25} 94.25`}
+                      transform="rotate(-90 18 18)"
+                      style={{ transition: "stroke-dasharray .35s ease" }}
+                    />
+                  </svg>
+                </span>
+                <span className="cov4-ready-txt">
+                  {canPublish
+                    ? "Ready to submit"
+                    : `${stepsDone} of ${publishSteps.length} ready · ${nextStep?.label.split(" ").slice(0, 4).join(" ")}…`}
+                </span>
+              </button>
+            </PopoverTrigger>
+            <PopoverContent side="top" align="start" className="cov4-ready-pop p-0 w-[320px]">
+              <div className="cov4-ready-head">
+                {canPublish ? "All set — you can submit 🎉" : "A few things left"}
+              </div>
+              <ul className="cov4-ready-list">
+                {publishSteps.map((s) => (
+                  <li key={s.key}>
+                    <button
+                      type="button"
+                      className={`cov4-ready-item ${s.done ? "done" : ""}`}
+                      onClick={() => !s.done && scrollToSection(s.anchor)}
+                      disabled={s.done}
+                    >
+                      <span className={`cov4-ready-dot ${s.done ? "done" : ""}`}>
+                        {s.done ? <Check size={12} /> : ""}
+                      </span>
+                      <span className="cov4-ready-lbl">{s.label}</span>
+                      {!s.done && <span className="cov4-ready-go">→</span>}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="cov4-ready-foot">
+                {filledRows} Product / Cut{filledRows !== 1 ? "s" : ""} · {fmtWeight(totalKg, unit)} {weightLabel(unit)} · {containerCount}×{containerType}ft
+              </div>
+            </PopoverContent>
+          </Popover>
         </div>
-        <div className="bcr-actions">
-          <button type="button" className="bcr-btn-ghost" onClick={() => navigate("/buyer/requests")}>Cancel</button>
-          <button type="button" className="bcr-btn-primary" onClick={broadcast} disabled={submitting || loadingEdit}>
-            {isEdit ? "💾 Save changes" : "✓ Submit request"}
+        <div className="cov4-ft-r">
+          <button type="button" className="cov4-btn-s" onClick={() => navigate("/buyer/requests")}>Cancel</button>
+          <button
+            type="button"
+            className="cov4-btn-p"
+            disabled={submitting || loadingEdit}
+            onClick={() => {
+              if (!canPublish && nextStep) { scrollToSection(nextStep.anchor); return; }
+              broadcast();
+            }}
+            title={nextStep ? `Next: ${nextStep.label}` : (isEdit ? "Save changes" : "Submit your request")}
+          >
+            {isEdit ? "Save changes →" : "Submit request →"}
           </button>
         </div>
       </footer>
