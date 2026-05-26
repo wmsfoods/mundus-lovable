@@ -1237,7 +1237,7 @@ export default function BuyerCreateRequest() {
               )}
             </div>
 
-            <div className="bcr-side-block">
+            <div id="sec-container" className="bcr-side-block">
               <label className="bcr-side-label">CONTAINER</label>
               <div className="bcr-pills">
                 <button type="button" className={`bcr-pill ${containerType === "20" ? "on" : ""}`} onClick={() => handlePickContainer("20")}>20' FCL</button>
