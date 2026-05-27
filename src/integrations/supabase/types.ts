@@ -3573,10 +3573,12 @@ export type Database = {
           evolution_base_url: string | null
           evolution_instance_id: string | null
           id: string
+          instance_id_external: string | null
           last_connected_at: string | null
           message_count_30d: number
           name: string
           phone_number: string | null
+          provider_type: string
           qr_code: string | null
           status: string
           updated_at: string
@@ -3589,10 +3591,12 @@ export type Database = {
           evolution_base_url?: string | null
           evolution_instance_id?: string | null
           id?: string
+          instance_id_external?: string | null
           last_connected_at?: string | null
           message_count_30d?: number
           name: string
           phone_number?: string | null
+          provider_type?: string
           qr_code?: string | null
           status?: string
           updated_at?: string
@@ -3605,10 +3609,12 @@ export type Database = {
           evolution_base_url?: string | null
           evolution_instance_id?: string | null
           id?: string
+          instance_id_external?: string | null
           last_connected_at?: string | null
           message_count_30d?: number
           name?: string
           phone_number?: string | null
+          provider_type?: string
           qr_code?: string | null
           status?: string
           updated_at?: string
