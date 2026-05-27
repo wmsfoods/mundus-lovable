@@ -59,14 +59,6 @@ function summarizeDetails(d: any): string {
   return parts.length ? parts.join(" · ") : "—";
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="adm-panel" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>{label}</span>
-      <span style={{ fontSize: 18, fontWeight: 700, color: "#8B2252" }}>{value}</span>
-    </div>
-  );
-}
 
 export default function AdminAuditLog() {
   const [rows, setRows] = useState<Row[]>([]);
