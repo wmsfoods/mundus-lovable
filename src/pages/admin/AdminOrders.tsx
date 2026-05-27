@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Package, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
@@ -9,11 +10,13 @@ type OrderRow = {
   id: string;
   order_number: number;
   status: string | null;
+  revenue_status: string;
   placed_at: string;
   supplier_name: string;
   buyer_name: string;
   offer_number: number | null;
   offer_created_at: string | null;
+  total_value: number;
 };
 
 function StatCard({ label, value }: { label: string; value: string | number }) {
@@ -30,8 +33,23 @@ function fmtDate(iso: string): string {
   return `${String(d.getMonth() + 1).padStart(2, "0")}/${String(d.getDate()).padStart(2, "0")}`;
 }
 
+const REVENUE_RATE = 0.003; // 0.30%
+
+const REVENUE_STATUSES: { value: string; label: string; bg: string; color: string }[] = [
+  { value: "in_progress", label: "In Progress", bg: "#FEF3C7", color: "#92400E" },
+  { value: "exempt",      label: "Exempt",      bg: "#E5E7EB", color: "#374151" },
+  { value: "due",         label: "Due → Revenue", bg: "#FEE2E2", color: "#991B1B" },
+];
+
+const REVENUE_MANAGED = new Set(["due", "invoiced", "received", "cancelled"]);
+
+function fmtMoney(v: number): string {
+  return v.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+}
+
 export default function AdminOrders() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -45,33 +63,42 @@ export default function AdminOrders() {
       try {
         const { data, error: e } = await supabase
           .from("orders")
-          .select("id, order_number, status, placed_at, buyer:companies!orders_buyer_id_fkey(name), offer:offers(offer_number, created_at, supplier_name)")
+          .select("id, order_number, status, revenue_status, placed_at, buyer:companies!orders_buyer_company_id_fkey(name), offer:offers(offer_number, created_at, supplier_name), items:order_items(settlement_amount, settlement_price)")
           .is("deleted_at", null)
           .order("placed_at", { ascending: false });
         if (e) throw e;
         if (cancelled) return;
         type Raw = {
-          id: string; order_number: number; status: string | null; placed_at: string;
+          id: string; order_number: number; status: string | null; revenue_status: string | null; placed_at: string;
           buyer: { name: string } | { name: string }[] | null;
           offer: { offer_number: number | null; created_at: string | null; supplier_name: string | null } | { offer_number: number | null; created_at: string | null; supplier_name: string | null }[] | null;
+          items: { settlement_amount: number | string | null; settlement_price: number | string | null }[] | null;
         };
         const one = <T,>(x: T | T[] | null | undefined): T | null =>
           Array.isArray(x) ? (x[0] ?? null) : (x ?? null);
         const list: OrderRow[] = ((data ?? []) as unknown as Raw[]).map((o) => {
           const b = one(o.buyer);
           const of = one(o.offer);
+          const total = (o.items ?? []).reduce((acc, it) => {
+            const qty = Number(it.settlement_amount ?? 0);
+            const price = Number(it.settlement_price ?? 0);
+            return acc + qty * price;
+          }, 0);
           return {
             id: o.id,
             order_number: o.order_number,
             status: o.status,
+            revenue_status: o.revenue_status ?? "in_progress",
             placed_at: o.placed_at,
             supplier_name: of?.supplier_name ?? "—",
             buyer_name: b?.name ?? "—",
             offer_number: of?.offer_number ?? null,
             offer_created_at: of?.created_at ?? null,
+            total_value: total,
           };
         });
-        setRows(list);
+        // Hide rows being managed in the Revenue module
+        setRows(list.filter((r) => !REVENUE_MANAGED.has(r.revenue_status)));
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : String(err));
       } finally {
@@ -86,6 +113,7 @@ export default function AdminOrders() {
     awaitingAccept: rows.filter(r => r.status === "pending_supplier").length,
     awaitingPayment: rows.filter(r => r.status === "awaiting_payment").length,
     completed: rows.filter(r => r.status === "delivered").length,
+    estRevenue: rows.reduce((acc, r) => acc + r.total_value * REVENUE_RATE, 0),
   }), [rows]);
 
   const filtered = useMemo(() => {
@@ -112,6 +140,42 @@ export default function AdminOrders() {
     } else {
       toast({ title: `Status updated to ${getStatusLabel(newStatus)}` });
     }
+  };
+
+  const updateRevenueStatus = async (id: string, newStatus: string) => {
+    const { error } = await supabase
+      .from("orders")
+      .update({ revenue_status: newStatus, revenue_status_changed_at: new Date().toISOString() } as never)
+      .eq("id", id);
+    if (error) {
+      toast({ title: "Failed to update revenue status", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (REVENUE_MANAGED.has(newStatus)) {
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      toast({ title: "Moved to Revenue", description: "Track this record in Finance · Revenue." });
+    } else {
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, revenue_status: newStatus } : r)));
+    }
+  };
+
+  const RevenueStatusSelect = ({ id, status }: { id: string; status: string }) => {
+    const cfg = REVENUE_STATUSES.find(s => s.value === status) ?? REVENUE_STATUSES[0];
+    return (
+      <select
+        value={status}
+        onChange={(e) => updateRevenueStatus(id, e.target.value)}
+        style={{
+          padding: "4px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+          background: cfg.bg, color: cfg.color,
+          border: `1px solid ${cfg.color}55`, cursor: "pointer",
+        }}
+      >
+        {REVENUE_STATUSES.map((s) => (
+          <option key={s.value} value={s.value}>{s.label}</option>
+        ))}
+      </select>
+    );
   };
 
   const StatusSelect = ({ id, status }: { id: string; status: string | null }) => {
@@ -142,11 +206,12 @@ export default function AdminOrders() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
         <StatCard label="Total" value={stats.total} />
         <StatCard label="Awaiting Acceptance" value={stats.awaitingAccept} />
         <StatCard label="Awaiting Payment" value={stats.awaitingPayment} />
         <StatCard label="Completed" value={stats.completed} />
+        <StatCard label="Est. Revenue (0.30%)" value={fmtMoney(stats.estRevenue)} />
       </div>
 
       <div className="flex flex-wrap gap-2 mt-2">
@@ -190,17 +255,27 @@ export default function AdminOrders() {
                     <th>Supplier</th>
                     <th>Buyer</th>
                     <th>Status</th>
+                    <th className="text-right">Total</th>
+                    <th className="text-right">Est. Revenue</th>
+                    <th>Revenue Status</th>
                     <th>Date</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filtered.map(r => (
-                    <tr key={r.id}>
-                      <td><strong>#{String(r.order_number).padStart(7, "0")}</strong></td>
+                    <tr
+                      key={r.id}
+                      onClick={() => navigate(`/admin/deals/${r.id}`)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td><strong style={{ color: "#8B2252" }}>#{String(r.order_number).padStart(7, "0")}</strong></td>
                       <td style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{r.offer_number != null ? formatOfferNumber(r.offer_number, r.offer_created_at) : "—"}</td>
                       <td>{r.supplier_name}</td>
                       <td>{r.buyer_name}</td>
-                      <td><StatusSelect id={r.id} status={r.status} /></td>
+                      <td onClick={(e) => e.stopPropagation()}><StatusSelect id={r.id} status={r.status} /></td>
+                      <td className="text-right" style={{ fontSize: 12 }}>{r.total_value > 0 ? fmtMoney(r.total_value) : "—"}</td>
+                      <td className="text-right" style={{ fontSize: 12, fontWeight: 600, color: "#8B2252" }}>{r.total_value > 0 ? fmtMoney(r.total_value * REVENUE_RATE) : "—"}</td>
+                      <td onClick={(e) => e.stopPropagation()}><RevenueStatusSelect id={r.id} status={r.revenue_status} /></td>
                       <td style={{ color: "#6b7280", fontSize: 12 }}>{fmtDate(r.placed_at)}</td>
                     </tr>
                   ))}
@@ -211,13 +286,28 @@ export default function AdminOrders() {
 
           <div className="adm-only-mobile adm-cards-stack">
             {filtered.map(r => (
-              <div key={r.id} className="adm-panel" style={{ padding: 12 }}>
+              <div
+                key={r.id}
+                className="adm-panel"
+                style={{ padding: 12, cursor: "pointer" }}
+                onClick={() => navigate(`/admin/deals/${r.id}`)}
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8 }}>
                   <strong>#{String(r.order_number).padStart(7, "0")}</strong>
-                  <StatusSelect id={r.id} status={r.status} />
+                  <span onClick={(e) => e.stopPropagation()}><StatusSelect id={r.id} status={r.status} /></span>
                 </div>
                 <div style={{ fontSize: 13, marginBottom: 4 }}>{r.supplier_name} → {r.buyer_name}</div>
-                <div style={{ fontSize: 12, color: "#6b7280" }}>{fmtDate(r.placed_at)}</div>
+                <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}>{fmtDate(r.placed_at)}</div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12 }}>
+                  <div>
+                    <div style={{ color: "#6b7280" }}>Total · Est. Revenue</div>
+                    <div style={{ fontWeight: 600 }}>
+                      {r.total_value > 0 ? `${fmtMoney(r.total_value)} · ` : "— · "}
+                      <span style={{ color: "#8B2252" }}>{r.total_value > 0 ? fmtMoney(r.total_value * REVENUE_RATE) : "—"}</span>
+                    </div>
+                  </div>
+                  <span onClick={(e) => e.stopPropagation()}><RevenueStatusSelect id={r.id} status={r.revenue_status} /></span>
+                </div>
               </div>
             ))}
           </div>

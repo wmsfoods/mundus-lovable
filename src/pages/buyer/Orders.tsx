@@ -16,6 +16,8 @@ import {
   useDealsFilter,
   type DealsFilterState,
 } from "@/hooks/useDealsFilter";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { MobileTechHeader } from "@/components/mundus/MobileTechHeader";
 
 function fmtDate(iso: string) {
   const d = new Date(iso);
@@ -29,6 +31,7 @@ type SortKey = "recent" | "oldest" | "status";
 export default function BuyerOrders() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const isMobile = useIsMobileShell();
   const { data: orders } = useBuyerOrders();
   const [sortBy, setSortBy] = useState<SortKey>("recent");
   const [filter, setFilter] = useState<DealsFilterState>(EMPTY_FILTER);
@@ -73,6 +76,16 @@ export default function BuyerOrders() {
   const from = total === 0 ? 0 : 1;
   const to = total;
 
+  const activeCount = useMemo(
+    () =>
+      (orders ?? []).filter((o) => {
+        const s = (o.status ?? "").toLowerCase();
+        return s !== "delivered" && s !== "cancelled" && s !== "completed";
+      }).length,
+    [orders],
+  );
+  const totalCount = orders?.length ?? 0;
+
   const statusOptions = options.statuses.map((s) => ({
     value: s,
     label: getStatusLabel(s),
@@ -80,19 +93,39 @@ export default function BuyerOrders() {
 
   return (
     <>
-      <section className="hero" style={{ marginBottom: 24 }}>
-        <h2>{t("buyer.orders.heroTitle")}</h2>
-        <div className="hero-photo" aria-hidden="true" />
-      </section>
+      {isMobile && (
+        <MobileTechHeader
+          icon={FileTextIcon}
+          eyebrow="Buyer · Workspace"
+          title={t("buyer.orders.title")}
+          subtitle={t("buyer.orders.heroTitle")}
+          stats={[
+            { label: "Total", value: totalCount, accent: "primary" },
+            { label: "Active", value: activeCount, accent: "success" },
+            { label: "Filtered", value: total, accent: "muted" },
+          ]}
+        />
+      )}
 
-      <Crumbs
-        items={[
-          { label: t("buyer.offers.crumbHome"), to: "/buyer" },
-          { label: t("buyer.orders.title") },
-        ]}
-      />
+      {!isMobile && (
+        <section className="hero" style={{ marginBottom: 24 }}>
+          <h2>{t("buyer.orders.heroTitle")}</h2>
+          <div className="hero-photo" aria-hidden="true" />
+        </section>
+      )}
 
-      <PageTitle icon={FileTextIcon} title={t("buyer.orders.title")} />
+      {!isMobile && (
+        <Crumbs
+          items={[
+            { label: t("buyer.offers.crumbHome"), to: "/buyer" },
+            { label: t("buyer.orders.title") },
+          ]}
+        />
+      )}
+
+      {!isMobile && (
+        <PageTitle icon={FileTextIcon} title={t("buyer.orders.title")} />
+      )}
 
       <DealsFilterBar
         value={filter}

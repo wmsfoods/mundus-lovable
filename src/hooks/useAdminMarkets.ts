@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { auditLog } from "@/lib/auditLog";
 
 export type PortInfo = { id: string; name: string; code: string };
 
@@ -112,11 +113,21 @@ export function useAdminMarkets() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ marketId, isActive }: { marketId: string; isActive: boolean }) => {
+      const { data: mk } = await supabase.from("markets").select("country_id, countries(english_name)").eq("id", marketId).maybeSingle();
+      const countryName = (mk as any)?.countries?.english_name ?? null;
       const { error } = await supabase
         .from("markets")
         .update({ is_active: isActive })
         .eq("id", marketId);
       if (error) throw error;
+      auditLog({
+        action: isActive ? "market.added" : "market.removed",
+        category: "catalog",
+        entityType: "market",
+        entityId: marketId,
+        entityLabel: countryName,
+        severity: isActive ? "info" : "warn",
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "markets"] }),
   });
@@ -137,6 +148,14 @@ export function useAdminMarkets() {
     mutationFn: async ({ countryId, isActive }: { countryId: string; isActive: boolean }) => {
       const { error } = await supabase.from("markets").insert({ country_id: countryId, is_active: isActive });
       if (error) throw error;
+      const { data: co } = await supabase.from("countries").select("english_name").eq("id", countryId).maybeSingle();
+      auditLog({
+        action: "market.added",
+        category: "catalog",
+        entityType: "market",
+        entityLabel: (co as any)?.english_name ?? null,
+        details: { countryId, isActive },
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "markets"] }),
   });

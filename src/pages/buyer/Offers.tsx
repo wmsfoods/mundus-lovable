@@ -28,52 +28,15 @@ import {
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { MobileTechHeader } from "@/components/mundus/MobileTechHeader";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const COUNTRY_CODE_MAP: Record<string, string> = {
-  argentina: "AR",
-  australia: "AU",
-  brazil: "BR",
-  canada: "CA",
-  chile: "CL",
-  china: "CN",
-  egypt: "EG",
-  france: "FR",
-  germany: "DE",
-  "hong kong": "HK",
-  india: "IN",
-  italy: "IT",
-  japan: "JP",
-  jordan: "JO",
-  mexico: "MX",
-  netherlands: "NL",
-  paraguay: "PY",
-  poland: "PL",
-  "saudi arabia": "SA",
-  "south africa": "ZA",
-  "south korea": "KR",
-  spain: "ES",
-  turkey: "TR",
-  "united arab emirates": "AE",
-  uae: "AE",
-  "united kingdom": "GB",
-  uk: "GB",
-  "united states": "US",
-  "united states of america": "US",
-  usa: "US",
-  us: "US",
-  uruguay: "UY",
-  vietnam: "VN",
-};
-
-function countryToCode(name: string | null | undefined): string {
-  if (!name) return "";
-  return COUNTRY_CODE_MAP[name.trim().toLowerCase()] ?? "";
-}
+import { countryToCode } from "@/lib/countryCodes";
 
 function formatShipment(month: number, year: number): string {
   const m = MONTH_NAMES[(month - 1) % 12] ?? "";
@@ -317,6 +280,7 @@ export default function BuyerOffers() {
   const [auctionsOnly, setAuctionsOnly] = useState(false);
   const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
+  const isMobile = useIsMobileShell();
 
   const { company } = useCurrentCompany();
   const buyerCompanyId = company?.id ?? null;
@@ -471,6 +435,20 @@ export default function BuyerOffers() {
 
   return (
     <>
+      {isMobile && (
+        <MobileTechHeader
+          icon={TagIcon}
+          eyebrow="Buyer · Marketplace"
+          title={t("buyer.offers.title")}
+          subtitle={`${total} ${total === 1 ? "offer" : "offers"} available now`}
+          stats={[
+            { label: "Offers", value: total, accent: "primary" },
+            { label: "Volume MT", value: totalMT >= 100 ? Math.round(totalMT) : totalMT.toFixed(1), accent: "success" },
+            { label: "Origins", value: filterOptions.origins.length, accent: "muted" },
+          ]}
+        />
+      )}
+
       <div className="crumbs">
         <a onClick={(e) => { e.preventDefault(); navigate("/buyer"); }} href="/buyer">
           {t("buyer.offers.crumbHome")}
@@ -479,39 +457,43 @@ export default function BuyerOffers() {
         <b>{t("buyer.offers.title")}</b>
       </div>
 
-      <div className="page-title">
-        <span className="chip">
-          <TagIcon size={20} />
-        </span>
-        <h1>{t("buyer.offers.title")}</h1>
-      </div>
+      {!isMobile && (
+        <div className="page-title">
+          <span className="chip">
+            <TagIcon size={20} />
+          </span>
+          <h1>{t("buyer.offers.title")}</h1>
+        </div>
+      )}
 
       <div className="bo-filterbar">
-        <div className="bo-filter-row" style={{ alignItems: "center", gap: 10 }}>
-          <button
-            type="button"
-            className={`bo-filter-pill ${auctionsOnly ? "is-active" : ""}`}
-            onClick={() => setAuctionsOnly((v) => !v)}
-            aria-pressed={auctionsOnly}
-          >
-            <Gavel size={13} /> 🔨 {t("buyer.auctions.filter")}
-            <span style={{ opacity: 0.7, marginLeft: 4 }}>0</span>
-          </button>
-          <AuctionInfoDialog />
-          <div className="mini-select-wrap" style={{ marginLeft: "auto" }}>
-            <select
-              className="mini-select"
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-              aria-label="Sort offers"
+        {!isMobile && (
+          <div className="bo-filter-row" style={{ alignItems: "center", gap: 10 }}>
+            <button
+              type="button"
+              className={`bo-filter-pill ${auctionsOnly ? "is-active" : ""}`}
+              onClick={() => setAuctionsOnly((v) => !v)}
+              aria-pressed={auctionsOnly}
             >
-              <option value="newest">{t("buyer.offers.sort.newest", "Newest first")}</option>
-              <option value="priceAsc">{t("buyer.offers.sort.priceAsc", "Price: low to high")}</option>
-              <option value="priceDesc">{t("buyer.offers.sort.priceDesc", "Price: high to low")}</option>
-              <option value="volumeDesc">{t("buyer.offers.sort.volumeDesc", "Largest volume")}</option>
-            </select>
+              <Gavel size={13} /> 🔨 {t("buyer.auctions.filter")}
+              <span style={{ opacity: 0.7, marginLeft: 4 }}>0</span>
+            </button>
+            <AuctionInfoDialog />
+            <div className="mini-select-wrap" style={{ marginLeft: "auto" }}>
+              <select
+                className="mini-select"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                aria-label="Sort offers"
+              >
+                <option value="newest">{t("buyer.offers.sort.newest", "Newest first")}</option>
+                <option value="priceAsc">{t("buyer.offers.sort.priceAsc", "Price: low to high")}</option>
+                <option value="priceDesc">{t("buyer.offers.sort.priceDesc", "Price: high to low")}</option>
+                <option value="volumeDesc">{t("buyer.offers.sort.volumeDesc", "Largest volume")}</option>
+              </select>
+            </div>
           </div>
-        </div>
+        )}
         <OffersFilterBar
           value={filter}
           onChange={setFilter}
@@ -524,6 +506,39 @@ export default function BuyerOffers() {
               available={marketProteins}
               counts={proteinCounts}
             />
+          }
+          extraSheetSections={
+            isMobile ? (
+              <>
+                <div className="ofb-sheet-section">
+                  <div className="ofb-sheet-section-title">Auctions</div>
+                  <button
+                    type="button"
+                    className={`bo-filter-pill ${auctionsOnly ? "is-active" : ""}`}
+                    onClick={() => setAuctionsOnly((v) => !v)}
+                    aria-pressed={auctionsOnly}
+                  >
+                    <Gavel size={13} /> 🔨 {t("buyer.auctions.filter")}
+                    <span style={{ opacity: 0.7, marginLeft: 4 }}>0</span>
+                  </button>
+                </div>
+                <div className="ofb-sheet-section">
+                  <div className="ofb-sheet-section-title">Sort by</div>
+                  <select
+                    className="mini-select"
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    aria-label="Sort offers"
+                    style={{ width: "100%" }}
+                  >
+                    <option value="newest">{t("buyer.offers.sort.newest", "Newest first")}</option>
+                    <option value="priceAsc">{t("buyer.offers.sort.priceAsc", "Price: low to high")}</option>
+                    <option value="priceDesc">{t("buyer.offers.sort.priceDesc", "Price: high to low")}</option>
+                    <option value="volumeDesc">{t("buyer.offers.sort.volumeDesc", "Largest volume")}</option>
+                  </select>
+                </div>
+              </>
+            ) : null
           }
         />
       </div>

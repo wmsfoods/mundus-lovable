@@ -97,14 +97,25 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   const [bids, setBids] = useState<Record<string, number | null>>(() =>
     Object.fromEntries(offer.items.map((it) => [it.id, Number(it.price)])),
   );
+  // Per-item editable text buffer for the bid input. Stays decoupled from
+  // the numeric `bids` state so typing doesn't fight reformatting.
+  const [bidDrafts, setBidDrafts] = useState<Record<string, string>>({});
   const hydratedRef = useRef(false);
   const [bulkMode, setBulkMode] = useState<"amount" | "percent">("amount");
   const [bulkValue, setBulkValue] = useState<string>("");
 
   const applyAllBids = (priceFor: (askingKg: number) => number) => {
-    setBids(
+    const next: Record<string, number> = Object.fromEntries(
+      offer.items.map((it) => [it.id, +priceFor(Number(it.price)).toFixed(4)]),
+    );
+    setBids(next);
+    // Re-sync the text buffers so the inputs reflect the new values.
+    setBidDrafts(
       Object.fromEntries(
-        offer.items.map((it) => [it.id, +priceFor(Number(it.price)).toFixed(4)]),
+        Object.entries(next).map(([id, kg]) => [
+          id,
+          toDisplay(kg, "price", unit).toFixed(2),
+        ]),
       ),
     );
   };
@@ -131,9 +142,16 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   useEffect(() => {
     if (!open) return;
     const draft = loadDraft(offer.id);
-    setBids(
+    const initial: Record<string, number> = Object.fromEntries(
+      offer.items.map((it) => [it.id, draft?.bids?.[it.id] ?? Number(it.price)]),
+    );
+    setBids(initial);
+    setBidDrafts(
       Object.fromEntries(
-        offer.items.map((it) => [it.id, draft?.bids?.[it.id] ?? Number(it.price)]),
+        Object.entries(initial).map(([id, kg]) => [
+          id,
+          toDisplay(kg, "price", unit).toFixed(2),
+        ]),
       ),
     );
     setIncoterm(draft?.incoterm ?? allowedIncoterms[0] ?? "CFR");
@@ -197,11 +215,18 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
   // and re-syncs whenever the buyer flips incoterm or freight stabilizes.
   useEffect(() => {
     if (!open || !hydratedRef.current) return;
-    setBids(
+    const next: Record<string, number> = Object.fromEntries(
+      offer.items.map((it) => [
+        it.id,
+        getEffectiveAskingPrice(Number(it.price), incoterm, freightPerKg, insurancePerKg),
+      ]),
+    );
+    setBids(next);
+    setBidDrafts(
       Object.fromEntries(
-        offer.items.map((it) => [
-          it.id,
-          getEffectiveAskingPrice(Number(it.price), incoterm, freightPerKg, insurancePerKg),
+        Object.entries(next).map(([id, kg]) => [
+          id,
+          toDisplay(kg, "price", unit).toFixed(2),
         ]),
       ),
     );
@@ -355,6 +380,16 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       if (tokErr) console.warn("token insert failed", tokErr.message);
 
       toast.success(t("buyer.bid.successToast"));
+      try {
+        const { auditLog } = await import("@/lib/auditLog");
+        auditLog({
+          action: "bid.placed",
+          category: "negotiation",
+          entityType: "negotiation",
+          entityId: neg.id as string,
+          details: { round: 1 },
+        });
+      } catch { /* never break flow */ }
       clearDraft(offer.id);
 
       // Fire in-app notification to supplier company (best-effort)
@@ -608,23 +643,37 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                     <td className="px-3 py-2 text-right">
                       <div className="flex flex-col items-end gap-0.5">
                         <Input
-                          type="number"
-                          step="0.01"
-                          min="0"
-                          value={isEmpty ? "" : (Number.isFinite(displayBid) ? displayBid.toFixed(2) : "")}
+                          type="text"
+                          inputMode="decimal"
+                          pattern="[0-9.,]*"
+                          value={bidDrafts[it.id] ?? ""}
+                          onFocus={(e) => e.currentTarget.select()}
                           onChange={(e) => {
-                            const raw = e.target.value;
-                            if (raw === "") {
+                            const raw = e.target.value.replace(",", ".");
+                            // Allow empty / partial inputs while typing.
+                            if (!/^\d*\.?\d*$/.test(raw)) return;
+                            setBidDrafts((prev) => ({ ...prev, [it.id]: raw }));
+                            if (raw === "" || raw === ".") {
                               setBids((prev) => ({ ...prev, [it.id]: null }));
                               return;
                             }
                             const v = parseFloat(raw);
-                            if (!Number.isFinite(v)) {
+                            if (!Number.isFinite(v)) return;
+                            setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
+                          }}
+                          onBlur={(e) => {
+                            const raw = e.currentTarget.value.replace(",", ".");
+                            const v = parseFloat(raw);
+                            if (!Number.isFinite(v) || v < 0) {
+                              setBidDrafts((prev) => ({ ...prev, [it.id]: "" }));
                               setBids((prev) => ({ ...prev, [it.id]: null }));
                               return;
                             }
-                            const kg = fromDisplay(v, "price", unit);
-                            setBids((prev) => ({ ...prev, [it.id]: kg }));
+                            setBidDrafts((prev) => ({ ...prev, [it.id]: v.toFixed(2) }));
+                            setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur();
                           }}
                           className={
                             "h-9 w-24 text-right tabular-nums focus-visible:ring-[#8B2252]" +
@@ -688,17 +737,36 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                 <div className="mt-2">
                   <div className="text-xs text-muted-foreground mb-1">{t("buyer.bid.yourBid")} ({pLbl})</div>
                   <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
                     inputMode="decimal"
-                    value={isEmpty ? "" : (Number.isFinite(displayBid) ? displayBid.toFixed(2) : "")}
+                    pattern="[0-9.,]*"
+                    value={bidDrafts[it.id] ?? ""}
+                    onFocus={(e) => e.currentTarget.select()}
                     onChange={(e) => {
-                      const raw = e.target.value;
-                      if (raw === "") { setBids((prev) => ({ ...prev, [it.id]: null })); return; }
+                      const raw = e.target.value.replace(",", ".");
+                      if (!/^\d*\.?\d*$/.test(raw)) return;
+                      setBidDrafts((prev) => ({ ...prev, [it.id]: raw }));
+                      if (raw === "" || raw === ".") {
+                        setBids((prev) => ({ ...prev, [it.id]: null }));
+                        return;
+                      }
                       const v = parseFloat(raw);
-                      if (!Number.isFinite(v)) { setBids((prev) => ({ ...prev, [it.id]: null })); return; }
+                      if (!Number.isFinite(v)) return;
                       setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
+                    }}
+                    onBlur={(e) => {
+                      const raw = e.currentTarget.value.replace(",", ".");
+                      const v = parseFloat(raw);
+                      if (!Number.isFinite(v) || v < 0) {
+                        setBidDrafts((prev) => ({ ...prev, [it.id]: "" }));
+                        setBids((prev) => ({ ...prev, [it.id]: null }));
+                        return;
+                      }
+                      setBidDrafts((prev) => ({ ...prev, [it.id]: v.toFixed(2) }));
+                      setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") (e.currentTarget as HTMLInputElement).blur();
                     }}
                     className={
                       "h-11 w-full text-right tabular-nums focus-visible:ring-[#8B2252]" +

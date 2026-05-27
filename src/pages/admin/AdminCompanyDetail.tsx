@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ArrowLeft, Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-react";
 import { toast } from "sonner";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
+import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import {
@@ -150,11 +151,31 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         const res = await create(form);
         if (!res.ok) { toast.error(res.error ?? t("admin.companies.toast.error")); return; }
         toast.success(t("admin.companies.detail.saved"));
+        auditLog({
+          action: "company.created",
+          category: "company",
+          entityType: "company",
+          entityId: res.id ?? null,
+          entityLabel: form.name,
+          details: { status: form.status ?? "active" },
+        });
         if (res.id) navigate(`/admin/companies/${res.id}`, { replace: true });
       } else {
+        const prevStatus = (data as any)?.status ?? null;
         const res = await save(form);
         if (!res.ok) { toast.error(res.error ?? t("admin.companies.toast.error")); return; }
         toast.success(t("admin.companies.detail.saved"));
+        if (prevStatus !== (form.status ?? "active")) {
+          auditLog({
+            action: "company.status_changed",
+            category: "company",
+            entityType: "company",
+            entityId: (data as any)?.id ?? null,
+            entityLabel: form.name,
+            details: { previousStatus: prevStatus, newStatus: form.status ?? "active" },
+            severity: "warn",
+          });
+        }
         setDirty(false);
       }
     } finally { setSaving(false); }

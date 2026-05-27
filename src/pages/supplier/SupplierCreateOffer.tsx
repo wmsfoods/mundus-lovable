@@ -1217,6 +1217,19 @@ export default function SupplierCreateOffer() {
           ? `Offer ${formatOfferNumber(offer.offer_number)} updated successfully!`
           : `Offer ${formatOfferNumber(offer.offer_number)} published successfully!`,
       );
+      try {
+        const { auditLog } = await import("@/lib/auditLog");
+        auditLog({
+          action: isEditing ? "offer.edited" : "offer.published",
+          category: "offer",
+          entityType: "offer",
+          entityId: offer.id as string,
+          entityLabel: formatOfferNumber(offer.offer_number as number),
+          details: {
+            itemCount: Array.isArray(itemsRows) ? itemsRows.length : undefined,
+          },
+        });
+      } catch { /* never break flow */ }
       if (fromRequest?.requestId) {
         await supabase
           .from("buyer_requests")

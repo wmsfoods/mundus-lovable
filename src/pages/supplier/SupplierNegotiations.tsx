@@ -8,6 +8,8 @@ import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
+import { NegotiationsFilterSheet } from "@/components/marketplace/NegotiationsFilterSheet";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import {
   useNegotiations,
   type NegotiationBid,
@@ -48,6 +50,7 @@ export default function SupplierNegotiations() {
   const navigate = useNavigate();
   const { data: offers, offerCount, bidCount, isLoading, error } = useNegotiations();
   const locale = i18n.language || "en";
+  const isMobile = useIsMobileShell();
 
   // Negotiation IDs that have at least one share token (email relay enabled).
   const [tokenSet, setTokenSet] = useState<Set<string>>(new Set());
@@ -139,6 +142,32 @@ export default function SupplierNegotiations() {
 
       <OfficeIndicator />
 
+      <NegotiationsFilterSheet
+        query={query}
+        onQueryChange={setQuery}
+        sortBy={sortBy}
+        onSortChange={(v) => setSortBy(v as SortKey)}
+        filter={filter}
+        onFilterChange={(v) => setFilter(v as Filter)}
+        chips={CHIPS.map((c) => ({ key: c.key, label: c.label, count: counts[c.key] }))}
+        sortLabels={{
+          recent: t("supplier.negotiations.sort.recent"),
+          oldest: t("supplier.negotiations.sort.oldest"),
+          priority: t("supplier.negotiations.sort.priority"),
+        }}
+        searchPlaceholder={t("supplier.negotiations.searchPlaceholder")}
+        i18n={{
+          filters: t("common.filters", "Filters"),
+          sort: t("common.sort", "Sort"),
+          status: t("common.status", "Status"),
+          clear: t("common.clear", "Clear"),
+          cancel: t("common.cancel", "Cancel"),
+          apply: t("common.apply", "Apply"),
+        }}
+      />
+
+      {!isMobile && (
+      <>
       <div className="nego-toolbar">
         <div className="search-input">
           <span className="ic"><SearchIcon size={16} /></span>
@@ -177,6 +206,8 @@ export default function SupplierNegotiations() {
           </button>
         ))}
       </div>
+      </>
+      )}
 
       {isLoading ? (
         <div className="detail-empty">

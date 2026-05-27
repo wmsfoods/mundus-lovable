@@ -3,6 +3,7 @@ import { Modal } from "@/components/mundus/Modal";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { auditLog } from "@/lib/auditLog";
 
 type Buyer = {
   id: string;
@@ -108,6 +109,14 @@ export function DistributeOfferModal({ open, onClose, offerId, offerNumber, offe
       return;
     }
     toast.success(`Offer sent to ${targets.length} buyer${targets.length === 1 ? "" : "s"}`);
+    auditLog({
+      action: "offer.shared",
+      category: "offer",
+      entityType: "offer",
+      entityId: offerId,
+      entityLabel: offerNumber != null ? formatOfferNumber(offerNumber, offerCreatedAt) : offerTitle,
+      details: { recipientCount: targets.length, channel, supplierName },
+    });
     onClose();
   };
 

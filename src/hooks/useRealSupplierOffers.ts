@@ -4,16 +4,9 @@ import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
+import { countryToCode } from "@/lib/countryCodes";
 
-const COUNTRY_CODE: Record<string, string> = {
-  argentina: "AR", brazil: "BR", canada: "CA", chile: "CL", china: "CN",
-  egypt: "EG", "hong kong": "HK", indonesia: "ID", jordan: "JO", mexico: "MX",
-  paraguay: "PY", russia: "RU", "saudi arabia": "SA", "south korea": "KR",
-  taiwan: "TW", thailand: "TH", "united arab emirates": "AE", uae: "AE",
-  "united states": "US", usa: "US", uruguay: "UY", vietnam: "VN",
-};
-const code = (n: string | null | undefined) =>
-  !n ? "" : COUNTRY_CODE[n.trim().toLowerCase()] ?? n.slice(0, 2).toUpperCase();
+const code = (n: string | null | undefined) => countryToCode(n);
 
 const MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 

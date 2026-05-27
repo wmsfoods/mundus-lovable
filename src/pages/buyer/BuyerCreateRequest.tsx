@@ -565,6 +565,20 @@ export default function BuyerCreateRequest() {
       setSubmitting(false);
       if (error || !data) return toast.error(error?.message ?? "Failed to create request");
       toast.success("Request published to suppliers");
+      try {
+        const { auditLog } = await import("@/lib/auditLog");
+        auditLog({
+          action: "request.submitted",
+          category: "request",
+          entityType: "buyer_request",
+          entityId: (data as any).id,
+          entityLabel: (payload as any)?.product_name ?? "Buyer request",
+          details: {
+            totalKg: (payload as any)?.quantity_kg,
+            destination: (payload as any)?.destination_country,
+          },
+        });
+      } catch { /* never break flow */ }
       navigate("/buyer/requests");
     }
   };

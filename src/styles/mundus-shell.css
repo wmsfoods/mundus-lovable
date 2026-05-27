@@ -538,6 +538,12 @@
     display: block;
     flex-shrink: 0;
   }
+  .bn-icon > svg { display: block; }
+  /* Optical alignment: TagIcon visual mass leans bottom-right; nudge to align with label */
+  .bn-item[href="/supplier/offers"] .bn-icon > svg,
+  .bn-item[href="/buyer/offers"] .bn-icon > svg {
+    transform: translateX(-1px);
+  }
   .bn-icon.is-accent {
     width: 44px;
     height: 44px;

@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+// build: 2026-05-27 republish revenue/team/audit routes
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -41,6 +42,10 @@ import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
 import AdminNegotiations from "./pages/admin/AdminNegotiations.tsx";
 import AdminOffers from "./pages/admin/AdminOffers.tsx";
 import AdminOrders from "./pages/admin/AdminOrders.tsx";
+import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
+import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
+import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
+import AdminTeam from "./pages/admin/AdminTeam.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
@@ -196,8 +201,11 @@ const App = () => (
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
               <Route path="offers" element={<AdminOffers />} />
+              <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="deals" element={<AdminOrders />} />
+              <Route path="deals/:id" element={<AdminOrderDetail />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
+              <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
               <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
               <Route path="disputes" element={<AdminComingSoon section="disputes" />} />
               <Route path="crm/prospects" element={<AdminProspects />} />
@@ -212,10 +220,10 @@ const App = () => (
               <Route path="marketplace/products" element={<AdminProducts />} />
               <Route path="marketplace/markets" element={<AdminMarkets />} />
               <Route path="marketplace/ports" element={<AdminPorts />} />
-              <Route path="finance/revenue" element={<AdminComingSoon section="finance/revenue" />} />
+              <Route path="finance/revenue" element={<AdminRevenue />} />
               <Route path="finance/commissions" element={<AdminComingSoon section="finance/commissions" />} />
-              <Route path="settings/team" element={<AdminComingSoon section="settings/team" />} />
-              <Route path="settings/audit" element={<AdminComingSoon section="settings/audit" />} />
+              <Route path="settings/team" element={<AdminTeam />} />
+              <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
               <Route path="user-requests" element={<AdminUserRequests />} />
               <Route path="outreach" element={<OutreachCenter />} />
