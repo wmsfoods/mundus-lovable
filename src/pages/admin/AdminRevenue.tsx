@@ -12,6 +12,7 @@ type Row = {
   revenue_cancel_reason: string | null;
   revenue_cancelled_at: string | null;
   revenue_status_changed_at: string | null;
+  revenue_due_date: string | null;
   placed_at: string;
   supplier_name: string;
   buyer_name: string;
@@ -77,7 +78,7 @@ export default function AdminRevenue() {
       try {
         const { data, error: e } = await supabase
           .from("orders")
-          .select("id, order_number, revenue_status, revenue_cancel_reason, revenue_cancelled_at, revenue_status_changed_at, placed_at, buyer:companies!orders_buyer_company_id_fkey(name), offer:offers(offer_number, created_at, supplier_name), items:order_items(settlement_amount, settlement_price)")
+          .select("id, order_number, revenue_status, revenue_cancel_reason, revenue_cancelled_at, revenue_status_changed_at, revenue_due_date, placed_at, buyer:companies!orders_buyer_company_id_fkey(name), offer:offers(offer_number, created_at, supplier_name), items:order_items(settlement_amount, settlement_price)")
           .is("deleted_at", null)
           .in("revenue_status", ["due", "invoiced", "received", "cancelled"])
           .order("placed_at", { ascending: false });
@@ -86,6 +87,7 @@ export default function AdminRevenue() {
         type Raw = {
           id: string; order_number: number; revenue_status: string;
           revenue_cancel_reason: string | null; revenue_cancelled_at: string | null; revenue_status_changed_at: string | null;
+          revenue_due_date: string | null;
           placed_at: string;
           buyer: { name: string } | { name: string }[] | null;
           offer: { offer_number: number | null; created_at: string | null; supplier_name: string | null } | { offer_number: number | null; created_at: string | null; supplier_name: string | null }[] | null;
@@ -108,6 +110,7 @@ export default function AdminRevenue() {
             revenue_cancel_reason: o.revenue_cancel_reason,
             revenue_cancelled_at: o.revenue_cancelled_at,
             revenue_status_changed_at: o.revenue_status_changed_at,
+            revenue_due_date: o.revenue_due_date,
             placed_at: o.placed_at,
             supplier_name: of?.supplier_name ?? "—",
             buyer_name: b?.name ?? "—",
