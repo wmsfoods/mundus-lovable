@@ -124,6 +124,7 @@ export default function AdminProspectDetail() {
   const isDbProspect = !!id && !id.startsWith("pr-");
   const [dbP, setDbP] = useState<Prospect | null>(null);
   const [dbLoading, setDbLoading] = useState(false);
+  const [enriching, setEnriching] = useState(false);
 
   useEffect(() => {
     if (mock || !isDbProspect || !id) return;
