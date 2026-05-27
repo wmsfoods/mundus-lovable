@@ -1,0 +1,1 @@
+ALTER TABLE public.companies ALTER COLUMN tax_id DROP NOT NULL;
