@@ -148,7 +148,7 @@ export default function AdminProspects() {
       let q = supabase
         .from("crm_companies")
         .select(
-          "id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin)",
+          "id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin,seniority)",
           { count: "exact" },
         )
         .order("created_at", { ascending: false });
