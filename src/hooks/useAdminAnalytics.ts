@@ -78,6 +78,10 @@ function getEmpty(): AdminAnalytics {
   };
 }
 
+function warnAdminQuery(name: string, error: unknown) {
+  if (error) console.warn(`[admin-analytics] ${name} query failed`, error);
+}
+
 function getRelativeTime(iso: string | null | undefined): string {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
@@ -107,6 +111,16 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
         supabase.from("buyer_requests").select("id, destination_country, created_at, status").is("deleted_at", null),
         supabase.from("offer_markets").select("offer_id, country_name"),
       ]);
+
+      warnAdminQuery("offers", offersRes.error);
+      warnAdminQuery("negotiations", negsRes.error);
+      warnAdminQuery("orders", ordersRes.error);
+      warnAdminQuery("companies", companiesRes.error);
+      warnAdminQuery("round_proposals", negRoundsRes.error);
+      warnAdminQuery("recent_negotiations", recentNegsRes.error);
+      warnAdminQuery("offer_items", offerItemsRes.error);
+      warnAdminQuery("buyer_requests", buyerReqsRes.error);
+      warnAdminQuery("offer_markets", marketsRes.error);
 
       const offers = (offersRes.data ?? []) as any[];
       const negs = (negsRes.data ?? []) as any[];
