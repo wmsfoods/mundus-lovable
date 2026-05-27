@@ -881,6 +881,8 @@ function buildRow(index: number, raw: any, map: Record<string, FieldKey | "ignor
       if (!mapped[req]) {
         if (req === "fullName" && mapped.email) {
           status = "warn"; note = "Name will be auto-extracted from email";
+        } else if (req === "email" && (mapped.fullName || mapped.personalLinkedin)) {
+          status = "warn"; note = "No email — will import with LinkedIn / name only";
         } else {
           status = "invalid"; note = `Missing ${req}`;
           break;
