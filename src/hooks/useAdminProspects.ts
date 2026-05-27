@@ -160,10 +160,6 @@ type Seed = Omit<
 >;
 
 const SEEDS: Seed[] = [
-  // SUPPLIERS
-  { companyName: "JBS Brasil", country: "BR", role: "potential_supplier", stage: "qualified", owner: "FN", estGmv: 4_200_000, source: "linkedin", contactName: "Carlos Mendonça", contactEmail: "carlos.mendonca@jbs.com.br", notes: "Major BR exporter, multiple plants approved for CN/EU." },
-  // BUYERS
-  { companyName: "Tokyo Premium Imports", country: "JP", role: "potential_buyer", stage: "qualified", owner: "FN", estGmv: 3_800_000, source: "trade_show", contactName: "Hiroshi Yamada", contactEmail: "h.yamada@tokyo-premium.jp", notes: "Wagyu and premium aged cuts, restaurant supply." },
 ];
 
 function buildInitial(): Prospect[] {
