@@ -473,7 +473,7 @@ export default function AdminProspects() {
                       </div>
                     </div>
                   </td>
-                  <td><span className="pill info">{t(`admin.crm.roles.${p.role}`)}</span></td>
+                  <td><span className={`pill ${p.leadType}`}>{t(`admin.crm.roles.${p.role}`)}</span></td>
                   <td><span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span></td>
                   <td>
                     <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
