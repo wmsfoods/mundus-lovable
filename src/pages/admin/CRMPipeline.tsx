@@ -5,8 +5,9 @@ import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DocsTab } from "@/components/admin/docs/DocsTab";
 
-type Tab = "pipeline" | "buyers" | "suppliers" | "interviews" | "learnings";
+type Tab = "pipeline" | "buyers" | "suppliers" | "interviews" | "learnings" | "documents";
 
 type Contact = {
   id: string;
@@ -200,6 +201,7 @@ export default function CRMPipeline() {
     { k: "suppliers", l: t("admin.crm.pipeline.tabs.suppliers") },
     { k: "interviews", l: t("admin.crm.pipeline.tabs.interviews") },
     { k: "learnings", l: t("admin.crm.pipeline.tabs.learnings") },
+    { k: "documents", l: "Documents" },
   ];
 
   function openAddCompany(type: "buyer" | "supplier") {
@@ -278,6 +280,10 @@ export default function CRMPipeline() {
           companies={companies}
           onAdd={() => setAddLearningOpen(true)}
         />
+      )}
+
+      {tab === "documents" && (
+        <DocsTab />
       )}
 
       <AddCompanyModal

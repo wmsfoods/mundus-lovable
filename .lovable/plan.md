@@ -1,51 +1,34 @@
-## Limpeza completa de dados de teste
+## Documents tab no CRM Pipeline
 
-Vou apagar (hard delete) todos os registros transacionais e suas dependências, mantendo catálogos (cuts, produtos, países, portos), empresas, usuários e configurações.
+### Adicionar nova aba "Documents" em `CRMPipeline.tsx`
+Nova aba ao lado das existentes (Pipeline / Buyers / Suppliers / Interviews / Learnings) com 3 subabas:
 
-### O que será apagado
+- **Admin Docs** — placeholder vazio "Nenhum documento ainda" (futura área para docs internos da equipe Mundus).
+- **Buyers** — renderiza o guia "[Buyer] Mundus guide" como HTML.
+- **Suppliers** — placeholder vazio (futura área).
 
-**Comercial (zerado total):**
-- `orders` (2) + filhos: `order_items`, `order_documents`, `shipment_containers`, `shipping_instructions`
-- `negotiations` (7) + filhos: `round_proposals`, `cut_rounds`, `counter_proposals`, `negotiation_tokens`, `agreed_items`
-- `offers` (14) + filhos: `offer_items`, `offer_images`, `offer_destination_ports`
-- `buyer_requests` (7) + filhos: `request_items`, `request_responses`, anexos
+### Componente novo: `src/components/admin/docs/BuyerGuideDocument.tsx`
+- HTML estilizado (não embed de PDF) baseado no conteúdo extraído do anexo.
+- 9 seções: Ponto de partida, Solução, Credibilidade, Benefícios, Operação, Custo, Prova social, FAQ, Próximo passo + canais de contato.
+- Visual: cores Mundus (wine `#9B2251`), cards de benefícios com ícones (🌍 ✅ 🔒), tabela de problemas/soluções, stepper numerado, blocos "$0".
+- **Seletor de idioma** no topo (4 botões pill): 🇺🇸 EN · 🇧🇷 PT · 🇪🇸 ES · 🇨🇳 ZH. Idioma default = PT (idioma do PDF original).
+- Botão "Imprimir / Salvar PDF" usando `window.print()` + CSS `@media print`.
+- Conteúdo armazenado num dicionário local `CONTENT[lang]` dentro do componente (auto-contido, sem mexer no `src/i18n`).
 
-**Notificações e logs vinculados:**
-- `app_notifications` referentes a esses registros
-- `audit_log` (opcional — confirmo abaixo)
+### Componente novo: `src/components/admin/docs/DocsTab.tsx`
+- Sub-navegação pill (Admin Docs / Buyers / Suppliers).
+- Renderiza o documento correspondente.
 
-**CRM:**
-- `crm_companies` "Inma Ireland" + contatos/atividades vinculadas
+### Edição em `CRMPipeline.tsx`
+- Adicionar `"documents"` ao tipo `Tab`.
+- Inserir item `{ k: "documents", l: "Documents" }` no array `TABS`.
+- Render condicional `{tab === "documents" && <DocsTab />}`.
 
-### O que será preservado
-- Empresas Mundus (buyers/suppliers reais), usuários, roles, ofícios
-- Catálogos: cuts, standard_products, customer_products, countries, ports, markets
-- Configurações de negociação, preferências de notificação
-- Módulo Mundus Whats (mw_*), Outreach, CRM (exceto Inma Ireland)
-- `audit_log` mantido como histórico de auditoria
+### Traduções
+Conteúdo do guia traduzido inline em 4 idiomas (PT, EN, ES, ZH). Mantém o tom comercial original do PDF: títulos curtos, parágrafos com voz de autoridade, exemplos preservados (CABC, Frigorífico Valencio, etc.).
 
-### Ordem de execução (respeita FKs)
-
-```text
-1. order_documents, shipment_containers, shipping_instructions, order_items
-2. orders
-3. counter_proposals, cut_rounds, round_proposals, negotiation_tokens
-4. negotiations
-5. offer_destination_ports, offer_images, offer_items
-6. offers
-7. request_responses, request_items, buyer_request attachments
-8. buyer_requests
-9. app_notifications órfãs
-10. crm_activities + crm_contacts da Inma Ireland → crm_companies
-```
-
-### Como vou executar
-
-Uma migration única `cleanup_test_data` com `DELETE` em ordem segura, dentro de uma transação implícita. Vou usar `TRUNCATE ... CASCADE` quando seguro para as tabelas filhas para garantir limpeza completa.
-
-### Confirmações antes de rodar
-
-1. **Audit log**: mantenho intacto (recomendado) ou apago também?
-2. **Soft-deleted antigos** (`deleted_at IS NOT NULL`): apago de vez junto ou deixo?
-
-Se confirmar essas 2 perguntas eu já rodo a migration.
+### Arquivos criados/editados
+- `src/pages/admin/CRMPipeline.tsx` (editar — adicionar aba)
+- `src/components/admin/docs/DocsTab.tsx` (novo)
+- `src/components/admin/docs/BuyerGuideDocument.tsx` (novo, ~600 linhas com 4 traduções)
+- `src/styles/mundus-docs.css` (novo — estilos do documento e print)
