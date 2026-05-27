@@ -628,6 +628,12 @@ export default function AdminImport() {
             background: leadType === "supplier" ? "#ECFDF5" : "white",
             color: leadType === "supplier" ? "#065F46" : "#1c1917",
           }}>🏭 Suppliers</button>
+          <button onClick={() => setLeadType("c_level")} style={{
+            padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
+            border: leadType === "c_level" ? "2px solid #7C3AED" : "1px solid #D1D5DB",
+            background: leadType === "c_level" ? "#F5F3FF" : "white",
+            color: leadType === "c_level" ? "#6D28D9" : "#1c1917",
+          }}>👔 C-Level</button>
         </div>
       )}
 
