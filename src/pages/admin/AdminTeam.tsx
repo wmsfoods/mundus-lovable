@@ -127,7 +127,7 @@ export default function AdminTeam() {
         .order("created_at", { ascending: false }),
     ]);
 
-    const rolesData = (rolesRes.data ?? []) as RoleRow[];
+    const rolesData = ((rolesRes.data ?? []) as unknown) as RoleRow[];
     setRoles(rolesData);
 
     const cu = (cuRes.data ?? []) as any[];
