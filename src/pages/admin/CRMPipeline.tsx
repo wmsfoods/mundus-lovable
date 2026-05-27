@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, LayoutGrid, List as ListIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -29,6 +29,10 @@ type Company = {
   website: string | null;
   stage: string | null;
   notes: string | null;
+  owner_id?: string | null;
+  industry?: string | null;
+  logo_url?: string | null;
+  created_at?: string | null;
   crm_contacts: Contact[];
 };
 
@@ -70,6 +74,34 @@ const ALL_STAGES = [
   "onboarding","onboarded","active","lost",
 ];
 
+function stageBadgeStyle(stage: string | null | undefined): { background: string; color: string } {
+  const m: Record<string, { background: string; color: string }> = {
+    cold:          { background: "#F3F4F6", color: "#374151" },
+    warm:          { background: "#FEF3C7", color: "#92400E" },
+    contacted:     { background: "#DBEAFE", color: "#1D4ED8" },
+    qualified:     { background: "#E0E7FF", color: "#4338CA" },
+    demo_scheduled:{ background: "#FCE7F3", color: "#9D174D" },
+    demo_done:     { background: "#EDE9FE", color: "#5B21B6" },
+    onboarding:    { background: "#CFFAFE", color: "#155E75" },
+    onboarded:     { background: "#D1FAE5", color: "#065F46" },
+    active:        { background: "#D1FAE5", color: "#065F46" },
+    lost:          { background: "#FEE2E2", color: "#991B1B" },
+  };
+  return m[stage ?? "cold"] ?? m.cold;
+}
+
+function formatRelative(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso).getTime();
+  const diff = Date.now() - d;
+  const day = 86400000;
+  if (diff < day) return "today";
+  if (diff < 2 * day) return "1d ago";
+  if (diff < 30 * day) return `${Math.floor(diff / day)}d ago`;
+  if (diff < 365 * day) return `${Math.floor(diff / (30 * day))}mo ago`;
+  return `${Math.floor(diff / (365 * day))}y ago`;
+}
+
 function stageColor(stage: string | null | undefined): string {
   const b = STAGE_BUCKETS.find((b) => stage && b.stages.includes(stage));
   return b?.color ?? "#94a3b8";
@@ -99,6 +131,15 @@ export default function CRMPipeline() {
   const [prepStatusByCompany, setPrepStatusByCompany] = useState<Record<string, string>>({});
   const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier">("all");
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<"kanban" | "list">("list");
+  const [stageFilter, setStageFilter] = useState<string>("all");
+  const [countryFilter, setCountryFilter] = useState<string>("all");
+  const [ownerFilter, setOwnerFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("newest");
+  const [page, setPage] = useState(1);
+  const [owners, setOwners] = useState<Array<{ id: string; name: string }>>([]);
+  const PAGE_SIZE = 50;
 
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
   const [addCompanyType, setAddCompanyType] = useState<"buyer" | "supplier">("buyer");
@@ -111,7 +152,7 @@ export default function CRMPipeline() {
       const [{ data: c }, { data: i }, { data: l }] = await Promise.all([
         supabase
           .from("crm_companies")
-          .select("id,name,company_type,country,market_region,website,stage,notes,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary)")
+          .select("id,name,company_type,country,market_region,website,stage,notes,owner_id,industry,logo_url,created_at,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary)")
           .order("created_at", { ascending: false })
           .limit(500),
         supabase.from("crm_interviews").select("*").order("interview_date", { ascending: false }).limit(500),
@@ -121,6 +162,14 @@ export default function CRMPipeline() {
       setCompanies((c as any) ?? []);
       setInterviews((i as any) ?? []);
       setLearnings((l as any) ?? []);
+      // Load owners (users referenced as owner_id)
+      const ownerIds = Array.from(new Set(((c as any[]) ?? []).map((x) => x.owner_id).filter(Boolean)));
+      if (ownerIds.length > 0) {
+        const { data: us } = await supabase.from("users").select("id,name,email").in("id", ownerIds);
+        if (!cancelled) {
+          setOwners((us ?? []).map((u: any) => ({ id: u.id, name: u.name || u.email || "Unknown" })));
+        }
+      }
       const { data: preps } = await supabase
         .from("crm_meeting_preps")
         .select("crm_company_id,status,created_at")
@@ -135,10 +184,32 @@ export default function CRMPipeline() {
     return () => { cancelled = true; };
   }, [refresh]);
 
+  const countries = useMemo(() => {
+    const s = new Set<string>();
+    companies.forEach((c) => { if (c.country) s.add(c.country); });
+    return Array.from(s).sort();
+  }, [companies]);
+
+  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, sortBy, view]);
+
   const filteredCompanies = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return companies.filter((c) => {
+    const now = Date.now();
+    const day = 86400000;
+    let since = 0;
+    if (dateFilter === "today") { const d = new Date(); d.setHours(0,0,0,0); since = d.getTime(); }
+    else if (dateFilter === "7d") since = now - 7 * day;
+    else if (dateFilter === "30d") since = now - 30 * day;
+    else if (dateFilter === "90d") since = now - 90 * day;
+    else if (dateFilter === "year") since = new Date(new Date().getFullYear(), 0, 1).getTime();
+
+    const out = companies.filter((c) => {
       if (typeFilter !== "all" && c.company_type !== typeFilter) return false;
+      if (stageFilter !== "all" && c.stage !== stageFilter) return false;
+      if (countryFilter !== "all" && c.country !== countryFilter) return false;
+      if (ownerFilter === "unassigned" && c.owner_id) return false;
+      if (ownerFilter !== "all" && ownerFilter !== "unassigned" && c.owner_id !== ownerFilter) return false;
+      if (since > 0 && c.created_at && new Date(c.created_at).getTime() < since) return false;
       if (q) {
         const pc = primaryContact(c);
         const hay = `${c.name} ${c.country ?? ""} ${pc?.full_name ?? ""} ${pc?.email ?? ""}`.toLowerCase();
@@ -146,7 +217,33 @@ export default function CRMPipeline() {
       }
       return true;
     });
-  }, [companies, typeFilter, search]);
+
+    const cmp = (a: Company, b: Company) => {
+      switch (sortBy) {
+        case "oldest": return (a.created_at ?? "").localeCompare(b.created_at ?? "");
+        case "name": return (primaryContact(a)?.full_name ?? "").localeCompare(primaryContact(b)?.full_name ?? "");
+        case "company": return a.name.localeCompare(b.name);
+        case "stage": return (a.stage ?? "").localeCompare(b.stage ?? "");
+        case "newest":
+        default: return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      }
+    };
+    return out.sort(cmp);
+  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, sortBy]);
+
+  const activeFilterCount = [
+    search.trim() !== "",
+    stageFilter !== "all",
+    countryFilter !== "all",
+    ownerFilter !== "all",
+    dateFilter !== "all",
+    typeFilter !== "all",
+  ].filter(Boolean).length;
+
+  function clearAllFilters() {
+    setSearch(""); setStageFilter("all"); setCountryFilter("all");
+    setOwnerFilter("all"); setDateFilter("all"); setTypeFilter("all");
+  }
 
   const grouped = useMemo(() => {
     const map: Record<string, Company[]> = {};
@@ -243,12 +340,32 @@ export default function CRMPipeline() {
       </div>
 
       {tab === "pipeline" && (
-        <PipelineKanban
+        <PipelineView
+          view={view}
+          setView={setView}
           grouped={grouped}
+          rows={filteredCompanies}
+          owners={owners}
+          countries={countries}
+          page={page}
+          setPage={setPage}
+          pageSize={PAGE_SIZE}
           typeFilter={typeFilter}
           setTypeFilter={setTypeFilter}
           search={search}
           setSearch={setSearch}
+          stageFilter={stageFilter}
+          setStageFilter={setStageFilter}
+          countryFilter={countryFilter}
+          setCountryFilter={setCountryFilter}
+          ownerFilter={ownerFilter}
+          setOwnerFilter={setOwnerFilter}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          activeFilterCount={activeFilterCount}
+          clearAllFilters={clearAllFilters}
           onCard={(id) => nav(`/admin/crm/prospects/${id}`)}
           prepStatus={prepStatusByCompany}
           onPrepClick={(id) => nav(`/admin/crm/meeting-prep/${id}`)}
