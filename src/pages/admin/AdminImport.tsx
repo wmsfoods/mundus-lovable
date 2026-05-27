@@ -989,6 +989,16 @@ export default function AdminImport() {
           <h3 style={{ margin: "0 0 8px", fontSize: 15, color: "#065f46" }}>Import complete</h3>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: "#1c1917", lineHeight: 1.7 }}>
             {destination === "prospects" ? (
+              leadType === "c_level" ? (
+                <>
+                  <li>👔 <strong>C-Level Import</strong></li>
+                  <li>✅ <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
+                  <li>👤 <strong>{results.contactsCreated ?? 0}</strong> contacts with email</li>
+                  <li>🔗 <strong>{results.contactsNoEmail ?? 0}</strong> LinkedIn-only contacts (no email)</li>
+                  <li>⚡ <strong>{results.contactsUpdated ?? 0}</strong> existing contacts upgraded to C-Level</li>
+                  <li>❌ <strong>{results.errors ?? 0}</strong> errors</li>
+                </>
+              ) : (
               <>
                 <li>✅ <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
                 <li>👤 <strong>{results.contactsCreated ?? 0}</strong> main contacts · 👥 <strong>{results.additionalCreated ?? 0}</strong> additional</li>
@@ -996,6 +1006,7 @@ export default function AdminImport() {
                 <li>⚠️ <strong>{results.duplicateEmails ?? 0}</strong> duplicate emails removed</li>
                 <li>❌ <strong>{results.errors ?? 0}</strong> errors</li>
               </>
+              )
             ) : (
               <>
                 <li>✅ <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
