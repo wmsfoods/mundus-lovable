@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DocsTab } from "@/components/admin/docs/DocsTab";
+import { WeeklyLearningLog } from "@/components/admin/learnings/WeeklyLearningLog";
 
 type Tab = "pipeline" | "buyers" | "suppliers" | "interviews" | "learnings" | "documents";
 
@@ -275,11 +276,7 @@ export default function CRMPipeline() {
       )}
 
       {tab === "learnings" && (
-        <LearningsView
-          rows={learnings}
-          companies={companies}
-          onAdd={() => setAddLearningOpen(true)}
-        />
+        <WeeklyLearningLog />
       )}
 
       {tab === "documents" && (
