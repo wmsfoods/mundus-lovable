@@ -3164,5 +3164,13 @@
     "dateFrom": "起始日期",
     "dateTo": "截止日期",
     "noResults": "没有与您筛选条件匹配的结果"
+  },
+  "whatsapp": {
+    "share_offer": "您好！请查看Mundus Trade上的报价：{{url}}",
+    "share_request": "您好！请查看Mundus Trade上的需求：{{url}}",
+    "contact_supplier": "您好！我对您在Mundus Trade上的报价感兴趣，我们聊聊吧。",
+    "contact_buyer": "您好！我看到了您在Mundus Trade上的需求，我想提供报价。",
+    "send_message": "通过WhatsApp发送",
+    "share": "通过WhatsApp分享"
   }
 }
