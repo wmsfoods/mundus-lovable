@@ -5624,6 +5624,7 @@ export type Database = {
         Returns: Json
       }
       current_user_company_id: { Args: never; Returns: string }
+      is_company_master: { Args: { _company_id: string }; Returns: boolean }
       is_mundus_admin: { Args: never; Returns: boolean }
       reject_negotiation: {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
