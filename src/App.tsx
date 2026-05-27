@@ -46,6 +46,7 @@ import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
+import AdminMigration from "./pages/admin/AdminMigration.tsx";
 import WhatsLayout from "./pages/admin/whats/WhatsLayout.tsx";
 import WhatsConversas from "./pages/admin/whats/WhatsConversas.tsx";
 import WhatsContatos from "./pages/admin/whats/WhatsContatos.tsx";
