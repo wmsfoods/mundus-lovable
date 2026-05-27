@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { auditLog } from "@/lib/auditLog";
 
 export type AdminPortRow = {
   port_id: string;
@@ -106,11 +107,20 @@ export function useAdminPorts() {
 
   const toggleMutation = useMutation({
     mutationFn: async ({ portId, isActive }: { portId: string; isActive: boolean }) => {
+      const { data: p } = await supabase.from("ports").select("name").eq("id", portId).maybeSingle();
       const { error } = await supabase
         .from("ports")
         .update({ is_active: isActive })
         .eq("id", portId);
       if (error) throw error;
+      auditLog({
+        action: isActive ? "port.added" : "port.removed",
+        category: "catalog",
+        entityType: "port",
+        entityId: portId,
+        entityLabel: (p as any)?.name ?? null,
+        severity: isActive ? "info" : "warn",
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "ports"] }),
   });
@@ -136,6 +146,13 @@ export function useAdminPorts() {
         is_active: isActive,
       });
       if (error) throw error;
+      auditLog({
+        action: "port.added",
+        category: "catalog",
+        entityType: "port",
+        entityLabel: name,
+        details: { code, countryId, isActive },
+      });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "ports"] }),
   });

@@ -23,6 +23,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { publicUrl } from "@/lib/publicUrl";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { auditLog } from "@/lib/auditLog";
 import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { OfferDetailLayout, type OfferItemRow } from "@/components/offer/OfferDetailLayout";
 
@@ -177,6 +178,15 @@ export default function SupplierOfferDetail() {
 
       setActive(false);
       setDeactivateOpen(false);
+      auditLog({
+        action: "offer.deactivated",
+        category: "offer",
+        entityType: "offer",
+        entityId: id,
+        entityLabel: formatOfferNumber(offer.offerNumber, offer.createdAt),
+        details: { activeNegotiationsWithdrawn: negs?.length ?? 0, offerTitle },
+        severity: "warn",
+      });
       toast.success(
         negs && negs.length > 0
           ? "Offer deactivated. Negotiating buyers have been notified."

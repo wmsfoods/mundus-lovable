@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
+import { auditLog } from "@/lib/auditLog";
 
 export async function acceptNegotiation(
   neg: RealNegotiationRow,
@@ -28,6 +29,16 @@ export async function acceptNegotiation(
     return false;
   }
   toast.success("Bid accepted! Order will be created.");
+  auditLog({
+    action: "negotiation.deal_closed",
+    category: "negotiation",
+    entityType: "negotiation",
+    entityId: neg.id,
+    details: {
+      finalValue: (neg as any).current_price_per_kg ?? (neg as any).price_per_kg ?? null,
+      rounds: (neg as any).current_round ?? null,
+    },
+  });
   return true;
 }
 
@@ -48,5 +59,12 @@ export async function rejectNegotiation(neg: RealNegotiationRow): Promise<boolea
     return false;
   }
   toast("Bid rejected.");
+  auditLog({
+    action: "negotiation.rejected",
+    category: "negotiation",
+    entityType: "negotiation",
+    entityId: neg.id,
+    severity: "warn",
+  });
   return true;
 }
