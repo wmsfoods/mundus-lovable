@@ -516,17 +516,17 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
                 {current.bl_document_url && (
                   <div>
                     <strong>📄 BL Document:</strong>{" "}
-                    <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                    <BLDocLink value={current.bl_document_url} mode="view">View</BLDocLink>
                     {" · "}
-                    <a href={current.bl_document_url} download>Download</a>
+                    <BLDocLink value={current.bl_document_url} mode="download">Download</BLDocLink>
                   </div>
                 )}
                 {current.bl_draft_url && (
                   <div>
                     <strong>📋 Draft BL:</strong>{" "}
-                    <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                    <BLDocLink value={current.bl_draft_url} mode="view">View</BLDocLink>
                     {" · "}
-                    <a href={current.bl_draft_url} download>Download</a>
+                    <BLDocLink value={current.bl_draft_url} mode="download">Download</BLDocLink>
                   </div>
                 )}
               </div>
@@ -540,17 +540,17 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
             {current.bl_document_url && (
               <div>
                 <strong>📄 BL Document:</strong>{" "}
-                <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                <BLDocLink value={current.bl_document_url} mode="view">View</BLDocLink>
                 {" · "}
-                <a href={current.bl_document_url} download>Download</a>
+                <BLDocLink value={current.bl_document_url} mode="download">Download</BLDocLink>
               </div>
             )}
             {current.bl_draft_url && (
               <div>
                 <strong>📋 Draft BL:</strong>{" "}
-                <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                <BLDocLink value={current.bl_draft_url} mode="view">View</BLDocLink>
                 {" · "}
-                <a href={current.bl_draft_url} download>Download</a>
+                <BLDocLink value={current.bl_draft_url} mode="download">Download</BLDocLink>
               </div>
             )}
           </div>
