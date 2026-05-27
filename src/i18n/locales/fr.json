@@ -3164,5 +3164,13 @@
     "dateFrom": "Date de début",
     "dateTo": "Date de fin",
     "noResults": "Aucun résultat ne correspond à vos filtres"
+  },
+  "whatsapp": {
+    "share_offer": "Bonjour ! Découvrez cette offre sur Mundus Trade : {{url}}",
+    "share_request": "Bonjour ! Découvrez cette demande sur Mundus Trade : {{url}}",
+    "contact_supplier": "Bonjour ! Je suis intéressé par votre offre sur Mundus Trade. Discutons.",
+    "contact_buyer": "Bonjour ! J'ai vu votre demande sur Mundus Trade. J'aimerais faire une offre.",
+    "send_message": "Envoyer via WhatsApp",
+    "share": "Partager via WhatsApp"
   }
 }
