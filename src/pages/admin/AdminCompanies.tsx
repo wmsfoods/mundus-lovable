@@ -392,8 +392,8 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
             {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
           </span>
           {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
-            <span className="adm-chip" style={{ background: "#FDF2F8", color: "#8B2252", borderColor: "#F9D0E0", fontSize: 10 }}>
-              🏢 Mundus Managed
+            <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 999, background: "#FDF2F8", color: "#8B2252", border: "1px solid #F9D0E0", lineHeight: 1.4, whiteSpace: "nowrap" }}>
+              🏢 Managed
             </span>
           )}
           {row.is_verified && (
