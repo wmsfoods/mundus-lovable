@@ -319,6 +319,7 @@ export default function AdminImport() {
     if (!rows.length || !destination) return;
     setImporting(true); setProgress(0); setDone(false);
     if (destination === "companies") await importCompanies();
+    else if (leadType === "c_level") await importCLevels();
     else await importGroupedProspects();
     setImporting(false); setDone(true);
   };
