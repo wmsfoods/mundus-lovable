@@ -226,7 +226,14 @@ function Row({
             {initials(row.name)}
           </span>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-            <strong>{row.name}</strong>
+            <strong style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              {row.name}
+              {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
+                <span title="Managed by Mundus team" style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 999, background: "#FDF2F8", color: "#8B2252", border: "1px solid #F9D0E0" }}>
+                  🏢 Mundus Managed
+                </span>
+              )}
+            </strong>
             <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>#{row.company_number}</span>
           </div>
         </div>
