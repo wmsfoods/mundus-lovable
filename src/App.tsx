@@ -46,6 +46,13 @@ import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
+import WhatsLayout from "./pages/admin/whats/WhatsLayout.tsx";
+import WhatsConversas from "./pages/admin/whats/WhatsConversas.tsx";
+import WhatsContatos from "./pages/admin/whats/WhatsContatos.tsx";
+import WhatsTarefas from "./pages/admin/whats/WhatsTarefas.tsx";
+import WhatsMacros from "./pages/admin/whats/WhatsMacros.tsx";
+import WhatsAnalises from "./pages/admin/whats/WhatsAnalises.tsx";
+import WhatsConfiguracoes from "./pages/admin/whats/WhatsConfiguracoes.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
@@ -230,6 +237,15 @@ const App = () => (
               <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
               <Route path="outreach/templates" element={<OutreachTemplates />} />
               <Route path="settings/email" element={<EmailSettings />} />
+              <Route path="whats" element={<WhatsLayout />}>
+                <Route index element={<WhatsConversas />} />
+                <Route path="conversas" element={<WhatsConversas />} />
+                <Route path="contatos" element={<WhatsContatos />} />
+                <Route path="tarefas" element={<WhatsTarefas />} />
+                <Route path="macros" element={<WhatsMacros />} />
+                <Route path="analises" element={<WhatsAnalises />} />
+                <Route path="configuracoes" element={<WhatsConfiguracoes />} />
+              </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>
