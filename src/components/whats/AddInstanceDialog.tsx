@@ -63,7 +63,7 @@ export const AddInstanceDialog = ({ open, onOpenChange, onCreated }: Props) => {
 
   const onSubmit = async (v: Values) => {
     try {
-      await create(v);
+      await create(v as Parameters<typeof create>[0]);
       setShowWebhook(true);
       form.reset();
       setTested(false);
