@@ -416,7 +416,7 @@ export default function AdminProspects() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {list.map((p) => (
                 <tr
                   key={p.id}
                   className="crm-row"
@@ -464,9 +464,9 @@ export default function AdminProspects() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
+              {list.length === 0 && (
                 <tr><td colSpan={8} style={{ textAlign: "center", padding: 28, color: "var(--adm-text-tertiary)" }}>
-                  {t("admin.crm.empty")}
+                  {loading ? "…" : t("admin.crm.empty")}
                 </td></tr>
               )}
             </tbody>
