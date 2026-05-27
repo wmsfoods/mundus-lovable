@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin, Camera,
   StickyNote, ArrowRight, Settings as SettingsIcon, PhoneCall,
-  Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe, Building2,
+  Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe, Building2, Sparkles, Loader2,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -18,6 +18,7 @@ import {
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import { enrichContact } from "@/lib/prospectEnrich";
 
 const STAGE_TO_DB: Record<ProspectStage, string> = {
   new: "cold", researching: "warm", contacted: "contacted",
