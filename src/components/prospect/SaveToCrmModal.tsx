@@ -343,8 +343,8 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
               <Field label="Mobile" auto={!!src?.mobile}><input className="psp-input" value={mobile} onChange={(e) => setMobile(e.target.value)} /></Field>
               <Field label="WhatsApp"><input className="psp-input" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} /></Field>
               <Field label="WeChat"><input className="psp-input" value={wechat} onChange={(e) => setWechat(e.target.value)} /></Field>
-              <Field label="LinkedIn" auto={!!src?.linkedin}><input className="psp-input" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} /></Field>
-              <Field label="Personal LinkedIn"><input className="psp-input" value={personalLinkedin} onChange={(e) => setPersonalLinkedin(e.target.value)} /></Field>
+              <Field label="LinkedIn (Work)" auto={!!src?.linkedin}><input className="psp-input" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} /></Field>
+              <Field label="Personal LinkedIn" auto={!!src?.personalLinkedin}><input className="psp-input" value={personalLinkedin} onChange={(e) => setPersonalLinkedin(e.target.value)} /></Field>
             </div>
           </Section>
 
