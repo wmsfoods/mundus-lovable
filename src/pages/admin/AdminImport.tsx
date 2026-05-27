@@ -962,18 +962,22 @@ export default function AdminImport() {
               onClick={runImport} disabled={importing || groups.length === 0}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "10px 18px", background: leadType === "supplier" ? "#059669" : "#2563EB",
+                padding: "10px 18px", background: leadType === "c_level" ? "#7C3AED" : leadType === "supplier" ? "#059669" : "#2563EB",
                 color: "white", border: 0, borderRadius: 6, fontWeight: 600,
                 cursor: importing ? "wait" : "pointer", opacity: importing ? 0.7 : 1,
               }}
             >
               {importing ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-              {importing ? `Importing… ${progress}%` : `Import ${groups.length} ${leadType === "supplier" ? "supplier" : "buyer"} companies`}
+              {importing
+                ? `Importing… ${progress}%`
+                : leadType === "c_level"
+                  ? `Import ${groups.length} companies · ${groupStats?.totalContacts ?? 0} C-Level contacts`
+                  : `Import ${groups.length} ${leadType === "supplier" ? "supplier" : "buyer"} companies`}
             </button>
           </div>
           {importing && (
             <div style={{ height: 6, background: "#e0e7ff", borderRadius: 3, marginBottom: 12, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${progress}%`, background: leadType === "supplier" ? "#059669" : "#2563EB", transition: "width .25s" }} />
+              <div style={{ height: "100%", width: `${progress}%`, background: leadType === "c_level" ? "#7C3AED" : leadType === "supplier" ? "#059669" : "#2563EB", transition: "width .25s" }} />
             </div>
           )}
         </>
