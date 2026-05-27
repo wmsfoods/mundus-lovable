@@ -347,12 +347,12 @@ export default function AdminProspectDetail() {
                         const r = await enrichContact({
                           id: main.id,
                           company_id: id,
-                          full_name: main.name ?? null,
+                          full_name: main.fullName ?? null,
                           email: main.email ?? null,
                           phone: main.phone ?? null,
                           mobile: main.mobile ?? null,
                           linkedin: main.linkedin ?? null,
-                          photo_url: main.photo ?? null,
+                          photo_url: main.photoUrl ?? null,
                           job_title: main.role ?? null,
                         });
                         if (r.ok) {
