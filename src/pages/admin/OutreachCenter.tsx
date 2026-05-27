@@ -1,157 +1,185 @@
 import "@/styles/mundus-outreach.css";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
+import { useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { ChevronDown, ChevronRight, Inbox, Send, AlarmClock, Sparkles, Megaphone } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useOutreachIntelligence, type OutreachOpportunity } from "@/hooks/useOutreachIntelligence";
 
-const KPIS = [
-  { label: "Total Sent", value: "847", delta: "+12% vs last 14d" },
-  { label: "Delivery Rate", value: "94.2%", delta: "+0.8%" },
-  { label: "Open Rate", value: "38.6%", delta: "+3.1%" },
-  { label: "Click Rate", value: "8.2%", delta: "+1.4%" },
-];
+const TYPE_ICON: Record<OutreachOpportunity["type"], JSX.Element> = {
+  new_offer_to_buyers: <Send size={16} />,
+  new_request_to_suppliers: <Inbox size={16} />,
+  stale_negotiation: <AlarmClock size={16} />,
+  welcome_sequence: <Sparkles size={16} />,
+};
 
-const CHART = Array.from({ length: 14 }, (_, i) => ({
-  day: `D${i + 1}`,
-  sent: 30 + Math.round(Math.sin(i) * 15 + Math.random() * 40 + 20),
-}));
+const TYPE_LABEL: Record<OutreachOpportunity["type"], string> = {
+  new_offer_to_buyers: "Offer alert",
+  new_request_to_suppliers: "Request match",
+  stale_negotiation: "Stale nudge",
+  welcome_sequence: "Welcome",
+};
 
-function typeClass(t: string) {
-  if (t.startsWith("initial")) return "type-initial";
-  if (t.startsWith("followup")) return "type-followup";
-  if (t.startsWith("auction")) return "type-auction";
-  return "cat";
+function priorityDot(p: OutreachOpportunity["priority"]) {
+  return p === "high" ? "🔴" : p === "medium" ? "🟡" : "🟢";
 }
 
-const RECENT = [
-  { id: 1, subject: "New offer — Brazil Beef Q2", type: "initial_offer", sent_at: "2026-05-20 10:14", recipients: 124, delivered: 121, opened: 52, clicked: 11, status: "sent" },
-  { id: 2, subject: "Auction MDS-A#00021 invite", type: "auction_invite", sent_at: "2026-05-19 16:02", recipients: 38, delivered: 38, opened: 21, clicked: 12, status: "sent" },
-  { id: 3, subject: "Following up — Lamb NZ", type: "followup_24h", sent_at: "2026-05-19 09:30", recipients: 87, delivered: 85, opened: 27, clicked: 6, status: "partial" },
-  { id: 4, subject: "Still available — Pork EU", type: "followup_3d", sent_at: "2026-05-18 11:45", recipients: 52, delivered: 52, opened: 14, clicked: 3, status: "sent" },
-  { id: 5, subject: "Auction MDS-A#00019 — Results", type: "auction_result", sent_at: "2026-05-17 18:20", recipients: 16, delivered: 16, opened: 10, clicked: 4, status: "sent" },
-];
-
-const CONTACTS = [
-  { name: "Yuki Tanaka", company: "Tokyo Foods", country: "JP", opens: 24, clicks: 9, last: "2h ago" },
-  { name: "Mei Chen", company: "Shanghai Premium", country: "CN", opens: 19, clicks: 7, last: "5h ago" },
-  { name: "Carlos Ruiz", company: "Madrid Cárnicas", country: "ES", opens: 17, clicks: 6, last: "1d ago" },
-  { name: "Ahmed Al-Farsi", company: "Gulf Meat Co.", country: "AE", opens: 14, clicks: 5, last: "1d ago" },
-  { name: "Pierre Dubois", company: "Paris Boucherie", country: "FR", opens: 12, clicks: 4, last: "2d ago" },
-];
-
 export default function OutreachCenter() {
+  const navigate = useNavigate();
+  const { data, isLoading } = useOutreachIntelligence();
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [filter, setFilter] = useState<"all" | OutreachOpportunity["type"]>("all");
+
+  const stats = data?.stats;
+  const opportunities = useMemo(() => {
+    const list = data?.opportunities ?? [];
+    return filter === "all" ? list : list.filter((o) => o.type === filter);
+  }, [data, filter]);
+
+  const kpis = [
+    { label: "Opportunities", value: stats?.totalOpportunities ?? 0 },
+    { label: "High Priority", value: stats?.highPriority ?? 0 },
+    { label: "Matched Recipients", value: stats?.totalMatchedRecipients ?? 0 },
+    { label: "Stale Negotiations", value: stats?.staleNegotiations ?? 0 },
+    { label: "Active Offers", value: stats?.activeOffers ?? 0 },
+    { label: "New Signups (7d)", value: stats?.newSignups ?? 0 },
+  ];
+
+  const createCampaign = (op: OutreachOpportunity) => {
+    const payload = encodeURIComponent(JSON.stringify({
+      opportunityId: op.id,
+      type: op.type,
+      title: op.title,
+      entityId: op.entityId,
+      entityType: op.entityType,
+      entityLabel: op.entityLabel,
+      recipients: op.matchedRecipients,
+    }));
+    navigate(`/admin/outreach/campaigns?draft=${payload}`);
+  };
+
   return (
     <div className="out-page">
       <div>
         <h1 className="out-h1">Outreach Center</h1>
-        <p className="out-sub">Email campaign overview and recent activity</p>
+        <p className="out-sub">Smart matching engine — actionable outreach based on live platform activity</p>
       </div>
+
       <div className="out-kpis">
-        {KPIS.map((k) => (
+        {kpis.map((k) => (
           <div key={k.label} className="out-kpi">
             <div className="out-kpi-label">{k.label}</div>
-            <div className="out-kpi-value">{k.value}</div>
-            <div className="out-kpi-delta">{k.delta}</div>
+            <div className="out-kpi-value">{isLoading ? "…" : k.value}</div>
+            <div className="out-kpi-delta">{stats?.totalSent ?? 0} sent total</div>
           </div>
         ))}
       </div>
+
       <div className="out-card">
-        <h3 className="out-card-title">Emails sent — last 14 days</h3>
-        <div style={{ width: "100%", height: 220 }}>
-          <ResponsiveContainer>
-            <BarChart data={CHART}>
-              <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
-              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
-              <YAxis tick={{ fontSize: 11 }} />
-              <Tooltip />
-              <Bar dataKey="sent" fill="#8B2252" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-      <div className="out-grid-2">
-        <div className="out-card">
-          <h3 className="out-card-title">Recent campaigns</h3>
-          <div className="out-desktop-only" style={{ overflowX: "auto" }}>
-            <table className="out-table">
-              <thead><tr><th>Subject</th><th>Type</th><th>Sent</th><th>Recip</th><th>Deliv</th><th>Open</th><th>Click</th><th>Engagement</th><th>Status</th></tr></thead>
-              <tbody>
-                {RECENT.map((r) => {
-                  const pct = Math.round((r.opened / r.recipients) * 100);
-                  return (
-                    <tr key={r.id}>
-                      <td>{r.subject}</td>
-                      <td><span className={`out-badge ${typeClass(r.type)}`}>{r.type}</span></td>
-                      <td>{r.sent_at}</td>
-                      <td>{r.recipients}</td>
-                      <td>{r.delivered}</td>
-                      <td>{r.opened}</td>
-                      <td>{r.clicked}</td>
-                      <td><span className="out-bar"><span style={{ width: `${pct}%` }} /></span> {pct}%</td>
-                      <td><span className={`out-pill ${r.status}`}>{r.status}</span></td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-          <div className="out-mobile-only out-list">
-            {RECENT.map((r) => {
-              const pct = Math.round((r.opened / r.recipients) * 100);
-              return (
-                <div key={r.id} className="out-item">
-                  <div className="out-item-head">
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div className="out-item-title">{r.subject}</div>
-                      <div className="out-item-meta" style={{ marginTop: 4 }}>
-                        <span className={`out-badge ${typeClass(r.type)}`}>{r.type}</span>
-                        <span className={`out-pill ${r.status}`}>{r.status}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="out-item-meta">📅 {r.sent_at}</div>
-                  <div className="out-item-stats">
-                    <div className="out-item-stat"><span className="out-item-stat-label">Recip</span><span className="out-item-stat-value">{r.recipients}</span></div>
-                    <div className="out-item-stat"><span className="out-item-stat-label">Opened</span><span className="out-item-stat-value">{r.opened}</span></div>
-                    <div className="out-item-stat"><span className="out-item-stat-label">Clicked</span><span className="out-item-stat-value">{r.clicked}</span></div>
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <span className="out-bar" style={{ flex: 1 }}><span style={{ width: `${pct}%` }} /></span>
-                    <span style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>{pct}%</span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div className="out-card">
-          <h3 className="out-card-title">Top contacts by engagement</h3>
-          <div className="out-desktop-only" style={{ overflowX: "auto" }}>
-            <table className="out-table">
-              <thead><tr><th>Contact</th><th>Company</th><th>Country</th><th>Opens</th><th>Clicks</th><th>Last open</th></tr></thead>
-              <tbody>
-                {CONTACTS.map((c) => (
-                  <tr key={c.name}>
-                    <td>{c.name}</td><td>{c.company}</td><td>{c.country}</td><td>{c.opens}</td><td>{c.clicks}</td><td>{c.last}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="out-mobile-only out-list">
-            {CONTACTS.map((c) => (
-              <div key={c.name} className="out-item">
-                <div className="out-item-row">
-                  <div className="out-rec-mini-info">
-                    <div className="out-rec-mini-name">{c.name} <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontWeight: 400 }}>· {c.country}</span></div>
-                    <div className="out-rec-mini-sub">{c.company}</div>
-                  </div>
-                </div>
-                <div className="out-item-stats">
-                  <div className="out-item-stat"><span className="out-item-stat-label">Opens</span><span className="out-item-stat-value">{c.opens}</span></div>
-                  <div className="out-item-stat"><span className="out-item-stat-label">Clicks</span><span className="out-item-stat-value">{c.clicks}</span></div>
-                  <div className="out-item-stat"><span className="out-item-stat-label">Last</span><span className="out-item-stat-value" style={{ fontSize: 12 }}>{c.last}</span></div>
-                </div>
-              </div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <h3 className="out-card-title" style={{ margin: 0, display: "flex", alignItems: "center", gap: 8 }}>
+            <Megaphone size={18} /> Smart Opportunities Feed
+          </h3>
+          <div className="out-filter-pills" style={{ margin: 0 }}>
+            {(["all", "new_offer_to_buyers", "new_request_to_suppliers", "stale_negotiation", "welcome_sequence"] as const).map((f) => (
+              <button key={f} className={`out-pill-btn ${filter === f ? "active" : ""}`} onClick={() => setFilter(f)}>
+                {f === "all" ? "All" : TYPE_LABEL[f as OutreachOpportunity["type"]]}
+              </button>
             ))}
           </div>
+        </div>
+
+        {isLoading && <div style={{ padding: 24, color: "hsl(var(--muted-foreground))" }}>Analyzing platform activity…</div>}
+
+        {!isLoading && opportunities.length === 0 && (
+          <div style={{ padding: 24, color: "hsl(var(--muted-foreground))" }}>
+            No opportunities right now. Check back as new offers, requests, and signups roll in.
+          </div>
+        )}
+
+        <div className="out-list">
+          {opportunities.map((op) => {
+            const isOpen = expanded === op.id;
+            const avgScore = op.matchedRecipients.length
+              ? Math.round(op.matchedRecipients.reduce((s, r) => s + r.matchScore, 0) / op.matchedRecipients.length)
+              : 0;
+            return (
+              <div key={op.id} className="out-item" style={{ borderLeft: `3px solid ${op.priority === "high" ? "#dc2626" : op.priority === "medium" ? "#d97706" : "#16a34a"}` }}>
+                <div className="out-item-head" style={{ alignItems: "flex-start" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className="out-item-meta" style={{ marginBottom: 4 }}>
+                      <span>{priorityDot(op.priority)} {op.priority.toUpperCase()}</span>
+                      <span className="out-badge cat" style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                        {TYPE_ICON[op.type]} {TYPE_LABEL[op.type]}
+                      </span>
+                      <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))" }}>{op.entityLabel}</span>
+                    </div>
+                    <div className="out-item-title">{op.title}</div>
+                    <div className="out-item-meta" style={{ marginTop: 4 }}>{op.description}</div>
+                  </div>
+                  <Button size="sm" className="out-btn-wine" onClick={() => createCampaign(op)} disabled={op.matchedRecipients.length === 0}>
+                    Send Campaign →
+                  </Button>
+                </div>
+
+                <div className="out-item-stats">
+                  <div className="out-item-stat">
+                    <span className="out-item-stat-label">Recipients</span>
+                    <span className="out-item-stat-value">{op.matchedRecipients.length}</span>
+                  </div>
+                  <div className="out-item-stat">
+                    <span className="out-item-stat-label">Avg score</span>
+                    <span className="out-item-stat-value">{avgScore}</span>
+                  </div>
+                  <div className="out-item-stat" style={{ flex: 1 }}>
+                    <span className="out-item-stat-label">Top matches</span>
+                    <span className="out-item-stat-value" style={{ fontSize: 12, fontWeight: 500 }}>
+                      {op.matchedRecipients.slice(0, 3).map((r) => r.companyName).join(", ") || "—"}
+                    </span>
+                  </div>
+                </div>
+
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span className="out-bar" style={{ flex: 1 }}>
+                    <span style={{ width: `${avgScore}%` }} />
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(isOpen ? null : op.id)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 4, fontSize: 12, color: "hsl(var(--muted-foreground))", background: "transparent", border: 0, cursor: "pointer" }}
+                  >
+                    {isOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
+                    {isOpen ? "Hide" : "View"} recipients
+                  </button>
+                </div>
+
+                {isOpen && (
+                  <div className="out-item-expand">
+                    {op.matchedRecipients.length === 0 && (
+                      <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))" }}>No contact email on file for this company.</div>
+                    )}
+                    {op.matchedRecipients.map((r) => (
+                      <div key={r.companyId} className="out-rec-mini">
+                        <div className="out-rec-mini-info">
+                          <div className="out-rec-mini-name">
+                            {r.contactName || r.companyName} <span style={{ fontSize: 11, color: "hsl(var(--muted-foreground))", fontWeight: 400 }}>· {r.country || "—"}</span>
+                          </div>
+                          <div className="out-rec-mini-sub">
+                            {r.companyName}{r.contactEmail ? ` · ${r.contactEmail}` : ""}
+                          </div>
+                          <div className="out-item-meta" style={{ marginTop: 4 }}>
+                            {r.matchReasons.map((reason) => (
+                              <span key={reason} className="out-badge cat" style={{ fontSize: 10 }}>{reason}</span>
+                            ))}
+                          </div>
+                        </div>
+                        <span className="out-pill sent">{r.matchScore}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>
