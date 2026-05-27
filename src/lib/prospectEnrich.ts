@@ -107,7 +107,7 @@ export async function enrichContact(contact: EnrichableContact): Promise<EnrichR
     if (mob && !contact.mobile) updates.mobile = mob.sanitized_number;
   }
 
-  await supabase.from("crm_contacts").update(updates).eq("id", contact.id);
+  await supabase.from("crm_contacts").update(updates as any).eq("id", contact.id);
 
   if (person.organization && contact.company_id) {
     const org = person.organization;
@@ -122,7 +122,7 @@ export async function enrichContact(contact: EnrichableContact): Promise<EnrichR
     if (org.annual_revenue) orgUpdates.annual_revenue = org.annual_revenue;
     orgUpdates.apollo_enriched_at = new Date().toISOString();
     if (Object.keys(orgUpdates).length > 1) {
-      await supabase.from("crm_companies").update(orgUpdates).eq("id", contact.company_id);
+      await supabase.from("crm_companies").update(orgUpdates as any).eq("id", contact.company_id);
     }
   }
 
