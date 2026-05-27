@@ -1,19 +1,11 @@
 import { useMemo, useRef, useState } from "react";
 import * as XLSX from "xlsx";
-import { createClient } from "@supabase/supabase-js";
 import { Upload, FileSpreadsheet, CheckCircle2, AlertTriangle, XCircle, Send, RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
 
-// Isolated auth client so signUp doesn't replace the admin's session.
-const SB_URL = import.meta.env.VITE_SUPABASE_URL as string;
-const SB_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY as string;
-const authIsolated = createClient(SB_URL, SB_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
-});
-
-type RowStatus = "ready" | "dup_user" | "dup_company" | "invalid" | "created" | "skipped" | "error";
+type RowStatus = "ready" | "dup_member" | "dup_company" | "invalid" | "created" | "skipped" | "error";
 
 interface ParsedRow {
   index: number;
@@ -27,10 +19,10 @@ interface ParsedRow {
   status: RowStatus;
   note?: string;
   resolvedCompanyId?: string;
-  createdUserId?: string;
+  createdMemberId?: string;
 }
 
-const HEADER_MAP: Record<string, keyof Omit<ParsedRow, "index" | "status" | "note" | "resolvedCompanyId" | "createdUserId">> = {
+const HEADER_MAP: Record<string, keyof Omit<ParsedRow, "index" | "status" | "note" | "resolvedCompanyId" | "createdMemberId">> = {
   user: "user", name: "user", "full name": "user", fullname: "user",
   email: "email", "e-mail": "email", mail: "email",
   company: "company", "company name": "company", organization: "company",
@@ -42,9 +34,6 @@ const HEADER_MAP: Record<string, keyof Omit<ParsedRow, "index" | "status" | "not
 
 function normHeader(h: string) { return String(h ?? "").trim().toLowerCase(); }
 function isEmail(v: string) { return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-function tempPassword() {
-  return crypto.randomUUID().slice(0, 12) + "Aa1!";
-}
 
 export default function AdminMigration() {
   const fileRef = useRef<HTMLInputElement>(null);
@@ -55,16 +44,17 @@ export default function AdminMigration() {
   const [done, setDone] = useState(false);
 
   const stats = useMemo(() => {
-    const s = { usersCreated: 0, usersSkipped: 0, companiesCreated: 0, companiesLinked: 0, errors: 0 };
+    const s = { membersCreated: 0, membersSkipped: 0, companiesTouched: 0, errors: 0 };
+    const cos = new Set<string>();
     for (const r of rows) {
-      if (r.status === "created") s.usersCreated++;
-      else if (r.status === "skipped" || r.status === "dup_user") s.usersSkipped++;
+      if (r.status === "created") s.membersCreated++;
+      else if (r.status === "skipped" || r.status === "dup_member") s.membersSkipped++;
       else if (r.status === "error") s.errors++;
+      if (r.resolvedCompanyId) cos.add(r.resolvedCompanyId);
     }
+    s.companiesTouched = cos.size;
     return s;
   }, [rows]);
-
-  const createdUsers = useMemo(() => rows.filter((r) => r.status === "created"), [rows]);
 
   const onFile = async (file: File) => {
     setFileName(file.name);
@@ -88,19 +78,14 @@ export default function AdminMigration() {
         else if (!obj.company) { status = "invalid"; note = "Missing company"; }
         return { ...obj, status, note };
       });
-      // Pre-check duplicates against DB
-      const emails = parsed.filter((r) => r.status === "ready").map((r) => r.email.toLowerCase());
-      const companies = Array.from(new Set(parsed.filter((r) => r.status === "ready").map((r) => r.company.toLowerCase())));
-      const [{ data: existingUsers }, { data: existingCos }] = await Promise.all([
-        emails.length ? supabase.from("users").select("email").in("email", emails) : Promise.resolve({ data: [] as any[] }),
-        companies.length ? supabase.from("companies").select("name").in("name", parsed.map((r) => r.company)) : Promise.resolve({ data: [] as any[] }),
-      ]);
-      const userSet = new Set((existingUsers ?? []).map((u: any) => String(u.email).toLowerCase()));
+      const companies = Array.from(new Set(parsed.filter((r) => r.status === "ready").map((r) => r.company)));
+      const { data: existingCos } = companies.length
+        ? await supabase.from("companies").select("name").in("name", companies)
+        : { data: [] as any[] };
       const coSet = new Set((existingCos ?? []).map((c: any) => String(c.name).toLowerCase()));
       for (const r of parsed) {
         if (r.status !== "ready") continue;
-        if (userSet.has(r.email.toLowerCase())) { r.status = "dup_user"; r.note = "User already exists — will skip"; continue; }
-        if (coSet.has(r.company.toLowerCase())) { r.status = "dup_company"; r.note = "Company exists — will link"; }
+        if (coSet.has(r.company.toLowerCase())) { r.status = "dup_company"; r.note = "Company exists — will link & add member"; }
       }
       setRows(parsed);
       toast.success(`Parsed ${parsed.length} rows from ${file.name}`);
@@ -116,63 +101,66 @@ export default function AdminMigration() {
     setDone(false);
     const updated = [...rows];
     let processed = 0;
+    // Cache companies created/linked during this run.
+    const companyCache = new Map<string, string>();
     for (let i = 0; i < updated.length; i++) {
       const r = updated[i];
       processed++;
       if (r.status === "invalid") { setProgress(Math.round((processed / updated.length) * 100)); continue; }
-      if (r.status === "dup_user") { setProgress(Math.round((processed / updated.length) * 100)); continue; }
       try {
-        // Step 1: dedup company (case-insensitive)
+        // Step 1: dedup company (case-insensitive) — cache within this run
         let companyId: string | null = null;
-        const { data: existingCo } = await supabase
-          .from("companies").select("id").ilike("name", r.company).maybeSingle();
-        if (existingCo) {
-          companyId = existingCo.id;
+        const cacheKey = r.company.trim().toLowerCase();
+        if (companyCache.has(cacheKey)) {
+          companyId = companyCache.get(cacheKey)!;
         } else {
-          const isSupplier = /supplier/i.test(r.businessType);
-          const isBuyer = /buyer/i.test(r.businessType);
-          const { data: newCo, error: coErr } = await supabase.from("companies").insert({
-            name: r.company,
-            tax_id: "—",
-            country: r.country || "—",
-            state: "—",
-            address: "—",
-            phone: "—",
-            is_supplier: isSupplier,
-            is_buyer: isBuyer,
-            status: "active",
-          }).select("id").single();
-          if (coErr || !newCo) throw coErr ?? new Error("company_create_failed");
-          companyId = newCo.id;
+          const { data: existingCo } = await supabase
+            .from("companies").select("id").ilike("name", r.company.trim()).maybeSingle();
+          if (existingCo) {
+            companyId = existingCo.id;
+          } else {
+            const isSupplier = /supplier/i.test(r.businessType);
+            const isBuyer = /buyer/i.test(r.businessType);
+            const { data: newCo, error: coErr } = await supabase.from("companies").insert({
+              name: r.company.trim(),
+              tax_id: "—",
+              country: r.country || "—",
+              state: "—",
+              address: "—",
+              phone: "—",
+              is_supplier: isSupplier,
+              is_buyer: isBuyer,
+              status: "active",
+            }).select("id").single();
+            if (coErr || !newCo) throw coErr ?? new Error("company_create_failed");
+            companyId = newCo.id;
+          }
+          companyCache.set(cacheKey, companyId!);
         }
         r.resolvedCompanyId = companyId!;
-        // Step 2: dedup user by email (in users)
-        const { data: existingUser } = await supabase
-          .from("users").select("id").ilike("email", r.email).maybeSingle();
-        if (existingUser) { r.status = "skipped"; r.note = "User already exists"; continue; }
-        // Step 3: create auth user via isolated client
-        const { data: authData, error: authErr } = await authIsolated.auth.signUp({
-          email: r.email,
-          password: tempPassword(),
-          options: { data: { full_name: r.user } },
-        });
-        if (authErr || !authData?.user) throw authErr ?? new Error("auth_signup_failed");
-        const newId = authData.user.id;
-        // Step 4: upsert users row
-        const { error: upErr } = await supabase.from("users").upsert({
-          id: newId,
-          email: r.email,
-          name: r.user,
-          company_id: companyId!,
-          active_company_id: companyId!,
-          status: "active",
-        });
+        // Step 2: upsert team member by (company_id, email) — NO auth, NO password
+        const role = /master/i.test(r.profileType) ? "master" : "member";
+        const { data: upserted, error: upErr } = await supabase
+          .from("company_team_members")
+          .upsert(
+            {
+              company_id: companyId!,
+              email: r.email.trim().toLowerCase(),
+              full_name: r.user.trim(),
+              profile_type: r.profileType || null,
+              role,
+              account_status: "pending",
+            },
+            { onConflict: "company_id,email" }
+          )
+          .select("id")
+          .single();
         if (upErr) throw upErr;
         r.status = "created";
-        r.createdUserId = newId;
+        r.createdMemberId = upserted?.id;
         r.note = "Imported";
         auditLog({
-          action: "migration.user_imported",
+          action: "migration.team_member_imported",
           category: "system",
           entityType: "company",
           entityId: companyId!,
@@ -191,17 +179,6 @@ export default function AdminMigration() {
     toast.success("Migration complete");
   };
 
-  const sendAllResets = async () => {
-    let ok = 0, fail = 0;
-    for (const r of createdUsers) {
-      const { error } = await supabase.auth.resetPasswordForEmail(r.email, {
-        redirectTo: `${window.location.origin}/login`,
-      });
-      if (error) fail++; else { ok++; auditLog({ action: "user.password_reset_sent", category: "user", entityLabel: r.email, severity: "warn" }); }
-    }
-    toast.success(`Sent ${ok} reset email${ok === 1 ? "" : "s"}${fail ? ` (${fail} failed)` : ""}`);
-  };
-
   return (
     <div style={{ padding: "20px 24px", maxWidth: 1280, margin: "0 auto" }}>
       {/* Header */}
@@ -210,7 +187,7 @@ export default function AdminMigration() {
         <h1 style={{ fontSize: 22, fontWeight: 700, color: "#1c1917", margin: 0 }}>Platform Migration</h1>
       </div>
       <p style={{ color: "#5e5e58", fontSize: 13, marginTop: 0, marginBottom: 16 }}>
-        Import users and companies from the old Mundus Trade platform. Idempotent — re-runs skip existing emails &amp; companies.
+        Import companies and their team members from the old Mundus Trade platform. <strong>No auth accounts are created here</strong> — each member starts as <em>pending</em>. Open the company → Team tab to create accounts and send reset emails one at a time.
       </p>
 
       {/* Upload zone */}
@@ -249,12 +226,6 @@ export default function AdminMigration() {
             {importing ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
             {importing ? `Importing… ${progress}%` : `Import ${rows.length} rows`}
           </button>
-          {done && createdUsers.length > 0 && (
-            <button onClick={sendAllResets}
-              style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 14px", background: "white", color: "#791f1f", border: "1px solid #791f1f", borderRadius: 6, fontWeight: 600, cursor: "pointer" }}>
-              <Send size={14} /> Send reset emails to {createdUsers.length} imported users
-            </button>
-          )}
           <span style={{ marginLeft: "auto", fontSize: 12, color: "#5e5e58" }}>{fileName}</span>
         </div>
       )}
@@ -269,9 +240,9 @@ export default function AdminMigration() {
       {/* Results summary */}
       {done && (
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px,1fr))", gap: 10, marginBottom: 16 }}>
-          <Stat label="Users created" value={stats.usersCreated} tone="ok" />
-          <Stat label="Users skipped" value={stats.usersSkipped} tone="warn" />
-          <Stat label="Companies linked" value={rows.filter(r => r.status === "created" || r.status === "skipped").length} tone="info" />
+          <Stat label="Members added" value={stats.membersCreated} tone="ok" />
+          <Stat label="Members skipped" value={stats.membersSkipped} tone="warn" />
+          <Stat label="Companies touched" value={stats.companiesTouched} tone="info" />
           <Stat label="Errors" value={stats.errors} tone={stats.errors ? "err" : "muted"} />
         </div>
       )}
@@ -322,7 +293,7 @@ function Stat({ label, value, tone }: { label: string; value: number; tone: "ok"
 function StatusPill({ status }: { status: RowStatus }) {
   const map: Record<RowStatus, { label: string; bg: string; color: string; Icon: any }> = {
     ready:        { label: "Ready",          bg: "#ecfdf5", color: "#065f46", Icon: CheckCircle2 },
-    dup_user:     { label: "Duplicate user", bg: "#fef3c7", color: "#92400e", Icon: AlertTriangle },
+    dup_member:   { label: "Duplicate member", bg: "#fef3c7", color: "#92400e", Icon: AlertTriangle },
     dup_company:  { label: "Link existing",  bg: "#fef3c7", color: "#92400e", Icon: AlertTriangle },
     invalid:      { label: "Invalid",        bg: "#fee2e2", color: "#991b1b", Icon: XCircle },
     created:      { label: "Created",        bg: "#dcfce7", color: "#166534", Icon: CheckCircle2 },
