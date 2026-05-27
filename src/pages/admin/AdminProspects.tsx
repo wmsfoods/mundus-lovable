@@ -184,6 +184,7 @@ export default function AdminProspects() {
       }
       const mapped: Prospect[] = (data || []).map((c: any) => {
         const primary = c.crm_contacts?.[0] ?? null;
+        const hasCLevel = (c.crm_contacts || []).some((x: any) => x?.seniority === "c_level");
         const uiStage = DB_TO_UI_STAGE[c.stage] ?? "new";
         const r = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
         return {
@@ -196,6 +197,7 @@ export default function AdminProspects() {
           contactName: primary?.full_name || "—",
           contactEmail: primary?.email || "—",
           contactPhone: primary?.phone || undefined,
+          hasCLevel,
           notes: "",
           stage: uiStage,
           owner: "FN",
