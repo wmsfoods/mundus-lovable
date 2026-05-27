@@ -267,15 +267,16 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
               <span>{initials(form.name || "")}</span>
             )}
             <span
+              aria-hidden
               style={{
-                position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
-                background: "rgba(0,0,0,0.45)", color: "#fff", opacity: uploadingLogo ? 1 : 0,
-                transition: "opacity .15s",
+                position: "absolute", right: -2, bottom: -2,
+                width: 20, height: 20, borderRadius: 999,
+                background: "#8B2252", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                border: "2px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
               }}
-              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-              onMouseLeave={(e) => { if (!uploadingLogo) (e.currentTarget as HTMLElement).style.opacity = "0"; }}
             >
-              {uploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
+              {uploadingLogo ? <Loader2 size={10} className="animate-spin" /> : <Camera size={10} />}
             </span>
             <input
               ref={logoInputRef}
