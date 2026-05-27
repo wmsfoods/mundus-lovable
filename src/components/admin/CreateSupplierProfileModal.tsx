@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
 import { LogoUploader } from "./LogoUploader";
 import { CountrySelect } from "./CountrySelect";
+import { ScanCardButton } from "./ScanCardButton";
 
 const schema = z.object({
   companyName: z.string().trim().min(1, "Company name is required").max(120),
@@ -156,6 +157,21 @@ export function CreateSupplierProfileModal({
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+          <ScanCardButton
+            hint="Scan a supplier's business card to auto-fill company & contact."
+            onScanned={(d) => {
+              setForm((s) => ({
+                ...s,
+                companyName: d.company || s.companyName,
+                country: d.country || s.country,
+                city: d.city || s.city,
+                website: d.website || s.website,
+                contactName: d.fullName || s.contactName,
+                contactEmail: d.email || s.contactEmail,
+                contactPhone: d.phone || d.mobile || s.contactPhone,
+              }));
+            }}
+          />
           <Field label="Company Name *" error={errors.companyName}>
             <input style={inputStyle} value={form.companyName} onChange={(e) => upd("companyName", e.target.value)} maxLength={120} />
           </Field>
