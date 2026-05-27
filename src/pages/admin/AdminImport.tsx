@@ -8,7 +8,7 @@ import { auditLog } from "@/lib/auditLog";
 
 type Destination = "companies" | "prospects";
 type RowStatus = "ready" | "warn" | "invalid" | "created" | "linked" | "skipped" | "error";
-type LeadType = "buyer" | "supplier";
+type LeadType = "buyer" | "supplier" | "c_level";
 
 // ---- Field schemas ----------------------------------------------------------
 
