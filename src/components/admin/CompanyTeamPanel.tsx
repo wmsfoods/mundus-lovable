@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { MoreVertical, KeyRound, Mail, UserPlus, Pencil, Ban, Trash2, Loader2, X } from "lucide-react";
+import { MoreVertical, KeyRound, Mail, UserPlus, Pencil, Ban, Trash2, Loader2, X, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
 import {
@@ -27,6 +27,7 @@ type Member = {
   role: string;
   profile_type: string | null;
   phone: string | null;
+  avatar_url: string | null;
   auth_user_id: string | null;
   account_status: "pending" | "invited" | "active" | "disabled";
   invited_at: string | null;
@@ -36,6 +37,26 @@ type Member = {
 type Props = { companyId: string; isSupplier?: boolean; isBuyer?: boolean };
 
 const ROLE_OPTIONS = ["master", "operator", "viewer", "member"];
+
+function memberInitials(name: string) {
+  return name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
+}
+
+function Avatar({ url, name, size = 28 }: { url: string | null; name: string; size?: number }) {
+  return (
+    <span
+      style={{
+        width: size, height: size, borderRadius: 999, overflow: "hidden", display: "inline-flex",
+        alignItems: "center", justifyContent: "center", background: "#f3f4f6",
+        color: "#6b7280", fontSize: Math.max(10, Math.floor(size * 0.38)), fontWeight: 600, flexShrink: 0,
+      }}
+    >
+      {url
+        ? <img src={url} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        : <span>{memberInitials(name)}</span>}
+    </span>
+  );
+}
 
 function tempPassword() {
   return crypto.randomUUID().slice(0, 12) + "Aa1!";
@@ -196,7 +217,12 @@ export default function CompanyTeamPanel({ companyId, isSupplier, isBuyer }: Pro
             <tbody>
               {members.map((m) => (
                 <tr key={m.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                  <td style={{ padding: "10px 12px", fontWeight: 500 }}>{m.full_name}</td>
+                  <td style={{ padding: "10px 12px", fontWeight: 500 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <Avatar url={m.avatar_url} name={m.full_name} />
+                      <span>{m.full_name}</span>
+                    </span>
+                  </td>
                   <td style={{ padding: "10px 12px", color: "#5e5e58" }}>{m.email}</td>
                   <td style={{ padding: "10px 12px", textTransform: "capitalize", color: "#374151" }}>{m.role}</td>
                   <td style={{ padding: "10px 12px", color: "#5e5e58" }}>{m.profile_type || "—"}</td>
@@ -264,7 +290,31 @@ function MemberFormModal({
   const [role, setRole] = useState(member?.role ?? "member");
   const [profileType, setProfileType] = useState(member?.profile_type ?? "");
   const [phone, setPhone] = useState(member?.phone ?? "");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(member?.avatar_url ?? null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
+
+  const uploadAvatar = async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      const key = member?.id ?? `new-${Date.now()}`;
+      const path = `team/${companyId}/${key}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, {
+        cacheControl: "3600", upsert: true, contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      setAvatarUrl(pub.publicUrl);
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e?.message ?? "unknown"));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const save = async () => {
     if (!fullName.trim() || !email.trim()) { toast.error("Name and email are required"); return; }
@@ -276,6 +326,7 @@ function MemberFormModal({
         role,
         profile_type: profileType || null,
         phone: phone || null,
+        avatar_url: avatarUrl,
       }).eq("id", member.id);
       setSaving(false);
       if (error) { toast.error(error.message); return; }
@@ -288,6 +339,7 @@ function MemberFormModal({
         role,
         profile_type: profileType || null,
         phone: phone || null,
+        avatar_url: avatarUrl,
         account_status: "pending",
       });
       setSaving(false);
@@ -305,6 +357,57 @@ function MemberFormModal({
           <button onClick={onClose} style={{ background: "transparent", border: 0, cursor: "pointer", color: "#6b7280" }}><X size={18} /></button>
         </div>
         <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              title="Upload profile photo"
+              style={{
+                position: "relative", width: 56, height: 56, borderRadius: 999,
+                border: "1px solid #e5e7eb", padding: 0, overflow: "hidden", cursor: "pointer",
+                background: "#f3f4f6", display: "inline-flex", alignItems: "center", justifyContent: "center",
+                color: "#6b7280", fontWeight: 700, fontSize: 18,
+              }}
+            >
+              {avatarUrl
+                ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <span>{memberInitials(fullName)}</span>}
+              <span
+                aria-hidden
+                style={{
+                  position: "absolute", right: -2, bottom: -2, width: 20, height: 20, borderRadius: 999,
+                  background: "#8B2252", color: "#fff", display: "flex", alignItems: "center",
+                  justifyContent: "center", border: "2px solid #fff",
+                }}
+              >
+                {uploading ? <Loader2 size={10} className="animate-spin" /> : <Camera size={10} />}
+              </span>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void uploadAvatar(f);
+                  e.currentTarget.value = "";
+                }}
+              />
+            </button>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>
+              Profile photo<br />
+              <span style={{ fontSize: 11 }}>PNG / JPG up to 5MB. Click to {avatarUrl ? "replace" : "upload"}.</span>
+            </div>
+            {avatarUrl && (
+              <button
+                type="button"
+                onClick={() => setAvatarUrl(null)}
+                style={{ marginLeft: "auto", background: "transparent", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 8px", fontSize: 11, cursor: "pointer", color: "#6b7280" }}
+              >
+                Remove
+              </button>
+            )}
+          </div>
           <Field label="Full Name *"><input value={fullName} onChange={(e) => setFullName(e.target.value)} className="adm-input" /></Field>
           <Field label="Email *"><input value={email} onChange={(e) => setEmail(e.target.value)} className="adm-input" type="email" /></Field>
           <Field label="Role">

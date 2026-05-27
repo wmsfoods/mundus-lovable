@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-react";
+import { Save, X, CheckCircle2, Info, Trash2, Upload, Camera, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
 import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
@@ -37,6 +38,7 @@ const EMPTY: CompanyPatch = {
   zip_code: "",
   phone: "",
   website: "",
+  logo_url: null,
   is_buyer: false,
   is_supplier: false,
   is_verified: false,
@@ -72,6 +74,38 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadLogo = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setUploadingLogo(true);
+    try {
+      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      const folder = id ?? "new";
+      const path = `companies/${folder}/logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, {
+        cacheControl: "3600", upsert: true, contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      setField("logo_url", url);
+      if (!isNew && id) {
+        const res = await save({ logo_url: url });
+        if (!res.ok) throw new Error(res.error);
+        toast.success("Logo updated");
+      } else {
+        toast.success("Logo ready — save the company to persist");
+      }
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e?.message ?? "unknown"));
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   useEffect(() => {
     if (data) {
@@ -85,6 +119,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         zip_code: data.zip_code ?? "",
         phone: data.phone,
         website: data.website ?? "",
+        logo_url: data.logo_url ?? null,
         is_buyer: !!data.is_buyer,
         is_supplier: !!data.is_supplier,
         is_verified: !!data.is_verified,
@@ -211,7 +246,50 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
       <div className="adm-panel">
         <Link to="/admin/companies" className="adm-link">← {t("admin.companies.detail.back", "Companies")}</Link>
         <div className="crm-detail-head">
-          <span className="crm-detail-av">{initials(form.name || "")}</span>
+          <button
+            type="button"
+            onClick={() => logoInputRef.current?.click()}
+            title="Upload company logo"
+            className="crm-detail-av"
+            style={{
+              position: "relative", padding: 0, border: 0, cursor: "pointer",
+              overflow: "hidden", background: form.logo_url ? "#f3f4f6" : undefined,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            {form.logo_url ? (
+              <img
+                src={form.logo_url}
+                alt={form.name || "logo"}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <span>{initials(form.name || "")}</span>
+            )}
+            <span
+              aria-hidden
+              style={{
+                position: "absolute", right: -2, bottom: -2,
+                width: 20, height: 20, borderRadius: 999,
+                background: "#8B2252", color: "#fff",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                border: "2px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)",
+              }}
+            >
+              {uploadingLogo ? <Loader2 size={10} className="animate-spin" /> : <Camera size={10} />}
+            </span>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void uploadLogo(f);
+                e.currentTarget.value = "";
+              }}
+            />
+          </button>
           <div className="crm-cell-stack" style={{ flex: 1, minWidth: 0 }}>
             <input
               className="psp-input"
