@@ -6,7 +6,7 @@ export default function WhatsAnalises() {
   const total = rows.length;
   const open = rows.filter((r) => r.status === "open").length;
   const closed = rows.filter((r) => r.status === "closed").length;
-  const archived = rows.filter((r) => r.is_archived).length;
+  const pending = rows.filter((r) => r.status === "pending").length;
 
   return (
     <>
@@ -14,7 +14,7 @@ export default function WhatsAnalises() {
         <Stat label="Total de conversas" value={total} />
         <Stat label="Conversas abertas" value={open} delta="—" />
         <Stat label="Conversas fechadas" value={closed} />
-        <Stat label="Conversas arquivadas" value={archived} />
+        <Stat label="Conversas pendentes" value={pending} />
       </div>
       <div className="mw-card" style={{ marginTop: 16 }}>
         <h2 className="mw-card-title">Relatório WhatsApp</h2>
