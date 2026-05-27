@@ -272,7 +272,7 @@ export default function AdminOffers() {
 
           <div className="adm-only-mobile adm-cards-stack">
             {filtered.map(r => (
-              <div key={r.id} className="adm-panel" style={{ padding: 12 }}>
+              <div key={r.id} className="adm-panel" onClick={() => navigate(`/admin/offers/${r.id}`)} style={{ padding: 12, cursor: "pointer" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.created_at)}</strong>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[r.status ?? ""] ?? "bg-zinc-200 text-zinc-700"}`}>
@@ -285,7 +285,7 @@ export default function AdminOffers() {
                 </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", fontSize: 12, color: "#6b7280" }}>
                   <span><Eye size={12} style={{ display: "inline", marginRight: 4 }} />{r.view_count} views · {r.distribution_count} sent</span>
-                  <button type="button" onClick={() => setDistribute(r)} style={btnPrimary}>Send</button>
+                  <button type="button" onClick={(e) => { e.stopPropagation(); setDistribute(r); }} style={btnPrimary}>Send</button>
                 </div>
               </div>
             ))}
