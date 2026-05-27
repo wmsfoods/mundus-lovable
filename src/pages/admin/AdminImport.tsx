@@ -71,6 +71,7 @@ const AUTO_MAP: Record<string, FieldKey> = {
   "company linkedin": "companyLinkedin", "linkedin company": "companyLinkedin",
   "industry": "industry", "category": "industry",
   "job title": "jobTitle", "title": "jobTitle", "role/job title": "jobTitle", "role": "jobTitle",
+  "position": "jobTitle",
   "role / title": "jobTitle", "role / job title": "jobTitle", "role title": "jobTitle",
   "decision level": "decisionLevel", "seniority": "decisionLevel",
   "lead type": "leadType",
