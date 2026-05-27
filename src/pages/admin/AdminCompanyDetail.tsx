@@ -470,7 +470,10 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         {/* Section 4: Business contact */}
         <Section title={t("admin.companies.sections.contact")}>
           <Field label={t("admin.companies.fields.country") + " *"}>
-            <input value={form.country ?? ""} onChange={(e) => setField("country", e.target.value)} />
+            <CountrySelect
+              value={form.country ?? ""}
+              onChange={(v) => setField("country", v)}
+            />
           </Field>
           <Field label={t("admin.companies.fields.state") + " *"}>
             <input value={form.state ?? ""} onChange={(e) => setField("state", e.target.value)} />
@@ -489,7 +492,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
                   city: addr.city || f.city,
                   state: addr.state || f.state,
                   zip_code: addr.zip || f.zip_code,
-                  country: addr.country || f.country,
+                  country: matchCountry(addr.country, getCachedCountries()) || addr.country || f.country,
                 }));
                 setDirty(true);
               }}
