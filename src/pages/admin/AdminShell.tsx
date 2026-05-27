@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle, Activity,
-  Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle,
+  Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw,
   Search as SearchIcon, UserSearch, ClipboardList, UserCheck,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
