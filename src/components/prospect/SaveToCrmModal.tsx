@@ -338,7 +338,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
             <div className="psp-scrm-grid">
               <Field label="Full Name" required auto={!!src?.fullName}><input className="psp-input" value={fullName} onChange={(e) => setFullName(e.target.value)} /></Field>
               <Field label="Email" required auto={!!src?.email}><input className="psp-input" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
-              <Field label="Additional Email"><input className="psp-input" value={secondaryEmail} onChange={(e) => setSecondaryEmail(e.target.value)} /></Field>
+              <Field label="Additional Email" auto={!!src?.secondaryEmail}><input className="psp-input" value={secondaryEmail} onChange={(e) => setSecondaryEmail(e.target.value)} /></Field>
               <Field label="Phone" auto={!!src?.phone}><input className="psp-input" value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
               <Field label="Mobile" auto={!!src?.mobile}><input className="psp-input" value={mobile} onChange={(e) => setMobile(e.target.value)} /></Field>
               <Field label="WhatsApp"><input className="psp-input" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} /></Field>
