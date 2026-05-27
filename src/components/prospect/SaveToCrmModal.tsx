@@ -128,21 +128,25 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     if (src) {
       setFullName(src.fullName || "");
       setEmail(src.email || "");
+      setSecondaryEmail(src.secondaryEmail || "");
       setPhone(src.phone || "");
       setMobile(src.mobile || "");
       setLinkedin(src.linkedin || "");
+      setPersonalLinkedin(src.personalLinkedin || "");
       setJobTitle(src.jobTitle || "");
       setDepartment(src.department || "");
       setSeniority(src.seniority || "");
       setCountry(src.country || "");
       setCity(src.city || "");
+      setState(src.state || "");
       setProductsOfInterest(src.productsOfInterest ?? []);
       setWhatsapp(src.whatsapp ?? "");
       setPhotoUrl(src.photoUrl ?? null);
     } else {
-      setFullName(""); setEmail(""); setPhone(""); setMobile(""); setLinkedin("");
+      setFullName(""); setEmail(""); setSecondaryEmail(""); setPhone(""); setMobile("");
+      setLinkedin(""); setPersonalLinkedin("");
       setJobTitle(""); setDepartment(""); setSeniority(""); setProductsOfInterest([]);
-      setWhatsapp(""); setPhotoUrl(null);
+      setWhatsapp(""); setPhotoUrl(null); setState("");
     }
     if (co) {
       setCoName(co.name); setCoDomain(co.domain); setCoIndustry(co.industry);
@@ -179,6 +183,14 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     })();
     return () => { cancelled = true; };
   }, [open, email, coDomain]);
+
+  // Buyer Type only applies to Buyer / Both leads. Clear it whenever the lead
+  // type moves away from Buyer (e.g. Supplier, Prospect) so we don't persist
+  // a stale value.
+  useEffect(() => {
+    if (leadType !== "Buyer" && leadType !== "Both") setBuyerType("");
+  }, [leadType]);
+  const buyerTypeDisabled = leadType !== "Buyer" && leadType !== "Both";
 
   const toggleIn = <T extends string>(arr: T[], v: T, set: (a: T[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
@@ -326,13 +338,13 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
             <div className="psp-scrm-grid">
               <Field label="Full Name" required auto={!!src?.fullName}><input className="psp-input" value={fullName} onChange={(e) => setFullName(e.target.value)} /></Field>
               <Field label="Email" required auto={!!src?.email}><input className="psp-input" value={email} onChange={(e) => setEmail(e.target.value)} /></Field>
-              <Field label="Additional Email"><input className="psp-input" value={secondaryEmail} onChange={(e) => setSecondaryEmail(e.target.value)} /></Field>
+              <Field label="Additional Email" auto={!!src?.secondaryEmail}><input className="psp-input" value={secondaryEmail} onChange={(e) => setSecondaryEmail(e.target.value)} /></Field>
               <Field label="Phone" auto={!!src?.phone}><input className="psp-input" value={phone} onChange={(e) => setPhone(e.target.value)} /></Field>
               <Field label="Mobile" auto={!!src?.mobile}><input className="psp-input" value={mobile} onChange={(e) => setMobile(e.target.value)} /></Field>
               <Field label="WhatsApp"><input className="psp-input" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} /></Field>
               <Field label="WeChat"><input className="psp-input" value={wechat} onChange={(e) => setWechat(e.target.value)} /></Field>
-              <Field label="LinkedIn" auto={!!src?.linkedin}><input className="psp-input" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} /></Field>
-              <Field label="Personal LinkedIn"><input className="psp-input" value={personalLinkedin} onChange={(e) => setPersonalLinkedin(e.target.value)} /></Field>
+              <Field label="LinkedIn (Work)" auto={!!src?.linkedin}><input className="psp-input" value={linkedin} onChange={(e) => setLinkedin(e.target.value)} /></Field>
+              <Field label="Personal LinkedIn" auto={!!src?.personalLinkedin}><input className="psp-input" value={personalLinkedin} onChange={(e) => setPersonalLinkedin(e.target.value)} /></Field>
             </div>
           </Section>
 
@@ -351,7 +363,18 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
               <Field label="Lead Type" required><select className="psp-input" value={leadType} onChange={(e) => setLeadType(e.target.value)}>{LEAD_TYPES.map((d) => <option key={d}>{d}</option>)}</select></Field>
               <Field label="Lead Status"><select className="psp-input" value={leadStatus} onChange={(e) => setLeadStatus(e.target.value)}>{LEAD_STATUSES.map((d) => <option key={d}>{d}</option>)}</select></Field>
               <Field label="Lead Source" auto><input className="psp-input" value="Mundus Prospect Search" disabled /></Field>
-              <Field label="Buyer Type"><select className="psp-input" value={buyerType} onChange={(e) => setBuyerType(e.target.value)}><option value="">—</option>{BUYER_TYPES.map((d) => <option key={d}>{d}</option>)}</select></Field>
+              <Field label="Buyer Type">
+                <select
+                  className="psp-input"
+                  value={buyerType}
+                  disabled={buyerTypeDisabled}
+                  onChange={(e) => setBuyerType(e.target.value)}
+                  title={buyerTypeDisabled ? "Only available for Buyer lead types" : undefined}
+                >
+                  <option value="">{buyerTypeDisabled ? "N/A" : "—"}</option>
+                  {BUYER_TYPES.map((d) => <option key={d}>{d}</option>)}
+                </select>
+              </Field>
               <Field label="Preferred Language"><select className="psp-input" value={language} onChange={(e) => setLanguage(e.target.value)}>{LANGUAGES.map((d) => <option key={d}>{d}</option>)}</select></Field>
             </div>
             <Field label="Products of Interest">
@@ -367,7 +390,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
             <div className="psp-scrm-grid">
               <Field label="Country" auto={!!src?.country}><input className="psp-input" value={country} onChange={(e) => setCountry(e.target.value)} /></Field>
               <Field label="City" auto={!!src?.city}><input className="psp-input" value={city} onChange={(e) => setCity(e.target.value)} /></Field>
-              <Field label="State"><input className="psp-input" value={state} onChange={(e) => setState(e.target.value)} /></Field>
+              <Field label="State" auto={!!src?.state}><input className="psp-input" value={state} onChange={(e) => setState(e.target.value)} /></Field>
               <Field label="Timezone"><input className="psp-input" value={timezone} onChange={(e) => setTimezone(e.target.value)} /></Field>
             </div>
           </Section>

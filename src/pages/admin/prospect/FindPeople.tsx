@@ -28,6 +28,9 @@ export type EnrichResult = {
   jobTitle?: string | null;
   city?: string | null;
   country?: string | null;
+  state?: string | null;
+  secondaryEmail?: string | null;
+  personalLinkedin?: string | null;
   person?: any;
 };
 
@@ -78,18 +81,30 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
     }
   }
 
+  // Extract personal email (different from primary) from Apollo response.
+  const personalEmails: string[] = Array.isArray(person.personal_emails) ? person.personal_emails : [];
+  const contactEmails: string[] = Array.isArray(person.contact_emails)
+    ? person.contact_emails.map((c: any) => (typeof c === "string" ? c : c?.email)).filter(Boolean)
+    : [];
+  const primary = data.email ?? person.email ?? null;
+  const altEmails = Array.from(new Set([...personalEmails, ...contactEmails])).filter((e) => e && e !== primary);
+
   return {
     email: data.email ?? null,
+    secondaryEmail: altEmails[0] ?? null,
     phone,
     mobile,
     firstName: person.first_name ?? null,
     lastName: person.last_name ?? null,
     fullName: person.name ?? null,
     photoUrl: person.photo_url ?? null,
-    linkedin: person.linkedin_url ?? null,
+    // Apollo's `linkedin_url` is the person's personal profile.
+    linkedin: null,
+    personalLinkedin: person.linkedin_url ?? null,
     jobTitle: person.title ?? null,
     city: person.city ?? null,
     country: person.country ?? null,
+    state: person.state ?? null,
     person,
   };
 }
@@ -459,7 +474,23 @@ export default function FindPeople() {
                       <td>
                         {p.in_crm
                           ? <button className="psp-btn ghost" onClick={() => setDetail(p)}>View</button>
-                          : <button className="psp-btn" onClick={() => setSavePerson(p)}>Save</button>}
+                          : <button className="psp-btn" onClick={() => {
+                              const r = revealedMap[p.id] || {};
+                              setSavePerson({
+                                ...p,
+                                email: r.email ?? p.email,
+                                secondaryEmail: r.secondaryEmail ?? p.secondaryEmail ?? null,
+                                phone: r.phone ?? p.phone,
+                                mobile: r.mobile ?? p.mobile,
+                                photoUrl: r.photoUrl ?? p.photoUrl,
+                                jobTitle: r.jobTitle ?? p.jobTitle,
+                                city: r.city ?? p.city,
+                                country: r.country ?? p.country,
+                                state: r.state ?? p.state ?? null,
+                                personalLinkedin: r.personalLinkedin ?? p.personalLinkedin ?? null,
+                                linkedin: r.linkedin ?? p.linkedin,
+                              });
+                            }}>Save</button>}
                       </td>
                     </tr>
                   );
