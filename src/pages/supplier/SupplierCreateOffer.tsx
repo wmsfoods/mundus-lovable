@@ -1227,7 +1227,6 @@ export default function SupplierCreateOffer() {
           entityLabel: formatOfferNumber(offer.offer_number as number),
           details: {
             itemCount: Array.isArray(itemsRows) ? itemsRows.length : undefined,
-            category: typeof cat0 !== "undefined" ? cat0 : undefined,
           },
         });
       } catch { /* never break flow */ }
