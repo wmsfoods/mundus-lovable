@@ -131,7 +131,7 @@ export default function CRMPipeline() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [learnings, setLearnings] = useState<Learning[]>([]);
   const [prepStatusByCompany, setPrepStatusByCompany] = useState<Record<string, string>>({});
-  const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier" | "prospect">("all");
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"kanban" | "list">("list");
   const [stageFilter, setStageFilter] = useState<string>("all");
@@ -440,8 +440,8 @@ type PipelineViewProps = {
   page: number;
   setPage: (n: number) => void;
   pageSize: number;
-  typeFilter: "all" | "buyer" | "supplier";
-  setTypeFilter: (v: "all" | "buyer" | "supplier") => void;
+  typeFilter: "all" | "buyer" | "supplier" | "prospect";
+  setTypeFilter: (v: "all" | "buyer" | "supplier" | "prospect") => void;
   search: string;
   setSearch: (v: string) => void;
   stageFilter: string;
@@ -477,7 +477,7 @@ function PipelineView(p: PipelineViewProps) {
       {/* Top bar: type segmented + view toggle */}
       <div className="crm-toolbar" style={{ marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
         <div className="crm-seg">
-          {(["all", "buyer", "supplier"] as const).map((r) => (
+          {(["all", "buyer", "supplier", "prospect"] as const).map((r) => (
             <button
               key={r}
               type="button"
