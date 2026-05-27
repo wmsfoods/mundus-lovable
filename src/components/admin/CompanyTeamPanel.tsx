@@ -290,7 +290,31 @@ function MemberFormModal({
   const [role, setRole] = useState(member?.role ?? "member");
   const [profileType, setProfileType] = useState(member?.profile_type ?? "");
   const [phone, setPhone] = useState(member?.phone ?? "");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(member?.avatar_url ?? null);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
   const [saving, setSaving] = useState(false);
+
+  const uploadAvatar = async (file: File) => {
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setUploading(true);
+    try {
+      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      const key = member?.id ?? `new-${Date.now()}`;
+      const path = `team/${companyId}/${key}-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, {
+        cacheControl: "3600", upsert: true, contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      setAvatarUrl(pub.publicUrl);
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e?.message ?? "unknown"));
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const save = async () => {
     if (!fullName.trim() || !email.trim()) { toast.error("Name and email are required"); return; }
@@ -302,6 +326,7 @@ function MemberFormModal({
         role,
         profile_type: profileType || null,
         phone: phone || null,
+        avatar_url: avatarUrl,
       }).eq("id", member.id);
       setSaving(false);
       if (error) { toast.error(error.message); return; }
@@ -314,6 +339,7 @@ function MemberFormModal({
         role,
         profile_type: profileType || null,
         phone: phone || null,
+        avatar_url: avatarUrl,
         account_status: "pending",
       });
       setSaving(false);
@@ -331,6 +357,57 @@ function MemberFormModal({
           <button onClick={onClose} style={{ background: "transparent", border: 0, cursor: "pointer", color: "#6b7280" }}><X size={18} /></button>
         </div>
         <div style={{ display: "grid", gap: 10 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button
+              type="button"
+              onClick={() => fileRef.current?.click()}
+              title="Upload profile photo"
+              style={{
+                position: "relative", width: 56, height: 56, borderRadius: 999,
+                border: "1px solid #e5e7eb", padding: 0, overflow: "hidden", cursor: "pointer",
+                background: "#f3f4f6", display: "inline-flex", alignItems: "center", justifyContent: "center",
+                color: "#6b7280", fontWeight: 700, fontSize: 18,
+              }}
+            >
+              {avatarUrl
+                ? <img src={avatarUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                : <span>{memberInitials(fullName)}</span>}
+              <span
+                aria-hidden
+                style={{
+                  position: "absolute", right: -2, bottom: -2, width: 20, height: 20, borderRadius: 999,
+                  background: "#8B2252", color: "#fff", display: "flex", alignItems: "center",
+                  justifyContent: "center", border: "2px solid #fff",
+                }}
+              >
+                {uploading ? <Loader2 size={10} className="animate-spin" /> : <Camera size={10} />}
+              </span>
+              <input
+                ref={fileRef}
+                type="file"
+                accept="image/*"
+                style={{ display: "none" }}
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void uploadAvatar(f);
+                  e.currentTarget.value = "";
+                }}
+              />
+            </button>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>
+              Profile photo<br />
+              <span style={{ fontSize: 11 }}>PNG / JPG up to 5MB. Click to {avatarUrl ? "replace" : "upload"}.</span>
+            </div>
+            {avatarUrl && (
+              <button
+                type="button"
+                onClick={() => setAvatarUrl(null)}
+                style={{ marginLeft: "auto", background: "transparent", border: "1px solid #e5e7eb", borderRadius: 6, padding: "4px 8px", fontSize: 11, cursor: "pointer", color: "#6b7280" }}
+              >
+                Remove
+              </button>
+            )}
+          </div>
           <Field label="Full Name *"><input value={fullName} onChange={(e) => setFullName(e.target.value)} className="adm-input" /></Field>
           <Field label="Email *"><input value={email} onChange={(e) => setEmail(e.target.value)} className="adm-input" type="email" /></Field>
           <Field label="Role">
