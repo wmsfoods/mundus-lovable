@@ -143,13 +143,19 @@ export default function AdminOrders() {
   };
 
   const updateRevenueStatus = async (id: string, newStatus: string) => {
-    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, revenue_status: newStatus } : r)));
     const { error } = await supabase
       .from("orders")
-      .update({ revenue_status: newStatus } as never)
+      .update({ revenue_status: newStatus, revenue_status_changed_at: new Date().toISOString() } as never)
       .eq("id", id);
     if (error) {
       toast({ title: "Failed to update revenue status", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (REVENUE_MANAGED.has(newStatus)) {
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      toast({ title: "Moved to Revenue", description: "Track this record in Finance · Revenue." });
+    } else {
+      setRows((prev) => prev.map((r) => (r.id === id ? { ...r, revenue_status: newStatus } : r)));
     }
   };
 
