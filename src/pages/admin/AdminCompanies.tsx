@@ -267,14 +267,7 @@ function Row({
             </span>
           )}
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-            <strong style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
-              {row.name}
-              {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
-                <span title="Managed by Mundus team" style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 999, background: "#FDF2F8", color: "#8B2252", border: "1px solid #F9D0E0" }}>
-                  🏢 Mundus Managed
-                </span>
-              )}
-            </strong>
+            <strong>{row.name}</strong>
             <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>#{row.company_number}</span>
           </div>
         </div>
@@ -306,9 +299,16 @@ function Row({
       </td>
       <td>{fmtDate(row.onboarded_at ?? row.created_at, locale)}</td>
       <td>
-        <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
-          {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
-        </span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
+            {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
+          </span>
+          {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
+            <span title="Managed by Mundus team" style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 999, background: "#FDF2F8", color: "#8B2252", border: "1px solid #F9D0E0", lineHeight: 1.4, whiteSpace: "nowrap" }}>
+              🏢 Managed
+            </span>
+          )}
+        </div>
       </td>
       <td onClick={(e) => e.stopPropagation()}>
         <div style={{ position: "relative", display: "inline-flex", gap: 4 }}>
