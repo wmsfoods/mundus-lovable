@@ -4232,6 +4232,7 @@ export type Database = {
           reject_justification: string | null
           revenue_cancel_reason: string | null
           revenue_cancelled_at: string | null
+          revenue_due_date: string | null
           revenue_status: string
           revenue_status_changed_at: string | null
           status: string | null
@@ -4256,6 +4257,7 @@ export type Database = {
           reject_justification?: string | null
           revenue_cancel_reason?: string | null
           revenue_cancelled_at?: string | null
+          revenue_due_date?: string | null
           revenue_status?: string
           revenue_status_changed_at?: string | null
           status?: string | null
@@ -4280,6 +4282,7 @@ export type Database = {
           reject_justification?: string | null
           revenue_cancel_reason?: string | null
           revenue_cancelled_at?: string | null
+          revenue_due_date?: string | null
           revenue_status?: string
           revenue_status_changed_at?: string | null
           status?: string | null

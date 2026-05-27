@@ -12,6 +12,7 @@ type Row = {
   revenue_cancel_reason: string | null;
   revenue_cancelled_at: string | null;
   revenue_status_changed_at: string | null;
+  revenue_due_date: string | null;
   placed_at: string;
   supplier_name: string;
   buyer_name: string;
@@ -77,7 +78,7 @@ export default function AdminRevenue() {
       try {
         const { data, error: e } = await supabase
           .from("orders")
-          .select("id, order_number, revenue_status, revenue_cancel_reason, revenue_cancelled_at, revenue_status_changed_at, placed_at, buyer:companies!orders_buyer_company_id_fkey(name), offer:offers(offer_number, created_at, supplier_name), items:order_items(settlement_amount, settlement_price)")
+          .select("id, order_number, revenue_status, revenue_cancel_reason, revenue_cancelled_at, revenue_status_changed_at, revenue_due_date, placed_at, buyer:companies!orders_buyer_company_id_fkey(name), offer:offers(offer_number, created_at, supplier_name), items:order_items(settlement_amount, settlement_price)")
           .is("deleted_at", null)
           .in("revenue_status", ["due", "invoiced", "received", "cancelled"])
           .order("placed_at", { ascending: false });
@@ -86,6 +87,7 @@ export default function AdminRevenue() {
         type Raw = {
           id: string; order_number: number; revenue_status: string;
           revenue_cancel_reason: string | null; revenue_cancelled_at: string | null; revenue_status_changed_at: string | null;
+          revenue_due_date: string | null;
           placed_at: string;
           buyer: { name: string } | { name: string }[] | null;
           offer: { offer_number: number | null; created_at: string | null; supplier_name: string | null } | { offer_number: number | null; created_at: string | null; supplier_name: string | null }[] | null;
@@ -108,6 +110,7 @@ export default function AdminRevenue() {
             revenue_cancel_reason: o.revenue_cancel_reason,
             revenue_cancelled_at: o.revenue_cancelled_at,
             revenue_status_changed_at: o.revenue_status_changed_at,
+            revenue_due_date: o.revenue_due_date,
             placed_at: o.placed_at,
             supplier_name: of?.supplier_name ?? "—",
             buyer_name: b?.name ?? "—",
@@ -232,8 +235,44 @@ export default function AdminRevenue() {
     );
   };
 
+  const updateDueDate = async (row: Row, value: string) => {
+    const next = value || null;
+    const { error } = await supabase.from("orders").update({ revenue_due_date: next } as never).eq("id", row.id);
+    if (error) {
+      toast({ title: "Failed to set due date", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRows(prev => prev.map(r => (r.id === row.id ? { ...r, revenue_due_date: next } : r)));
+  };
+
+  const dueBadge = (iso: string | null) => {
+    if (!iso) return { color: "#6b7280", bg: "transparent" };
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const d = new Date(iso + "T00:00:00");
+    const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+    if (diff < 0) return { color: "#991B1B", bg: "#FEE2E2" };
+    if (diff <= 7) return { color: "#92400E", bg: "#FEF3C7" };
+    return { color: "#065F46", bg: "#D1FAE5" };
+  };
+
   return (
     <div className="adm-body">
+      <style>{`
+        .adm-table.adm-table-tight th,
+        .adm-table.adm-table-tight td {
+          text-align: left;
+          vertical-align: middle;
+          padding: 8px 10px;
+          white-space: nowrap;
+        }
+        .adm-table.adm-table-tight th.text-right,
+        .adm-table.adm-table-tight td.text-right { text-align: right; }
+        .adm-table.adm-table-tight thead th {
+          font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase;
+          color: #6b7280; font-weight: 600;
+        }
+        .adm-table.adm-table-tight tbody td { font-size: 12px; color: #111827; }
+      `}</style>
       <div className="adm-page-header">
         <div>
           <span className="adm-page-title">Revenue</span>
@@ -285,7 +324,7 @@ export default function AdminRevenue() {
         <>
           <div className="adm-panel adm-only-desktop" style={{ padding: 0 }}>
             <div className="adm-table-wrap">
-              <table className="adm-table">
+              <table className="adm-table adm-table-tight">
                 <thead>
                   <tr>
                     <th>Order #</th>
@@ -293,6 +332,7 @@ export default function AdminRevenue() {
                     <th>Supplier</th>
                     <th>Buyer</th>
                     <th>Revenue Status</th>
+                    <th>Due Date</th>
                     <th className="text-right">Total</th>
                     <th className="text-right">Est. Revenue</th>
                     <th>Reason</th>
@@ -310,6 +350,28 @@ export default function AdminRevenue() {
                       <td>{r.supplier_name}</td>
                       <td>{r.buyer_name}</td>
                       <td onClick={(e) => e.stopPropagation()}><StatusSelect row={r} /></td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        {(() => {
+                          const locked = r.revenue_status === "cancelled" || r.revenue_status === "received";
+                          const b = dueBadge(r.revenue_due_date);
+                          return (
+                            <input
+                              type="date"
+                              value={r.revenue_due_date ?? ""}
+                              disabled={locked}
+                              onChange={(e) => updateDueDate(r, e.target.value)}
+                              style={{
+                                padding: "3px 6px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                                background: b.bg, color: b.color,
+                                border: `1px solid ${b.color}33`,
+                                cursor: locked ? "not-allowed" : "pointer",
+                                opacity: locked ? 0.7 : 1,
+                                fontFamily: "inherit",
+                              }}
+                            />
+                          );
+                        })()}
+                      </td>
                       <td className="text-right" style={{ fontSize: 12 }}>{r.total_value > 0 ? fmtMoney(r.total_value) : "—"}</td>
                       <td className="text-right" style={{ fontSize: 12, fontWeight: 600, color: "#8B2252" }}>{r.total_value > 0 ? fmtMoney(r.total_value * REVENUE_RATE) : "—"}</td>
                       <td style={{ fontSize: 12, color: "#6b7280", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.revenue_cancel_reason ?? ""}>{r.revenue_cancel_reason ?? "—"}</td>
@@ -344,7 +406,19 @@ export default function AdminRevenue() {
                   <span onClick={(e) => e.stopPropagation()}><StatusSelect row={r} /></span>
                 </div>
                 <div style={{ fontSize: 13, marginBottom: 4 }}>{r.supplier_name} → {r.buyer_name}</div>
-                <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}>Updated {fmtDate(r.revenue_status_changed_at ?? r.placed_at)}</div>
+                <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <span>Updated {fmtDate(r.revenue_status_changed_at ?? r.placed_at)}</span>
+                  <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    Due:&nbsp;
+                    <input
+                      type="date"
+                      value={r.revenue_due_date ?? ""}
+                      disabled={r.revenue_status === "cancelled" || r.revenue_status === "received"}
+                      onChange={(e) => updateDueDate(r, e.target.value)}
+                      style={{ padding: "2px 4px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 11 }}
+                    />
+                  </span>
+                </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12 }}>
                   <div>
                     <div style={{ color: "#6b7280" }}>Total · Est. Revenue</div>
