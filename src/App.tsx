@@ -46,7 +46,7 @@ import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
-import AdminMigration from "./pages/admin/AdminMigration.tsx";
+import AdminImport from "./pages/admin/AdminImport.tsx";
 import WhatsLayout from "./pages/admin/whats/WhatsLayout.tsx";
 import WhatsConversas from "./pages/admin/whats/WhatsConversas.tsx";
 import WhatsContatos from "./pages/admin/whats/WhatsContatos.tsx";
@@ -233,7 +233,8 @@ const App = () => (
               <Route path="settings/team" element={<AdminTeam />} />
               <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
-              <Route path="migration" element={<AdminMigration />} />
+              <Route path="import" element={<AdminImport />} />
+              <Route path="migration" element={<AdminImport />} />
               <Route path="user-requests" element={<AdminUserRequests />} />
               <Route path="outreach" element={<OutreachCenter />} />
               <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
