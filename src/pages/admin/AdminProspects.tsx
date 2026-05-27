@@ -492,6 +492,10 @@ export default function AdminProspects() {
         </div>
       </div>
 
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      </div>
+
       <AddProspectModal open={addOpen} onOpenChange={setAddOpen} />
       <ImportProspectsModal open={importOpen} onOpenChange={setImportOpen} />
 
