@@ -14,16 +14,16 @@ let inflight: Promise<CountryRow[]> | null = null;
 async function load(): Promise<CountryRow[]> {
   if (cache) return cache;
   if (inflight) return inflight;
-  inflight = supabase
-    .from("countries")
-    .select("id, english_name, iso_code, flag_emoji")
-    .order("english_name", { ascending: true })
-    .then(({ data, error }) => {
-      inflight = null;
-      if (error || !data) return [];
-      cache = data as CountryRow[];
-      return cache;
-    });
+  inflight = (async () => {
+    const { data, error } = await supabase
+      .from("countries")
+      .select("id, english_name, iso_code, flag_emoji")
+      .order("english_name", { ascending: true });
+    inflight = null;
+    if (error || !data) return [];
+    cache = data as CountryRow[];
+    return cache;
+  })();
   return inflight;
 }
 
