@@ -141,7 +141,7 @@ export default function AdminMigration() {
         // Step 2: upsert team member by (company_id, email) — NO auth, NO password
         const role = /master/i.test(r.profileType) ? "master" : "member";
         const { data: upserted, error: upErr } = await supabase
-          .from("company_team_members")
+          .from("team_invitations")
           .upsert(
             {
               company_id: companyId!,
