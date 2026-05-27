@@ -715,7 +715,7 @@ export default function AdminImport() {
               onClick={runImport} disabled={importing || stats.ready === 0}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "10px 18px", background: destination === "prospects" ? "#2563EB" : "#791f1f",
+                padding: "10px 18px", background: "#791f1f",
                 color: "white", border: 0, borderRadius: 6, fontWeight: 600,
                 cursor: importing ? "wait" : "pointer", opacity: importing || stats.ready === 0 ? 0.7 : 1,
               }}
@@ -726,7 +726,7 @@ export default function AdminImport() {
           </div>
           {importing && (
             <div style={{ height: 6, background: "#f5e6e6", borderRadius: 3, marginBottom: 12, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${progress}%`, background: destination === "prospects" ? "#2563EB" : "#791f1f", transition: "width .25s" }} />
+              <div style={{ height: "100%", width: `${progress}%`, background: "#791f1f", transition: "width .25s" }} />
             </div>
           )}
         </>
