@@ -141,6 +141,7 @@ export default function CRMPipeline() {
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [seniorityFilter, setSeniorityFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const [owners, setOwners] = useState<Array<{ id: string; name: string }>>([]);
   const PAGE_SIZE = 50;
@@ -198,7 +199,7 @@ export default function CRMPipeline() {
       .sort((a, b) => b.count - a.count);
   }, [companies]);
 
-  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy, view]);
+  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy, sortDir, view]);
 
   const filteredCompanies = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -240,8 +241,9 @@ export default function CRMPipeline() {
         default: return (b.created_at ?? "").localeCompare(a.created_at ?? "");
       }
     };
-    return out.sort(cmp);
-  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy]);
+    const sorted = out.sort(cmp);
+    return sortDir === "asc" ? sorted.reverse() : sorted;
+  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy, sortDir]);
 
   const activeFilterCount = [
     search.trim() !== "",
@@ -380,6 +382,8 @@ export default function CRMPipeline() {
           setSeniorityFilter={setSeniorityFilter}
           sortBy={sortBy}
           setSortBy={setSortBy}
+          sortDir={sortDir}
+          setSortDir={setSortDir}
           activeFilterCount={activeFilterCount}
           clearAllFilters={clearAllFilters}
           onCard={(id) => nav(`/admin/crm/prospects/${id}`)}
@@ -470,6 +474,8 @@ type PipelineViewProps = {
   setSeniorityFilter: (v: string) => void;
   sortBy: string;
   setSortBy: (v: string) => void;
+  sortDir: "asc" | "desc";
+  setSortDir: (v: "asc" | "desc") => void;
   activeFilterCount: number;
   clearAllFilters: () => void;
   onCard: (id: string) => void;
@@ -575,12 +581,19 @@ function PipelineView(p: PipelineViewProps) {
           <option value="staff">Staff</option>
         </select>
         <select value={p.sortBy} onChange={(e) => p.setSortBy(e.target.value)} style={selectStyle}>
-          <option value="newest">↓ Newest first</option>
-          <option value="oldest">↑ Oldest first</option>
-          <option value="name">A-Z Contact</option>
-          <option value="company">A-Z Company</option>
-          <option value="stage">By stage</option>
+          <option value="newest">Date</option>
+          <option value="name">Contact name</option>
+          <option value="company">Company name</option>
+          <option value="stage">Stage</option>
         </select>
+        <button
+          type="button"
+          onClick={() => p.setSortDir(p.sortDir === "asc" ? "desc" : "asc")}
+          title={p.sortDir === "asc" ? "Ascending" : "Descending"}
+          style={{ ...selectStyle, padding: "7px 10px", cursor: "pointer", fontWeight: 600 }}
+        >
+          {p.sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+        </button>
         {p.activeFilterCount > 0 && (
           <button
             type="button"
