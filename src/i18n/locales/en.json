@@ -1189,13 +1189,13 @@
       }
     },
     "share": {
-      "title": "Share this bid with the supplier",
-      "subtitle": "The supplier can review and respond using this secure link — no login required.",
-      "subtitleUsed": "This link has already been used by the supplier.",
+      "title": "Share this negotiation with the buyer",
+      "subtitle": "The buyer can review and respond using this secure link — no login required.",
+      "subtitleUsed": "This link has already been used by the buyer.",
       "loading": "Preparing share link…",
       "copy": "Copy link",
       "copied": "Copied!",
-      "supplierEmail": "Supplier email (optional)",
+      "supplierEmail": "Buyer email (optional)",
       "saveEmail": "Save",
       "emailSaved": "Email saved",
       "sendEmail": "Send email",
