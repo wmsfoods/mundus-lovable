@@ -68,6 +68,7 @@ export interface Prospect {
   mundusCompanyId?: string;
   deactivationReason?: string;
   deactivatedAt?: string;
+  hasCLevel?: boolean;
 }
 
 export const STAGES: ProspectStage[] = [
