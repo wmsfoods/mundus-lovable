@@ -275,11 +275,7 @@ export default function CRMPipeline() {
       )}
 
       {tab === "learnings" && (
-        <LearningsView
-          rows={learnings}
-          companies={companies}
-          onAdd={() => setAddLearningOpen(true)}
-        />
+        <WeeklyLearningLog />
       )}
 
       {tab === "documents" && (
