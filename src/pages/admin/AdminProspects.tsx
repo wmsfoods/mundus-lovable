@@ -469,6 +469,12 @@ export default function AdminProspects() {
                           return (
                             <span className="crm-cell-sub">
                               {p.country}{contactName ? ` · ${contactName}` : ""}
+                              {p.hasCLevel && (
+                                <span title="C-Level decision maker"
+                                  style={{ marginLeft: 6, background: "#F5F3FF", color: "#6D28D9",
+                                    padding: "1px 6px", borderRadius: 8, fontSize: 10, fontWeight: 700,
+                                    border: "1px solid #DDD6FE" }}>👔 C-Level</span>
+                              )}
                             </span>
                           );
                         })()}
