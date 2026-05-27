@@ -41,6 +41,7 @@ import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
 import AdminNegotiations from "./pages/admin/AdminNegotiations.tsx";
 import AdminOffers from "./pages/admin/AdminOffers.tsx";
 import AdminOrders from "./pages/admin/AdminOrders.tsx";
+import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
