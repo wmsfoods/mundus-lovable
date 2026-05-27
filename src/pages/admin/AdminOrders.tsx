@@ -37,9 +37,11 @@ const REVENUE_RATE = 0.003; // 0.30%
 
 const REVENUE_STATUSES: { value: string; label: string; bg: string; color: string }[] = [
   { value: "in_progress", label: "In Progress", bg: "#FEF3C7", color: "#92400E" },
-  { value: "due",         label: "Due",         bg: "#FEE2E2", color: "#991B1B" },
   { value: "exempt",      label: "Exempt",      bg: "#E5E7EB", color: "#374151" },
+  { value: "due",         label: "Due → Revenue", bg: "#FEE2E2", color: "#991B1B" },
 ];
+
+const REVENUE_MANAGED = new Set(["due", "invoiced", "received", "cancelled"]);
 
 function fmtMoney(v: number): string {
   return v.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
@@ -95,7 +97,8 @@ export default function AdminOrders() {
             total_value: total,
           };
         });
-        setRows(list);
+        // Hide rows being managed in the Revenue module
+        setRows(list.filter((r) => !REVENUE_MANAGED.has(r.revenue_status)));
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : String(err));
       } finally {
