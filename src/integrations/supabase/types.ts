@@ -520,7 +520,7 @@ export type Database = {
           rating: number | null
           state: string
           status: string | null
-          tax_id: string
+          tax_id: string | null
           updated_at: string | null
           website: string | null
           zip_code: string | null
@@ -561,7 +561,7 @@ export type Database = {
           rating?: number | null
           state: string
           status?: string | null
-          tax_id: string
+          tax_id?: string | null
           updated_at?: string | null
           website?: string | null
           zip_code?: string | null
@@ -602,7 +602,7 @@ export type Database = {
           rating?: number | null
           state?: string
           status?: string | null
-          tax_id?: string
+          tax_id?: string | null
           updated_at?: string | null
           website?: string | null
           zip_code?: string | null
