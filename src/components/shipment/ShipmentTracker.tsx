@@ -1,6 +1,63 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Resolve a stored BL value (storage path OR legacy public URL) to a fresh
+ * signed URL and open it. The bl-documents bucket is private and scoped via
+ * RLS to the order's buyer / supplier / Mundus admins.
+ */
+async function resolveBLUrl(value: string): Promise<string | null> {
+  if (!value) return null;
+  // Extract storage path from legacy public URL form: ".../bl-documents/<path>"
+  let path = value;
+  const marker = "/bl-documents/";
+  const idx = value.indexOf(marker);
+  if (idx >= 0) path = value.slice(idx + marker.length);
+  const { data, error } = await supabase.storage
+    .from("bl-documents")
+    .createSignedUrl(path, 3600);
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
+}
+
+function BLDocLink({
+  value,
+  mode,
+  children,
+}: {
+  value: string;
+  mode: "view" | "download";
+  children: React.ReactNode;
+}) {
+  const [busy, setBusy] = useState(false);
+  const handle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    const url = await resolveBLUrl(value);
+    setBusy(false);
+    if (!url) {
+      alert("Could not open document — you may not have access.");
+      return;
+    }
+    if (mode === "download") {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+  return (
+    <a href="#" onClick={handle} aria-busy={busy}>
+      {children}
+    </a>
+  );
+}
+
 type ShipmentContainer = {
   id: string;
   order_id: string | null;
