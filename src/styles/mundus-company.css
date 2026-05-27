@@ -61,13 +61,8 @@
   letter-spacing: 0;
 }
 
-/* Hide non-active sub-tab cards. CompanyProfileSections renders all
-   sections; we scope visibility to the active tab via wrapper class. */
-.adm-profile-scope-about .cp-card:not(:nth-of-type(1)),
-.adm-profile-scope-plants .cp-card:not(:nth-of-type(2)),
-.adm-profile-scope-preferences .cp-card:not(:nth-of-type(3)),
-.adm-profile-scope-certifications .cp-card:not(:nth-of-type(4)),
-.adm-profile-scope-documents .cp-card:not(:nth-of-type(5)) { display: none; }
+/* Note: per-tab section visibility is handled lower in this file
+   (see .adm-profile-scope-* > .cp-page > section rules). */
 
 /* ============================================================
    New Company Profile Page (CompanyProfilePage)
