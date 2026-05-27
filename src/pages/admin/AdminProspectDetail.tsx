@@ -333,6 +333,43 @@ export default function AdminProspectDetail() {
                 <button type="button" className="crm-btn-ghost" onClick={startEdit} disabled={!p.isActive}>
                   <Pencil size={14} /> {t("admin.crm.detail.actions.edit")}
                 </button>
+                {isDbProspect && main?.id && (
+                  <button
+                    type="button"
+                    className="crm-btn-outline"
+                    disabled={enriching}
+                    style={{ borderColor: "#2563EB", color: "#2563EB" }}
+                    onClick={async () => {
+                      if (!main?.id || !id) return;
+                      setEnriching(true);
+                      toast.info("Enriching via Apollo…");
+                      try {
+                        const r = await enrichContact({
+                          id: main.id,
+                          company_id: id,
+                          full_name: main.name ?? null,
+                          email: main.email ?? null,
+                          phone: main.phone ?? null,
+                          mobile: main.mobile ?? null,
+                          linkedin: main.linkedin ?? null,
+                          photo_url: main.photo ?? null,
+                          job_title: main.role ?? null,
+                        });
+                        if (r.ok) {
+                          toast.success(`Enriched ${r.updatedFields?.length ?? 0} fields`);
+                          setTimeout(() => window.location.reload(), 600);
+                        } else {
+                          toast.error("Enrich failed: " + (r.error ?? "unknown"));
+                        }
+                      } finally {
+                        setEnriching(false);
+                      }
+                    }}
+                  >
+                    {enriching ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    {enriching ? " Enriching…" : " Enrich"}
+                  </button>
+                )}
                 {p.isActive ? (
                   <button type="button" className="crm-btn-outline" onClick={() => setShowDeactivate(true)}>
                     <PowerOff size={14} /> {t("admin.crm.detail.actions.deactivate")}
