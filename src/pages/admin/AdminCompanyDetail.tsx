@@ -72,6 +72,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   };
   const isNew = mode === "new";
   const { data, loading, error, save, create, remove } = useAdminCompany(isNew ? undefined : id);
+  useCountriesList(); // preload + cache for matchCountry()
 
   const [form, setForm] = useState<CompanyPatch>(EMPTY);
   const [dirty, setDirty] = useState(false);
