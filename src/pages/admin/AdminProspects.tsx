@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Upload, Plus, KanbanSquare, Table as TableIcon, Trash2, X } from "lucide-react";
+import { Search, Upload, Plus, KanbanSquare, Table as TableIcon, Trash2, X, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -12,6 +12,7 @@ import {
 import { AddProspectModal } from "@/components/admin/AddProspectModal";
 import { ImportProspectsModal } from "@/components/admin/ImportProspectsModal";
 import { supabase } from "@/integrations/supabase/client";
+import { bulkEnrichByCompanyIds } from "@/lib/prospectEnrich";
 
 const fmtGmv = (v?: number) =>
   v == null ? "—" : v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}k`;
@@ -25,6 +26,8 @@ export default function AdminProspects() {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState<{ done: number; total: number } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -224,6 +227,36 @@ export default function AdminProspects() {
             {t("admin.crm.bulkDelete.selected", { count: selectedIds.size, defaultValue: "{{count}} selected" })}
           </strong>
           <div style={{ flex: 1 }} />
+          <button
+            type="button"
+            className="crm-btn-outline"
+            disabled={enriching}
+            onClick={async () => {
+              const ids = [...selectedIds];
+              setEnriching(true);
+              setEnrichProgress({ done: 0, total: ids.length });
+              toast.info(`Enriching ${ids.length} prospect(s) via Apollo…`);
+              try {
+                const r = await bulkEnrichByCompanyIds(ids, (done, total) =>
+                  setEnrichProgress({ done, total }),
+                );
+                toast.success(`Enriched: ${r.success} ✓ · ${r.failed} failed`);
+                setRefreshTick((x) => x + 1);
+              } catch (e: any) {
+                toast.error("Enrich failed: " + (e?.message ?? "unknown"));
+              } finally {
+                setEnriching(false);
+                setEnrichProgress(null);
+              }
+            }}
+            style={{ borderColor: "#2563EB", color: "#2563EB" }}
+          >
+            {enriching ? <Loader2 size={14} className="animate-spin" style={{ marginRight: 4 }} />
+                       : <Sparkles size={14} style={{ marginRight: 4 }} />}
+            {enriching && enrichProgress
+              ? `Enriching ${enrichProgress.done}/${enrichProgress.total}`
+              : t("admin.crm.bulkEnrich.button", { defaultValue: "Enrich via Apollo" })}
+          </button>
           <button
             type="button"
             className="crm-btn-outline"

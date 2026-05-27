@@ -6,7 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import {
   Send, MessageSquarePlus, Pencil, Mail, Phone, Smartphone, Linkedin, Camera,
   StickyNote, ArrowRight, Settings as SettingsIcon, PhoneCall,
-  Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe, Building2,
+  Save, X, PowerOff, Trash2, Plus, Search, ShieldOff, Globe, Building2, Sparkles, Loader2,
   type LucideIcon,
 } from "lucide-react";
 import {
@@ -18,6 +18,7 @@ import {
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import { enrichContact } from "@/lib/prospectEnrich";
 
 const STAGE_TO_DB: Record<ProspectStage, string> = {
   new: "cold", researching: "warm", contacted: "contacted",
@@ -123,6 +124,7 @@ export default function AdminProspectDetail() {
   const isDbProspect = !!id && !id.startsWith("pr-");
   const [dbP, setDbP] = useState<Prospect | null>(null);
   const [dbLoading, setDbLoading] = useState(false);
+  const [enriching, setEnriching] = useState(false);
 
   useEffect(() => {
     if (mock || !isDbProspect || !id) return;
@@ -331,6 +333,43 @@ export default function AdminProspectDetail() {
                 <button type="button" className="crm-btn-ghost" onClick={startEdit} disabled={!p.isActive}>
                   <Pencil size={14} /> {t("admin.crm.detail.actions.edit")}
                 </button>
+                {isDbProspect && main?.id && (
+                  <button
+                    type="button"
+                    className="crm-btn-outline"
+                    disabled={enriching}
+                    style={{ borderColor: "#2563EB", color: "#2563EB" }}
+                    onClick={async () => {
+                      if (!main?.id || !id) return;
+                      setEnriching(true);
+                      toast.info("Enriching via Apollo…");
+                      try {
+                        const r = await enrichContact({
+                          id: main.id,
+                          company_id: id,
+                          full_name: main.fullName ?? null,
+                          email: main.email ?? null,
+                          phone: main.phone ?? null,
+                          mobile: main.mobile ?? null,
+                          linkedin: main.linkedin ?? null,
+                          photo_url: main.photoUrl ?? null,
+                          job_title: main.role ?? null,
+                        });
+                        if (r.ok) {
+                          toast.success(`Enriched ${r.updatedFields?.length ?? 0} fields`);
+                          setTimeout(() => window.location.reload(), 600);
+                        } else {
+                          toast.error("Enrich failed: " + (r.error ?? "unknown"));
+                        }
+                      } finally {
+                        setEnriching(false);
+                      }
+                    }}
+                  >
+                    {enriching ? <Loader2 size={14} className="animate-spin" /> : <Sparkles size={14} />}
+                    {enriching ? " Enriching…" : " Enrich"}
+                  </button>
+                )}
                 {p.isActive ? (
                   <button type="button" className="crm-btn-outline" onClick={() => setShowDeactivate(true)}>
                     <PowerOff size={14} /> {t("admin.crm.detail.actions.deactivate")}
