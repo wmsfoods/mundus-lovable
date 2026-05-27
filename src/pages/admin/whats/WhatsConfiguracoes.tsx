@@ -1,9 +1,13 @@
 import { useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
-  Rocket, Phone, Zap, GitBranch, Users, Shield, CheckCircle2, Circle, Copy,
+  Rocket, Phone, Zap, GitBranch, Users, Shield, CheckCircle2, Circle, Copy, Plus,
 } from "lucide-react";
 import { useMwInstances, useMwRules, useMwTeam, useMwMacros } from "@/hooks/mw/useMw";
+import { AddInstanceDialog } from "@/components/whats/AddInstanceDialog";
+import { InstanceCard } from "@/components/whats/InstanceCard";
+import { InstanceSetupCollapsible } from "@/components/whats/InstanceSetupCollapsible";
+import { Button } from "@/components/ui/button";
 
 type SettingsKey = "setup" | "instancias" | "macros" | "atribuicao" | "equipe" | "seguranca";
 
@@ -159,7 +163,8 @@ function SetupPanel() {
 }
 
 function InstancesPanel() {
-  const { rows, loading } = useMwInstances();
+  const { rows, loading, reload } = useMwInstances();
+  const [showAdd, setShowAdd] = useState(false);
   const webhook = `https://kypyqxicwbusadnlhnwe.supabase.co/functions/v1/mw-evolution-webhook`;
 
   return (
@@ -181,10 +186,14 @@ function InstancesPanel() {
         </div>
       </div>
 
+      <div style={{ marginBottom: 16 }}>
+        <InstanceSetupCollapsible onOpenAddDialog={() => setShowAdd(true)} />
+      </div>
+
       <div className="mw-card">
         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 12 }}>
           <h3 className="mw-card-title">Instâncias</h3>
-          <button className="btn btn-primary">+ Nova instância</button>
+          <Button onClick={() => setShowAdd(true)} size="sm"><Plus className="mr-1.5 h-3.5 w-3.5" />Nova instância</Button>
         </div>
         {loading ? (
           <div>Carregando…</div>
@@ -193,21 +202,12 @@ function InstancesPanel() {
             <div className="mw-empty-icon"><Phone size={22} /></div>
             <div className="mw-empty-title">Nenhuma instância conectada</div>
             <div className="mw-empty-sub">Crie uma instância usando a Evolution API para começar a receber mensagens.</div>
+            <Button onClick={() => setShowAdd(true)} className="mt-3" size="sm"><Plus className="mr-1.5 h-3.5 w-3.5" />Conectar primeira instância</Button>
           </div>
         ) : (
-          <div style={{ display: "grid", gap: 12 }}>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {rows.map((inst) => (
-              <div key={inst.id} style={{ border: "1px solid hsl(var(--border))", borderRadius: 10, padding: 16 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <div style={{ fontWeight: 600 }}>● {inst.name}</div>
-                  <div style={{ fontSize: 11, color: "var(--p800)", background: "#fde2e7", padding: "2px 8px", borderRadius: 999 }}>{inst.name}</div>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "120px 1fr", rowGap: 6, fontSize: 13, marginTop: 12 }}>
-                  <div style={{ color: "var(--g600)" }}>Status:</div><div>{inst.status}</div>
-                  <div style={{ color: "var(--g600)" }}>Número:</div><div>{inst.phone_number ?? "—"}</div>
-                  <div style={{ color: "var(--g600)" }}>Mensagens:</div><div>{inst.message_count_30d} (30d)</div>
-                </div>
-              </div>
+              <InstanceCard key={inst.id} instance={inst} onChanged={reload} />
             ))}
           </div>
         )}
@@ -217,6 +217,8 @@ function InstancesPanel() {
           <button className="btn btn-ghost btn-sm" onClick={() => navigator.clipboard.writeText(webhook)}><Copy size={12} /></button>
         </div>
       </div>
+
+      <AddInstanceDialog open={showAdd} onOpenChange={setShowAdd} onCreated={reload} />
     </>
   );
 }
