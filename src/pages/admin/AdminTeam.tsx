@@ -85,12 +85,16 @@ function StatusDot({ active }: { active: boolean }) {
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function MiniStat({ label, value }: { label: string; value: string | number }) {
   return (
-    <div className="adm-panel" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>{label}</span>
-      <span style={{ fontSize: 18, fontWeight: 700, color: "#8B2252" }}>{value}</span>
-    </div>
+    <span style={{
+      display: "inline-flex", alignItems: "baseline", gap: 6,
+      padding: "4px 9px", borderRadius: 999, background: "#f6f5f3",
+      border: "1px solid rgba(0,0,0,0.06)",
+    }}>
+      <span style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>{label}</span>
+      <span style={{ fontSize: 12, fontWeight: 700, color: "#8B2252" }}>{value}</span>
+    </span>
   );
 }
 
@@ -189,67 +193,68 @@ export default function AdminTeam() {
   }, [members]);
 
   return (
-    <div className="adm-page" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 12 }}>
-        <div>
-          <h1 style={{ fontSize: 18, fontWeight: 700, color: "#1a1a18", display: "flex", alignItems: "center", gap: 8, margin: 0 }}>
-            <Users2 size={18} /> Team
+    <div className="adm-page" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+      {/* Compact header: title + stats + add button on a single row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+          <h1 style={{ fontSize: 14, fontWeight: 700, color: "#1a1a18", display: "flex", alignItems: "center", gap: 6, margin: 0 }}>
+            <Users2 size={15} /> Team
           </h1>
-          <p style={{ fontSize: 12, color: "#5e5e58", margin: "2px 0 0" }}>
-            Manage Mundus Trade admin users
-          </p>
+          <span style={{ fontSize: 11, color: "#908d85" }}>Mundus Trade admins</span>
+          <div style={{ display: "inline-flex", gap: 6, marginLeft: 4 }}>
+            <MiniStat label="Active" value={stats.active} />
+            <MiniStat label="Roles" value={stats.roles} />
+            <MiniStat label="Last" value={fmtDate(stats.last)} />
+          </div>
         </div>
         <button
           onClick={() => setAddOpen(true)}
           style={{
             display: "inline-flex", alignItems: "center", gap: 6,
-            padding: "8px 12px", borderRadius: 6, border: "none",
+            padding: "6px 10px", borderRadius: 6, border: "none",
             background: "#B64769", color: "white", fontSize: 12, fontWeight: 600,
             cursor: "pointer",
           }}
         >
-          <Plus size={14} /> Add Team Member
+          <Plus size={13} /> Add Member
         </button>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-        <StatCard label="Active" value={stats.active} />
-        <StatCard label="Roles" value={stats.roles} />
-        <StatCard label="Last Added" value={fmtDate(stats.last)} />
-      </div>
-
-      {/* Filters */}
-      <div className="adm-panel" style={{ padding: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" }}>
-        <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
-          <SearchIcon size={14} style={{ position: "absolute", left: 10, top: 9, color: "#908d85" }} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search by name or email…"
-            style={{
-              width: "100%", padding: "7px 10px 7px 30px", fontSize: 12,
-              border: "1px solid rgba(0,0,0,0.10)", borderRadius: 6, background: "#f6f5f3",
-            }}
-          />
-        </div>
-        <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as any)}
-          style={{ padding: "7px 8px", fontSize: 12, borderRadius: 6, border: "1px solid rgba(0,0,0,0.10)", background: "#f6f5f3" }}>
-          <option value="all">All roles</option>
-          {ROLE_OPTIONS.map((r) => (
-            <option key={r.key} value={r.key}>{r.label}</option>
-          ))}
-        </select>
-        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}
-          style={{ padding: "7px 8px", fontSize: 12, borderRadius: 6, border: "1px solid rgba(0,0,0,0.10)", background: "#f6f5f3" }}>
-          <option value="all">All statuses</option>
-          <option value="active">Active</option>
-          <option value="inactive">Inactive</option>
-        </select>
-      </div>
-
-      {/* Table */}
+      {/* Table panel with inline filter bar */}
       <div className="adm-panel" style={{ overflow: "hidden" }}>
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center",
+          padding: "6px 8px", borderBottom: "1px solid rgba(0,0,0,0.06)", background: "#fafaf9",
+        }}>
+          <div style={{ position: "relative", flex: "1 1 220px", minWidth: 180 }}>
+            <SearchIcon size={12} style={{ position: "absolute", left: 8, top: 7, color: "#908d85" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search name or email…"
+              style={{
+                width: "100%", padding: "5px 8px 5px 24px", fontSize: 11,
+                border: "1px solid rgba(0,0,0,0.10)", borderRadius: 5, background: "white",
+              }}
+            />
+          </div>
+          <select value={roleFilter} onChange={(e) => setRoleFilter(e.target.value as any)}
+            style={{ padding: "5px 6px", fontSize: 11, borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)", background: "white" }}>
+            <option value="all">All roles</option>
+            {ROLE_OPTIONS.map((r) => (
+              <option key={r.key} value={r.key}>{r.label}</option>
+            ))}
+          </select>
+          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value as any)}
+            style={{ padding: "5px 6px", fontSize: 11, borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)", background: "white" }}>
+            <option value="all">All statuses</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <span style={{ marginLeft: "auto", fontSize: 10, color: "#908d85" }}>
+            {filtered.length} of {members.length}
+          </span>
+        </div>
         <table className="adm-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
             <tr style={{ background: "#fafaf9", textAlign: "left" }}>
