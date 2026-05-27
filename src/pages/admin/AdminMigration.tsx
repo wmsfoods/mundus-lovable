@@ -123,7 +123,6 @@ export default function AdminMigration() {
             const isBuyer = /buyer/i.test(r.businessType);
             const { data: newCo, error: coErr } = await supabase.from("companies").insert({
               name: r.company.trim(),
-              tax_id: "—",
               country: r.country || "—",
               state: "—",
               address: "—",
@@ -131,7 +130,7 @@ export default function AdminMigration() {
               is_supplier: isSupplier,
               is_buyer: isBuyer,
               status: "active",
-            }).select("id").single();
+            } as any).select("id").single();
             if (coErr || !newCo) throw coErr ?? new Error("company_create_failed");
             companyId = newCo.id;
           }
