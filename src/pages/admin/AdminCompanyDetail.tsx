@@ -464,11 +464,13 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   );
 }
 
-function Section({ title, children, full }: { title: string; children: React.ReactNode; full?: boolean }) {
+function Section({ title, children }: { title: string; children: React.ReactNode; full?: boolean }) {
   return (
-    <div className="adm-panel" style={{ padding: 16, gridColumn: full ? "1 / -1" : undefined }}>
-      <h3 style={{ margin: "0 0 12px", fontSize: 13, textTransform: "uppercase", letterSpacing: 0.5, color: "#6b7280" }}>{title}</h3>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+    <div className="adm-panel">
+      <div className="adm-panel-h">
+        <span className="adm-panel-title">{title}</span>
+      </div>
+      <div className="psp-grid-2">
         {children}
       </div>
     </div>
@@ -477,17 +479,17 @@ function Section({ title, children, full }: { title: string; children: React.Rea
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="adm-field">
-      <span>{label}</span>
+    <div className="psp-scrm-field">
+      <label className="psp-scrm-label">{label}</label>
       {children}
-    </label>
+    </div>
   );
 }
 
 function ReadOnly({ label, value }: { label: string; value: string }) {
   return (
-    <div className="adm-field">
-      <span>{label}</span>
+    <div className="psp-scrm-field">
+      <label className="psp-scrm-label">{label}</label>
       <div style={{ padding: "8px 10px", background: "#f9fafb", borderRadius: 6, fontSize: 12, color: "#374151", border: "1px solid #e5e7eb", wordBreak: "break-all" }}>{value}</div>
     </div>
   );
