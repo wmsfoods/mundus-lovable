@@ -206,7 +206,13 @@ const App = () => (
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
-            <Route path="/admin" element={<ErrorBoundary><AdminShell /></ErrorBoundary>}>
+            <Route path="/admin" element={
+              <RequireAuth>
+                <ErrorBoundary>
+                  <AdminShell />
+                </ErrorBoundary>
+              </RequireAuth>
+            }>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="analytics" element={<AdminAnalytics />} />
