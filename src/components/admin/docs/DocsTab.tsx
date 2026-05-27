@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { BuyerGuideDocument } from "./BuyerGuideDocument";
+import { SupplierGuideDocument } from "./SupplierGuideDocument";
 
 type SubTab = "admin" | "buyers" | "suppliers";
 
@@ -38,7 +39,7 @@ export function DocsTab() {
 
       {sub === "admin" && <EmptyState label="Admin documents" />}
       {sub === "buyers" && <BuyerGuideDocument />}
-      {sub === "suppliers" && <EmptyState label="Supplier documents" />}
+      {sub === "suppliers" && <SupplierGuideDocument />}
     </div>
   );
 }
