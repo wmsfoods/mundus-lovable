@@ -246,7 +246,49 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
       <div className="adm-panel">
         <Link to="/admin/companies" className="adm-link">← {t("admin.companies.detail.back", "Companies")}</Link>
         <div className="crm-detail-head">
-          <span className="crm-detail-av">{initials(form.name || "")}</span>
+          <button
+            type="button"
+            onClick={() => logoInputRef.current?.click()}
+            title="Upload company logo"
+            className="crm-detail-av"
+            style={{
+              position: "relative", padding: 0, border: 0, cursor: "pointer",
+              overflow: "hidden", background: form.logo_url ? "#f3f4f6" : undefined,
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+            }}
+          >
+            {form.logo_url ? (
+              <img
+                src={form.logo_url}
+                alt={form.name || "logo"}
+                style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              />
+            ) : (
+              <span>{initials(form.name || "")}</span>
+            )}
+            <span
+              style={{
+                position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center",
+                background: "rgba(0,0,0,0.45)", color: "#fff", opacity: uploadingLogo ? 1 : 0,
+                transition: "opacity .15s",
+              }}
+              onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+              onMouseLeave={(e) => { if (!uploadingLogo) (e.currentTarget as HTMLElement).style.opacity = "0"; }}
+            >
+              {uploadingLogo ? <Loader2 size={16} className="animate-spin" /> : <Camera size={16} />}
+            </span>
+            <input
+              ref={logoInputRef}
+              type="file"
+              accept="image/*"
+              style={{ display: "none" }}
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void uploadLogo(f);
+                e.currentTarget.value = "";
+              }}
+            />
+          </button>
           <div className="crm-cell-stack" style={{ flex: 1, minWidth: 0 }}>
             <input
               className="psp-input"
