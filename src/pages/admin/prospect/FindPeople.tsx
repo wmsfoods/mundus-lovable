@@ -457,12 +457,15 @@ export default function FindPeople() {
                           : <RevealButton label="Reveal" icon={<Phone size={11} />} value={null}
                               onReveal={async () => {
                                 try {
+                                  toast.loading("Requesting phone from Apollo...", { id: "phone-reveal" });
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.phone || "";
                                   setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, phone: v || undefined } }));
-                                  if (!v) { toast.error("Phone not found"); return ""; }
+                                  toast.dismiss("phone-reveal");
+                                  if (!v) { toast.error("Phone not available — Apollo may not have this number on file"); return "N/A"; }
                                   return v;
                                 } catch (e: any) {
+                                  toast.dismiss("phone-reveal");
                                   toast.error(`Reveal failed: ${e.message}`);
                                   return "";
                                 }
@@ -474,12 +477,15 @@ export default function FindPeople() {
                           : <RevealButton label="Reveal" icon={<Smartphone size={11} />} value={null}
                               onReveal={async () => {
                                 try {
+                                  toast.loading("Requesting mobile from Apollo...", { id: "mobile-reveal" });
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.mobile || r.phone || "";
                                   setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, mobile: v || undefined } }));
-                                  if (!v) { toast.error("Mobile not found"); return ""; }
+                                  toast.dismiss("mobile-reveal");
+                                  if (!v) { toast.error("Mobile not available — Apollo may not have this number on file"); return "N/A"; }
                                   return v;
                                 } catch (e: any) {
+                                  toast.dismiss("mobile-reveal");
                                   toast.error(`Reveal failed: ${e.message}`);
                                   return "";
                                 }
