@@ -138,6 +138,7 @@ export default function CRMPipeline() {
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [seniorityFilter, setSeniorityFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
   const [page, setPage] = useState(1);
   const [owners, setOwners] = useState<Array<{ id: string; name: string }>>([]);
