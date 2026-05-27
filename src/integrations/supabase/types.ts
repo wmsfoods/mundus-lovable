@@ -1983,29 +1983,50 @@ export type Database = {
         Row: {
           category: string | null
           created_at: string
+          created_by: string | null
+          filled_at: string | null
           id: string
           insight: string
+          next_action: string | null
+          next_action_due: string | null
           source_company_ids: string[]
+          stuck: string | null
+          tags: string[] | null
           theme: string
           week_start: string
+          worked: string | null
         }
         Insert: {
           category?: string | null
           created_at?: string
+          created_by?: string | null
+          filled_at?: string | null
           id?: string
           insight: string
+          next_action?: string | null
+          next_action_due?: string | null
           source_company_ids?: string[]
+          stuck?: string | null
+          tags?: string[] | null
           theme: string
           week_start: string
+          worked?: string | null
         }
         Update: {
           category?: string | null
           created_at?: string
+          created_by?: string | null
+          filled_at?: string | null
           id?: string
           insight?: string
+          next_action?: string | null
+          next_action_due?: string | null
           source_company_ids?: string[]
+          stuck?: string | null
+          tags?: string[] | null
           theme?: string
           week_start?: string
+          worked?: string | null
         }
         Relationships: []
       }
