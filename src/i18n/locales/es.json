@@ -831,13 +831,13 @@
       }
     },
     "share": {
-      "title": "Comparte esta oferta con el proveedor",
-      "subtitle": "El proveedor puede revisar y responder con este enlace seguro — sin iniciar sesión.",
-      "subtitleUsed": "Este enlace ya fue usado por el proveedor.",
+      "title": "Comparte esta negociación con el comprador",
+      "subtitle": "El comprador puede revisar y responder con este enlace seguro — sin iniciar sesión.",
+      "subtitleUsed": "Este enlace ya fue usado por el comprador.",
       "loading": "Preparando el enlace…",
       "copy": "Copiar enlace",
       "copied": "¡Copiado!",
-      "supplierEmail": "Correo del proveedor (opcional)",
+      "supplierEmail": "Correo del comprador (opcional)",
       "saveEmail": "Guardar",
       "emailSaved": "Correo guardado",
       "sendEmail": "Enviar correo",
