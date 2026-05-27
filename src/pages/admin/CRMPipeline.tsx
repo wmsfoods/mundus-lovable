@@ -460,6 +460,8 @@ type PipelineViewProps = {
   setOwnerFilter: (v: string) => void;
   dateFilter: string;
   setDateFilter: (v: string) => void;
+  seniorityFilter: string;
+  setSeniorityFilter: (v: string) => void;
   sortBy: string;
   setSortBy: (v: string) => void;
   activeFilterCount: number;
