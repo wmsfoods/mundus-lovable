@@ -4,6 +4,7 @@ import { SupplierGuideDocument } from "./SupplierGuideDocument";
 import { BrandbookDocument } from "./BrandbookDocument";
 import { DiscoveryScriptDocument } from "./DiscoveryScriptDocument";
 import { BuyerTrainingDocument } from "./BuyerTrainingDocument";
+import { SupplierTrainingDocument } from "./SupplierTrainingDocument";
 
 type SubTab = "admin" | "buyers" | "suppliers";
 
@@ -15,7 +16,7 @@ const TABS: Array<{ k: SubTab; l: string }> = [
 
 export function DocsTab() {
   const [sub, setSub] = useState<SubTab>("buyers");
-  const [adminDoc, setAdminDoc] = useState<"brandbook" | "discovery" | "buyer-training">("brandbook");
+  const [adminDoc, setAdminDoc] = useState<"brandbook" | "discovery" | "buyer-training" | "supplier-training">("brandbook");
   return (
     <div>
       <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
@@ -48,11 +49,12 @@ export function DocsTab() {
               { k: "brandbook", l: "📘 Brandbook Mundus" },
               { k: "discovery", l: "🎯 Discovery Call Script" },
               { k: "buyer-training", l: "🛒 Treinamento Buyer" },
+            { k: "supplier-training", l: "🥩 Treinamento Supplier" },
             ].map((d) => (
               <button
                 key={d.k}
                 type="button"
-                onClick={() => setAdminDoc(d.k as "brandbook" | "discovery" | "buyer-training")}
+                onClick={() => setAdminDoc(d.k as "brandbook" | "discovery" | "buyer-training" | "supplier-training")}
                 style={{
                   padding: "6px 12px",
                   borderRadius: 8,
@@ -72,6 +74,7 @@ export function DocsTab() {
           {adminDoc === "brandbook" && <BrandbookDocument />}
           {adminDoc === "discovery" && <DiscoveryScriptDocument />}
           {adminDoc === "buyer-training" && <BuyerTrainingDocument />}
+          {adminDoc === "supplier-training" && <SupplierTrainingDocument />}
         </div>
       )}
       {sub === "buyers" && <BuyerGuideDocument />}
