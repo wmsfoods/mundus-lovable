@@ -257,6 +257,22 @@ export default function AdminRevenue() {
 
   return (
     <div className="adm-body">
+      <style>{`
+        .adm-table.adm-table-tight th,
+        .adm-table.adm-table-tight td {
+          text-align: left;
+          vertical-align: middle;
+          padding: 8px 10px;
+          white-space: nowrap;
+        }
+        .adm-table.adm-table-tight th.text-right,
+        .adm-table.adm-table-tight td.text-right { text-align: right; }
+        .adm-table.adm-table-tight thead th {
+          font-size: 10px; letter-spacing: 0.4px; text-transform: uppercase;
+          color: #6b7280; font-weight: 600;
+        }
+        .adm-table.adm-table-tight tbody td { font-size: 12px; color: #111827; }
+      `}</style>
       <div className="adm-page-header">
         <div>
           <span className="adm-page-title">Revenue</span>
