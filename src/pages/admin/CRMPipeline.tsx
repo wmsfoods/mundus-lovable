@@ -440,8 +440,8 @@ type PipelineViewProps = {
   page: number;
   setPage: (n: number) => void;
   pageSize: number;
-  typeFilter: "all" | "buyer" | "supplier";
-  setTypeFilter: (v: "all" | "buyer" | "supplier") => void;
+  typeFilter: "all" | "buyer" | "supplier" | "prospect";
+  setTypeFilter: (v: "all" | "buyer" | "supplier" | "prospect") => void;
   search: string;
   setSearch: (v: string) => void;
   stageFilter: string;
