@@ -341,6 +341,24 @@ export default function AdminProspects() {
           selected={selectedCountries}
           onChange={setSelectedCountries}
         />
+        <select
+          className="crm-select"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+        >
+          <option value="created_at">Created date</option>
+          <option value="updated_at">Updated date</option>
+          <option value="name">Company name</option>
+        </select>
+        <button
+          type="button"
+          className="crm-select"
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          title={sortDir === "asc" ? "Ascending" : "Descending"}
+          style={{ cursor: "pointer", fontWeight: 600 }}
+        >
+          {sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+        </button>
         <div className="crm-seg">
           <button type="button" className="crm-seg-btn is-active" aria-label="Table"><TableIcon size={14} /></button>
           <Link to="/admin/crm/pipeline" className="crm-seg-btn" aria-label="Kanban"><KanbanSquare size={14} /></Link>
