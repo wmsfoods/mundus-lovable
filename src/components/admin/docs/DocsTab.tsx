@@ -76,23 +76,3 @@ export function DocsTab() {
     </div>
   );
 }
-
-function EmptyState({ label }: { label: string }) {
-  return (
-    <div style={{
-      border: "1px dashed #e5e7eb",
-      borderRadius: 12,
-      padding: "60px 24px",
-      textAlign: "center",
-      color: "#9ca3af",
-      background: "#fafafa",
-    }}>
-      <div style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", marginBottom: 4 }}>
-        No {label.toLowerCase()} yet
-      </div>
-      <div style={{ fontSize: 12 }}>
-        Documents added here will be visible to the Mundus admin team.
-      </div>
-    </div>
-  );
-}
