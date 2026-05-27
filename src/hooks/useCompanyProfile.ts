@@ -176,12 +176,11 @@ export function useCompanyProfile(companyId: string | undefined) {
     const path = `${companyId}/${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
     const up = await sb.storage.from("company-files").upload(path, file, { contentType: file.type, upsert: false });
     if (up.error) return { ok: false, error: up.error.message };
-    const { data: pub } = sb.storage.from("company-files").getPublicUrl(path);
     const { error: dbErr } = await sb.from("company_documents").insert({
       company_id: companyId,
       doc_type: docType,
       name: displayName || file.name,
-      file_url: pub.publicUrl,
+      file_url: path,
       file_path: path,
       file_size: file.size,
       mime_type: file.type,
