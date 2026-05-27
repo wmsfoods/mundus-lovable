@@ -323,31 +323,202 @@ function PlantsSection({ data, profile, canEdit }: { data: CompanyPlant[]; profi
 }
 
 /* ========================================================== PREFERENCES */
+const INCOTERM_OPTIONS = [
+  { code: "FOB", label: "FOB - Free on Board" },
+  { code: "CFR", label: "CFR - Cost and Freight" },
+  { code: "CIF", label: "CIF - Cost, Insurance & Freight" },
+  { code: "EXW", label: "EXW - Ex Works" },
+  { code: "DDP", label: "DDP - Delivered Duty Paid" },
+  { code: "DAP", label: "DAP - Delivered at Place" },
+];
+const PAYMENT_TERM_OPTIONS = [
+  "30% Advance, Balance TT - Against finalized doc copies",
+  "50% Advance, 50% Against BL copy",
+  "100% TT in advance",
+  "L/C at sight",
+  "L/C 30 days",
+  "10% Advance, Balance TT - Against finalized doc copies",
+  "Open account 30 days",
+];
+const FCL_OPTIONS = [
+  { code: "20", label: "20' FCL (14,000 kg)" },
+  { code: "40", label: "40' FCL (28,000 kg)" },
+];
+
 function PreferencesSection({ data, profile, canEdit }: { data: CompanyPreferences | null; profile: ReturnType<typeof useCompanyProfile>; canEdit: boolean }) {
   const { t } = useTranslation();
+  const [ports, setPorts] = useState<Array<{ id: string; name: string; code: string | null; country: string }>>([]);
+  const companyId = profile.data.preferences?.company_id ?? (profile as any).companyId;
+  const plants = profile.data.plants;
+
   const save = async (patch: Partial<CompanyPreferences>) => {
     const r = await profile.savePreferences({ ...(data ?? {}), ...patch });
     if (!r.ok) toast.error(r.error);
   };
+
+  // Load ports limited to the supplier's relevant countries (company country + plant countries)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      // 1) collect candidate country identifiers from plants
+      const plantCodes = Array.from(new Set(plants.map((p) => p.country_code).filter(Boolean))) as string[];
+      const plantNames = Array.from(new Set(plants.map((p) => p.country).filter(Boolean))) as string[];
+
+      // 2) also include the main company country (need to fetch from companies)
+      let companyCountry: string | null = null;
+      if (data?.company_id) {
+        const { data: c } = await supabase.from("companies").select("country").eq("id", data.company_id).maybeSingle();
+        companyCountry = (c as any)?.country ?? null;
+      }
+      if (companyCountry) plantNames.push(companyCountry);
+
+      if (plantCodes.length === 0 && plantNames.length === 0) {
+        if (!cancelled) setPorts([]);
+        return;
+      }
+
+      // 3) resolve country ids
+      const { data: ctrs } = await supabase
+        .from("countries")
+        .select("id, english_name, iso_code")
+        .or(
+          [
+            plantCodes.length ? `iso_code.in.(${plantCodes.map((c) => `"${c}"`).join(",")})` : null,
+            plantNames.length ? `english_name.in.(${plantNames.map((n) => `"${n.replace(/"/g, '\\"')}"`).join(",")})` : null,
+          ].filter(Boolean).join(",")
+        );
+      const countryMap = new Map<string, string>();
+      (ctrs ?? []).forEach((c: any) => countryMap.set(c.id, c.english_name));
+      const ids = Array.from(countryMap.keys());
+      if (ids.length === 0) { if (!cancelled) setPorts([]); return; }
+
+      const { data: pts } = await supabase
+        .from("ports")
+        .select("id,name,code,country_id")
+        .in("country_id", ids)
+        .order("name");
+      if (cancelled) return;
+      setPorts(
+        (pts ?? []).map((p: any) => ({
+          id: p.id, name: p.name, code: p.code, country: countryMap.get(p.country_id) ?? "",
+        }))
+      );
+    })();
+    return () => { cancelled = true; };
+  }, [plants, data?.company_id]);
+
+  // Multi-value helpers (stored as CSV in existing text columns)
+  const incotermsSel = csvParse(data?.default_incoterm ?? "");
+  const paymentsSel = csvParse(data?.default_payment_terms ?? "");
+  const fclSel = csvParse(data?.fcl_size ?? "");
+
+  const toggleCsv = (list: string[], v: string) =>
+    list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
+
   const row = (label: string, node: React.ReactNode) => (
     <div><dt>{label}</dt><dd>{node}</dd></div>
   );
+
   return (
     <section className="cp-card">
       <header className="cp-section-head"><h2>{t("supplier.company.preferences.title", "Trade preferences")}</h2></header>
       <dl className="cp-prefs">
-        {row(t("supplier.company.preferences.defaultIncoterm", "Default incoterm"),
-          <InlineText canEdit={canEdit} value={data?.default_incoterm} placeholder="CFR, FOB…" onSave={(v) => save({ default_incoterm: v })} />)}
+        {row(t("supplier.company.preferences.defaultIncoterm", "Default incoterms"),
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {INCOTERM_OPTIONS.map((i) => {
+              const on = incotermsSel.includes(i.code);
+              return (
+                <button
+                  key={i.code}
+                  type="button"
+                  disabled={!canEdit}
+                  title={i.label}
+                  className={`cp-chip-btn ${on ? "is-on" : ""}`}
+                  onClick={() => save({ default_incoterm: toggleCsv(incotermsSel, i.code).join(", ") })}
+                >
+                  {on ? "✓ " : ""}{i.code}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {row(t("supplier.company.preferences.defaultPaymentTerms", "Default payment terms"),
-          <InlineText canEdit={canEdit} value={data?.default_payment_terms} onSave={(v) => save({ default_payment_terms: v })} />)}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {PAYMENT_TERM_OPTIONS.map((p) => {
+              const on = paymentsSel.includes(p);
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  disabled={!canEdit}
+                  className={`cp-chip-btn ${on ? "is-on" : ""}`}
+                  onClick={() => save({ default_payment_terms: toggleCsv(paymentsSel, p).join(", ") })}
+                  style={{ maxWidth: 320, textAlign: "left" }}
+                >
+                  {on ? "✓ " : ""}{p}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {row(t("supplier.company.preferences.currencies", "Currencies"),
           <InlineText canEdit={canEdit} value={csv(data?.currencies)} placeholder="USD, EUR" onSave={(v) => save({ currencies: csvParse(v) })} />)}
+
         {row(t("supplier.company.preferences.leadTime", "Lead time"),
           <InlineText canEdit={canEdit} value={data?.lead_time} placeholder="30–45 days from PO" onSave={(v) => save({ lead_time: v })} />)}
-        {row(t("supplier.company.preferences.fclSize", "FCL size"),
-          <InlineText canEdit={canEdit} value={data?.fcl_size} placeholder="25 MT (40' reefer)" onSave={(v) => save({ fcl_size: v })} />)}
+
+        {row(t("supplier.company.preferences.fclSize", "Typical FCL size"),
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {FCL_OPTIONS.map((f) => {
+              const on = fclSel.includes(f.code);
+              return (
+                <button
+                  key={f.code}
+                  type="button"
+                  disabled={!canEdit}
+                  className={`cp-chip-btn ${on ? "is-on" : ""}`}
+                  onClick={() => save({ fcl_size: toggleCsv(fclSel, f.code).join(", ") })}
+                >
+                  {on ? "✓ " : ""}{f.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {row(t("supplier.company.preferences.originPorts", "Origin ports"),
-          <InlineText canEdit={canEdit} value={csv(data?.origin_ports)} onSave={(v) => save({ origin_ports: csvParse(v) })} />)}
+          <div>
+            {ports.length === 0 ? (
+              <span style={{ fontSize: 12, color: "#9ca3af" }}>
+                {t("supplier.company.preferences.originPortsEmpty", "Add plants with a country to choose origin ports.")}
+              </span>
+            ) : (
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {ports.map((p) => {
+                  const label = p.code ? `${p.name} (${p.code})` : p.name;
+                  const on = (data?.origin_ports ?? []).includes(label);
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      disabled={!canEdit}
+                      className={`cp-chip-btn ${on ? "is-on" : ""}`}
+                      title={p.country}
+                      onClick={() => {
+                        const cur = data?.origin_ports ?? [];
+                        save({ origin_ports: on ? cur.filter((x) => x !== label) : [...cur, label] });
+                      }}
+                    >
+                      {on ? "✓ " : ""}{label}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
       </dl>
     </section>
   );
