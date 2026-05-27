@@ -1048,3 +1048,26 @@
   cursor: pointer;
 }
 .adm-ports-trigger:hover { filter: brightness(0.96); }
+
+/* Create profile modals — mobile fullscreen */
+@media (max-width: 640px) {
+  .create-profile-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: 100vh !important;
+    border-radius: 0 !important;
+    overflow-y: auto;
+  }
+  .create-profile-modal .field-row {
+    grid-template-columns: 1fr !important;
+  }
+  .create-profile-modal .actions {
+    flex-direction: column-reverse !important;
+    gap: 8px !important;
+  }
+  .create-profile-modal .actions button {
+    width: 100% !important;
+  }
+}
