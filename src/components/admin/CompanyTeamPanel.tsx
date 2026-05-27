@@ -217,7 +217,12 @@ export default function CompanyTeamPanel({ companyId, isSupplier, isBuyer }: Pro
             <tbody>
               {members.map((m) => (
                 <tr key={m.id} style={{ borderBottom: "1px solid #f3f4f6" }}>
-                  <td style={{ padding: "10px 12px", fontWeight: 500 }}>{m.full_name}</td>
+                  <td style={{ padding: "10px 12px", fontWeight: 500 }}>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
+                      <Avatar url={m.avatar_url} name={m.full_name} />
+                      <span>{m.full_name}</span>
+                    </span>
+                  </td>
                   <td style={{ padding: "10px 12px", color: "#5e5e58" }}>{m.email}</td>
                   <td style={{ padding: "10px 12px", textTransform: "capitalize", color: "#374151" }}>{m.role}</td>
                   <td style={{ padding: "10px 12px", color: "#5e5e58" }}>{m.profile_type || "—"}</td>
