@@ -322,10 +322,28 @@ export default function AdminProspects() {
           <option value="all">{t("admin.crm.filters.allOwners")}</option>
           {OWNERS.map((o) => <option key={o.initials} value={o.initials}>{o.initials} — {o.name}</option>)}
         </select>
+        <select
+          className="crm-select"
+          value={countryFilter}
+          onChange={(e) => setCountryFilter(e.target.value)}
+          style={{ minWidth: 180 }}
+        >
+          <option value="all">🌐 {t("admin.crm.filters.allCountries", { defaultValue: "All countries" })}</option>
+          {countries.map((c) => <option key={c} value={c}>{c}</option>)}
+        </select>
         <div className="crm-seg">
           <button type="button" className="crm-seg-btn is-active" aria-label="Table"><TableIcon size={14} /></button>
           <Link to="/admin/crm/pipeline" className="crm-seg-btn" aria-label="Kanban"><KanbanSquare size={14} /></Link>
         </div>
+      </div>
+
+      <div style={{ fontSize: 12, color: "var(--adm-text-tertiary, #6B7280)", margin: "4px 2px 8px" }}>
+        {t("admin.crm.results.showing", {
+          from: rangeFrom,
+          to: rangeTo,
+          total: totalCount.toLocaleString(),
+          defaultValue: "Showing {{from}}-{{to}} of {{total}} results",
+        })}
       </div>
 
       {/* table */}
