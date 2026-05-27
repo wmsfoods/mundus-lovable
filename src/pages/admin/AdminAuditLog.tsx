@@ -160,46 +160,46 @@ export default function AdminAuditLog() {
         </div>
       </div>
 
-      {/* Table panel with embedded compact filters */}
-      <div className="adm-panel" style={{ padding: 0, overflow: "hidden" }}>
-        {/* Inline filters toolbar */}
-        <div style={{ padding: "8px 10px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", borderBottom: "1px solid #e5e7eb", background: "#fafafa" }}>
-          <div style={{ position: "relative", flex: "1 1 180px", minWidth: 160 }}>
-            <Search size={12} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search…"
-              style={{ width: "100%", padding: "5px 8px 5px 24px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 12, lineHeight: 1.3 }}
-            />
-          </div>
-          <select value={category} onChange={(e) => setCategory(e.target.value)} style={selCompact}>
-            <option value="all">All categories</option>
-            {["offer","request","negotiation","order","company","user","catalog","system","auth"].map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select value={actorRole} onChange={(e) => setActorRole(e.target.value)} style={selCompact}>
-            <option value="all">All actors</option>
-            <option value="supplier">Supplier</option>
-            <option value="buyer">Buyer</option>
-            <option value="admin">Admin</option>
-            <option value="system">System</option>
-          </select>
-          <select value={severity} onChange={(e) => setSeverity(e.target.value)} style={selCompact}>
-            <option value="all">All severity</option>
-            <option value="info">Info</option>
-            <option value="warn">Warning</option>
-            <option value="critical">Critical</option>
-          </select>
-          <select value={range} onChange={(e) => setRange(e.target.value as any)} style={selCompact}>
-            <option value="today">Today</option>
-            <option value="7d">7d</option>
-            <option value="30d">30d</option>
-            <option value="all">All</option>
-          </select>
+      {/* Filters — one horizontal row */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <div style={{ position: "relative", flex: "1 1 260px", minWidth: 200 }}>
+          <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search user, company, entity, action…"
+            style={{ width: "100%", padding: "8px 10px 8px 30px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
+          />
         </div>
+        <select value={category} onChange={(e) => setCategory(e.target.value)} style={selStyle}>
+          <option value="all">All categories</option>
+          {["offer","request","negotiation","order","company","user","catalog","system","auth"].map(c => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+        <select value={actorRole} onChange={(e) => setActorRole(e.target.value)} style={selStyle}>
+          <option value="all">All actors</option>
+          <option value="supplier">Supplier</option>
+          <option value="buyer">Buyer</option>
+          <option value="admin">Admin</option>
+          <option value="system">System</option>
+        </select>
+        <select value={severity} onChange={(e) => setSeverity(e.target.value)} style={selStyle}>
+          <option value="all">All severity</option>
+          <option value="info">Info</option>
+          <option value="warn">Warning</option>
+          <option value="critical">Critical</option>
+        </select>
+        <select value={range} onChange={(e) => setRange(e.target.value as any)} style={selStyle}>
+          <option value="today">Today</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="all">All time</option>
+        </select>
+      </div>
 
+      {/* Table */}
+      <div className="adm-panel" style={{ padding: 0, overflow: "hidden" }}>
         <div style={{ overflowX: "auto" }}>
           <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
@@ -223,6 +223,7 @@ export default function AdminAuditLog() {
                 const colors = CATEGORY_COLORS[r.category] || CATEGORY_COLORS.system;
                 const isExp = expanded.has(r.id);
                 const isCrit = r.severity === "critical";
+                const hasDetails = r.details && typeof r.details === "object" && Object.keys(r.details).length > 0;
                 return (
                   <>
                     <tr key={r.id}
@@ -277,12 +278,21 @@ export default function AdminAuditLog() {
                     </tr>
                     {isExp && (
                       <tr key={r.id + "-exp"} style={{ background: "#fafafa", borderBottom: "1px solid #f3f4f6" }}>
-                        <td colSpan={6} style={{ padding: "6px 12px 10px" }}>
-                          <pre style={{
-                            margin: 0, padding: 8, background: "#1f2937", color: "#e5e7eb",
-                            borderRadius: 4, fontSize: 10, overflow: "auto",
-                            fontFamily: "ui-monospace, SFMono-Regular, monospace",
-                          }}>{JSON.stringify(r.details, null, 2)}</pre>
+                        <td colSpan={6} style={{ padding: "8px 16px" }}>
+                          {!hasDetails ? (
+                            <div style={{ color: "#9ca3af", fontSize: 12, fontStyle: "italic", padding: "8px 0" }}>
+                              No additional details recorded
+                            </div>
+                          ) : (
+                            <pre style={{
+                              margin: "8px 16px", padding: "12px 16px",
+                              background: "#F9FAFB", color: "#374151",
+                              border: "1px solid #E5E7EB", borderRadius: 8,
+                              fontSize: 12, lineHeight: 1.5, maxHeight: 300, overflow: "auto",
+                              whiteSpace: "pre-wrap", wordBreak: "break-all",
+                              fontFamily: "'SF Mono', 'Fira Code', 'Consolas', ui-monospace, SFMono-Regular, monospace",
+                            }}>{JSON.stringify(r.details, null, 2)}</pre>
+                          )}
                         </td>
                       </tr>
                     )}
@@ -328,8 +338,8 @@ const thStyle: React.CSSProperties = {
 const tdStyle: React.CSSProperties = {
   padding: "6px 10px", verticalAlign: "top", color: "#1f2937", fontSize: 12,
 };
-const selCompact: React.CSSProperties = {
-  padding: "4px 6px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 11, background: "white", color: "#374151",
+const selStyle: React.CSSProperties = {
+  padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, background: "white", color: "#374151",
 };
 const pgBtn = (disabled: boolean): React.CSSProperties => ({
   padding: "3px 8px", borderRadius: 5, border: "1px solid #d1d5db",
