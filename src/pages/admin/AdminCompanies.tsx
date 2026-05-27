@@ -1,9 +1,10 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from "lucide-react";
 import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
 import { CreateBuyerProfileModal } from "@/components/admin/CreateBuyerProfileModal";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useAdminCompanies,
   companyType,
@@ -47,6 +48,8 @@ export default function AdminCompanies() {
   const [createBuyerOpen, setCreateBuyerOpen] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [teamMatchIds, setTeamMatchIds] = useState<Set<string>>(new Set());
+  const [teamSearching, setTeamSearching] = useState(false);
   const [typeF, setTypeF] = useState<CompanyTypeFilter>("all");
   const [statusF, setStatusF] = useState<CompanyStatusFilter>("all");
   const [country, setCountry] = useState<string>("all");
@@ -63,6 +66,31 @@ export default function AdminCompanies() {
     return { total: rows.length, active: rows.length - inactive };
   }, [rows]);
 
+  // Search team members (team_invitations) when query has 2+ chars; collect company_ids.
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setTeamMatchIds(new Set());
+      setTeamSearching(false);
+      return;
+    }
+    let cancelled = false;
+    setTeamSearching(true);
+    const run = async () => {
+      const { data, error } = await supabase
+        .from("team_invitations")
+        .select("company_id")
+        .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+        .limit(500);
+      if (cancelled) return;
+      if (error || !data) { setTeamMatchIds(new Set()); setTeamSearching(false); return; }
+      setTeamMatchIds(new Set(data.map((r: any) => r.company_id).filter(Boolean)));
+      setTeamSearching(false);
+    };
+    const h = setTimeout(run, 200);
+    return () => { cancelled = true; clearTimeout(h); };
+  }, [search]);
+
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
@@ -76,11 +104,12 @@ export default function AdminCompanies() {
       if (country !== "all" && r.country !== country) return false;
       if (q) {
         const hay = `${r.name} ${r.country ?? ""} ${r.city ?? ""} #${r.company_number}`.toLowerCase();
-        if (!hay.includes(q)) return false;
+        const matchesTeam = teamMatchIds.has(r.id);
+        if (!hay.includes(q) && !matchesTeam) return false;
       }
       return true;
     });
-  }, [rows, search, typeF, statusF, country]);
+  }, [rows, search, typeF, statusF, country, teamMatchIds]);
 
   return (
     <div className="adm-body">
