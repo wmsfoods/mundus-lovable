@@ -2219,7 +2219,8 @@
         "web_scrape": "网络抓取",
         "apollo": "Mundus Intelligence",
         "manual": "手动",
-        "inbound": "入站"
+        "inbound": "入站",
+        "wms_import": "WMS"
       },
       "table": {
         "company": "公司",

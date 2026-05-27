@@ -2309,7 +2309,8 @@
         "web_scrape": "Extraction web",
         "apollo": "Mundus Intelligence",
         "manual": "Manuel",
-        "inbound": "Entrant"
+        "inbound": "Entrant",
+        "wms_import": "WMS"
       },
       "table": {
         "company": "Entreprise",
