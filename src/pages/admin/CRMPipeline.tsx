@@ -374,6 +374,8 @@ export default function CRMPipeline() {
           setOwnerFilter={setOwnerFilter}
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
+          seniorityFilter={seniorityFilter}
+          setSeniorityFilter={setSeniorityFilter}
           sortBy={sortBy}
           setSortBy={setSortBy}
           activeFilterCount={activeFilterCount}
