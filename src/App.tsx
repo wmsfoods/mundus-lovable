@@ -214,8 +214,6 @@ const App = () => (
               <Route path="deals/:id" element={<AdminOrderDetail />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
-              <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
-              <Route path="disputes" element={<AdminComingSoon section="disputes" />} />
               <Route path="crm/prospects" element={<AdminProspects />} />
               <Route path="crm/prospects/:id" element={<AdminProspectDetail />} />
               <Route path="crm/pipeline" element={<CRMPipeline />} />
