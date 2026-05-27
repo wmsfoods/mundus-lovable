@@ -436,20 +436,29 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         </div>
       )}
 
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{t("admin.companies.detail.deleteTitle")}</AlertDialogTitle>
-            <AlertDialogDescription>{t("admin.companies.detail.deleteConfirm")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t("admin.companies.actions.cancel")}</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} style={{ background: "#b91c1c" }}>
-              {t("admin.companies.detail.deleteTitle")}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      {deleteOpen && (
+        <>
+          <div className="psp-drawer-backdrop" onClick={() => setDeleteOpen(false)} />
+          <div className="psp-scrm-modal" style={{ width: "min(440px, 96vw)" }}>
+            <div className="psp-scrm-head">
+              <div>
+                <div className="psp-scrm-title">{t("admin.companies.detail.deleteTitle")}</div>
+                <div className="psp-scrm-sub">{form.name}</div>
+              </div>
+              <button className="psp-drawer-close" onClick={() => setDeleteOpen(false)}><X size={18} /></button>
+            </div>
+            <div className="psp-scrm-body" style={{ padding: 16 }}>
+              <p style={{ fontSize: 13, lineHeight: 1.5, margin: 0 }}>{t("admin.companies.detail.deleteConfirm")}</p>
+            </div>
+            <div className="psp-scrm-foot">
+              <button className="crm-btn-ghost" onClick={() => setDeleteOpen(false)}>{t("admin.companies.actions.cancel")}</button>
+              <button className="crm-btn-primary" style={{ background: "#b91c1c" }} onClick={handleDelete}>
+                <Trash2 size={14} /> {t("admin.companies.detail.deleteTitle")}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
 
     </div>
   );
