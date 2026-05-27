@@ -474,7 +474,23 @@ export default function FindPeople() {
                       <td>
                         {p.in_crm
                           ? <button className="psp-btn ghost" onClick={() => setDetail(p)}>View</button>
-                          : <button className="psp-btn" onClick={() => setSavePerson(p)}>Save</button>}
+                          : <button className="psp-btn" onClick={() => {
+                              const r = revealedMap[p.id] || {};
+                              setSavePerson({
+                                ...p,
+                                email: r.email ?? p.email,
+                                secondaryEmail: r.secondaryEmail ?? p.secondaryEmail ?? null,
+                                phone: r.phone ?? p.phone,
+                                mobile: r.mobile ?? p.mobile,
+                                photoUrl: r.photoUrl ?? p.photoUrl,
+                                jobTitle: r.jobTitle ?? p.jobTitle,
+                                city: r.city ?? p.city,
+                                country: r.country ?? p.country,
+                                state: r.state ?? p.state ?? null,
+                                personalLinkedin: r.personalLinkedin ?? p.personalLinkedin ?? null,
+                                linkedin: r.linkedin ?? p.linkedin,
+                              });
+                            }}>Save</button>}
                       </td>
                     </tr>
                   );
