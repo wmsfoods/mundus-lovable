@@ -54,6 +54,20 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
   let phone = data.phone ?? null;
   let mobile = data.mobile ?? null;
 
+  // Try to extract from phone_numbers array if not already present
+  const phoneNumbers: any[] = Array.isArray(person.phone_numbers) ? person.phone_numbers : [];
+  if (!phone && phoneNumbers.length) {
+    const direct = phoneNumbers.find((pn: any) => pn?.type === "work_direct" || pn?.type === "work_hq");
+    phone = direct?.sanitized_number ?? phoneNumbers[0]?.sanitized_number ?? null;
+  }
+  if (!mobile && phoneNumbers.length) {
+    const mob = phoneNumbers.find((pn: any) => pn?.type === "mobile");
+    mobile = mob?.sanitized_number ?? null;
+  }
+  if (!phone && person.organization?.phone) {
+    phone = person.organization.phone;
+  }
+
   // Apollo delivers phones asynchronously via webhook. Poll the cache for up to ~20s.
   if (opts.reveal_phone && !phone && !mobile && data.apollo_person_id) {
     const apolloId = String(data.apollo_person_id);
@@ -79,6 +93,10 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
         break;
       }
     }
+  }
+
+  if (opts.reveal_phone && !phone && !mobile) {
+    console.warn("[enrich] Phone not available from Apollo for person:", p.id, p.fullName);
   }
 
   // Extract personal email (different from primary) from Apollo response.
