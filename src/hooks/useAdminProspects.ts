@@ -7,7 +7,7 @@ export type ProspectStage =
 export type ProspectRole = "potential_buyer" | "potential_supplier";
 export type ProspectSource =
   | "linkedin" | "trade_show" | "referral" | "web_scrape"
-  | "apollo" | "manual" | "inbound";
+  | "apollo" | "manual" | "inbound" | "wms_import";
 
 export type LeadType = "buyer" | "supplier" | "buyer_supplier";
 export type DecisionLevel = "c_level" | "vp" | "director" | "manager" | "specialist" | "other";

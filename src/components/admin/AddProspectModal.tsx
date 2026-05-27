@@ -26,7 +26,7 @@ const COUNTRY_NAME_TO_CODE: Record<string, string> = {
   "united kingdom": "UK", uk: "UK", "great britain": "UK", netherlands: "NL", poland: "PL",
 };
 
-const SOURCES: ProspectSource[] = ["linkedin", "trade_show", "referral", "web_scrape", "apollo", "manual", "inbound"];
+const SOURCES: ProspectSource[] = ["linkedin", "trade_show", "referral", "web_scrape", "apollo", "manual", "inbound", "wms_import"];
 
 type Props = { open: boolean; onOpenChange: (v: boolean) => void };
 
@@ -35,7 +35,7 @@ export function AddProspectModal({ open, onOpenChange }: Props) {
   const nav = useNavigate();
   const [form, setForm] = useState({
     companyName: "", country: "BR", role: "potential_supplier" as ProspectRole,
-    source: "linkedin" as ProspectSource, contactName: "", contactEmail: "",
+    source: "wms_import" as ProspectSource, contactName: "", contactEmail: "",
     contactPhone: "", estGmv: "", owner: "FN", notes: "",
   });
   const [err, setErr] = useState<string | null>(null);

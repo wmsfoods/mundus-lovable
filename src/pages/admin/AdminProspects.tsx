@@ -53,7 +53,7 @@ export default function AdminProspects() {
           initials: (c.name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "?",
           country: c.country || "—",
           role,
-          source: (c.source as any) || "manual",
+          source: (c.source as any) || "wms_import",
           contactName: primary?.full_name || "—",
           contactEmail: primary?.email || "—",
           contactPhone: primary?.phone || undefined,
@@ -278,14 +278,13 @@ export default function AdminProspects() {
           <table className="adm-table">
             <colgroup>
               <col style={{ width: "3%" }} />
-              <col style={{ width: "26%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "12%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "6%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "8%" }} />
-              <col style={{ width: "15%" }} />
+              <col style={{ width: "28%" }} />
+              <col style={{ width: "11%" }} />
+              <col style={{ width: "13%" }} />
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "11%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "18%" }} />
             </colgroup>
             <thead>
               <tr>
@@ -299,7 +298,6 @@ export default function AdminProspects() {
                 <th>{t("admin.crm.table.company")}</th>
                 <th>{t("admin.crm.table.role")}</th>
                 <th>{t("admin.crm.table.stage")}</th>
-                <th>{t("admin.crm.table.source")}</th>
                 <th>{t("admin.crm.table.country")}</th>
                 <th style={{ textAlign: "right" }}>{t("admin.crm.table.estGmv")}</th>
                 <th>{t("admin.crm.table.owner")}</th>
@@ -342,7 +340,6 @@ export default function AdminProspects() {
                   </td>
                   <td><span className="pill info">{t(`admin.crm.roles.${p.role}`)}</span></td>
                   <td><span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span></td>
-                  <td><span className={`crm-source ${p.source}`}>{t(`admin.crm.sources.${p.source}`)}</span></td>
                   <td><span className="mono">{p.country}</span></td>
                   <td style={{ textAlign: "right" }}>{fmtGmv(p.estGmv)}</td>
                   <td><span className="crm-owner-av">{p.owner}</span></td>
@@ -357,7 +354,7 @@ export default function AdminProspects() {
                 </tr>
               ))}
               {filtered.length === 0 && (
-                <tr><td colSpan={9} style={{ textAlign: "center", padding: 28, color: "var(--adm-text-tertiary)" }}>
+                <tr><td colSpan={8} style={{ textAlign: "center", padding: 28, color: "var(--adm-text-tertiary)" }}>
                   {t("admin.crm.empty")}
                 </td></tr>
               )}

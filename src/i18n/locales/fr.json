@@ -2309,7 +2309,8 @@
         "web_scrape": "Extraction web",
         "apollo": "Mundus Intelligence",
         "manual": "Manuel",
-        "inbound": "Entrant"
+        "inbound": "Entrant",
+        "wms_import": "WMS"
       },
       "table": {
         "company": "Entreprise",
@@ -3093,7 +3094,7 @@
         "supplier_main": "Fournisseur · Menu principal",
         "supplier_insights": "Fournisseur · Statistiques",
         "supplier_future": "Fournisseur · Prochainement",
-        "admin_crm": "Admin · CRM",
+        "admin_crm": "WMS",
         "admin_ops": "Admin · Opérations",
         "admin_marketplace": "Admin · Marketplace",
         "admin_finance": "Admin · Finance"
