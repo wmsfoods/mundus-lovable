@@ -87,7 +87,7 @@ export function PartnersModule() {
   const countries = useMemo(() => {
     const map = new Map<string, number>();
     partners.forEach(p => { if (p.country) map.set(p.country, (map.get(p.country) ?? 0) + 1); });
-    return Array.from(map.entries()).map(([code, count]) => ({ code, count }));
+    return Array.from(map.entries()).map(([name, count]) => ({ name, count }));
   }, [partners]);
 
   const filtered = useMemo(() => {
