@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Package, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
@@ -46,6 +47,7 @@ function fmtMoney(v: number): string {
 
 export default function AdminOrders() {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [rows, setRows] = useState<OrderRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -252,15 +254,19 @@ export default function AdminOrders() {
                 </thead>
                 <tbody>
                   {filtered.map(r => (
-                    <tr key={r.id}>
-                      <td><strong>#{String(r.order_number).padStart(7, "0")}</strong></td>
+                    <tr
+                      key={r.id}
+                      onClick={() => navigate(`/admin/deals/${r.id}`)}
+                      style={{ cursor: "pointer" }}
+                    >
+                      <td><strong style={{ color: "#8B2252" }}>#{String(r.order_number).padStart(7, "0")}</strong></td>
                       <td style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{r.offer_number != null ? formatOfferNumber(r.offer_number, r.offer_created_at) : "—"}</td>
                       <td>{r.supplier_name}</td>
                       <td>{r.buyer_name}</td>
-                      <td><StatusSelect id={r.id} status={r.status} /></td>
+                      <td onClick={(e) => e.stopPropagation()}><StatusSelect id={r.id} status={r.status} /></td>
                       <td className="text-right" style={{ fontSize: 12 }}>{r.total_value > 0 ? fmtMoney(r.total_value) : "—"}</td>
                       <td className="text-right" style={{ fontSize: 12, fontWeight: 600, color: "#8B2252" }}>{r.total_value > 0 ? fmtMoney(r.total_value * REVENUE_RATE) : "—"}</td>
-                      <td><RevenueStatusSelect id={r.id} status={r.revenue_status} /></td>
+                      <td onClick={(e) => e.stopPropagation()}><RevenueStatusSelect id={r.id} status={r.revenue_status} /></td>
                       <td style={{ color: "#6b7280", fontSize: 12 }}>{fmtDate(r.placed_at)}</td>
                     </tr>
                   ))}
@@ -271,10 +277,15 @@ export default function AdminOrders() {
 
           <div className="adm-only-mobile adm-cards-stack">
             {filtered.map(r => (
-              <div key={r.id} className="adm-panel" style={{ padding: 12 }}>
+              <div
+                key={r.id}
+                className="adm-panel"
+                style={{ padding: 12, cursor: "pointer" }}
+                onClick={() => navigate(`/admin/deals/${r.id}`)}
+              >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6, gap: 8 }}>
                   <strong>#{String(r.order_number).padStart(7, "0")}</strong>
-                  <StatusSelect id={r.id} status={r.status} />
+                  <span onClick={(e) => e.stopPropagation()}><StatusSelect id={r.id} status={r.status} /></span>
                 </div>
                 <div style={{ fontSize: 13, marginBottom: 4 }}>{r.supplier_name} → {r.buyer_name}</div>
                 <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}>{fmtDate(r.placed_at)}</div>
@@ -286,7 +297,7 @@ export default function AdminOrders() {
                       <span style={{ color: "#8B2252" }}>{r.total_value > 0 ? fmtMoney(r.total_value * REVENUE_RATE) : "—"}</span>
                     </div>
                   </div>
-                  <RevenueStatusSelect id={r.id} status={r.revenue_status} />
+                  <span onClick={(e) => e.stopPropagation()}><RevenueStatusSelect id={r.id} status={r.revenue_status} /></span>
                 </div>
               </div>
             ))}
