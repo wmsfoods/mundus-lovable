@@ -192,8 +192,17 @@
 
 /* Print */
 @media print {
+  @page { size: A4; margin: 14mm 12mm; }
+  html, body { background: #fff !important; }
   .no-print { display: none !important; }
   .mw-docs-wrap { background: #fff; padding: 0; }
-  .mw-doc { box-shadow: none; max-width: 100%; padding: 0; }
+  .mw-doc {
+    box-shadow: none; max-width: 100%; padding: 0;
+    font-size: 11.5pt; line-height: 1.55;
+  }
+  .mw-doc-hero { font-size: 22pt; }
+  .mw-doc-h2 { font-size: 16pt; }
+  .mw-doc-cover { page-break-after: always; }
   .mw-doc-section { page-break-inside: avoid; }
+  .mw-doc-table, .mw-doc-faq, .mw-doc-grid-3, .mw-doc-grid-2 { page-break-inside: avoid; }
 }
