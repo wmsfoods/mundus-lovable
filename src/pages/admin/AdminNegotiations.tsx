@@ -165,10 +165,12 @@ export default function AdminNegotiations() {
   const pageGroups = grouped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleRowClick = (row: AdminNegotiationRow) => {
+    navigate(`/admin/negotiations/${row.id}`);
+  };
+  const toggleExpanded = (row: AdminNegotiationRow) => {
     setExpandedNeg((m) => ({ ...m, [row.id]: !m[row.id] }));
   };
-
-  const openOfferView = (offerId: string) => navigate(`/admin/offers?id=${offerId}`);
+  const openOfferView = (offerId: string) => navigate(`/admin/offers/${offerId}`);
 
   return (
     <div className="adm-body">
@@ -320,6 +322,7 @@ export default function AdminNegotiations() {
                             navigate={navigate}
                             expanded={!!expandedNeg[r.id]}
                             onToggle={() => handleRowClick(r)}
+                            onToggleExpand={(e) => { e.stopPropagation(); toggleExpanded(r); }}
                             onOpenOffer={() => openOfferView(r.offer_id)}
                             isChild={isCluster}
                             isLast={idx === group.length - 1}
