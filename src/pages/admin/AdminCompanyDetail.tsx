@@ -83,11 +83,21 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
     if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
     setUploadingLogo(true);
     try {
-      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
       const folder = id ?? "new";
+      // Auto-process: remove background, crop, and fit to standard square.
+      let blob: Blob = file;
+      let ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      try {
+        const { processLogo, dataUrlToBlob } = await import("@/lib/logoProcessor");
+        const processed = await processLogo(file, { size: 400 });
+        blob = await dataUrlToBlob(processed);
+        ext = "png";
+      } catch (procErr) {
+        console.warn("Logo processing failed, uploading original", procErr);
+      }
       const path = `companies/${folder}/logo-${Date.now()}.${ext}`;
-      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, {
-        cacheControl: "3600", upsert: true, contentType: file.type,
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, {
+        cacheControl: "3600", upsert: true, contentType: ext === "png" ? "image/png" : file.type,
       });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);

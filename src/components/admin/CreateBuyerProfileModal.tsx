@@ -4,6 +4,7 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
+import { LogoUploader } from "./LogoUploader";
 
 const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine"] as const;
 
@@ -161,9 +162,7 @@ export function CreateBuyerProfileModal({
               <input style={inputStyle} value={form.website} onChange={(e) => upd("website", e.target.value)} placeholder="https://..." maxLength={255} />
             </Field>
           </div>
-          <Field label="Logo URL" error={errors.logoUrl}>
-            <input style={inputStyle} value={form.logoUrl} onChange={(e) => upd("logoUrl", e.target.value)} placeholder="https://..." maxLength={500} />
-          </Field>
+          <LogoUploader value={form.logoUrl} onChange={(url) => upd("logoUrl", url)} />
 
           <div style={{ borderTop: "1px solid #e5e7eb", margin: "8px 0 0", paddingTop: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", textTransform: "uppercase", marginBottom: 8 }}>Primary Contact</div>
