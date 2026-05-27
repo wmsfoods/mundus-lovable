@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle, Activity,
-  Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle,
+  Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw,
   Search as SearchIcon, UserSearch, ClipboardList, UserCheck,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
@@ -79,6 +79,7 @@ export default function AdminShell() {
     { to: "/admin/settings/team", label: t("admin.shell.nav.team"), icon: Users2 as unknown as IconCmp, groupLabel: t("admin.shell.nav.settings") },
     { to: "/admin/settings/audit", label: t("admin.shell.nav.audit"), icon: History as unknown as IconCmp },
     { to: "/admin/settings/flags", label: t("admin.shell.nav.flags"), icon: Flag as unknown as IconCmp },
+    { to: "/admin/migration", label: "Migration", icon: RefreshCw as unknown as IconCmp },
   ];
 
   const ADMIN_BOTTOM: BottomNavItem[] = [

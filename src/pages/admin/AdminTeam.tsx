@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Users2, Plus, Pencil, Trash2, X, Search as SearchIcon, ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
+import { Users2, Plus, Pencil, Trash2, X, Search as SearchIcon, ChevronLeft, ChevronRight, CheckCircle2, XCircle, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { auditLog } from "@/lib/auditLog";
@@ -434,6 +434,24 @@ export default function AdminTeam() {
                         <button onClick={() => setDeleting(m)} title="Remove"
                           style={{ padding: 6, border: "1px solid rgba(0,0,0,0.10)", background: "white", borderRadius: 4, cursor: "pointer", color: "#791f1f" }}>
                           <Trash2 size={13} />
+                        </button>
+                      )}
+                      {m.email && (
+                        <button
+                          onClick={async () => {
+                            if (!confirm(`Send password reset email to ${m.email}?`)) return;
+                            const { error } = await supabase.auth.resetPasswordForEmail(m.email!, {
+                              redirectTo: `${window.location.origin}/login`,
+                            });
+                            if (error) toast.error("Failed: " + error.message);
+                            else {
+                              toast.success(`Reset email sent to ${m.email}`);
+                              auditLog({ action: "user.password_reset_sent", category: "user", entityLabel: m.email!, severity: "warn" });
+                            }
+                          }}
+                          title="Send password reset email"
+                          style={{ padding: 6, border: "1px solid rgba(0,0,0,0.10)", background: "white", borderRadius: 4, cursor: "pointer", color: "#5e5e58" }}>
+                          <KeyRound size={13} />
                         </button>
                       )}
                     </div>
