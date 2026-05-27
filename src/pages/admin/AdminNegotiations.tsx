@@ -369,7 +369,7 @@ export default function AdminNegotiations() {
 }
 
 function NegotiationRow({
-  r, unit, locale, t, navigate, expanded, onToggle, onOpenOffer, isChild, isLast,
+  r, unit, locale, t, navigate, expanded, onToggle, onToggleExpand, onOpenOffer, isChild, isLast,
 }: {
   r: AdminNegotiationRow;
   unit: "kg" | "lbs";
@@ -378,6 +378,7 @@ function NegotiationRow({
   navigate: (path: string) => void;
   expanded: boolean;
   onToggle: () => void;
+  onToggleExpand: (e: React.MouseEvent) => void;
   onOpenOffer: () => void;
   isChild: boolean;
   isLast: boolean;
@@ -394,7 +395,7 @@ function NegotiationRow({
   return (
     <>
       <tr onClick={onToggle} style={{ cursor: "pointer" }}>
-        <td>
+        <td onClick={onToggleExpand} style={{ cursor: "pointer" }}>
           {isChild ? (
             <span style={{ display: "inline-block", width: 14, borderLeft: "1px solid #e5e7eb", borderBottom: isLast ? "1px solid #e5e7eb" : "none", height: 18, marginLeft: 6 }} />
           ) : (
@@ -502,9 +503,8 @@ function ExpandedDetail({
       <div>
         <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Links</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
-          <button type="button" onClick={() => navigate(`/admin/offers?id=${r.offer_id}`)} style={linkBtn}>→ View Offer</button>
-          <button type="button" onClick={() => navigate(`/supplier/negotiations/${r.id}`)} style={linkBtn}>→ Open Supplier View</button>
-          <button type="button" onClick={() => navigate(`/buyer/negotiations/${r.id}`)} style={linkBtn}>→ Open Buyer View</button>
+          <button type="button" onClick={() => navigate(`/admin/offers/${r.offer_id}`)} style={linkBtn}>→ View Offer</button>
+          <button type="button" onClick={() => navigate(`/admin/negotiations/${r.id}`)} style={linkBtn}>→ Open Negotiation</button>
         </div>
       </div>
       {r.cut_names.length > 0 && (
