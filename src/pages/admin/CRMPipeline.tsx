@@ -7,6 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DocsTab } from "@/components/admin/docs/DocsTab";
 import { WeeklyLearningLog } from "@/components/admin/learnings/WeeklyLearningLog";
+import { CountryFilterPopover } from "@/components/admin/CountryFilterPopover";
+import { countryFlag } from "@/lib/countryFlags";
 
 type Tab = "pipeline" | "buyers" | "suppliers" | "interviews" | "learnings" | "documents";
 
@@ -133,7 +135,7 @@ export default function CRMPipeline() {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"kanban" | "list">("list");
   const [stageFilter, setStageFilter] = useState<string>("all");
-  const [countryFilter, setCountryFilter] = useState<string>("all");
+  const [countryFilter, setCountryFilter] = useState<string[]>([]);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
@@ -185,9 +187,13 @@ export default function CRMPipeline() {
   }, [refresh]);
 
   const countries = useMemo(() => {
-    const s = new Set<string>();
-    companies.forEach((c) => { if (c.country) s.add(c.country); });
-    return Array.from(s).sort();
+    const counts: Record<string, number> = {};
+    companies.forEach((c) => {
+      if (c.country) counts[c.country] = (counts[c.country] ?? 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
   }, [companies]);
 
   useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, sortBy, view]);
@@ -206,7 +212,7 @@ export default function CRMPipeline() {
     const out = companies.filter((c) => {
       if (typeFilter !== "all" && c.company_type !== typeFilter) return false;
       if (stageFilter !== "all" && c.stage !== stageFilter) return false;
-      if (countryFilter !== "all" && c.country !== countryFilter) return false;
+      if (countryFilter.length > 0 && (!c.country || !countryFilter.includes(c.country))) return false;
       if (ownerFilter === "unassigned" && c.owner_id) return false;
       if (ownerFilter !== "all" && ownerFilter !== "unassigned" && c.owner_id !== ownerFilter) return false;
       if (since > 0 && c.created_at && new Date(c.created_at).getTime() < since) return false;
@@ -234,14 +240,14 @@ export default function CRMPipeline() {
   const activeFilterCount = [
     search.trim() !== "",
     stageFilter !== "all",
-    countryFilter !== "all",
+    countryFilter.length > 0,
     ownerFilter !== "all",
     dateFilter !== "all",
     typeFilter !== "all",
   ].filter(Boolean).length;
 
   function clearAllFilters() {
-    setSearch(""); setStageFilter("all"); setCountryFilter("all");
+    setSearch(""); setStageFilter("all"); setCountryFilter([]);
     setOwnerFilter("all"); setDateFilter("all"); setTypeFilter("all");
   }
 
@@ -430,7 +436,7 @@ type PipelineViewProps = {
   grouped: Record<string, Company[]>;
   rows: Company[];
   owners: Array<{ id: string; name: string }>;
-  countries: string[];
+  countries: Array<{ name: string; count: number }>;
   page: number;
   setPage: (n: number) => void;
   pageSize: number;
@@ -440,8 +446,8 @@ type PipelineViewProps = {
   setSearch: (v: string) => void;
   stageFilter: string;
   setStageFilter: (v: string) => void;
-  countryFilter: string;
-  setCountryFilter: (v: string) => void;
+  countryFilter: string[];
+  setCountryFilter: (v: string[]) => void;
   ownerFilter: string;
   setOwnerFilter: (v: string) => void;
   dateFilter: string;
@@ -525,10 +531,11 @@ function PipelineView(p: PipelineViewProps) {
           <option value="all">All stages</option>
           {ALL_STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
         </select>
-        <select value={p.countryFilter} onChange={(e) => p.setCountryFilter(e.target.value)} style={selectStyle}>
-          <option value="all">🌐 All countries</option>
-          {p.countries.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <CountryFilterPopover
+          countries={p.countries}
+          selected={p.countryFilter}
+          onChange={p.setCountryFilter}
+        />
         <select value={p.ownerFilter} onChange={(e) => p.setOwnerFilter(e.target.value)} style={selectStyle}>
           <option value="all">👤 All owners</option>
           <option value="unassigned">— Unassigned</option>
@@ -611,7 +618,12 @@ function PipelineView(p: PipelineViewProps) {
                         <div style={{ fontSize: 11, color: "#9CA3AF" }}>{pc?.role ?? ""}</div>
                       </td>
                       <td style={{ padding: "10px 12px", fontSize: 12 }}>{pc?.email ?? "—"}</td>
-                      <td style={{ padding: "10px 12px", fontSize: 12 }}>{c.country ?? "—"}</td>
+                      <td style={{ padding: "10px 12px", fontSize: 12 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 14 }}>{countryFlag(c.country)}</span>
+                          <span>{c.country ?? "—"}</span>
+                        </span>
+                      </td>
                       <td style={{ padding: "10px 12px" }}>
                         <span style={{
                           padding: "3px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600,
@@ -854,7 +866,12 @@ function CompanyTable({
                         </a>
                       ) : "—"}
                     </td>
-                    <td>{c.country ?? "—"}</td>
+                    <td>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>{countryFlag(c.country)}</span>
+                        <span>{c.country ?? "—"}</span>
+                      </span>
+                    </td>
                     <td>
                       <span
                         style={{
