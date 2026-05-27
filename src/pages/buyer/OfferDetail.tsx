@@ -26,20 +26,7 @@ const MONTH_NAMES = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-const COUNTRY_CODE_MAP: Record<string, string> = {
-  argentina: "AR", australia: "AU", brazil: "BR", canada: "CA", chile: "CL",
-  china: "CN", egypt: "EG", france: "FR", germany: "DE", "hong kong": "HK",
-  india: "IN", italy: "IT", japan: "JP", jordan: "JO", mexico: "MX",
-  netherlands: "NL", paraguay: "PY", poland: "PL", "saudi arabia": "SA",
-  "south africa": "ZA", "south korea": "KR", spain: "ES", turkey: "TR",
-  "united arab emirates": "AE", uae: "AE", "united kingdom": "GB", uk: "GB",
-  "united states": "US", "united states of america": "US", usa: "US", us: "US",
-  uruguay: "UY", vietnam: "VN",
-};
-function countryToCode(name: string | null | undefined): string {
-  if (!name) return "";
-  return COUNTRY_CODE_MAP[name.trim().toLowerCase()] ?? "";
-}
+import { countryToCode } from "@/lib/countryCodes";
 function formatShipment(month: number, year: number): string {
   return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
 }
