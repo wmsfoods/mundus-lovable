@@ -74,7 +74,6 @@ export default function AdminShell() {
     { to: "/admin/settings/email", label: t("admin.outreach.nav.email_settings", "Email Settings"), icon: AtSign as unknown as IconCmp },
 
     { to: "/admin/finance/revenue", label: t("admin.shell.nav.revenue"), icon: Coins as unknown as IconCmp, groupLabel: t("admin.shell.nav.finance") },
-    { to: "/admin/finance/commissions", label: t("admin.shell.nav.commissions"), icon: Percent as unknown as IconCmp },
 
     { to: "/admin/settings/team", label: t("admin.shell.nav.team"), icon: Users2 as unknown as IconCmp, groupLabel: t("admin.shell.nav.settings") },
     { to: "/admin/settings/audit", label: t("admin.shell.nav.audit"), icon: History as unknown as IconCmp },
