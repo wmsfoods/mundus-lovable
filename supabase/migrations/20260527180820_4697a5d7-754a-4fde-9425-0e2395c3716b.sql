@@ -1,0 +1,2 @@
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS mundus_managed_supplier boolean NOT NULL DEFAULT false;
+ALTER TABLE public.companies ADD COLUMN IF NOT EXISTS mundus_managed_buyer boolean NOT NULL DEFAULT false;
