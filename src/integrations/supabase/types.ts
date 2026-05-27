@@ -3267,6 +3267,122 @@ export type Database = {
           },
         ]
       }
+      mundus_partner_contacts: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string
+          id: string
+          is_primary: boolean | null
+          job_title: string | null
+          linkedin: string | null
+          mobile: string | null
+          notes: string | null
+          partner_id: string
+          phone: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          full_name: string
+          id?: string
+          is_primary?: boolean | null
+          job_title?: string | null
+          linkedin?: string | null
+          mobile?: string | null
+          notes?: string | null
+          partner_id: string
+          phone?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          full_name?: string
+          id?: string
+          is_primary?: boolean | null
+          job_title?: string | null
+          linkedin?: string | null
+          mobile?: string | null
+          notes?: string | null
+          partner_id?: string
+          phone?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mundus_partner_contacts_partner_id_fkey"
+            columns: ["partner_id"]
+            isOneToOne: false
+            referencedRelation: "mundus_partners"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mundus_partners: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_name: string
+          country: string | null
+          coverage_regions: string[] | null
+          created_at: string | null
+          created_by: string | null
+          id: string
+          logo_url: string | null
+          notes: string | null
+          owner_id: string | null
+          partner_type: string
+          partnership_since: string | null
+          postal_code: string | null
+          services_offered: string[] | null
+          state: string | null
+          status: string | null
+          updated_at: string | null
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_name: string
+          country?: string | null
+          coverage_regions?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          logo_url?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          partner_type: string
+          partnership_since?: string | null
+          postal_code?: string | null
+          services_offered?: string[] | null
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_name?: string
+          country?: string | null
+          coverage_regions?: string[] | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          logo_url?: string | null
+          notes?: string | null
+          owner_id?: string | null
+          partner_type?: string
+          partnership_since?: string | null
+          postal_code?: string | null
+          services_offered?: string[] | null
+          state?: string | null
+          status?: string | null
+          updated_at?: string | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       mw_assignment_rules: {
         Row: {
           created_at: string

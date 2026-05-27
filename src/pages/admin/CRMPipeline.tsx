@@ -7,10 +7,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { DocsTab } from "@/components/admin/docs/DocsTab";
 import { WeeklyLearningLog } from "@/components/admin/learnings/WeeklyLearningLog";
+import { PartnersModule } from "@/components/admin/partners/PartnersModule";
 import { CountryFilterPopover } from "@/components/admin/CountryFilterPopover";
 import { countryFlag } from "@/lib/countryFlags";
 
-type Tab = "pipeline" | "buyers" | "suppliers" | "interviews" | "learnings" | "documents";
+type Tab = "pipeline" | "buyers" | "suppliers" | "partners" | "interviews" | "learnings" | "documents";
 
 type Contact = {
   id: string;
@@ -309,6 +310,7 @@ export default function CRMPipeline() {
     { k: "pipeline", l: t("admin.crm.pipeline.tabs.pipeline") },
     { k: "buyers", l: t("admin.crm.pipeline.tabs.buyers") },
     { k: "suppliers", l: t("admin.crm.pipeline.tabs.suppliers") },
+    { k: "partners", l: "🤝 Partners" },
     { k: "interviews", l: t("admin.crm.pipeline.tabs.interviews") },
     { k: "learnings", l: t("admin.crm.pipeline.tabs.learnings") },
     { k: "documents", l: "Documents" },
@@ -408,6 +410,10 @@ export default function CRMPipeline() {
 
       {tab === "learnings" && (
         <WeeklyLearningLog />
+      )}
+
+      {tab === "partners" && (
+        <PartnersModule />
       )}
 
       {tab === "documents" && (
