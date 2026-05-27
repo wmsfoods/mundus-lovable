@@ -435,6 +435,16 @@ export function CounterOfferModal({
       if (nErr) throw nErr;
 
       toast.success(t(`${perspective}.counter.successToast`));
+      try {
+        const { auditLog } = await import("@/lib/auditLog");
+        auditLog({
+          action: "counter.sent",
+          category: "negotiation",
+          entityType: "negotiation",
+          entityId: negotiation.id as string,
+          details: { round: displayRound, perspective },
+        });
+      } catch { /* never break flow */ }
 
       // In-app notifications (best-effort, non-blocking)
       try {

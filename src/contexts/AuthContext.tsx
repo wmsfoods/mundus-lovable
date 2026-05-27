@@ -50,8 +50,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, newSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       applySession(newSession);
+      if (event === "SIGNED_IN" && newSession?.user) {
+        // Fire-and-forget audit log; deferred so it runs after the auth handler returns
+        setTimeout(() => {
+          import("@/lib/auditLog").then(({ auditLog }) => {
+            auditLog({ action: "auth.login", category: "auth" });
+          }).catch(() => {});
+        }, 0);
+      }
     });
 
     (async () => {

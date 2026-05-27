@@ -380,6 +380,16 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       if (tokErr) console.warn("token insert failed", tokErr.message);
 
       toast.success(t("buyer.bid.successToast"));
+      try {
+        const { auditLog } = await import("@/lib/auditLog");
+        auditLog({
+          action: "bid.placed",
+          category: "negotiation",
+          entityType: "negotiation",
+          entityId: neg.id as string,
+          details: { round: 1 },
+        });
+      } catch { /* never break flow */ }
       clearDraft(offer.id);
 
       // Fire in-app notification to supplier company (best-effort)
