@@ -131,7 +131,7 @@ export default function CRMPipeline() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [learnings, setLearnings] = useState<Learning[]>([]);
   const [prepStatusByCompany, setPrepStatusByCompany] = useState<Record<string, string>>({});
-  const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier" | "prospect">("all");
   const [search, setSearch] = useState("");
   const [view, setView] = useState<"kanban" | "list">("list");
   const [stageFilter, setStageFilter] = useState<string>("all");
