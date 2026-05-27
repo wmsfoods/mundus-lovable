@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { auditLog } from "@/lib/auditLog";
 
 export type CutCategory = "Beef" | "Pork" | "Poultry" | "Ovine";
 
@@ -79,14 +80,17 @@ export function useAdminCuts() {
         .update({ name: input.name, product_number: input.product_number, category: input.category, image_url: input.image_url, bone_spec: input.bone_spec, unit_weight: input.unit_weight })
         .eq("id", input.id);
       if (error) throw error;
+      auditLog({ action: "cut.edited", category: "catalog", entityType: "cut", entityId: input.id, entityLabel: input.name });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "cuts"] }),
   });
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
+      const { data: existing } = await supabase.from("cuts").select("name").eq("id", id).maybeSingle();
       const { error } = await supabase.from("cuts").delete().eq("id", id);
       if (error) throw error;
+      auditLog({ action: "cut.deleted", category: "catalog", entityType: "cut", entityId: id, entityLabel: (existing as any)?.name ?? null, severity: "warn" });
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "cuts"] }),
   });
@@ -108,6 +112,7 @@ export function useAdminCuts() {
         .select("id")
         .single();
       if (error) throw error;
+      auditLog({ action: "cut.created", category: "catalog", entityType: "cut", entityId: data.id as string, entityLabel: input.name });
       return data.id as string;
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: ["admin", "cuts"] }),
