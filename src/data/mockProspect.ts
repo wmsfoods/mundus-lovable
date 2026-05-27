@@ -40,6 +40,7 @@ export type MockPerson = {
   email: string | null;
   emailStatus: "verified" | "unverified" | "unavailable";
   emailRevealed: boolean;
+  secondaryEmail?: string | null;
   phone: string | null;
   phoneAvailable: boolean;
   phoneRevealed: boolean;
@@ -49,9 +50,11 @@ export type MockPerson = {
   country: string;
   countryFlag: string;
   city: string;
+  state?: string | null;
   seniority: "C-Level" | "VP" | "Director" | "Manager" | "Senior" | "Staff";
   department: string;
   linkedin: string;
+  personalLinkedin?: string | null;
   whatsapp: string | null;
   in_crm: boolean;
   productsOfInterest?: string[];
