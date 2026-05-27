@@ -493,7 +493,7 @@ function PipelineView(p: PipelineViewProps) {
       {/* Top bar: type segmented + view toggle */}
       <div className="crm-toolbar" style={{ marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
         <div className="crm-seg">
-          {(["all", "buyer", "supplier", "prospect"] as const).map((r) => (
+          {(["all", "buyer", "supplier"] as const).map((r) => (
             <button
               key={r}
               type="button"
