@@ -184,6 +184,14 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     return () => { cancelled = true; };
   }, [open, email, coDomain]);
 
+  // Buyer Type only applies to Buyer / Both leads. Clear it whenever the lead
+  // type moves away from Buyer (e.g. Supplier, Prospect) so we don't persist
+  // a stale value.
+  useEffect(() => {
+    if (leadType !== "Buyer" && leadType !== "Both") setBuyerType("");
+  }, [leadType]);
+  const buyerTypeDisabled = leadType !== "Buyer" && leadType !== "Both";
+
   const toggleIn = <T extends string>(arr: T[], v: T, set: (a: T[]) => void) =>
     set(arr.includes(v) ? arr.filter((x) => x !== v) : [...arr, v]);
 
@@ -355,7 +363,18 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
               <Field label="Lead Type" required><select className="psp-input" value={leadType} onChange={(e) => setLeadType(e.target.value)}>{LEAD_TYPES.map((d) => <option key={d}>{d}</option>)}</select></Field>
               <Field label="Lead Status"><select className="psp-input" value={leadStatus} onChange={(e) => setLeadStatus(e.target.value)}>{LEAD_STATUSES.map((d) => <option key={d}>{d}</option>)}</select></Field>
               <Field label="Lead Source" auto><input className="psp-input" value="Mundus Prospect Search" disabled /></Field>
-              <Field label="Buyer Type"><select className="psp-input" value={buyerType} onChange={(e) => setBuyerType(e.target.value)}><option value="">—</option>{BUYER_TYPES.map((d) => <option key={d}>{d}</option>)}</select></Field>
+              <Field label="Buyer Type">
+                <select
+                  className="psp-input"
+                  value={buyerType}
+                  disabled={buyerTypeDisabled}
+                  onChange={(e) => setBuyerType(e.target.value)}
+                  title={buyerTypeDisabled ? "Only available for Buyer lead types" : undefined}
+                >
+                  <option value="">{buyerTypeDisabled ? "N/A" : "—"}</option>
+                  {BUYER_TYPES.map((d) => <option key={d}>{d}</option>)}
+                </select>
+              </Field>
               <Field label="Preferred Language"><select className="psp-input" value={language} onChange={(e) => setLanguage(e.target.value)}>{LANGUAGES.map((d) => <option key={d}>{d}</option>)}</select></Field>
             </div>
             <Field label="Products of Interest">
