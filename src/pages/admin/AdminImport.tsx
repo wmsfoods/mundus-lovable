@@ -8,7 +8,7 @@ import { auditLog } from "@/lib/auditLog";
 
 type Destination = "companies" | "prospects";
 type RowStatus = "ready" | "warn" | "invalid" | "created" | "linked" | "skipped" | "error";
-type LeadType = "buyer" | "supplier";
+type LeadType = "buyer" | "supplier" | "c_level";
 
 // ---- Field schemas ----------------------------------------------------------
 
@@ -71,6 +71,7 @@ const AUTO_MAP: Record<string, FieldKey> = {
   "company linkedin": "companyLinkedin", "linkedin company": "companyLinkedin",
   "industry": "industry", "category": "industry",
   "job title": "jobTitle", "title": "jobTitle", "role/job title": "jobTitle", "role": "jobTitle",
+  "position": "jobTitle",
   "role / title": "jobTitle", "role / job title": "jobTitle", "role title": "jobTitle",
   "decision level": "decisionLevel", "seniority": "decisionLevel",
   "lead type": "leadType",
@@ -89,6 +90,15 @@ function extractNameFromEmail(email: string): string {
     .join(" ");
 }
 
+const GENERIC_EMAIL_DOMAINS = new Set([
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com",
+  "icloud.com", "live.com", "mail.com", "yandex.com", "protonmail.com",
+  "nate.com", "naver.com", "qq.com", "163.com", "msn.com", "me.com",
+]);
+function isGenericDomain(domain: string): boolean {
+  return GENERIC_EMAIL_DOMAINS.has(domain.toLowerCase());
+}
+
 interface RawRow { __raw: Record<string, string> }
 
 interface ParsedRow extends RawRow {
@@ -102,11 +112,12 @@ interface ParsedRow extends RawRow {
 
 interface GroupedContact {
   fullName: string;
-  email: string;
+  email: string | null;
   phone?: string;
   mobile?: string;
   roleTitle?: string;
   additionalEmail?: string;
+  linkedin?: string;
 }
 interface GroupedCompany {
   companyName: string;
@@ -118,11 +129,12 @@ interface GroupedCompany {
 }
 interface GroupStats {
   totalRows: number; duplicateEmails: number; mergedCompanies: number;
-  companyOnly: number; totalContacts: number;
+  companyOnly: number; totalContacts: number; noEmailContacts?: number;
 }
 
-function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: GroupStats } {
-  const stats: GroupStats = { totalRows: rows.length, duplicateEmails: 0, mergedCompanies: 0, companyOnly: 0, totalContacts: 0 };
+function groupAndDedup(rows: ParsedRow[], opts?: { allowNoEmail?: boolean }): { groups: GroupedCompany[]; stats: GroupStats } {
+  const allowNoEmail = !!opts?.allowNoEmail;
+  const stats: GroupStats = { totalRows: rows.length, duplicateEmails: 0, mergedCompanies: 0, companyOnly: 0, totalContacts: 0, noEmailContacts: 0 };
   const scoreOf = (r: ParsedRow) => Object.values(r.mapped).filter((v) => v != null && v !== "").length;
 
   // Step 1: dedup by email keeping highest-data row
@@ -159,7 +171,9 @@ function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: Gr
     if (list.length > 1) stats.mergedCompanies++;
     const best = [...list].sort((a, b) => scoreOf(b) - scoreOf(a))[0];
     const m = best.mapped;
-    const contactRows = list.filter((r) => r.mapped.email);
+    const contactRows = list.filter((r) =>
+      r.mapped.email || (allowNoEmail && (r.mapped.fullName || r.mapped.personalLinkedin))
+    );
     const hasContacts = contactRows.length > 0;
 
     const resolve = (r: ParsedRow): GroupedContact => {
@@ -167,11 +181,12 @@ function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: Gr
       if (!name && r.mapped.email) name = extractNameFromEmail(r.mapped.email);
       return {
         fullName: name || "Unknown",
-        email: r.mapped.email!.trim().toLowerCase(),
+        email: r.mapped.email ? r.mapped.email.trim().toLowerCase() : null,
         phone: r.mapped.phone?.trim() || undefined,
         mobile: r.mapped.mobile?.trim() || undefined,
         roleTitle: r.mapped.jobTitle?.trim() || undefined,
         additionalEmail: r.mapped.additionalEmail?.trim() || undefined,
+        linkedin: r.mapped.personalLinkedin?.trim() || undefined,
       };
     };
 
@@ -186,6 +201,8 @@ function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: Gr
       mainContact = resolve(sorted[0]);
       for (let i = 1; i < sorted.length; i++) additional.push(resolve(sorted[i]));
       stats.totalContacts += 1 + additional.length;
+      const noEmailCount = sorted.filter((r) => !r.mapped.email).length;
+      stats.noEmailContacts = (stats.noEmailContacts ?? 0) + noEmailCount;
     } else {
       stats.companyOnly++;
     }
@@ -260,11 +277,19 @@ export default function AdminImport() {
       if (destination === "prospects") {
         const types = parsed.map((p) => p.mapped.leadType?.toLowerCase()).filter(Boolean) as string[];
         if (types.length > 0) {
+          const cLevelCount = types.filter((t) => /c[\s\-_]?level|^c-?suite/.test(t)).length;
           const supplierCount = types.filter((t) => /supplier|vendor/.test(t)).length;
-          if (supplierCount > types.length / 2) setLeadType("supplier");
+          if (cLevelCount > types.length / 2) setLeadType("c_level");
+          else if (supplierCount > types.length / 2) setLeadType("supplier");
           else setLeadType("buyer");
         }
-        const g = groupAndDedup(parsed);
+        // Also auto-detect via job title pattern (CEO, CFO, COO, CTO, Founder)
+        const titles = parsed.map((p) => (p.mapped.jobTitle ?? "").toLowerCase()).filter(Boolean);
+        if (titles.length > 0 && types.length === 0) {
+          const cTitles = titles.filter((t) => /\b(ceo|cfo|coo|cto|cmo|cio|chro|president|founder|owner|managing director)\b/.test(t)).length;
+          if (cTitles > titles.length * 0.6) setLeadType("c_level");
+        }
+        const g = groupAndDedup(parsed, { allowNoEmail: true });
         setGroups(g.groups);
         setGroupStats(g.stats);
       }
@@ -281,7 +306,7 @@ export default function AdminImport() {
     const updated = rows.map((r) => buildRow(r.index, r.__raw, next, requiredKeys));
     setRows(updated);
     if (destination === "prospects") {
-      const g = groupAndDedup(updated);
+      const g = groupAndDedup(updated, { allowNoEmail: true });
       setGroups(g.groups);
       setGroupStats(g.stats);
     }
@@ -303,6 +328,7 @@ export default function AdminImport() {
     if (!rows.length || !destination) return;
     setImporting(true); setProgress(0); setDone(false);
     if (destination === "companies") await importCompanies();
+    else if (leadType === "c_level") await importCLevels();
     else await importGroupedProspects();
     setImporting(false); setDone(true);
   };
@@ -474,6 +500,139 @@ export default function AdminImport() {
     toast.success(`Imported ${contactsCreated} prospects`);
   };
 
+  const importCLevels = async () => {
+    if (!groups.length) return;
+    let companiesCreated = 0, companiesLinked = 0, contactsCreated = 0,
+        contactsNoEmail = 0, contactsUpdated = 0, errors = 0;
+    for (let i = 0; i < groups.length; i++) {
+      const g = groups[i];
+      try {
+        let crmCompanyId: string | null = null;
+        const mainEmail = g.mainContact?.email ?? null;
+        const domain = mainEmail ? mainEmail.split("@")[1] : null;
+
+        // 1. Try by domain (skip generic)
+        if (domain && !isGenericDomain(domain)) {
+          const { data: byDomain } = await supabase
+            .from("crm_companies").select("id").ilike("domain", domain).maybeSingle();
+          if (byDomain) { crmCompanyId = byDomain.id; companiesLinked++; }
+        }
+
+        // 2. Try by company name
+        if (!crmCompanyId && g.companyName) {
+          const { data: byName } = await supabase
+            .from("crm_companies").select("id").ilike("name", g.companyName.trim()).maybeSingle();
+          if (byName) { crmCompanyId = byName.id; companiesLinked++; }
+        }
+
+        // 3. Create new company
+        if (!crmCompanyId) {
+          const websiteUrl = g.website
+            ? (g.website.startsWith("http") ? g.website : `https://${g.website}`)
+            : null;
+          const { data: newCo, error } = await supabase.from("crm_companies").insert({
+            name: g.companyName || "Unknown",
+            domain: domain && !isGenericDomain(domain) ? domain : null,
+            company_type: "prospect",
+            country: g.country && g.country.toLowerCase() !== "unknown" ? g.country : null,
+            city: g.city || null,
+            state: g.state || null,
+            website: websiteUrl,
+            industry: g.industry || null,
+            stage: "cold",
+            source: "csv_import",
+            source_detail: `C-Level import — ${fileName}`,
+            status: "active",
+          } as any).select("id").single();
+          if (error || !newCo) throw error ?? new Error("crm_company_create_failed");
+          crmCompanyId = newCo.id; companiesCreated++;
+        }
+
+        const allContacts = [
+          ...(g.mainContact ? [g.mainContact] : []),
+          ...g.additionalContacts,
+        ];
+
+        for (const c of allContacts) {
+          try {
+            // Dedup by email when present
+            if (c.email) {
+              const { data: existing } = await supabase
+                .from("crm_contacts").select("id").ilike("email", c.email).maybeSingle();
+              if (existing) {
+                await supabase.from("crm_contacts").update({
+                  seniority: "c_level",
+                  contact_type: "decision_maker",
+                  job_title: c.roleTitle || undefined,
+                  linkedin: c.linkedin || undefined,
+                } as any).eq("id", existing.id);
+                contactsUpdated++;
+                continue;
+              }
+            } else if (c.fullName) {
+              const { data: byName } = await supabase
+                .from("crm_contacts").select("id")
+                .eq("company_id", crmCompanyId!)
+                .ilike("full_name", c.fullName.trim())
+                .maybeSingle();
+              if (byName) {
+                await supabase.from("crm_contacts").update({
+                  seniority: "c_level",
+                  contact_type: "decision_maker",
+                  job_title: c.roleTitle || undefined,
+                  linkedin: c.linkedin || undefined,
+                } as any).eq("id", byName.id);
+                contactsUpdated++;
+                continue;
+              }
+            }
+
+            const parts = (c.fullName || "Unknown").split(" ");
+            const { error: ctErr } = await supabase.from("crm_contacts").insert({
+              company_id: crmCompanyId!,
+              full_name: c.fullName || "Unknown",
+              first_name: parts[0] || null,
+              last_name: parts.slice(1).join(" ") || null,
+              email: c.email,
+              phone: c.phone || null,
+              mobile: c.mobile || null,
+              linkedin: c.linkedin || null,
+              job_title: c.roleTitle || null,
+              seniority: "c_level",
+              contact_type: "decision_maker",
+              country: g.country && g.country.toLowerCase() !== "unknown" ? g.country : null,
+              city: g.city || null,
+              lead_status: "new",
+              source: "csv_import",
+              source_detail: `C-Level import — ${fileName}`,
+              status: "active",
+            } as any);
+            if (ctErr) throw ctErr;
+            if (c.email) contactsCreated++;
+            else contactsNoEmail++;
+          } catch (e: any) {
+            errors++;
+            console.error("[C-Level] contact insert:", c.fullName, e?.message);
+          }
+        }
+      } catch (e: any) {
+        errors++;
+        console.error("[C-Level] company:", g.companyName, e?.message);
+      }
+      setProgress(Math.round(((i + 1) / groups.length) * 100));
+    }
+    setResults({
+      companiesCreated, companiesLinked, contactsCreated, contactsNoEmail,
+      contactsUpdated, errors, total: groups.length,
+    });
+    auditLog({
+      action: "import.c_level_imported", category: "system",
+      entityType: "import", entityLabel: fileName,
+      details: { companiesCreated, companiesLinked, contactsCreated, contactsNoEmail, contactsUpdated, file: fileName },
+    });
+    toast.success(`Imported ${companiesCreated + companiesLinked} companies, ${contactsCreated + contactsNoEmail} C-Level contacts`);
+  };
+
   const importGroupedProspects = async () => {
     if (!groups.length) return;
     let companiesCreated = 0, companiesLinked = 0, contactsCreated = 0, additionalCreated = 0, companyOnly = 0, errors = 0;
@@ -612,6 +771,12 @@ export default function AdminImport() {
             background: leadType === "supplier" ? "#ECFDF5" : "white",
             color: leadType === "supplier" ? "#065F46" : "#1c1917",
           }}>🏭 Suppliers</button>
+          <button onClick={() => setLeadType("c_level")} style={{
+            padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
+            border: leadType === "c_level" ? "2px solid #7C3AED" : "1px solid #D1D5DB",
+            background: leadType === "c_level" ? "#F5F3FF" : "white",
+            color: leadType === "c_level" ? "#6D28D9" : "#1c1917",
+          }}>👔 C-Level</button>
         </div>
       )}
 
@@ -735,11 +900,14 @@ export default function AdminImport() {
       {/* Grouped preview for prospects */}
       {destination === "prospects" && groups.length > 0 && groupStats && (
         <>
-          <SectionTitle n={4} label={`Preview — Grouped ${leadType === "supplier" ? "Suppliers" : "Buyers"}`} />
+          <SectionTitle n={4} label={`Preview — ${leadType === "c_level" ? "C-Level Decision Makers" : leadType === "supplier" ? "Grouped Suppliers" : "Grouped Buyers"}`} />
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
             <GroupStat label={`📊 ${groupStats.totalRows} rows parsed`} />
             <GroupStat label={`🏢 ${groups.length} companies`} accent="#1D4ED8" bg="#EFF6FF" />
             <GroupStat label={`👤 ${groupStats.totalContacts} contacts`} accent="#065F46" bg="#ECFDF5" />
+            {leadType === "c_level" && (groupStats.noEmailContacts ?? 0) > 0 && (
+              <GroupStat label={`🔗 ${groupStats.noEmailContacts} LinkedIn-only (no email)`} accent="#6D28D9" bg="#F5F3FF" />
+            )}
             <GroupStat label={`🔗 ${groupStats.mergedCompanies} merged (multi-contact)`} accent="#7C2D12" bg="#FEF3C7" />
             <GroupStat label={`⚠️ ${groupStats.duplicateEmails} duplicate emails removed`} accent="#92400E" bg="#FEF3C7" />
             <GroupStat label={`📭 ${groupStats.companyOnly} company-only`} accent="#57534E" bg="#F5F5F4" />
@@ -768,7 +936,13 @@ export default function AdminImport() {
                     </td>
                     <td style={td()}>{g.country || "—"}</td>
                     <td style={td()}>{g.mainContact?.fullName || "—"}</td>
-                    <td style={{ ...td(), fontSize: 12 }}>{g.mainContact?.email || "—"}</td>
+                    <td style={{ ...td(), fontSize: 12 }}>
+                      {g.mainContact?.email
+                        ? g.mainContact.email
+                        : g.mainContact?.linkedin
+                          ? <span style={{ background: "#F5F3FF", color: "#6D28D9", padding: "2px 8px", borderRadius: 10, fontSize: 11, fontWeight: 600 }}>🔗 LinkedIn only</span>
+                          : "—"}
+                    </td>
                     <td style={{ ...td(), fontSize: 12 }}>{g.mainContact?.phone || "—"}</td>
                     <td style={td()}>
                       {g.additionalContacts.length > 0
@@ -794,18 +968,22 @@ export default function AdminImport() {
               onClick={runImport} disabled={importing || groups.length === 0}
               style={{
                 display: "inline-flex", alignItems: "center", gap: 6,
-                padding: "10px 18px", background: leadType === "supplier" ? "#059669" : "#2563EB",
+                padding: "10px 18px", background: leadType === "c_level" ? "#7C3AED" : leadType === "supplier" ? "#059669" : "#2563EB",
                 color: "white", border: 0, borderRadius: 6, fontWeight: 600,
                 cursor: importing ? "wait" : "pointer", opacity: importing ? 0.7 : 1,
               }}
             >
               {importing ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
-              {importing ? `Importing… ${progress}%` : `Import ${groups.length} ${leadType === "supplier" ? "supplier" : "buyer"} companies`}
+              {importing
+                ? `Importing… ${progress}%`
+                : leadType === "c_level"
+                  ? `Import ${groups.length} companies · ${groupStats?.totalContacts ?? 0} C-Level contacts`
+                  : `Import ${groups.length} ${leadType === "supplier" ? "supplier" : "buyer"} companies`}
             </button>
           </div>
           {importing && (
             <div style={{ height: 6, background: "#e0e7ff", borderRadius: 3, marginBottom: 12, overflow: "hidden" }}>
-              <div style={{ height: "100%", width: `${progress}%`, background: leadType === "supplier" ? "#059669" : "#2563EB", transition: "width .25s" }} />
+              <div style={{ height: "100%", width: `${progress}%`, background: leadType === "c_level" ? "#7C3AED" : leadType === "supplier" ? "#059669" : "#2563EB", transition: "width .25s" }} />
             </div>
           )}
         </>
@@ -817,6 +995,16 @@ export default function AdminImport() {
           <h3 style={{ margin: "0 0 8px", fontSize: 15, color: "#065f46" }}>Import complete</h3>
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: "#1c1917", lineHeight: 1.7 }}>
             {destination === "prospects" ? (
+              leadType === "c_level" ? (
+                <>
+                  <li>👔 <strong>C-Level Import</strong></li>
+                  <li>✅ <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
+                  <li>👤 <strong>{results.contactsCreated ?? 0}</strong> contacts with email</li>
+                  <li>🔗 <strong>{results.contactsNoEmail ?? 0}</strong> LinkedIn-only contacts (no email)</li>
+                  <li>⚡ <strong>{results.contactsUpdated ?? 0}</strong> existing contacts upgraded to C-Level</li>
+                  <li>❌ <strong>{results.errors ?? 0}</strong> errors</li>
+                </>
+              ) : (
               <>
                 <li>✅ <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
                 <li>👤 <strong>{results.contactsCreated ?? 0}</strong> main contacts · 👥 <strong>{results.additionalCreated ?? 0}</strong> additional</li>
@@ -824,6 +1012,7 @@ export default function AdminImport() {
                 <li>⚠️ <strong>{results.duplicateEmails ?? 0}</strong> duplicate emails removed</li>
                 <li>❌ <strong>{results.errors ?? 0}</strong> errors</li>
               </>
+              )
             ) : (
               <>
                 <li>✅ <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
@@ -865,6 +1054,8 @@ function buildRow(index: number, raw: any, map: Record<string, FieldKey | "ignor
       if (!mapped[req]) {
         if (req === "fullName" && mapped.email) {
           status = "warn"; note = "Name will be auto-extracted from email";
+        } else if (req === "email" && (mapped.fullName || mapped.personalLinkedin)) {
+          status = "warn"; note = "No email — will import with LinkedIn / name only";
         } else {
           status = "invalid"; note = `Missing ${req}`;
           break;

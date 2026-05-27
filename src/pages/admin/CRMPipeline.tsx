@@ -138,6 +138,7 @@ export default function CRMPipeline() {
   const [countryFilter, setCountryFilter] = useState<string[]>([]);
   const [ownerFilter, setOwnerFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [seniorityFilter, setSeniorityFilter] = useState<string>("all");
   const [sortBy, setSortBy] = useState<string>("newest");
   const [page, setPage] = useState(1);
   const [owners, setOwners] = useState<Array<{ id: string; name: string }>>([]);
@@ -154,7 +155,7 @@ export default function CRMPipeline() {
       const [{ data: c }, { data: i }, { data: l }] = await Promise.all([
         supabase
           .from("crm_companies")
-          .select("id,name,company_type,country,market_region,website,stage,notes,owner_id,industry,logo_url,created_at,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary)")
+          .select("id,name,company_type,country,market_region,website,stage,notes,owner_id,industry,logo_url,created_at,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary,seniority)")
           .order("created_at", { ascending: false })
           .limit(500),
         supabase.from("crm_interviews").select("*").order("interview_date", { ascending: false }).limit(500),
@@ -196,7 +197,7 @@ export default function CRMPipeline() {
       .sort((a, b) => b.count - a.count);
   }, [companies]);
 
-  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, sortBy, view]);
+  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy, view]);
 
   const filteredCompanies = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -216,6 +217,10 @@ export default function CRMPipeline() {
       if (ownerFilter === "unassigned" && c.owner_id) return false;
       if (ownerFilter !== "all" && ownerFilter !== "unassigned" && c.owner_id !== ownerFilter) return false;
       if (since > 0 && c.created_at && new Date(c.created_at).getTime() < since) return false;
+      if (seniorityFilter !== "all") {
+        const contacts = (c as any).crm_contacts || [];
+        if (!contacts.some((x: any) => x?.seniority === seniorityFilter)) return false;
+      }
       if (q) {
         const pc = primaryContact(c);
         const hay = `${c.name} ${c.country ?? ""} ${pc?.full_name ?? ""} ${pc?.email ?? ""}`.toLowerCase();
@@ -235,7 +240,7 @@ export default function CRMPipeline() {
       }
     };
     return out.sort(cmp);
-  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, sortBy]);
+  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy]);
 
   const activeFilterCount = [
     search.trim() !== "",
@@ -244,11 +249,12 @@ export default function CRMPipeline() {
     ownerFilter !== "all",
     dateFilter !== "all",
     typeFilter !== "all",
+    seniorityFilter !== "all",
   ].filter(Boolean).length;
 
   function clearAllFilters() {
     setSearch(""); setStageFilter("all"); setCountryFilter([]);
-    setOwnerFilter("all"); setDateFilter("all"); setTypeFilter("all");
+    setOwnerFilter("all"); setDateFilter("all"); setTypeFilter("all"); setSeniorityFilter("all");
   }
 
   const grouped = useMemo(() => {
@@ -368,6 +374,8 @@ export default function CRMPipeline() {
           setOwnerFilter={setOwnerFilter}
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
+          seniorityFilter={seniorityFilter}
+          setSeniorityFilter={setSeniorityFilter}
           sortBy={sortBy}
           setSortBy={setSortBy}
           activeFilterCount={activeFilterCount}
@@ -452,6 +460,8 @@ type PipelineViewProps = {
   setOwnerFilter: (v: string) => void;
   dateFilter: string;
   setDateFilter: (v: string) => void;
+  seniorityFilter: string;
+  setSeniorityFilter: (v: string) => void;
   sortBy: string;
   setSortBy: (v: string) => void;
   activeFilterCount: number;
@@ -548,6 +558,15 @@ function PipelineView(p: PipelineViewProps) {
           <option value="30d">Last 30 days</option>
           <option value="90d">Last 90 days</option>
           <option value="year">This year</option>
+        </select>
+        <select value={p.seniorityFilter} onChange={(e) => p.setSeniorityFilter(e.target.value)} style={selectStyle}>
+          <option value="all">All seniority</option>
+          <option value="c_level">👔 C-Level</option>
+          <option value="vp">VP</option>
+          <option value="director">Director</option>
+          <option value="manager">Manager</option>
+          <option value="senior">Senior</option>
+          <option value="staff">Staff</option>
         </select>
         <select value={p.sortBy} onChange={(e) => p.setSortBy(e.target.value)} style={selectStyle}>
           <option value="newest">↓ Newest first</option>

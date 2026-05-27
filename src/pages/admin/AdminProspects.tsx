@@ -148,7 +148,7 @@ export default function AdminProspects() {
       let q = supabase
         .from("crm_companies")
         .select(
-          "id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin)",
+          "id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin,seniority)",
           { count: "exact" },
         )
         .order("created_at", { ascending: false });
@@ -184,6 +184,7 @@ export default function AdminProspects() {
       }
       const mapped: Prospect[] = (data || []).map((c: any) => {
         const primary = c.crm_contacts?.[0] ?? null;
+        const hasCLevel = (c.crm_contacts || []).some((x: any) => x?.seniority === "c_level");
         const uiStage = DB_TO_UI_STAGE[c.stage] ?? "new";
         const r = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
         return {
@@ -196,6 +197,7 @@ export default function AdminProspects() {
           contactName: primary?.full_name || "—",
           contactEmail: primary?.email || "—",
           contactPhone: primary?.phone || undefined,
+          hasCLevel,
           notes: "",
           stage: uiStage,
           owner: "FN",
@@ -467,6 +469,12 @@ export default function AdminProspects() {
                           return (
                             <span className="crm-cell-sub">
                               {p.country}{contactName ? ` · ${contactName}` : ""}
+                              {p.hasCLevel && (
+                                <span title="C-Level decision maker"
+                                  style={{ marginLeft: 6, background: "#F5F3FF", color: "#6D28D9",
+                                    padding: "1px 6px", borderRadius: 8, fontSize: 10, fontWeight: 700,
+                                    border: "1px solid #DDD6FE" }}>👔 C-Level</span>
+                              )}
                             </span>
                           );
                         })()}
