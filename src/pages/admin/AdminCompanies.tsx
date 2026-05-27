@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from "lucide-react";
 import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
+import { CreateBuyerProfileModal } from "@/components/admin/CreateBuyerProfileModal";
 import {
   useAdminCompanies,
   companyType,
@@ -43,6 +44,7 @@ export default function AdminCompanies() {
   const navigate = useNavigate();
   const { rows, loading, error } = useAdminCompanies();
   const [createSupplierOpen, setCreateSupplierOpen] = useState(false);
+  const [createBuyerOpen, setCreateBuyerOpen] = useState(false);
 
   const [search, setSearch] = useState("");
   const [typeF, setTypeF] = useState<CompanyTypeFilter>("all");
@@ -97,6 +99,14 @@ export default function AdminCompanies() {
             onClick={() => setCreateSupplierOpen(true)}
           >
             <Plus size={14} style={{ marginRight: 4, display: "inline" }} /> Create Supplier Profile
+          </button>
+          <button
+            type="button"
+            className="crm-btn-primary"
+            style={{ background: "#2563EB", color: "white", borderRadius: 6, padding: "8px 12px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}
+            onClick={() => setCreateBuyerOpen(true)}
+          >
+            <Plus size={14} style={{ marginRight: 4, display: "inline" }} /> Create Buyer Profile
           </button>
           <button type="button" className="crm-btn-primary" onClick={() => navigate("/admin/companies/new")}>
             <Plus size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.new")}
@@ -185,6 +195,11 @@ export default function AdminCompanies() {
       <CreateSupplierProfileModal
         open={createSupplierOpen}
         onClose={() => setCreateSupplierOpen(false)}
+        onCreated={(id) => navigate(`/admin/companies/${id}`)}
+      />
+      <CreateBuyerProfileModal
+        open={createBuyerOpen}
+        onClose={() => setCreateBuyerOpen(false)}
         onCreated={(id) => navigate(`/admin/companies/${id}`)}
       />
     </div>
