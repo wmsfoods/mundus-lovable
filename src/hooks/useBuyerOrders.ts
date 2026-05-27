@@ -127,7 +127,7 @@ export function useBuyerOrders() {
     };
     void load();
     const channel = supabase
-      .channel('buyer-orders-list')
+      .channel(`buyer-orders-${company.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
         if (reloadTimer) clearTimeout(reloadTimer);
         reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 400);
