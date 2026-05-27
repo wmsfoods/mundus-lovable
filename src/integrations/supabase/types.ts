@@ -6448,6 +6448,10 @@ export type Database = {
         Args: { p_negotiation_id: string }
         Returns: boolean
       }
+      user_can_create_negotiation: {
+        Args: { p_buyer_company_id: string; p_created_by_user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       auction_bid_status: "submitted" | "winning" | "lost" | "withdrawn"
