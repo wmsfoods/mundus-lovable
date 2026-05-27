@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-react";
+import { Save, X, CheckCircle2, Info, Trash2, Upload, Camera, Loader2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
 import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
@@ -37,6 +38,7 @@ const EMPTY: CompanyPatch = {
   zip_code: "",
   phone: "",
   website: "",
+  logo_url: null,
   is_buyer: false,
   is_supplier: false,
   is_verified: false,
@@ -85,6 +87,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         zip_code: data.zip_code ?? "",
         phone: data.phone,
         website: data.website ?? "",
+        logo_url: data.logo_url ?? null,
         is_buyer: !!data.is_buyer,
         is_supplier: !!data.is_supplier,
         is_verified: !!data.is_verified,
