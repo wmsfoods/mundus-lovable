@@ -900,11 +900,14 @@ export default function AdminImport() {
       {/* Grouped preview for prospects */}
       {destination === "prospects" && groups.length > 0 && groupStats && (
         <>
-          <SectionTitle n={4} label={`Preview — Grouped ${leadType === "supplier" ? "Suppliers" : "Buyers"}`} />
+          <SectionTitle n={4} label={`Preview — ${leadType === "c_level" ? "C-Level Decision Makers" : leadType === "supplier" ? "Grouped Suppliers" : "Grouped Buyers"}`} />
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
             <GroupStat label={`📊 ${groupStats.totalRows} rows parsed`} />
             <GroupStat label={`🏢 ${groups.length} companies`} accent="#1D4ED8" bg="#EFF6FF" />
             <GroupStat label={`👤 ${groupStats.totalContacts} contacts`} accent="#065F46" bg="#ECFDF5" />
+            {leadType === "c_level" && (groupStats.noEmailContacts ?? 0) > 0 && (
+              <GroupStat label={`🔗 ${groupStats.noEmailContacts} LinkedIn-only (no email)`} accent="#6D28D9" bg="#F5F3FF" />
+            )}
             <GroupStat label={`🔗 ${groupStats.mergedCompanies} merged (multi-contact)`} accent="#7C2D12" bg="#FEF3C7" />
             <GroupStat label={`⚠️ ${groupStats.duplicateEmails} duplicate emails removed`} accent="#92400E" bg="#FEF3C7" />
             <GroupStat label={`📭 ${groupStats.companyOnly} company-only`} accent="#57534E" bg="#F5F5F4" />
