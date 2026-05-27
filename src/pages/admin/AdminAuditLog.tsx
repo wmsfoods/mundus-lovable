@@ -59,14 +59,6 @@ function summarizeDetails(d: any): string {
   return parts.length ? parts.join(" · ") : "—";
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
-  return (
-    <div className="adm-panel" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 4 }}>
-      <span style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4 }}>{label}</span>
-      <span style={{ fontSize: 18, fontWeight: 700, color: "#8B2252" }}>{value}</span>
-    </div>
-  );
-}
 
 export default function AdminAuditLog() {
   const [rows, setRows] = useState<Row[]>([]);
@@ -144,76 +136,74 @@ export default function AdminAuditLog() {
   }
 
   return (
-    <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
-      {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-        <div style={{
-          width: 40, height: 40, borderRadius: 10,
-          background: "linear-gradient(135deg, #9B2251, #6C0B28)",
-          display: "grid", placeItems: "center", color: "white",
-        }}>
-          <History size={20} />
+    <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+      {/* Compact header + stats row */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <div style={{
+            width: 32, height: 32, borderRadius: 8,
+            background: "linear-gradient(135deg, #9B2251, #6C0B28)",
+            display: "grid", placeItems: "center", color: "white",
+          }}>
+            <History size={16} />
+          </div>
+          <div>
+            <h1 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#1f2937", lineHeight: 1.2 }}>Audit Log</h1>
+            <p style={{ margin: 0, fontSize: 11, color: "#6b7280", lineHeight: 1.2 }}>Complete activity trail across the platform</p>
+          </div>
         </div>
-        <div>
-          <h1 style={{ margin: 0, fontSize: 22, fontWeight: 700, color: "#1f2937" }}>Audit Log</h1>
-          <p style={{ margin: 0, fontSize: 13, color: "#6b7280" }}>
-            Complete activity trail across the platform
-          </p>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <MiniStat label="Events" value={stats.total.toLocaleString()} />
+          <MiniStat label="Actors" value={stats.actors} />
+          <MiniStat label="Warnings" value={stats.warn} warn />
+          <MiniStat label="Critical" value={stats.crit} crit />
         </div>
       </div>
 
-      {/* Stats */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12 }}>
-        <StatCard label="Events" value={stats.total.toLocaleString()} />
-        <StatCard label="Active actors" value={stats.actors} />
-        <StatCard label="Warnings" value={stats.warn} />
-        <StatCard label="Critical" value={stats.crit} />
-      </div>
-
-      {/* Filters */}
-      <div className="adm-panel" style={{ padding: 12, display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <div style={{ position: "relative", flex: "1 1 220px", minWidth: 200 }}>
-          <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
-          <input
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search user, company, entity, action…"
-            style={{ width: "100%", padding: "8px 10px 8px 30px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13 }}
-          />
-        </div>
-        <select value={category} onChange={(e) => setCategory(e.target.value)} style={selStyle}>
-          <option value="all">All categories</option>
-          {["offer","request","negotiation","order","company","user","catalog","system","auth"].map(c => (
-            <option key={c} value={c}>{c}</option>
-          ))}
-        </select>
-        <select value={actorRole} onChange={(e) => setActorRole(e.target.value)} style={selStyle}>
-          <option value="all">All actors</option>
-          <option value="supplier">Supplier</option>
-          <option value="buyer">Buyer</option>
-          <option value="admin">Admin</option>
-          <option value="system">System</option>
-        </select>
-        <select value={severity} onChange={(e) => setSeverity(e.target.value)} style={selStyle}>
-          <option value="all">All severity</option>
-          <option value="info">Info</option>
-          <option value="warn">Warning</option>
-          <option value="critical">Critical</option>
-        </select>
-        <select value={range} onChange={(e) => setRange(e.target.value as any)} style={selStyle}>
-          <option value="today">Today</option>
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="all">All time</option>
-        </select>
-      </div>
-
-      {/* Table */}
+      {/* Table panel with embedded compact filters */}
       <div className="adm-panel" style={{ padding: 0, overflow: "hidden" }}>
+        {/* Inline filters toolbar */}
+        <div style={{ padding: "8px 10px", display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", borderBottom: "1px solid #e5e7eb", background: "#fafafa" }}>
+          <div style={{ position: "relative", flex: "1 1 180px", minWidth: 160 }}>
+            <Search size={12} style={{ position: "absolute", left: 8, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
+            <input
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search…"
+              style={{ width: "100%", padding: "5px 8px 5px 24px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 12, lineHeight: 1.3 }}
+            />
+          </div>
+          <select value={category} onChange={(e) => setCategory(e.target.value)} style={selCompact}>
+            <option value="all">All categories</option>
+            {["offer","request","negotiation","order","company","user","catalog","system","auth"].map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select value={actorRole} onChange={(e) => setActorRole(e.target.value)} style={selCompact}>
+            <option value="all">All actors</option>
+            <option value="supplier">Supplier</option>
+            <option value="buyer">Buyer</option>
+            <option value="admin">Admin</option>
+            <option value="system">System</option>
+          </select>
+          <select value={severity} onChange={(e) => setSeverity(e.target.value)} style={selCompact}>
+            <option value="all">All severity</option>
+            <option value="info">Info</option>
+            <option value="warn">Warning</option>
+            <option value="critical">Critical</option>
+          </select>
+          <select value={range} onChange={(e) => setRange(e.target.value as any)} style={selCompact}>
+            <option value="today">Today</option>
+            <option value="7d">7d</option>
+            <option value="30d">30d</option>
+            <option value="all">All</option>
+          </select>
+        </div>
+
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
             <thead>
-              <tr style={{ background: "#f9fafb", borderBottom: "1px solid #e5e7eb" }}>
+              <tr style={{ background: "#f3f4f6", borderBottom: "1px solid #e5e7eb" }}>
                 <th style={thStyle}>Timestamp</th>
                 <th style={thStyle}>Actor</th>
                 <th style={thStyle}>Action</th>
@@ -224,10 +214,10 @@ export default function AdminAuditLog() {
             </thead>
             <tbody>
               {loading && (
-                <tr><td colSpan={6} style={{ padding: 24, textAlign: "center", color: "#6b7280" }}>Loading…</td></tr>
+                <tr><td colSpan={6} style={{ padding: 16, textAlign: "center", color: "#6b7280", fontSize: 12 }}>Loading…</td></tr>
               )}
               {!loading && paged.length === 0 && (
-                <tr><td colSpan={6} style={{ padding: 24, textAlign: "center", color: "#6b7280" }}>No events match these filters.</td></tr>
+                <tr><td colSpan={6} style={{ padding: 16, textAlign: "center", color: "#6b7280", fontSize: 12 }}>No events match these filters.</td></tr>
               )}
               {!loading && paged.map(r => {
                 const colors = CATEGORY_COLORS[r.category] || CATEGORY_COLORS.system;
@@ -244,15 +234,15 @@ export default function AdminAuditLog() {
                         }}
                         onClick={() => toggleExpand(r.id)}>
                       <td style={tdStyle}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                          {isExp ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-                          <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 12 }}>{fmtDate(r.created_at)}</span>
+                        <div style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                          {isExp ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
+                          <span style={{ fontFamily: "ui-monospace, SFMono-Regular, monospace", fontSize: 11 }}>{fmtDate(r.created_at)}</span>
                         </div>
                       </td>
                       <td style={tdStyle}>
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontWeight: 500 }}>{r.user_email || "—"}</span>
-                          <span style={{ fontSize: 11, color: "#6b7280" }}>
+                          <span style={{ fontWeight: 500, fontSize: 12 }}>{r.user_email || "—"}</span>
+                          <span style={{ fontSize: 10, color: "#6b7280" }}>
                             {r.company_name || "—"} · <span style={{ textTransform: "capitalize" }}>{r.actor_role || "system"}</span>
                           </span>
                         </div>
@@ -260,37 +250,37 @@ export default function AdminAuditLog() {
                       <td style={tdStyle}>
                         <span style={{
                           display: "inline-block",
-                          padding: "3px 8px",
-                          borderRadius: 6,
+                          padding: "2px 6px",
+                          borderRadius: 4,
                           background: colors.bg,
                           color: colors.fg,
-                          fontSize: 12,
+                          fontSize: 11,
                           fontWeight: 600,
                           fontFamily: "ui-monospace, SFMono-Regular, monospace",
                         }}>{r.action}</span>
                       </td>
                       <td style={tdStyle}>
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span style={{ fontWeight: 500 }}>{r.entity_label || "—"}</span>
+                          <span style={{ fontWeight: 500, fontSize: 12 }}>{r.entity_label || "—"}</span>
                           {r.entity_type && (
-                            <span style={{ fontSize: 11, color: "#6b7280" }}>{r.entity_type}</span>
+                            <span style={{ fontSize: 10, color: "#6b7280" }}>{r.entity_type}</span>
                           )}
                         </div>
                       </td>
                       <td style={tdStyle}>{summarizeDetails(r.details)}</td>
                       <td style={tdStyle}>
                         <span style={{
-                          fontSize: 11, fontWeight: 600, textTransform: "uppercase",
+                          fontSize: 10, fontWeight: 600, textTransform: "uppercase",
                           color: r.severity === "critical" ? "#DC2626" : r.severity === "warn" ? "#B45309" : "#6b7280",
                         }}>{r.severity}</span>
                       </td>
                     </tr>
                     {isExp && (
                       <tr key={r.id + "-exp"} style={{ background: "#fafafa", borderBottom: "1px solid #f3f4f6" }}>
-                        <td colSpan={6} style={{ padding: "8px 16px 14px" }}>
+                        <td colSpan={6} style={{ padding: "6px 12px 10px" }}>
                           <pre style={{
-                            margin: 0, padding: 10, background: "#1f2937", color: "#e5e7eb",
-                            borderRadius: 6, fontSize: 11, overflow: "auto",
+                            margin: 0, padding: 8, background: "#1f2937", color: "#e5e7eb",
+                            borderRadius: 4, fontSize: 10, overflow: "auto",
                             fontFamily: "ui-monospace, SFMono-Regular, monospace",
                           }}>{JSON.stringify(r.details, null, 2)}</pre>
                         </td>
@@ -305,14 +295,14 @@ export default function AdminAuditLog() {
 
         {/* Pagination */}
         {filtered.length > PAGE && (
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", borderTop: "1px solid #e5e7eb", fontSize: 12, color: "#6b7280" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 10px", borderTop: "1px solid #e5e7eb", fontSize: 11, color: "#6b7280" }}>
             <span>
-              Showing {page * PAGE + 1}–{Math.min((page + 1) * PAGE, filtered.length)} of {filtered.length.toLocaleString()}
+              {page * PAGE + 1}–{Math.min((page + 1) * PAGE, filtered.length)} of {filtered.length.toLocaleString()}
             </span>
-            <div style={{ display: "flex", gap: 6 }}>
-              <button disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))} style={pgBtn(page === 0)}>← Prev</button>
-              <span style={{ alignSelf: "center" }}>Page {page + 1} / {totalPages}</span>
-              <button disabled={page + 1 >= totalPages} onClick={() => setPage(p => p + 1)} style={pgBtn(page + 1 >= totalPages)}>Next →</button>
+            <div style={{ display: "flex", gap: 4 }}>
+              <button disabled={page === 0} onClick={() => setPage(p => Math.max(0, p - 1))} style={pgBtn(page === 0)}>←</button>
+              <span style={{ alignSelf: "center" }}>{page + 1}/{totalPages}</span>
+              <button disabled={page + 1 >= totalPages} onClick={() => setPage(p => p + 1)} style={pgBtn(page + 1 >= totalPages)}>→</button>
             </div>
           </div>
         )}
@@ -321,18 +311,28 @@ export default function AdminAuditLog() {
   );
 }
 
+function MiniStat({ label, value, warn, crit }: { label: string; value: string | number; warn?: boolean; crit?: boolean }) {
+  const color = crit ? "#DC2626" : warn ? "#B45309" : "#8B2252";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 8px", borderRadius: 6, background: "#f3f4f6", fontSize: 11 }}>
+      <span style={{ color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.3, fontSize: 10 }}>{label}</span>
+      <span style={{ fontWeight: 700, color, fontSize: 12 }}>{value}</span>
+    </div>
+  );
+}
+
 const thStyle: React.CSSProperties = {
-  padding: "10px 12px", textAlign: "left", fontSize: 11, fontWeight: 600,
+  padding: "6px 10px", textAlign: "left", fontSize: 10, fontWeight: 600,
   color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4, whiteSpace: "nowrap",
 };
 const tdStyle: React.CSSProperties = {
-  padding: "10px 12px", verticalAlign: "top", color: "#1f2937",
+  padding: "6px 10px", verticalAlign: "top", color: "#1f2937", fontSize: 12,
 };
-const selStyle: React.CSSProperties = {
-  padding: "8px 10px", borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 13, background: "white",
+const selCompact: React.CSSProperties = {
+  padding: "4px 6px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 11, background: "white", color: "#374151",
 };
 const pgBtn = (disabled: boolean): React.CSSProperties => ({
-  padding: "4px 10px", borderRadius: 6, border: "1px solid #e5e7eb",
-  background: disabled ? "#f9fafb" : "white", color: disabled ? "#9ca3af" : "#1f2937",
-  cursor: disabled ? "not-allowed" : "pointer", fontSize: 12,
+  padding: "3px 8px", borderRadius: 5, border: "1px solid #d1d5db",
+  background: disabled ? "#f3f4f6" : "white", color: disabled ? "#9ca3af" : "#374151",
+  cursor: disabled ? "not-allowed" : "pointer", fontSize: 11,
 });
