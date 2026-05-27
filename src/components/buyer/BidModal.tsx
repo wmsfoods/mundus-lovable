@@ -549,13 +549,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
 
             {/* Value input */}
             <Input
-              type="number"
-              step={bulkMode === "percent" ? "0.1" : "0.01"}
-              min="0"
-              max={bulkMode === "percent" ? "30" : undefined}
+              type="text"
               inputMode="decimal"
               value={bulkValue}
-              onChange={(e) => setBulkValue(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value.replace(/,/g, ".");
+                if (v === "" || /^\d*\.?\d*$/.test(v)) setBulkValue(v);
+              }}
               placeholder={bulkMode === "percent" ? "e.g. 3%" : `e.g. 0.10 $/${wLbl}`}
               className="h-9 w-32 text-right tabular-nums text-xs"
             />
