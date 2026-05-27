@@ -197,7 +197,7 @@ export default function CRMPipeline() {
       .sort((a, b) => b.count - a.count);
   }, [companies]);
 
-  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, sortBy, view]);
+  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy, view]);
 
   const filteredCompanies = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -217,6 +217,10 @@ export default function CRMPipeline() {
       if (ownerFilter === "unassigned" && c.owner_id) return false;
       if (ownerFilter !== "all" && ownerFilter !== "unassigned" && c.owner_id !== ownerFilter) return false;
       if (since > 0 && c.created_at && new Date(c.created_at).getTime() < since) return false;
+      if (seniorityFilter !== "all") {
+        const contacts = (c as any).crm_contacts || [];
+        if (!contacts.some((x: any) => x?.seniority === seniorityFilter)) return false;
+      }
       if (q) {
         const pc = primaryContact(c);
         const hay = `${c.name} ${c.country ?? ""} ${pc?.full_name ?? ""} ${pc?.email ?? ""}`.toLowerCase();
@@ -236,7 +240,7 @@ export default function CRMPipeline() {
       }
     };
     return out.sort(cmp);
-  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, sortBy]);
+  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy]);
 
   const activeFilterCount = [
     search.trim() !== "",
@@ -245,11 +249,12 @@ export default function CRMPipeline() {
     ownerFilter !== "all",
     dateFilter !== "all",
     typeFilter !== "all",
+    seniorityFilter !== "all",
   ].filter(Boolean).length;
 
   function clearAllFilters() {
     setSearch(""); setStageFilter("all"); setCountryFilter([]);
-    setOwnerFilter("all"); setDateFilter("all"); setTypeFilter("all");
+    setOwnerFilter("all"); setDateFilter("all"); setTypeFilter("all"); setSeniorityFilter("all");
   }
 
   const grouped = useMemo(() => {
