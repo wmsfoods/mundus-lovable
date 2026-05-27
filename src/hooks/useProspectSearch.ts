@@ -73,13 +73,23 @@ export function mapCompany(o: any): MockCompany {
 
 export function mapPerson(p: any): MockPerson {
   const org = p.organization ?? {};
-  const country = p.country ?? org.country ?? "";
+  const country = p.country ?? p.present_raw_address_country ?? org.country ?? "";
+  const city = p.city ?? p.present_raw_address_city ?? "";
+  const state = p.state ?? p.present_raw_address_state ?? null;
   const first = p.first_name ?? "";
   const last = p.last_name ?? p.last_name_obfuscated ?? "";
   const hasEmail = p.has_email === true || !!p.email;
   const emailStatus: MockPerson["emailStatus"] = (p.email_status as MockPerson["emailStatus"])
     ?? (p.email ? "verified" : hasEmail ? "unverified" : "unavailable");
   const hasPhone = !!(p.sanitized_phone || p.phone_numbers?.length || p.has_direct_phone === "Yes" || p.has_direct_phone === true);
+  // Apollo returns personal_emails alongside the work email. Pick the first that
+  // differs from the primary email as our "secondary" / personal email.
+  const personalEmails: string[] = Array.isArray(p.personal_emails) ? p.personal_emails : [];
+  const contactEmails: string[] = Array.isArray(p.contact_emails)
+    ? p.contact_emails.map((c: any) => (typeof c === "string" ? c : c?.email)).filter(Boolean)
+    : [];
+  const allEmails = Array.from(new Set([...personalEmails, ...contactEmails])).filter((e) => e && e !== p.email);
+  const secondaryEmail = allEmails[0] ?? null;
   return {
     id: p.id ?? p._id ?? String(Math.random()),
     firstName: first,
@@ -93,6 +103,7 @@ export function mapPerson(p: any): MockPerson {
     email: p.email ?? null,
     emailStatus,
     emailRevealed: !!p.email,
+    secondaryEmail,
     phone: null,
     phoneAvailable: hasPhone,
     phoneRevealed: false,
@@ -101,10 +112,15 @@ export function mapPerson(p: any): MockPerson {
     mobileRevealed: false,
     country: country || "—",
     countryFlag: flagFor(country),
-    city: p.city ?? "—",
+    city: city || "—",
+    state,
     seniority: (p.seniority as MockPerson["seniority"]) ?? "Staff",
     department: (p.departments && p.departments[0]) ?? "—",
-    linkedin: p.linkedin_url ?? "",
+    // A person's `linkedin_url` from Apollo is their PERSONAL profile.
+    // Surface it as `personalLinkedin`; keep `linkedin` (work) empty so users
+    // can paste a corporate profile if it exists.
+    linkedin: "",
+    personalLinkedin: p.linkedin_url ?? null,
     whatsapp: null,
     in_crm: false,
   };
