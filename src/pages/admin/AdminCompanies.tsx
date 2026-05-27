@@ -334,6 +334,13 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
           <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
             {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
           </span>
+          {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
+            <span className="adm-chip" style={{ background: "#FDF2F8", color: "#8B2252", borderColor: "#F9D0E0", fontSize: 10 }}>
+              🏢 Mundus Managed
+            </span>
+          )}
+          <span style={{ display: "none" }}>
+          </span>
           {row.is_verified && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16a34a", fontSize: 11, fontWeight: 600 }}>
               <CheckCircle2 size={12} /> {t("common.yes")}
