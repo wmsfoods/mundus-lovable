@@ -6,6 +6,7 @@ import {
   MessageIcon, FlagSVG,
 } from "@/components/icons";
 import { Plus, Trash2, Check } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import {
   useCompanyProfile,
   type CompanyAbout, type CompanyPlant, type CompanyCertification,
@@ -481,7 +482,27 @@ function DocumentsSection({ data, profile, canEdit, locale }: { data: CompanyDoc
                   {d.file_size ? ` · ${fmtSize(d.file_size)}` : ""} · {t("supplier.company.documents.lastUpdated", "Last updated")} {fmtDate(d.updated_at, locale)}
                 </span>
               </div>
-              {d.file_url && <a className="cp-link" href={d.file_url} target="_blank" rel="noreferrer">{t("supplier.company.documents.view", "View")}</a>}
+              {(d.file_path || d.file_url) && (
+                <button
+                  type="button"
+                  className="cp-link"
+                  onClick={async () => {
+                    let path = d.file_path || "";
+                    if (!path && d.file_url) {
+                      const m = d.file_url.match(/company-files\/(.+)$/);
+                      path = m ? m[1] : "";
+                    }
+                    if (!path) return;
+                    const { data: sg, error } = await supabase.storage
+                      .from("company-files")
+                      .createSignedUrl(path, 300);
+                    if (error || !sg?.signedUrl) { toast.error("Unable to open document"); return; }
+                    window.open(sg.signedUrl, "_blank", "noopener,noreferrer");
+                  }}
+                >
+                  {t("supplier.company.documents.view", "View")}
+                </button>
+              )}
               {canEdit && <button type="button" className="cp-icon-btn" style={{ marginLeft: 8 }} onClick={() => remove(d)} aria-label="Delete"><Trash2 size={14} /></button>}
             </div>
           ))}
