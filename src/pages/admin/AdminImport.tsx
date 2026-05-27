@@ -936,7 +936,13 @@ export default function AdminImport() {
                     </td>
                     <td style={td()}>{g.country || "—"}</td>
                     <td style={td()}>{g.mainContact?.fullName || "—"}</td>
-                    <td style={{ ...td(), fontSize: 12 }}>{g.mainContact?.email || "—"}</td>
+                    <td style={{ ...td(), fontSize: 12 }}>
+                      {g.mainContact?.email
+                        ? g.mainContact.email
+                        : g.mainContact?.linkedin
+                          ? <span style={{ background: "#F5F3FF", color: "#6D28D9", padding: "2px 8px", borderRadius: 10, fontSize: 11, fontWeight: 600 }}>🔗 LinkedIn only</span>
+                          : "—"}
+                    </td>
                     <td style={{ ...td(), fontSize: 12 }}>{g.mainContact?.phone || "—"}</td>
                     <td style={td()}>
                       {g.additionalContacts.length > 0
