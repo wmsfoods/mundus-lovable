@@ -8,6 +8,7 @@ import { auditLog } from "@/lib/auditLog";
 
 type Destination = "companies" | "prospects";
 type RowStatus = "ready" | "warn" | "invalid" | "created" | "linked" | "skipped" | "error";
+type LeadType = "buyer" | "supplier";
 
 // ---- Field schemas ----------------------------------------------------------
 
@@ -19,7 +20,7 @@ type FieldKey =
   | "businessType" | "profileType"
   // prospect-only
   | "jobTitle" | "personalLinkedin" | "companyLinkedin" | "industry"
-  | "additionalEmail" | "decisionLevel" | "leadType";
+  | "additionalEmail" | "decisionLevel" | "leadType" | "supplierType";
 
 const COMPANY_FIELDS: { key: FieldKey; label: string; required?: boolean }[] = [
   { key: "fullName",    label: "Full Name",     required: true },
@@ -49,6 +50,7 @@ const PROSPECT_FIELDS: { key: FieldKey; label: string; required?: boolean }[] = 
   { key: "additionalEmail", label: "Additional Email" },
   { key: "decisionLevel",   label: "Decision Level" },
   { key: "leadType",        label: "Lead Type (buyer/supplier)" },
+  { key: "supplierType",    label: "Supplier Type / Category" },
 ];
 
 const AUTO_MAP: Record<string, FieldKey> = {
@@ -67,12 +69,14 @@ const AUTO_MAP: Record<string, FieldKey> = {
   "website": "website", "url": "website", "site": "website",
   "linkedin": "personalLinkedin", "personal linkedin": "personalLinkedin",
   "company linkedin": "companyLinkedin", "linkedin company": "companyLinkedin",
-  "industry": "industry",
+  "industry": "industry", "category": "industry",
   "job title": "jobTitle", "title": "jobTitle", "role/job title": "jobTitle", "role": "jobTitle",
+  "role / title": "jobTitle", "role / job title": "jobTitle", "role title": "jobTitle",
   "decision level": "decisionLevel", "seniority": "decisionLevel",
   "lead type": "leadType",
   "business type": "businessType", "business": "businessType", "type": "businessType",
   "profile type": "profileType", "profile": "profileType",
+  "supplier type": "supplierType",
 };
 
 function normHeader(h: string) { return String(h ?? "").trim().toLowerCase(); }
@@ -94,15 +98,129 @@ interface ParsedRow extends RawRow {
   mapped: Partial<Record<FieldKey, string>>;
 }
 
+// ---- Grouping types --------------------------------------------------------
+
+interface GroupedContact {
+  fullName: string;
+  email: string;
+  phone?: string;
+  mobile?: string;
+  roleTitle?: string;
+  additionalEmail?: string;
+}
+interface GroupedCompany {
+  companyName: string;
+  country?: string; city?: string; state?: string; street?: string; zipCode?: string;
+  website?: string; industry?: string; supplierType?: string;
+  mainContact: GroupedContact | null;
+  additionalContacts: GroupedContact[];
+  companyOnly: boolean;
+}
+interface GroupStats {
+  totalRows: number; duplicateEmails: number; mergedCompanies: number;
+  companyOnly: number; totalContacts: number;
+}
+
+function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: GroupStats } {
+  const stats: GroupStats = { totalRows: rows.length, duplicateEmails: 0, mergedCompanies: 0, companyOnly: 0, totalContacts: 0 };
+  const scoreOf = (r: ParsedRow) => Object.values(r.mapped).filter((v) => v != null && v !== "").length;
+
+  // Step 1: dedup by email keeping highest-data row
+  const seen = new Map<string, ParsedRow>();
+  const deduped: ParsedRow[] = [];
+  for (const r of rows) {
+    const em = r.mapped.email?.trim().toLowerCase();
+    if (!em) { deduped.push(r); continue; }
+    const existing = seen.get(em);
+    if (existing) {
+      stats.duplicateEmails++;
+      if (scoreOf(r) > scoreOf(existing)) {
+        seen.set(em, r);
+        const idx = deduped.findIndex((x) => x.mapped.email?.trim().toLowerCase() === em);
+        if (idx >= 0) deduped[idx] = r;
+      }
+      continue;
+    }
+    seen.set(em, r);
+    deduped.push(r);
+  }
+
+  // Step 2: group by company
+  const byCo = new Map<string, ParsedRow[]>();
+  for (const r of deduped) {
+    const key = (r.mapped.company ?? "").trim().toLowerCase();
+    if (!key) continue;
+    if (!byCo.has(key)) byCo.set(key, []);
+    byCo.get(key)!.push(r);
+  }
+
+  const groups: GroupedCompany[] = [];
+  for (const [, list] of byCo) {
+    if (list.length > 1) stats.mergedCompanies++;
+    const best = [...list].sort((a, b) => scoreOf(b) - scoreOf(a))[0];
+    const m = best.mapped;
+    const contactRows = list.filter((r) => r.mapped.email);
+    const hasContacts = contactRows.length > 0;
+
+    const resolve = (r: ParsedRow): GroupedContact => {
+      let name = (r.mapped.fullName ?? "").trim();
+      if (!name && r.mapped.email) name = extractNameFromEmail(r.mapped.email);
+      return {
+        fullName: name || "Unknown",
+        email: r.mapped.email!.trim().toLowerCase(),
+        phone: r.mapped.phone?.trim() || undefined,
+        mobile: r.mapped.mobile?.trim() || undefined,
+        roleTitle: r.mapped.jobTitle?.trim() || undefined,
+        additionalEmail: r.mapped.additionalEmail?.trim() || undefined,
+      };
+    };
+
+    let mainContact: GroupedContact | null = null;
+    const additional: GroupedContact[] = [];
+    if (hasContacts) {
+      const sorted = [...contactRows].sort((a, b) => {
+        const an = a.mapped.fullName ? 1 : 0, bn = b.mapped.fullName ? 1 : 0;
+        if (an !== bn) return bn - an;
+        return scoreOf(b) - scoreOf(a);
+      });
+      mainContact = resolve(sorted[0]);
+      for (let i = 1; i < sorted.length; i++) additional.push(resolve(sorted[i]));
+      stats.totalContacts += 1 + additional.length;
+    } else {
+      stats.companyOnly++;
+    }
+
+    groups.push({
+      companyName: (m.company ?? "").trim(),
+      country: m.country?.trim() || undefined,
+      city: m.city?.trim() || undefined,
+      state: m.state?.trim() || undefined,
+      street: m.address?.trim() || undefined,
+      zipCode: m.postalCode?.trim() || undefined,
+      website: m.website?.trim() || undefined,
+      industry: m.industry?.trim() || undefined,
+      supplierType: m.supplierType?.trim() || undefined,
+      mainContact,
+      additionalContacts: additional,
+      companyOnly: !hasContacts,
+    });
+  }
+
+  return { groups, stats };
+}
+
 // ---- Component --------------------------------------------------------------
 
 export default function AdminImport() {
   const fileRef = useRef<HTMLInputElement>(null);
   const [destination, setDestination] = useState<Destination | null>(null);
+  const [leadType, setLeadType] = useState<LeadType>("buyer");
   const [fileName, setFileName] = useState<string>("");
   const [headers, setHeaders] = useState<string[]>([]);
   const [mapping, setMapping] = useState<Record<string, FieldKey | "ignore">>({});
   const [rows, setRows] = useState<ParsedRow[]>([]);
+  const [groups, setGroups] = useState<GroupedCompany[]>([]);
+  const [groupStats, setGroupStats] = useState<GroupStats | null>(null);
   const [importing, setImporting] = useState(false);
   const [progress, setProgress] = useState(0);
   const [done, setDone] = useState(false);
@@ -113,6 +231,7 @@ export default function AdminImport() {
 
   const reset = () => {
     setFileName(""); setHeaders([]); setMapping({}); setRows([]);
+    setGroups([]); setGroupStats(null);
     setProgress(0); setDone(false); setResults({});
   };
 
@@ -136,6 +255,20 @@ export default function AdminImport() {
       setMapping(map);
       const parsed: ParsedRow[] = raw.map((r, i) => buildRow(i + 1, r, map, requiredKeys));
       setRows(parsed);
+
+      // Auto-detect lead type from data (if "Lead Type" column present)
+      if (destination === "prospects") {
+        const types = parsed.map((p) => p.mapped.leadType?.toLowerCase()).filter(Boolean) as string[];
+        if (types.length > 0) {
+          const supplierCount = types.filter((t) => /supplier|vendor/.test(t)).length;
+          if (supplierCount > types.length / 2) setLeadType("supplier");
+          else setLeadType("buyer");
+        }
+        const g = groupAndDedup(parsed);
+        setGroups(g.groups);
+        setGroupStats(g.stats);
+      }
+
       toast.success(`Parsed ${parsed.length} rows from ${file.name}`);
     } catch (e: any) {
       toast.error("Failed to parse file: " + (e?.message ?? "unknown"));
@@ -145,7 +278,13 @@ export default function AdminImport() {
   const onMappingChange = (header: string, value: FieldKey | "ignore") => {
     const next = { ...mapping, [header]: value };
     setMapping(next);
-    setRows((prev) => prev.map((r) => buildRow(r.index, r.__raw, next, requiredKeys)));
+    const updated = rows.map((r) => buildRow(r.index, r.__raw, next, requiredKeys));
+    setRows(updated);
+    if (destination === "prospects") {
+      const g = groupAndDedup(updated);
+      setGroups(g.groups);
+      setGroupStats(g.stats);
+    }
   };
 
   const stats = useMemo(() => {
@@ -164,7 +303,7 @@ export default function AdminImport() {
     if (!rows.length || !destination) return;
     setImporting(true); setProgress(0); setDone(false);
     if (destination === "companies") await importCompanies();
-    else await importProspects();
+    else await importGroupedProspects();
     setImporting(false); setDone(true);
   };
 
@@ -232,7 +371,8 @@ export default function AdminImport() {
     toast.success("Companies import complete");
   };
 
-  const importProspects = async () => {
+  // Legacy per-row importer kept for reference (unused).
+  const _importProspectsLegacy = async () => {
     const updated = [...rows];
     const companyCache = new Map<string, string>();
     let coCreated = 0, coLinked = 0, contactsCreated = 0, contactsSkipped = 0, namesExtracted = 0, errors = 0, skipped = 0;
@@ -334,6 +474,98 @@ export default function AdminImport() {
     toast.success(`Imported ${contactsCreated} prospects`);
   };
 
+  const importGroupedProspects = async () => {
+    if (!groups.length) return;
+    let companiesCreated = 0, companiesLinked = 0, contactsCreated = 0, additionalCreated = 0, companyOnly = 0, errors = 0;
+    for (let i = 0; i < groups.length; i++) {
+      const g = groups[i];
+      try {
+        // Dedup company by name
+        const { data: existingCo } = await supabase
+          .from("crm_companies").select("id").ilike("name", g.companyName).maybeSingle();
+        let crmCompanyId: string;
+        if (existingCo) {
+          crmCompanyId = existingCo.id; companiesLinked++;
+        } else {
+          const domain = g.mainContact?.email?.split("@")[1]
+            || g.website?.replace(/^https?:\/\//, "").replace(/\/.*$/, "")
+            || null;
+          const websiteUrl = g.website
+            ? (g.website.startsWith("http") ? g.website : `https://${g.website}`)
+            : null;
+          const { data: newCo, error } = await supabase.from("crm_companies").insert({
+            name: g.companyName,
+            domain,
+            company_type: leadType,
+            country: g.country && g.country.toLowerCase() !== "unknown" ? g.country : null,
+            city: g.city || null,
+            state: g.state || null,
+            address: g.street || null,
+            postal_code: g.zipCode || null,
+            industry: g.industry || null,
+            website: websiteUrl,
+            company_size: g.supplierType || null,
+            stage: "cold",
+            source: "csv_import",
+            source_detail: fileName,
+            status: "active",
+          } as any).select("id").single();
+          if (error || !newCo) throw error ?? new Error("crm_company_create_failed");
+          crmCompanyId = newCo.id; companiesCreated++;
+        }
+
+        const insertContact = async (c: GroupedContact) => {
+          const { data: existing } = await supabase
+            .from("crm_contacts").select("id").ilike("email", c.email).maybeSingle();
+          if (existing) return false;
+          const parts = c.fullName.split(" ");
+          const { error } = await supabase.from("crm_contacts").insert({
+            company_id: crmCompanyId,
+            full_name: c.fullName,
+            first_name: parts[0] || null,
+            last_name: parts.slice(1).join(" ") || null,
+            email: c.email,
+            secondary_email: c.additionalEmail || null,
+            phone: c.phone || null,
+            mobile: c.mobile || null,
+            job_title: c.roleTitle || null,
+            country: g.country && g.country.toLowerCase() !== "unknown" ? g.country : null,
+            city: g.city || null,
+            lead_status: "new",
+            source: "csv_import",
+            source_detail: fileName,
+            status: "active",
+          } as any);
+          if (error) throw error;
+          return true;
+        };
+
+        if (g.mainContact) {
+          if (await insertContact(g.mainContact)) contactsCreated++;
+        }
+        for (const ac of g.additionalContacts) {
+          try { if (await insertContact(ac)) additionalCreated++; } catch { /* skip */ }
+        }
+        if (g.companyOnly) companyOnly++;
+      } catch (e: any) {
+        errors++;
+        console.error("Import error:", g.companyName, e?.message);
+      }
+      setProgress(Math.round(((i + 1) / groups.length) * 100));
+    }
+    setResults({
+      companiesCreated, companiesLinked, contactsCreated, additionalCreated,
+      companyOnly, duplicateEmails: groupStats?.duplicateEmails ?? 0, errors,
+      total: groups.length,
+    });
+    auditLog({
+      action: "import.prospects_imported", category: "system",
+      entityType: "import", entityLabel: fileName,
+      details: { leadType, companiesCreated, contactsCreated, additionalCreated, file: fileName },
+    });
+    toast.success(`Imported ${companiesCreated} ${leadType} companies, ${contactsCreated + additionalCreated} contacts`);
+  };
+
   const bump = (i: number, arr: ParsedRow[]) => {
     setProgress(Math.round(((i + 1) / arr.length) * 100));
     setRows([...arr]);
@@ -365,6 +597,23 @@ export default function AdminImport() {
           desc="CRM leads — creates prospect companies + contacts. For leads to be enriched and nurtured."
         />
       </div>
+
+      {destination === "prospects" && (
+        <div style={{ display: "flex", gap: 12, marginTop: -8, marginBottom: 24 }}>
+          <button onClick={() => setLeadType("buyer")} style={{
+            padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
+            border: leadType === "buyer" ? "2px solid #2563EB" : "1px solid #D1D5DB",
+            background: leadType === "buyer" ? "#EFF6FF" : "white",
+            color: leadType === "buyer" ? "#1D4ED8" : "#1c1917",
+          }}>🛒 Buyers</button>
+          <button onClick={() => setLeadType("supplier")} style={{
+            padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer",
+            border: leadType === "supplier" ? "2px solid #059669" : "1px solid #D1D5DB",
+            background: leadType === "supplier" ? "#ECFDF5" : "white",
+            color: leadType === "supplier" ? "#065F46" : "#1c1917",
+          }}>🏭 Suppliers</button>
+        </div>
+      )}
 
       {/* Step 2: upload */}
       {destination && (
@@ -420,7 +669,7 @@ export default function AdminImport() {
       )}
 
       {/* Step 4: preview + stats */}
-      {rows.length > 0 && (
+      {rows.length > 0 && destination !== "prospects" && (
         <>
           <SectionTitle n={4} label="Preview" />
           <div style={{ display: "flex", gap: 14, flexWrap: "wrap", fontSize: 13, color: "#5e5e58", marginBottom: 10 }}>
@@ -483,6 +732,85 @@ export default function AdminImport() {
         </>
       )}
 
+      {/* Grouped preview for prospects */}
+      {destination === "prospects" && groups.length > 0 && groupStats && (
+        <>
+          <SectionTitle n={4} label={`Preview — Grouped ${leadType === "supplier" ? "Suppliers" : "Buyers"}`} />
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 14 }}>
+            <GroupStat label={`📊 ${groupStats.totalRows} rows parsed`} />
+            <GroupStat label={`🏢 ${groups.length} companies`} accent="#1D4ED8" bg="#EFF6FF" />
+            <GroupStat label={`👤 ${groupStats.totalContacts} contacts`} accent="#065F46" bg="#ECFDF5" />
+            <GroupStat label={`🔗 ${groupStats.mergedCompanies} merged (multi-contact)`} accent="#7C2D12" bg="#FEF3C7" />
+            <GroupStat label={`⚠️ ${groupStats.duplicateEmails} duplicate emails removed`} accent="#92400E" bg="#FEF3C7" />
+            <GroupStat label={`📭 ${groupStats.companyOnly} company-only`} accent="#57534E" bg="#F5F5F4" />
+          </div>
+          <div className="import-preview-table" style={{ border: "1px solid rgba(0,0,0,0.08)", borderRadius: 8, overflow: "auto", background: "white", marginBottom: 16, maxHeight: 420 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead style={{ background: "#faf3f3", borderBottom: "1px solid rgba(0,0,0,0.08)", position: "sticky", top: 0 }}>
+                <tr>
+                  <th style={th()}>#</th>
+                  <th style={th()}>Company</th>
+                  <th style={th()}>Country</th>
+                  <th style={th()}>Main Contact</th>
+                  <th style={th()}>Email</th>
+                  <th style={th()}>Phone</th>
+                  <th style={th()}>Additional</th>
+                  <th style={th()}>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {groups.slice(0, 100).map((g, i) => (
+                  <tr key={i} style={{ borderBottom: "1px solid rgba(0,0,0,0.05)" }}>
+                    <td style={td()}>{i + 1}</td>
+                    <td style={td()}>
+                      <strong>{g.companyName}</strong>
+                      {g.website && <div style={{ fontSize: 11, color: "#9CA3AF" }}>{g.website}</div>}
+                    </td>
+                    <td style={td()}>{g.country || "—"}</td>
+                    <td style={td()}>{g.mainContact?.fullName || "—"}</td>
+                    <td style={{ ...td(), fontSize: 12 }}>{g.mainContact?.email || "—"}</td>
+                    <td style={{ ...td(), fontSize: 12 }}>{g.mainContact?.phone || "—"}</td>
+                    <td style={td()}>
+                      {g.additionalContacts.length > 0
+                        ? <span style={{ background: "#DBEAFE", color: "#1D4ED8", padding: "2px 8px", borderRadius: 10, fontSize: 11, fontWeight: 600 }}>
+                            +{g.additionalContacts.length} contact{g.additionalContacts.length > 1 ? "s" : ""}
+                          </span>
+                        : "—"}
+                    </td>
+                    <td style={td()}>
+                      {g.companyOnly
+                        ? <span style={{ background: "#FEF3C7", color: "#92400E", padding: "2px 8px", borderRadius: 10, fontSize: 11 }}>Company only</span>
+                        : <span style={{ background: "#D1FAE5", color: "#065F46", padding: "2px 8px", borderRadius: 10, fontSize: 11 }}>✓ Ready</span>}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <SectionTitle n={5} label="Run import" />
+          <div style={{ display: "flex", gap: 10, alignItems: "center", marginBottom: 12, flexWrap: "wrap" }}>
+            <button
+              onClick={runImport} disabled={importing || groups.length === 0}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 6,
+                padding: "10px 18px", background: leadType === "supplier" ? "#059669" : "#2563EB",
+                color: "white", border: 0, borderRadius: 6, fontWeight: 600,
+                cursor: importing ? "wait" : "pointer", opacity: importing ? 0.7 : 1,
+              }}
+            >
+              {importing ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              {importing ? `Importing… ${progress}%` : `Import ${groups.length} ${leadType === "supplier" ? "supplier" : "buyer"} companies`}
+            </button>
+          </div>
+          {importing && (
+            <div style={{ height: 6, background: "#e0e7ff", borderRadius: 3, marginBottom: 12, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${progress}%`, background: leadType === "supplier" ? "#059669" : "#2563EB", transition: "width .25s" }} />
+            </div>
+          )}
+        </>
+      )}
+
       {/* Results */}
       {done && (
         <div style={{ border: "1px solid #d1fae5", background: "#ecfdf5", borderRadius: 10, padding: 16, marginTop: 8 }}>
@@ -490,11 +818,11 @@ export default function AdminImport() {
           <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: "#1c1917", lineHeight: 1.7 }}>
             {destination === "prospects" ? (
               <>
-                <li>✅ <strong>{results.contactsCreated ?? 0}</strong> contacts created</li>
-                <li>🏢 <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
-                <li>⚠️ <strong>{results.contactsSkipped ?? 0}</strong> duplicate emails skipped</li>
-                <li>📊 <strong>{results.namesExtracted ?? 0}</strong> names auto-extracted from email</li>
-                <li>❌ <strong>{results.errors ?? 0}</strong> errors · <strong>{results.skipped ?? 0}</strong> invalid skipped</li>
+                <li>✅ <strong>{results.companiesCreated ?? 0}</strong> companies created · 🔗 <strong>{results.companiesLinked ?? 0}</strong> linked</li>
+                <li>👤 <strong>{results.contactsCreated ?? 0}</strong> main contacts · 👥 <strong>{results.additionalCreated ?? 0}</strong> additional</li>
+                <li>📭 <strong>{results.companyOnly ?? 0}</strong> company-only (no email)</li>
+                <li>⚠️ <strong>{results.duplicateEmails ?? 0}</strong> duplicate emails removed</li>
+                <li>❌ <strong>{results.errors ?? 0}</strong> errors</li>
               </>
             ) : (
               <>
@@ -592,6 +920,14 @@ function DestCard({ active, onClick, accent, bgActive, emoji, title, desc }: {
 
 function ArrowRightThin() {
   return <span style={{ color: "#9ca3af", fontSize: 14 }}>→</span>;
+}
+
+function GroupStat({ label, accent = "#1c1917", bg = "#F5F5F4" }: { label: string; accent?: string; bg?: string }) {
+  return (
+    <div style={{ padding: "8px 14px", borderRadius: 10, background: bg, color: accent, fontSize: 12, fontWeight: 600 }}>
+      {label}
+    </div>
+  );
 }
 
 function StatusPill({ status }: { status: RowStatus }) {
