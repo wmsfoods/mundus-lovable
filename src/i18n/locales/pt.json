@@ -3178,5 +3178,13 @@
     "title": "Notificações",
     "markAllRead": "Marcar todas como lidas",
     "empty": "Nenhuma notificação ainda"
+  },
+  "whatsapp": {
+    "share_offer": "Olá! Confira essa oferta na Mundus Trade: {{url}}",
+    "share_request": "Olá! Confira essa demanda na Mundus Trade: {{url}}",
+    "contact_supplier": "Olá! Tenho interesse na sua oferta na Mundus Trade. Vamos conversar.",
+    "contact_buyer": "Olá! Vi sua demanda na Mundus Trade. Gostaria de fazer uma oferta.",
+    "send_message": "Enviar via WhatsApp",
+    "share": "Compartilhar via WhatsApp"
   }
 }
