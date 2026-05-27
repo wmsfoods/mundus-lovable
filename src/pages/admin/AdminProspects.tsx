@@ -53,7 +53,7 @@ export default function AdminProspects() {
           initials: (c.name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "?",
           country: c.country || "—",
           role,
-          source: (c.source as any) || "manual",
+          source: (c.source as any) || "wms_import",
           contactName: primary?.full_name || "—",
           contactEmail: primary?.email || "—",
           contactPhone: primary?.phone || undefined,

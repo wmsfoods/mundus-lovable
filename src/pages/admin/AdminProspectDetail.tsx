@@ -52,7 +52,7 @@ function mapDbCompanyToProspect(c: any): Prospect {
     initials,
     country: c.country || "—",
     role,
-    source: (c.source as ProspectSource) || "manual",
+    source: (c.source as ProspectSource) || "wms_import",
     contactName: primary?.full_name || "—",
     contactEmail: primary?.email || "—",
     contactPhone: primary?.phone || undefined,
@@ -88,7 +88,7 @@ const ICONS: Record<ProspectActivity["type"], LucideIcon> = {
 
 const DECISION_LEVELS: DecisionLevel[] = ["c_level","vp","director","manager","specialist","other"];
 const LEAD_TYPES: LeadType[] = ["buyer","supplier","buyer_supplier"];
-const SOURCES: ProspectSource[] = ["linkedin","trade_show","referral","web_scrape","apollo","manual","inbound"];
+const SOURCES: ProspectSource[] = ["linkedin","trade_show","referral","web_scrape","apollo","manual","inbound","wms_import"];
 
 const ROLE_OPTIONS: Record<LeadType, string[]> = {
   buyer: ["CEO", "Owner/Founder", "Sales Director", "International Trader", "Logistics"],
