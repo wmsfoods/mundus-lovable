@@ -74,6 +74,38 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadLogo = async (file: File) => {
+    if (!file) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setUploadingLogo(true);
+    try {
+      const ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      const folder = id ?? "new";
+      const path = `companies/${folder}/logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, {
+        cacheControl: "3600", upsert: true, contentType: file.type,
+      });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      setField("logo_url", url);
+      if (!isNew && id) {
+        const res = await save({ logo_url: url });
+        if (!res.ok) throw new Error(res.error);
+        toast.success("Logo updated");
+      } else {
+        toast.success("Logo ready — save the company to persist");
+      }
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e?.message ?? "unknown"));
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   useEffect(() => {
     if (data) {
