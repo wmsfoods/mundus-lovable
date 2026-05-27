@@ -7,12 +7,24 @@ import {
   addProspect, OWNERS,
   type ProspectRole, type ProspectSource,
 } from "@/hooks/useAdminProspects";
+import { ScanCardButton } from "./ScanCardButton";
 
 const COUNTRIES = [
   "BR","AR","UY","PY","CL","PE","CO","MX","EC","US","CA",
   "CN","HK","JP","KR","VN","PH","MY","TH","ID","SG","IN",
   "SA","AE","EG","MA","ZA","GH","CI","DE","FR","ES","IT","UK","NL","PL",
 ];
+
+const COUNTRY_NAME_TO_CODE: Record<string, string> = {
+  brazil: "BR", argentina: "AR", uruguay: "UY", paraguay: "PY", chile: "CL", peru: "PE",
+  colombia: "CO", mexico: "MX", ecuador: "EC", "united states": "US", usa: "US", "u.s.a.": "US",
+  "united states of america": "US", canada: "CA", china: "CN", "hong kong": "HK", japan: "JP",
+  "south korea": "KR", korea: "KR", vietnam: "VN", philippines: "PH", malaysia: "MY",
+  thailand: "TH", indonesia: "ID", singapore: "SG", india: "IN", "saudi arabia": "SA",
+  "united arab emirates": "AE", uae: "AE", egypt: "EG", morocco: "MA", "south africa": "ZA",
+  ghana: "GH", "ivory coast": "CI", germany: "DE", france: "FR", spain: "ES", italy: "IT",
+  "united kingdom": "UK", uk: "UK", "great britain": "UK", netherlands: "NL", poland: "PL",
+};
 
 const SOURCES: ProspectSource[] = ["linkedin", "trade_show", "referral", "web_scrape", "apollo", "manual", "inbound"];
 
@@ -65,6 +77,30 @@ export function AddProspectModal({ open, onOpenChange }: Props) {
           <DialogTitle>{t("admin.crm.add.title")}</DialogTitle>
         </DialogHeader>
         <form className="crm-form" onSubmit={onSubmit}>
+          <ScanCardButton
+            onScanned={(d) => {
+              setForm((f) => {
+                const next = { ...f };
+                if (d.company) next.companyName = d.company;
+                if (d.fullName) next.contactName = d.fullName;
+                if (d.email) next.contactEmail = d.email;
+                if (d.phone || d.mobile) next.contactPhone = d.phone || d.mobile || "";
+                if (d.country) {
+                  const code = COUNTRY_NAME_TO_CODE[d.country.toLowerCase().trim()];
+                  if (code) next.country = code;
+                }
+                const noteBits: string[] = [];
+                if (d.jobTitle) noteBits.push(`Job title: ${d.jobTitle}`);
+                if (d.linkedin) noteBits.push(`LinkedIn: ${d.linkedin}`);
+                if (d.website) noteBits.push(`Website: ${d.website}`);
+                if (d.address) noteBits.push(`Address: ${d.address}`);
+                if (noteBits.length) {
+                  next.notes = [f.notes, noteBits.join(" · ")].filter(Boolean).join("\n");
+                }
+                return next;
+              });
+            }}
+          />
           <label className="crm-field">
             <span>{t("admin.crm.add.companyName")} *</span>
             <input value={form.companyName} onChange={(e) => update("companyName", e.target.value)} required />
