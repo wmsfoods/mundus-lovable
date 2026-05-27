@@ -236,7 +236,7 @@ export default function AdminOffers() {
                 </thead>
                 <tbody>
                   {filtered.map(r => (
-                    <tr key={r.id}>
+                    <tr key={r.id} onClick={() => navigate(`/admin/offers/${r.id}`)} style={{ cursor: "pointer" }}>
                       <td><strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.created_at)}</strong></td>
                       <td>{r.supplier_name}</td>
                       <td>{r.product_name ?? "—"}</td>
@@ -257,9 +257,8 @@ export default function AdminOffers() {
                       <td className="text-right" style={{ color: "#6b7280" }}>{r.distribution_count}</td>
                       <td className="text-right">
                         <div style={{ display: "inline-flex", gap: 6 }}>
-                          <button type="button" onClick={() => navigate(`/admin/companies/${r.supplier_id}`)} style={btnGhost}>View</button>
-                          <button type="button" onClick={() => navigate(`/supplier/offers/${r.id}`)} style={btnGhost}>View as Supplier</button>
-                          <button type="button" onClick={() => setDistribute(r)} style={btnPrimary}>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); navigate(`/admin/companies/${r.supplier_id}`); }} style={btnGhost}>Supplier</button>
+                          <button type="button" onClick={(e) => { e.stopPropagation(); setDistribute(r); }} style={btnPrimary}>
                             <Send size={12} style={{ marginRight: 4, display: "inline" }} /> Send
                           </button>
                         </div>
