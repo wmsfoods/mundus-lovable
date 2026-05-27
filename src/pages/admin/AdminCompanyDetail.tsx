@@ -276,17 +276,17 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         </div>
       )}
 
-      {/* Profile tab — original form */}
+      {/* Profile tab — prospect-style panels */}
       {(activeTab === "profile" || isNew) && (
-      <div className="adm-form-grid">
+      <div className="adm-profile-scope" style={{ display: "flex", flexDirection: "column", gap: 12 }}>
         {/* Section 1: Business role */}
-        <Section title={t("admin.companies.sections.role")} full>
-          <div style={{ display: "flex", gap: 24, flexWrap: "wrap", padding: "4px 0 12px" }}>
+        <Section title={t("admin.companies.sections.role")}>
+          <div style={{ display: "flex", gap: 24, flexWrap: "wrap", padding: "4px 0 8px", gridColumn: "1 / -1" }}>
             <Check label={t("admin.companies.fields.buyer")} checked={!!form.is_buyer} onChange={(v) => setField("is_buyer", v)} />
             <Check label={t("admin.companies.fields.supplier")} checked={!!form.is_supplier} onChange={(v) => setField("is_supplier", v)} />
           </div>
           {bothChecked && (
-            <div style={{ display: "flex", gap: 8, padding: 12, borderRadius: 8, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#1E40AF" }}>
+            <div style={{ display: "flex", gap: 8, padding: 12, borderRadius: 8, background: "#EFF6FF", border: "1px solid #BFDBFE", fontSize: 12, color: "#1E40AF", gridColumn: "1 / -1" }}>
               <Info size={16} style={{ flexShrink: 0, marginTop: 1 }} />
               <span>{t("admin.companies.fields.bothRoleNote")}</span>
             </div>
@@ -294,7 +294,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         </Section>
 
         {/* Section 2: Protein + Cuts */}
-        <Section title={t("admin.companies.sections.protein")} full>
+        <Section title={t("admin.companies.sections.protein")}>
           <div style={{ gridColumn: "1 / -1" }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#374151", marginBottom: 8 }}>
               {t("admin.companies.fields.proteinProfile")}
@@ -464,11 +464,13 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   );
 }
 
-function Section({ title, children, full }: { title: string; children: React.ReactNode; full?: boolean }) {
+function Section({ title, children }: { title: string; children: React.ReactNode; full?: boolean }) {
   return (
-    <div className="adm-panel" style={{ padding: 16, gridColumn: full ? "1 / -1" : undefined }}>
-      <h3 style={{ margin: "0 0 12px", fontSize: 13, textTransform: "uppercase", letterSpacing: 0.5, color: "#6b7280" }}>{title}</h3>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 12 }}>
+    <div className="adm-panel">
+      <div className="adm-panel-h">
+        <span className="adm-panel-title">{title}</span>
+      </div>
+      <div className="psp-grid-2">
         {children}
       </div>
     </div>
@@ -477,17 +479,17 @@ function Section({ title, children, full }: { title: string; children: React.Rea
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <label className="adm-field">
-      <span>{label}</span>
+    <div className="psp-scrm-field">
+      <label className="psp-scrm-label">{label}</label>
       {children}
-    </label>
+    </div>
   );
 }
 
 function ReadOnly({ label, value }: { label: string; value: string }) {
   return (
-    <div className="adm-field">
-      <span>{label}</span>
+    <div className="psp-scrm-field">
+      <label className="psp-scrm-label">{label}</label>
       <div style={{ padding: "8px 10px", background: "#f9fafb", borderRadius: 6, fontSize: 12, color: "#374151", border: "1px solid #e5e7eb", wordBreak: "break-all" }}>{value}</div>
     </div>
   );
