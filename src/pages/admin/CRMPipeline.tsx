@@ -714,7 +714,7 @@ function AddCompanyModal({
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     name: "", type: defaultType, country: "", market_region: "",
-    website: "", stage: "cold", source: "manual",
+    website: "", stage: "cold", source: "wms_import",
     contactName: "", contactRole: "", contactEmail: "", contactPhone: "", contactLinkedin: "",
     notes: "",
   });
@@ -764,7 +764,7 @@ function AddCompanyModal({
       onOpenChange(false);
       setForm({
         name: "", type: defaultType, country: "", market_region: "",
-        website: "", stage: "cold", source: "manual",
+        website: "", stage: "cold", source: "wms_import",
         contactName: "", contactRole: "", contactEmail: "", contactPhone: "", contactLinkedin: "",
         notes: "",
       });
