@@ -5,6 +5,8 @@ import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from 
 import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
 import { CreateBuyerProfileModal } from "@/components/admin/CreateBuyerProfileModal";
 import { supabase } from "@/integrations/supabase/client";
+import { CountryMultiFilter } from "@/components/admin/CountryMultiFilter";
+import { countryFlag } from "@/lib/countryFlags";
 import {
   useAdminCompanies,
   companyType,
@@ -52,12 +54,12 @@ export default function AdminCompanies() {
   const [teamSearching, setTeamSearching] = useState(false);
   const [typeF, setTypeF] = useState<CompanyTypeFilter>("all");
   const [statusF, setStatusF] = useState<CompanyStatusFilter>("all");
-  const [country, setCountry] = useState<string>("all");
+  const [countries, setCountries] = useState<string[]>([]);
 
-  const countries = useMemo(() => {
+  const availableCountries = useMemo(() => {
     const s = new Set<string>();
     rows.forEach((r) => r.country && s.add(r.country));
-    return Array.from(s).sort();
+    return s;
   }, [rows]);
 
   const totals = useMemo(() => {
@@ -101,7 +103,7 @@ export default function AdminCompanies() {
       const isActive = (r.status ?? "active") === "active";
       if (statusF === "active" && !isActive) return false;
       if (statusF === "inactive" && isActive) return false;
-      if (country !== "all" && r.country !== country) return false;
+      if (countries.length > 0 && (!r.country || !countries.includes(r.country))) return false;
       if (q) {
         const hay = `${r.name} ${r.country ?? ""} ${r.city ?? ""} #${r.company_number}`.toLowerCase();
         const matchesTeam = teamMatchIds.has(r.id);
@@ -109,7 +111,7 @@ export default function AdminCompanies() {
       }
       return true;
     });
-  }, [rows, search, typeF, statusF, country, teamMatchIds]);
+  }, [rows, search, typeF, statusF, countries, teamMatchIds]);
 
   return (
     <div className="adm-body">
@@ -159,10 +161,12 @@ export default function AdminCompanies() {
           <option value="active">{t("admin.companies.filters.active")}</option>
           <option value="inactive">{t("admin.companies.filters.inactive")}</option>
         </select>
-        <select className="crm-select" value={country} onChange={(e) => setCountry(e.target.value)}>
-          <option value="all">{t("admin.companies.filters.allCountries")}</option>
-          {countries.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <CountryMultiFilter
+          value={countries}
+          onChange={setCountries}
+          available={availableCountries}
+          placeholder={t("admin.companies.filters.allCountries")}
+        />
         <select className="crm-select" value={typeF} onChange={(e) => setTypeF(e.target.value as CompanyTypeFilter)}>
           <option value="all">{t("admin.companies.filters.allTypes")}</option>
           <option value="buyer">{t("admin.companies.filters.buyer")}</option>
@@ -276,7 +280,14 @@ function Row({
         </div>
       </td>
       <td><TypeChip type={k} t={t} /></td>
-      <td>{[row.city, row.country].filter(Boolean).join(", ") || "—"}</td>
+      <td>
+        {row.country ? (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 14 }}>{countryFlag(row.country)}</span>
+            <span>{[row.city, row.country].filter(Boolean).join(", ")}</span>
+          </span>
+        ) : "—"}
+      </td>
       <td>
         {(row.protein_profiles ?? []).length > 0 ? (
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -364,8 +375,9 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
           <strong style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis" }}>{row.name}</strong>
           <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>#{row.company_number}</span>
         </div>
-        <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
-          {[row.city, row.country].filter(Boolean).join(", ") || "—"}
+        <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+          {row.country && <span>{countryFlag(row.country)}</span>}
+          <span>{[row.city, row.country].filter(Boolean).join(", ") || "—"}</span>
         </div>
         {(row.protein_profiles ?? []).length > 0 && (
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}>

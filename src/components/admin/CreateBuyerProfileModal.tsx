@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
 import { LogoUploader } from "./LogoUploader";
+import { CountrySelect } from "./CountrySelect";
 
 const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine"] as const;
 
@@ -148,7 +149,11 @@ export function CreateBuyerProfileModal({
           </Field>
           <div className="field-row" style={twoCol}>
             <Field label="Country *" error={errors.country}>
-              <input style={inputStyle} value={form.country} onChange={(e) => upd("country", e.target.value)} maxLength={80} />
+              <CountrySelect
+                style={inputStyle}
+                value={form.country}
+                onChange={(v) => upd("country", v)}
+              />
             </Field>
             <Field label="City" error={errors.city}>
               <input style={inputStyle} value={form.city} onChange={(e) => upd("city", e.target.value)} maxLength={80} />

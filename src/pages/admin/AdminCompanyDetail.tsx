@@ -10,6 +10,9 @@ import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
+import { CountrySelect } from "@/components/admin/CountrySelect";
+import { matchCountry } from "@/lib/countryMatch";
+import { getCachedCountries, useCountriesList } from "@/hooks/useCountriesList";
 import "@/styles/mundus-company.css";
 
 type Props = { mode?: "edit" | "new" };
@@ -69,6 +72,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
   };
   const isNew = mode === "new";
   const { data, loading, error, save, create, remove } = useAdminCompany(isNew ? undefined : id);
+  useCountriesList(); // preload + cache for matchCountry()
 
   const [form, setForm] = useState<CompanyPatch>(EMPTY);
   const [dirty, setDirty] = useState(false);
@@ -466,7 +470,10 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
         {/* Section 4: Business contact */}
         <Section title={t("admin.companies.sections.contact")}>
           <Field label={t("admin.companies.fields.country") + " *"}>
-            <input value={form.country ?? ""} onChange={(e) => setField("country", e.target.value)} />
+            <CountrySelect
+              value={form.country ?? ""}
+              onChange={(v) => setField("country", v)}
+            />
           </Field>
           <Field label={t("admin.companies.fields.state") + " *"}>
             <input value={form.state ?? ""} onChange={(e) => setField("state", e.target.value)} />
@@ -485,7 +492,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
                   city: addr.city || f.city,
                   state: addr.state || f.state,
                   zip_code: addr.zip || f.zip_code,
-                  country: addr.country || f.country,
+                  country: matchCountry(addr.country, getCachedCountries()) || addr.country || f.country,
                 }));
                 setDirty(true);
               }}
