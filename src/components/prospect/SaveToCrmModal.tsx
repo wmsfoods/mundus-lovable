@@ -128,21 +128,25 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     if (src) {
       setFullName(src.fullName || "");
       setEmail(src.email || "");
+      setSecondaryEmail(src.secondaryEmail || "");
       setPhone(src.phone || "");
       setMobile(src.mobile || "");
       setLinkedin(src.linkedin || "");
+      setPersonalLinkedin(src.personalLinkedin || "");
       setJobTitle(src.jobTitle || "");
       setDepartment(src.department || "");
       setSeniority(src.seniority || "");
       setCountry(src.country || "");
       setCity(src.city || "");
+      setState(src.state || "");
       setProductsOfInterest(src.productsOfInterest ?? []);
       setWhatsapp(src.whatsapp ?? "");
       setPhotoUrl(src.photoUrl ?? null);
     } else {
-      setFullName(""); setEmail(""); setPhone(""); setMobile(""); setLinkedin("");
+      setFullName(""); setEmail(""); setSecondaryEmail(""); setPhone(""); setMobile("");
+      setLinkedin(""); setPersonalLinkedin("");
       setJobTitle(""); setDepartment(""); setSeniority(""); setProductsOfInterest([]);
-      setWhatsapp(""); setPhotoUrl(null);
+      setWhatsapp(""); setPhotoUrl(null); setState("");
     }
     if (co) {
       setCoName(co.name); setCoDomain(co.domain); setCoIndustry(co.industry);
