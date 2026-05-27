@@ -628,7 +628,7 @@ function AddMemberModal({ roleIdByKey, onClose, onCreated }:{
         </div>
         <div>
           <label style={labelStyle}>Email *</label>
-          <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="jane@mundus.trade" />
+          <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="email@mundustrade.com" />
         </div>
         <div>
           <label style={labelStyle}>Role *</label>
