@@ -54,6 +54,20 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
   let phone = data.phone ?? null;
   let mobile = data.mobile ?? null;
 
+  // Try to extract from phone_numbers array if not already present
+  const phoneNumbers: any[] = Array.isArray(person.phone_numbers) ? person.phone_numbers : [];
+  if (!phone && phoneNumbers.length) {
+    const direct = phoneNumbers.find((pn: any) => pn?.type === "work_direct" || pn?.type === "work_hq");
+    phone = direct?.sanitized_number ?? phoneNumbers[0]?.sanitized_number ?? null;
+  }
+  if (!mobile && phoneNumbers.length) {
+    const mob = phoneNumbers.find((pn: any) => pn?.type === "mobile");
+    mobile = mob?.sanitized_number ?? null;
+  }
+  if (!phone && person.organization?.phone) {
+    phone = person.organization.phone;
+  }
+
   // Apollo delivers phones asynchronously via webhook. Poll the cache for up to ~20s.
   if (opts.reveal_phone && !phone && !mobile && data.apollo_person_id) {
     const apolloId = String(data.apollo_person_id);
@@ -79,6 +93,10 @@ async function enrichPerson(p: MockPerson, opts: { reveal_phone?: boolean } = {}
         break;
       }
     }
+  }
+
+  if (opts.reveal_phone && !phone && !mobile) {
+    console.warn("[enrich] Phone not available from Apollo for person:", p.id, p.fullName);
   }
 
   // Extract personal email (different from primary) from Apollo response.
@@ -439,12 +457,15 @@ export default function FindPeople() {
                           : <RevealButton label="Reveal" icon={<Phone size={11} />} value={null}
                               onReveal={async () => {
                                 try {
+                                  toast.loading("Requesting phone from Apollo...", { id: "phone-reveal" });
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.phone || "";
                                   setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, phone: v || undefined } }));
-                                  if (!v) { toast.error("Phone not found"); return ""; }
+                                  toast.dismiss("phone-reveal");
+                                  if (!v) { toast.error("Phone not available — Apollo may not have this number on file"); return "N/A"; }
                                   return v;
                                 } catch (e: any) {
+                                  toast.dismiss("phone-reveal");
                                   toast.error(`Reveal failed: ${e.message}`);
                                   return "";
                                 }
@@ -456,12 +477,15 @@ export default function FindPeople() {
                           : <RevealButton label="Reveal" icon={<Smartphone size={11} />} value={null}
                               onReveal={async () => {
                                 try {
+                                  toast.loading("Requesting mobile from Apollo...", { id: "mobile-reveal" });
                                   const r = await enrichPerson(p, { reveal_phone: true });
                                   const v = r.mobile || r.phone || "";
                                   setRevealedMap((m) => ({ ...m, [p.id]: { ...m[p.id], ...r, mobile: v || undefined } }));
-                                  if (!v) { toast.error("Mobile not found"); return ""; }
+                                  toast.dismiss("mobile-reveal");
+                                  if (!v) { toast.error("Mobile not available — Apollo may not have this number on file"); return "N/A"; }
                                   return v;
                                 } catch (e: any) {
+                                  toast.dismiss("mobile-reveal");
                                   toast.error(`Reveal failed: ${e.message}`);
                                   return "";
                                 }

@@ -58,14 +58,22 @@ Deno.serve(async (req) => {
       });
     }
     const person = j.person ?? j.matches?.[0] ?? null;
+    const phoneNumbers: any[] = Array.isArray(person?.phone_numbers) ? person.phone_numbers : [];
+    const directPhone = phoneNumbers.find((pn: any) => pn?.type === "work_direct" || pn?.type === "work_hq");
+    const mobilePhone = phoneNumbers.find((pn: any) => pn?.type === "mobile");
+    const anyPhone = phoneNumbers[0];
     return json({
       ok: true,
       person,
       apollo_person_id: person?.id ?? null,
       phone_pending: Boolean(body.reveal_phone),
       email: person?.email ?? null,
-      phone: person?.sanitized_phone ?? person?.phone_numbers?.[0]?.sanitized_number ?? null,
-      mobile: person?.mobile_phone ?? null,
+      phone: person?.sanitized_phone
+        ?? directPhone?.sanitized_number
+        ?? anyPhone?.sanitized_number
+        ?? person?.organization?.phone
+        ?? null,
+      mobile: mobilePhone?.sanitized_number ?? person?.mobile_phone ?? null,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
