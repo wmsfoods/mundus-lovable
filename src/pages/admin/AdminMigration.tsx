@@ -123,7 +123,6 @@ export default function AdminMigration() {
             const isBuyer = /buyer/i.test(r.businessType);
             const { data: newCo, error: coErr } = await supabase.from("companies").insert({
               name: r.company.trim(),
-              tax_id: "—",
               country: r.country || "—",
               state: "—",
               address: "—",
