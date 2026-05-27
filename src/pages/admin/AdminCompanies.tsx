@@ -251,9 +251,17 @@ function Row({
     <tr onClick={onOpen} style={{ cursor: "pointer" }}>
       <td>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12 }}>
-            {initials(row.name)}
-          </span>
+          {row.logo_url ? (
+            <img
+              src={row.logo_url}
+              alt={row.name}
+              style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover", background: "#fff", border: "1px solid #e5e7eb", flexShrink: 0 }}
+            />
+          ) : (
+            <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12, flexShrink: 0 }}>
+              {initials(row.name)}
+            </span>
+          )}
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
             <strong style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
               {row.name}
@@ -340,9 +348,17 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
   const isActive = (row.status ?? "active") === "active";
   return (
     <div className="adm-panel" onClick={onOpen} style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}>
-      <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
-        {initials(row.name)}
-      </span>
+      {row.logo_url ? (
+        <img
+          src={row.logo_url}
+          alt={row.name}
+          style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", background: "#fff", border: "1px solid #e5e7eb", flexShrink: 0 }}
+        />
+      ) : (
+        <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
+          {initials(row.name)}
+        </span>
+      )}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
           <strong style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis" }}>{row.name}</strong>
