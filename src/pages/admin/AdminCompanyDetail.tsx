@@ -336,6 +336,26 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
             <span className="crm-chip">{t("admin.companies.fields.onboarded", "Created")}: {onboardedDisplay}</span>
           )}
         </div>
+        {!isNew && data && (form.is_supplier || form.is_buyer) && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+            {form.is_supplier && (
+              <MundusManagedToggle
+                kind="supplier"
+                value={!!(data as any).mundus_managed_supplier}
+                companyId={data.id}
+                onChanged={(v) => { (data as any).mundus_managed_supplier = v; }}
+              />
+            )}
+            {form.is_buyer && (
+              <MundusManagedToggle
+                kind="buyer"
+                value={!!(data as any).mundus_managed_buyer}
+                companyId={data.id}
+                onChanged={(v) => { (data as any).mundus_managed_buyer = v; }}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tab bar (only when editing existing company) */}
