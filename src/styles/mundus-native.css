@@ -1,0 +1,46 @@
+/* =========================================================================
+   Mundus Trade — Capacitor native (WKWebView) layout fixes
+   Shell scroll containment is in mundus-shell.css (.app-shell.is-mobile).
+   This file only adds WKWebView-specific tweaks (no duplicate safe-area).
+   ========================================================================= */
+
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+}
+
+html.is-native-scroll-lock,
+body.is-native {
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+}
+
+body.is-native {
+  position: fixed;
+  inset: 0;
+}
+
+body.is-native #root {
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* WKWebView: softer horizontal snap on carousels */
+body.is-native-ios .stats,
+body.is-native-ios .sh-card-row,
+body.is-native-ios .protein-explore {
+  scroll-snap-type: x proximity;
+  overscroll-behavior-x: contain;
+}
+
+body.is-native-ios .app-shell.is-mobile .stats,
+body.is-native-ios .app-shell.is-mobile .sh-card-row,
+body.is-native-ios .app-shell.is-mobile .protein-explore {
+  scroll-padding-inline: 12px;
+}

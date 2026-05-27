@@ -113,7 +113,7 @@ function SupplierShellInner() {
 
   const SUPPLIER_BOTTOM: BottomNavItem[] = [
     { to: "/supplier", label: t("shell.nav.home"), icon: HomeIcon, end: true },
-    { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
+    { to: "/supplier/offers", label: t("shell.bottom.myOffers", { defaultValue: "Ofertas" }), icon: TagIcon },
     { to: "/supplier/offers/new", label: t("shell.bottom.create", { defaultValue: "Create" }), icon: PlusIcon, accent: true },
     { to: "/supplier/negotiations", label: t("shell.bottom.negotiations", { defaultValue: "Chat" }), icon: MessageIcon },
     { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },

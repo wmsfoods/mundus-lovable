@@ -325,12 +325,18 @@ export const ClipboardIcon = (props: IconProps) => (
     <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
   </Icon>
 );
-export const TagIcon = (props: IconProps) => (
-  <Icon {...props}>
-    <path d="M20.6 13.4 13 21a2 2 0 0 1-2.8 0L3 13.8V3h10.8L21 10.2a2 2 0 0 1 0 2.8z" />
-    <circle cx="7.5" cy="7.5" r="1.4" fill="currentColor" stroke="none" />
-  </Icon>
-);
+export const TagIcon = (props: IconProps) => {
+  const { style, ...rest } = props;
+  return (
+    <Icon
+      {...rest}
+      style={{ transform: "translateX(-1.5px)", ...style }}
+    >
+      <path d="M20.6 13.4 13 21a2 2 0 0 1-2.8 0L3 13.8V3h10.8L21 10.2a2 2 0 0 1 0 2.8z" />
+      <circle cx="7.5" cy="7.5" r="1.4" fill="currentColor" stroke="none" />
+    </Icon>
+  );
+};
 export const MessageIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8z" />

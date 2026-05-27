@@ -15,10 +15,13 @@
     gap: 4px;
     background: #fff;
     border-bottom: 1px solid hsl(var(--border));
-    padding: env(safe-area-inset-top) 12px 0 12px;
-    height: calc(52px + env(safe-area-inset-top));
-    position: sticky;
-    top: 0;
+    box-sizing: border-box;
+    padding: env(safe-area-inset-top, 0px) 12px 0 12px;
+    min-height: calc(52px + env(safe-area-inset-top, 0px));
+    height: auto;
+    position: relative;
+    top: auto;
+    flex-shrink: 0;
     z-index: 20;
   }
 
@@ -31,9 +34,8 @@
     padding: 12px 12px calc(24px + env(safe-area-inset-bottom));
   }
 
-  /* Stack-mode grid rows */
-  .app-shell.is-stack {
-    grid-template-rows: calc(52px + env(safe-area-inset-top)) 1fr;
+  .app-shell.is-stack.is-mobile > .sh {
+    flex: 0 0 auto;
   }
 
   .sh-back {

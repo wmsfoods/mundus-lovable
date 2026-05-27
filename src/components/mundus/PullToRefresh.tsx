@@ -26,10 +26,16 @@ export function PullToRefresh({ children, enabled = true }: Props) {
     const el = containerRef.current;
     if (!el) return;
 
+    const getScroller = (): Element => {
+      const main = el.closest(".app-main");
+      if (main) return main;
+      return document.scrollingElement || document.documentElement;
+    };
+
     const onTouchStart = (e: TouchEvent) => {
       if (refreshing) return;
-      // Only when scrolled to top
-      const scroller = document.scrollingElement || document.documentElement;
+      // Only when scrolled to top of the content pane (not the document)
+      const scroller = getScroller();
       if (scroller.scrollTop > 0) {
         startY.current = null;
         return;

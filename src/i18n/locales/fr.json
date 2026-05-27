@@ -215,7 +215,8 @@
     },
     "bottom": {
       "create": "Créer",
-      "negotiations": "Chat"
+      "negotiations": "Chat",
+      "myOffers": "Offres"
     }
   },
   "dashboard": {

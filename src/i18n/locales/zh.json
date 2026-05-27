@@ -215,7 +215,8 @@
     },
     "bottom": {
       "create": "创建",
-      "negotiations": "聊天"
+      "negotiations": "聊天",
+      "myOffers": "报价"
     }
   },
   "dashboard": {

@@ -3,7 +3,9 @@ import App from "./App.tsx";
 import "./index.css";
 import "./i18n";
 import { initCapacitor } from "./capacitor";
+import { applyPlatformBodyClasses } from "./lib/platform";
 
+applyPlatformBodyClasses();
 void initCapacitor();
 
 // Cleanup any previously-registered service workers + caches.
