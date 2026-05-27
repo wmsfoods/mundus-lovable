@@ -1,4 +1,5 @@
 import { useState } from "react";
+import type { LucideIcon } from "lucide-react";
 import {
   Rocket, Phone, Zap, GitBranch, Users, Shield, CheckCircle2, Circle, Copy,
 } from "lucide-react";
@@ -6,7 +7,7 @@ import { useMwInstances, useMwRules, useMwTeam, useMwMacros } from "@/hooks/mw/u
 
 type SettingsKey = "setup" | "instancias" | "macros" | "atribuicao" | "equipe" | "seguranca";
 
-const SIDE: { key: SettingsKey; label: string; icon: React.ComponentType<{ size?: number }> }[] = [
+const SIDE: { key: SettingsKey; label: string; icon: LucideIcon }[] = [
   { key: "setup", label: "Setup", icon: Rocket },
   { key: "instancias", label: "Instâncias", icon: Phone },
   { key: "macros", label: "Macros", icon: Zap },
