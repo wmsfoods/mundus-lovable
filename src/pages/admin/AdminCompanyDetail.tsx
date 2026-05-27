@@ -1,23 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-react";
+import { Save, X, CheckCircle2, Info, Trash2, Upload, Pencil, Globe } from "lucide-react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
 import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import "@/styles/mundus-company.css";
 
 type Props = { mode?: "edit" | "new" };
