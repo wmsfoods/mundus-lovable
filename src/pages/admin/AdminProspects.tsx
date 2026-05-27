@@ -14,6 +14,8 @@ import { ImportProspectsModal } from "@/components/admin/ImportProspectsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { bulkEnrichByCompanyIds } from "@/lib/prospectEnrich";
 import { Pagination } from "@/components/mundus/Pagination";
+import { CountryFilterPopover } from "@/components/admin/CountryFilterPopover";
+import { countryFlag } from "@/lib/countryFlags";
 
 const PAGE_SIZE = 50;
 
@@ -53,8 +55,8 @@ export default function AdminProspects() {
   const [stage, setStage] = useState<ProspectStage | "all">("all");
   const [role, setRole] = useState<"all" | "buyer" | "supplier">("all");
   const [owner, setOwner] = useState<string>("all");
-  const [countryFilter, setCountryFilter] = useState<string>("all");
-  const [countries, setCountries] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [countryCounts, setCountryCounts] = useState<Array<{ name: string; count: number }>>([]);
   const [page, setPage] = useState(1);
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -83,9 +85,17 @@ export default function AdminProspects() {
         .not("country", "is", null)
         .limit(5000);
       if (cancelled || !data) return;
-      const uniq = Array.from(new Set(data.map((d: any) => (d.country || "").trim()).filter(Boolean))) as string[];
-      uniq.sort((a, b) => a.localeCompare(b));
-      setCountries(uniq);
+      const counts: Record<string, number> = {};
+      for (const row of data as any[]) {
+        const name = (row.country || "").trim();
+        if (!name) continue;
+        counts[name] = (counts[name] ?? 0) + 1;
+      }
+      setCountryCounts(
+        Object.entries(counts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count),
+      );
     })();
     return () => { cancelled = true; };
   }, [refreshTick]);
@@ -146,7 +156,7 @@ export default function AdminProspects() {
       if (stage !== "all") q = q.eq("stage", UI_TO_DB_STAGE[stage]);
       if (role === "buyer") q = q.eq("company_type", "buyer");
       if (role === "supplier") q = q.eq("company_type", "supplier");
-      if (countryFilter !== "all") q = q.eq("country", countryFilter);
+      if (selectedCountries.length > 0) q = q.in("country", selectedCountries);
 
       if (s) {
         const orParts = [
@@ -211,10 +221,10 @@ export default function AdminProspects() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [debouncedSearch, stage, role, owner, countryFilter, page, refreshTick]);
+  }, [debouncedSearch, stage, role, owner, selectedCountries, page, refreshTick]);
 
   // Reset page when non-search filters change
-  useEffect(() => { setPage(1); }, [stage, role, owner, countryFilter]);
+  useEffect(() => { setPage(1); }, [stage, role, owner, selectedCountries]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const rangeFrom = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
