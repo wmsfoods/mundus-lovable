@@ -103,11 +103,12 @@ interface ParsedRow extends RawRow {
 
 interface GroupedContact {
   fullName: string;
-  email: string;
+  email: string | null;
   phone?: string;
   mobile?: string;
   roleTitle?: string;
   additionalEmail?: string;
+  linkedin?: string;
 }
 interface GroupedCompany {
   companyName: string;
@@ -119,11 +120,12 @@ interface GroupedCompany {
 }
 interface GroupStats {
   totalRows: number; duplicateEmails: number; mergedCompanies: number;
-  companyOnly: number; totalContacts: number;
+  companyOnly: number; totalContacts: number; noEmailContacts?: number;
 }
 
-function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: GroupStats } {
-  const stats: GroupStats = { totalRows: rows.length, duplicateEmails: 0, mergedCompanies: 0, companyOnly: 0, totalContacts: 0 };
+function groupAndDedup(rows: ParsedRow[], opts?: { allowNoEmail?: boolean }): { groups: GroupedCompany[]; stats: GroupStats } {
+  const allowNoEmail = !!opts?.allowNoEmail;
+  const stats: GroupStats = { totalRows: rows.length, duplicateEmails: 0, mergedCompanies: 0, companyOnly: 0, totalContacts: 0, noEmailContacts: 0 };
   const scoreOf = (r: ParsedRow) => Object.values(r.mapped).filter((v) => v != null && v !== "").length;
 
   // Step 1: dedup by email keeping highest-data row
@@ -160,7 +162,9 @@ function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: Gr
     if (list.length > 1) stats.mergedCompanies++;
     const best = [...list].sort((a, b) => scoreOf(b) - scoreOf(a))[0];
     const m = best.mapped;
-    const contactRows = list.filter((r) => r.mapped.email);
+    const contactRows = list.filter((r) =>
+      r.mapped.email || (allowNoEmail && (r.mapped.fullName || r.mapped.personalLinkedin))
+    );
     const hasContacts = contactRows.length > 0;
 
     const resolve = (r: ParsedRow): GroupedContact => {
@@ -168,11 +172,12 @@ function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: Gr
       if (!name && r.mapped.email) name = extractNameFromEmail(r.mapped.email);
       return {
         fullName: name || "Unknown",
-        email: r.mapped.email!.trim().toLowerCase(),
+        email: r.mapped.email ? r.mapped.email.trim().toLowerCase() : null,
         phone: r.mapped.phone?.trim() || undefined,
         mobile: r.mapped.mobile?.trim() || undefined,
         roleTitle: r.mapped.jobTitle?.trim() || undefined,
         additionalEmail: r.mapped.additionalEmail?.trim() || undefined,
+        linkedin: r.mapped.personalLinkedin?.trim() || undefined,
       };
     };
 
@@ -187,6 +192,8 @@ function groupAndDedup(rows: ParsedRow[]): { groups: GroupedCompany[]; stats: Gr
       mainContact = resolve(sorted[0]);
       for (let i = 1; i < sorted.length; i++) additional.push(resolve(sorted[i]));
       stats.totalContacts += 1 + additional.length;
+      const noEmailCount = sorted.filter((r) => !r.mapped.email).length;
+      stats.noEmailContacts = (stats.noEmailContacts ?? 0) + noEmailCount;
     } else {
       stats.companyOnly++;
     }
