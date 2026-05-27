@@ -35,6 +35,10 @@ export type MwInstance = {
   status: string;
   webhook_url: string | null;
   evolution_base_url: string | null;
+  evolution_instance_id: string | null;
+  evolution_api_key: string | null;
+  provider_type: "self_hosted" | "cloud";
+  instance_id_external: string | null;
   message_count_30d: number;
   last_connected_at: string | null;
   created_at: string;
