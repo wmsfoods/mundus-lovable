@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
-import { MoreVertical, KeyRound, Mail, UserPlus, Pencil, Ban, Trash2, Loader2, X } from "lucide-react";
+import { MoreVertical, KeyRound, Mail, UserPlus, Pencil, Ban, Trash2, Loader2, X, Camera } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
 import {
@@ -27,6 +27,7 @@ type Member = {
   role: string;
   profile_type: string | null;
   phone: string | null;
+  avatar_url: string | null;
   auth_user_id: string | null;
   account_status: "pending" | "invited" | "active" | "disabled";
   invited_at: string | null;
@@ -36,6 +37,26 @@ type Member = {
 type Props = { companyId: string; isSupplier?: boolean; isBuyer?: boolean };
 
 const ROLE_OPTIONS = ["master", "operator", "viewer", "member"];
+
+function memberInitials(name: string) {
+  return name.split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?";
+}
+
+function Avatar({ url, name, size = 28 }: { url: string | null; name: string; size?: number }) {
+  return (
+    <span
+      style={{
+        width: size, height: size, borderRadius: 999, overflow: "hidden", display: "inline-flex",
+        alignItems: "center", justifyContent: "center", background: "#f3f4f6",
+        color: "#6b7280", fontSize: Math.max(10, Math.floor(size * 0.38)), fontWeight: 600, flexShrink: 0,
+      }}
+    >
+      {url
+        ? <img src={url} alt={name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        : <span>{memberInitials(name)}</span>}
+    </span>
+  );
+}
 
 function tempPassword() {
   return crypto.randomUUID().slice(0, 12) + "Aa1!";
