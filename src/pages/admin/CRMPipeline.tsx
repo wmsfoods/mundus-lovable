@@ -5,6 +5,7 @@ import { Plus, Search } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DocsTab } from "@/components/admin/docs/DocsTab";
 
 type Tab = "pipeline" | "buyers" | "suppliers" | "interviews" | "learnings" | "documents";
 
