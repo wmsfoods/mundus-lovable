@@ -725,13 +725,13 @@ export function CounterOfferModal({
                 </button>
               </div>
               <Input
-                type="number"
-                step={bulkMode === "percent" ? "0.1" : "0.01"}
-                min="0"
-                max={bulkMode === "percent" ? "30" : undefined}
+                type="text"
                 inputMode="decimal"
                 value={bulkValue}
-                onChange={(e) => setBulkValue(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/,/g, ".");
+                  if (v === "" || /^\d*\.?\d*$/.test(v)) setBulkValue(v);
+                }}
                 placeholder={bulkMode === "percent" ? "e.g. 3%" : `e.g. 0.10 $/${wLbl}`}
                 className="h-9 w-32 text-right tabular-nums text-xs"
               />
@@ -842,14 +842,15 @@ export function CounterOfferModal({
                     </td>
                     <td className="px-3 py-2 text-right">
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         readOnly={isAccepted}
                         value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
                         onChange={(e) => {
                           if (isAccepted) return;
-                          const v = parseFloat(e.target.value);
+                          const raw = e.target.value.replace(/,/g, ".");
+                          if (raw !== "" && !/^\d*\.?\d*$/.test(raw)) return;
+                          const v = parseFloat(raw);
                           const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
                           handleManualCounterChange(it.id, kg);
                         }}
@@ -945,15 +946,15 @@ export function CounterOfferModal({
                     {t("supplier.counter.col.yourCounter")} ({pLbl})
                   </div>
                   <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
                     inputMode="decimal"
                     readOnly={isAccepted}
                     value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
                     onChange={(e) => {
                       if (isAccepted) return;
-                      const v = parseFloat(e.target.value);
+                      const raw = e.target.value.replace(/,/g, ".");
+                      if (raw !== "" && !/^\d*\.?\d*$/.test(raw)) return;
+                      const v = parseFloat(raw);
                       const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
                       handleManualCounterChange(it.id, kg);
                     }}

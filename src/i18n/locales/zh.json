@@ -1339,13 +1339,13 @@
       }
     },
     "share": {
-      "title": "与供应商分享此投标",
-      "subtitle": "供应商可以使用此安全链接查看和回复 — 无需登录。",
-      "subtitleUsed": "此链接已被供应商使用。",
+      "title": "与买家分享此谈判",
+      "subtitle": "买家可以使用此安全链接查看和回复 — 无需登录。",
+      "subtitleUsed": "此链接已被买家使用。",
       "loading": "正在准备分享链接…",
       "copy": "复制链接",
       "copied": "已复制！",
-      "supplierEmail": "供应商电子邮件 (可选)",
+      "supplierEmail": "买家电子邮件 (可选)",
       "saveEmail": "保存",
       "emailSaved": "电子邮件已保存",
       "sendEmail": "发送电子邮件",

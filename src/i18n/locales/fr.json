@@ -1184,13 +1184,13 @@
       }
     },
     "share": {
-      "title": "Partager cette enchère avec le fournisseur",
-      "subtitle": "Le fournisseur peut consulter et répondre via ce lien sécurisé — aucune connexion requise.",
-      "subtitleUsed": "Ce lien a déjà été utilisé par le fournisseur.",
+      "title": "Partager cette négociation avec l'acheteur",
+      "subtitle": "L'acheteur peut consulter et répondre via ce lien sécurisé — aucune connexion requise.",
+      "subtitleUsed": "Ce lien a déjà été utilisé par l'acheteur.",
       "loading": "Préparation du lien de partage…",
       "copy": "Copier le lien",
       "copied": "Copié !",
-      "supplierEmail": "Email du fournisseur (facultatif)",
+      "supplierEmail": "Email de l'acheteur (facultatif)",
       "saveEmail": "Enregistrer",
       "emailSaved": "Email enregistré",
       "sendEmail": "Envoyer l'email",
