@@ -5,7 +5,7 @@ import { Search, Upload, Plus, KanbanSquare, Table as TableIcon, Trash2, X, Spar
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  useAdminProspects, getStageCounts, STAGES,
+  STAGES,
   OWNERS, type ProspectStage,
   type Prospect,
 } from "@/hooks/useAdminProspects";
@@ -13,6 +13,24 @@ import { AddProspectModal } from "@/components/admin/AddProspectModal";
 import { ImportProspectsModal } from "@/components/admin/ImportProspectsModal";
 import { supabase } from "@/integrations/supabase/client";
 import { bulkEnrichByCompanyIds } from "@/lib/prospectEnrich";
+import { Pagination } from "@/components/mundus/Pagination";
+
+const PAGE_SIZE = 50;
+
+// DB crm_companies.stage → UI ProspectStage
+const DB_TO_UI_STAGE: Record<string, ProspectStage> = {
+  cold: "new", warm: "researching", contacted: "contacted",
+  qualified: "qualified", onboarding: "onboarding",
+  onboarded: "onboarded", lost: "lost",
+};
+const UI_TO_DB_STAGE: Record<ProspectStage, string> = {
+  new: "cold", researching: "warm", contacted: "contacted",
+  qualified: "qualified", onboarding: "onboarding",
+  onboarded: "onboarded", lost: "lost",
+};
+
+// Escape commas / parens that would break PostgREST .or() syntax
+const sanitizeOr = (s: string) => s.replace(/[,()]/g, " ").trim();
 
 const fmtGmv = (v?: number) =>
   v == null ? "—" : v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}k`;
@@ -20,8 +38,9 @@ const fmtGmv = (v?: number) =>
 export default function AdminProspects() {
   const { t } = useTranslation();
   const nav = useNavigate();
-  const mockList = useAdminProspects();
-  const [dbList, setDbList] = useState<Prospect[]>([]);
+  const [list, setList] = useState<Prospect[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
@@ -29,36 +48,146 @@ export default function AdminProspects() {
   const [enriching, setEnriching] = useState(false);
   const [enrichProgress, setEnrichProgress] = useState<{ done: number; total: number } | null>(null);
 
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [stage, setStage] = useState<ProspectStage | "all">("all");
+  const [role, setRole] = useState<"all" | "buyer" | "supplier">("all");
+  const [owner, setOwner] = useState<string>("all");
+  const [countryFilter, setCountryFilter] = useState<string>("all");
+  const [countries, setCountries] = useState<string[]>([]);
+  const [page, setPage] = useState(1);
+  const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+
+  // Stage tile counts (global, independent of filters)
+  const [stageCounts, setStageCounts] = useState<Record<ProspectStage, number>>({
+    new: 0, researching: 0, contacted: 0, qualified: 0, onboarding: 0, onboarded: 0, lost: 0,
+  });
+  const [globalTotal, setGlobalTotal] = useState(0);
+  const counts = stageCounts;
+  const activeCount = Math.max(0, globalTotal - counts.lost - counts.onboarded);
+
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Load distinct countries once
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("crm_companies")
-        .select("id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin)")
-        .order("created_at", { ascending: false })
-        .limit(500);
+        .select("country")
+        .not("country", "is", null)
+        .limit(5000);
       if (cancelled || !data) return;
-      const mapped: Prospect[] = data.map((c: any) => {
+      const uniq = Array.from(new Set(data.map((d: any) => (d.country || "").trim()).filter(Boolean))) as string[];
+      uniq.sort((a, b) => a.localeCompare(b));
+      setCountries(uniq);
+    })();
+    return () => { cancelled = true; };
+  }, [refreshTick]);
+
+  // KPI/stage counts (parallel head:exact queries)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const dbStages = ["cold", "warm", "contacted", "qualified", "onboarding", "onboarded", "lost"] as const;
+      const results = await Promise.all([
+        supabase.from("crm_companies").select("id", { count: "exact", head: true }),
+        ...dbStages.map((s) =>
+          supabase.from("crm_companies").select("id", { count: "exact", head: true }).eq("stage", s),
+        ),
+      ]);
+      if (cancelled) return;
+      const [total, ...stageRes] = results;
+      setGlobalTotal(total.count ?? 0);
+      const next: Record<ProspectStage, number> = {
+        new: 0, researching: 0, contacted: 0, qualified: 0, onboarding: 0, onboarded: 0, lost: 0,
+      };
+      stageRes.forEach((r, i) => {
+        const ui = DB_TO_UI_STAGE[dbStages[i]];
+        if (ui) next[ui] = r.count ?? 0;
+      });
+      setStageCounts(next);
+    })();
+    return () => { cancelled = true; };
+  }, [refreshTick]);
+
+  // Paginated list query with server-side filters/search
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      let contactCompanyIds: string[] | null = null;
+      const s = sanitizeOr(debouncedSearch);
+      if (s) {
+        // Look up contacts matching the search to include their parent companies
+        const { data: cMatches } = await supabase
+          .from("crm_contacts")
+          .select("company_id")
+          .or(`full_name.ilike.%${s}%,email.ilike.%${s}%,phone.ilike.%${s}%`)
+          .limit(500);
+        contactCompanyIds = Array.from(
+          new Set((cMatches || []).map((r: any) => r.company_id).filter(Boolean)),
+        );
+      }
+
+      let q = supabase
+        .from("crm_companies")
+        .select(
+          "id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin)",
+          { count: "exact" },
+        )
+        .order("created_at", { ascending: false });
+
+      if (stage !== "all") q = q.eq("stage", UI_TO_DB_STAGE[stage]);
+      if (role === "buyer") q = q.eq("company_type", "buyer");
+      if (role === "supplier") q = q.eq("company_type", "supplier");
+      if (countryFilter !== "all") q = q.eq("country", countryFilter);
+
+      if (s) {
+        const orParts = [
+          `name.ilike.%${s}%`,
+          `domain.ilike.%${s}%`,
+          `country.ilike.%${s}%`,
+          `city.ilike.%${s}%`,
+          `industry.ilike.%${s}%`,
+          `wms_company_name.ilike.%${s}%`,
+        ];
+        if (contactCompanyIds && contactCompanyIds.length) {
+          orParts.push(`id.in.(${contactCompanyIds.join(",")})`);
+        }
+        q = q.or(orParts.join(","));
+      }
+
+      q = q.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+
+      const { data, count, error } = await q;
+      if (cancelled) return;
+      if (error) {
+        console.error("[AdminProspects] query error", error);
+        setList([]); setTotalCount(0); setLoading(false);
+        return;
+      }
+      const mapped: Prospect[] = (data || []).map((c: any) => {
         const primary = c.crm_contacts?.[0] ?? null;
-        const stageMap: Record<string, ProspectStage> = {
-          cold: "new", warm: "researching", contacted: "contacted",
-          qualified: "qualified", onboarding: "onboarding",
-          onboarded: "onboarded", lost: "lost",
-        };
-        const stage = stageMap[c.stage] ?? "new";
-        const role = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
+        const uiStage = DB_TO_UI_STAGE[c.stage] ?? "new";
+        const r = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
         return {
           id: c.id,
           companyName: c.name,
           initials: (c.name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "?",
           country: c.country || "—",
-          role,
+          role: r,
           source: (c.source as any) || "wms_import",
           contactName: primary?.full_name || "—",
           contactEmail: primary?.email || "—",
           contactPhone: primary?.phone || undefined,
           notes: "",
-          stage,
+          stage: uiStage,
           owner: "FN",
           ownerName: "Fernando Nascimento",
           estGmv: c.annual_revenue ?? undefined,
@@ -66,53 +195,35 @@ export default function AdminProspects() {
           updatedAt: c.updated_at,
           lastActivity: { type: "system", when: "just now" },
           activity: [],
-          leadType: role === "potential_buyer" ? "buyer" : "supplier",
+          leadType: r === "potential_buyer" ? "buyer" : "supplier",
           city: c.city ?? undefined,
           industry: c.industry ?? undefined,
           website: c.website ?? undefined,
           companyLinkedin: c.linkedin_url ?? undefined,
           contacts: [],
           isActive: true,
-          isOnboarded: stage === "onboarded" || !!c.onboarded_at,
+          isOnboarded: uiStage === "onboarded" || !!c.onboarded_at,
           mundusCompanyId: c.mundus_company_id ?? undefined,
         } as Prospect;
       });
-      setDbList(mapped);
+      setList(mapped);
+      setTotalCount(count ?? 0);
+      setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [refreshTick]);
+  }, [debouncedSearch, stage, role, owner, countryFilter, page, refreshTick]);
 
-  const list = useMemo(() => [...dbList, ...mockList], [dbList, mockList]);
+  // Reset page when non-search filters change
+  useEffect(() => { setPage(1); }, [stage, role, owner, countryFilter]);
 
-  const [search, setSearch] = useState("");
-  const [stage, setStage] = useState<ProspectStage | "all">("all");
-  const [role, setRole] = useState<"all" | "buyer" | "supplier">("all");
-  const [owner, setOwner] = useState<string>("all");
-  const [addOpen, setAddOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-
-  const counts = useMemo(() => getStageCounts(list), [list]);
-  const totalCount = list.length;
-  const activeCount = totalCount - counts.lost - counts.onboarded;
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return list.filter((p) => {
-      if (stage !== "all" && p.stage !== stage) return false;
-      if (role !== "all") {
-        if (role === "buyer" && p.role !== "potential_buyer") return false;
-        if (role === "supplier" && p.role !== "potential_supplier") return false;
-      }
-      if (owner !== "all" && p.owner !== owner) return false;
-      if (q && !`${p.companyName} ${p.contactName} ${p.country}`.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [list, search, stage, role, owner]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const rangeFrom = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeTo = Math.min(page * PAGE_SIZE, totalCount);
 
   const isDbId = (id: string) => !id.startsWith("pr-");
   const deletableFiltered = useMemo(
-    () => filtered.filter((p) => isDbId(p.id) && !p.isOnboarded && !p.mundusCompanyId),
-    [filtered],
+    () => list.filter((p) => isDbId(p.id) && !p.isOnboarded && !p.mundusCompanyId),
+    [list],
   );
   const pageAllSelected = deletableFiltered.length > 0 && deletableFiltered.every((p) => selectedIds.has(p.id));
   const pageSomeSelected = deletableFiltered.some((p) => selectedIds.has(p.id));
