@@ -268,11 +268,19 @@ export default function AdminImport() {
       if (destination === "prospects") {
         const types = parsed.map((p) => p.mapped.leadType?.toLowerCase()).filter(Boolean) as string[];
         if (types.length > 0) {
+          const cLevelCount = types.filter((t) => /c[\s\-_]?level|^c-?suite/.test(t)).length;
           const supplierCount = types.filter((t) => /supplier|vendor/.test(t)).length;
-          if (supplierCount > types.length / 2) setLeadType("supplier");
+          if (cLevelCount > types.length / 2) setLeadType("c_level");
+          else if (supplierCount > types.length / 2) setLeadType("supplier");
           else setLeadType("buyer");
         }
-        const g = groupAndDedup(parsed);
+        // Also auto-detect via job title pattern (CEO, CFO, COO, CTO, Founder)
+        const titles = parsed.map((p) => (p.mapped.jobTitle ?? "").toLowerCase()).filter(Boolean);
+        if (titles.length > 0 && types.length === 0) {
+          const cTitles = titles.filter((t) => /\b(ceo|cfo|coo|cto|cmo|cio|chro|president|founder|owner|managing director)\b/.test(t)).length;
+          if (cTitles > titles.length * 0.6) setLeadType("c_level");
+        }
+        const g = groupAndDedup(parsed, { allowNoEmail: true });
         setGroups(g.groups);
         setGroupStats(g.stats);
       }
@@ -289,7 +297,7 @@ export default function AdminImport() {
     const updated = rows.map((r) => buildRow(r.index, r.__raw, next, requiredKeys));
     setRows(updated);
     if (destination === "prospects") {
-      const g = groupAndDedup(updated);
+      const g = groupAndDedup(updated, { allowNoEmail: true });
       setGroups(g.groups);
       setGroupStats(g.stats);
     }
