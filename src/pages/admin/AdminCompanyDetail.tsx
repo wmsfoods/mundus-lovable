@@ -207,38 +207,56 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
 
   return (
     <div className="adm-body" style={{ paddingBottom: 96 }}>
-      {/* Header */}
-      <div className="adm-page-header" style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-        <button type="button" onClick={() => navigate("/admin/companies")} className="adm-btn-ghost" aria-label="Back">
-          <ArrowLeft size={16} />
-        </button>
-        <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg,#8B2252,#7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600 }}>
-          {initials(form.name || "")}
-        </span>
-        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-          <strong style={{ fontSize: 16 }}>{isNew ? t("admin.companies.detail.newTitle") : (form.name || t("admin.companies.detail.title"))}</strong>
-          {data && <span style={{ fontSize: 11, color: "#6b7280" }}>#{data.company_number}</span>}
+      {/* Header — prospect-style */}
+      <div className="adm-panel">
+        <Link to="/admin/companies" className="adm-link">← {t("admin.companies.detail.back", "Companies")}</Link>
+        <div className="crm-detail-head">
+          <span className="crm-detail-av">{initials(form.name || "")}</span>
+          <div className="crm-cell-stack" style={{ flex: 1, minWidth: 0 }}>
+            <input
+              className="psp-input"
+              style={{ height: 36, fontSize: 16, fontWeight: 700, background: "transparent", border: "1px solid transparent" }}
+              value={form.name ?? ""}
+              placeholder={isNew ? t("admin.companies.detail.newTitle") : t("admin.companies.detail.title")}
+              onChange={(e) => setField("name", e.target.value)}
+              onFocus={(e) => { e.currentTarget.style.border = "1px solid #e5e7eb"; e.currentTarget.style.background = "#fff"; }}
+              onBlur={(e) => { e.currentTarget.style.border = "1px solid transparent"; e.currentTarget.style.background = "transparent"; }}
+            />
+            {data && <span className="mono" style={{ paddingLeft: 4 }}>{form.country || "—"} · #{data.company_number}</span>}
+          </div>
+          <div className="crm-header-actions psp-actions-wrap">
+            <button type="button" className="crm-btn-ghost" onClick={() => navigate("/admin/companies")}>
+              <X size={14} /> {t("admin.companies.actions.cancel")}
+            </button>
+            {activeTab === "profile" && (
+              <button
+                type="button"
+                className="crm-btn-primary"
+                onClick={handleSave}
+                disabled={saving || (!dirty && !isNew)}
+                style={{ background: "#8B2252" }}
+              >
+                <Save size={14} /> {saving ? t("admin.companies.detail.saving") : t("admin.companies.detail.save")}
+              </button>
+            )}
+          </div>
         </div>
-        <div style={{ display: "flex", gap: 6, marginLeft: 8, flexWrap: "wrap" }}>
-          {form.is_buyer && <span className="adm-chip is-buyer">{t("admin.companies.fields.buyer")}</span>}
-          {form.is_supplier && <span className="adm-chip is-supplier">{t("admin.companies.fields.supplier")}</span>}
+        <div className="crm-chips">
+          {!isNew && (
+            <span className={`pill ${isActive ? "stage-qualified" : "stage-lost"}`}>
+              {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
+            </span>
+          )}
+          {form.is_buyer && <span className="pill info">{t("admin.companies.fields.buyer")}</span>}
+          {form.is_supplier && <span className="pill info">{t("admin.companies.fields.supplier")}</span>}
           {form.is_verified && (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16a34a", fontSize: 12, fontWeight: 600 }}>
-              <CheckCircle2 size={14} /> {t("admin.companies.fields.verified")}
+            <span className="crm-chip" style={{ color: "#16a34a", fontWeight: 600 }}>
+              <CheckCircle2 size={12} /> {t("admin.companies.fields.verified")}
             </span>
           )}
           {!isNew && (
-            <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>{isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}</span>
+            <span className="crm-chip">{t("admin.companies.fields.onboarded", "Created")}: {onboardedDisplay}</span>
           )}
-        </div>
-        <div style={{ marginLeft: "auto", display: "flex", gap: 8 }}>
-          <button type="button" className="adm-btn-ghost" onClick={() => navigate("/admin/companies")}>
-            <X size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.cancel")}
-          </button>
-          {activeTab === "profile" && (
-          <button type="button" className="crm-btn-primary" onClick={handleSave} disabled={saving || (!dirty && !isNew)} style={{ background: "#8B2252" }}>
-            <Save size={14} style={{ marginRight: 4 }} /> {saving ? t("admin.companies.detail.saving") : t("admin.companies.detail.save")}
-          </button>)}
         </div>
       </div>
 
