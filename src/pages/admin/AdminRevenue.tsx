@@ -235,6 +235,26 @@ export default function AdminRevenue() {
     );
   };
 
+  const updateDueDate = async (row: Row, value: string) => {
+    const next = value || null;
+    const { error } = await supabase.from("orders").update({ revenue_due_date: next } as never).eq("id", row.id);
+    if (error) {
+      toast({ title: "Failed to set due date", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRows(prev => prev.map(r => (r.id === row.id ? { ...r, revenue_due_date: next } : r)));
+  };
+
+  const dueBadge = (iso: string | null) => {
+    if (!iso) return { color: "#6b7280", bg: "transparent" };
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const d = new Date(iso + "T00:00:00");
+    const diff = Math.round((d.getTime() - today.getTime()) / 86400000);
+    if (diff < 0) return { color: "#991B1B", bg: "#FEE2E2" };
+    if (diff <= 7) return { color: "#92400E", bg: "#FEF3C7" };
+    return { color: "#065F46", bg: "#D1FAE5" };
+  };
+
   return (
     <div className="adm-body">
       <div className="adm-page-header">
