@@ -58,6 +58,8 @@ export default function AdminProspects() {
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [countryCounts, setCountryCounts] = useState<Array<{ name: string; count: number }>>([]);
   const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"created_at" | "updated_at" | "name">("created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
   const [addOpen, setAddOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
 
@@ -151,7 +153,7 @@ export default function AdminProspects() {
           "id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin,seniority)",
           { count: "exact" },
         )
-        .order("created_at", { ascending: false });
+        .order(sortBy, { ascending: sortDir === "asc" });
 
       if (stage !== "all") q = q.eq("stage", UI_TO_DB_STAGE[stage]);
       if (role === "buyer") q = q.eq("company_type", "buyer");
@@ -223,10 +225,10 @@ export default function AdminProspects() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [debouncedSearch, stage, role, owner, selectedCountries, page, refreshTick]);
+  }, [debouncedSearch, stage, role, owner, selectedCountries, page, refreshTick, sortBy, sortDir]);
 
   // Reset page when non-search filters change
-  useEffect(() => { setPage(1); }, [stage, role, owner, selectedCountries]);
+  useEffect(() => { setPage(1); }, [stage, role, owner, selectedCountries, sortBy, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
   const rangeFrom = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
