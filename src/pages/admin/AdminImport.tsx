@@ -491,6 +491,139 @@ export default function AdminImport() {
     toast.success(`Imported ${contactsCreated} prospects`);
   };
 
+  const importCLevels = async () => {
+    if (!groups.length) return;
+    let companiesCreated = 0, companiesLinked = 0, contactsCreated = 0,
+        contactsNoEmail = 0, contactsUpdated = 0, errors = 0;
+    for (let i = 0; i < groups.length; i++) {
+      const g = groups[i];
+      try {
+        let crmCompanyId: string | null = null;
+        const mainEmail = g.mainContact?.email ?? null;
+        const domain = mainEmail ? mainEmail.split("@")[1] : null;
+
+        // 1. Try by domain (skip generic)
+        if (domain && !isGenericDomain(domain)) {
+          const { data: byDomain } = await supabase
+            .from("crm_companies").select("id").ilike("domain", domain).maybeSingle();
+          if (byDomain) { crmCompanyId = byDomain.id; companiesLinked++; }
+        }
+
+        // 2. Try by company name
+        if (!crmCompanyId && g.companyName) {
+          const { data: byName } = await supabase
+            .from("crm_companies").select("id").ilike("name", g.companyName.trim()).maybeSingle();
+          if (byName) { crmCompanyId = byName.id; companiesLinked++; }
+        }
+
+        // 3. Create new company
+        if (!crmCompanyId) {
+          const websiteUrl = g.website
+            ? (g.website.startsWith("http") ? g.website : `https://${g.website}`)
+            : null;
+          const { data: newCo, error } = await supabase.from("crm_companies").insert({
+            name: g.companyName || "Unknown",
+            domain: domain && !isGenericDomain(domain) ? domain : null,
+            company_type: "prospect",
+            country: g.country && g.country.toLowerCase() !== "unknown" ? g.country : null,
+            city: g.city || null,
+            state: g.state || null,
+            website: websiteUrl,
+            industry: g.industry || null,
+            stage: "cold",
+            source: "csv_import",
+            source_detail: `C-Level import — ${fileName}`,
+            status: "active",
+          } as any).select("id").single();
+          if (error || !newCo) throw error ?? new Error("crm_company_create_failed");
+          crmCompanyId = newCo.id; companiesCreated++;
+        }
+
+        const allContacts = [
+          ...(g.mainContact ? [g.mainContact] : []),
+          ...g.additionalContacts,
+        ];
+
+        for (const c of allContacts) {
+          try {
+            // Dedup by email when present
+            if (c.email) {
+              const { data: existing } = await supabase
+                .from("crm_contacts").select("id").ilike("email", c.email).maybeSingle();
+              if (existing) {
+                await supabase.from("crm_contacts").update({
+                  seniority: "c_level",
+                  contact_type: "decision_maker",
+                  job_title: c.roleTitle || undefined,
+                  linkedin: c.linkedin || undefined,
+                } as any).eq("id", existing.id);
+                contactsUpdated++;
+                continue;
+              }
+            } else if (c.fullName) {
+              const { data: byName } = await supabase
+                .from("crm_contacts").select("id")
+                .eq("company_id", crmCompanyId!)
+                .ilike("full_name", c.fullName.trim())
+                .maybeSingle();
+              if (byName) {
+                await supabase.from("crm_contacts").update({
+                  seniority: "c_level",
+                  contact_type: "decision_maker",
+                  job_title: c.roleTitle || undefined,
+                  linkedin: c.linkedin || undefined,
+                } as any).eq("id", byName.id);
+                contactsUpdated++;
+                continue;
+              }
+            }
+
+            const parts = (c.fullName || "Unknown").split(" ");
+            const { error: ctErr } = await supabase.from("crm_contacts").insert({
+              company_id: crmCompanyId!,
+              full_name: c.fullName || "Unknown",
+              first_name: parts[0] || null,
+              last_name: parts.slice(1).join(" ") || null,
+              email: c.email,
+              phone: c.phone || null,
+              mobile: c.mobile || null,
+              linkedin: c.linkedin || null,
+              job_title: c.roleTitle || null,
+              seniority: "c_level",
+              contact_type: "decision_maker",
+              country: g.country && g.country.toLowerCase() !== "unknown" ? g.country : null,
+              city: g.city || null,
+              lead_status: "new",
+              source: "csv_import",
+              source_detail: `C-Level import — ${fileName}`,
+              status: "active",
+            } as any);
+            if (ctErr) throw ctErr;
+            if (c.email) contactsCreated++;
+            else contactsNoEmail++;
+          } catch (e: any) {
+            errors++;
+            console.error("[C-Level] contact insert:", c.fullName, e?.message);
+          }
+        }
+      } catch (e: any) {
+        errors++;
+        console.error("[C-Level] company:", g.companyName, e?.message);
+      }
+      setProgress(Math.round(((i + 1) / groups.length) * 100));
+    }
+    setResults({
+      companiesCreated, companiesLinked, contactsCreated, contactsNoEmail,
+      contactsUpdated, errors, total: groups.length,
+    });
+    auditLog({
+      action: "import.c_level_imported", category: "system",
+      entityType: "import", entityLabel: fileName,
+      details: { companiesCreated, companiesLinked, contactsCreated, contactsNoEmail, contactsUpdated, file: fileName },
+    });
+    toast.success(`Imported ${companiesCreated + companiesLinked} companies, ${contactsCreated + contactsNoEmail} C-Level contacts`);
+  };
+
   const importGroupedProspects = async () => {
     if (!groups.length) return;
     let companiesCreated = 0, companiesLinked = 0, contactsCreated = 0, additionalCreated = 0, companyOnly = 0, errors = 0;
