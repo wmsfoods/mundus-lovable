@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Save, X, CheckCircle2, Info, Trash2, Upload, Pencil, Globe } from "lucide-react";
+import { Save, X, CheckCircle2, Info, Trash2, Upload } from "lucide-react";
 import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
