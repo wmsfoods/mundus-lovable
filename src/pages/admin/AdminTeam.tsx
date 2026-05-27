@@ -1,9 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Users2, Plus, Pencil, Trash2, X, Search as SearchIcon, ChevronLeft, ChevronRight, CheckCircle2, XCircle, KeyRound } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { auditLog } from "@/lib/auditLog";
-import { toast } from "sonner";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { auditLog } from "@/lib/auditLog";
 
