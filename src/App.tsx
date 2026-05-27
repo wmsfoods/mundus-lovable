@@ -233,6 +233,7 @@ const App = () => (
               <Route path="settings/team" element={<AdminTeam />} />
               <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
+              <Route path="migration" element={<AdminMigration />} />
               <Route path="user-requests" element={<AdminUserRequests />} />
               <Route path="outreach" element={<OutreachCenter />} />
               <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
