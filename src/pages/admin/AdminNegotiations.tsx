@@ -184,16 +184,25 @@ export default function AdminNegotiations() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="adm-neg-stats" style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 8 }}>
         <StatCard label="Active" value={String(stats.active)} accent="#15803d" />
         <StatCard label="Pending Review" value={String(stats.pending)} accent="#b45309" />
         <StatCard label="Closed Deals" value={String(stats.closed)} accent="#1d4ed8" />
         <StatCard label="Total" value={String(stats.total)} accent="#52525b" />
       </div>
 
-      {/* Filters row */}
-      <div className="adm-panel" style={{ padding: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 8 }}>
-        <div style={{ position: "relative", flex: "1 1 320px", minWidth: 220 }}>
+      {/* Filters row — compact, single line */}
+      <div
+        className="adm-panel"
+        style={{
+          padding: 8,
+          flexDirection: "row",
+          flexWrap: "wrap",
+          alignItems: "center",
+          gap: 8,
+        }}
+      >
+        <div style={{ position: "relative", flex: "1 1 280px", minWidth: 200, minHeight: 0 }}>
           <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
           <input
             type="text"
@@ -206,7 +215,7 @@ export default function AdminNegotiations() {
         <button
           type="button"
           onClick={() => setFiltersOpen((v) => !v)}
-          style={{ ...INPUT_STYLE, display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 500 }}
+          style={{ ...INPUT_STYLE, display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 500, flex: "0 0 auto" }}
         >
           <SlidersHorizontal size={14} />
           Filters{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
@@ -216,13 +225,13 @@ export default function AdminNegotiations() {
           <button
             type="button"
             onClick={() => { setFilter("all"); setProtein("all"); setDateRange("all"); setSortBy("recent"); setPage(1); }}
-            style={{ ...INPUT_STYLE, cursor: "pointer", color: "#8B2252", borderColor: "transparent", background: "transparent" }}
+            style={{ ...INPUT_STYLE, cursor: "pointer", color: "#8B2252", borderColor: "transparent", background: "transparent", flex: "0 0 auto" }}
           >
             Clear
           </button>
         )}
         {filtersOpen && (
-          <div style={{ flex: "1 1 100%", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
+          <div style={{ flex: "1 1 100%", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
             <select style={INPUT_STYLE} value={filter} onChange={(e) => { setFilter(e.target.value as FilterKey); setPage(1); }}>
               <option value="all">All statuses</option>
               <option value="awaiting_supplier">Awaiting Supplier</option>
