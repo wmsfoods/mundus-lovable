@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Users2, Plus, Pencil, Trash2, X, Search as SearchIcon } from "lucide-react";
+import { Users2, Plus, Pencil, Trash2, X, Search as SearchIcon, ChevronLeft, ChevronRight, CheckCircle2, XCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { auditLog } from "@/lib/auditLog";
@@ -120,6 +120,12 @@ export default function AdminTeam() {
   const [editing, setEditing] = useState<Member | null>(null);
   const [deleting, setDeleting] = useState<Member | null>(null);
 
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
+  const [bulkBusy, setBulkBusy] = useState(false);
+  const [bulkRemoveOpen, setBulkRemoveOpen] = useState(false);
+
   const load = async () => {
     setLoading(true);
     const [rolesRes, cuRes] = await Promise.all([
@@ -185,6 +191,91 @@ export default function AdminTeam() {
     });
   }, [members, search, roleFilter, statusFilter]);
 
+  // Reset page when filters change or list shrinks
+  useEffect(() => { setPage(1); }, [search, roleFilter, statusFilter, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const safePage = Math.min(page, totalPages);
+  const pageStart = (safePage - 1) * pageSize;
+  const paged = filtered.slice(pageStart, pageStart + pageSize);
+
+  const pageIds = useMemo(() => paged.map((m) => m.id), [paged]);
+  const allOnPageSelected = pageIds.length > 0 && pageIds.every((id) => selected.has(id));
+  const someOnPageSelected = pageIds.some((id) => selected.has(id));
+
+  const togglePageSelection = () => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allOnPageSelected) pageIds.forEach((id) => next.delete(id));
+      else pageIds.forEach((id) => next.add(id));
+      return next;
+    });
+  };
+  const toggleOne = (id: string) => {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const clearSelection = () => setSelected(new Set());
+
+  const selectedMembers = useMemo(
+    () => members.filter((m) => selected.has(m.id)),
+    [members, selected],
+  );
+
+  const bulkUpdateStatus = async (status: "active" | "inactive") => {
+    if (selectedMembers.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const ids = selectedMembers.map((m) => m.id);
+      const { error } = await supabase
+        .from("company_users")
+        .update({ status } as any)
+        .in("id", ids);
+      if (error) throw error;
+      auditLog({
+        action: status === "active" ? "team.bulk_activated" : "team.bulk_deactivated",
+        category: "user",
+        severity: status === "active" ? "info" : "warn",
+        details: { count: ids.length, ids },
+      });
+      toast.success(`${ids.length} member${ids.length > 1 ? "s" : ""} ${status === "active" ? "activated" : "deactivated"}`);
+      clearSelection();
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Bulk update failed");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
+  const bulkRemove = async () => {
+    if (selectedMembers.length === 0) return;
+    setBulkBusy(true);
+    try {
+      const ids = selectedMembers.map((m) => m.id);
+      const { error } = await supabase
+        .from("company_users")
+        .update({ status: "inactive" } as any)
+        .in("id", ids);
+      if (error) throw error;
+      auditLog({
+        action: "team.bulk_removed", category: "user", severity: "warn",
+        details: { count: ids.length, ids },
+      });
+      toast.success(`${ids.length} member${ids.length > 1 ? "s" : ""} removed`);
+      clearSelection();
+      setBulkRemoveOpen(false);
+      load();
+    } catch (e: any) {
+      toast.error(e?.message ?? "Bulk remove failed");
+    } finally {
+      setBulkBusy(false);
+    }
+  };
+
   const stats = useMemo(() => {
     const active = members.filter((m) => m.status === "active");
     const roleSet = new Set(active.map((m) => m.role_name).filter(Boolean));
@@ -225,6 +316,7 @@ export default function AdminTeam() {
         <div style={{
           display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center",
           padding: "6px 8px", borderBottom: "1px solid rgba(0,0,0,0.06)", background: "#fafaf9",
+          position: "sticky", top: 0, zIndex: 5,
         }}>
           <div style={{ position: "relative", flex: "1 1 220px", minWidth: 180 }}>
             <SearchIcon size={12} style={{ position: "absolute", left: 8, top: 7, color: "#908d85" }} />
@@ -255,9 +347,52 @@ export default function AdminTeam() {
             {filtered.length} of {members.length}
           </span>
         </div>
+
+        {selected.size > 0 && (
+          <div style={{
+            display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center",
+            padding: "6px 10px", borderBottom: "1px solid rgba(0,0,0,0.06)",
+            background: "#fbe2e8", position: "sticky", top: 36, zIndex: 4,
+          }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: "#791f3f" }}>
+              {selected.size} selected
+            </span>
+            <button onClick={() => bulkUpdateStatus("active")} disabled={bulkBusy}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 8px", fontSize: 11, fontWeight: 600,
+                borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)", background: "white", color: "#3b6d11", cursor: "pointer" }}>
+              <CheckCircle2 size={12} /> Activate
+            </button>
+            <button onClick={() => bulkUpdateStatus("inactive")} disabled={bulkBusy}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 8px", fontSize: 11, fontWeight: 600,
+                borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)", background: "white", color: "#5e5e58", cursor: "pointer" }}>
+              <XCircle size={12} /> Deactivate
+            </button>
+            <button onClick={() => setBulkRemoveOpen(true)} disabled={bulkBusy}
+              style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 8px", fontSize: 11, fontWeight: 600,
+                borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)", background: "white", color: "#791f1f", cursor: "pointer" }}>
+              <Trash2 size={12} /> Remove
+            </button>
+            <button onClick={clearSelection} disabled={bulkBusy}
+              style={{ marginLeft: "auto", padding: "4px 8px", fontSize: 11, borderRadius: 5,
+                border: "1px solid rgba(0,0,0,0.10)", background: "white", color: "#5e5e58", cursor: "pointer" }}>
+              Clear
+            </button>
+          </div>
+        )}
+
         <table className="adm-table" style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
             <tr style={{ background: "#fafaf9", textAlign: "left" }}>
+              <th style={{ padding: "9px 12px", width: 28, borderBottom: "1px solid rgba(0,0,0,0.08)" }}>
+                <input
+                  type="checkbox"
+                  checked={allOnPageSelected}
+                  ref={(el) => { if (el) el.indeterminate = !allOnPageSelected && someOnPageSelected; }}
+                  onChange={togglePageSelection}
+                  aria-label="Select all on page"
+                  style={{ cursor: "pointer" }}
+                />
+              </th>
               {["MEMBER", "EMAIL", "ROLE", "STATUS", "ADDED", "ACTIONS"].map((h) => (
                 <th key={h} style={{ padding: "9px 12px", fontSize: 10, fontWeight: 600, color: "#5e5e58", letterSpacing: 0.4, borderBottom: "1px solid rgba(0,0,0,0.08)" }}>{h}</th>
               ))}
@@ -265,15 +400,20 @@ export default function AdminTeam() {
           </thead>
           <tbody>
             {loading && (
-              <tr><td colSpan={6} style={{ padding: 20, textAlign: "center", color: "#908d85" }}>Loading…</td></tr>
+              <tr><td colSpan={7} style={{ padding: 20, textAlign: "center", color: "#908d85" }}>Loading…</td></tr>
             )}
-            {!loading && filtered.length === 0 && (
-              <tr><td colSpan={6} style={{ padding: 20, textAlign: "center", color: "#908d85" }}>No members found</td></tr>
+            {!loading && paged.length === 0 && (
+              <tr><td colSpan={7} style={{ padding: 20, textAlign: "center", color: "#908d85" }}>No members found</td></tr>
             )}
-            {filtered.map((m) => {
+            {paged.map((m) => {
               const active = m.status === "active";
+              const isSel = selected.has(m.id);
               return (
-                <tr key={m.id} style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", opacity: active ? 1 : 0.55 }}>
+                <tr key={m.id} style={{ borderBottom: "1px solid rgba(0,0,0,0.06)", opacity: active ? 1 : 0.55, background: isSel ? "#fdf3f6" : "transparent" }}>
+                  <td style={{ padding: "10px 12px" }}>
+                    <input type="checkbox" checked={isSel} onChange={() => toggleOne(m.id)}
+                      aria-label={`Select ${m.full_name || m.email}`} style={{ cursor: "pointer" }} />
+                  </td>
                   <td style={{ padding: "10px 12px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                       <Avatar name={m.full_name} email={m.email} url={m.avatar_url} />
@@ -303,6 +443,38 @@ export default function AdminTeam() {
             })}
           </tbody>
         </table>
+
+        {/* Pagination footer */}
+        <div style={{
+          display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center",
+          padding: "6px 10px", borderTop: "1px solid rgba(0,0,0,0.06)", background: "#fafaf9",
+        }}>
+          <span style={{ fontSize: 11, color: "#5e5e58" }}>
+            {filtered.length === 0 ? "0" : `${pageStart + 1}–${Math.min(pageStart + pageSize, filtered.length)}`} of {filtered.length}
+          </span>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 4, marginLeft: 8 }}>
+            <label style={{ fontSize: 10, color: "#908d85", textTransform: "uppercase", letterSpacing: 0.4, fontWeight: 600 }}>Rows</label>
+            <select value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}
+              style={{ padding: "3px 6px", fontSize: 11, borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)", background: "white" }}>
+              {[10, 25, 50, 100].map((n) => <option key={n} value={n}>{n}</option>)}
+            </select>
+          </div>
+          <div style={{ marginLeft: "auto", display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <button onClick={() => setPage((p) => Math.max(1, p - 1))} disabled={safePage <= 1}
+              style={{ padding: "3px 6px", fontSize: 11, borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)",
+                background: "white", cursor: safePage <= 1 ? "not-allowed" : "pointer", opacity: safePage <= 1 ? 0.5 : 1 }}>
+              <ChevronLeft size={12} />
+            </button>
+            <span style={{ fontSize: 11, color: "#5e5e58", padding: "0 4px" }}>
+              Page {safePage} of {totalPages}
+            </span>
+            <button onClick={() => setPage((p) => Math.min(totalPages, p + 1))} disabled={safePage >= totalPages}
+              style={{ padding: "3px 6px", fontSize: 11, borderRadius: 5, border: "1px solid rgba(0,0,0,0.10)",
+                background: "white", cursor: safePage >= totalPages ? "not-allowed" : "pointer", opacity: safePage >= totalPages ? 0.5 : 1 }}>
+              <ChevronRight size={12} />
+            </button>
+          </div>
+        </div>
       </div>
 
       {addOpen && (
@@ -326,6 +498,23 @@ export default function AdminTeam() {
           onClose={() => setDeleting(null)}
           onDone={() => { setDeleting(null); load(); }}
         />
+      )}
+      {bulkRemoveOpen && (
+        <ModalShell title={`Remove ${selected.size} member${selected.size > 1 ? "s" : ""}?`} onClose={() => setBulkRemoveOpen(false)}>
+          <p style={{ fontSize: 13, color: "#1a1a18", margin: "0 0 16px" }}>
+            This will revoke admin access for the selected members. They will be marked inactive.
+          </p>
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button onClick={() => setBulkRemoveOpen(false)} disabled={bulkBusy}
+              style={{ padding: "8px 12px", borderRadius: 6, border: "1px solid rgba(0,0,0,0.12)", background: "white", cursor: "pointer", fontSize: 12 }}>
+              Cancel
+            </button>
+            <button onClick={bulkRemove} disabled={bulkBusy}
+              style={{ padding: "8px 14px", borderRadius: 6, border: "none", background: "#791f1f", color: "white", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
+              {bulkBusy ? "Removing…" : "Remove"}
+            </button>
+          </div>
+        </ModalShell>
       )}
     </div>
   );
