@@ -3240,6 +3240,611 @@ export type Database = {
           },
         ]
       }
+      mw_assignment_rules: {
+        Row: {
+          created_at: string
+          criteria: Json
+          id: string
+          is_active: boolean
+          name: string
+          priority: number
+          strategy: string
+          target_user_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criteria?: Json
+          id?: string
+          is_active?: boolean
+          name: string
+          priority?: number
+          strategy?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criteria?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          priority?: number
+          strategy?: string
+          target_user_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mw_contacts: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          id: string
+          instance_id: string | null
+          is_business: boolean
+          jid: string
+          last_seen_at: string | null
+          metadata: Json
+          name: string | null
+          notes: string | null
+          owner_user_id: string | null
+          phone: string | null
+          push_name: string | null
+          tags: string[]
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          instance_id?: string | null
+          is_business?: boolean
+          jid: string
+          last_seen_at?: string | null
+          metadata?: Json
+          name?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          push_name?: string | null
+          tags?: string[]
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          instance_id?: string | null
+          is_business?: boolean
+          jid?: string
+          last_seen_at?: string | null
+          metadata?: Json
+          name?: string | null
+          notes?: string | null
+          owner_user_id?: string | null
+          phone?: string | null
+          push_name?: string | null
+          tags?: string[]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_contacts_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "mw_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_conversation_notes: {
+        Row: {
+          body: string
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+        }
+        Insert: {
+          body: string
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+        }
+        Update: {
+          body?: string
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_conversation_notes_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "mw_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_conversation_summaries: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          model: string | null
+          sentiment: string | null
+          summary: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model?: string | null
+          sentiment?: string | null
+          summary: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          model?: string | null
+          sentiment?: string | null
+          summary?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_conversation_summaries_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "mw_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_conversation_tasks: {
+        Row: {
+          assigned_to: string | null
+          completed_at: string | null
+          conversation_id: string
+          created_at: string
+          created_by: string | null
+          due_at: string | null
+          id: string
+          priority: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          conversation_id: string
+          created_at?: string
+          created_by?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          completed_at?: string | null
+          conversation_id?: string
+          created_at?: string
+          created_by?: string | null
+          due_at?: string | null
+          id?: string
+          priority?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_conversation_tasks_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "mw_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_conversation_topics: {
+        Row: {
+          analysis: string | null
+          confidence: number | null
+          conversation_id: string
+          created_at: string
+          id: string
+          model: string | null
+          topics: string[]
+        }
+        Insert: {
+          analysis?: string | null
+          confidence?: number | null
+          conversation_id: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          topics?: string[]
+        }
+        Update: {
+          analysis?: string | null
+          confidence?: number | null
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          model?: string | null
+          topics?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_conversation_topics_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "mw_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_conversations: {
+        Row: {
+          assigned_to: string | null
+          contact_id: string
+          created_at: string
+          id: string
+          instance_id: string
+          is_archived: boolean
+          last_message_at: string | null
+          last_message_preview: string | null
+          sentiment: string | null
+          sentiment_confidence: number | null
+          status: string
+          topic_confidence: number | null
+          topic_tags: string[]
+          unread_count: number
+          updated_at: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          contact_id: string
+          created_at?: string
+          id?: string
+          instance_id: string
+          is_archived?: boolean
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          sentiment?: string | null
+          sentiment_confidence?: number | null
+          status?: string
+          topic_confidence?: number | null
+          topic_tags?: string[]
+          unread_count?: number
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string | null
+          contact_id?: string
+          created_at?: string
+          id?: string
+          instance_id?: string
+          is_archived?: boolean
+          last_message_at?: string | null
+          last_message_preview?: string | null
+          sentiment?: string | null
+          sentiment_confidence?: number | null
+          status?: string
+          topic_confidence?: number | null
+          topic_tags?: string[]
+          unread_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_conversations_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "mw_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mw_conversations_instance_id_fkey"
+            columns: ["instance_id"]
+            isOneToOne: false
+            referencedRelation: "mw_instances"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_instances: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          evolution_api_key: string | null
+          evolution_base_url: string | null
+          evolution_instance_id: string | null
+          id: string
+          last_connected_at: string | null
+          message_count_30d: number
+          name: string
+          phone_number: string | null
+          qr_code: string | null
+          status: string
+          updated_at: string
+          webhook_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          evolution_api_key?: string | null
+          evolution_base_url?: string | null
+          evolution_instance_id?: string | null
+          id?: string
+          last_connected_at?: string | null
+          message_count_30d?: number
+          name: string
+          phone_number?: string | null
+          qr_code?: string | null
+          status?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          evolution_api_key?: string | null
+          evolution_base_url?: string | null
+          evolution_instance_id?: string | null
+          id?: string
+          last_connected_at?: string | null
+          message_count_30d?: number
+          name?: string
+          phone_number?: string | null
+          qr_code?: string | null
+          status?: string
+          updated_at?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
+      mw_macros: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          scope: string
+          slug: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scope?: string
+          slug: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          scope?: string
+          slug?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      mw_message_edits: {
+        Row: {
+          edited_at: string
+          edited_by: string | null
+          id: string
+          message_id: string
+          previous_body: string | null
+        }
+        Insert: {
+          edited_at?: string
+          edited_by?: string | null
+          id?: string
+          message_id: string
+          previous_body?: string | null
+        }
+        Update: {
+          edited_at?: string
+          edited_by?: string | null
+          id?: string
+          message_id?: string
+          previous_body?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_message_edits_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "mw_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_message_reactions: {
+        Row: {
+          created_at: string
+          emoji: string
+          id: string
+          message_id: string
+          reactor_jid: string | null
+          reactor_user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          emoji: string
+          id?: string
+          message_id: string
+          reactor_jid?: string | null
+          reactor_user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          emoji?: string
+          id?: string
+          message_id?: string
+          reactor_jid?: string | null
+          reactor_user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_message_reactions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "mw_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_messages: {
+        Row: {
+          body: string | null
+          conversation_id: string
+          created_at: string
+          deleted_at: string | null
+          edited_at: string | null
+          external_id: string | null
+          from_me: boolean
+          id: string
+          is_edited: boolean
+          media_mime: string | null
+          media_size: number | null
+          media_url: string | null
+          metadata: Json
+          reply_to_id: string | null
+          sender_jid: string | null
+          sender_user_id: string | null
+          sent_at: string
+          status: string
+          type: string
+        }
+        Insert: {
+          body?: string | null
+          conversation_id: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          external_id?: string | null
+          from_me?: boolean
+          id?: string
+          is_edited?: boolean
+          media_mime?: string | null
+          media_size?: number | null
+          media_url?: string | null
+          metadata?: Json
+          reply_to_id?: string | null
+          sender_jid?: string | null
+          sender_user_id?: string | null
+          sent_at?: string
+          status?: string
+          type?: string
+        }
+        Update: {
+          body?: string | null
+          conversation_id?: string
+          created_at?: string
+          deleted_at?: string | null
+          edited_at?: string | null
+          external_id?: string | null
+          from_me?: boolean
+          id?: string
+          is_edited?: boolean
+          media_mime?: string | null
+          media_size?: number | null
+          media_url?: string | null
+          metadata?: Json
+          reply_to_id?: string | null
+          sender_jid?: string | null
+          sender_user_id?: string | null
+          sent_at?: string
+          status?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mw_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "mw_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "mw_messages_reply_to_id_fkey"
+            columns: ["reply_to_id"]
+            isOneToOne: false
+            referencedRelation: "mw_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mw_setup_progress: {
+        Row: {
+          steps: Json
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          steps?: Json
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          steps?: Json
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      mw_team_members: {
+        Row: {
+          created_at: string
+          display_name: string | null
+          id: string
+          role: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          display_name?: string | null
+          id?: string
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       negotiation_messages: {
         Row: {
           content: string | null
