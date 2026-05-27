@@ -390,7 +390,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
             <div className="psp-scrm-grid">
               <Field label="Country" auto={!!src?.country}><input className="psp-input" value={country} onChange={(e) => setCountry(e.target.value)} /></Field>
               <Field label="City" auto={!!src?.city}><input className="psp-input" value={city} onChange={(e) => setCity(e.target.value)} /></Field>
-              <Field label="State"><input className="psp-input" value={state} onChange={(e) => setState(e.target.value)} /></Field>
+              <Field label="State" auto={!!src?.state}><input className="psp-input" value={state} onChange={(e) => setState(e.target.value)} /></Field>
               <Field label="Timezone"><input className="psp-input" value={timezone} onChange={(e) => setTimezone(e.target.value)} /></Field>
             </div>
           </Section>
