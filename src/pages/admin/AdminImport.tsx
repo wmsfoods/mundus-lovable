@@ -90,6 +90,15 @@ function extractNameFromEmail(email: string): string {
     .join(" ");
 }
 
+const GENERIC_EMAIL_DOMAINS = new Set([
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "aol.com",
+  "icloud.com", "live.com", "mail.com", "yandex.com", "protonmail.com",
+  "nate.com", "naver.com", "qq.com", "163.com", "msn.com", "me.com",
+]);
+function isGenericDomain(domain: string): boolean {
+  return GENERIC_EMAIL_DOMAINS.has(domain.toLowerCase());
+}
+
 interface RawRow { __raw: Record<string, string> }
 
 interface ParsedRow extends RawRow {
