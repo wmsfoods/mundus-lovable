@@ -199,6 +199,7 @@ const App = () => (
               <Route path="offers" element={<AdminOffers />} />
               <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="deals" element={<AdminOrders />} />
+              <Route path="deals/:id" element={<AdminOrderDetail />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
               <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
