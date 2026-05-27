@@ -406,7 +406,19 @@ export default function AdminRevenue() {
                   <span onClick={(e) => e.stopPropagation()}><StatusSelect row={r} /></span>
                 </div>
                 <div style={{ fontSize: 13, marginBottom: 4 }}>{r.supplier_name} → {r.buyer_name}</div>
-                <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8 }}>Updated {fmtDate(r.revenue_status_changed_at ?? r.placed_at)}</div>
+                <div style={{ fontSize: 12, color: "#6b7280", marginBottom: 8, display: "flex", gap: 10, flexWrap: "wrap" }}>
+                  <span>Updated {fmtDate(r.revenue_status_changed_at ?? r.placed_at)}</span>
+                  <span onClick={(e) => e.stopPropagation()} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+                    Due:&nbsp;
+                    <input
+                      type="date"
+                      value={r.revenue_due_date ?? ""}
+                      disabled={r.revenue_status === "cancelled" || r.revenue_status === "received"}
+                      onChange={(e) => updateDueDate(r, e.target.value)}
+                      style={{ padding: "2px 4px", borderRadius: 6, border: "1px solid #d1d5db", fontSize: 11 }}
+                    />
+                  </span>
+                </div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8, fontSize: 12 }}>
                   <div>
                     <div style={{ color: "#6b7280" }}>Total · Est. Revenue</div>
