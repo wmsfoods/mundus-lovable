@@ -559,6 +559,15 @@ function PipelineView(p: PipelineViewProps) {
           <option value="90d">Last 90 days</option>
           <option value="year">This year</option>
         </select>
+        <select value={p.seniorityFilter} onChange={(e) => p.setSeniorityFilter(e.target.value)} style={selectStyle}>
+          <option value="all">All seniority</option>
+          <option value="c_level">👔 C-Level</option>
+          <option value="vp">VP</option>
+          <option value="director">Director</option>
+          <option value="manager">Manager</option>
+          <option value="senior">Senior</option>
+          <option value="staff">Staff</option>
+        </select>
         <select value={p.sortBy} onChange={(e) => p.setSortBy(e.target.value)} style={selectStyle}>
           <option value="newest">↓ Newest first</option>
           <option value="oldest">↑ Oldest first</option>
