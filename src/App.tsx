@@ -8,6 +8,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { WeightUnitProvider } from "@/contexts/WeightUnitContext";
 import { RequireAuth } from "@/components/RequireAuth";
+import { RequireAdmin } from "@/components/RequireAdmin";
 import { RoleRedirect } from "@/components/RoleRedirect";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login.tsx";
@@ -208,9 +209,11 @@ const App = () => (
             </Route>
             <Route path="/admin" element={
               <RequireAuth>
-                <ErrorBoundary>
-                  <AdminShell />
-                </ErrorBoundary>
+                <RequireAdmin>
+                  <ErrorBoundary>
+                    <AdminShell />
+                  </ErrorBoundary>
+                </RequireAdmin>
               </RequireAuth>
             }>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
