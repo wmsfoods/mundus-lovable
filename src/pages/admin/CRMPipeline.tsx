@@ -155,7 +155,7 @@ export default function CRMPipeline() {
       const [{ data: c }, { data: i }, { data: l }] = await Promise.all([
         supabase
           .from("crm_companies")
-          .select("id,name,company_type,country,market_region,website,stage,notes,owner_id,industry,logo_url,created_at,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary)")
+          .select("id,name,company_type,country,market_region,website,stage,notes,owner_id,industry,logo_url,created_at,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary,seniority)")
           .order("created_at", { ascending: false })
           .limit(500),
         supabase.from("crm_interviews").select("*").order("interview_date", { ascending: false }).limit(500),
