@@ -41,6 +41,7 @@ import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
 import AdminNegotiations from "./pages/admin/AdminNegotiations.tsx";
 import AdminOffers from "./pages/admin/AdminOffers.tsx";
 import AdminOrders from "./pages/admin/AdminOrders.tsx";
+import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
@@ -198,6 +199,7 @@ const App = () => (
               <Route path="offers" element={<AdminOffers />} />
               <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="deals" element={<AdminOrders />} />
+              <Route path="deals/:id" element={<AdminOrderDetail />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
               <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
