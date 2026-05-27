@@ -10,6 +10,9 @@ import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
+import { CountrySelect } from "@/components/admin/CountrySelect";
+import { matchCountry } from "@/lib/countryMatch";
+import { getCachedCountries, useCountriesList } from "@/hooks/useCountriesList";
 import "@/styles/mundus-company.css";
 
 type Props = { mode?: "edit" | "new" };
