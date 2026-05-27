@@ -308,7 +308,7 @@ export default function AdminRevenue() {
         <>
           <div className="adm-panel adm-only-desktop" style={{ padding: 0 }}>
             <div className="adm-table-wrap">
-              <table className="adm-table">
+              <table className="adm-table adm-table-tight">
                 <thead>
                   <tr>
                     <th>Order #</th>
@@ -316,6 +316,7 @@ export default function AdminRevenue() {
                     <th>Supplier</th>
                     <th>Buyer</th>
                     <th>Revenue Status</th>
+                    <th>Due Date</th>
                     <th className="text-right">Total</th>
                     <th className="text-right">Est. Revenue</th>
                     <th>Reason</th>
@@ -333,6 +334,28 @@ export default function AdminRevenue() {
                       <td>{r.supplier_name}</td>
                       <td>{r.buyer_name}</td>
                       <td onClick={(e) => e.stopPropagation()}><StatusSelect row={r} /></td>
+                      <td onClick={(e) => e.stopPropagation()}>
+                        {(() => {
+                          const locked = r.revenue_status === "cancelled" || r.revenue_status === "received";
+                          const b = dueBadge(r.revenue_due_date);
+                          return (
+                            <input
+                              type="date"
+                              value={r.revenue_due_date ?? ""}
+                              disabled={locked}
+                              onChange={(e) => updateDueDate(r, e.target.value)}
+                              style={{
+                                padding: "3px 6px", borderRadius: 6, fontSize: 11, fontWeight: 600,
+                                background: b.bg, color: b.color,
+                                border: `1px solid ${b.color}33`,
+                                cursor: locked ? "not-allowed" : "pointer",
+                                opacity: locked ? 0.7 : 1,
+                                fontFamily: "inherit",
+                              }}
+                            />
+                          );
+                        })()}
+                      </td>
                       <td className="text-right" style={{ fontSize: 12 }}>{r.total_value > 0 ? fmtMoney(r.total_value) : "—"}</td>
                       <td className="text-right" style={{ fontSize: 12, fontWeight: 600, color: "#8B2252" }}>{r.total_value > 0 ? fmtMoney(r.total_value * REVENUE_RATE) : "—"}</td>
                       <td style={{ fontSize: 12, color: "#6b7280", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={r.revenue_cancel_reason ?? ""}>{r.revenue_cancel_reason ?? "—"}</td>
