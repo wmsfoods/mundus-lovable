@@ -336,6 +336,26 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
             <span className="crm-chip">{t("admin.companies.fields.onboarded", "Created")}: {onboardedDisplay}</span>
           )}
         </div>
+        {!isNew && data && (form.is_supplier || form.is_buyer) && (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 12 }}>
+            {form.is_supplier && (
+              <MundusManagedToggle
+                kind="supplier"
+                value={!!(data as any).mundus_managed_supplier}
+                companyId={data.id}
+                onChanged={(v) => { (data as any).mundus_managed_supplier = v; }}
+              />
+            )}
+            {form.is_buyer && (
+              <MundusManagedToggle
+                kind="buyer"
+                value={!!(data as any).mundus_managed_buyer}
+                companyId={data.id}
+                onChanged={(v) => { (data as any).mundus_managed_buyer = v; }}
+              />
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tab bar (only when editing existing company) */}
@@ -589,6 +609,71 @@ function ProfileTabContent({ tab, companyId }: { tab: string; companyId: string 
   return (
     <div className={`adm-profile-scope adm-profile-scope-${tab}`}>
       <CompanyProfileSections companyId={companyId} canEdit />
+    </div>
+  );
+}
+
+function MundusManagedToggle({
+  kind, value, companyId, onChanged,
+}: { kind: "supplier" | "buyer"; value: boolean; companyId: string; onChanged: (v: boolean) => void }) {
+  const [checked, setChecked] = useState(value);
+  const [busy, setBusy] = useState(false);
+  const isBuyer = kind === "buyer";
+  const col = isBuyer
+    ? { bg: "#EFF6FF", border: "#BFDBFE", accent: "#2563EB" }
+    : { bg: "#FDF2F8", border: "#F9D0E0", accent: "#8B2252" };
+  const title = isBuyer ? "Mundus manages requests" : "Mundus manages offers";
+  const desc = isBuyer
+    ? "Allows the Mundus team to create and manage requests on behalf of this buyer."
+    : "Allows the Mundus team to create and manage offers on behalf of this supplier.";
+
+  const handle = async (v: boolean) => {
+    setBusy(true);
+    const patch = isBuyer ? { mundus_managed_buyer: v } : { mundus_managed_supplier: v };
+    const { error } = await supabase.from("companies").update(patch).eq("id", companyId);
+    setBusy(false);
+    if (error) { toast.error(error.message); return; }
+    setChecked(v);
+    onChanged(v);
+    toast.success(
+      v
+        ? isBuyer ? "Mundus now manages requests for this buyer" : "Mundus now manages offers for this supplier"
+        : isBuyer ? "Buyer manages their own requests" : "Supplier manages their own offers"
+    );
+    auditLog({
+      action: isBuyer ? "company.mundus_managed_buyer_toggled" : "company.mundus_managed_supplier_toggled",
+      category: "company",
+      entityType: "company",
+      entityId: companyId,
+      details: { value: v },
+    });
+  };
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, background: col.bg, borderRadius: 12, border: `1px solid ${col.border}` }}>
+      <label style={{ position: "relative", display: "inline-block", width: 36, height: 20, flexShrink: 0 }}>
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={busy}
+          onChange={(e) => void handle(e.target.checked)}
+          style={{ opacity: 0, width: 0, height: 0 }}
+        />
+        <span style={{
+          position: "absolute", inset: 0, cursor: busy ? "wait" : "pointer",
+          background: checked ? col.accent : "#cbd5e1", borderRadius: 999,
+          transition: "background 0.2s",
+        }} />
+        <span style={{
+          position: "absolute", top: 2, left: checked ? 18 : 2,
+          width: 16, height: 16, borderRadius: "50%", background: "#fff",
+          transition: "left 0.2s", boxShadow: "0 1px 2px rgba(0,0,0,0.2)",
+        }} />
+      </label>
+      <div>
+        <div style={{ fontWeight: 600, fontSize: 14 }}>{title}</div>
+        <div style={{ fontSize: 12, color: "#6B7280" }}>{desc}</div>
+      </div>
     </div>
   );
 }

@@ -18,6 +18,8 @@ export type AdminCompanyRow = {
   onboarded_at: string | null;
   created_at: string | null;
   protein_profiles: string[] | null;
+  mundus_managed_supplier?: boolean | null;
+  mundus_managed_buyer?: boolean | null;
 };
 
 type State = {
@@ -34,7 +36,7 @@ export function useAdminCompanies() {
     const { data, error } = await supabase
       .from("companies")
       .select(
-        "id, company_number, name, country, state, city, phone, website, logo_url, is_buyer, is_supplier, is_verified, status, onboarded_at, created_at, protein_profiles",
+        "id, company_number, name, country, state, city, phone, website, logo_url, is_buyer, is_supplier, is_verified, status, onboarded_at, created_at, protein_profiles, mundus_managed_supplier, mundus_managed_buyer",
       )
       .order("created_at", { ascending: false })
       .limit(1000);

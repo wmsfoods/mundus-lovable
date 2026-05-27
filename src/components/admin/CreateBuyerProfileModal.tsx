@@ -5,6 +5,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
 
+const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine"] as const;
+
 const schema = z.object({
   companyName: z.string().trim().min(1, "Company name is required").max(120),
   country: z.string().trim().min(1, "Country is required").max(80),
@@ -22,10 +24,10 @@ type FormData = z.infer<typeof schema>;
 
 const empty: FormData = {
   companyName: "", country: "", city: "", taxId: "", website: "", logoUrl: "",
-  contactName: "", contactEmail: "", contactPhone: "", role: "master_supplier",
+  contactName: "", contactEmail: "", contactPhone: "", role: "master_buyer",
 };
 
-export function CreateSupplierProfileModal({
+export function CreateBuyerProfileModal({
   open,
   onClose,
   onCreated,
@@ -35,7 +37,7 @@ export function CreateSupplierProfileModal({
   onCreated?: (companyId: string) => void;
 }) {
   const [form, setForm] = useState<FormData>(empty);
-  const [addMundusAdmin, setAddMundusAdmin] = useState(true);
+  const [proteins, setProteins] = useState<string[]>([]);
   const [mundusManaged, setMundusManaged] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
@@ -44,6 +46,9 @@ export function CreateSupplierProfileModal({
 
   const upd = <K extends keyof FormData>(k: K, v: FormData[K]) =>
     setForm((s) => ({ ...s, [k]: v }));
+
+  const toggleProtein = (p: string) =>
+    setProteins((s) => (s.includes(p) ? s.filter((x) => x !== p) : [...s, p]));
 
   const handleSubmit = async () => {
     const parsed = schema.safeParse(form);
@@ -73,9 +78,11 @@ export function CreateSupplierProfileModal({
           website: f.website || null,
           logo_url: f.logoUrl || null,
           office_type: "headquarters",
-          is_supplier: true,
-          is_buyer: false,
-          mundus_managed_supplier: mundusManaged,
+          is_buyer: true,
+          is_supplier: false,
+          buyer_protein_profile: proteins,
+          mundus_managed_buyer: mundusManaged,
+          status: "active",
         })
         .select("id")
         .single();
@@ -83,51 +90,32 @@ export function CreateSupplierProfileModal({
 
       const { error: tiErr } = await supabase.from("team_invitations").insert({
         company_id: company.id,
-        email: f.contactEmail.toLowerCase(),
         full_name: f.contactName,
+        email: f.contactEmail.toLowerCase(),
         phone: f.contactPhone || null,
-        profile_type: f.role || "master_supplier",
+        profile_type: f.role || "master_buyer",
         role: (f.role || "").includes("master") ? "master" : "member",
         account_status: "pending",
       });
       if (tiErr) throw tiErr;
 
-      if (addMundusAdmin) {
-        const { data: auth } = await supabase.auth.getUser();
-        const adminId = auth?.user?.id;
-        if (adminId) {
-          const { data: existing } = await supabase
-            .from("user_offices")
-            .select("id")
-            .eq("user_id", adminId)
-            .eq("company_id", company.id)
-            .maybeSingle();
-          if (!existing) {
-            await supabase.from("user_offices").insert({
-              user_id: adminId,
-              company_id: company.id,
-              role: "office_admin",
-              is_primary: false,
-            });
-          }
-        }
-      }
-
-      toast.success("Supplier profile created");
       auditLog({
-        action: "company.supplier_created",
+        action: "company.buyer_created",
         category: "company",
         entityType: "company",
         entityId: company.id,
         entityLabel: f.companyName,
-        details: { mundus_managed: mundusManaged },
+        details: { mundus_managed: mundusManaged, proteins },
       });
+
+      toast.success("Buyer profile created");
       setForm(empty);
+      setProteins([]);
       onCreated?.(company.id);
       onClose();
     } catch (e) {
       const msg = e instanceof Error ? e.message : String(e);
-      toast.error(`Failed to create supplier: ${msg}`);
+      toast.error(`Failed to create buyer: ${msg}`);
     } finally {
       setSubmitting(false);
     }
@@ -147,7 +135,7 @@ export function CreateSupplierProfileModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ padding: "16px 20px", borderBottom: "1px solid #e5e7eb", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>🏢 Create Supplier Profile</h2>
+          <h2 style={{ margin: 0, fontSize: 16, fontWeight: 600 }}>🛒 Create Buyer Profile</h2>
           <button type="button" onClick={onClose} style={{ background: "transparent", border: "none", cursor: "pointer" }}>
             <X size={18} />
           </button>
@@ -182,7 +170,7 @@ export function CreateSupplierProfileModal({
             <Field label="Full Name *" error={errors.contactName}>
               <input style={inputStyle} value={form.contactName} onChange={(e) => upd("contactName", e.target.value)} maxLength={120} />
             </Field>
-            <div className="field-row" style={twoCol}>
+            <div className="field-row" style={{ ...twoCol, marginTop: 12 }}>
               <Field label="Email *" error={errors.contactEmail}>
                 <input style={inputStyle} type="email" value={form.contactEmail} onChange={(e) => upd("contactEmail", e.target.value)} maxLength={255} />
               </Field>
@@ -190,13 +178,39 @@ export function CreateSupplierProfileModal({
                 <input style={inputStyle} value={form.contactPhone} onChange={(e) => upd("contactPhone", e.target.value)} maxLength={40} />
               </Field>
             </div>
-            <Field label="Role">
-              <select style={inputStyle} value={form.role} onChange={(e) => upd("role", e.target.value)}>
-                <option value="master_supplier">Master Supplier</option>
-                <option value="supplier_user">Supplier User</option>
-                <option value="office_admin">Office Admin</option>
-              </select>
-            </Field>
+            <div style={{ marginTop: 12 }}>
+              <Field label="Role">
+                <select style={inputStyle} value={form.role} onChange={(e) => upd("role", e.target.value)}>
+                  <option value="master_buyer">Master Buyer</option>
+                  <option value="procurement_manager">Procurement Manager</option>
+                  <option value="buyer_operator">Buyer Operator</option>
+                  <option value="viewer">Viewer</option>
+                </select>
+              </Field>
+            </div>
+          </div>
+
+          <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 8, paddingTop: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", textTransform: "uppercase", marginBottom: 8 }}>Protein Profile</div>
+            <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+              {PROTEINS.map((p) => {
+                const active = proteins.includes(p);
+                return (
+                  <button
+                    key={p}
+                    type="button"
+                    onClick={() => toggleProtein(p)}
+                    style={{
+                      padding: "6px 12px", borderRadius: 999, fontSize: 12, cursor: "pointer",
+                      background: active ? "#2563EB" : "#fff", color: active ? "#fff" : "#374151",
+                      border: `1px solid ${active ? "#2563EB" : "#e5e7eb"}`, fontWeight: 500,
+                    }}
+                  >
+                    {p}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div style={{ borderTop: "1px solid #e5e7eb", marginTop: 8, paddingTop: 12 }}>
@@ -204,13 +218,13 @@ export function CreateSupplierProfileModal({
               <input
                 type="checkbox"
                 checked={mundusManaged}
-                onChange={(e) => { setMundusManaged(e.target.checked); setAddMundusAdmin(e.target.checked); }}
+                onChange={(e) => setMundusManaged(e.target.checked)}
                 style={{ marginTop: 3 }}
               />
               <span>
-                <strong>Mundus manages offers for this supplier</strong>
+                <strong>Mundus manages requests for this buyer</strong>
                 <div style={{ fontSize: 11, color: "#6b7280" }}>
-                  Allows the Mundus team to create and manage offers on behalf of this supplier.
+                  Allows the Mundus team to create and manage requests on behalf of this buyer.
                 </div>
               </span>
             </label>
@@ -246,5 +260,5 @@ const btnGhost: React.CSSProperties = {
   padding: "8px 14px", borderRadius: 6, border: "1px solid #d1d5db", background: "white", fontSize: 13, cursor: "pointer",
 };
 const btnPrimary: React.CSSProperties = {
-  padding: "8px 14px", borderRadius: 6, border: "1px solid #8B2252", background: "#8B2252", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer",
+  padding: "8px 14px", borderRadius: 6, border: "1px solid #2563EB", background: "#2563EB", color: "white", fontSize: 13, fontWeight: 600, cursor: "pointer",
 };

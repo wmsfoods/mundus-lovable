@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from "lucide-react";
 import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
+import { CreateBuyerProfileModal } from "@/components/admin/CreateBuyerProfileModal";
 import {
   useAdminCompanies,
   companyType,
@@ -43,6 +44,7 @@ export default function AdminCompanies() {
   const navigate = useNavigate();
   const { rows, loading, error } = useAdminCompanies();
   const [createSupplierOpen, setCreateSupplierOpen] = useState(false);
+  const [createBuyerOpen, setCreateBuyerOpen] = useState(false);
 
   const [search, setSearch] = useState("");
   const [typeF, setTypeF] = useState<CompanyTypeFilter>("all");
@@ -97,6 +99,14 @@ export default function AdminCompanies() {
             onClick={() => setCreateSupplierOpen(true)}
           >
             <Plus size={14} style={{ marginRight: 4, display: "inline" }} /> Create Supplier Profile
+          </button>
+          <button
+            type="button"
+            className="crm-btn-primary"
+            style={{ background: "#2563EB", color: "white", borderRadius: 6, padding: "8px 12px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}
+            onClick={() => setCreateBuyerOpen(true)}
+          >
+            <Plus size={14} style={{ marginRight: 4, display: "inline" }} /> Create Buyer Profile
           </button>
           <button type="button" className="crm-btn-primary" onClick={() => navigate("/admin/companies/new")}>
             <Plus size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.new")}
@@ -187,6 +197,11 @@ export default function AdminCompanies() {
         onClose={() => setCreateSupplierOpen(false)}
         onCreated={(id) => navigate(`/admin/companies/${id}`)}
       />
+      <CreateBuyerProfileModal
+        open={createBuyerOpen}
+        onClose={() => setCreateBuyerOpen(false)}
+        onCreated={(id) => navigate(`/admin/companies/${id}`)}
+      />
     </div>
   );
 }
@@ -211,7 +226,14 @@ function Row({
             {initials(row.name)}
           </span>
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
-            <strong>{row.name}</strong>
+            <strong style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              {row.name}
+              {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
+                <span title="Managed by Mundus team" style={{ fontSize: 10, fontWeight: 600, padding: "2px 6px", borderRadius: 999, background: "#FDF2F8", color: "#8B2252", border: "1px solid #F9D0E0" }}>
+                  🏢 Mundus Managed
+                </span>
+              )}
+            </strong>
             <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>#{row.company_number}</span>
           </div>
         </div>
@@ -312,6 +334,11 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
           <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
             {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
           </span>
+          {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
+            <span className="adm-chip" style={{ background: "#FDF2F8", color: "#8B2252", borderColor: "#F9D0E0", fontSize: 10 }}>
+              🏢 Mundus Managed
+            </span>
+          )}
           {row.is_verified && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16a34a", fontSize: 11, fontWeight: 600 }}>
               <CheckCircle2 size={12} /> {t("common.yes")}

@@ -501,6 +501,8 @@ export type Database = {
           is_supplier: boolean | null
           is_verified: boolean | null
           logo_url: string | null
+          mundus_managed_buyer: boolean
+          mundus_managed_supplier: boolean
           name: string
           office_country: string | null
           office_name: string | null
@@ -542,6 +544,8 @@ export type Database = {
           is_supplier?: boolean | null
           is_verified?: boolean | null
           logo_url?: string | null
+          mundus_managed_buyer?: boolean
+          mundus_managed_supplier?: boolean
           name: string
           office_country?: string | null
           office_name?: string | null
@@ -583,6 +587,8 @@ export type Database = {
           is_supplier?: boolean | null
           is_verified?: boolean | null
           logo_url?: string | null
+          mundus_managed_buyer?: boolean
+          mundus_managed_supplier?: boolean
           name?: string
           office_country?: string | null
           office_name?: string | null
