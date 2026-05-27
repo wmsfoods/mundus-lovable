@@ -78,6 +78,10 @@ function getEmpty(): AdminAnalytics {
   };
 }
 
+function warnAdminQuery(name: string, error: unknown) {
+  if (error) console.warn(`[admin-analytics] ${name} query failed`, error);
+}
+
 function getRelativeTime(iso: string | null | undefined): string {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
@@ -93,10 +97,11 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-analytics-live"],
     queryFn: async (): Promise<AdminAnalytics> => {
-      const [
-        offersRes, negsRes, ordersRes, companiesRes,
-        negRoundsRes, recentNegsRes, offerItemsRes, buyerReqsRes, marketsRes,
-      ] = await Promise.all([
+      try {
+        const [
+          offersRes, negsRes, ordersRes, companiesRes,
+          negRoundsRes, recentNegsRes, offerItemsRes, buyerReqsRes, marketsRes,
+        ] = await Promise.all([
         supabase.from("offers").select("id, status, supplier_id, created_at, deleted_at").is("deleted_at", null),
         supabase.from("negotiations").select("id, status, offer_id, buyer_company_id, settled_total_value, created_at, updated_at, deleted_at").is("deleted_at", null),
         supabase.from("orders").select("id, status, created_at, deleted_at").is("deleted_at", null),
@@ -107,6 +112,16 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
         supabase.from("buyer_requests").select("id, destination_country, created_at, status").is("deleted_at", null),
         supabase.from("offer_markets").select("offer_id, country_name"),
       ]);
+
+      warnAdminQuery("offers", offersRes.error);
+      warnAdminQuery("negotiations", negsRes.error);
+      warnAdminQuery("orders", ordersRes.error);
+      warnAdminQuery("companies", companiesRes.error);
+      warnAdminQuery("round_proposals", negRoundsRes.error);
+      warnAdminQuery("recent_negotiations", recentNegsRes.error);
+      warnAdminQuery("offer_items", offerItemsRes.error);
+      warnAdminQuery("buyer_requests", buyerReqsRes.error);
+      warnAdminQuery("offer_markets", marketsRes.error);
 
       const offers = (offersRes.data ?? []) as any[];
       const negs = (negsRes.data ?? []) as any[];
@@ -306,9 +321,15 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
         avgByProduct,
         opsQueue: [],
       };
+      } catch (error) {
+        console.warn("[admin-analytics] failed to load dashboard data", error);
+        return getEmpty();
+      }
     },
     staleTime: 60_000,
     refetchInterval: 120_000,
+    retry: 1,
+    throwOnError: false,
   });
 
   return { ...(data ?? getEmpty()), loading: isLoading };

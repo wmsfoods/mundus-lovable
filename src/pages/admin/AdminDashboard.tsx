@@ -61,13 +61,13 @@ export default function AdminDashboard() {
   const fmtN = (v: number | undefined) => (v === undefined ? "—" : v.toLocaleString("en-US"));
 
   // pipeline scale
-  const pipeMax = a.pipeline[0].count;
+  const pipeMax = Math.max(...a.pipeline.map((p) => p.count), 1);
 
   // top lists max
-  const buyerMax = Math.max(...a.topBuyers.map((b) => b.gmv));
-  const supplierMax = Math.max(...a.topSuppliers.map((s) => s.gmv));
-  const destMax = Math.max(...a.destinations.map((d) => d.gmv));
-  const portMax = Math.max(...a.originPorts.map((p) => p.tons));
+  const buyerMax = Math.max(...a.topBuyers.map((b) => b.gmv), 1);
+  const supplierMax = Math.max(...a.topSuppliers.map((s) => s.gmv), 1);
+  const destMax = Math.max(...a.destinations.map((d) => d.gmv), 1);
+  const portMax = Math.max(...a.originPorts.map((p) => p.tons), 1);
 
   const rounds = a.negotiationRounds;
   const tta = a.timeToAcceptance;
