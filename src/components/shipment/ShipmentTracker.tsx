@@ -266,8 +266,8 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       cacheControl: "3600", upsert: false, contentType: file.type,
     });
     if (upErr) { setExtractError(`Upload failed: ${upErr.message}`); return; }
-    const { data: pub } = supabase.storage.from("bl-documents").getPublicUrl(path);
-    const url = pub.publicUrl;
+    // Bucket is private — store the storage path; signed URLs are issued on demand.
+    const url = path;
     const patch: Partial<ShipmentContainer> = kind === "final"
       ? { bl_document_url: url }
       : { bl_draft_url: url };
