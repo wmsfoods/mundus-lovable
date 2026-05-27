@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { WeightUnitProvider } from "@/contexts/WeightUnitContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import { RoleRedirect } from "@/components/RoleRedirect";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/signup/Signup.tsx";
 import SignupSuccess from "./pages/signup/SignupSuccess.tsx";
@@ -146,7 +147,9 @@ const App = () => (
               path="/buyer"
               element={
                 <RequireAuth>
-                  <BuyerShell />
+                  <ErrorBoundary>
+                    <BuyerShell />
+                  </ErrorBoundary>
                 </RequireAuth>
               }
             >
@@ -176,7 +179,9 @@ const App = () => (
               path="/supplier"
               element={
                 <RequireAuth>
-                  <SupplierShell />
+                  <ErrorBoundary>
+                    <SupplierShell />
+                  </ErrorBoundary>
                 </RequireAuth>
               }
             >
@@ -201,7 +206,7 @@ const App = () => (
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
-            <Route path="/admin" element={<AdminShell />}>
+            <Route path="/admin" element={<ErrorBoundary><AdminShell /></ErrorBoundary>}>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="analytics" element={<AdminAnalytics />} />
