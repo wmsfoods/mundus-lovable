@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { MockPerson, MockCompany } from "@/data/mockProspect";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import { ScanCardButton } from "@/components/admin/ScanCardButton";
 
 const DEPARTMENTS = ["Operations","Purchasing","Sales","Marketing","Logistics","Finance","Executive","Other"];
 const SENIORITIES = ["C-Level","VP","Director","Manager","Senior","Staff","Entry"];
@@ -334,6 +335,34 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
         {dupWarn && <div className="psp-scrm-warn">{dupWarn}</div>}
 
         <div className="psp-scrm-body">
+          <ScanCardButton
+            hint="Scan a business card to auto-fill contact & company fields."
+            onScanned={(d) => {
+              if (d.fullName) setFullName(d.fullName);
+              if (d.email) setEmail(d.email);
+              if (d.phone) setPhone(d.phone);
+              if (d.mobile) setMobile(d.mobile);
+              if (d.linkedin) setPersonalLinkedin(d.linkedin);
+              if (d.jobTitle) setJobTitle(d.jobTitle);
+              if (d.country) setCountry(d.country);
+              if (d.city) setCity(d.city);
+              if (d.state) setState(d.state);
+              if (d.company) setCoName(d.company);
+              if (d.website) {
+                setCoWebsite(d.website);
+                try {
+                  const host = new URL(d.website).hostname.replace(/^www\./, "");
+                  if (host) setCoDomain(host);
+                } catch {}
+              }
+              if (d.phone) setCoPhone(d.phone);
+              if (d.address) setCoStreet(d.address);
+              if (d.city) setCoCity(d.city);
+              if (d.state) setCoState(d.state);
+              if (d.country) setCoCountry(d.country);
+              if (d.postalCode) setCoZip(d.postalCode);
+            }}
+          />
           <Section title="Contact Info">
             <div className="psp-scrm-grid">
               <Field label="Full Name" required auto={!!src?.fullName}><input className="psp-input" value={fullName} onChange={(e) => setFullName(e.target.value)} /></Field>
