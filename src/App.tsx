@@ -196,8 +196,10 @@ const App = () => (
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
               <Route path="offers" element={<AdminOffers />} />
+              <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="deals" element={<AdminOrders />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
+              <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
               <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
               <Route path="disputes" element={<AdminComingSoon section="disputes" />} />
               <Route path="crm/prospects" element={<AdminProspects />} />

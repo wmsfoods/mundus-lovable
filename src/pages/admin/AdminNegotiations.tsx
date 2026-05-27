@@ -1,7 +1,7 @@
 import { Fragment, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Handshake, AlertCircle, Search, ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
+import { Handshake, AlertCircle, Search, ChevronDown, ChevronRight, ExternalLink, SlidersHorizontal } from "lucide-react";
 import {
   useAdminNegotiations,
   type AdminNegotiationRow,
@@ -101,6 +101,12 @@ export default function AdminNegotiations() {
   const [page, setPage] = useState(1);
   const [expandedNeg, setExpandedNeg] = useState<Record<string, boolean>>({});
   const [collapsedGroups, setCollapsedGroups] = useState<Record<string, boolean>>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const activeFilterCount =
+    (filter !== "all" ? 1 : 0) +
+    (protein !== "all" ? 1 : 0) +
+    (dateRange !== "all" ? 1 : 0) +
+    (sortBy !== "recent" ? 1 : 0);
 
   const stats = useMemo(() => {
     const active = rows.filter((r) => !["bid_accepted", "offer_rejected", "offer_exhausted", "expired"].includes(r.status)).length;
@@ -159,10 +165,12 @@ export default function AdminNegotiations() {
   const pageGroups = grouped.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   const handleRowClick = (row: AdminNegotiationRow) => {
+    navigate(`/admin/negotiations/${row.id}`);
+  };
+  const toggleExpanded = (row: AdminNegotiationRow) => {
     setExpandedNeg((m) => ({ ...m, [row.id]: !m[row.id] }));
   };
-
-  const openOfferView = (offerId: string) => navigate(`/admin/offers?id=${offerId}`);
+  const openOfferView = (offerId: string) => navigate(`/admin/offers/${offerId}`);
 
   return (
     <div className="adm-body">
@@ -184,8 +192,8 @@ export default function AdminNegotiations() {
       </div>
 
       {/* Filters row */}
-      <div className="adm-panel" style={{ padding: 12, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 8 }}>
-        <div style={{ position: "relative", flex: "1 1 240px", minWidth: 200 }}>
+      <div className="adm-panel" style={{ padding: 10, display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center", marginTop: 8 }}>
+        <div style={{ position: "relative", flex: "1 1 320px", minWidth: 220 }}>
           <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9ca3af" }} />
           <input
             type="text"
@@ -195,33 +203,55 @@ export default function AdminNegotiations() {
             style={{ ...INPUT_STYLE, paddingLeft: 30, width: "100%" }}
           />
         </div>
-        <select style={INPUT_STYLE} value={filter} onChange={(e) => { setFilter(e.target.value as FilterKey); setPage(1); }}>
-          <option value="all">All statuses</option>
-          <option value="awaiting_supplier">Awaiting Supplier</option>
-          <option value="pending_buyer_review">Awaiting Buyer</option>
-          <option value="bid_accepted">Bid Accepted</option>
-          <option value="rejected">Rejected</option>
-          <option value="expired">Expired</option>
-        </select>
-        <select style={INPUT_STYLE} value={protein} onChange={(e) => { setProtein(e.target.value as ProteinKey); setPage(1); }}>
-          <option value="all">All proteins</option>
-          <option value="beef">Beef</option>
-          <option value="pork">Pork</option>
-          <option value="poultry">Poultry</option>
-          <option value="lamb">Lamb</option>
-        </select>
-        <select style={INPUT_STYLE} value={dateRange} onChange={(e) => { setDateRange(e.target.value as DateRangeKey); setPage(1); }}>
-          <option value="all">All time</option>
-          <option value="7d">Last 7 days</option>
-          <option value="30d">Last 30 days</option>
-          <option value="90d">Last 90 days</option>
-        </select>
-        <select style={INPUT_STYLE} value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
-          <option value="recent">Most Recent</option>
-          <option value="oldest">Oldest</option>
-          <option value="value">Highest Value</option>
-          <option value="rounds">Most Rounds</option>
-        </select>
+        <button
+          type="button"
+          onClick={() => setFiltersOpen((v) => !v)}
+          style={{ ...INPUT_STYLE, display: "inline-flex", alignItems: "center", gap: 6, cursor: "pointer", fontWeight: 500 }}
+        >
+          <SlidersHorizontal size={14} />
+          Filters{activeFilterCount > 0 ? ` · ${activeFilterCount}` : ""}
+          <ChevronDown size={12} style={{ transform: filtersOpen ? "rotate(180deg)" : "none", transition: "transform 150ms" }} />
+        </button>
+        {activeFilterCount > 0 && (
+          <button
+            type="button"
+            onClick={() => { setFilter("all"); setProtein("all"); setDateRange("all"); setSortBy("recent"); setPage(1); }}
+            style={{ ...INPUT_STYLE, cursor: "pointer", color: "#8B2252", borderColor: "transparent", background: "transparent" }}
+          >
+            Clear
+          </button>
+        )}
+        {filtersOpen && (
+          <div style={{ flex: "1 1 100%", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 8, paddingTop: 8, borderTop: "1px solid #f1f5f9" }}>
+            <select style={INPUT_STYLE} value={filter} onChange={(e) => { setFilter(e.target.value as FilterKey); setPage(1); }}>
+              <option value="all">All statuses</option>
+              <option value="awaiting_supplier">Awaiting Supplier</option>
+              <option value="pending_buyer_review">Awaiting Buyer</option>
+              <option value="bid_accepted">Bid Accepted</option>
+              <option value="rejected">Rejected</option>
+              <option value="expired">Expired</option>
+            </select>
+            <select style={INPUT_STYLE} value={protein} onChange={(e) => { setProtein(e.target.value as ProteinKey); setPage(1); }}>
+              <option value="all">All proteins</option>
+              <option value="beef">Beef</option>
+              <option value="pork">Pork</option>
+              <option value="poultry">Poultry</option>
+              <option value="lamb">Lamb</option>
+            </select>
+            <select style={INPUT_STYLE} value={dateRange} onChange={(e) => { setDateRange(e.target.value as DateRangeKey); setPage(1); }}>
+              <option value="all">All time</option>
+              <option value="7d">Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+              <option value="90d">Last 90 days</option>
+            </select>
+            <select style={INPUT_STYLE} value={sortBy} onChange={(e) => setSortBy(e.target.value as SortKey)}>
+              <option value="recent">Most Recent</option>
+              <option value="oldest">Oldest</option>
+              <option value="value">Highest Value</option>
+              <option value="rounds">Most Rounds</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -292,6 +322,7 @@ export default function AdminNegotiations() {
                             navigate={navigate}
                             expanded={!!expandedNeg[r.id]}
                             onToggle={() => handleRowClick(r)}
+                            onToggleExpand={(e) => { e.stopPropagation(); toggleExpanded(r); }}
                             onOpenOffer={() => openOfferView(r.offer_id)}
                             isChild={isCluster}
                             isLast={idx === group.length - 1}
@@ -338,7 +369,7 @@ export default function AdminNegotiations() {
 }
 
 function NegotiationRow({
-  r, unit, locale, t, navigate, expanded, onToggle, onOpenOffer, isChild, isLast,
+  r, unit, locale, t, navigate, expanded, onToggle, onToggleExpand, onOpenOffer, isChild, isLast,
 }: {
   r: AdminNegotiationRow;
   unit: "kg" | "lbs";
@@ -347,6 +378,7 @@ function NegotiationRow({
   navigate: (path: string) => void;
   expanded: boolean;
   onToggle: () => void;
+  onToggleExpand: (e: React.MouseEvent) => void;
   onOpenOffer: () => void;
   isChild: boolean;
   isLast: boolean;
@@ -363,7 +395,7 @@ function NegotiationRow({
   return (
     <>
       <tr onClick={onToggle} style={{ cursor: "pointer" }}>
-        <td>
+        <td onClick={onToggleExpand} style={{ cursor: "pointer" }}>
           {isChild ? (
             <span style={{ display: "inline-block", width: 14, borderLeft: "1px solid #e5e7eb", borderBottom: isLast ? "1px solid #e5e7eb" : "none", height: 18, marginLeft: 6 }} />
           ) : (
@@ -471,9 +503,8 @@ function ExpandedDetail({
       <div>
         <div style={{ fontSize: 11, color: "#6b7280", textTransform: "uppercase", letterSpacing: 0.4, marginBottom: 6 }}>Links</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6, fontSize: 13 }}>
-          <button type="button" onClick={() => navigate(`/admin/offers?id=${r.offer_id}`)} style={linkBtn}>→ View Offer</button>
-          <button type="button" onClick={() => navigate(`/supplier/negotiations/${r.id}`)} style={linkBtn}>→ Open Supplier View</button>
-          <button type="button" onClick={() => navigate(`/buyer/negotiations/${r.id}`)} style={linkBtn}>→ Open Buyer View</button>
+          <button type="button" onClick={() => navigate(`/admin/offers/${r.offer_id}`)} style={linkBtn}>→ View Offer</button>
+          <button type="button" onClick={() => navigate(`/admin/negotiations/${r.id}`)} style={linkBtn}>→ Open Negotiation</button>
         </div>
       </div>
       {r.cut_names.length > 0 && (
