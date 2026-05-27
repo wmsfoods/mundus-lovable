@@ -339,8 +339,6 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
               🏢 Mundus Managed
             </span>
           )}
-          <span style={{ display: "none" }}>
-          </span>
           {row.is_verified && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16a34a", fontSize: 11, fontWeight: 600 }}>
               <CheckCircle2 size={12} /> {t("common.yes")}
