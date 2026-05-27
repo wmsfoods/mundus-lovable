@@ -4168,6 +4168,7 @@ export type Database = {
           order_number: number
           placed_at: string | null
           reject_justification: string | null
+          revenue_status: string
           status: string | null
         }
         Insert: {
@@ -4188,6 +4189,7 @@ export type Database = {
           order_number?: number
           placed_at?: string | null
           reject_justification?: string | null
+          revenue_status?: string
           status?: string | null
         }
         Update: {
@@ -4208,6 +4210,7 @@ export type Database = {
           order_number?: number
           placed_at?: string | null
           reject_justification?: string | null
+          revenue_status?: string
           status?: string | null
         }
         Relationships: [
