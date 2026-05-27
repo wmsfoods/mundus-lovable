@@ -897,9 +897,9 @@ function ExtractionReview({
           ✕ Dismiss
         </button>
         {blUrl && (
-          <a className="shp-carrier-btn shp-btn-ghost" href={blUrl} target="_blank" rel="noopener noreferrer">
-            📄 View BL
-          </a>
+          <BLDocLink value={blUrl} mode="view">
+            <span className="shp-carrier-btn shp-btn-ghost">📄 View BL</span>
+          </BLDocLink>
         )}
       </div>
     </div>
