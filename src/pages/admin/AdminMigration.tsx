@@ -130,7 +130,7 @@ export default function AdminMigration() {
               is_supplier: isSupplier,
               is_buyer: isBuyer,
               status: "active",
-            }).select("id").single();
+            } as any).select("id").single();
             if (coErr || !newCo) throw coErr ?? new Error("company_create_failed");
             companyId = newCo.id;
           }
