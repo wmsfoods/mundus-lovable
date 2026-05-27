@@ -475,7 +475,12 @@ export default function AdminProspects() {
                   </td>
                   <td><span className="pill info">{t(`admin.crm.roles.${p.role}`)}</span></td>
                   <td><span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span></td>
-                  <td><span className="mono">{p.country}</span></td>
+                  <td>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 16 }}>{countryFlag(p.country)}</span>
+                      <span>{p.country || "—"}</span>
+                    </span>
+                  </td>
                   <td style={{ textAlign: "right" }}>{fmtGmv(p.estGmv)}</td>
                   <td><span className="crm-owner-av">{p.owner}</span></td>
                   <td>
