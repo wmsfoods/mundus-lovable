@@ -7,6 +7,7 @@ import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
 import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -412,7 +413,9 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
       {/* Profile-related sub-tabs use shared component */}
       {!isNew && id && activeTab !== "profile" && (
         <div style={{ marginTop: 16 }}>
-          <ProfileTabContent tab={activeTab} companyId={id} />
+          {activeTab === "team"
+            ? <CompanyTeamPanel companyId={id} isSupplier={!!form.is_supplier} isBuyer={!!form.is_buyer} />
+            : <ProfileTabContent tab={activeTab} companyId={id} />}
         </div>
       )}
 

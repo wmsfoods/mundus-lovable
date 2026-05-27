@@ -5971,6 +5971,59 @@ export type Database = {
           },
         ]
       }
+      team_invitations: {
+        Row: {
+          account_status: string
+          auth_user_id: string | null
+          company_id: string
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          invited_at: string | null
+          phone: string | null
+          profile_type: string | null
+          role: string
+          updated_at: string
+        }
+        Insert: {
+          account_status?: string
+          auth_user_id?: string | null
+          company_id: string
+          created_at?: string
+          email: string
+          full_name: string
+          id?: string
+          invited_at?: string | null
+          phone?: string | null
+          profile_type?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Update: {
+          account_status?: string
+          auth_user_id?: string | null
+          company_id?: string
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          invited_at?: string | null
+          phone?: string | null
+          profile_type?: string | null
+          role?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invitations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_offices: {
         Row: {
           company_id: string
