@@ -41,6 +41,8 @@ export type SupplierOffer = {
   items: SupplierOfferItem[];
   active: boolean;
   exwPickupLocation?: string | null;
+  viewCount?: number;
+  proposalCount?: number;
 };
 
 export const MOCK_SUPPLIER_OFFERS: SupplierOffer[] = [
