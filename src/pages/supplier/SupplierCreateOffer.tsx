@@ -356,17 +356,18 @@ export default function SupplierCreateOffer() {
   const [plantManual, setPlantManual] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    if (!company?.id) return;
     let cancelled = false;
     (async () => {
       try {
         const { data, error } = await supabase
           .from("companies")
           .select("plant_numbers")
-          .limit(1)
+          .eq("id", company.id)
           .maybeSingle();
         if (cancelled || error || !data) return;
         const list = (data as any).plant_numbers as string[] | null;
-        if (list && list.length > 0) setCompanyPlants(list);
+        setCompanyPlants(list ?? []);
       } catch {
         /* no-op: anonymous or no company; falls back to free text input */
       }
@@ -374,7 +375,7 @@ export default function SupplierCreateOffer() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [company?.id]);
 
   const [mlOpen, setMlOpen] = useState(false);
   const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
