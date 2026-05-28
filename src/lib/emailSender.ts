@@ -19,16 +19,23 @@ export async function sendEmailNotification<T extends EmailTemplateName>(
     const subjectFn = emailSubjects[templateName];
     const subject = subjectFn ? subjectFn(templateVars) : "Mundus Trade Notification";
 
-    const { error } = await (supabase as any).from("email_queue").insert({
+    const { data: queued, error } = await (supabase as any).from("email_queue").insert({
       to_email: recipientEmail,
       subject,
       html_body: html,
       template_name: templateName,
       template_vars: templateVars,
       status: "queued",
-    });
+    }).select("id").single();
     if (error) {
       console.warn("[sendEmail] Queue failed:", error.message);
+      return;
+    }
+    // Fire-and-forget immediate dispatch (never block the caller)
+    if (queued?.id) {
+      supabase.functions
+        .invoke("send-email", { body: { email_id: queued.id } })
+        .catch((e) => console.warn("[sendEmail] dispatch failed", e));
     }
   } catch (e) {
     console.warn("[sendEmail] Unexpected error:", e);
