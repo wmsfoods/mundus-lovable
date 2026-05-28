@@ -317,7 +317,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
             country: l.country || "—",
             zip_code: l.zip_code,
             est_number: l.est_number,
-            tax_id: company.tax_id || "—",
+            tax_id: `${companyId}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
             phone: company.phone || "—",
           });
           if (error) throw error;
