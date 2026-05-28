@@ -342,6 +342,48 @@ export function CounterOfferModal({
   }, [perspective, openItems, accepted, buyerInitialBid, counters, rounds, unit]);
   const errorCount = Object.keys(errors).length;
 
+  /**
+   * Per-row reference value displayed under the input as a hint.
+   *  - Buyer R2+ : floor = previous buyer bid for this item
+   *  - Buyer R1  : (handled in BidModal — not used here)
+   *  - Supplier  : ceiling = previous supplier counter, else asking price
+   */
+  const hintRefs = useMemo(() => {
+    const map = new Map<string, { kind: "min" | "max"; price: number; label: string }>();
+    if (perspective === "buyer") {
+      const buyerRounds = rounds.filter((r) => r.round % 2 === 1);
+      const lastBuyerRound = buyerRounds[buyerRounds.length - 1];
+      if (!lastBuyerRound) return map;
+      for (const c of lastBuyerRound.cut_rounds ?? []) {
+        map.set(c.offer_item_id, {
+          kind: "min",
+          price: Number(c.price_per_kg),
+          label: "your previous bid",
+        });
+      }
+    } else {
+      const supplierRounds = rounds.filter((r) => r.round % 2 === 0);
+      const lastSupplierRound = supplierRounds[supplierRounds.length - 1];
+      for (const it of openItems) {
+        const prev = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
+        if (prev) {
+          map.set(it.id, {
+            kind: "max",
+            price: Number(prev.price_per_kg),
+            label: "your previous counter",
+          });
+        } else {
+          map.set(it.id, {
+            kind: "max",
+            price: Number(it.price),
+            label: "asking price",
+          });
+        }
+      }
+    }
+    return map;
+  }, [perspective, rounds, openItems]);
+
   const deductionFeedback = useMemo(() => {
     if (perspective !== "buyer" || bulkMode !== "percent") return null;
     const v = parseFloat(bulkValue);
