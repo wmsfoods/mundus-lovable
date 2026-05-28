@@ -527,7 +527,6 @@
     },
     "home": {
       "hero": "更明智采购。全球寻源。更快成交。",
-      "hero_title": "从经过验证的全球供应商采购优质蛋白质。",
       "stats": {
         "activeOffers": "活跃报价",
         "totalOffers": "总报价数",
@@ -1804,7 +1803,6 @@
     },
     "home": {
       "heroTitle": "更智能地销售，更快地谈判，掌控全局。",
-      "hero_title": "更智能地销售，更快地谈判，保持控制。",
       "heroSubtitle": "在一个地方管理您的有效报价，审核买家提案，并完成交易。",
       "greeting": {
         "morning": "早上好，{{name}}",

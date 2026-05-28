@@ -14,7 +14,6 @@ import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
 import { supabase } from "@/integrations/supabase/client";
-import { HeroMarquee } from "@/components/mundus/HeroMarquee";
 
 type SupplierKpi = {
   key: "activeOffers" | "totalOffers" | "closedDeals" | "inNegotiation" | "avgClosing";
@@ -120,31 +119,60 @@ export default function SupplierHome() {
 
   return (
     <>
-      <section className="hero" style={{
-        position: "relative",
-        background: "linear-gradient(100deg, #6C0B28 0%, #A74764 55%, #EEC7D4 100%)",
-        borderRadius: 12,
-        padding: "32px 56px",
-        minHeight: 168,
-        display: "flex",
-        alignItems: "center",
-        color: "#fff",
-        marginBottom: 24,
-        overflow: "hidden",
-      }}>
-        <h2 style={{
-          fontSize: 28,
-          lineHeight: 1.2,
-          fontWeight: 600,
-          margin: 0,
-          maxWidth: "42%",
-          letterSpacing: "-0.01em",
-          position: "relative",
-          zIndex: 2,
-        }}>
-          {t("supplier.home.hero_title", "Sell smarter, negotiate faster, stay in control.")}
-        </h2>
-        <HeroMarquee perRow={6} rows={2} speed={55} />
+      <section className="hero sh-hero">
+        <span className="sh-hero-glow sh-hero-glow--a" aria-hidden />
+        <span className="sh-hero-glow sh-hero-glow--b" aria-hidden />
+        <div className="sh-hero-inner">
+          <div className="sh-hero-main">
+            <span className="sh-greeting">
+              <span className="sh-greeting-pulse">
+                <span className="ping" />
+                <span className="dot" />
+              </span>
+              {t(`supplier.home.greeting.${greetingKey}`, { name: firstName })}
+            </span>
+            <h2>
+              <span className="sh-hero-title-lead">{t("supplier.home.heroTitle")}</span>
+            </h2>
+            <p className="sh-hero-sub">
+              {t("supplier.home.heroSub", {
+                defaultValue: "Your operations are running smoothly. Here's a quick snapshot of your activity.",
+              })}
+            </p>
+          </div>
+
+          <div className="sh-hero-stats" aria-hidden={false}>
+            <div className="sh-hero-stat">
+              <div className="sh-hero-stat-row">
+                <div>
+                  <p className="sh-hero-stat-label">{t("supplier.home.stats.activeOffers")}</p>
+                  <p className="sh-hero-stat-value">{dash.activeOffers ?? "—"}</p>
+                </div>
+                <span className="sh-hero-stat-ic sh-hero-stat-ic--primary">
+                  <SparkleIcon size={18} />
+                </span>
+              </div>
+              <div className="sh-hero-stat-bar">
+                <span className="sh-hero-stat-bar-fill sh-hero-stat-bar-fill--primary" style={{ width: "72%" }} />
+              </div>
+            </div>
+
+            <div className="sh-hero-stat">
+              <div className="sh-hero-stat-row">
+                <div>
+                  <p className="sh-hero-stat-label">{t("supplier.home.stats.closedDeals")}</p>
+                  <p className="sh-hero-stat-value">{dash.closedDeals ?? "—"}</p>
+                </div>
+                <span className="sh-hero-stat-ic sh-hero-stat-ic--success">
+                  <CheckCircleIcon size={18} />
+                </span>
+              </div>
+              <div className="sh-hero-stat-bar">
+                <span className="sh-hero-stat-bar-fill sh-hero-stat-bar-fill--success" style={{ width: "100%" }} />
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
 
       <div className="stats">

@@ -527,7 +527,6 @@
     },
     "home": {
       "hero": "Achetez plus intelligemment. Sourcez mondialement. Concluez plus vite.",
-      "hero_title": "Approvisionnez-vous en protéines premium auprès de fournisseurs mondiaux vérifiés.",
       "stats": {
         "activeOffers": "Offres actives",
         "totalOffers": "Total des offres",
@@ -1804,7 +1803,6 @@
     },
     "home": {
       "heroTitle": "Vendez plus intelligemment, négociez plus vite, gardez le contrôle.",
-      "hero_title": "Vendez plus intelligemment, négociez plus vite, gardez le contrôle.",
       "heroSubtitle": "Gérez vos Offres actives, examinez les propositions de l'Acheteur et expédiez les Transactions depuis un seul endroit.",
       "greeting": {
         "morning": "Bonjour, {{name}}",
