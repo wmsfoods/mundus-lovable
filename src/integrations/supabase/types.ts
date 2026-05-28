@@ -4697,6 +4697,7 @@ export type Database = {
           supplier_rating: number | null
           total_fcl: number | null
           updated_at: string | null
+          view_count: number
         }
         Insert: {
           container_size: string
@@ -4724,6 +4725,7 @@ export type Database = {
           supplier_rating?: number | null
           total_fcl?: number | null
           updated_at?: string | null
+          view_count?: number
         }
         Update: {
           container_size?: string
@@ -4751,6 +4753,7 @@ export type Database = {
           supplier_rating?: number | null
           total_fcl?: number | null
           updated_at?: string | null
+          view_count?: number
         }
         Relationships: [
           {
@@ -6502,6 +6505,7 @@ export type Database = {
       }
       current_user_company_id: { Args: never; Returns: string }
       current_user_company_ids: { Args: never; Returns: string[] }
+      increment_offer_views: { Args: { offer_id: string }; Returns: undefined }
       is_company_master: { Args: { _company_id: string }; Returns: boolean }
       is_mundus_admin: { Args: never; Returns: boolean }
       reject_negotiation: {
