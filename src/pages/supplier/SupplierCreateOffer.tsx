@@ -690,6 +690,10 @@ export default function SupplierCreateOffer() {
       setCutRegion(src.cutRegion);
     }
 
+    if ((src as any).originPortId) {
+      setOriginPortId((src as any).originPortId as string);
+    }
+
     // Incoterms
     const incos = (src.incoterms ?? []).filter(Boolean);
     if (incos.length) {
