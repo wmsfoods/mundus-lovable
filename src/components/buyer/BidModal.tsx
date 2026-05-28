@@ -404,6 +404,26 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         relatedId: neg.id,
       }).catch(() => {});
 
+      // Best-effort branded email to first supplier contact (lazy import)
+      (async () => {
+        try {
+          const { data: contact } = await (supabase as any)
+            .from("users")
+            .select("email, full_name")
+            .or(`company_id.eq.${offer.supplier_id},active_company_id.eq.${offer.supplier_id}`)
+            .limit(1).maybeSingle();
+          if (!contact?.email) return;
+          const { sendEmailNotification } = await import("@/lib/emailSender");
+          sendEmailNotification("bidReceived" as any, contact.email, {
+            supplierName: contact.full_name || "Supplier",
+            buyerCompany: company?.name ?? "A buyer",
+            offerNumber: offer.offer_number,
+            round: 1,
+            maxRounds: 4,
+          } as any);
+        } catch { /* never break flow */ }
+      })();
+
       onOpenChange(false);
       navigate("/buyer/negotiations");
     } catch (e: any) {
