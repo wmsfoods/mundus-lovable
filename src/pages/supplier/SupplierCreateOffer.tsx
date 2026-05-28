@@ -1,9 +1,10 @@
-import { Fragment, useCallback, useState, useEffect, useRef } from "react";
+import { Fragment, useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
+import { DEFAULT_PROTEINS, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -226,6 +227,30 @@ export default function SupplierCreateOffer() {
   const [moreMktsOpen, setMoreMktsOpen] = useState(false);
   const [cutPickerOpen, setCutPickerOpen] = useState(false);
 
+  // Supplier protein profile → controls which categories appear in the form.
+  const [supplierProteins, setSupplierProteins] = useState<string[]>([]);
+  useEffect(() => {
+    if (!company?.id) {
+      setSupplierProteins([...DEFAULT_PROTEINS]);
+      return;
+    }
+    supabase
+      .from("companies")
+      .select("protein_profiles")
+      .eq("id", company.id)
+      .maybeSingle()
+      .then(({ data }) => setSupplierProteins(resolveProteinProfile((data as any)?.protein_profiles)));
+  }, [company?.id]);
+
+  const filteredCutsByCategory = useMemo(() => {
+    const out: typeof cutsByCategory = {} as any;
+    for (const cat of Object.keys(cutsByCategory)) {
+      if (supplierProteins.includes(cat)) out[cat] = cutsByCategory[cat];
+    }
+    // Failsafe: if the profile filters out everything available, fall back to the full catalog.
+    return Object.keys(out).length === 0 ? cutsByCategory : out;
+  }, [cutsByCategory, supplierProteins]);
+
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
   const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
@@ -254,6 +279,16 @@ export default function SupplierCreateOffer() {
   const [addRow, setAddRow] = useState(false);
   const [newImgPrev, setNewImgPrev] = useState<string | null>(null);
   const [nf, setNf] = useState<Omit<Cut, "id">>({ ...EMPTY_NF });
+
+  // Keep `nf.cat` (the add-row category selector) inside the supplier's profile.
+  useEffect(() => {
+    const keys = Object.keys(filteredCutsByCategory);
+    if (keys.length === 0) return;
+    if (!keys.includes(nf.cat)) {
+      setNf((p) => ({ ...p, cat: keys[0], cut: "", cutId: undefined, cutImage: null }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredCutsByCategory]);
 
   // Cut nomenclature region (only meaningful when company is US-based and category is Beef)
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
@@ -2326,7 +2361,7 @@ export default function SupplierCreateOffer() {
                           value={nf.cat}
                           onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}
                         >
-                          {Object.keys(cutsByCategory).map((c) => (
+                          {Object.keys(filteredCutsByCategory).map((c) => (
                             <option key={c} value={c}>
                               {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
                             </option>
@@ -2355,7 +2390,7 @@ export default function SupplierCreateOffer() {
                               <CommandList className="max-h-[320px]">
                                 <CommandEmpty>{tm("noCuts")}</CommandEmpty>
                                 <CommandGroup>
-                                  {(cutsByCategory[nf.cat] || [])
+                                  {(filteredCutsByCategory[nf.cat] || [])
                                     .filter((c) => {
                                       if (!["Beef", "Pork"].includes(nf.cat)) return c.region === "global";
                                       if (cutRegion === "us") return c.region === "us" || c.bone_spec === "Offals";
