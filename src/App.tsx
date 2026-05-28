@@ -15,6 +15,7 @@ import Login from "./pages/Login.tsx";
 import Signup from "./pages/signup/Signup.tsx";
 import SignupSuccess from "./pages/signup/SignupSuccess.tsx";
 import PartnerSignup from "./pages/signup/PartnerSignup.tsx";
+import InviteAccept from "./pages/InviteAccept.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import BuyerShell from "./layouts/BuyerShell.tsx";
@@ -118,6 +119,7 @@ const App = () => (
             <Route path="/signup/success" element={<SignupSuccess />} />
             <Route path="/signup/partner" element={<PartnerSignup />} />
             <Route path="/respond/:token" element={<SupplierRespond />} />
+           <Route path="/invite/:token" element={<InviteAccept />} />
             <Route path="/shipping-instructions/:token" element={<ShippingInstructionsForm />} />
             <Route path="/shipping-instructions/print/:requestId" element={<ShippingInstructionsPrint />} />
             <Route
