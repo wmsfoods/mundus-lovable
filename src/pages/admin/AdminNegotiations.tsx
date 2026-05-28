@@ -426,6 +426,18 @@ function NegotiationRow({
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
             <span>{countryFlag(r.supplier_country)}</span>
             <span>{r.supplier_name ?? "—"}</span>
+            {r.is_managed_supplier && (
+              <span
+                title="Managed by Mundus — act on behalf of this supplier"
+                style={{
+                  fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
+                  background: "#FDF2F8", color: "#8B2252", border: "1px solid #FBCFE8",
+                  textTransform: "uppercase", letterSpacing: 0.4,
+                }}
+              >
+                🏛 Managed
+              </span>
+            )}
           </div>
         </td>
         <td>

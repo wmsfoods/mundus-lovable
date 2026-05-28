@@ -52,6 +52,7 @@ import AdminTeam from "./pages/admin/AdminTeam.tsx";
 import AdminImport from "./pages/admin/AdminImport.tsx";
 import EmailPreview from "./pages/admin/EmailPreview.tsx";
 import EmailQueue from "./pages/admin/EmailQueue.tsx";
+import EmailActivity from "./pages/admin/EmailActivity.tsx";
 import WhatsLayout from "./pages/admin/whats/WhatsLayout.tsx";
 import WhatsConversas from "./pages/admin/whats/WhatsConversas.tsx";
 import WhatsContatos from "./pages/admin/whats/WhatsContatos.tsx";
@@ -258,6 +259,7 @@ const App = () => (
               <Route path="settings/email" element={<EmailSettings />} />
               <Route path="email-preview" element={<EmailPreview />} />
               <Route path="email-queue" element={<EmailQueue />} />
+              <Route path="email-activity" element={<EmailActivity />} />
               <Route path="whats" element={<WhatsLayout />}>
                 <Route index element={<WhatsConversas />} />
                 <Route path="conversas" element={<WhatsConversas />} />

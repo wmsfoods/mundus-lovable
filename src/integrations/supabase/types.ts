@@ -2878,10 +2878,16 @@ export type Database = {
       }
       email_queue: {
         Row: {
+          bounce_reason: string | null
+          bounced_at: string | null
+          click_count: number
+          clicked_at: string | null
           created_at: string
           error_message: string | null
           html_body: string
           id: string
+          open_count: number
+          opened_at: string | null
           sent_at: string | null
           status: string | null
           subject: string
@@ -2890,10 +2896,16 @@ export type Database = {
           to_email: string
         }
         Insert: {
+          bounce_reason?: string | null
+          bounced_at?: string | null
+          click_count?: number
+          clicked_at?: string | null
           created_at?: string
           error_message?: string | null
           html_body: string
           id?: string
+          open_count?: number
+          opened_at?: string | null
           sent_at?: string | null
           status?: string | null
           subject: string
@@ -2902,10 +2914,16 @@ export type Database = {
           to_email: string
         }
         Update: {
+          bounce_reason?: string | null
+          bounced_at?: string | null
+          click_count?: number
+          clicked_at?: string | null
           created_at?: string
           error_message?: string | null
           html_body?: string
           id?: string
+          open_count?: number
+          opened_at?: string | null
           sent_at?: string | null
           status?: string | null
           subject?: string
@@ -6516,6 +6534,8 @@ export type Database = {
         Args: { p_items: Json; p_negotiation_id: string; p_user_id: string }
         Returns: Json
       }
+      track_email_click: { Args: { email_id: string }; Returns: undefined }
+      track_email_open: { Args: { email_id: string }; Returns: undefined }
       user_can_access_negotiation: {
         Args: { p_negotiation_id: string }
         Returns: boolean

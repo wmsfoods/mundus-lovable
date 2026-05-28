@@ -24,6 +24,8 @@ export interface AdminNegotiationRow {
   offer_created_at: string | null;
   supplier_name: string | null;
   supplier_country: string | null;
+  is_managed_supplier: boolean;
+  supplier_id: string | null;
   container_size: string | null;
   total_fcl: number | null;
   origin_port: string | null;
@@ -98,7 +100,7 @@ export function useAdminNegotiations() {
 
       const supplierIds = [...new Set((offersRes.data ?? []).map((o: any) => o.supplier_id).filter(Boolean))];
       const suppliersRes = supplierIds.length
-        ? await supabase.from("companies").select("id, country").in("id", supplierIds as string[])
+        ? await supabase.from("companies").select("id, country, mundus_managed_supplier").in("id", supplierIds as string[])
         : { data: [], error: null };
 
       const roundIds = (roundsRes.data ?? []).map((r) => r.id);
@@ -185,6 +187,8 @@ export function useAdminNegotiations() {
           offer_created_at: offer?.created_at ?? null,
           supplier_name: offer?.supplier_name ?? null,
           supplier_country: (supplier as any)?.country ?? null,
+          supplier_id: offer?.supplier_id ?? null,
+          is_managed_supplier: !!(supplier as any)?.mundus_managed_supplier,
           container_size: offer?.container_size ?? null,
           total_fcl: offer?.total_fcl ?? null,
           origin_port: offer?.origin_port ?? null,
