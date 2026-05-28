@@ -16,6 +16,7 @@ import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { OfficeSwitcher } from "./OfficeSwitcher";
 import { supabase } from "@/integrations/supabase/client";
 import { transformedPublicUrl } from "@/lib/imageOptimization";
+import { ThemeToggle } from "@/contexts/ThemeContext";
 
 type TopbarProps = {
   onMenuClick?: () => void;
@@ -183,6 +184,7 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
           <span style={{ fontWeight: unit === "lbs" ? 700 : 400, opacity: unit === "lbs" ? 1 : 0.55 }}>lbs</span>
         </button>
       )}
+      {!isMobile && <ThemeToggle />}
       {isMobile ? (
         <button
           type="button"
