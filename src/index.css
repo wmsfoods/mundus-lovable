@@ -27,6 +27,7 @@
 @import "./styles/mundus-buyer-create-request.css";
 @import "./styles/mundus-address.css";
 @import "./styles/mundus-shipment.css";
+@import "./styles/mundus-dark-overrides.css";
 
 @tailwind base;
 @tailwind components;
