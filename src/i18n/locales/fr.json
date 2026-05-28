@@ -43,7 +43,8 @@
     "language": "Langue",
     "english": "Anglais",
     "portuguese": "Portugais",
-    "spanish": "Espagnol"
+    "spanish": "Espagnol",
+    "signIn": "Se connecter"
   },
   "auth": {
     "login": "Se connecter",
@@ -3172,5 +3173,88 @@
     "contact_buyer": "Bonjour ! J'ai vu votre demande sur Mundus Trade. J'aimerais faire une offre.",
     "send_message": "Envoyer via WhatsApp",
     "share": "Partager via WhatsApp"
+  },
+  "team": {
+    "form": {
+      "title": {
+        "edit": "Modifier l'utilisateur",
+        "invite": "Inviter un utilisateur"
+      },
+      "subtitle": {
+        "edit": "Mettez à jour les informations et autorisations de ce membre.",
+        "invite": "Envoyer un e-mail d'invitation — l'utilisateur définira son mot de passe à la première connexion."
+      },
+      "fields": {
+        "name": "Nom",
+        "email": "E-mail",
+        "profileType": "Type de profil",
+        "jobTitle": "Fonction",
+        "phone": "Téléphone",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "jobTitle": "ex. Directeur commercial",
+        "notes": "Notes internes sur cet utilisateur…"
+      },
+      "profile": {
+        "master_buyer": "Acheteur principal (accès total)",
+        "procurement": "Approvisionnement",
+        "import_manager": "Responsable des imports",
+        "quality_control": "Contrôle qualité",
+        "logistics": "Logistique",
+        "master_supplier": "Fournisseur principal (accès total)",
+        "operator": "Opérateur",
+        "export_manager": "Responsable export"
+      },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
+      "account": {
+        "activeTitle": "Compte actif",
+        "inactiveTitle": "Compte inactif",
+        "activeHint": "L'utilisateur peut se connecter et accéder au workspace.",
+        "inactiveHint": "L'utilisateur ne peut pas se connecter tant qu'il n'est pas réactivé."
+      },
+      "meta": {
+        "created": "CRÉÉ",
+        "lastLogin": "DERNIÈRE CONNEXION",
+        "userId": "ID UTILISATEUR"
+      },
+      "actions": {
+        "save": "Enregistrer",
+        "sendInvite": "Envoyer l'invitation",
+        "delete": "Supprimer l'utilisateur"
+      },
+      "confirmDelete": "Supprimer cet utilisateur ? Cette action est irréversible.",
+      "toast": {
+        "updated": "Utilisateur mis à jour.",
+        "deleted": "Utilisateur supprimé.",
+        "inviteSent": "Invitation envoyée à {{email}}.",
+        "inviteCreated": "Invitation créée pour {{email}} (e-mail en attente)."
+      },
+      "errors": {
+        "nameEmailRequired": "Nom et e-mail sont obligatoires.",
+        "noCompany": "Aucune entreprise sélectionnée.",
+        "saveFailed": "Échec de l'enregistrement."
+      }
+    }
+  },
+  "inviteAccept": {
+    "title": "Accepter l'invitation",
+    "subtitle": "Bonjour {{name}}, définissez un mot de passe pour accéder à votre workspace.",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "confirm": "Confirmer le mot de passe",
+    "cta": "Accepter et continuer",
+    "success": "Bienvenue ! Redirection vers votre workspace…",
+    "errors": {
+      "title": "Invitation indisponible",
+      "invalid": "Ce lien d'invitation est invalide ou a expiré.",
+      "alreadyAccepted": "Cette invitation a déjà été acceptée. Veuillez vous connecter.",
+      "expired": "Cette invitation a expiré. Veuillez en demander une nouvelle.",
+      "passwordShort": "Le mot de passe doit comporter au moins 8 caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    }
   }
 }
