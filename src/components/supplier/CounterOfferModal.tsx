@@ -680,11 +680,15 @@ export function CounterOfferModal({
 
         {isFinal && !exhausted && (
           <div
-            className="rounded-md px-3 py-2 text-xs font-medium border"
+            className="rounded-md px-3 py-3 text-xs border"
             style={{ background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" }}
           >
-            ⚠️ {t("engine.finalRound.banner",
-              "Final Round — This is the last chance to reach agreement. Unresolved items will be cancelled after this round.")}
+            <div className="font-bold text-sm" style={{ color: "#92400e" }}>⚠️ Final Round</div>
+            <div className="mt-1" style={{ color: "#78350f" }}>
+              {perspective === "supplier"
+                ? "This is the last round of negotiation on this offer. You can send this counter to the buyer for final evaluation, accept the buyer's current bid, reject, or send a message."
+                : "This is the last round of negotiation on this offer. You can accept the supplier's counter, reject, or send a message."}
+            </div>
           </div>
         )}
 
