@@ -368,6 +368,29 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
                 onChanged={(v) => { (data as any).mundus_managed_buyer = v; }}
               />
             )}
+            {form.is_supplier && (data as any).mundus_managed_supplier && (
+              <button
+                type="button"
+                onClick={() => navigate(`/supplier/create-offer?as_company=${data.id}`)}
+                style={{
+                  alignSelf: "flex-start",
+                  padding: "10px 18px",
+                  background: "#8B2252",
+                  color: "white",
+                  border: "none",
+                  borderRadius: 8,
+                  fontWeight: 600,
+                  fontSize: 13,
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 8,
+                  boxShadow: "0 1px 2px rgba(0,0,0,.08)",
+                }}
+              >
+                📝 Create Offer as {data.name}
+              </button>
+            )}
           </div>
         )}
       </div>
