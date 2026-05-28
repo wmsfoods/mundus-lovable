@@ -50,6 +50,7 @@ import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
 import AdminImport from "./pages/admin/AdminImport.tsx";
+import EmailPreview from "./pages/admin/EmailPreview.tsx";
 import WhatsLayout from "./pages/admin/whats/WhatsLayout.tsx";
 import WhatsConversas from "./pages/admin/whats/WhatsConversas.tsx";
 import WhatsContatos from "./pages/admin/whats/WhatsContatos.tsx";
@@ -254,6 +255,7 @@ const App = () => (
               <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
               <Route path="outreach/templates" element={<OutreachTemplates />} />
               <Route path="settings/email" element={<EmailSettings />} />
+              <Route path="email-preview" element={<EmailPreview />} />
               <Route path="whats" element={<WhatsLayout />}>
                 <Route index element={<WhatsConversas />} />
                 <Route path="conversas" element={<WhatsConversas />} />

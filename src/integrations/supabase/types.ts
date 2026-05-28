@@ -2876,6 +2876,45 @@ export type Database = {
         }
         Relationships: []
       }
+      email_queue: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          html_body: string
+          id: string
+          sent_at: string | null
+          status: string | null
+          subject: string
+          template_name: string | null
+          template_vars: Json | null
+          to_email: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          html_body: string
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          subject: string
+          template_name?: string | null
+          template_vars?: Json | null
+          to_email: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          html_body?: string
+          id?: string
+          sent_at?: string | null
+          status?: string | null
+          subject?: string
+          template_name?: string | null
+          template_vars?: Json | null
+          to_email?: string
+        }
+        Relationships: []
+      }
       email_sends: {
         Row: {
           ai_generated: boolean | null
