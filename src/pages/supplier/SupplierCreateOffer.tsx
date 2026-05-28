@@ -33,15 +33,16 @@ import {
    DATA — markets & cuts come from Supabase via useSupplierOfferData
    ══════════════════════════════════════════════════════════ */
 type Market = OfferMarket;
-const SPECS = ["Boneless", "Bone-In", "Not specified"];
+const SPECS = ["Bone-In", "Boneless", "Offals"];
 
-/** Normalize a raw bone_spec value coming from the DB to one of the options
- *  rendered in the Spec dropdown. Offals are treated as "Not specified". */
+/** Normalize a raw bone_spec value coming from the DB (cuts.bone_spec)
+ *  to one of the options rendered in the Spec dropdown. */
 function normalizeSpec(raw: string | null | undefined): string {
   const v = (raw ?? "").trim().toLowerCase();
   if (v === "boneless") return "Boneless";
   if (v === "bone-in" || v === "bone in" || v === "bonein") return "Bone-In";
-  return "Not specified";
+  if (v === "offals" || v === "offal") return "Offals";
+  return "Bone-In";
 }
 const PACKING_OPTIONS: Record<string, string[]> = {
   Beef: ["IWP", "VP", "Bulk", "Tray", "Bag"],
@@ -498,7 +499,7 @@ export default function SupplierCreateOffer() {
             (c) => c.displayName.toLowerCase().includes(cutName.toLowerCase()) ||
                    cutName.toLowerCase().includes(c.displayName.toLowerCase())
           );
-          const spec = specInner || boneSpec || matched?.bone_spec || fromRequest.specification || "Boneless";
+          const spec = normalizeSpec(boneSpec || matched?.bone_spec || fromRequest.specification || specInner);
           parsedCuts.push({
             id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
             cat: cat0,
@@ -547,7 +548,7 @@ export default function SupplierCreateOffer() {
         cut: matched?.displayName || cutName,
         cutId: matched?.id,
         cutImage: matched?.image_url ?? null,
-        spec: matched?.bone_spec || fromRequest.specification || "Boneless",
+        spec: normalizeSpec(matched?.bone_spec || fromRequest.specification),
         pkg: "\n",
         gr: "\n",
         ag: "None",
@@ -653,7 +654,7 @@ export default function SupplierCreateOffer() {
         cut: matched?.displayName || it.name,
         cutId: matched?.id,
         cutImage: matched?.image_url ?? null,
-        spec: matched?.bone_spec || "Boneless",
+        spec: normalizeSpec(matched?.bone_spec),
         pkg: "\n",
         gr: "\n",
         ag: it.agingMethod || "None",
@@ -2170,8 +2171,8 @@ export default function SupplierCreateOffer() {
                 <tr>
                   <th style={{ width: 48 }}>Photo</th>
                   <th style={{ width: 120 }}>Protein</th>
-                  <th style={{ minWidth: 220 }}>Item / Cut</th>
-                  <th style={{ width: 100 }}>Spec</th>
+                  <th style={{ width: 180 }}>Item / Cut</th>
+                  <th style={{ width: 90 }}>Spec</th>
                   {showGradeColumn && <th style={{ width: 100 }}>Grade</th>}
                   <th style={{ width: 120 }}>Packing</th>
                   <th style={{ width: 80 }} title="USDA/SIF establishment number">Plant #</th>
