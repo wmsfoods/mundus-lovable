@@ -70,6 +70,7 @@ export default function AdminShell() {
     { to: "/admin/outreach/campaigns", label: t("admin.outreach.nav.campaigns", "Campaigns"), icon: Megaphone as unknown as IconCmp },
     { to: "/admin/outreach/templates", label: t("admin.outreach.nav.templates", "Templates"), icon: FileText as unknown as IconCmp },
     { to: "/admin/settings/email", label: t("admin.outreach.nav.email_settings", "Email Settings"), icon: AtSign as unknown as IconCmp },
+    { to: "/admin/email-activity", label: "Email Activity", icon: Mail as unknown as IconCmp },
 
     { to: "/admin/finance/revenue", label: t("admin.shell.nav.revenue"), icon: Coins as unknown as IconCmp, groupLabel: t("admin.shell.nav.finance") },
     { to: "/admin/whats/conversas", label: "Mundus Whats", icon: MessageCircle as unknown as IconCmp, groupLabel: "COMMUNICATION" },
