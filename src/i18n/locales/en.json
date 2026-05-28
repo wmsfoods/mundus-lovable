@@ -532,6 +532,7 @@
     },
     "home": {
       "hero": "Buy smarter. Source globally. Close faster.",
+      "hero_title": "Source premium proteins from verified global suppliers.",
       "stats": {
         "activeOffers": "Active Offers",
         "totalOffers": "Total Offers",
@@ -1808,6 +1809,7 @@
     },
     "home": {
       "heroTitle": "Sell smarter, negotiate faster, stay in control.",
+      "hero_title": "Sell smarter, negotiate faster, stay in control.",
       "heroSubtitle": "Manage your active offers, review buyer proposals, and ship deals from one place.",
       "greeting": {
         "morning": "Good morning, {{name}}",
