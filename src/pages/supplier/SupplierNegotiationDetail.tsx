@@ -23,6 +23,7 @@ import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiati
 import { NegotiationChat } from "@/components/negotiation/NegotiationChat";
 import { isChatEnabled } from "@/lib/negotiationEngine";
 import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
+import { OtherBidsPanel } from "@/components/negotiation/OtherBidsPanel";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
@@ -210,6 +211,17 @@ export default function SupplierNegotiationDetail() {
 
       {isReal && rawNeg && (
         <ShareWithSupplierCard negotiationId={rawNeg.id} buyerLabel={d.buyerName} />
+      )}
+
+      {isReal && rawNeg && (
+        <OtherBidsPanel
+          currentNegotiationId={rawNeg.id}
+          offerId={rawNeg.offer_id}
+          currentBuyerTotal={d.latestBidUsd}
+          currentBuyerName={d.buyerName}
+          currentRound={d.round}
+          currentStatus={rawNeg.status}
+        />
       )}
 
       {isReal && rawNeg && <NegotiationProgressCard negotiation={rawNeg} />}
