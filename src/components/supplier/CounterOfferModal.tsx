@@ -342,6 +342,48 @@ export function CounterOfferModal({
   }, [perspective, openItems, accepted, buyerInitialBid, counters, rounds, unit]);
   const errorCount = Object.keys(errors).length;
 
+  /**
+   * Per-row reference value displayed under the input as a hint.
+   *  - Buyer R2+ : floor = previous buyer bid for this item
+   *  - Buyer R1  : (handled in BidModal — not used here)
+   *  - Supplier  : ceiling = previous supplier counter, else asking price
+   */
+  const hintRefs = useMemo(() => {
+    const map = new Map<string, { kind: "min" | "max"; price: number; label: string }>();
+    if (perspective === "buyer") {
+      const buyerRounds = rounds.filter((r) => r.round % 2 === 1);
+      const lastBuyerRound = buyerRounds[buyerRounds.length - 1];
+      if (!lastBuyerRound) return map;
+      for (const c of lastBuyerRound.cut_rounds ?? []) {
+        map.set(c.offer_item_id, {
+          kind: "min",
+          price: Number(c.price_per_kg),
+          label: "your previous bid",
+        });
+      }
+    } else {
+      const supplierRounds = rounds.filter((r) => r.round % 2 === 0);
+      const lastSupplierRound = supplierRounds[supplierRounds.length - 1];
+      for (const it of openItems) {
+        const prev = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
+        if (prev) {
+          map.set(it.id, {
+            kind: "max",
+            price: Number(prev.price_per_kg),
+            label: "your previous counter",
+          });
+        } else {
+          map.set(it.id, {
+            kind: "max",
+            price: Number(it.price),
+            label: "asking price",
+          });
+        }
+      }
+    }
+    return map;
+  }, [perspective, rounds, openItems]);
+
   const deductionFeedback = useMemo(() => {
     if (perspective !== "buyer" || bulkMode !== "percent") return null;
     const v = parseFloat(bulkValue);
@@ -638,11 +680,15 @@ export function CounterOfferModal({
 
         {isFinal && !exhausted && (
           <div
-            className="rounded-md px-3 py-2 text-xs font-medium border"
+            className="rounded-md px-3 py-3 text-xs border"
             style={{ background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" }}
           >
-            ⚠️ {t("engine.finalRound.banner",
-              "Final Round — This is the last chance to reach agreement. Unresolved items will be cancelled after this round.")}
+            <div className="font-bold text-sm" style={{ color: "#92400e" }}>⚠️ Final Round</div>
+            <div className="mt-1" style={{ color: "#78350f" }}>
+              {perspective === "supplier"
+                ? "This is the last round of negotiation on this offer. You can send this counter to the buyer for final evaluation, accept the buyer's current bid, reject, or send a message."
+                : "This is the last round of negotiation on this offer. You can accept the supplier's counter, reject, or send a message."}
+            </div>
           </div>
         )}
 
@@ -865,6 +911,13 @@ export function CounterOfferModal({
                           {errors[it.id]}
                         </div>
                       )}
+                      {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
+                        <div className="text-[10px] text-muted-foreground mt-1 max-w-[200px] ml-auto text-right">
+                          {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
+                          {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                          {" "}({hintRefs.get(it.id)!.label})
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right text-xs tabular-nums">
                       {isAccepted ? (
@@ -966,6 +1019,13 @@ export function CounterOfferModal({
                   />
                   {errors[it.id] && (
                     <div className="text-[11px] text-destructive mt-1">{errors[it.id]}</div>
+                  )}
+                  {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
+                      {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                      {" "}({hintRefs.get(it.id)!.label})
+                    </div>
                   )}
                   {!isAccepted && Math.abs(d) > 0.001 && (
                     <div className="text-[11px] tabular-nums mt-1" style={{ color: d > 0 ? "#15803d" : "#b45309" }}>

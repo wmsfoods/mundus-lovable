@@ -29,7 +29,7 @@ import {
 import { useRemainingFcl } from "@/hooks/useRemainingFcl";
 import { notifyCompanyUsers } from "@/lib/notifications";
 
-const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
+const MIN_BID_PCT = 0.7; // initial bid must be ≥ 70% of asking (max 30% discount)
 
 type FreightOption = {
   id: string;
@@ -267,7 +267,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         out[it.id] = t("buyer.bid.validation.required", "Enter a bid greater than 0");
       } else if (v < min) {
         out[it.id] = t("buyer.bid.validation.minPct", {
-          defaultValue: "Minimum bid is ${{min}} (90% of asking)",
+          defaultValue: "Minimum bid is ${{min}}/kg (70% of asking — max 30% discount)",
           min: toDisplay(min, "price", unit).toFixed(2),
         });
       }
@@ -685,6 +685,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                             {err}
                           </span>
                         )}
+                        {!showErr && (
+                          <span className="text-[10px] text-muted-foreground">
+                            Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                          </span>
+                        )}
                         {Math.abs(d) > 0.001 && (
                           <span
                             className="text-[11px] tabular-nums"
@@ -775,6 +780,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                   />
                   {showErr && (
                     <div className="text-[11px] text-destructive mt-1">{err}</div>
+                  )}
+                  {!showErr && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                    </div>
                   )}
                   {Math.abs(d) > 0.001 && (
                     <div
