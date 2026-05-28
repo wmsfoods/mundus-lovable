@@ -27,8 +27,8 @@ type LocationRow = {
   _isNew?: boolean;
   _dirty?: boolean;
   _deleted?: boolean;
-  parent_company_id: string | null;
-  office_type: string | null; // headquarters | office | factory
+  parent_company_id: string | null; // null = HQ stored on companies row; else company_id (location row)
+  office_type: string | null; // headquarters | office | factory | warehouse
   office_name: string | null;
   address: string | null;
   city: string | null;
@@ -136,16 +136,22 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
     let cancelled = false;
     (async () => {
       setLoading(true);
-      const { data } = await (supabase as any)
+      const [{ data: hqRows }, { data: locRows }] = await Promise.all([
+        (supabase as any)
         .from("companies")
         .select(
-          "id, name, tax_id, phone, website, protein_profiles, buyer_protein_profile, preferred_cuts, preferred_payment_terms, preferred_incoterms, countries_of_operation, ports_of_shipment, is_buyer, is_supplier, parent_company_id, office_type, office_name, address, city, state, country, zip_code, est_number"
+          "id, name, tax_id, phone, website, protein_profiles, buyer_protein_profile, preferred_cuts, preferred_payment_terms, preferred_incoterms, countries_of_operation, ports_of_shipment, is_buyer, is_supplier, office_name, address, city, state, country, zip_code, est_number"
         )
-        .or(`id.eq.${companyId},parent_company_id.eq.${companyId}`);
+          .eq("id", companyId),
+        (supabase as any)
+          .from("company_locations")
+          .select("id, company_id, location_type, name, address, city, state, country, zip_code, est_number")
+          .eq("company_id", companyId)
+          .order("created_at", { ascending: true }),
+      ]);
       if (cancelled) return;
-      const rows = (data || []) as any[];
-      const hq = rows.find((r) => r.id === companyId);
-      const children = rows.filter((r) => r.id !== companyId);
+      const hq = (hqRows || [])[0];
+      const children = (locRows || []) as any[];
       if (hq) {
         setCompany({
           id: hq.id,
@@ -177,9 +183,9 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
         };
         const childLocs: LocationRow[] = children.map((c) => ({
           id: c.id,
-          parent_company_id: c.parent_company_id,
-          office_type: c.office_type || "office",
-          office_name: c.office_name || c.name,
+          parent_company_id: c.company_id,
+          office_type: c.location_type || "office",
+          office_name: c.name,
           address: c.address,
           city: c.city,
           state: c.state,
@@ -301,34 +307,31 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       for (const l of locations) {
         if (l.office_type === "headquarters") continue;
         if (l._deleted && !l._isNew) {
-          const { error } = await (supabase as any).from("companies").delete().eq("id", l.id);
+          const { error } = await (supabase as any).from("company_locations").delete().eq("id", l.id);
           if (error) throw error;
           continue;
         }
         if (l._isNew && !l._deleted) {
-          const { error } = await (supabase as any).from("companies").insert({
-            name: l.office_name || "Office",
-            parent_company_id: companyId,
-            office_type: l.office_type,
-            office_name: l.office_name,
-            address: l.address || "—",
+          const { error } = await (supabase as any).from("company_locations").insert({
+            company_id: companyId,
+            location_type: l.office_type,
+            name: l.office_name,
+            address: l.address,
             city: l.city,
-            state: l.state || "—",
-            country: l.country || "—",
+            state: l.state,
+            country: l.country,
             zip_code: l.zip_code,
             est_number: l.est_number,
-            tax_id: `${companyId}-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
-            phone: company.phone || "—",
           });
           if (error) throw error;
           continue;
         }
         if (l._dirty) {
           const { error } = await (supabase as any)
-            .from("companies")
+            .from("company_locations")
             .update({
-              office_type: l.office_type,
-              office_name: l.office_name,
+              location_type: l.office_type,
+              name: l.office_name,
               address: l.address,
               city: l.city,
               state: l.state,
