@@ -359,7 +359,7 @@ export default function AdminOffers() {
                   type="button"
                   onClick={() => {
                     setShowSelectCompany(false);
-                    navigate(`/supplier/create-offer?as_company=${s.id}`);
+                    navigate(`/admin/create-offer?as_company=${s.id}`);
                   }}
                   style={{
                     display: "flex", alignItems: "center", gap: 12,

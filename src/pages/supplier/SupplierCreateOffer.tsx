@@ -1444,9 +1444,9 @@ export default function SupplierCreateOffer() {
         }
       }
       if (isEditing && editOffer) {
-        navigate(`/supplier/offers/${editOffer.offerId}`);
+        navigate(isAdminActor && asCompanyId ? `/admin/offers/${editOffer.offerId}` : `/supplier/offers/${editOffer.offerId}`);
       } else {
-        navigate("/supplier/offers");
+        navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
       }
     } catch (e: unknown) {
       // If we created an offer but something failed afterward, clean it up
@@ -1465,7 +1465,9 @@ export default function SupplierCreateOffer() {
     }
   };
   const handleCancel = () => {
-    if (confirm("Discard this offer?")) navigate("/supplier/offers");
+    if (confirm("Discard this offer?")) {
+      navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
+    }
   };
 
   return (

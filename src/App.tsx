@@ -258,6 +258,7 @@ const App = () => (
               <Route path="outreach/templates" element={<OutreachTemplates />} />
               <Route path="settings/email" element={<EmailSettings />} />
               <Route path="email-preview" element={<EmailPreview />} />
+              <Route path="create-offer" element={<SupplierCreateOffer />} />
               <Route path="email-queue" element={<EmailQueue />} />
               <Route path="email-activity" element={<EmailActivity />} />
               <Route path="whats" element={<WhatsLayout />}>
