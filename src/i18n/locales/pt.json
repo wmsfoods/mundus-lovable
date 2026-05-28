@@ -532,6 +532,7 @@
     },
     "home": {
       "hero": "Compre com inteligência. Procure no mundo. Feche mais rápido.",
+      "hero_title": "Compre proteínas premium de fornecedores globais verificados.",
       "stats": {
         "activeOffers": "Ofertas Ativas",
         "totalOffers": "Total de Ofertas",
@@ -1808,6 +1809,7 @@
     },
     "home": {
       "heroTitle": "Venda com inteligência, negocie mais rápido, mantenha o controle.",
+      "hero_title": "Venda com inteligência, negocie mais rápido, mantenha o controle.",
       "heroSubtitle": "Gerencie suas ofertas ativas, revise propostas de compradores e embarque negócios em um só lugar.",
       "greeting": {
         "morning": "Bom dia, {{name}}",

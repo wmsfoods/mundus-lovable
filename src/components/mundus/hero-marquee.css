@@ -1,0 +1,73 @@
+.hero-marquee {
+  position: absolute;
+  right: 32px;
+  top: 0;
+  bottom: 0;
+  width: calc(62% - 32px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 0;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 22%, #000 88%, transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0%, #000 22%, #000 88%, transparent 100%);
+  z-index: 1;
+}
+.hm-row {
+  overflow: visible;
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+.hm-track {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+  width: max-content;
+  animation: hm-scroll var(--hm-speed, 55s) linear infinite;
+  will-change: transform;
+}
+.hm-row-rev .hm-track {
+  animation-direction: reverse;
+}
+.hm-card {
+  flex: 0 0 auto;
+  width: 120px;
+  height: 92px;
+  pointer-events: auto;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateY(var(--hm-y, 0)) rotate(var(--hm-rot, 0deg)) scale(var(--hm-scale, 1));
+  transition: transform 0.4s ease;
+}
+.hm-img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.28));
+}
+@keyframes hm-scroll {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-50% - 14px)); }
+}
+.hero-marquee:hover .hm-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .hm-track { animation: none; }
+}
+@media (max-width: 768px) {
+  .hero-marquee { display: none; }
+  .hero {
+    padding: 24px 20px !important;
+    min-height: 120px !important;
+  }
+  .hero h2 {
+    max-width: 100% !important;
+    font-size: 22px !important;
+  }
+}
