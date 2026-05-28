@@ -812,6 +812,65 @@ export type Database = {
           },
         ]
       }
+      company_locations: {
+        Row: {
+          address: string | null
+          city: string | null
+          company_id: string
+          country: string | null
+          created_at: string
+          est_number: string | null
+          id: string
+          location_type: string
+          name: string | null
+          notes: string | null
+          phone: string | null
+          state: string | null
+          updated_at: string
+          zip_code: string | null
+        }
+        Insert: {
+          address?: string | null
+          city?: string | null
+          company_id: string
+          country?: string | null
+          created_at?: string
+          est_number?: string | null
+          id?: string
+          location_type?: string
+          name?: string | null
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Update: {
+          address?: string | null
+          city?: string | null
+          company_id?: string
+          country?: string | null
+          created_at?: string
+          est_number?: string | null
+          id?: string
+          location_type?: string
+          name?: string | null
+          notes?: string | null
+          phone?: string | null
+          state?: string | null
+          updated_at?: string
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_locations_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_plants: {
         Row: {
           capacity: string | null
