@@ -182,7 +182,50 @@ export default function SupplierCreateOffer() {
   const fromRequestId = searchParams.get("from");
   const location = useLocation();
   const { activeOfficeId } = useActiveOffice();
-  const { company, loading: companyLoading } = useCurrentCompany();
+  const { company: realCompany, loading: companyLoading } = useCurrentCompany();
+  const asCompanyId = searchParams.get("as_company");
+  const [actingAsCompany, setActingAsCompany] = useState<any>(null);
+  const [isAdminActor, setIsAdminActor] = useState(false);
+
+  useEffect(() => {
+    if (!asCompanyId) { setActingAsCompany(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth.user?.id;
+        if (!uid) return;
+        // Admin check — either profiles.role or users.is_mundus_admin
+        let admin = false;
+        try {
+          const { data: u } = await supabase
+            .from("users").select("is_mundus_admin").eq("auth_user_id", uid).maybeSingle();
+          admin = !!(u as any)?.is_mundus_admin;
+        } catch { /* noop */ }
+        if (!admin) {
+          try {
+            const { data: p } = await (supabase as any)
+              .from("profiles").select("role").eq("id", uid).maybeSingle();
+            const r = (p as any)?.role;
+            admin = r === "mundus_admin" || r === "admin";
+          } catch { /* noop */ }
+        }
+        if (cancelled) return;
+        setIsAdminActor(admin);
+        if (!admin) return;
+        const { data: c } = await supabase
+          .from("companies").select("*").eq("id", asCompanyId).maybeSingle();
+        if (!cancelled) setActingAsCompany(c ?? null);
+      } catch (e) {
+        console.warn("[as_company] load failed", e);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [asCompanyId]);
+
+  // Effective company — admin acting on behalf of a managed supplier overrides
+  // the current user's company context for the entire form.
+  const company: any = (isAdminActor && actingAsCompany) ? actingAsCompany : realCompany;
   const fromRequest = (location.state as any)?.fromRequest as
     | {
         requestId: string;
