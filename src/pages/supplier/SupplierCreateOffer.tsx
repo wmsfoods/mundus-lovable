@@ -421,6 +421,52 @@ export default function SupplierCreateOffer() {
     };
   }, [company?.id]);
 
+  /* ── Origin port (filtered by supplier's countries) ─────────── */
+  const [supplierCountries, setSupplierCountries] = useState<string[]>([]);
+  const [originPorts, setOriginPorts] = useState<
+    Array<{ id: string; name: string; code: string | null; city: string | null; country: string }>
+  >([]);
+  const [originPortId, setOriginPortId] = useState<string>("");
+  const [originPickerOpen, setOriginPickerOpen] = useState(false);
+
+  useEffect(() => {
+    if (!company?.id) return;
+    let cancelled = false;
+    (async () => {
+      const countries = new Set<string>();
+      const { data: parent } = await supabase
+        .from("companies")
+        .select("country")
+        .eq("id", company.id)
+        .maybeSingle();
+      if ((parent as any)?.country) countries.add((parent as any).country);
+      const { data: children } = await supabase
+        .from("companies")
+        .select("country")
+        .eq("parent_company_id", company.id);
+      (children ?? []).forEach((o: any) => {
+        if (o?.country) countries.add(o.country);
+      });
+      if (!cancelled) setSupplierCountries([...countries]);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [company?.id]);
+
+  useEffect(() => {
+    if (supplierCountries.length === 0) {
+      setOriginPorts([]);
+      return;
+    }
+    supabase
+      .from("ports")
+      .select("id, name, code, city, country")
+      .in("country", supplierCountries)
+      .order("name")
+      .then(({ data }) => setOriginPorts((data ?? []) as any));
+  }, [supplierCountries]);
+
   const [mlOpen, setMlOpen] = useState(false);
   const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
 
@@ -1489,7 +1535,6 @@ export default function SupplierCreateOffer() {
           </div>
         </div>
         <div className="cov4-hdr-r">
-          <span className="cov4-orig-badge">🇧🇷 Brazil · Santos (BRSSZ)</span>
           <div className="cov4-tgl" role="group" aria-label="Unit">
             {(["kg", "lbs"] as const).map((u) => (
               <button
