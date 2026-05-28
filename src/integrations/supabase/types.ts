@@ -1482,6 +1482,8 @@ export type Database = {
           photo_url: string | null
           preferred_language: string | null
           products_of_interest: string[] | null
+          qualified_as: string | null
+          qualified_at: string | null
           receives_deal_offers: boolean | null
           role: string | null
           scoring_points: number | null
@@ -1575,6 +1577,8 @@ export type Database = {
           photo_url?: string | null
           preferred_language?: string | null
           products_of_interest?: string[] | null
+          qualified_as?: string | null
+          qualified_at?: string | null
           receives_deal_offers?: boolean | null
           role?: string | null
           scoring_points?: number | null
@@ -1668,6 +1672,8 @@ export type Database = {
           photo_url?: string | null
           preferred_language?: string | null
           products_of_interest?: string[] | null
+          qualified_as?: string | null
+          qualified_at?: string | null
           receives_deal_offers?: boolean | null
           role?: string | null
           scoring_points?: number | null
