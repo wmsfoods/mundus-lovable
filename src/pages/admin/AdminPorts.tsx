@@ -66,6 +66,18 @@ export default function AdminPorts() {
     return sorted;
   }, [rows, countryId, activeF, search, sortBy, sortDir, locale]);
 
+  // Count ports per (name + country) to surface possible duplicates for admin review.
+  const duplicateCityCounts = useMemo(() => {
+    const acc: Record<string, number> = {};
+    for (const p of rows) {
+      const key = `${(p.name ?? "").trim().toLowerCase()}|${p.country_id}`;
+      acc[key] = (acc[key] || 0) + 1;
+    }
+    return acc;
+  }, [rows]);
+  const isDuplicate = (r: AdminPortRow) =>
+    (duplicateCityCounts[`${(r.name ?? "").trim().toLowerCase()}|${r.country_id}`] || 0) > 1;
+
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
   const safePage = Math.min(page, pageCount);
   const pageRows = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE);
@@ -280,7 +292,17 @@ export default function AdminPorts() {
                         />
                       </td>
                       <td style={{ fontSize: 22 }}>{r.flag_emoji ?? "🏳️"}</td>
-                      <td><strong>{r.name}</strong></td>
+                      <td>
+                        <strong>{r.name}</strong>
+                        {isDuplicate(r) && (
+                          <span
+                            style={{ marginLeft: 6, color: "#D97706", fontSize: 11, fontWeight: 600 }}
+                            title="Multiple ports share this city — review for duplicates"
+                          >
+                            ⚠️ duplicate?
+                          </span>
+                        )}
+                      </td>
                       <td><span className="adm-chip">{r.code ?? "—"}</span></td>
                       <td>{pickCountry(r, locale)}</td>
                       <td>
