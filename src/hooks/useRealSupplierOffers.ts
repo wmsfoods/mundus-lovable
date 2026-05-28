@@ -41,13 +41,14 @@ export function useRealSupplierOffers() {
       const query = supabase
         .from("offers")
         .select(`
-          id, offer_number, status, origin_country, origin_port,
+          id, offer_number, status, origin_country, origin_port, view_count,
           shipment_month, shipment_year, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location,
           items:offer_items ( id, amount, price, minimum_price, condition, packaging,
             customer_product:customer_products ( id, name ) ),
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
-          incoterms:offer_allowed_incoterms ( incoterm_type )
+          incoterms:offer_allowed_incoterms ( incoterm_type ),
+          negotiations ( id )
         `)
         .eq("supplier_id", supplierId)
         .is("deleted_at", null)
@@ -125,6 +126,8 @@ export function useRealSupplierOffers() {
             pricePerKgUsd: Number(it.price ?? 0),
           })),
           active: o.status === "active",
+          viewCount: Number(o.view_count ?? 0),
+          proposalCount: Array.isArray(o.negotiations) ? o.negotiations.length : 0,
         };
       });
       setOffers(mapped);
