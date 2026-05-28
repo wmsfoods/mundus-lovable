@@ -19,10 +19,11 @@ export function RoleRedirect() {
 
   if (!user) return <Navigate to="/login" replace />;
 
+  if (isAdmin) return <Navigate to="/admin" replace />;
+
   const available: string[] = [
-    ...(company?.is_buyer ? ["buyer"] : []),
     ...(company?.is_supplier ? ["supplier"] : []),
-    ...(isAdmin ? ["admin"] : []),
+    ...(company?.is_buyer ? ["buyer"] : []),
   ];
   if (available.length > 0) {
     const saved = getActiveRole();
