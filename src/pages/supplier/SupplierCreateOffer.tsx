@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
-import { DEFAULT_PROTEINS, resolveProteinProfile } from "@/lib/proteins";
+import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -34,8 +34,23 @@ import {
    ══════════════════════════════════════════════════════════ */
 type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In"];
-const PKGS = ["\n", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
-const GRADES = ["Not specified", "Low", "Medium", "High", "Prime"];
+const PACKING_OPTIONS: Record<string, string[]> = {
+  Beef: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Pork: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Lamb: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Ovine: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Veal: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Poultry: ["IWP", "VP", "IQF", "Bulk"],
+};
+const PACKING_TOOLTIPS: Record<string, string> = {
+  IWP: "Individually Wrapped Pieces",
+  VP: "Vacuum Packed",
+  IQF: "Individually Quick Frozen",
+  Bulk: "Bulk packed in boxes",
+  Tray: "Tray packed",
+  Bag: "Bag packed",
+};
+const US_GRADES = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
 // Primary destination markets shown as chips (in this order).
