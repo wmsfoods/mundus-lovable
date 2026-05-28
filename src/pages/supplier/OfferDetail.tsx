@@ -232,7 +232,7 @@ export default function SupplierOfferDetail() {
       const { data: row, error } = await supabase
         .from("offers")
         .select(`
-          id, container_size, total_fcl, payment_terms,
+          id, container_size, total_fcl, payment_terms, origin_port_id,
           is_halal, is_kosher, cut_region, exw_pickup_location,
           items:offer_items (
             amount, price, minimum_price, condition, aging_method,
@@ -259,6 +259,7 @@ export default function SupplierOfferDetail() {
         isKosher: !!(row as any).is_kosher,
         cutRegion: ((row as any).cut_region as "global" | "us") ?? "global",
         exwCity: (row as any).exw_pickup_location ?? "",
+        originPortId: (row as any).origin_port_id ?? null,
         destinationCountries: ((row as any).markets ?? [])
           .map((m: any) => m?.market?.country?.english_name)
           .filter(Boolean) as string[],
@@ -286,7 +287,7 @@ export default function SupplierOfferDetail() {
       const { data: row, error } = await supabase
         .from("offers")
         .select(`
-          id, container_size, total_fcl, payment_terms,
+          id, container_size, total_fcl, payment_terms, origin_port_id,
           is_halal, is_kosher, cut_region, exw_pickup_location,
           items:offer_items (
             amount, price, minimum_price, condition, aging_method,
@@ -311,6 +312,7 @@ export default function SupplierOfferDetail() {
         isKosher: !!(row as any).is_kosher,
         cutRegion: ((row as any).cut_region as "global" | "us") ?? "global",
         exwCity: (row as any).exw_pickup_location ?? "",
+        originPortId: (row as any).origin_port_id ?? null,
         destinationCountries: ((row as any).markets ?? [])
           .map((m: any) => m?.market?.country?.english_name)
           .filter(Boolean) as string[],

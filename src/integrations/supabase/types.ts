@@ -4702,8 +4702,9 @@ export type Database = {
           offer_number: number
           office_id: string | null
           origin_city: string | null
-          origin_country: string
-          origin_port: string
+          origin_country: string | null
+          origin_port: string | null
+          origin_port_id: string | null
           payment_terms: string
           price: number | null
           request_id: string | null
@@ -4730,8 +4731,9 @@ export type Database = {
           offer_number?: number
           office_id?: string | null
           origin_city?: string | null
-          origin_country: string
-          origin_port: string
+          origin_country?: string | null
+          origin_port?: string | null
+          origin_port_id?: string | null
           payment_terms: string
           price?: number | null
           request_id?: string | null
@@ -4758,8 +4760,9 @@ export type Database = {
           offer_number?: number
           office_id?: string | null
           origin_city?: string | null
-          origin_country?: string
-          origin_port?: string
+          origin_country?: string | null
+          origin_port?: string | null
+          origin_port_id?: string | null
           payment_terms?: string
           price?: number | null
           request_id?: string | null
@@ -4779,6 +4782,13 @@ export type Database = {
             columns: ["office_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_origin_port_id_fkey"
+            columns: ["origin_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
             referencedColumns: ["id"]
           },
           {
