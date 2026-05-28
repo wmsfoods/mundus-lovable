@@ -2388,17 +2388,18 @@ export default function SupplierCreateOffer() {
                       </label>
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        <select
-                          value={nf.cat}
-                          onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}
-                        >
-                          {Object.keys(filteredCutsByCategory).map((c) => (
-                            <option key={c} value={c}>
-                              {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
-                            </option>
-                          ))}
-                        </select>
+                      <select
+                        value={nf.cat}
+                        onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null, pkg: "" }))}
+                      >
+                        {Object.keys(filteredCutsByCategory).map((c) => (
+                          <option key={c} value={c}>
+                            {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
                         <Popover open={cutPickerOpen} onOpenChange={setCutPickerOpen}>
                           <PopoverTrigger asChild>
                             <button
@@ -2416,7 +2417,7 @@ export default function SupplierCreateOffer() {
                               <SearchIcon size={12} style={{ opacity: 0.5 }} />
                             </button>
                           </PopoverTrigger>
-                          <PopoverContent className="p-0 w-[300px]" align="start">
+                          <PopoverContent className="p-0 w-[320px]" align="start">
                             <Command>
                               <CommandInput placeholder={tm("searchCutsPh") as string} />
                               <CommandList className="max-h-[320px]">
@@ -2456,12 +2457,28 @@ export default function SupplierCreateOffer() {
                             </Command>
                           </PopoverContent>
                         </Popover>
-                      </div>
                     </td>
                     <td><select value={nf.spec} onChange={(e) => setNf((p) => ({ ...p, spec: e.target.value }))}>{SPECS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.pkg} onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}>{PKGS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
+                    {showGradeColumn && (
+                      <td>
+                        <select value={nf.gr === "\n" ? "" : nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>
+                          <option value="">—</option>
+                          {US_GRADES.map((x) => <option key={x}>{x}</option>)}
+                        </select>
+                      </td>
+                    )}
+                    <td>
+                      <select
+                        value={nf.pkg === "\n" ? "" : nf.pkg}
+                        onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}
+                        title={PACKING_TOOLTIPS[nf.pkg] || ""}
+                      >
+                        <option value="">—</option>
+                        {(PACKING_OPTIONS[nf.cat] || PACKING_OPTIONS.Beef).map((x) => (
+                          <option key={x} value={x} title={PACKING_TOOLTIPS[x]}>{x}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td>
                       {companyPlants.length > 0 && !plantManual["__nf"] ? (
                         <select
