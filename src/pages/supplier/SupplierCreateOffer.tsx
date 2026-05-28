@@ -326,12 +326,15 @@ export default function SupplierCreateOffer() {
     isUsCompany &&
     selMarkets.length > 0 &&
     selMarkets.every((m) => isUsMarketName(m.n));
-  // Dynamic nomenclature toggle label based on selected proteins.
+  // Dynamic nomenclature toggle label based on the supplier's proteins.
+  // 1 protein → "Beef"; 2 → "Beef & Pork"; 0 → "" (falls back to "Cuts").
   const usToggleProteinLabel = (() => {
     const ps = supplierProteins.filter((p) =>
       (PROTEINS_WITH_US_NOMENCLATURE as readonly string[]).includes(p)
     );
-    return ps.length === 1 ? ps[0] + " " : "";
+    if (ps.length === 0) return "";
+    if (ps.length === 1) return ps[0] + " ";
+    return ps.join(" & ") + " ";
   })();
 
   const [distMarketplace, setDistMarketplace] = useState(true);
