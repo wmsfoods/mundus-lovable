@@ -371,7 +371,7 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
             {form.is_supplier && (data as any).mundus_managed_supplier && (
               <button
                 type="button"
-                onClick={() => navigate(`/supplier/create-offer?as_company=${data.id}`)}
+                onClick={() => navigate(`/admin/create-offer?as_company=${data.id}`)}
                 style={{
                   alignSelf: "flex-start",
                   padding: "10px 18px",
