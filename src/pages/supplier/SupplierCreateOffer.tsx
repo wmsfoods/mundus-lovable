@@ -2451,8 +2451,8 @@ export default function SupplierCreateOffer() {
                                           ...p,
                                           cutId: c.id,
                                           cut: c.displayName,
-                                          cutImage: c.image_url ?? null,
-                                          spec: c.bone_spec ?? p.spec,
+                                         cutImage: c.image_url ?? null,
+                                         spec: normalizeSpec(c.bone_spec),
                                         }));
                                         if (c.image_url) setNewImgPrev(c.image_url);
                                         setCutPickerOpen(false);
