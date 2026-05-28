@@ -12,6 +12,7 @@ import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
+import { HeroMarquee } from "@/components/mundus/HeroMarquee";
 
 function useGreetingKey(): "morning" | "afternoon" | "evening" {
   const h = new Date().getHours();
