@@ -2351,7 +2351,7 @@ export default function SupplierCreateOffer() {
                           value={nf.cat}
                           onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}
                         >
-                          {Object.keys(cutsByCategory).map((c) => (
+                          {Object.keys(filteredCutsByCategory).map((c) => (
                             <option key={c} value={c}>
                               {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
                             </option>
@@ -2380,7 +2380,7 @@ export default function SupplierCreateOffer() {
                               <CommandList className="max-h-[320px]">
                                 <CommandEmpty>{tm("noCuts")}</CommandEmpty>
                                 <CommandGroup>
-                                  {(cutsByCategory[nf.cat] || [])
+                                  {(filteredCutsByCategory[nf.cat] || [])
                                     .filter((c) => {
                                       if (!["Beef", "Pork"].includes(nf.cat)) return c.region === "global";
                                       if (cutRegion === "us") return c.region === "us" || c.bone_spec === "Offals";
