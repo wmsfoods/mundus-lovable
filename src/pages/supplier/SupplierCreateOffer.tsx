@@ -308,6 +308,22 @@ export default function SupplierCreateOffer() {
   // Cut nomenclature region (only meaningful when company is US-based and category is Beef)
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
   const isUsCompany = (company?.country ?? "").trim().toLowerCase() === "united states";
+  // Show US Grade column only for US suppliers whose destinations are all US.
+  const isUsMarketName = (n: string) => {
+    const v = (n ?? "").trim().toLowerCase();
+    return v === "united states" || v === "us" || v === "usa" || v === "u.s.a.";
+  };
+  const showGradeColumn =
+    isUsCompany &&
+    selMarkets.length > 0 &&
+    selMarkets.every((m) => isUsMarketName(m.n));
+  // Dynamic nomenclature toggle label based on selected proteins.
+  const usToggleProteinLabel = (() => {
+    const ps = supplierProteins.filter((p) =>
+      (PROTEINS_WITH_US_NOMENCLATURE as readonly string[]).includes(p)
+    );
+    return ps.length === 1 ? ps[0] + " " : "";
+  })();
 
   const [distMarketplace, setDistMarketplace] = useState(true);
   const [distAllCustomers, setDistAllCustomers] = useState(false);
