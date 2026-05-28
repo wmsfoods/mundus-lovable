@@ -30,6 +30,7 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { MobileTechHeader } from "@/components/mundus/MobileTechHeader";
+import "@/styles/mundus-offer-card-tooltip.css";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -92,6 +93,10 @@ export function OfferCard({
       ? `${firstMarket} +${extraMarkets}`
       : firstMarket
     : "—";
+  const allDestinations = (offer.markets ?? [])
+    .map((m) => m?.market?.country?.english_name)
+    .filter((n): n is string => !!n)
+    .map((n) => ({ name: n, code: countryToCode(n) }));
 
   const firstIncoterm = offer.incoterms?.[0]?.incoterm_type ?? null;
   const extraIncoterms = Math.max(0, (offer.incoterms?.length ?? 0) - 1);
@@ -100,6 +105,7 @@ export function OfferCard({
       ? `${firstIncoterm} +${extraIncoterms}`
       : `${firstIncoterm} ${offer.origin_port}`
     : offer.origin_port;
+  const allIncoterms = (offer.incoterms ?? []).map((i) => i.incoterm_type).filter(Boolean);
 
   const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
 
@@ -200,6 +206,9 @@ export function OfferCard({
 
       <div className="oc-title-block">
         <div className="oc-title">{title}</div>
+        {offer.supplier_name && (
+          <div className="oc-supplier">🏭 {offer.supplier_name}</div>
+        )}
         {mixed ? (
           <div className="cut-chips">
             {items.slice(0, 3).map((it) => (
@@ -232,14 +241,34 @@ export function OfferCard({
         </div>
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.destination")}</span>
-          <span className="cm-value">
+          <span className="cm-value dest-hover-wrap">
             {destCode && <FlagSVG code={destCode} size={13} />}
             {destinationLabel}
+            {allDestinations.length > 1 && (
+              <div className="dest-tooltip">
+                <div className="dest-tooltip-title">Available destinations:</div>
+                {allDestinations.map((d, i) => (
+                  <div key={i} className="dest-tooltip-row">
+                    <FlagSVG code={d.code} size={12} /> {d.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </span>
         </div>
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.incoterm")}</span>
-          <span className="cm-value">{incotermLabel}</span>
+          <span className="cm-value dest-hover-wrap">
+            {incotermLabel}
+            {allIncoterms.length > 1 && (
+              <div className="dest-tooltip">
+                <div className="dest-tooltip-title">Available incoterms:</div>
+                {allIncoterms.map((inc, i) => (
+                  <div key={i} className="dest-tooltip-row">{inc}</div>
+                ))}
+              </div>
+            )}
+          </span>
         </div>
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.shipment")}</span>

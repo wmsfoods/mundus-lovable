@@ -80,6 +80,7 @@ export default function BuyerOfferDetail() {
 
   useEffect(() => {
     if (!id) return;
+    supabase.rpc("increment_offer_views" as any, { offer_id: id }).then(() => {}, () => {});
     (async () => {
       const { data: userData } = await supabase.auth.getUser();
       const user = userData?.user;
