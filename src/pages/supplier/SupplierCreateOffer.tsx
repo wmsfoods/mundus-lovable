@@ -198,8 +198,8 @@ export default function SupplierCreateOffer() {
         // Admin check — either profiles.role or users.is_mundus_admin
         let admin = false;
         try {
-          const { data: u } = await supabase
-            .from("users").select("is_mundus_admin").eq("auth_user_id", uid).maybeSingle();
+          const { data: u } = await (supabase as any)
+            .from("users").select("is_mundus_admin").eq("id", uid).maybeSingle();
           admin = !!(u as any)?.is_mundus_admin;
         } catch { /* noop */ }
         if (!admin) {
