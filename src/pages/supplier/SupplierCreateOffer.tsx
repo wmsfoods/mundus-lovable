@@ -2106,7 +2106,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global Beef &amp; Pork Product / Cuts
+                  🌐 Global {usToggleProteinLabel}Cuts
                 </button>
                 <button
                   type="button"
@@ -2126,7 +2126,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US Beef &amp; Pork Product / Cuts (IMPS)
+                  🇺🇸 US {usToggleProteinLabel}Cuts (IMPS)
                 </button>
                 {cuts.length > 0 && (
                   <button
