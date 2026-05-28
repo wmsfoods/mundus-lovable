@@ -29,7 +29,7 @@ import {
 import { useRemainingFcl } from "@/hooks/useRemainingFcl";
 import { notifyCompanyUsers } from "@/lib/notifications";
 
-const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
+const MIN_BID_PCT = 0.7; // initial bid must be ≥ 70% of asking (max 30% discount)
 
 type FreightOption = {
   id: string;
@@ -267,7 +267,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         out[it.id] = t("buyer.bid.validation.required", "Enter a bid greater than 0");
       } else if (v < min) {
         out[it.id] = t("buyer.bid.validation.minPct", {
-          defaultValue: "Minimum bid is ${{min}} (90% of asking)",
+          defaultValue: "Minimum bid is ${{min}}/kg (70% of asking — max 30% discount)",
           min: toDisplay(min, "price", unit).toFixed(2),
         });
       }
