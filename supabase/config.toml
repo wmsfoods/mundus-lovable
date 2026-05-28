@@ -29,3 +29,6 @@ verify_jwt = false
 
 [functions.shipping-instructions-notify-approved]
 verify_jwt = false
+
+[functions.email-track]
+verify_jwt = false
