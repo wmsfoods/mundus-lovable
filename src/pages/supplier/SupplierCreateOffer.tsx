@@ -1051,6 +1051,13 @@ export default function SupplierCreateOffer() {
       const totalKg = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
       const totalFcl = containerCount;
 
+      // Resolve selected origin port → country / display string
+      const selectedOriginPort = originPorts.find((p) => p.id === originPortId) || null;
+      const originCountryVal = selectedOriginPort?.country ?? null;
+      const originPortLabel = selectedOriginPort
+        ? `${selectedOriginPort.name}${selectedOriginPort.code ? ` (${selectedOriginPort.code})` : ""}`
+        : null;
+
       // 1. Create offer
       let offer: { id: string; offer_number: number };
       if (isEditing && editOffer) {
@@ -1070,6 +1077,9 @@ export default function SupplierCreateOffer() {
                 ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
                 : null,
               cut_region: cutRegion,
+              origin_port_id: originPortId || null,
+              ...(originCountryVal ? { origin_country: originCountryVal } : {}),
+              ...(originPortLabel ? { origin_port: originPortLabel } : {}),
               updated_at: new Date().toISOString(),
             })
             .eq("id", editOffer.offerId);
@@ -1093,8 +1103,9 @@ export default function SupplierCreateOffer() {
             supplier_id: supplierId,
             supplier_name: supplierName,
             status: "active",
-            origin_country: "Brazil",
-            origin_port: "Santos (BRSSZ)",
+            origin_country: originCountryVal ?? (company?.country ?? null),
+            origin_port: originPortLabel,
+            origin_port_id: originPortId || null,
             shipment_month,
             shipment_year,
             payment_terms: payTerm,
