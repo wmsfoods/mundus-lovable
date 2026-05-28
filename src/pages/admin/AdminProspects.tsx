@@ -561,6 +561,8 @@ export default function AdminProspects() {
 
       <AddProspectModal open={addOpen} onOpenChange={setAddOpen} />
       <ImportProspectsModal open={importOpen} onOpenChange={setImportOpen} />
+      </>
+      )}
 
       {confirmDelete && (
         <>
