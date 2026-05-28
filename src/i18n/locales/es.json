@@ -2189,7 +2189,7 @@
         "find_people": "Buscar Personas",
         "lists": "Listas",
         "marketplace": "Marketplace",
-        "products": "Productos y cortes",
+        "products": "Ítems",
         "markets": "Mercados",
         "ports": "Puertos",
         "finance": "Finanzas",
@@ -3023,7 +3023,7 @@
         }
       },
       "cuts": {
-        "title": "Productos & Cortes",
+        "title": "Ítems",
         "subtitle": "Administre el catálogo de cortes de carne del marketplace",
         "searchPlaceholder": "Buscar nombre del corte o número de producto...",
         "allCategories": "Todas las categorías",
