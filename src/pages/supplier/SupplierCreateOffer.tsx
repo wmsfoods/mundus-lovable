@@ -33,7 +33,16 @@ import {
    DATA — markets & cuts come from Supabase via useSupplierOfferData
    ══════════════════════════════════════════════════════════ */
 type Market = OfferMarket;
-const SPECS = ["Boneless", "Bone-In"];
+const SPECS = ["Boneless", "Bone-In", "Not specified"];
+
+/** Normalize a raw bone_spec value coming from the DB to one of the options
+ *  rendered in the Spec dropdown. Offals are treated as "Not specified". */
+function normalizeSpec(raw: string | null | undefined): string {
+  const v = (raw ?? "").trim().toLowerCase();
+  if (v === "boneless") return "Boneless";
+  if (v === "bone-in" || v === "bone in" || v === "bonein") return "Bone-In";
+  return "Not specified";
+}
 const PACKING_OPTIONS: Record<string, string[]> = {
   Beef: ["IWP", "VP", "Bulk", "Tray", "Bag"],
   Pork: ["IWP", "VP", "Bulk", "Tray", "Bag"],
