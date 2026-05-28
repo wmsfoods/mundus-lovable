@@ -149,6 +149,27 @@ export default function AdminProspects() {
         );
       }
 
+      // Exclude companies whose ONLY contacts are unqualified c_level (those live in C-Level tab)
+      let excludeCompanyIds: string[] = [];
+      {
+        const { data: clOnly } = await supabase
+          .from("crm_contacts")
+          .select("company_id, seniority, qualified_as")
+          .not("company_id", "is", null)
+          .limit(10000);
+        const byCo: Record<string, { total: number; cl_unqualified: number }> = {};
+        for (const c of (clOnly || []) as any[]) {
+          const k = c.company_id;
+          if (!byCo[k]) byCo[k] = { total: 0, cl_unqualified: 0 };
+          byCo[k].total += 1;
+          if (c.seniority === "c_level" && !c.qualified_as) byCo[k].cl_unqualified += 1;
+        }
+        excludeCompanyIds = Object.entries(byCo)
+          .filter(([, v]) => v.total > 0 && v.total === v.cl_unqualified)
+          .map(([id]) => id);
+      }
+
+
       let q = supabase
         .from("crm_companies")
         .select(
@@ -161,6 +182,7 @@ export default function AdminProspects() {
       if (role === "buyer") q = q.eq("company_type", "buyer");
       if (role === "supplier") q = q.eq("company_type", "supplier");
       if (selectedCountries.length > 0) q = q.in("country", selectedCountries);
+      if (excludeCompanyIds.length > 0) q = q.not("id", "in", `(${excludeCompanyIds.join(",")})`);
 
       if (s) {
         const orParts = [
