@@ -1409,6 +1409,25 @@ export default function SupplierCreateOffer() {
 
   return (
     <div className="cov4">
+      {isAdminActor && actingAsCompany && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "#FEF3C7",
+            border: "1px solid #F59E0B",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#92400E",
+          }}
+        >
+          ⚠️ Creating offer as <strong>{actingAsCompany.name}</strong> (Managed by Mundus)
+        </div>
+      )}
       {fromRequest && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
