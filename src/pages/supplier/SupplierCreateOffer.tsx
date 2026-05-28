@@ -1,9 +1,10 @@
-import { Fragment, useCallback, useState, useEffect, useRef } from "react";
+import { Fragment, useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
+import { DEFAULT_PROTEINS, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
