@@ -17,6 +17,8 @@ import { Crumbs } from "@/components/mundus/Crumbs";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { countryFlag } from "@/lib/countryFlags";
+import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import "@/styles/mundus-address.css";
 
 type Role = "buyer" | "supplier";
 
@@ -299,28 +301,30 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       for (const l of locations) {
         if (l.office_type === "headquarters") continue;
         if (l._deleted && !l._isNew) {
-          await (supabase as any).from("companies").delete().eq("id", l.id);
+          const { error } = await (supabase as any).from("companies").delete().eq("id", l.id);
+          if (error) throw error;
           continue;
         }
         if (l._isNew && !l._deleted) {
-          await (supabase as any).from("companies").insert({
+          const { error } = await (supabase as any).from("companies").insert({
             name: l.office_name || "Office",
             parent_company_id: companyId,
             office_type: l.office_type,
             office_name: l.office_name,
-            address: l.address,
+            address: l.address || "—",
             city: l.city,
-            state: l.state,
-            country: l.country,
+            state: l.state || "—",
+            country: l.country || "—",
             zip_code: l.zip_code,
             est_number: l.est_number,
             tax_id: company.tax_id || "—",
             phone: company.phone || "—",
           });
+          if (error) throw error;
           continue;
         }
         if (l._dirty) {
-          await (supabase as any)
+          const { error } = await (supabase as any)
             .from("companies")
             .update({
               office_type: l.office_type,
@@ -333,6 +337,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
               est_number: l.est_number,
             })
             .eq("id", l.id);
+          if (error) throw error;
         }
       }
       toast.success("Company saved");
@@ -699,11 +704,20 @@ function LocationCard({
       </div>
 
       <FieldLabel label="Address Line">
-        <input
+        <AddressAutocomplete
           className="cprofile-input"
           value={loc.address || ""}
-          onChange={(e) => onChange({ address: e.target.value })}
-          autoComplete="street-address"
+          onChange={(v) => onChange({ address: v })}
+          onAddressSelect={(p) =>
+            onChange({
+              address: p.street || p.formatted,
+              city: p.city || loc.city || "",
+              state: p.state || loc.state || "",
+              country: p.country || loc.country || "",
+              zip_code: p.zip || loc.zip_code || "",
+            })
+          }
+          placeholder="Start typing the address…"
         />
       </FieldLabel>
       <div className="cprofile-row2">
