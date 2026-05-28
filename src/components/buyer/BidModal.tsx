@@ -685,6 +685,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                             {err}
                           </span>
                         )}
+                        {!showErr && (
+                          <span className="text-[10px] text-muted-foreground">
+                            Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                          </span>
+                        )}
                         {Math.abs(d) > 0.001 && (
                           <span
                             className="text-[11px] tabular-nums"
@@ -775,6 +780,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                   />
                   {showErr && (
                     <div className="text-[11px] text-destructive mt-1">{err}</div>
+                  )}
+                  {!showErr && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                    </div>
                   )}
                   {Math.abs(d) > 0.001 && (
                     <div
