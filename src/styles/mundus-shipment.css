@@ -280,18 +280,6 @@
 
 .shp-empty { padding: 32px; text-align: center; color: var(--muted); }
 
-/* Dark theme */
-.dark .shp,
-[data-theme="dark"] .shp {
-  --bg: #0f172a;
-  --card: #1e293b;
-  --border: #334155;
-  --text: #f8fafc;
-  --muted: #94a3b8;
-  --gray: #334155;
-}
-.dark .shp-readonly,
-[data-theme="dark"] .shp-readonly { background: #0f172a; }
 
 /* ===== Mundus AI BL Extraction ===== */
 .shp-ai {
