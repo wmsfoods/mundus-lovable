@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, Activity,
   Users, BarChart3, Beef, Globe, Ship, Coins, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw,
-  Search as SearchIcon, UserSearch, ClipboardList, UserCheck,
+  Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
@@ -51,6 +51,7 @@ export default function AdminShell() {
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
     { to: "/admin/user-requests", label: "User Requests", icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },
+    { to: "/admin/offer-requests", label: "Offer Requests", icon: Inbox as unknown as IconCmp },
     { to: "/admin/offers", label: "All Offers", icon: Package as unknown as IconCmp },
     { to: "/admin/deals", label: t("admin.shell.nav.deals"), icon: Package as unknown as IconCmp },
     { to: "/admin/negotiations", label: t("admin.shell.nav.negotiations"), icon: MessagesSquare as unknown as IconCmp },

@@ -39,6 +39,7 @@ import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
 import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags.tsx";
 import AdminUserRequests from "./pages/admin/AdminUserRequests.tsx";
+import AdminBuyerRequests from "./pages/admin/AdminBuyerRequests.tsx";
 import AdminProspects from "./pages/admin/AdminProspects.tsx";
 import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
 import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
@@ -253,6 +254,7 @@ const App = () => (
               <Route path="import" element={<AdminImport />} />
               <Route path="migration" element={<AdminImport />} />
               <Route path="user-requests" element={<AdminUserRequests />} />
+              <Route path="offer-requests" element={<AdminBuyerRequests />} />
               <Route path="outreach" element={<OutreachCenter />} />
               <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
               <Route path="outreach/templates" element={<OutreachTemplates />} />
