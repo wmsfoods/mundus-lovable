@@ -16,6 +16,7 @@ import { bulkEnrichByCompanyIds } from "@/lib/prospectEnrich";
 import { Pagination } from "@/components/mundus/Pagination";
 import { CountryFilterPopover } from "@/components/admin/CountryFilterPopover";
 import { countryFlag } from "@/lib/countryFlags";
+import CLevelModule from "@/components/admin/CLevelModule";
 
 const PAGE_SIZE = 50;
 
@@ -40,6 +41,7 @@ const fmtGmv = (v?: number) =>
 export default function AdminProspects() {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const [section, setSection] = useState<"prospects" | "c_level">("prospects");
   const [list, setList] = useState<Prospect[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -294,6 +296,28 @@ export default function AdminProspects() {
         </div>
       </div>
 
+      {/* Section tabs */}
+      <div style={{ display: "flex", gap: 2, background: "#F3F4F6", borderRadius: 10, padding: 3, marginBottom: 20, width: "fit-content" }}>
+        <button type="button" onClick={() => setSection("prospects")} style={{
+          padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+          background: section === "prospects" ? "white" : "transparent",
+          border: "none", cursor: "pointer",
+          boxShadow: section === "prospects" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+          color: section === "prospects" ? "#111827" : "#6B7280",
+        }}>🎯 Prospects</button>
+        <button type="button" onClick={() => setSection("c_level")} style={{
+          padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+          background: section === "c_level" ? "white" : "transparent",
+          border: "none", cursor: "pointer",
+          boxShadow: section === "c_level" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+          color: section === "c_level" ? "#111827" : "#6B7280",
+        }}>👔 C-Level</button>
+      </div>
+
+      {section === "c_level" ? (
+        <CLevelModule />
+      ) : (
+      <>
       {/* funnel tiles */}
       <div className="crm-funnel-tiles">
         {STAGES.map((s) => (
