@@ -459,7 +459,7 @@ export default function SupplierCreateOffer() {
       setOriginPorts([]);
       return;
     }
-    supabase
+    (supabase as any)
       .from("ports")
       .select("id, name, code, city, country")
       .in("country", supplierCountries)
