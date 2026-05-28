@@ -907,6 +907,13 @@ export function CounterOfferModal({
                           {errors[it.id]}
                         </div>
                       )}
+                      {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
+                        <div className="text-[10px] text-muted-foreground mt-1 max-w-[200px] ml-auto text-right">
+                          {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
+                          {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                          {" "}({hintRefs.get(it.id)!.label})
+                        </div>
+                      )}
                     </td>
                     <td className="px-3 py-2 text-right text-xs tabular-nums">
                       {isAccepted ? (
@@ -1008,6 +1015,13 @@ export function CounterOfferModal({
                   />
                   {errors[it.id] && (
                     <div className="text-[11px] text-destructive mt-1">{errors[it.id]}</div>
+                  )}
+                  {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
+                      {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                      {" "}({hintRefs.get(it.id)!.label})
+                    </div>
                   )}
                   {!isAccepted && Math.abs(d) > 0.001 && (
                     <div className="text-[11px] tabular-nums mt-1" style={{ color: d > 0 ? "#15803d" : "#b45309" }}>
