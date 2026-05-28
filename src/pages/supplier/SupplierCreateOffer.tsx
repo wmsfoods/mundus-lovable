@@ -1562,6 +1562,92 @@ export default function SupplierCreateOffer() {
         <aside className="cov4-panel cov4-panel-l">
           <SectionHeader icon="🌍" t="Markets & freight" s="Countries, ports, freight costs" />
 
+          {/* ── Origin Port ─────────────────────────────────── */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>
+              Origin Port
+            </label>
+            {supplierCountries.length === 1 && (
+              <span style={{ fontSize: 12, color: "#6B7280", marginBottom: 6, display: "block" }}>
+                {supplierCountries[0]}
+              </span>
+            )}
+            <Popover open={originPickerOpen} onOpenChange={setOriginPickerOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  style={{
+                    width: "100%",
+                    maxWidth: 420,
+                    textAlign: "left",
+                    padding: "9px 12px",
+                    border: "1.5px solid #D1D5DB",
+                    borderRadius: 8,
+                    background: "#fff",
+                    fontSize: 14,
+                    color: originPortId ? "#111827" : "#9CA3AF",
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  {(() => {
+                    const p = originPorts.find((x) => x.id === originPortId);
+                    if (!p) return "Select origin port…";
+                    return `${p.name}${p.code ? ` (${p.code})` : ""} — ${p.country}`;
+                  })()}
+                  <span style={{ color: "#9CA3AF" }}>▾</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0" style={{ width: 420 }}>
+                <Command>
+                  <CommandInput placeholder="Search ports…" />
+                  <CommandList>
+                    <CommandEmpty>
+                      {supplierCountries.length === 0
+                        ? "Set your company country in My Company first."
+                        : "No ports found."}
+                    </CommandEmpty>
+                    {supplierCountries.map((c) => {
+                      const list = originPorts.filter((p) => p.country === c);
+                      if (list.length === 0) return null;
+                      return (
+                        <CommandGroup key={c} heading={c}>
+                          {list.map((p) => (
+                            <CommandItem
+                              key={p.id}
+                              value={`${p.name} ${p.code ?? ""} ${p.city ?? ""} ${p.country}`}
+                              onSelect={() => {
+                                setOriginPortId(p.id);
+                                setOriginPickerOpen(false);
+                              }}
+                            >
+                              <Check
+                                className="mr-2 h-4 w-4"
+                                style={{ opacity: originPortId === p.id ? 1 : 0 }}
+                              />
+                              <span>
+                                {p.name}
+                                {p.code ? ` (${p.code})` : ""}
+                                {p.city ? ` — ${p.city}` : ""}
+                              </span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      );
+                    })}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {supplierCountries.length > 1 && (
+              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
+                Showing ports from: {supplierCountries.join(", ")}
+              </p>
+            )}
+          </div>
+
           {/* Container & Temp */}
           <div className="cov4-cfg-row">
             <div className="cov4-cfg-g">
