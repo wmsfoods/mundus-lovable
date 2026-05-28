@@ -251,6 +251,16 @@ export default function SupplierCreateOffer() {
     return Object.keys(out).length === 0 ? cutsByCategory : out;
   }, [cutsByCategory, supplierProteins]);
 
+  // Keep `nf.cat` (the add-row category selector) inside the supplier's profile.
+  useEffect(() => {
+    const keys = Object.keys(filteredCutsByCategory);
+    if (keys.length === 0) return;
+    if (!keys.includes(nf.cat)) {
+      setNf((p) => ({ ...p, cat: keys[0], cut: "", cutId: undefined, cutImage: null }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredCutsByCategory]);
+
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
   const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
