@@ -1,0 +1,2 @@
+ALTER TABLE public.companies DROP CONSTRAINT IF EXISTS companies_office_type_check;
+ALTER TABLE public.companies ADD CONSTRAINT companies_office_type_check CHECK (office_type = ANY (ARRAY['headquarters'::text, 'regional_office'::text, 'branch'::text, 'office'::text, 'factory'::text]));
