@@ -434,13 +434,13 @@ export default function SupplierCreateOffer() {
     let cancelled = false;
     (async () => {
       const countries = new Set<string>();
-      const { data: parent } = await supabase
+      const { data: parent } = await (supabase as any)
         .from("companies")
         .select("country")
         .eq("id", company.id)
         .maybeSingle();
-      if ((parent as any)?.country) countries.add((parent as any).country);
-      const { data: children } = await supabase
+      if (parent?.country) countries.add(parent.country);
+      const { data: children } = await (supabase as any)
         .from("companies")
         .select("country")
         .eq("parent_company_id", company.id);
