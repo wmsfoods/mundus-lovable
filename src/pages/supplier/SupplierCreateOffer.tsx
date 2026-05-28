@@ -226,6 +226,30 @@ export default function SupplierCreateOffer() {
   const [moreMktsOpen, setMoreMktsOpen] = useState(false);
   const [cutPickerOpen, setCutPickerOpen] = useState(false);
 
+  // Supplier protein profile → controls which categories appear in the form.
+  const [supplierProteins, setSupplierProteins] = useState<string[]>([]);
+  useEffect(() => {
+    if (!company?.id) {
+      setSupplierProteins([...DEFAULT_PROTEINS]);
+      return;
+    }
+    supabase
+      .from("companies")
+      .select("protein_profiles")
+      .eq("id", company.id)
+      .maybeSingle()
+      .then(({ data }) => setSupplierProteins(resolveProteinProfile((data as any)?.protein_profiles)));
+  }, [company?.id]);
+
+  const filteredCutsByCategory = useMemo(() => {
+    const out: typeof cutsByCategory = {} as any;
+    for (const cat of Object.keys(cutsByCategory)) {
+      if (supplierProteins.includes(cat)) out[cat] = cutsByCategory[cat];
+    }
+    // Failsafe: if the profile filters out everything available, fall back to the full catalog.
+    return Object.keys(out).length === 0 ? cutsByCategory : out;
+  }, [cutsByCategory, supplierProteins]);
+
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
   const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
