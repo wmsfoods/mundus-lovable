@@ -4,7 +4,7 @@ import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
-import { DEFAULT_PROTEINS, resolveProteinProfile } from "@/lib/proteins";
+import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -34,8 +34,23 @@ import {
    ══════════════════════════════════════════════════════════ */
 type Market = OfferMarket;
 const SPECS = ["Boneless", "Bone-In"];
-const PKGS = ["\n", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
-const GRADES = ["Not specified", "Low", "Medium", "High", "Prime"];
+const PACKING_OPTIONS: Record<string, string[]> = {
+  Beef: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Pork: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Lamb: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Ovine: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Veal: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Poultry: ["IWP", "VP", "IQF", "Bulk"],
+};
+const PACKING_TOOLTIPS: Record<string, string> = {
+  IWP: "Individually Wrapped Pieces",
+  VP: "Vacuum Packed",
+  IQF: "Individually Quick Frozen",
+  Bulk: "Bulk packed in boxes",
+  Tray: "Tray packed",
+  Bag: "Bag packed",
+};
+const US_GRADES = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
 // Primary destination markets shown as chips (in this order).
@@ -293,6 +308,22 @@ export default function SupplierCreateOffer() {
   // Cut nomenclature region (only meaningful when company is US-based and category is Beef)
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
   const isUsCompany = (company?.country ?? "").trim().toLowerCase() === "united states";
+  // Show US Grade column only for US suppliers whose destinations are all US.
+  const isUsMarketName = (n: string) => {
+    const v = (n ?? "").trim().toLowerCase();
+    return v === "united states" || v === "us" || v === "usa" || v === "u.s.a.";
+  };
+  const showGradeColumn =
+    isUsCompany &&
+    selMarkets.length > 0 &&
+    selMarkets.every((m) => isUsMarketName(m.n));
+  // Dynamic nomenclature toggle label based on selected proteins.
+  const usToggleProteinLabel = (() => {
+    const ps = supplierProteins.filter((p) =>
+      (PROTEINS_WITH_US_NOMENCLATURE as readonly string[]).includes(p)
+    );
+    return ps.length === 1 ? ps[0] + " " : "";
+  })();
 
   const [distMarketplace, setDistMarketplace] = useState(true);
   const [distAllCustomers, setDistAllCustomers] = useState(false);
@@ -2114,7 +2145,9 @@ export default function SupplierCreateOffer() {
                 )}
                 {cuts.length > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
-                    {cutRegion === "us" ? "🇺🇸 Using US Beef & Pork Product / Cuts (IMPS)" : "🌐 Using Global Beef & Pork Product / Cuts"} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
+                    {cutRegion === "us"
+                      ? `🇺🇸 Using US ${usToggleProteinLabel}Cuts (IMPS)`
+                      : `🌐 Using Global ${usToggleProteinLabel}Cuts`} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
@@ -2122,14 +2155,14 @@ export default function SupplierCreateOffer() {
             <table className="cov4-tbl">
               <thead>
                 <tr>
-                  <th style={{ width: 44 }}>Photo</th>
-                  <th>PRODUCT / CUT</th>
-                  <th>Spec</th>
-                  <th>Packaging</th>
-                  <th>{"\n"}</th>
-                  <th>Aging</th>
-                  <th title="USDA/SIF establishment number">Plant #</th>
-                  <th className="num">{qLbl}</th>
+                  <th style={{ width: 48 }}>Photo</th>
+                  <th style={{ width: 120 }}>Protein</th>
+                  <th style={{ minWidth: 220 }}>Item / Cut</th>
+                  <th style={{ width: 100 }}>Spec</th>
+                  {showGradeColumn && <th style={{ width: 100 }}>Grade</th>}
+                  <th style={{ width: 120 }}>Packing</th>
+                  <th style={{ width: 80 }} title="USDA/SIF establishment number">Plant #</th>
+                  <th className="num" style={{ width: 100 }}>{qLbl}</th>
                   <th className="num">
                     Ask {pLbl}
                     {multiInco && (
@@ -2137,7 +2170,7 @@ export default function SupplierCreateOffer() {
                     )}
                   </th>
                   <th className="num">
-                    Floor {pLbl}
+                    Floor {pLbl} <span style={{ fontWeight: 400, opacity: 0.7, textTransform: "none" }}>(optional)</span>
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
@@ -2154,7 +2187,7 @@ export default function SupplierCreateOffer() {
                       </th>
                     </Fragment>
                   ))}
-                  <th>Notes</th>
+                  <th style={{ width: 120 }}>Notes</th>
                   <th style={{ width: 28 }} aria-label="actions" />
                 </tr>
               </thead>
@@ -2169,7 +2202,8 @@ export default function SupplierCreateOffer() {
                         isMobile={isMobile}
                       />
                     </td>
-                    <td><span className="cov4-cut-nm">{c.cat} {c.cut}</span></td>
+                    <td><span className="cov4-cut-nm" style={{ fontWeight: 600 }}>{c.cat}</span></td>
+                    <td><span className="cov4-cut-nm">{c.cut}</span></td>
                     <td>
                       <select
                         className="cov4-inline-edit"
@@ -2179,31 +2213,29 @@ export default function SupplierCreateOffer() {
                         {SPECS.map((x) => <option key={x}>{x}</option>)}
                       </select>
                     </td>
+                    {showGradeColumn && (
+                      <td>
+                        <select
+                          className="cov4-inline-edit"
+                          value={c.gr === "\n" ? "" : c.gr}
+                          onChange={(e) => updateCutField(c.id, "gr", e.target.value)}
+                        >
+                          <option value="">—</option>
+                          {US_GRADES.map((x) => <option key={x}>{x}</option>)}
+                        </select>
+                      </td>
+                    )}
                     <td>
                       <select
                         className="cov4-inline-edit"
-                        value={c.pkg}
+                        value={c.pkg === "\n" ? "" : c.pkg}
                         onChange={(e) => updateCutField(c.id, "pkg", e.target.value)}
+                        title={PACKING_TOOLTIPS[c.pkg] || ""}
                       >
-                        {PKGS.map((x) => <option key={x}>{x}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        className="cov4-inline-edit"
-                        value={c.gr}
-                        onChange={(e) => updateCutField(c.id, "gr", e.target.value)}
-                      >
-                        {GRADES.map((x) => <option key={x}>{x}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        className="cov4-inline-edit"
-                        value={c.ag}
-                        onChange={(e) => updateCutField(c.id, "ag", e.target.value)}
-                      >
-                        {AGINGS.map((x) => <option key={x}>{x}</option>)}
+                        <option value="">—</option>
+                        {(PACKING_OPTIONS[c.cat] || PACKING_OPTIONS.Beef).map((x) => (
+                          <option key={x} value={x} title={PACKING_TOOLTIPS[x]}>{x}</option>
+                        ))}
                       </select>
                     </td>
                     <td>
@@ -2356,17 +2388,18 @@ export default function SupplierCreateOffer() {
                       </label>
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        <select
-                          value={nf.cat}
-                          onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}
-                        >
-                          {Object.keys(filteredCutsByCategory).map((c) => (
-                            <option key={c} value={c}>
-                              {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
-                            </option>
-                          ))}
-                        </select>
+                      <select
+                        value={nf.cat}
+                        onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null, pkg: "" }))}
+                      >
+                        {Object.keys(filteredCutsByCategory).map((c) => (
+                          <option key={c} value={c}>
+                            {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
                         <Popover open={cutPickerOpen} onOpenChange={setCutPickerOpen}>
                           <PopoverTrigger asChild>
                             <button
@@ -2384,7 +2417,7 @@ export default function SupplierCreateOffer() {
                               <SearchIcon size={12} style={{ opacity: 0.5 }} />
                             </button>
                           </PopoverTrigger>
-                          <PopoverContent className="p-0 w-[300px]" align="start">
+                          <PopoverContent className="p-0 w-[320px]" align="start">
                             <Command>
                               <CommandInput placeholder={tm("searchCutsPh") as string} />
                               <CommandList className="max-h-[320px]">
@@ -2424,12 +2457,28 @@ export default function SupplierCreateOffer() {
                             </Command>
                           </PopoverContent>
                         </Popover>
-                      </div>
                     </td>
                     <td><select value={nf.spec} onChange={(e) => setNf((p) => ({ ...p, spec: e.target.value }))}>{SPECS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.pkg} onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}>{PKGS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
+                    {showGradeColumn && (
+                      <td>
+                        <select value={nf.gr === "\n" ? "" : nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>
+                          <option value="">—</option>
+                          {US_GRADES.map((x) => <option key={x}>{x}</option>)}
+                        </select>
+                      </td>
+                    )}
+                    <td>
+                      <select
+                        value={nf.pkg === "\n" ? "" : nf.pkg}
+                        onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}
+                        title={PACKING_TOOLTIPS[nf.pkg] || ""}
+                      >
+                        <option value="">—</option>
+                        {(PACKING_OPTIONS[nf.cat] || PACKING_OPTIONS.Beef).map((x) => (
+                          <option key={x} value={x} title={PACKING_TOOLTIPS[x]}>{x}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td>
                       {companyPlants.length > 0 && !plantManual["__nf"] ? (
                         <select
