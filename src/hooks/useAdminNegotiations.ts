@@ -24,6 +24,8 @@ export interface AdminNegotiationRow {
   offer_created_at: string | null;
   supplier_name: string | null;
   supplier_country: string | null;
+  is_managed_supplier: boolean;
+  supplier_id: string | null;
   container_size: string | null;
   total_fcl: number | null;
   origin_port: string | null;
