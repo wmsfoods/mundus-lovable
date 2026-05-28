@@ -33,7 +33,16 @@ import {
    DATA — markets & cuts come from Supabase via useSupplierOfferData
    ══════════════════════════════════════════════════════════ */
 type Market = OfferMarket;
-const SPECS = ["Boneless", "Bone-In"];
+const SPECS = ["Boneless", "Bone-In", "Not specified"];
+
+/** Normalize a raw bone_spec value coming from the DB to one of the options
+ *  rendered in the Spec dropdown. Offals are treated as "Not specified". */
+function normalizeSpec(raw: string | null | undefined): string {
+  const v = (raw ?? "").trim().toLowerCase();
+  if (v === "boneless") return "Boneless";
+  if (v === "bone-in" || v === "bone in" || v === "bonein") return "Bone-In";
+  return "Not specified";
+}
 const PACKING_OPTIONS: Record<string, string[]> = {
   Beef: ["IWP", "VP", "Bulk", "Tray", "Bag"],
   Pork: ["IWP", "VP", "Bulk", "Tray", "Bag"],
@@ -317,12 +326,15 @@ export default function SupplierCreateOffer() {
     isUsCompany &&
     selMarkets.length > 0 &&
     selMarkets.every((m) => isUsMarketName(m.n));
-  // Dynamic nomenclature toggle label based on selected proteins.
+  // Dynamic nomenclature toggle label based on the supplier's proteins.
+  // 1 protein → "Beef"; 2 → "Beef & Pork"; 0 → "" (falls back to "Cuts").
   const usToggleProteinLabel = (() => {
     const ps = supplierProteins.filter((p) =>
       (PROTEINS_WITH_US_NOMENCLATURE as readonly string[]).includes(p)
     );
-    return ps.length === 1 ? ps[0] + " " : "";
+    if (ps.length === 0) return "";
+    if (ps.length === 1) return ps[0] + " ";
+    return ps.join(" & ") + " ";
   })();
 
   const [distMarketplace, setDistMarketplace] = useState(true);
@@ -344,17 +356,18 @@ export default function SupplierCreateOffer() {
   const [plantManual, setPlantManual] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
+    if (!company?.id) return;
     let cancelled = false;
     (async () => {
       try {
         const { data, error } = await supabase
           .from("companies")
           .select("plant_numbers")
-          .limit(1)
+          .eq("id", company.id)
           .maybeSingle();
         if (cancelled || error || !data) return;
         const list = (data as any).plant_numbers as string[] | null;
-        if (list && list.length > 0) setCompanyPlants(list);
+        setCompanyPlants(list ?? []);
       } catch {
         /* no-op: anonymous or no company; falls back to free text input */
       }
@@ -362,7 +375,7 @@ export default function SupplierCreateOffer() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [company?.id]);
 
   const [mlOpen, setMlOpen] = useState(false);
   const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
@@ -2093,7 +2106,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global Beef &amp; Pork Product / Cuts
+                  🌐 Global {usToggleProteinLabel}Cuts
                 </button>
                 <button
                   type="button"
@@ -2113,7 +2126,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US Beef &amp; Pork Product / Cuts (IMPS)
+                  🇺🇸 US {usToggleProteinLabel}Cuts (IMPS)
                 </button>
                 {cuts.length > 0 && (
                   <button
@@ -2438,8 +2451,8 @@ export default function SupplierCreateOffer() {
                                           ...p,
                                           cutId: c.id,
                                           cut: c.displayName,
-                                          cutImage: c.image_url ?? null,
-                                          spec: c.bone_spec ?? p.spec,
+                                         cutImage: c.image_url ?? null,
+                                         spec: normalizeSpec(c.bone_spec),
                                         }));
                                         if (c.image_url) setNewImgPrev(c.image_url);
                                         setCutPickerOpen(false);
