@@ -1943,7 +1943,7 @@ export default function SupplierCreateOffer() {
             </button>
             {cutRegion === "us" && (
               <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 380, marginLeft: 8 }}>
-                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Product / Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Product / Cuts</strong> button above to switch.
+                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef &amp; Pork Product / Cuts (IMPS)</strong>. To switch, use the <strong>🌐 Global Product / Cuts</strong> button above.
               </span>
             )}
           </div>
@@ -2027,7 +2027,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global Beef Product / Cuts
+                  🌐 Global Beef &amp; Pork Product / Cuts
                 </button>
                 <button
                   type="button"
@@ -2047,7 +2047,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US Beef Product / Cuts (IMPS)
+                  🇺🇸 US Beef &amp; Pork Product / Cuts (IMPS)
                 </button>
                 {cuts.length > 0 && (
                   <button
@@ -2079,7 +2079,7 @@ export default function SupplierCreateOffer() {
                 )}
                 {cuts.length > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
-                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 Using US Beef & Pork Product / Cuts (IMPS)" : "🌐 Using Global Beef & Pork Product / Cuts"} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
@@ -2357,7 +2357,7 @@ export default function SupplierCreateOffer() {
                                 <CommandGroup>
                                   {(cutsByCategory[nf.cat] || [])
                                     .filter((c) => {
-                                      if (nf.cat !== "Beef") return c.region === "global";
+                                      if (!["Beef", "Pork"].includes(nf.cat)) return c.region === "global";
                                       if (cutRegion === "us") return c.region === "us" || c.bone_spec === "Offals";
                                       return c.region === "global";
                                     })
