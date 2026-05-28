@@ -496,12 +496,58 @@ export default function SupplierCreateOffer() {
       setOriginPorts([]);
       return;
     }
-    (supabase as any)
-      .from("ports")
-      .select("id, name, code, city, country")
-      .in("country", supplierCountries)
-      .order("name")
-      .then(({ data }) => setOriginPorts((data ?? []) as any));
+    let cancelled = false;
+    (async () => {
+      // Country name normalization (codes & locale variants → english_name)
+      const norm = (c: string): string => {
+        const map: Record<string, string> = {
+          BR: "Brazil", BRA: "Brazil", Brasil: "Brazil",
+          US: "United States", USA: "United States", "U.S.": "United States", "U.S.A.": "United States",
+          AR: "Argentina", ARG: "Argentina",
+          CN: "China", CHN: "China",
+          HK: "Hong Kong", HKG: "Hong Kong",
+          KR: "South Korea", "Korea, Republic of": "South Korea",
+        };
+        return map[c] || c;
+      };
+      const wanted = Array.from(new Set(supplierCountries.map(norm).filter(Boolean)));
+
+      // Resolve country_ids via english_name (case-insensitive)
+      const { data: countryRows } = await (supabase as any)
+        .from("countries")
+        .select("id, english_name")
+        .or(wanted.map((n) => `english_name.ilike.${n}`).join(","));
+      let countryIds: string[] = (countryRows ?? []).map((r: any) => r.id);
+      if (countryIds.length === 0) {
+        // Last-resort fallback: load all ports so the user can still pick.
+        const { data: all } = await (supabase as any)
+          .from("ports")
+          .select("id, name, code, country_id, countries:country_id(english_name)")
+          .order("name");
+        if (!cancelled) {
+          setOriginPorts(
+            (all ?? []).map((p: any) => ({
+              id: p.id, name: p.name, code: p.code, city: null,
+              country: p.countries?.english_name ?? "",
+            })),
+          );
+        }
+        return;
+      }
+      const { data } = await (supabase as any)
+        .from("ports")
+        .select("id, name, code, country_id, countries:country_id(english_name)")
+        .in("country_id", countryIds)
+        .order("name");
+      if (cancelled) return;
+      setOriginPorts(
+        (data ?? []).map((p: any) => ({
+          id: p.id, name: p.name, code: p.code, city: null,
+          country: p.countries?.english_name ?? "",
+        })),
+      );
+    })();
+    return () => { cancelled = true; };
   }, [supplierCountries]);
 
   const [mlOpen, setMlOpen] = useState(false);
