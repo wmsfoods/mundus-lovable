@@ -57,6 +57,15 @@ Deno.serve(async (req) => {
     for (const email of emails) {
       try {
         await supabase.from("email_queue").update({ status: "sending" }).eq("id", email.id);
+        // Inject tracking pixel just before </body> (or append if not present)
+        const projectUrl = Deno.env.get("SUPABASE_URL") ?? "";
+        const pixel = `<img src="${projectUrl}/functions/v1/email-track?id=${email.id}&action=open" width="1" height="1" alt="" style="display:block;height:1px;width:1px;border:0;" />`;
+        let htmlWithPixel: string = email.html_body || "";
+        if (htmlWithPixel.includes("</body>")) {
+          htmlWithPixel = htmlWithPixel.replace("</body>", `${pixel}</body>`);
+        } else {
+          htmlWithPixel = htmlWithPixel + pixel;
+        }
         const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {
@@ -67,7 +76,7 @@ Deno.serve(async (req) => {
             from: FROM,
             to: [email.to_email],
             subject: email.subject,
-            html: email.html_body,
+            html: htmlWithPixel,
           }),
         });
         if (!res.ok) {
