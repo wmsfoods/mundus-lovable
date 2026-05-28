@@ -362,8 +362,8 @@ export default function BuyerCreateRequest() {
     return acc;
   }, [cutsByCategory, selectedCategories]);
   const cuts = useMemo(() => {
-    const hasBeef = selectedCategories.includes("Beef");
-    if (!hasBeef) return allCuts.filter((c) => (c as any).region !== "us");
+    const hasUsCapable = selectedCategories.some((c) => c === "Beef" || c === "Pork");
+    if (!hasUsCapable) return allCuts.filter((c) => (c as any).region !== "us");
     if (cutRegion === "us") return allCuts.filter((c) => (c as any).region === "us" || c.bone_spec === "Offals");
     return allCuts.filter((c) => (c as any).region !== "us");
   }, [allCuts, selectedCategories, cutRegion]);
@@ -756,7 +756,7 @@ export default function BuyerCreateRequest() {
           </div>
 
           {/* Cut nomenclature toggle */}
-          {selectedCategories.includes("Beef") && (
+          {(selectedCategories.includes("Beef") || selectedCategories.includes("Pork")) && (
             <div className="bcr-card" style={{ padding: "12px 16px" }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "#374151" }}>
                 Cut Nomenclature
@@ -776,7 +776,7 @@ export default function BuyerCreateRequest() {
                     opacity: (filledRows > 0 && String(cutRegion) !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global Beef Cuts
+                  🌐 Global Beef &amp; Pork Cuts
                 </button>
                 <button
                   type="button"
@@ -792,7 +792,7 @@ export default function BuyerCreateRequest() {
                     opacity: (filledRows > 0 && String(cutRegion) !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US Beef Cuts (IMPS)
+                  🇺🇸 US Beef &amp; Pork Cuts (IMPS)
                 </button>
                 {filledRows > 0 && (
                   <button
@@ -814,13 +814,13 @@ export default function BuyerCreateRequest() {
                 )}
                 {filledRows > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF" }}>
-                    {cutRegion === "us" ? "🇺🇸 US Beef Product / Cuts" : "🌐 Global Beef Product / Cuts"} · {filledRows} Product / Cut{filledRows > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 US Beef & Pork Product / Cuts (IMPS)" : "🌐 Global Beef & Pork Product / Cuts"} · {filledRows} Product / Cut{filledRows > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
               {cutRegion === "us" && (
                 <div style={{ fontSize: 12, color: "#6B7280", marginTop: 6 }}>
-                  💡 US Beef Cuts use IMPS/NAMP nomenclature, recommended when sourcing from American suppliers
+                  💡 US Beef &amp; Pork Cuts use IMPS/NAMP nomenclature, recommended when sourcing from American suppliers
                 </div>
               )}
             </div>
