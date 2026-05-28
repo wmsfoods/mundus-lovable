@@ -1,46 +1,108 @@
-## Goal
+## Parte 1 — Invite User real (Resend)
 
-Make the **Admin → Company Detail** page look and feel exactly like the **Prospect Detail** page (header avatar + inline-edit name + chip bar + stacked panels), while keeping **all current company fields, tabs, validations, save/delete/role logic and team management** intact.
+### Backend
+Criar edge function `send-team-invite` em `supabase/functions/send-team-invite/index.ts` com:
+- Validação de JWT do usuário chamador.
+- Confere que o chamador é master da `company_id` (via `is_company_master`) ou Mundus admin.
+- Cria/atualiza `auth.users` via `admin.inviteUserByEmail` (Service Role) gerando o link de aceite.
+- Vincula `company_users.user_id` ao usuário criado.
+- Gera token de aceite (UUID) com expiração de 7 dias na nova tabela `team_invitations` (já existe parcialmente — vou aproveitar).
+- Envia email via gateway Resend (`https://connector-gateway.lovable.dev/resend`) com template HTML inline multilíngue (idioma vem do payload).
+- Retorna `{ ok, invite_id, link }`.
 
-## What changes (visual / layout only)
+Migration mínima:
+- Garantir colunas `team_invitations.token`, `expires_at`, `accepted_at`, `language`.
+- Função `accept_team_invite(token)` que move o usuário para `active`.
 
-Refactor `src/pages/admin/AdminCompanyDetail.tsx` so the **Profile tab** mirrors the prospect detail structure:
+### Frontend
+- `UserFormModal.tsx`: quando `mode=invite`, em vez de `INSERT` direto, chamar `supabase.functions.invoke('send-team-invite', { body: { ...payload, language: i18n.language } })`.
+- Página `/invite/:token` para o convidado definir senha e ativar conta.
+- Toast com retry e estado de loading no botão.
 
-1. **Header panel** (replaces current `adm-page-header`)
-   - Back link `← Companies` (top-left, `adm-link`)
-   - Row: `crm-detail-av` avatar with company initials + inline-editable company name (`psp-input` when editing) + subtitle `Country · #company_number`
-   - Right-aligned actions: Edit / Cancel+Save (Save uses Mundus wine `#8B2252`), plus Delete (with the same "cannot delete if has data" guard already in the file)
-   - Chip bar `crm-chips` below the title showing:
-     - Active/Inactive pill (`stage-qualified` / `stage-lost`)
-     - Buyer / Supplier / Buyer+Supplier pill (editable select while editing → toggles `is_buyer`/`is_supplier`)
-     - Verified pill (when `is_verified`)
-     - Status select (active / inactive / etc.) — already in admin section, promoted to chip
-     - "Created: …" chip with `onboardedDisplay`
-   - Editing toggles the same `dirty` flag and Save handler that exists today.
+---
 
-2. **Tabs bar** stays unchanged (same `adm-company-tabs` with Profile / About / Plants / Certifications / Documents / Team / Preferences). Only the Profile tab body is restyled.
+## Parte 2 — i18n: auditoria + execução em fases
 
-3. **Profile tab body** — replace the current `adm-form-grid` Sections with prospect-style panels:
-   - **Company information** panel (`adm-panel` + `psp-grid-2`): Lead type (Buyer/Supplier/Both, derived from `is_buyer`/`is_supplier`), Industry (new free-text — already optional, fall back to placeholder if not in schema → keep only fields that exist in `CompanyPatch`; map: Company name, Tax ID, Country, State, City, Street/Address (with `AddressAutocomplete`), Zip, Phone, Website, Company LinkedIn (only if field exists; otherwise omit).
-   - **Protein & Cuts** panel (kept, same logic as today, just wrapped in `adm-panel` with the panel title pattern).
-   - **Admin** panel (Verified toggle + Status select + Rating) — only when editing existing record.
-   - Each field uses the prospect's `Field` read/edit pattern (label + value in view mode, input in edit mode) so the page looks identical to prospects when not editing.
+### Estado atual
+- 5 locales (`en, pt, es, fr, zh`) configurados.
+- Apenas 33% dos componentes usam `t()`. Strings hardcoded espalhadas: labels, placeholders, toasts, headings, options de select, mensagens de validação.
 
-4. **Activity + Notes row** (`crm-detail-grid`) at the bottom of the Profile tab — Activity left, Notes right. For companies we don't have activity log yet, so render:
-   - Activity panel: empty state "No activity yet" (using `admin.crm.detail.noActivity` key) — no add-note button to avoid scope creep.
-   - Notes panel: read-only display of `data.notes` when present, textarea in edit mode. If `notes` is not in `CompanyPatch`, skip this panel (verify when implementing).
+### Estratégia
+Convenção: cada módulo ganha um namespace dedicado em `src/i18n/locales/*.json` (ex.: `team.invite.*`, `negotiation.counter.*`). Profiles, status, e enums viram dicionários reutilizáveis (`enums.profile.master_buyer` etc).
 
-5. **Delete confirm modal** — reuse the `psp-scrm-modal` markup from prospect detail instead of the current `AlertDialog`, so the look matches. Behavior (the `remove()` call + redirect to `/admin/companies`) is unchanged.
+### Fases (ordem de prioridade, cada fase é um turno separado)
 
-## What stays the same
+```text
+Fase 1 — Team & Users (alto impacto, baixo risco)
+  UserFormModal, BuyerUsers, SupplierUsers, AdminTeam,
+  CompanyTeamPanel, CompanyProfileSections, CompanyProfilePage,
+  TradePreferencesSection, SupplierOffices
+  ~140 strings
 
-- All **tabs** (About, Plants, Certifications, Documents, Team, Preferences) and their components (`CompanyProfileSections`, `CompanyTeamPanel`, etc.) — untouched.
-- All **fields** currently on the form (Buyer/Supplier roles, Protein profiles, Preferred cuts, Company name, Tax ID, Country/State/City/Address/Zip/Phone/Website, Verified, Status, Rating, Licenses upload hint).
-- **Validation**, `handleSave`, `handleDelete`, `auditLog`, `create` vs `edit` mode, dirty tracking, translations — no behavior change.
-- The "new company" view (`isNew`) keeps the same fields but renders inside the new panel layout (no tabs bar, no delete).
+Fase 2 — Negotiation flow (crítico p/ buyers/suppliers)
+  BidModal, CounterOfferModal, CounterOfferActions,
+  BuyerNegotiationDetail, SupplierNegotiationDetail,
+  OtherBidsPanel, negotiation hints/validators
+  ~180 strings
 
-## Files touched
+Fase 3 — Create flows
+  BuyerCreateRequest, SupplierCreateOffer, SupplierCreateAuction,
+  CreateBuyerProfileModal, CreateCutModal, todos os modais de criação
+  ~250 strings
 
-- `src/pages/admin/AdminCompanyDetail.tsx` — rewrite header + Profile tab body using `adm-panel`, `crm-detail-head`, `crm-chips`, `psp-grid-2`, `crm-detail-grid` classes already defined in the prospect/CRM stylesheets. No new CSS file needed.
+Fase 4 — Marketplace / Orders / Shipment
+  Offers, OfferDetail (buyer+supplier), OrderDetail, Orders,
+  Requests, RequestDetail, ShipmentTracker, ShippingInstructions*
+  ~200 strings
 
-No DB changes, no new dependencies, no changes to other tabs or to the companies list page.
+Fase 5 — CRM & Admin (volume maior, menos prioridade p/ clientes finais)
+  CRMPipeline, AdminCompanyDetail, AdminProspects, OutreachCenter,
+  OutreachCampaigns, OutreachTemplates, EmailSettings, AdminProducts,
+  AdminRevenue, AdminOrders, AdminNegotiations, AdminAuditLog,
+  AdminAnalytics, AdminDashboard, AdminImport, AdminUserRequests,
+  partners/PartnersModule, FindCompanies, FindPeople, ListDetail
+  ~600 strings
+
+Fase 6 — Whats module (PT-BR fixo hoje)
+  WhatsConversas, WhatsTarefas, WhatsMacros, WhatsContatos,
+  WhatsConfiguracoes, WhatsAnalises, components/whats/*
+  ~200 strings
+
+Fase 7 — Auxiliares (modals públicos, settings, etc)
+  prospect/SaveToCrmModal, supplier/TransferOffersModal,
+  marketplace/OffersFilterBar, mundus/AddressAutocomplete,
+  settings/NotificationPreferences, signup/*, public/Shipping*
+  ~150 strings
+
+Total estimado: ~1700 strings em ~150 arquivos.
+```
+
+### Padrão de qualidade por fase
+1. Extrair toda string visível para namespace dedicado.
+2. Adicionar chaves nos 5 locales (`en` como base; pt/es/fr/zh traduzidos).
+3. Toasts e erros de validação também traduzidos.
+4. Date/Number formatting respeita `i18n.language`.
+5. Pluralização com `{count}`.
+
+---
+
+## Detalhes técnicos
+
+**Edge function Resend (parte 1):**
+- Template HTML simples (heading, CTA button, footer) com cores do brand (`hsl(var(--primary))` resolvido para hex).
+- `from: 'Mundus Trade <noreply@notify.mundustrade.us>'` (ou domínio já verificado — vou conferir antes de codar).
+- Idioma do email vem do `i18n.language` do chamador.
+- Idempotência: token UUID único por convite.
+
+**i18n (parte 2):**
+- Novos arquivos: nada — só estendo `src/i18n/locales/*.json`.
+- Helper opcional `tEnum(ns, value)` para enums.
+- Lint regra: posso adicionar script de CI que detecta strings hardcoded suspeitas (`>[A-Z][a-z]{3,}<`) — opcional, sob confirmação.
+
+---
+
+## O que vou entregar agora (após sua aprovação do plano)
+
+**Turno 1**: Parte 1 completa (Resend invite + página /invite/:token) + Fase 1 do i18n (Team & Users — incluindo o modal que você acabou de ver em chinês).
+
+Demais fases entram em turnos separados pra eu não estourar contexto e você poder revisar incrementalmente.

@@ -6095,48 +6095,66 @@ export type Database = {
       }
       team_invitations: {
         Row: {
+          accepted_at: string | null
           account_status: string
           auth_user_id: string | null
           avatar_url: string | null
           company_id: string
           created_at: string
           email: string
+          expires_at: string | null
           full_name: string
           id: string
           invited_at: string | null
+          job_title: string | null
+          language: string | null
+          notes: string | null
           phone: string | null
           profile_type: string | null
           role: string
+          token: string | null
           updated_at: string
         }
         Insert: {
+          accepted_at?: string | null
           account_status?: string
           auth_user_id?: string | null
           avatar_url?: string | null
           company_id: string
           created_at?: string
           email: string
+          expires_at?: string | null
           full_name: string
           id?: string
           invited_at?: string | null
+          job_title?: string | null
+          language?: string | null
+          notes?: string | null
           phone?: string | null
           profile_type?: string | null
           role?: string
+          token?: string | null
           updated_at?: string
         }
         Update: {
+          accepted_at?: string | null
           account_status?: string
           auth_user_id?: string | null
           avatar_url?: string | null
           company_id?: string
           created_at?: string
           email?: string
+          expires_at?: string | null
           full_name?: string
           id?: string
           invited_at?: string | null
+          job_title?: string | null
+          language?: string | null
+          notes?: string | null
           phone?: string | null
           profile_type?: string | null
           role?: string
+          token?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -6431,6 +6449,10 @@ export type Database = {
     Functions: {
       accept_negotiation: {
         Args: { p_negotiation_id: string; p_user_id: string }
+        Returns: Json
+      }
+      accept_team_invitation: {
+        Args: { p_token: string; p_user_id: string }
         Returns: Json
       }
       current_user_company_id: { Args: never; Returns: string }

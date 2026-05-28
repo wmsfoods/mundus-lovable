@@ -43,7 +43,8 @@
     "language": "Language",
     "english": "English",
     "portuguese": "Português",
-    "spanish": "Español"
+    "spanish": "Español",
+    "signIn": "Sign in"
   },
   "auth": {
     "login": "Log in",
@@ -3186,5 +3187,88 @@
     "contact_buyer": "Hi! I saw your request on Mundus Trade. I'd like to make an offer.",
     "send_message": "Send via WhatsApp",
     "share": "Share via WhatsApp"
+  },
+  "team": {
+    "form": {
+      "title": {
+        "edit": "Edit User",
+        "invite": "Invite User"
+      },
+      "subtitle": {
+        "edit": "Update this team member's details and permissions.",
+        "invite": "Send an invitation email — they will set their password on first login."
+      },
+      "fields": {
+        "name": "Name",
+        "email": "E-mail",
+        "profileType": "Profile Type",
+        "jobTitle": "Job title",
+        "phone": "Phone",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "jobTitle": "e.g. Sales Director",
+        "notes": "Internal notes about this user…"
+      },
+      "profile": {
+        "master_buyer": "Master Buyer (full access)",
+        "procurement": "Procurement",
+        "import_manager": "Import Manager",
+        "quality_control": "Quality Control",
+        "logistics": "Logistics",
+        "master_supplier": "Master Supplier (full access)",
+        "operator": "Operator",
+        "export_manager": "Export Manager"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "account": {
+        "activeTitle": "Account active",
+        "inactiveTitle": "Account inactive",
+        "activeHint": "User can sign in and access this workspace.",
+        "inactiveHint": "User cannot sign in until reactivated."
+      },
+      "meta": {
+        "created": "CREATED",
+        "lastLogin": "LAST LOGIN",
+        "userId": "USER ID"
+      },
+      "actions": {
+        "save": "Save changes",
+        "sendInvite": "Send invite",
+        "delete": "Delete user"
+      },
+      "confirmDelete": "Delete this user? This cannot be undone.",
+      "toast": {
+        "updated": "User updated.",
+        "deleted": "User deleted.",
+        "inviteSent": "Invitation email sent to {{email}}.",
+        "inviteCreated": "Invitation created for {{email}} (email pending)."
+      },
+      "errors": {
+        "nameEmailRequired": "Name and email are required.",
+        "noCompany": "No company selected.",
+        "saveFailed": "Save failed."
+      }
+    }
+  },
+  "inviteAccept": {
+    "title": "Accept your invitation",
+    "subtitle": "Hi {{name}}, set a password to access your workspace.",
+    "email": "E-mail",
+    "password": "Password",
+    "confirm": "Confirm password",
+    "cta": "Accept and continue",
+    "success": "Welcome! Redirecting to your workspace…",
+    "errors": {
+      "title": "Invitation unavailable",
+      "invalid": "This invitation link is invalid or has expired.",
+      "alreadyAccepted": "This invitation has already been accepted. Please sign in.",
+      "expired": "This invitation has expired. Please ask for a new one.",
+      "passwordShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match."
+    }
   }
 }

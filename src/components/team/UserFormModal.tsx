@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Modal } from "@/components/mundus/Modal";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -23,21 +24,8 @@ export type UserFormUser = {
   lastLoginAt?: string | null;
 };
 
-const BUYER_PROFILES: { value: string; label: string }[] = [
-  { value: "master_buyer", label: "Master Buyer (full access)" },
-  { value: "procurement", label: "Procurement" },
-  { value: "import_manager", label: "Import Manager" },
-  { value: "quality_control", label: "Quality Control" },
-  { value: "logistics", label: "Logistics" },
-];
-
-const SUPPLIER_PROFILES: { value: string; label: string }[] = [
-  { value: "master_supplier", label: "Master Supplier (full access)" },
-  { value: "operator", label: "Operator" },
-  { value: "export_manager", label: "Export Manager" },
-  { value: "quality_control", label: "Quality Control" },
-  { value: "logistics", label: "Logistics" },
-];
+const BUYER_PROFILE_VALUES = ["master_buyer", "procurement", "import_manager", "quality_control", "logistics"];
+const SUPPLIER_PROFILE_VALUES = ["master_supplier", "operator", "export_manager", "quality_control", "logistics"];
 
 function fmtDate(iso?: string | null) {
   if (!iso) return "—";
@@ -73,12 +61,14 @@ export function UserFormModal({
   onClose,
   onSaved,
 }: UserFormModalProps) {
+  const { t, i18n } = useTranslation();
   const { company } = useCurrentCompany();
-  const profiles = ns === "buyer" ? BUYER_PROFILES : SUPPLIER_PROFILES;
+  const profileValues = ns === "buyer" ? BUYER_PROFILE_VALUES : SUPPLIER_PROFILE_VALUES;
+  const profileLabel = (v: string) => t(`team.form.profile.${v}`, { defaultValue: v });
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [profileType, setProfileType] = useState(profiles[0].value);
+  const [profileType, setProfileType] = useState(profileValues[0]);
   const [jobTitle, setJobTitle] = useState("");
   const [phone, setPhone] = useState("");
   const [notes, setNotes] = useState("");
@@ -90,7 +80,7 @@ export function UserFormModal({
     if (mode === "edit" && user) {
       setName(user.name || "");
       setEmail(user.email || "");
-      setProfileType(user.profileType || profiles[0].value);
+      setProfileType(user.profileType || profileValues[0]);
       setJobTitle(user.jobTitle || "");
       setPhone(user.phone || "");
       setNotes(user.notes || "");
@@ -98,49 +88,65 @@ export function UserFormModal({
     } else {
       setName("");
       setEmail("");
-      setProfileType(profiles[0].value);
+      setProfileType(profileValues[0]);
       setJobTitle("");
       setPhone("");
       setNotes("");
       setActive(true);
     }
-  }, [open, mode, user, profiles]);
+  }, [open, mode, user, profileValues]);
 
   async function handleSave() {
     if (!name.trim() || !email.trim()) {
-      toast.error("Name and email are required.");
+      toast.error(t("team.form.errors.nameEmailRequired"));
       return;
     }
     setBusy(true);
     try {
-      const payload = {
-        full_name: name.trim(),
-        email: email.trim().toLowerCase(),
-        role: profileType,
-        job_title: jobTitle.trim() || null,
-        phone: phone.trim() || null,
-        notes: notes.trim() || null,
-        status: active ? "active" : "inactive",
-      };
       if (mode === "edit" && user) {
+        const payload = {
+          full_name: name.trim(),
+          email: email.trim().toLowerCase(),
+          role: profileType,
+          job_title: jobTitle.trim() || null,
+          phone: phone.trim() || null,
+          notes: notes.trim() || null,
+          status: active ? "active" : "inactive",
+        };
         const { error } = await (supabase as any)
           .from("company_users")
           .update(payload)
           .eq("id", user.id);
         if (error) throw error;
-        toast.success("User updated");
+        toast.success(t("team.form.toast.updated"));
       } else {
-        if (!company?.id) throw new Error("No company");
-        const { error } = await (supabase as any)
-          .from("company_users")
-          .insert({ ...payload, status: "invited", company_id: company.id });
+        if (!company?.id) throw new Error(t("team.form.errors.noCompany"));
+        const { data, error } = await supabase.functions.invoke("send-team-invite", {
+          body: {
+            company_id: company.id,
+            full_name: name.trim(),
+            email: email.trim().toLowerCase(),
+            role: profileType,
+            job_title: jobTitle.trim() || null,
+            phone: phone.trim() || null,
+            notes: notes.trim() || null,
+            language: i18n.language,
+            origin: window.location.origin,
+          },
+        });
         if (error) throw error;
-        toast.success(`Invite sent to ${email.trim()}`);
+        const res = data as { ok?: boolean; email_sent?: boolean; email_error?: string };
+        if (res?.email_sent) {
+          toast.success(t("team.form.toast.inviteSent", { email: email.trim() }));
+        } else {
+          toast.success(t("team.form.toast.inviteCreated", { email: email.trim() }));
+          if (res?.email_error) console.warn("invite email error:", res.email_error);
+        }
       }
       onSaved?.();
       onClose();
     } catch (e: any) {
-      toast.error(e?.message || "Save failed");
+      toast.error(e?.message || t("team.form.errors.saveFailed"));
     } finally {
       setBusy(false);
     }
@@ -148,7 +154,7 @@ export function UserFormModal({
 
   async function handleDelete() {
     if (!user) return;
-    if (!confirm("Delete this user? This cannot be undone.")) return;
+    if (!confirm(t("team.form.confirmDelete"))) return;
     setBusy(true);
     const { error } = await (supabase as any)
       .from("company_users")
@@ -159,16 +165,13 @@ export function UserFormModal({
       toast.error(error.message);
       return;
     }
-    toast.success("User deleted");
+    toast.success(t("team.form.toast.deleted"));
     onSaved?.();
     onClose();
   }
 
-  const title = mode === "edit" ? "Edit User" : "Invite User";
-  const subtitle =
-    mode === "edit"
-      ? "Update this team member's details and permissions."
-      : "Send an invitation to add a new team member.";
+  const title = mode === "edit" ? t("team.form.title.edit") : t("team.form.title.invite");
+  const subtitle = mode === "edit" ? t("team.form.subtitle.edit") : t("team.form.subtitle.invite");
 
   return (
     <Modal open={open} onClose={onClose} width={620} ariaLabel={title}>
@@ -179,7 +182,7 @@ export function UserFormModal({
         </div>
         {mode === "edit" && (
           <span className={`ufm-status-pill ${active ? "active" : "inactive"}`}>
-            <span className="ufm-status-dot" /> {active ? "Active" : "Inactive"}
+            <span className="ufm-status-dot" /> {active ? t("team.form.status.active") : t("team.form.status.inactive")}
           </span>
         )}
       </div>
@@ -187,7 +190,7 @@ export function UserFormModal({
       <div className="ufm-body">
         <div className="ufm-row2">
           <div className="ufm-field">
-            <label>Name <span className="ufm-req">*</span></label>
+            <label>{t("team.form.fields.name")} <span className="ufm-req">*</span></label>
             <input
               className="ufm-input"
               value={name}
@@ -196,7 +199,7 @@ export function UserFormModal({
             />
           </div>
           <div className="ufm-field">
-            <label>E-mail <span className="ufm-req">*</span></label>
+            <label>{t("team.form.fields.email")} <span className="ufm-req">*</span></label>
             <input
               type="email"
               className="ufm-input"
@@ -208,42 +211,42 @@ export function UserFormModal({
         </div>
         <div className="ufm-row2">
           <div className="ufm-field">
-            <label>Profile Type <span className="ufm-req">*</span></label>
+            <label>{t("team.form.fields.profileType")} <span className="ufm-req">*</span></label>
             <select
               className="ufm-input"
               value={profileType}
               onChange={(e) => setProfileType(e.target.value)}
             >
-              {profiles.map((p) => (
-                <option key={p.value} value={p.value}>
-                  {p.label}
+              {profileValues.map((v) => (
+                <option key={v} value={v}>
+                  {profileLabel(v)}
                 </option>
               ))}
             </select>
           </div>
           <div className="ufm-field">
-            <label>Job title</label>
+            <label>{t("team.form.fields.jobTitle")}</label>
             <input
               className="ufm-input"
               value={jobTitle}
               onChange={(e) => setJobTitle(e.target.value)}
-              placeholder="e.g. Sales Director"
+              placeholder={t("team.form.placeholders.jobTitle")}
               autoComplete="organization-title"
             />
           </div>
         </div>
         <div className="ufm-field">
-          <label>Phone</label>
+          <label>{t("team.form.fields.phone")}</label>
           <PhoneInput value={phone} onChange={setPhone} />
         </div>
         <div className="ufm-field">
-          <label>Notes</label>
+          <label>{t("team.form.fields.notes")}</label>
           <textarea
             className="ufm-input ufm-textarea"
             rows={3}
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
-            placeholder="Internal notes about this user…"
+            placeholder={t("team.form.placeholders.notes")}
           />
         </div>
 
@@ -257,11 +260,9 @@ export function UserFormModal({
             <span className="ufm-switch-slider" />
           </label>
           <div>
-            <strong>Account {active ? "active" : "inactive"}</strong>
+            <strong>{active ? t("team.form.account.activeTitle") : t("team.form.account.inactiveTitle")}</strong>
             <p>
-              {active
-                ? "User can sign in and access this workspace."
-                : "User cannot sign in until reactivated."}
+              {active ? t("team.form.account.activeHint") : t("team.form.account.inactiveHint")}
             </p>
           </div>
         </div>
@@ -269,15 +270,15 @@ export function UserFormModal({
         {mode === "edit" && user && (
           <div className="ufm-meta">
             <div>
-              <span className="ufm-meta-label">CREATED</span>
+              <span className="ufm-meta-label">{t("team.form.meta.created")}</span>
               <span>{fmtDate(user.createdAt)}</span>
             </div>
             <div>
-              <span className="ufm-meta-label">LAST LOGIN</span>
+              <span className="ufm-meta-label">{t("team.form.meta.lastLogin")}</span>
               <span>{fmtDateTime(user.lastLoginAt)}</span>
             </div>
             <div>
-              <span className="ufm-meta-label">USER ID</span>
+              <span className="ufm-meta-label">{t("team.form.meta.userId")}</span>
               <span>#{user.userNumber ?? "—"}</span>
             </div>
           </div>
@@ -292,14 +293,14 @@ export function UserFormModal({
             onClick={handleDelete}
             disabled={busy}
           >
-            <Trash2 size={14} /> Delete user
+            <Trash2 size={14} /> {t("team.form.actions.delete")}
           </button>
         ) : (
           <span />
         )}
         <div className="ufm-footer-right">
           <button type="button" className="ufm-btn-ghost" onClick={onClose}>
-            Cancel
+            {t("common.cancel")}
           </button>
           <button
             type="button"
@@ -307,7 +308,11 @@ export function UserFormModal({
             onClick={handleSave}
             disabled={busy}
           >
-            {mode === "edit" ? "Save changes" : "Send invite"}
+            {busy
+              ? t("common.submitting")
+              : mode === "edit"
+                ? t("team.form.actions.save")
+                : t("team.form.actions.sendInvite")}
           </button>
         </div>
       </div>

@@ -43,7 +43,8 @@
     "language": "语言",
     "english": "英语",
     "portuguese": "葡萄牙语",
-    "spanish": "西班牙语"
+    "spanish": "西班牙语",
+    "signIn": "登录"
   },
   "auth": {
     "login": "登录",
@@ -3172,5 +3173,88 @@
     "contact_buyer": "您好！我看到了您在Mundus Trade上的需求，我想提供报价。",
     "send_message": "通过WhatsApp发送",
     "share": "通过WhatsApp分享"
+  },
+  "team": {
+    "form": {
+      "title": {
+        "edit": "编辑用户",
+        "invite": "邀请用户"
+      },
+      "subtitle": {
+        "edit": "更新此团队成员的详细信息和权限。",
+        "invite": "发送邀请邮件 — 用户将在首次登录时设置密码。"
+      },
+      "fields": {
+        "name": "姓名",
+        "email": "电子邮箱",
+        "profileType": "账户类型",
+        "jobTitle": "职位",
+        "phone": "电话",
+        "notes": "备注"
+      },
+      "placeholders": {
+        "jobTitle": "例如:销售总监",
+        "notes": "关于此用户的内部备注…"
+      },
+      "profile": {
+        "master_buyer": "主采购员(完全访问)",
+        "procurement": "采购",
+        "import_manager": "进口经理",
+        "quality_control": "质量控制",
+        "logistics": "物流",
+        "master_supplier": "主供应商(完全访问)",
+        "operator": "操作员",
+        "export_manager": "出口经理"
+      },
+      "status": {
+        "active": "已激活",
+        "inactive": "未激活"
+      },
+      "account": {
+        "activeTitle": "账户已激活",
+        "inactiveTitle": "账户未激活",
+        "activeHint": "用户可以登录并访问此工作区。",
+        "inactiveHint": "在重新激活之前,用户无法登录。"
+      },
+      "meta": {
+        "created": "创建于",
+        "lastLogin": "最近登录",
+        "userId": "用户编号"
+      },
+      "actions": {
+        "save": "保存更改",
+        "sendInvite": "发送邀请",
+        "delete": "删除用户"
+      },
+      "confirmDelete": "删除此用户?此操作无法撤销。",
+      "toast": {
+        "updated": "用户已更新。",
+        "deleted": "用户已删除。",
+        "inviteSent": "邀请邮件已发送至 {{email}}。",
+        "inviteCreated": "已为 {{email}} 创建邀请(邮件待发送)。"
+      },
+      "errors": {
+        "nameEmailRequired": "姓名和邮箱为必填项。",
+        "noCompany": "未选择公司。",
+        "saveFailed": "保存失败。"
+      }
+    }
+  },
+  "inviteAccept": {
+    "title": "接受邀请",
+    "subtitle": "您好 {{name}},请设置密码以访问您的工作区。",
+    "email": "电子邮箱",
+    "password": "密码",
+    "confirm": "确认密码",
+    "cta": "接受并继续",
+    "success": "欢迎!正在跳转到您的工作区…",
+    "errors": {
+      "title": "邀请不可用",
+      "invalid": "此邀请链接无效或已过期。",
+      "alreadyAccepted": "此邀请已被接受,请直接登录。",
+      "expired": "此邀请已过期,请重新申请。",
+      "passwordShort": "密码至少需要 8 个字符。",
+      "passwordMismatch": "两次输入的密码不一致。"
+    }
   }
 }
