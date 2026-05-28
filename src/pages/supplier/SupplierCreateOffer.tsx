@@ -179,7 +179,8 @@ const EMPTY_NF: Omit<Cut, "id"> = {
 export default function SupplierCreateOffer() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const fromRequestId = searchParams.get("from");
+  // Support both legacy `?from=` (supplier flow) and `?from_request=` (admin flow)
+  const fromRequestId = searchParams.get("from") || searchParams.get("from_request");
   const location = useLocation();
   const { activeOfficeId } = useActiveOffice();
   const { company: realCompany, loading: companyLoading } = useCurrentCompany();
@@ -226,26 +227,62 @@ export default function SupplierCreateOffer() {
   // Effective company — admin acting on behalf of a managed supplier overrides
   // the current user's company context for the entire form.
   const company: any = (isAdminActor && actingAsCompany) ? actingAsCompany : realCompany;
-  const fromRequest = (location.state as any)?.fromRequest as
-    | {
-        requestId: string;
-        requestNumber: string;
-        client: string;
-        product: string;
-        category: string;
-        specification: string;
-        quantity: number;
-        targetPrice: number;
-        destinationCountry: string;
-        destinationPort: string;
-        incoterms: string;
-        containerSize: string;
-        containerCount: number;
-        temperature: string;
-        shipmentDate: string;
-        additionalInfo: string | null;
-      }
-    | undefined;
+  type FromRequest = {
+    requestId: string;
+    requestNumber: string;
+    client: string;
+    product: string;
+    category: string;
+    specification: string;
+    quantity: number;
+    targetPrice: number;
+    destinationCountry: string;
+    destinationPort: string;
+    incoterms: string;
+    containerSize: string;
+    containerCount: number;
+    temperature: string;
+    shipmentDate: string;
+    additionalInfo: string | null;
+  };
+  const stateFromRequest = (location.state as any)?.fromRequest as FromRequest | undefined;
+  const [loadedFromRequest, setLoadedFromRequest] = useState<FromRequest | null>(null);
+  // When opened via `?from_request=UUID` (e.g. admin path) and no state was
+  // passed, fetch the buyer request from the DB and synthesize the same shape.
+  useEffect(() => {
+    if (stateFromRequest) return;
+    if (!fromRequestId) return;
+    let cancelled = false;
+    (async () => {
+      const { data: r } = await supabase
+        .from("buyer_requests")
+        .select("*, buyer_company:companies!buyer_requests_buyer_company_id_fkey(name)")
+        .eq("id", fromRequestId)
+        .maybeSingle();
+      if (cancelled || !r) return;
+      const reqNo = `R-${String((r as any).request_number ?? 0).padStart(6, "0")}-${new Date((r as any).created_at).getFullYear()}`;
+      setLoadedFromRequest({
+        requestId: (r as any).id,
+        requestNumber: reqNo,
+        client: (r as any).buyer_company?.name ?? "Buyer",
+        product: (r as any).product_name ?? "",
+        category: (r as any).category ?? "",
+        specification: (r as any).specification ?? "",
+        quantity: Number((r as any).quantity_kg ?? 0),
+        targetPrice: (r as any).target_price_usd != null ? Number((r as any).target_price_usd) : 0,
+        destinationCountry: (r as any).destination_country ?? "",
+        destinationPort: (r as any).destination_port ?? "",
+        incoterms: (r as any).incoterm ?? "",
+        containerSize: (r as any).container_size ?? "40ft",
+        containerCount: (r as any).container_count ?? 1,
+        temperature: (r as any).temperature ?? "Frozen",
+        shipmentDate: (r as any).shipment_date ?? "",
+        additionalInfo: (r as any).additional_info ?? "",
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [fromRequestId, stateFromRequest]);
+  const fromRequest: FromRequest | undefined = stateFromRequest ?? loadedFromRequest ?? undefined;
   const cloneFrom = (location.state as any)?.cloneFrom as
     | {
         category: string;
