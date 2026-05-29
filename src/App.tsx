@@ -229,6 +229,7 @@ const App = () => (
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="bi" element={<AdminBIOverview />} />
               <Route path="bi/market" element={<AdminBIMarket />} />
               <Route path="bi/negotiations" element={<AdminBINegotiations />} />
               <Route path="bi/demand" element={<AdminBIDemand />} />
