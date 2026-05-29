@@ -146,7 +146,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           .eq("id", companyId),
         (supabase as any)
           .from("company_locations")
-          .select("id, company_id, location_type, name, address, city, state, country, zip_code, est_number")
+          .select("id, company_id, location_type, name, address, city, state, country, zip_code, est_number, plant_numbers")
           .eq("company_id", companyId)
           .order("created_at", { ascending: true }),
       ]);
@@ -181,6 +181,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           country: hq.country,
           zip_code: hq.zip_code,
           est_number: hq.est_number,
+          plant_numbers: [],
         };
         const childLocs: LocationRow[] = children.map((c) => ({
           id: c.id,
@@ -193,6 +194,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           country: c.country,
           zip_code: c.zip_code,
           est_number: c.est_number,
+          plant_numbers: (c.plant_numbers as string[] | null) ?? [],
         }));
         setLocations([hqLoc, ...childLocs]);
       }
@@ -229,6 +231,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       country: "",
       zip_code: "",
       est_number: null,
+      plant_numbers: [],
     };
     setLocations((arr) => [...arr, nl]);
     setDirty(true);
@@ -243,6 +246,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       parent_company_id: companyId,
       office_name: `${src.office_name || "Location"} (copy)`,
       est_number: null,
+      plant_numbers: [...(src.plant_numbers || [])],
     };
     setLocations((arr) => [...arr, nl]);
     setDirty(true);
