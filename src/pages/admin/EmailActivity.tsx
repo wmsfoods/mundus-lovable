@@ -236,6 +236,52 @@ export default function EmailActivity() {
     failed: filtered.filter(e => e.status === "failed").length,
   }), [filtered]);
 
+  // ---- Resend-style metrics (per-day buckets, last N days from filter) ----
+  const metrics = useMemo(() => {
+    const days: { key: string; day: string }[] = [];
+    const span = 15;
+    const today = new Date();
+    for (let i = span - 1; i >= 0; i--) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      days.push({ key, day: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) });
+    }
+    const idx = new Map(days.map((d, i) => [d.key, i]));
+    const buckets = days.map(d => ({
+      day: d.day, sent: 0, opened: 0, clicked: 0, bounced: 0,
+    }));
+    for (const r of filtered) {
+      const k = (r.created_at ?? "").slice(0, 10);
+      const i = idx.get(k);
+      if (i === undefined) continue;
+      buckets[i].sent += 1;
+      if (r.opened_at) buckets[i].opened += 1;
+      if (r.clicked_at) buckets[i].clicked += 1;
+      if (r.bounced_at) buckets[i].bounced += 1;
+    }
+    const total = filtered.length || 1;
+    const pct = (n: number) => `${((n / total) * 100).toFixed(2)}%`;
+    const ratePer = (key: "opened" | "clicked" | "bounced") =>
+      buckets.map(b => ({ day: b.day, value: b.sent > 0 ? Math.round((b[key] / b.sent) * 100) : 0 }));
+    const countPer = (key: "sent" | "bounced") =>
+      buckets.map(b => ({ day: b.day, value: b[key] }));
+    return {
+      totalEmails: filtered.length,
+      deliverability: filtered.length
+        ? `${(((filtered.length - stats.bounced - stats.failed) / filtered.length) * 100).toFixed(2)}%`
+        : "—",
+      bounceRate: pct(stats.bounced),
+      complainRate: "0%",
+      openRate: pct(stats.opened),
+      clickRate: pct(stats.clicked),
+      bounceData: countPer("bounced"),
+      complainData: buckets.map(b => ({ day: b.day, value: 0 })),
+      openData: ratePer("opened"),
+      clickData: ratePer("clicked"),
+      deliveryData: buckets.map(b => ({ day: b.day, value: b.sent })),
+    };
+  }, [filtered, stats]);
+
   const retryEmail = async (id: string) => {
     await (supabase as any).from("email_queue")
       .update({ status: "queued", error_message: null }).eq("id", id);
