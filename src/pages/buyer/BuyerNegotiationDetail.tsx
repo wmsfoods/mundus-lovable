@@ -215,6 +215,14 @@ export default function BuyerNegotiationDetail() {
       {isReal && rawNeg && realAccepted && (
         <DealClosedBanner negotiation={rawNeg} perspective="buyer" />
       )}
+      {isReal && rawNeg && realPending && (
+        <PendingConfirmationBanner
+          negotiation={rawNeg}
+          perspective="buyer"
+          canConfirm={canConfirmAsCounterparty}
+          onConfirmed={() => refetch()}
+        />
+      )}
       {isReal && realIsFinal && !realAccepted && !realExpired && (
         <div
           className="rounded-md px-3 py-3 mb-3 border"
@@ -371,7 +379,7 @@ export default function BuyerNegotiationDetail() {
 
             {showActions ? (
               <div className="nd-actions">
-                <button type="button" className="btn-accept" onClick={handleAccept} disabled={(isReal && realExpired) || offerInactive}>
+                <button type="button" className="btn-accept" onClick={handleAccept} disabled={(isReal && (realExpired || realPending || realAccepted)) || offerInactive}>
                   <CheckIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("buyer.negotiations.detail.actions.acceptCounter")}
                 </button>
