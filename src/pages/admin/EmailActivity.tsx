@@ -446,9 +446,9 @@ export default function EmailActivity() {
           <thead style={{ background: "#f9fafb", fontSize: 11, textTransform: "uppercase", color: "#6b7280" }}>
             <tr>
               <th style={{ textAlign: "left", padding: 10 }}>Date</th>
-              <th style={{ textAlign: "left", padding: 10 }}>Type</th>
+              <th style={{ textAlign: "left", padding: 10 }}>Template</th>
               <th style={{ textAlign: "left", padding: 10 }}>Recipient</th>
-              <th style={{ textAlign: "left", padding: 10 }}>Subject</th>
+              <th style={{ textAlign: "left", padding: 10 }}>Offer #</th>
               <th style={{ textAlign: "left", padding: 10 }}>Status</th>
             </tr>
           </thead>
@@ -467,7 +467,9 @@ export default function EmailActivity() {
                   <td style={{ padding: 10, color: "#6b7280", whiteSpace: "nowrap" }}>{fmt(e.created_at)}</td>
                   <td style={{ padding: 10 }}><TypeBadge type={e.template_name} /></td>
                   <td style={{ padding: 10 }}>{e.to_email}</td>
-                  <td style={{ padding: 10, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={e.subject}>{e.subject}</td>
+                  <td style={{ padding: 10, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: "#0f172a" }}>
+                    {offerNoOf(e) ?? <span style={{ color: "#9CA3AF" }}>—</span>}
+                  </td>
                   <td style={{ padding: 10 }}><StatusFlow email={e} /></td>
                 </tr>
                 {expandedId === e.id && (
