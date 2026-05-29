@@ -69,6 +69,7 @@ import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 import AdminBIMarket from "./pages/admin/AdminBIMarket.tsx";
 import AdminBINegotiations from "./pages/admin/AdminBINegotiations.tsx";
 import AdminBIDemand from "./pages/admin/AdminBIDemand.tsx";
+import AdminBIOverview from "./pages/admin/AdminBIOverview.tsx";
 import AdminMarkets from "./pages/admin/AdminMarkets.tsx";
 import AdminPorts from "./pages/admin/AdminPorts.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
