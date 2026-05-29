@@ -27,6 +27,7 @@ import { fmtWeight, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
+import { PendingConfirmationBanner } from "@/components/negotiation/PendingConfirmationBanner";
 import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
@@ -155,8 +156,12 @@ export default function SupplierNegotiationDetail() {
   const realExhausted = !!rawNeg && isCounterExhausted(rawNeg);
   const realExpired = !!rawNeg && isNegotiationExpired(rawNeg);
   const realAccepted = !!rawNeg && rawNeg.status === "bid_accepted";
+  const realPending = !!rawNeg && (rawNeg as any).status === "pending_confirmation";
+  const acceptedBy = (rawNeg as any)?.accepted_by as "buyer" | "supplier" | null;
+  const canConfirmAsCounterparty = realPending && acceptedBy === "buyer";
   // Suppress counter button when no more rounds possible or expired
-  const counterAllowed = !isReal || (!realExhausted && !realExpired && !realAccepted);
+  const counterAllowed =
+    !isReal || (!realExhausted && !realExpired && !realAccepted && !realPending);
 
   // Compute max round index present in products for the price table columns
   const maxRoundShown = Math.min(
@@ -255,6 +260,14 @@ export default function SupplierNegotiationDetail() {
       )}
       {isReal && rawNeg && realAccepted && (
         <DealClosedBanner negotiation={rawNeg} perspective="supplier" />
+      )}
+      {isReal && rawNeg && realPending && (
+        <PendingConfirmationBanner
+          negotiation={rawNeg}
+          perspective="supplier"
+          canConfirm={canConfirmAsCounterparty}
+          onConfirmed={() => refetch()}
+        />
       )}
       {isReal && realIsFinal && !realAccepted && !realExpired && (
         <div
