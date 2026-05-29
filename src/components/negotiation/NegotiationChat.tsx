@@ -800,3 +800,201 @@ const mobileSheetStyle: React.CSSProperties = {
   borderRadius: 0,
   paddingTop: "env(safe-area-inset-top)",
 };
+
+/* ============================================================
+   ProposalComposerModal — multi-item formal proposal builder.
+   Quantities are locked unless `allowQty` is true (buyers only).
+   Total kg must equal the sum of offer item amounts — never partial.
+============================================================ */
+function ProposalComposerModal({
+  offerItems, allowQty, seed, busy, onClose, onSubmit,
+}: {
+  offerItems: OfferItem[];
+  allowQty: boolean;
+  seed: ProposalItem[] | null;
+  busy: boolean;
+  onClose: () => void;
+  onSubmit: (items: ProposalItem[], note: string) => void;
+}) {
+  const totalOfferedKg = useMemo(
+    () => offerItems.reduce((s, it) => s + Number(it.amount || 0), 0),
+    [offerItems]
+  );
+
+  const [rows, setRows] = useState<ProposalItem[]>(() => {
+    if (seed && seed.length) return seed.map((s) => ({ ...s }));
+    return offerItems.map((oi) => ({
+      offer_item_id: oi.id,
+      name: oi.name,
+      quantity_kg: Number(oi.amount || 0),
+      price_per_kg: Number(oi.price || 0),
+    }));
+  });
+  const [note, setNote] = useState("");
+
+  const sumKg = rows.reduce((s, r) => s + (Number(r.quantity_kg) || 0), 0);
+  const sumUsd = rows.reduce((s, r) => s + (Number(r.quantity_kg) || 0) * (Number(r.price_per_kg) || 0), 0);
+  const totalMatches = Math.abs(sumKg - totalOfferedKg) < 0.5; // tolerance: 0.5 kg
+  const allPricesValid = rows.every((r) => Number(r.price_per_kg) > 0);
+  const canSend = totalMatches && allPricesValid && rows.length > 0 && !busy;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, zIndex: 90,
+        background: "rgba(0,0,0,0.45)", display: "flex",
+        alignItems: "center", justifyContent: "center", padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(640px, 100%)", maxHeight: "90vh", overflowY: "auto",
+          background: "hsl(var(--card))", borderRadius: 12,
+          border: "1px solid hsl(var(--border))", boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+        }}
+      >
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid hsl(var(--border))", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>📋 Send formal proposal</div>
+          <button type="button" onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "hsl(var(--muted-foreground))" }}>×</button>
+        </div>
+        <div style={{ padding: 16 }}>
+          <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 10 }}>
+            {allowQty
+              ? "You may adjust per-item quantities, but the total kg must equal the original load (partial loads are not allowed)."
+              : "Quantities are locked by the supplier. You may only adjust prices."}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", gap: 8, fontSize: 11, fontWeight: 600, color: "hsl(var(--muted-foreground))", padding: "0 4px" }}>
+              <div>Item</div>
+              <div style={{ textAlign: "right" }}>Quantity (kg)</div>
+              <div style={{ textAlign: "right" }}>Price/kg</div>
+              <div style={{ textAlign: "right" }}>Subtotal</div>
+            </div>
+            {rows.map((r, i) => {
+              const subtotal = (Number(r.quantity_kg) || 0) * (Number(r.price_per_kg) || 0);
+              return (
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", gap: 8, alignItems: "center" }}>
+                  <div style={{ fontSize: 13, fontWeight: 500 }}>{r.name}</div>
+                  <input
+                    type="number" min={0} step={1}
+                    value={r.quantity_kg}
+                    disabled={!allowQty}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setRows((cur) => cur.map((x, idx) => idx === i ? { ...x, quantity_kg: v } : x));
+                    }}
+                    style={{ padding: "6px 8px", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 13, textAlign: "right", background: allowQty ? "hsl(var(--background))" : "hsl(var(--muted))" }}
+                  />
+                  <input
+                    type="number" min={0} step={0.01}
+                    value={r.price_per_kg}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setRows((cur) => cur.map((x, idx) => idx === i ? { ...x, price_per_kg: v } : x));
+                    }}
+                    style={{ padding: "6px 8px", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 13, textAlign: "right", background: "hsl(var(--background))" }}
+                  />
+                  <div style={{ textAlign: "right", fontSize: 13, fontWeight: 600 }}>{fmtUsd(subtotal)}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: totalMatches ? "#dcfce7" : "#fee2e2", color: totalMatches ? "#15803d" : "#b91c1c", fontSize: 12, fontWeight: 600 }}>
+            Total: {new Intl.NumberFormat("en-US").format(sumKg)} kg / {new Intl.NumberFormat("en-US").format(totalOfferedKg)} kg required · {fmtUsd(sumUsd)}
+            {!totalMatches && <div style={{ fontWeight: 400, marginTop: 2 }}>Adjust quantities so the total matches the original load.</div>}
+          </div>
+          <textarea
+            placeholder="Optional note for the counterparty…"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+            style={{ marginTop: 10, width: "100%", padding: "8px 10px", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13, fontFamily: "inherit", background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxSizing: "border-box", resize: "vertical" }}
+          />
+        </div>
+        <div style={{ padding: "12px 18px", borderTop: "1px solid hsl(var(--border))", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="button" onClick={onClose} disabled={busy}
+            style={{ padding: "8px 14px", borderRadius: 8, background: "hsl(var(--background))", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--border))", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            Cancel
+          </button>
+          <button type="button" onClick={() => onSubmit(rows, note.trim())} disabled={!canSend}
+            style={{ padding: "8px 14px", borderRadius: 8, background: canSend ? "#16a34a" : "#a3a3a3", color: "white", border: "none", fontSize: 13, fontWeight: 700, cursor: canSend ? "pointer" : "not-allowed" }}>
+            {busy ? "Sending…" : "Send proposal"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   ConfirmSaleModal — final double-confirmation by the proposer.
+   Confirming closes the negotiation and creates the order via RPC.
+============================================================ */
+function ConfirmSaleModal({
+  message, busy, onClose, onConfirm,
+}: {
+  message: Message;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const data = message.structured_data ?? {};
+  const items = data.items ?? [];
+  const total = data.total_usd ?? items.reduce((s, it) => s + Number(it.price_per_kg) * Number(it.quantity_kg), 0);
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, zIndex: 95,
+        background: "rgba(0,0,0,0.5)", display: "flex",
+        alignItems: "center", justifyContent: "center", padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(480px, 100%)",
+          background: "hsl(var(--card))", borderRadius: 12,
+          border: "1px solid hsl(var(--border))",
+        }}
+      >
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid hsl(var(--border))", fontWeight: 700, fontSize: 15 }}>
+          Confirm sale & close deal
+        </div>
+        <div style={{ padding: 16, fontSize: 13, color: "hsl(var(--foreground))" }}>
+          <p style={{ marginTop: 0, marginBottom: 12 }}>
+            The counterparty accepted your proposal. Confirming will <strong>close this negotiation</strong> and <strong>create an order</strong> with the values below. This cannot be undone.
+          </p>
+          <div style={{ border: "1px solid hsl(var(--border))", borderRadius: 8, overflow: "hidden", fontSize: 12 }}>
+            {items.map((it, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", borderBottom: "1px solid hsl(var(--border))" }}>
+                <span>{it.name}</span>
+                <span>{new Intl.NumberFormat("en-US").format(Number(it.quantity_kg))} kg · {fmtUsd(Number(it.price_per_kg))}/kg</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "hsl(var(--muted))", fontWeight: 700 }}>
+              <span>Total</span>
+              <span>{fmtUsd(Number(total))}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ padding: "12px 18px", borderTop: "1px solid hsl(var(--border))", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="button" onClick={onClose} disabled={busy}
+            style={{ padding: "8px 14px", borderRadius: 8, background: "hsl(var(--background))", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--border))", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            Not yet
+          </button>
+          <button type="button" onClick={onConfirm} disabled={busy}
+            style={{ padding: "8px 14px", borderRadius: 8, background: "#16a34a", color: "white", border: "none", fontSize: 13, fontWeight: 700, cursor: busy ? "not-allowed" : "pointer" }}>
+            {busy ? "Confirming…" : "Confirm & create order"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
