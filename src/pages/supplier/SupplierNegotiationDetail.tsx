@@ -277,6 +277,7 @@ export default function SupplierNegotiationDetail() {
       )}
 
       <div className="nd-grid">
+
         {/* LEFT */}
         <div>
           {/* Round / bid card */}
