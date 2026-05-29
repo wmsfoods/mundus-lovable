@@ -445,14 +445,21 @@ export default function SupplierCreateOffer() {
     let cancelled = false;
     (async () => {
       try {
-        const { data, error } = await supabase
-          .from("companies")
-          .select("plant_numbers")
-          .eq("id", company.id)
-          .maybeSingle();
-        if (cancelled || error || !data) return;
-        const list = (data as any).plant_numbers as string[] | null;
-        setCompanyPlants(list ?? []);
+        const [{ data: co }, { data: locs }] = await Promise.all([
+          supabase.from("companies").select("plant_numbers").eq("id", company.id).maybeSingle(),
+          (supabase as any)
+            .from("company_locations")
+            .select("plant_numbers, location_type, est_number")
+            .eq("company_id", company.id),
+        ]);
+        if (cancelled) return;
+        const merged = new Set<string>();
+        ((co as any)?.plant_numbers as string[] | null ?? []).forEach((p) => p && merged.add(p));
+        ((locs as any[]) ?? []).forEach((l) => {
+          ((l?.plant_numbers as string[] | null) ?? []).forEach((p) => p && merged.add(p));
+          if (l?.location_type === "factory" && l?.est_number) merged.add(String(l.est_number));
+        });
+        setCompanyPlants([...merged]);
       } catch {
         /* no-op: anonymous or no company; falls back to free text input */
       }
