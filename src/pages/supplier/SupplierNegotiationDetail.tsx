@@ -31,6 +31,7 @@ import { PendingConfirmationBanner } from "@/components/negotiation/PendingConfi
 import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
+import { OfferAvailabilityChip } from "@/components/negotiation/OfferAvailabilityChip";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
@@ -223,6 +224,11 @@ export default function SupplierNegotiationDetail() {
           <span className="chip-label">{t("supplier.negotiations.detail.meta.fcls")}:</span>
           <span className="chip-value">{d.fclCount}</span>
         </span>
+        <OfferAvailabilityChip
+          offerId={rawNeg?.offer?.id ?? rawNeg?.offer_id}
+          totalFcl={rawNeg?.offer?.total_fcl}
+          thisNegotiationFcl={d.fclCount}
+        />
         <span className="chip">
           <span className="chip-label">{t("supplier.negotiations.detail.meta.weight")}:</span>
           <span className="chip-value">{fmtWeight(d.totalWeightKg, unit)} {weightLabel(unit)}</span>
