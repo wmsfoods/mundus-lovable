@@ -2950,6 +2950,7 @@ export type Database = {
           id: string
           open_count: number
           opened_at: string | null
+          resend_id: string | null
           sent_at: string | null
           status: string | null
           subject: string
@@ -2968,6 +2969,7 @@ export type Database = {
           id?: string
           open_count?: number
           opened_at?: string | null
+          resend_id?: string | null
           sent_at?: string | null
           status?: string | null
           subject: string
@@ -2986,6 +2988,7 @@ export type Database = {
           id?: string
           open_count?: number
           opened_at?: string | null
+          resend_id?: string | null
           sent_at?: string | null
           status?: string | null
           subject?: string
