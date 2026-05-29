@@ -26,6 +26,7 @@ import {
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRemainingFcl } from "@/hooks/useRemainingFcl";
 import {
   getIncotermAddOn,
   getIncotermBannerLabel,
