@@ -84,7 +84,7 @@ export default function AdminShell() {
     { to: "/admin/settings/audit", label: t("admin.shell.nav.audit"), icon: History as unknown as IconCmp },
     { to: "/admin/settings/flags", label: t("admin.shell.nav.flags"), icon: Flag as unknown as IconCmp },
     { to: "/admin/import", label: "Import", icon: RefreshCw as unknown as IconCmp },
-    { to: "/admin/docs", label: "Documentação", icon: BookOpen as unknown as IconCmp, groupLabel: "RESOURCES" },
+    { to: "/admin/docs", label: "Documents", icon: BookOpen as unknown as IconCmp, groupLabel: "RESOURCES" },
   ];
 
   const ADMIN_BOTTOM: BottomNavItem[] = [
