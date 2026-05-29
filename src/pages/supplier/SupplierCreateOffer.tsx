@@ -1563,7 +1563,13 @@ export default function SupplierCreateOffer() {
         await supabase.from("freight_options").delete().eq("offer_id", offerId);
         await supabase.from("offers").delete().eq("id", offerId);
       }
-      const msg = e instanceof Error ? e.message : "Failed to publish offer";
+      const msg =
+        (e as any)?.message ||
+        (e as any)?.details ||
+        (e as any)?.hint ||
+        (typeof e === "string" ? e : JSON.stringify(e)) ||
+        "Failed to publish offer";
+      console.error("[publish] Error:", e);
       toast.error(msg);
     } finally {
       setPublishing(false);
