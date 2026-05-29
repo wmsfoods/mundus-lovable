@@ -1068,6 +1068,7 @@ export function CounterOfferModal({
               </button>
             </div>
           </div>
+          </>
         )}
 
         {/* Cuts — desktop table */}
