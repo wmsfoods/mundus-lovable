@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
+import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay, LB_PER_KG } from "@/lib/units";
 import {
   MAX_DISPLAY_ROUNDS,
   getAgreedItems,
@@ -32,7 +32,6 @@ import {
 } from "@/lib/incotermPricing";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { PriceHistoryTable, type PriceHistoryProduct } from "@/components/negotiation/PriceHistoryTable";
-import { LB_PER_KG } from "@/lib/units";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
