@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Camera, ArrowLeft } from "lucide-react";
+import { Camera, ArrowLeft, Pencil, Check, X } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
@@ -25,6 +25,10 @@ export default function Profile() {
   const [cropOpen, setCropOpen] = useState(false);
   const [savingAvatar, setSavingAvatar] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+  const [fullName, setFullName] = useState<string>("");
+  const [editingName, setEditingName] = useState(false);
+  const [nameDraft, setNameDraft] = useState("");
+  const [savingName, setSavingName] = useState(false);
 
   useEffect(() => {
     if (!user?.id) { setAvatarUrl(null); return; }
@@ -32,10 +36,13 @@ export default function Profile() {
     (async () => {
       const { data } = await supabase
         .from("users")
-        .select("avatar_url")
+        .select("avatar_url, full_name")
         .eq("id", user.id)
         .maybeSingle();
-      if (!cancelled) setAvatarUrl((data?.avatar_url as string | null) ?? null);
+      if (!cancelled) {
+        setAvatarUrl((data?.avatar_url as string | null) ?? null);
+        setFullName(((data?.full_name as string | null) ?? "").trim());
+      }
     })();
     return () => { cancelled = true; };
   }, [user?.id]);
@@ -116,7 +123,39 @@ export default function Profile() {
   };
 
   const initials = user?.email?.slice(0, 2).toUpperCase() ?? "U";
-  const displayName = user?.email?.split("@")[0] ?? t("shell.nav.profile", { defaultValue: "Profile" });
+  const displayName = fullName || user?.email?.split("@")[0] || t("shell.nav.profile", { defaultValue: "Profile" });
+
+  const startEditName = () => {
+    setNameDraft(fullName || "");
+    setEditingName(true);
+  };
+  const cancelEditName = () => {
+    setEditingName(false);
+    setNameDraft("");
+  };
+  const saveName = async () => {
+    if (!user?.id) return;
+    const trimmed = nameDraft.trim().slice(0, 120);
+    if (!trimmed) {
+      toast.error(t("profile.name.required", { defaultValue: "Name cannot be empty" }));
+      return;
+    }
+    setSavingName(true);
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({ full_name: trimmed })
+        .eq("id", user.id);
+      if (error) throw error;
+      setFullName(trimmed);
+      setEditingName(false);
+      toast.success(t("profile.name.updated", { defaultValue: "Name updated" }));
+    } catch (e: any) {
+      toast.error(e?.message || "Update failed");
+    } finally {
+      setSavingName(false);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut();
@@ -171,7 +210,34 @@ export default function Profile() {
             }}
           />
         </div>
-        <span className="profile-name">{displayName}</span>
+        {editingName ? (
+          <div className="profile-name-edit">
+            <input
+              type="text"
+              className="profile-name-input"
+              value={nameDraft}
+              onChange={(e) => setNameDraft(e.target.value)}
+              maxLength={120}
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveName();
+                if (e.key === "Escape") cancelEditName();
+              }}
+              placeholder={t("profile.name.placeholder", { defaultValue: "Your name" })}
+            />
+            <button type="button" className="profile-name-btn" onClick={saveName} disabled={savingName} aria-label="Save">
+              <Check size={14} />
+            </button>
+            <button type="button" className="profile-name-btn" onClick={cancelEditName} disabled={savingName} aria-label="Cancel">
+              <X size={14} />
+            </button>
+          </div>
+        ) : (
+          <button type="button" className="profile-name profile-name-display" onClick={startEditName} title={t("profile.name.edit", { defaultValue: "Edit name" })}>
+            <span>{displayName}</span>
+            <Pencil size={12} className="profile-name-pencil" />
+          </button>
+        )}
         {user?.email && <span className="profile-sub">{user.email}</span>}
         {company?.name && <span className="profile-sub">{company.name}</span>}
       </div>
