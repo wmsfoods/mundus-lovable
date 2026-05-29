@@ -3,7 +3,7 @@ import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, Activity,
-  Users, BarChart3, Beef, Globe, Ship, Coins, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw,
+  Users, BarChart3, Beef, Globe, Ship, Coins, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw, LineChart,
   Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
@@ -48,6 +48,7 @@ export default function AdminShell() {
   const ADMIN_NAV: SidebarItem[] = [
     { to: "/admin/dashboard", label: t("admin.shell.nav.dashboard"), icon: LayoutDashboard as unknown as IconCmp, groupLabel: t("admin.shell.nav.overview") },
     { to: "/admin/analytics", label: t("admin.shell.nav.analytics"), icon: Activity as unknown as IconCmp },
+    { to: "/admin/bi/market", label: "Market Intelligence", icon: LineChart as unknown as IconCmp },
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
     { to: "/admin/user-requests", label: "User Requests", icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },
