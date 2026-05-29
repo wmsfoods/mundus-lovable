@@ -6601,6 +6601,21 @@ export type Database = {
       }
       current_user_company_id: { Args: never; Returns: string }
       current_user_company_ids: { Args: never; Returns: string[] }
+      enqueue_app_notifications: {
+        Args: {
+          p_body?: string
+          p_category?: string
+          p_company_id: string
+          p_icon?: string
+          p_link_label?: string
+          p_link_url?: string
+          p_related_id?: string
+          p_related_type?: string
+          p_title: string
+          p_user_ids: string[]
+        }
+        Returns: number
+      }
       enqueue_email: {
         Args: {
           p_html_body: string
@@ -6610,6 +6625,12 @@ export type Database = {
           p_to_email: string
         }
         Returns: string
+      }
+      get_company_active_user_ids: {
+        Args: { p_company_id: string }
+        Returns: {
+          user_id: string
+        }[]
       }
       get_company_primary_contact: {
         Args: { p_company_id: string }
