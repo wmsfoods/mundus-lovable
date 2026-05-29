@@ -1,0 +1,1 @@
+ALTER TABLE public.company_locations ADD COLUMN IF NOT EXISTS plant_numbers text[] NOT NULL DEFAULT '{}';

@@ -36,6 +36,7 @@ type LocationRow = {
   country: string | null;
   zip_code: string | null;
   est_number: string | null;
+  plant_numbers: string[];
 };
 
 type CompanyRow = {
@@ -145,7 +146,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           .eq("id", companyId),
         (supabase as any)
           .from("company_locations")
-          .select("id, company_id, location_type, name, address, city, state, country, zip_code, est_number")
+          .select("id, company_id, location_type, name, address, city, state, country, zip_code, est_number, plant_numbers")
           .eq("company_id", companyId)
           .order("created_at", { ascending: true }),
       ]);
@@ -180,6 +181,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           country: hq.country,
           zip_code: hq.zip_code,
           est_number: hq.est_number,
+          plant_numbers: [],
         };
         const childLocs: LocationRow[] = children.map((c) => ({
           id: c.id,
@@ -192,6 +194,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           country: c.country,
           zip_code: c.zip_code,
           est_number: c.est_number,
+          plant_numbers: (c.plant_numbers as string[] | null) ?? [],
         }));
         setLocations([hqLoc, ...childLocs]);
       }
@@ -228,6 +231,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       country: "",
       zip_code: "",
       est_number: null,
+      plant_numbers: [],
     };
     setLocations((arr) => [...arr, nl]);
     setDirty(true);
@@ -242,6 +246,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       parent_company_id: companyId,
       office_name: `${src.office_name || "Location"} (copy)`,
       est_number: null,
+      plant_numbers: [...(src.plant_numbers || [])],
     };
     setLocations((arr) => [...arr, nl]);
     setDirty(true);
@@ -322,6 +327,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
             country: l.country,
             zip_code: l.zip_code,
             est_number: l.est_number,
+            plant_numbers: l.plant_numbers || [],
           });
           if (error) throw error;
           continue;
@@ -338,6 +344,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
               country: l.country,
               zip_code: l.zip_code,
               est_number: l.est_number,
+              plant_numbers: l.plant_numbers || [],
             })
             .eq("id", l.id);
           if (error) throw error;
@@ -771,6 +778,22 @@ function LocationCard({
             value={loc.est_number || ""}
             onChange={(e) => onChange({ est_number: e.target.value })}
             placeholder="e.g. 2872"
+          />
+          <label className="cprofile-est-label" style={{ marginTop: 12 }}>
+            Additional Plant Numbers (comma-separated)
+          </label>
+          <input
+            className="cprofile-est-input"
+            value={(loc.plant_numbers || []).join(", ")}
+            onChange={(e) =>
+              onChange({
+                plant_numbers: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="e.g. 1234, 5678"
           />
         </div>
       )}
