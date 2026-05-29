@@ -66,6 +66,7 @@ import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
+import AdminBIMarket from "./pages/admin/AdminBIMarket.tsx";
 import AdminMarkets from "./pages/admin/AdminMarkets.tsx";
 import AdminPorts from "./pages/admin/AdminPorts.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
@@ -225,6 +226,7 @@ const App = () => (
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="bi/market" element={<AdminBIMarket />} />
               <Route path="companies" element={<AdminCompanies />} />
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
