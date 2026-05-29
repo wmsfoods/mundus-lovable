@@ -25,6 +25,7 @@ import { fmtWeight, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
+import { PendingConfirmationBanner } from "@/components/negotiation/PendingConfirmationBanner";
 import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
@@ -128,7 +129,11 @@ export default function BuyerNegotiationDetail() {
   const realExhausted = !!rawNeg && isCounterExhausted(rawNeg);
   const realExpired = !!rawNeg && isNegotiationExpired(rawNeg);
   const realAccepted = !!rawNeg && rawNeg.status === "bid_accepted";
-  const counterAllowed = !isReal || (!realExhausted && !realExpired && !realAccepted);
+  const realPending = !!rawNeg && (rawNeg as any).status === "pending_confirmation";
+  const acceptedBy = (rawNeg as any)?.accepted_by as "buyer" | "supplier" | null;
+  const canConfirmAsCounterparty = realPending && acceptedBy === "supplier";
+  const counterAllowed =
+    !isReal || (!realExhausted && !realExpired && !realAccepted && !realPending);
   const offerInactive = !!rawNeg && (rawNeg.offer?.status ?? "active") !== "active";
   const maxRoundShown = Math.min(
     MAX_DISPLAY_ROUNDS,
