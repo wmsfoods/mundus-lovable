@@ -114,6 +114,53 @@ export function CounterOfferModal({
   const isFinal = isFinalDisplayRound(displayRound);
   const exhausted = isCounterExhausted(negotiation); // nextRaw would exceed MAX_RAW_ROUNDS
 
+  // Per-product historical bid/counter prices for all completed rounds.
+  // Mirrors the Price History table on the negotiation detail page.
+  const historyProducts = useMemo<PriceHistoryProduct[]>(() => {
+    const perItem = new Map<string, Record<string, number>>();
+    for (const rp of rounds) {
+      const isBid = rp.round % 2 === 1;
+      const disp = Math.ceil(rp.round / 2);
+      const key = `${isBid ? "bid" : "counter"}R${disp}UsdKg`;
+      for (const c of rp.cut_rounds ?? []) {
+        const m = perItem.get(c.offer_item_id) ?? {};
+        m[key] = Number(c.price_per_kg);
+        perItem.set(c.offer_item_id, m);
+      }
+    }
+    return items.map((it) => {
+      const m = perItem.get(it.id) ?? {};
+      return {
+        name: it.customer_product?.name ?? "—",
+        pack: "—",
+        qtyLb: Number(it.amount) * LB_PER_KG,
+        askingUsdKg: Number(it.price),
+        bidR1UsdKg: m["bidR1UsdKg"],
+        counterR1UsdKg: m["counterR1UsdKg"],
+        bidR2UsdKg: m["bidR2UsdKg"],
+        counterR2UsdKg: m["counterR2UsdKg"],
+        bidR3UsdKg: m["bidR3UsdKg"],
+        counterR3UsdKg: m["counterR3UsdKg"],
+        bidR4UsdKg: m["bidR4UsdKg"],
+        counterR4UsdKg: m["counterR4UsdKg"],
+      } as PriceHistoryProduct;
+    });
+  }, [rounds, items]);
+  const historyMaxRound = Math.min(
+    MAX_DISPLAY_ROUNDS,
+    Math.max(displayRound, ...rounds.map((r) => Math.ceil(r.round / 2)), 1),
+  );
+  const agreedByName = useMemo(() => {
+    const map = new Map<string, { price: number; round: number }>();
+    for (const a of existingAgreed) {
+      const it = items.find((i) => i.id === a.offer_item_id);
+      if (it?.customer_product?.name) {
+        map.set(it.customer_product.name, { price: a.price_per_kg, round: a.round });
+      }
+    }
+    return map;
+  }, [existingAgreed, items]);
+
   // Latest "other side" prices per offer_item — what we're responding to.
   // Supplier responds to latest bid (odd round); buyer responds to latest counter (even round).
   const theirPrices = useMemo(() => {
