@@ -11,6 +11,12 @@ import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 import { NegotiationsFilterSheet } from "@/components/marketplace/NegotiationsFilterSheet";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import {
+  MobileNegoBidCard,
+  MobileNegoGroup,
+  MobileNegoTabs,
+  type MobileNegoStatusTone,
+} from "@/components/negotiation/MobileNegotiationCard";
+import {
   useNegotiations,
   type NegotiationBid,
   type NegotiationStatus,
@@ -19,6 +25,32 @@ import {
 
 type Filter = NegotiationStatus | "all";
 type SortKey = "recent" | "oldest" | "priority";
+type MobileTab = "needs_you" | "waiting" | "closed";
+
+const TAB_OF_STATUS: Record<NegotiationStatus, MobileTab> = {
+  action_required: "needs_you",
+  final_round: "needs_you",
+  awaiting_buyer: "waiting",
+  accepted: "closed",
+  rejected: "closed",
+  expired: "closed",
+};
+
+const STATUS_TONE: Record<NegotiationStatus, MobileNegoStatusTone> = {
+  action_required: "action_required",
+  awaiting_buyer: "awaiting",
+  final_round: "final_round",
+  accepted: "accepted",
+  rejected: "rejected",
+  expired: "expired",
+};
+
+const AVATAR_TONES = ["indigo", "blue", "rose", "amber", "green", "slate"] as const;
+function toneFor(seed: string): typeof AVATAR_TONES[number] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return AVATAR_TONES[Math.abs(h) % AVATAR_TONES.length];
+}
 
 const STATUS_PILL: Record<NegotiationStatus, string> = {
   action_required: "pill-action-required",
