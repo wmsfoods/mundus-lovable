@@ -68,6 +68,7 @@ import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
 import AdminBIMarket from "./pages/admin/AdminBIMarket.tsx";
 import AdminBINegotiations from "./pages/admin/AdminBINegotiations.tsx";
+import AdminBIDemand from "./pages/admin/AdminBIDemand.tsx";
 import AdminMarkets from "./pages/admin/AdminMarkets.tsx";
 import AdminPorts from "./pages/admin/AdminPorts.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
@@ -229,6 +230,7 @@ const App = () => (
               <Route path="analytics" element={<AdminAnalytics />} />
               <Route path="bi/market" element={<AdminBIMarket />} />
               <Route path="bi/negotiations" element={<AdminBINegotiations />} />
+              <Route path="bi/demand" element={<AdminBIDemand />} />
               <Route path="companies" element={<AdminCompanies />} />
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
