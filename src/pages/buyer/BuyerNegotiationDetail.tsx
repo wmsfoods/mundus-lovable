@@ -1,4 +1,4 @@
-import { Fragment, useState, type CSSProperties } from "react";
+import { useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -9,12 +9,10 @@ import {
   CheckIcon,
   XIcon,
   KnifeForkIcon,
-  SparkleIcon,
 } from "@/components/icons";
 import {
   useBuyerNegotiation,
   type BuyerNegotiationDetail,
-  type BuyerNegotiationProduct,
 } from "@/hooks/useBuyerNegotiations";
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
@@ -23,7 +21,7 @@ import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiati
 import { NegotiationChat } from "@/components/negotiation/NegotiationChat";
 import { isChatEnabled } from "@/lib/negotiationEngine";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
+import { fmtWeight, weightLabel } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
@@ -60,11 +58,6 @@ function fmtDateShort(iso: string, locale: string) {
 }
 function fmtKg(v: number) {
   return new Intl.NumberFormat("de-DE").format(v);
-}
-
-function getPerRoundKg(p: BuyerNegotiationProduct, type: "bid" | "counter", round: number): number | undefined {
-  const key = `${type}R${round}UsdKg` as keyof BuyerNegotiationProduct;
-  return p[key] as number | undefined;
 }
 
 export default function BuyerNegotiationDetail() {
