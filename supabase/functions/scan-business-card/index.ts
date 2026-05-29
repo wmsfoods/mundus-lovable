@@ -1,4 +1,5 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { requireUser } from "../_shared/auth.ts";
 
 const SYSTEM_PROMPT = `You extract contact information from business card images.
 Return ONLY valid JSON with no markdown, no backticks, no commentary. Use this exact structure:
@@ -24,6 +25,8 @@ Use null for any field not present on the card. Clean up phone numbers to includ
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const auth = await requireUser(req);
+  if (!auth.ok) return new Response(auth.response.body, { status: auth.response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) {
