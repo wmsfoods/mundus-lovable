@@ -50,7 +50,7 @@ Respond in JSON ONLY (no markdown, no backticks):
 }`;
 
     if (fileType === "application/pdf") {
-      const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") || "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";
+      const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") || "";
       if (!ANTHROPIC_API_KEY) {
         return new Response(
           JSON.stringify({
