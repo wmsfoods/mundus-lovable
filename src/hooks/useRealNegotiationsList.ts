@@ -274,6 +274,8 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
       counterR2UsdKg: m["counterR2UsdKg"] as number | undefined,
       bidR3UsdKg: m["bidR3UsdKg"] as number | undefined,
       counterR3UsdKg: m["counterR3UsdKg"] as number | undefined,
+      bidR4UsdKg: m["bidR4UsdKg"] as number | undefined,
+      counterR4UsdKg: m["counterR4UsdKg"] as number | undefined,
     };
   });
 
