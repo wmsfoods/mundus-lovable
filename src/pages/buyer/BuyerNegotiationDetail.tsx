@@ -415,10 +415,6 @@ export default function BuyerNegotiationDetail() {
             maxRounds={d.maxRounds}
             perspective="buyer"
           />
-          <PriceHistoryTable
-            products={d.products}
-            maxRoundShown={maxRoundShown}
-          />
           {isReal && rawNeg && (
             <NegotiationActivityTab
               negotiation={rawNeg}
