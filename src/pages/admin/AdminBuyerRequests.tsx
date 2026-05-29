@@ -163,12 +163,26 @@ export default function AdminBuyerRequests() {
       </nav>
 
       <header>
-        <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          <ClipboardList className="w-7 h-7" style={{ color: WINE }} /> Offer Requests
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Buyer requests across the platform. Create an offer on behalf of a managed supplier to fulfill a request.
-        </p>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <ClipboardList className="w-7 h-7" style={{ color: WINE }} /> Offer Requests
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Buyer requests across the platform. Create an offer on behalf of a managed supplier to fulfill a request.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowCreateRequest(true)}
+            style={{
+              padding: "10px 18px", background: WINE, color: "white",
+              border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer",
+            }}
+          >
+            + Create Request
+          </button>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
