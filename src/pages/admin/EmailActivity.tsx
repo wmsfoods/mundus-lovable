@@ -363,6 +363,63 @@ export default function EmailActivity() {
         <KPICard icon="❌" label="Failed" value={stats.failed} color="#DC2626" />
       </div>
 
+      {/* Resend-style metrics dashboard */}
+      <div style={{
+        background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 16,
+        display: "flex", flexDirection: "column", gap: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 28 }}>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", color: "#6b7280" }}>Emails</div>
+            <div style={{ fontSize: 28, fontWeight: 600, color: "#0f172a" }}>{metrics.totalEmails}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", color: "#6b7280" }}>Deliverability rate</div>
+            <div style={{ fontSize: 28, fontWeight: 600, color: "#0f172a" }}>{metrics.deliverability}</div>
+          </div>
+        </div>
+        <div style={{ height: 220 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={metrics.deliveryData} margin={{ top: 8, right: 12, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="emailGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="#f1f5f9" vertical={false} strokeDasharray="3 3" />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={36} />
+              <RTooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+              <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#emailGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 12 }}>
+        <MetricCard
+          title="Bounce rate" value={metrics.bounceRate} data={metrics.bounceData}
+          color="#fb7185" riskAt={4}
+          legend={[{ label: "Bounced", count: stats.bounced, pct: metrics.bounceRate, color: "#fb7185" }]}
+        />
+        <MetricCard
+          title="Complain rate" value={metrics.complainRate} data={metrics.complainData}
+          color="#f59e0b" riskAt={0.08}
+          legend={[{ label: "Complained", count: 0, pct: "0%", color: "#f59e0b" }]}
+        />
+        <MetricCard
+          title="Open rate" value={metrics.openRate} data={metrics.openData}
+          color="#3b82f6"
+          legend={[{ label: "Opened", count: stats.opened, pct: metrics.openRate, color: "#3b82f6" }]}
+        />
+        <MetricCard
+          title="Click rate" value={metrics.clickRate} data={metrics.clickData}
+          color="#a78bfa"
+          legend={[{ label: "Clicked", count: stats.clicked, pct: metrics.clickRate, color: "#a78bfa" }]}
+        />
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
         <Input placeholder="Search recipient or subject..." value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ maxWidth: 260 }} />
