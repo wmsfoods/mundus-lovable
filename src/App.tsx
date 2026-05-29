@@ -50,6 +50,7 @@ import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
+import AdminDocs from "./pages/admin/AdminDocs.tsx";
 import AdminImport from "./pages/admin/AdminImport.tsx";
 import EmailPreview from "./pages/admin/EmailPreview.tsx";
 import EmailQueue from "./pages/admin/EmailQueue.tsx";
