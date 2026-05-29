@@ -1465,23 +1465,39 @@ export default function SupplierCreateOffer() {
       try {
         const freightInserts: Array<{ offer_id: string; port_id: string; cost: number; insurance: number }> = [];
         const insuranceVal = parseFloat(incoExtras.cifInsurance ?? "") || 0;
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const seen = new Set<string>();
         for (const m of selMarkets) {
           const cfg = mktCfg[m.id];
           if (!cfg) continue;
           for (const pid of cfg.sp) {
+            const portId = typeof pid === "object" && pid !== null ? (pid as any).id : pid;
+            if (!portId || !uuidRe.test(String(portId))) {
+              console.warn("[publish] skipping invalid port_id", { market: m.id, pid });
+              continue;
+            }
+            if (seen.has(portId)) continue;
+            seen.add(portId);
             const rawFreight = uniformFreight
               ? uniformFreightValue
-              : (cfg.sm || cfg.sp.length <= 1) ? cfg.gf : (cfg.pf[pid] ?? "");
-            const cost = parseFloat(rawFreight) || 0;
-            freightInserts.push({ offer_id: offer.id, port_id: pid, cost, insurance: insuranceVal });
+              : (cfg.sm || cfg.sp.length <= 1) ? cfg.gf : (cfg.pf[portId] ?? "");
+            const cost = parseFloat(String(rawFreight ?? "").replace(/,/g, "")) || 0;
+            freightInserts.push({ offer_id: offer.id as string, port_id: portId, cost, insurance: insuranceVal });
           }
         }
         if (freightInserts.length > 0) {
           const { error } = await supabase.from("freight_options").insert(freightInserts);
-          if (error) throw error;
+          if (error) {
+            console.error("[publish] freight_options insert failed:", error, freightInserts);
+            throw error;
+          }
         }
       } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
+        const m =
+          (e as any)?.message ||
+          (e as any)?.details ||
+          (e as any)?.hint ||
+          (typeof e === "string" ? e : JSON.stringify(e));
         throw new Error(`Step 6 failed: freight_options — ${m}`);
       }
 
