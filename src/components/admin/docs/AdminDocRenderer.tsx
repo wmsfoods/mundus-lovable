@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Printer } from "lucide-react";
 import "@/styles/mundus-docs.css";
 
@@ -119,11 +119,28 @@ function RenderBlock({ b }: { b: Block }): ReactNode {
   }
 }
 
-export function AdminDocView({ content }: { content: Record<Lang, DocContent> }) {
+export function AdminDocView({
+  content,
+  scrollTarget,
+}: {
+  content: Record<Lang, DocContent>;
+  scrollTarget?: string | null;
+}) {
   const [lang, setLang] = useState<Lang>("pt");
   const c = content[lang];
+  const rootRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!scrollTarget || !rootRef.current) return;
+    const el = rootRef.current.querySelector<HTMLElement>(`#${CSS.escape(scrollTarget)}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.style.transition = "background 1.2s ease";
+      el.style.background = "#fdf2f7";
+      setTimeout(() => { el.style.background = ""; }, 1400);
+    }
+  }, [scrollTarget, lang]);
   return (
-    <div className="mw-docs-wrap">
+    <div className="mw-docs-wrap" ref={rootRef}>
       <div className="mw-docs-toolbar no-print">
         <div className="mw-docs-langs">
           {ADMIN_LANGS.map((l) => (
@@ -150,7 +167,7 @@ export function AdminDocView({ content }: { content: Record<Lang, DocContent> })
         </header>
 
         {c.sections.map((s, i) => (
-          <section key={i} className="mw-doc-section">
+          <section key={i} id={`sec-${i}`} className="mw-doc-section">
             <div className="mw-doc-kicker">{s.kicker}</div>
             <h2 className="mw-doc-h2">{s.title}</h2>
             {s.blocks.map((b, j) => <RenderBlock key={j} b={b} />)}
