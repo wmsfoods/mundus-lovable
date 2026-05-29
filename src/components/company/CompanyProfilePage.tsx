@@ -327,6 +327,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
             country: l.country,
             zip_code: l.zip_code,
             est_number: l.est_number,
+            plant_numbers: l.plant_numbers || [],
           });
           if (error) throw error;
           continue;
@@ -343,6 +344,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
               country: l.country,
               zip_code: l.zip_code,
               est_number: l.est_number,
+              plant_numbers: l.plant_numbers || [],
             })
             .eq("id", l.id);
           if (error) throw error;
