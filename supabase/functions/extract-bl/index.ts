@@ -48,7 +48,6 @@ Deno.serve(async (req) => {
   if (!auth.ok) {
     return new Response(auth.response.body, { status: auth.response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   }
-  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const { fileBase64, mimeType } = await req.json();
