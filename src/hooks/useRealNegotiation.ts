@@ -113,6 +113,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           id, offer_id, buyer_company_id, port_id, incoterm, status,
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
           agreed_items, settled_total_value, buyer_message, supplier_message,
+          accepted_by, accepted_by_user_id, accepted_at, accepted_total_value,
           rejection_cooldown_until, current_round, chat_enabled,
           order_id,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
