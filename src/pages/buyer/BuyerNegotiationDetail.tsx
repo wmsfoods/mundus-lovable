@@ -27,6 +27,8 @@ import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
+import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
+import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
@@ -407,89 +409,16 @@ export default function BuyerNegotiationDetail() {
 
         {/* RIGHT */}
         <div>
-          <div className="nd-card">
-            <div className="nd-timeline-head">
-              <span className="tl-head-title">
-                <SparkleIcon size={14} />
-                {t("buyer.negotiations.detail.timeline")}
-              </span>
-              <span className="tl-head-meta">
-                {t("buyer.negotiations.detail.roundOf", { round: d.round, max: d.maxRounds })}
-              </span>
-            </div>
-            <div className="nd-timeline-flow">
-              {d.rounds.map((r, i) => {
-                const labelKey =
-                  r.type === "bid"
-                    ? "buyer.negotiations.detail.timelineLabel.bid"
-                    : r.isCurrent
-                      ? "buyer.negotiations.detail.timelineLabel.counterCurrent"
-                      : "buyer.negotiations.detail.timelineLabel.counter";
-                const pillClass =
-                  r.type === "bid"
-                    ? "tl-pill tl-pill--bid"
-                    : r.isCurrent
-                      ? "tl-pill tl-pill--counter tl-pill--current"
-                      : "tl-pill tl-pill--counter";
-                return (
-                  <Fragment key={`${r.type}-${r.round}-${i}`}>
-                    {i > 0 && <span className="tl-sep">→</span>}
-                    <span className={pillClass}>
-                      <span className="tl-pill-label">{t(labelKey, { n: r.round })}</span>
-                      <span>{fmtUsd(r.totalUsd, 2)}</span>
-                    </span>
-                  </Fragment>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="nd-card">
-            <div className="nd-card-head">
-              <strong>{t("buyer.negotiations.detail.priceDetails")}</strong>
-            </div>
-            <div className="nd-price-scroll-wrap" style={{ overflowX: "auto" }}>
-              <table className="nd-price-table">
-                <thead>
-                  <tr>
-                    <th>{t("buyer.negotiations.detail.col.product")}</th>
-                    <th>{t("buyer.negotiations.detail.col.qty", { unit: weightLabel(unit), defaultValue: "Qty ({{unit}})" })}</th>
-                    <th>{t("buyer.negotiations.detail.col.asking")}</th>
-                    {Array.from({ length: maxRoundShown }, (_, i) => (
-                      <Fragment key={`h-${i}`}>
-                      <th className="col-bid">{t("buyer.negotiations.detail.col.bidR", { n: i + 1 })}</th>
-                      <th className="col-counter">{t("buyer.negotiations.detail.col.counterR", { n: i + 1 })}</th>
-                      </Fragment>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.products.map((p) => (
-                    <tr key={p.name}>
-                      <td>
-                        <span className="product-name">{p.name}</span>
-                        <span className="product-pack">{p.pack}</span>
-                      </td>
-                      <td>{fmtWeight(p.qtyLb / LB_PER_KG, unit)}</td>
-                      <td>${fmtPrice(p.askingUsdKg, unit)}</td>
-                      {Array.from({ length: maxRoundShown }, (_, i) => {
-                        const round = i + 1;
-                        const bidV = getPerRoundKg(p, "bid", round);
-                        const cntV = getPerRoundKg(p, "counter", round);
-                      const isCurrentCounter = round === maxRoundShown;
-                        return (
-                          <Fragment key={`v-${i}`}>
-                          <td className="col-bid">{bidV != null ? `$${fmtPrice(bidV, unit)}` : "—"}</td>
-                          <td className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}>{cntV != null ? `$${fmtPrice(cntV, unit)}` : "—"}</td>
-                          </Fragment>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DealProgressionCard
+            rounds={d.rounds}
+            currentRound={d.round}
+            maxRounds={d.maxRounds}
+            perspective="buyer"
+          />
+          <PriceHistoryTable
+            products={d.products}
+            maxRoundShown={maxRoundShown}
+          />
         </div>
       </div>
 
