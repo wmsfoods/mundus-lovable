@@ -4,9 +4,14 @@ import { useTranslation } from "react-i18next";
 import { MessageIcon, SearchIcon, ChevronRightIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
-import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { NegotiationsFilterSheet } from "@/components/marketplace/NegotiationsFilterSheet";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import {
+  MobileNegoBidCard,
+  MobileNegoGroup,
+  MobileNegoTabs,
+  type MobileNegoStatusTone,
+} from "@/components/negotiation/MobileNegotiationCard";
 import {
   useBuyerNegotiations,
   type BuyerNegotiationBid,
@@ -16,6 +21,32 @@ import {
 
 type Filter = BuyerNegotiationStatus | "all";
 type SortKey = "recent" | "oldest" | "priority";
+type MobileTab = "needs_you" | "waiting" | "closed";
+
+const TAB_OF_STATUS: Record<BuyerNegotiationStatus, MobileTab> = {
+  action_required: "needs_you",
+  final_round: "needs_you",
+  awaiting_supplier: "waiting",
+  accepted: "closed",
+  rejected: "closed",
+  expired: "closed",
+};
+
+const STATUS_TONE: Record<BuyerNegotiationStatus, MobileNegoStatusTone> = {
+  action_required: "action_required",
+  awaiting_supplier: "awaiting",
+  final_round: "final_round",
+  accepted: "accepted",
+  rejected: "rejected",
+  expired: "expired",
+};
+
+const AVATAR_TONES = ["indigo", "blue", "rose", "amber", "green", "slate"] as const;
+function toneFor(seed: string): typeof AVATAR_TONES[number] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return AVATAR_TONES[Math.abs(h) % AVATAR_TONES.length];
+}
 
 const STATUS_PILL: Record<BuyerNegotiationStatus, string> = {
   action_required: "pill-action-required",
@@ -53,6 +84,7 @@ export default function BuyerNegotiations() {
   const [filter, setFilter] = useState<Filter>("all");
   const [sortBy, setSortBy] = useState<SortKey>("recent");
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+  const [mobileTab, setMobileTab] = useState<MobileTab>("needs_you");
 
   const allBids = useMemo(
     () => offers.flatMap((p) => p.bids.map((b) => ({ ...b, parentTitle: p.title, oppWmsRef: p.oppWmsRef }))),
@@ -350,47 +382,112 @@ export default function BuyerNegotiations() {
       )}
 
       {groups.length > 0 && (
-        <ListCardList>
-          {groups.map((g) => {
-            const bids = g._bids;
-            const actionCount = bids.filter((b) => b.status === "action_required").length;
-            const finalCount = bids.filter((b) => b.status === "final_round").length;
-            const needAction = actionCount + finalCount;
-            const mostSevere = bids
-              .slice()
-              .sort((a, b) => PRIORITY[a.status] - PRIORITY[b.status])[0].status;
-            const latestUpdate = bids
-              .map((b) => new Date(b.updatedAt).getTime())
-              .reduce((a, b) => Math.max(a, b), 0);
-            const minBid = Math.min(...bids.map((b) => b.yourBidUsd));
-            const maxBid = Math.max(...bids.map((b) => b.yourBidUsd));
-            const bidRange = minBid === maxBid ? fmtUsd(minBid) : `${fmtUsd(minBid)} – ${fmtUsd(maxBid)}`;
-            return (
-              <ListCard
-                key={g.id}
-                onClick={() => navigate(`/buyer/negotiations/${bids[0].id}`)}
-                title={g.title}
-                subtitle={t("buyer.negotiations.bidsCount", { n: bids.length })}
-                chip={
-                  needAction > 0
-                    ? {
-                        label: t("buyer.negotiations.needAction", { n: needAction }),
-                        className: "pill-status pill-action-required",
-                      }
-                    : {
-                        label: t(`buyer.negotiations.status.${mostSevere}`),
-                        className: `pill-status ${STATUS_PILL[mostSevere]}`,
-                      }
-                }
-                meta={[
-                  { label: t("buyer.negotiations.col.yourBid"), value: bidRange },
-                  { label: t("buyer.negotiations.col.updated"), value: fmtDate(new Date(latestUpdate).toISOString(), locale) },
-                ]}
-              />
-            );
-          })}
-        </ListCardList>
+        <MobileBuyerNegoList
+          groups={groups}
+          tab={mobileTab}
+          onTabChange={setMobileTab}
+          locale={locale}
+          navigate={navigate}
+          t={t}
+        />
       )}
     </>
+  );
+}
+
+function MobileBuyerNegoList({
+  groups,
+  tab,
+  onTabChange,
+  locale,
+  navigate,
+  t,
+}: {
+  groups: (BuyerParentOffer & { _bids: BuyerNegotiationBid[] })[];
+  tab: MobileTab;
+  onTabChange: (v: MobileTab) => void;
+  locale: string;
+  navigate: ReturnType<typeof useNavigate>;
+  t: ReturnType<typeof useTranslation>["t"];
+}) {
+  const allBids = groups.flatMap((g) => g._bids);
+  const counts = {
+    needs_you: allBids.filter((b) => TAB_OF_STATUS[b.status] === "needs_you").length,
+    waiting:   allBids.filter((b) => TAB_OF_STATUS[b.status] === "waiting").length,
+    closed:    allBids.filter((b) => TAB_OF_STATUS[b.status] === "closed").length,
+  };
+  const visibleGroups = groups
+    .map((g) => ({ ...g, _bids: g._bids.filter((b) => TAB_OF_STATUS[b.status] === tab) }))
+    .filter((g) => g._bids.length > 0);
+
+  return (
+    <div className="mnc-active md:hidden">
+      <MobileNegoTabs<MobileTab>
+        value={tab}
+        onChange={onTabChange}
+        options={[
+          { key: "needs_you", label: t("buyer.negotiations.mobile.needsYou", { defaultValue: "Needs you" }), count: counts.needs_you },
+          { key: "waiting",   label: t("buyer.negotiations.mobile.waiting",   { defaultValue: "Waiting" }),   count: counts.waiting },
+          { key: "closed",    label: t("buyer.negotiations.mobile.closed",    { defaultValue: "Closed" }),    count: counts.closed },
+        ]}
+      />
+      {visibleGroups.length === 0 ? (
+        <div className="detail-empty"><p>{t("buyer.negotiations.empty")}</p></div>
+      ) : (
+        visibleGroups.map((g) => {
+          const need = g._bids.filter(
+            (b) => b.status === "action_required" || b.status === "final_round",
+          ).length;
+          return (
+            <MobileNegoGroup
+              key={g.id}
+              title={g.title}
+              refNumber={g.oppWmsRef}
+              bidCount={g._bids.length}
+              needActionLabel={
+                need > 0
+                  ? t("buyer.negotiations.needAction", {
+                      n: need,
+                      defaultValue: `${need} need action`,
+                    })
+                  : undefined
+              }
+            >
+              {g._bids.map((b) => {
+                const gap = b.supplierCounterUsd - b.yourBidUsd;
+                return (
+                  <MobileNegoBidCard
+                    key={b.id}
+                    initials={b.supplierInitials}
+                    initialsTone={toneFor(b.supplierName)}
+                    partyName={b.supplierName}
+                    countryCode={b.supplierCountryCode}
+                    subtitle={
+                      <>
+                        {b.originPort}
+                        {b.supplierContact ? ` · ${b.supplierContact}` : ""}
+                      </>
+                    }
+                    status={{
+                      tone: STATUS_TONE[b.status],
+                      label: t(`buyer.negotiations.status.${b.status}`),
+                    }}
+                    stats={[
+                      { label: t("buyer.negotiations.col.yourBid"), value: fmtUsd(b.yourBidUsd), tone: "bid" },
+                      { label: t("buyer.negotiations.col.supplierCounter", { defaultValue: "Supplier counter" }), value: fmtUsd(b.supplierCounterUsd), tone: "counter" },
+                      { label: t("buyer.negotiations.mobile.gap", { defaultValue: "Gap" }), value: `${gap >= 0 ? "+" : ""}${fmtUsd(Math.abs(gap))}`, tone: gap >= 0 ? "gap-neg" : "gap-pos" },
+                    ]}
+                    round={{ current: b.round, total: b.maxRounds }}
+                    dateLabel={fmtDate(b.updatedAt, locale)}
+                    timerLabel={b.status === "action_required" && b.expiresIn ? b.expiresIn : undefined}
+                    onClick={() => navigate(`/buyer/negotiations/${b.id}`)}
+                  />
+                );
+              })}
+            </MobileNegoGroup>
+          );
+        })
+      )}
+    </div>
   );
 }
