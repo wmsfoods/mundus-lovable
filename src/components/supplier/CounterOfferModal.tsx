@@ -519,6 +519,10 @@ export function CounterOfferModal({
         agreed_items: mergedAgreed,
         updated_at: new Date().toISOString(),
       };
+      // Buyer may adjust container quantity within remaining availability.
+      if (perspective === "buyer" && fclCount !== currentFcl) {
+        update.fcl_count = fclCount;
+      }
       const trimmed = message.trim();
       if (perspective === "buyer") {
         update.buyer_message = trimmed ? trimmed : null;
