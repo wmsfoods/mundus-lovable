@@ -26,6 +26,7 @@ import {
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRemainingFcl } from "@/hooks/useRemainingFcl";
 import {
   getIncotermAddOn,
   getIncotermBannerLabel,
@@ -181,6 +182,26 @@ export function CounterOfferModal({
   const [bulkAnchor, setBulkAnchor] = useState<Anchor>("self");
   const [bulkMode, setBulkMode] = useState<DeltaUnit>("amount");
   const [bulkValue, setBulkValue] = useState<string>("");
+
+  // Buyer-only: allow adjusting FCL count during counter-rounds, bounded by
+  // remaining availability on the parent offer (plus what's already reserved
+  // by this very negotiation).
+  const currentFcl = Math.max(1, Number(negotiation.fcl_count ?? 1));
+  const totalOfferFcl = Math.max(1, Number(negotiation.offer?.total_fcl ?? 1));
+  const fclAlloc = useRemainingFcl(negotiation.offer?.id ?? null, totalOfferFcl);
+  const maxSelectableFcl =
+    perspective === "buyer"
+      ? Math.max(currentFcl, fclAlloc.available + currentFcl)
+      : currentFcl;
+  const [fclCount, setFclCount] = useState<number>(currentFcl);
+  useEffect(() => {
+    if (!open) return;
+    setFclCount(currentFcl);
+  }, [open, currentFcl]);
+  useEffect(() => {
+    if (fclCount > maxSelectableFcl) setFclCount(maxSelectableFcl);
+    if (fclCount < 1) setFclCount(1);
+  }, [fclCount, maxSelectableFcl]);
 
   // Toggleable shortcuts ("Accept all", "Meet in middle") — clicking again reverts.
   type Shortcut = "accept_all" | "meet_middle";
@@ -498,6 +519,10 @@ export function CounterOfferModal({
         agreed_items: mergedAgreed,
         updated_at: new Date().toISOString(),
       };
+      // Buyer may adjust container quantity within remaining availability.
+      if (perspective === "buyer" && fclCount !== currentFcl) {
+        update.fcl_count = fclCount;
+      }
       const trimmed = message.trim();
       if (perspective === "buyer") {
         update.buyer_message = trimmed ? trimmed : null;
@@ -899,6 +924,41 @@ export function CounterOfferModal({
 
         {/* Bulk apply — unified responsive */}
         {openItems.length > 0 && (
+          <>
+          {perspective === "buyer" && totalOfferFcl > 1 && (
+            <div className="mt-3 rounded-lg border border-border p-3 flex flex-wrap items-center gap-3">
+              <div className="flex flex-col">
+                <span className="text-[11px] uppercase font-semibold text-muted-foreground">
+                  Containers (FCL)
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Adjust how many you want on this negotiation
+                </span>
+              </div>
+              <select
+                value={fclCount}
+                onChange={(e) => setFclCount(Number(e.target.value))}
+                className="h-9 px-2 rounded-md border border-border text-sm tabular-nums bg-background"
+                disabled={maxSelectableFcl < 1}
+              >
+                {Array.from({ length: Math.max(1, maxSelectableFcl) }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>
+                    {n} FCL{n > 1 ? "s" : ""}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">
+                <strong className="text-foreground tabular-nums">{fclAlloc.available + currentFcl}</strong> of {totalOfferFcl} available
+                {fclAlloc.sold > 0 && <> · {fclAlloc.sold} sold</>}
+                {Math.max(0, fclAlloc.inNegotiation - currentFcl) > 0 && (
+                  <> · {fclAlloc.inNegotiation - currentFcl} reserved by others</>
+                )}
+                {fclCount !== currentFcl && (
+                  <> · <span style={{ color: "#8B2252", fontWeight: 600 }}>changing from {currentFcl}</span></>
+                )}
+              </span>
+            </div>
+          )}
           <div className="mt-3 rounded-lg border border-border p-3 flex flex-col gap-3">
             <div className="text-xs uppercase font-semibold text-muted-foreground">
               {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
@@ -1012,6 +1072,7 @@ export function CounterOfferModal({
               </button>
             </div>
           </div>
+          </>
         )}
 
         {/* Cuts — desktop table */}
