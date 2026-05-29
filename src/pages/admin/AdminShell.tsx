@@ -48,6 +48,7 @@ export default function AdminShell() {
   const ADMIN_NAV: SidebarItem[] = [
     { to: "/admin/dashboard", label: t("admin.shell.nav.dashboard"), icon: LayoutDashboard as unknown as IconCmp, groupLabel: t("admin.shell.nav.overview") },
     { to: "/admin/analytics", label: t("admin.shell.nav.analytics"), icon: Activity as unknown as IconCmp },
+    { to: "/admin/bi", label: "Executive Overview", icon: LineChart as unknown as IconCmp },
     { to: "/admin/bi/market", label: "Market Intelligence", icon: LineChart as unknown as IconCmp },
     { to: "/admin/bi/negotiations", label: "Negotiation Funnel", icon: LineChart as unknown as IconCmp },
     { to: "/admin/bi/demand", label: "Buyer Demand", icon: LineChart as unknown as IconCmp },
