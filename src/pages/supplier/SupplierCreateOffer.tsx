@@ -382,6 +382,8 @@ export default function SupplierCreateOffer() {
 
   const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
   const [certifications, setCertifications] = useState<string[]>([]);
+  // Whether buyers can edit per-item quantities in chat proposals (total must still match).
+  const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
 
   const [cuts, setCuts] = useState<Cut[]>([]);
   const [cutImgs, setCutImgs] = useState<Record<string, string>>({});
