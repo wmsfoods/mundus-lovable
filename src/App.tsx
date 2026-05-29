@@ -271,6 +271,7 @@ const App = () => (
               <Route path="settings/email" element={<EmailSettings />} />
               <Route path="email-preview" element={<EmailPreview />} />
               <Route path="create-offer" element={<SupplierCreateOffer />} />
+              <Route path="create-request" element={<BuyerCreateRequest />} />
               <Route path="email-queue" element={<EmailQueue />} />
               <Route path="email-activity" element={<EmailActivity />} />
               <Route path="whats" element={<WhatsLayout />}>

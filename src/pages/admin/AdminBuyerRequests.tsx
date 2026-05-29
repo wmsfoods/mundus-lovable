@@ -25,6 +25,7 @@ type RequestRow = {
 };
 
 type ManagedSupplier = { id: string; name: string; country: string | null; logo_url: string | null };
+type ManagedBuyer = { id: string; name: string; country: string | null; logo_url: string | null };
 
 type Filter = "all" | "new" | "with_responses" | "offer_sent" | "closed";
 
@@ -58,6 +59,8 @@ export default function AdminBuyerRequests() {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
   const [managedSuppliers, setManagedSuppliers] = useState<ManagedSupplier[]>([]);
+  const [managedBuyers, setManagedBuyers] = useState<ManagedBuyer[]>([]);
+  const [showCreateRequest, setShowCreateRequest] = useState(false);
   const [pickerRequest, setPickerRequest] = useState<RequestRow | null>(null);
 
   useEffect(() => {
@@ -79,11 +82,19 @@ export default function AdminBuyerRequests() {
           .order("name"),
       ]);
 
+      const { data: buyers } = await supabase
+        .from("companies")
+        .select("id, name, country, logo_url")
+        .eq("mundus_managed_buyer", true)
+        .eq("is_buyer", true)
+        .is("deleted_at", null)
+        .order("name");
+
       const list = (reqs ?? []) as RequestRow[];
       const buyerIds = Array.from(new Set(list.map((r) => r.buyer_company_id)));
       const reqIds = list.map((r) => r.id);
 
-      const [{ data: buyers }, { data: linkedOffers }] = await Promise.all([
+      const [{ data: buyersForRows }, { data: linkedOffers }] = await Promise.all([
         buyerIds.length
           ? supabase.from("companies").select("id, name").in("id", buyerIds)
           : Promise.resolve({ data: [] as any[] }),
@@ -96,7 +107,7 @@ export default function AdminBuyerRequests() {
           : Promise.resolve({ data: [] as any[] }),
       ]);
 
-      const buyerMap = new Map((buyers ?? []).map((b: any) => [b.id, b.name]));
+      const buyerMap = new Map((buyersForRows ?? []).map((b: any) => [b.id, b.name]));
       const offerMap = new Map<string, RequestRow["linked_offers"]>();
       (linkedOffers ?? []).forEach((o: any) => {
         const arr = offerMap.get(o.request_id) ?? [];
@@ -113,6 +124,7 @@ export default function AdminBuyerRequests() {
         }))
       );
       setManagedSuppliers((suppliers as any) ?? []);
+      setManagedBuyers((buyers as any) ?? []);
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -151,12 +163,26 @@ export default function AdminBuyerRequests() {
       </nav>
 
       <header>
-        <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
-          <ClipboardList className="w-7 h-7" style={{ color: WINE }} /> Offer Requests
-        </h1>
-        <p className="text-sm text-gray-500 mt-1">
-          Buyer requests across the platform. Create an offer on behalf of a managed supplier to fulfill a request.
-        </p>
+        <div className="flex items-start justify-between gap-3 flex-wrap">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold flex items-center gap-2">
+              <ClipboardList className="w-7 h-7" style={{ color: WINE }} /> Offer Requests
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Buyer requests across the platform. Create an offer on behalf of a managed supplier to fulfill a request.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowCreateRequest(true)}
+            style={{
+              padding: "10px 18px", background: WINE, color: "white",
+              border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer",
+            }}
+          >
+            + Create Request
+          </button>
+        </div>
       </header>
 
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -350,6 +376,76 @@ export default function AdminBuyerRequests() {
             <div style={{ marginTop: 14, textAlign: "right" }}>
               <button
                 onClick={() => setPickerRequest(null)}
+                style={{
+                  padding: "8px 14px", borderRadius: 8, border: "1px solid #E5E7EB",
+                  background: "white", cursor: "pointer", fontSize: 13,
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showCreateRequest && (
+        <div
+          onClick={() => setShowCreateRequest(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white", borderRadius: 12, padding: 20, maxWidth: 480, width: "100%",
+              maxHeight: "80vh", overflowY: "auto",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Create Request for…</h3>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: "6px 0 16px" }}>
+              Select a managed buyer to create a request on their behalf.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {managedBuyers.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => {
+                    setShowCreateRequest(false);
+                    navigate(`/admin/create-request?as_company=${b.id}`);
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "10px 14px", border: "1px solid #E5E7EB", borderRadius: 10,
+                    background: "white", cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  {b.logo_url ? (
+                    <img src={b.logo_url} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: "cover" }} />
+                  ) : (
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 6, background: "#FDF2F8",
+                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
+                    }}>🛒</div>
+                  )}
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{b.name}</div>
+                    <div style={{ fontSize: 12, color: "#6B7280" }}>{b.country ?? "—"}</div>
+                  </div>
+                </button>
+              ))}
+              {managedBuyers.length === 0 && (
+                <p style={{ fontSize: 13, color: "#9CA3AF", textAlign: "center", padding: 20 }}>
+                  No managed buyers. Go to Companies → toggle "Mundus manages requests for this buyer" first.
+                </p>
+              )}
+            </div>
+            <div style={{ marginTop: 14, textAlign: "right" }}>
+              <button
+                type="button"
+                onClick={() => setShowCreateRequest(false)}
                 style={{
                   padding: "8px 14px", borderRadius: 8, border: "1px solid #E5E7EB",
                   background: "white", cursor: "pointer", fontSize: 13,
