@@ -16,6 +16,8 @@ import {
   Shield,
   Trash2,
   CheckCircle2,
+  Camera,
+  Loader2,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Crumbs } from "@/components/mundus/Crumbs";
@@ -99,6 +101,42 @@ export default function CompanyProfilePage({
     mundus_managed_buyer: boolean;
     logo_url: string | null;
   }>({ is_verified: false, status: "active", mundus_managed_supplier: false, mundus_managed_buyer: false, logo_url: null });
+  const logoInputRef = useRef<HTMLInputElement>(null);
+  const [uploadingLogo, setUploadingLogo] = useState(false);
+
+  const uploadLogo = async (file: File) => {
+    if (!file || !companyId) return;
+    if (!file.type.startsWith("image/")) { toast.error("Please choose an image file"); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error("Image must be under 5MB"); return; }
+    setUploadingLogo(true);
+    try {
+      let blob: Blob = file;
+      let ext = (file.name.split(".").pop() || "png").toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
+      try {
+        const { processLogo, dataUrlToBlob } = await import("@/lib/logoProcessor");
+        const processed = await processLogo(file, { size: 400 });
+        blob = await dataUrlToBlob(processed);
+        ext = "png";
+      } catch (procErr) {
+        console.warn("Logo processing failed, uploading original", procErr);
+      }
+      const path = `companies/${companyId}/logo-${Date.now()}.${ext}`;
+      const { error: upErr } = await supabase.storage.from("avatars").upload(path, blob, {
+        cacheControl: "3600", upsert: true, contentType: ext === "png" ? "image/png" : file.type,
+      });
+      if (upErr) throw upErr;
+      const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+      const url = pub.publicUrl;
+      const { error: updErr } = await (supabase as any).from("companies").update({ logo_url: url }).eq("id", companyId);
+      if (updErr) throw updErr;
+      setAdminFlags((s) => ({ ...s, logo_url: url }));
+      toast.success("Logo updated");
+    } catch (e: any) {
+      toast.error("Upload failed: " + (e?.message ?? "unknown"));
+    } finally {
+      setUploadingLogo(false);
+    }
+  };
 
   const [company, setCompany] = useState<CompanyRow | null>(null);
   const [locations, setLocations] = useState<LocationRow[]>([]);
@@ -464,6 +502,61 @@ export default function CompanyProfilePage({
       </div>
 
       <div className="cprofile-card cprofile-namecard">
+        <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
+          <button
+            type="button"
+            onClick={() => logoInputRef.current?.click()}
+            disabled={uploadingLogo || !companyId}
+            title="Upload company logo"
+            style={{
+              position: "relative", width: 96, height: 96, borderRadius: 999,
+              border: "1px solid #e5e7eb", background: adminFlags.logo_url ? "#f3f4f6" : "#fdf2f8",
+              overflow: "hidden", padding: 0, cursor: uploadingLogo ? "wait" : "pointer",
+              display: "inline-flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}
+          >
+            {adminFlags.logo_url ? (
+              <img src={adminFlags.logo_url} alt={company.name || "logo"} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+            ) : (
+              <span style={{ fontWeight: 700, color: "#8B2252", fontSize: 28 }}>
+                {(company.name || "?").trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("") || "?"}
+              </span>
+            )}
+            <span
+              aria-hidden
+              style={{
+                position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)",
+                display: "inline-flex", alignItems: "center", justifyContent: "center",
+                color: "#fff", opacity: uploadingLogo ? 1 : 0, transition: "opacity 0.15s",
+              }}
+              className="cprofile-logo-overlay"
+            >
+              {uploadingLogo ? <Loader2 size={20} className="animate-spin" /> : <Camera size={20} />}
+            </span>
+          </button>
+          <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            <button
+              type="button"
+              onClick={() => logoInputRef.current?.click()}
+              disabled={uploadingLogo || !companyId}
+              style={{
+                alignSelf: "flex-start", padding: "6px 12px", borderRadius: 8,
+                border: "1px solid #e5e7eb", background: "#fff", fontSize: 13, fontWeight: 600,
+                cursor: uploadingLogo ? "wait" : "pointer", color: "#111827",
+              }}
+            >
+              {uploadingLogo ? "Uploading…" : adminFlags.logo_url ? "Replace logo" : "Upload logo"}
+            </button>
+            <span style={{ fontSize: 12, color: "#6b7280" }}>PNG/JPG up to 5MB. Square works best.</span>
+          </div>
+          <input
+            ref={logoInputRef}
+            type="file"
+            accept="image/*"
+            style={{ display: "none" }}
+            onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadLogo(f); e.currentTarget.value = ""; }}
+          />
+        </div>
         <div className="cprofile-namecard-top">
           <input
             className="cprofile-name-input"

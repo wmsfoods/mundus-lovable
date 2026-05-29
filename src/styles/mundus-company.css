@@ -826,3 +826,7 @@ select.cp-inline { cursor: pointer; }
   border: 1px dashed #8B2252 !important;
   background: rgba(139,34,82,0.02);
 }
+
+/* Logo overlay hover (CompanyProfilePage) */
+.cprofile-namecard button:hover .cprofile-logo-overlay { opacity: 1 !important; }
+
