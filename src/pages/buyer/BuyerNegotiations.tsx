@@ -4,9 +4,14 @@ import { useTranslation } from "react-i18next";
 import { MessageIcon, SearchIcon, ChevronRightIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
-import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { NegotiationsFilterSheet } from "@/components/marketplace/NegotiationsFilterSheet";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import {
+  MobileNegoBidCard,
+  MobileNegoGroup,
+  MobileNegoTabs,
+  type MobileNegoStatusTone,
+} from "@/components/negotiation/MobileNegotiationCard";
 import {
   useBuyerNegotiations,
   type BuyerNegotiationBid,
@@ -16,6 +21,32 @@ import {
 
 type Filter = BuyerNegotiationStatus | "all";
 type SortKey = "recent" | "oldest" | "priority";
+type MobileTab = "needs_you" | "waiting" | "closed";
+
+const TAB_OF_STATUS: Record<BuyerNegotiationStatus, MobileTab> = {
+  action_required: "needs_you",
+  final_round: "needs_you",
+  awaiting_supplier: "waiting",
+  accepted: "closed",
+  rejected: "closed",
+  expired: "closed",
+};
+
+const STATUS_TONE: Record<BuyerNegotiationStatus, MobileNegoStatusTone> = {
+  action_required: "action_required",
+  awaiting_supplier: "awaiting",
+  final_round: "final_round",
+  accepted: "accepted",
+  rejected: "rejected",
+  expired: "expired",
+};
+
+const AVATAR_TONES = ["indigo", "blue", "rose", "amber", "green", "slate"] as const;
+function toneFor(seed: string): typeof AVATAR_TONES[number] {
+  let h = 0;
+  for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) | 0;
+  return AVATAR_TONES[Math.abs(h) % AVATAR_TONES.length];
+}
 
 const STATUS_PILL: Record<BuyerNegotiationStatus, string> = {
   action_required: "pill-action-required",
