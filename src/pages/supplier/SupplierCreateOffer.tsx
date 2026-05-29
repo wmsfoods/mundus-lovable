@@ -385,6 +385,22 @@ export default function SupplierCreateOffer() {
   // Whether buyers can edit per-item quantities in chat proposals (total must still match).
   const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
 
+  // Hydrate allow_quantity_negotiation when editing an existing offer.
+  useEffect(() => {
+    if (!editOffer?.offerId) return;
+    supabase
+      .from("offers")
+      .select("allow_quantity_negotiation")
+      .eq("id", editOffer.offerId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && typeof (data as any).allow_quantity_negotiation === "boolean") {
+          setAllowQtyNegotiation(Boolean((data as any).allow_quantity_negotiation));
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editOffer?.offerId]);
+
   const [cuts, setCuts] = useState<Cut[]>([]);
   const [cutImgs, setCutImgs] = useState<Record<string, string>>({});
   const [addRow, setAddRow] = useState(false);
