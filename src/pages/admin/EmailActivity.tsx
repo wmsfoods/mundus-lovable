@@ -100,6 +100,58 @@ function TypeBadge({ type }: { type: string | null }) {
   );
 }
 
+function offerNoOf(r: Row): string | null {
+  const v = r.template_vars;
+  const n = v?.offerNumber ?? v?.offer_number ?? v?.offerNo;
+  return n ? `M-${String(n).replace(/^M-/, "")}` : null;
+}
+
+function MetricCard({
+  title, value, data, color, riskAt, legend,
+}: {
+  title: string; value: string;
+  data: { day: string; value: number }[];
+  color: string; riskAt?: number;
+  legend?: { label: string; count: number; pct: string; color: string }[];
+}) {
+  return (
+    <div style={{
+      background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,
+      padding: 16, display: "flex", flexDirection: "column", gap: 10, minHeight: 280,
+    }}>
+      <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", color: "#6b7280" }}>{title}</div>
+      <div style={{ fontSize: 28, fontWeight: 600, color: "#0f172a", lineHeight: 1 }}>{value}</div>
+      <div style={{ flex: 1, minHeight: 140 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+            <CartesianGrid stroke="#f1f5f9" vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="day" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={36} />
+            <RTooltip cursor={{ fill: "#f8fafc" }} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+            {riskAt !== undefined && (
+              <ReferenceLine y={riskAt} stroke="#F97316" strokeDasharray="4 4" label={{ value: "RISK", fill: "#F97316", fontSize: 10, position: "insideTopLeft" }} />
+            )}
+            <Bar dataKey="value" fill={color} radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      {legend && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
+          {legend.map(l => (
+            <div key={l.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, color: "#374151" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: l.color }} />
+                {l.label}
+              </span>
+              <span style={{ color: "#6b7280" }}>{l.count} <strong style={{ color: "#0f172a" }}>{l.pct}</strong></span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EmailActivity() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
