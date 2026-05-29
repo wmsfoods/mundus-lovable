@@ -3,6 +3,7 @@ export type CounterSource = 'engine' | 'manual';
 export type NegotiationStatus =
   | 'awaiting_supplier'
   | 'pending_buyer_review'
+  | 'pending_confirmation'
   | 'bid_accepted'
   | 'offer_rejected'
   | 'offer_exhausted'
