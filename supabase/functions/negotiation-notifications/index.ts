@@ -6,7 +6,7 @@ const corsHeaders = {
 };
 
 const RESEND_KEY =
-  Deno.env.get("RESEND_API_KEY") ?? "re_APWMMN9H_PjbBKigYBDSgpnXXpcVdiArZ";
+  Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
