@@ -59,7 +59,7 @@ export function useRemainingFcl(
         if (r.status === "bid_accepted") {
           sold += n;
           if (r.buyer_company?.name) soldBuyers.add(r.buyer_company.name);
-        } else if (["awaiting_supplier", "pending_buyer_review"].includes(r.status)) {
+        } else if (["awaiting_supplier", "pending_buyer_review", "pending_confirmation"].includes(r.status)) {
           inNegotiation += n;
         }
       }
