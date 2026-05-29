@@ -1,5 +1,6 @@
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
+import { FileText } from "lucide-react";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 
@@ -35,6 +36,21 @@ function getKg(p: PriceHistoryProduct, type: "bid" | "counter", round: number): 
   return p[key] as number | undefined;
 }
 
+function fmtUsd(n: number): string {
+  return `$${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(n))}`;
+}
+
+/** Last known $/kg for a product across all rounds (counter > bid). Falls back to asking. */
+function lastKnownPerKg(p: PriceHistoryProduct, maxRound: number): number {
+  for (let r = maxRound; r >= 1; r--) {
+    const c = getKg(p, "counter", r);
+    if (c != null) return c;
+    const b = getKg(p, "bid", r);
+    if (b != null) return b;
+  }
+  return p.askingUsdKg;
+}
+
 /**
  * PriceHistoryTable
  * Multi-column per-product table showing every Bid/Counter price for each round.
@@ -44,39 +60,85 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
   const { t } = useTranslation();
   const { unit } = useWeightUnit();
 
+  // Totals computed in USD (qtyKg * $/kg) — unit-agnostic.
+  const startTotal = products.reduce((s, p) => s + (p.qtyLb / LB_PER_KG) * p.askingUsdKg, 0);
+  const currentTotal = products.reduce(
+    (s, p) => s + (p.qtyLb / LB_PER_KG) * lastKnownPerKg(p, maxRoundShown),
+    0,
+  );
+  const askingTotal = startTotal;
+  // Per-round totals (bid / counter) for the footer row.
+  const roundTotals = Array.from({ length: maxRoundShown }, (_, i) => {
+    const round = i + 1;
+    let bid = 0;
+    let counter = 0;
+    let hasBid = false;
+    let hasCounter = false;
+    for (const p of products) {
+      const qtyKg = p.qtyLb / LB_PER_KG;
+      const b = getKg(p, "bid", round);
+      const c = getKg(p, "counter", round);
+      if (b != null) {
+        bid += qtyKg * b;
+        hasBid = true;
+      }
+      if (c != null) {
+        counter += qtyKg * c;
+        hasCounter = true;
+      }
+    }
+    return { bid, counter, hasBid, hasCounter };
+  });
+
   return (
-    <div className="nd-card">
-      <div className="nd-card-head">
-        <strong>
-          {t("negotiation.history.title", "Price history per product")}
-        </strong>
+    <div className="nd-card nd-price-history">
+      <div className="nd-price-history__head">
+        <div className="nd-price-history__title">
+          <FileText size={16} aria-hidden />
+          <strong>{t("negotiation.history.title", "Price details — full history")}</strong>
+        </div>
+        <div className="nd-price-history__summary">
+          {t("negotiation.history.summary", {
+            defaultValue: "Asking + {{n}} rounds · {{from}} → {{to}}",
+            n: maxRoundShown,
+            from: fmtUsd(startTotal),
+            to: fmtUsd(currentTotal),
+          })}
+        </div>
       </div>
-      <div className="nd-price-scroll-wrap" style={{ overflowX: "auto" }}>
-        <table className="nd-price-table">
+      <div className="nd-price-scroll-wrap">
+        <table className="nd-price-table nd-price-table--grouped">
           <thead>
+            <tr className="nd-price-table__group-row">
+              <th className="nd-sticky-col" colSpan={3} aria-hidden />
+              {Array.from({ length: maxRoundShown }, (_, i) => {
+                const round = i + 1;
+                const isFinal = round === maxRoundShown && maxRoundShown >= 2;
+                return (
+                  <th key={`g-${i}`} colSpan={2} className={`nd-round-group${isFinal ? " is-final" : ""}`}>
+                    {isFinal
+                      ? t("negotiation.history.col.roundFinal", {
+                          defaultValue: "Round {{n}} · Final",
+                          n: round,
+                        })
+                      : t("negotiation.history.col.round", { defaultValue: "Round {{n}}", n: round })}
+                  </th>
+                );
+              })}
+            </tr>
             <tr>
-              <th>{t("negotiation.history.col.product", "Product")}</th>
-              <th>
+              <th className="nd-sticky-col">{t("negotiation.history.col.product", "Product")}</th>
+              <th className="num">
                 {t("negotiation.history.col.qty", {
                   defaultValue: "Qty ({{unit}})",
                   unit: weightLabel(unit),
                 })}
               </th>
-              <th>{t("negotiation.history.col.asking", "Asking")}</th>
+              <th className="num">{t("negotiation.history.col.asking", "Start · Asking")}</th>
               {Array.from({ length: maxRoundShown }, (_, i) => (
                 <Fragment key={`h-${i}`}>
-                  <th className="col-bid">
-                    {t("negotiation.history.col.bidR", {
-                      defaultValue: "Bid R{{n}}",
-                      n: i + 1,
-                    })}
-                  </th>
-                  <th className="col-counter">
-                    {t("negotiation.history.col.counterR", {
-                      defaultValue: "Counter R{{n}}",
-                      n: i + 1,
-                    })}
-                  </th>
+                  <th className="col-bid num">{t("negotiation.history.col.bid", "Bid")}</th>
+                  <th className="col-counter num">{t("negotiation.history.col.counter", "Counter")}</th>
                 </Fragment>
               ))}
             </tr>
@@ -85,12 +147,9 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
             {products.map((p) => {
               const qtyKg = p.qtyLb / LB_PER_KG;
               const agreed = agreedByName?.get(p.name);
-              const rowStyle = agreed
-                ? { background: "rgba(34,197,94,0.06)" }
-                : undefined;
               return (
-                <tr key={p.name} style={rowStyle}>
-                  <td>
+                <tr key={p.name} className={agreed ? "is-agreed" : undefined}>
+                  <td className="nd-sticky-col">
                     <span className="product-name">
                       {agreed && (
                         <span aria-hidden style={{ marginRight: 4 }}>
@@ -116,8 +175,8 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                       </span>
                     )}
                   </td>
-                  <td>{fmtWeight(qtyKg, unit)}</td>
-                  <td>${fmtPrice(p.askingUsdKg, unit)}</td>
+                  <td className="num">{fmtWeight(qtyKg, unit)}</td>
+                  <td className="num">${fmtPrice(p.askingUsdKg, unit)}</td>
                   {Array.from({ length: maxRoundShown }, (_, i) => {
                     const round = i + 1;
                     const bidV = getKg(p, "bid", round);
@@ -126,11 +185,11 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                     const showAgreedInLast = agreed && isCurrentCounter;
                     return (
                       <Fragment key={`v-${i}`}>
-                        <td className="col-bid">
+                        <td className="col-bid num">
                           {bidV != null ? `$${fmtPrice(bidV, unit)}` : "—"}
                         </td>
                         <td
-                          className={`col-counter${
+                          className={`col-counter num${
                             isCurrentCounter ? " col-counter--current" : ""
                           }`}
                           style={
@@ -139,11 +198,13 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                               : undefined
                           }
                         >
-                          {showAgreedInLast
-                            ? `$${fmtPrice(agreed!.price, unit)} 🔒`
-                            : cntV != null
-                              ? `$${fmtPrice(cntV, unit)}`
-                              : "—"}
+                          {showAgreedInLast ? (
+                            `$${fmtPrice(agreed!.price, unit)} 🔒`
+                          ) : cntV != null ? (
+                            <span className="counter-pill">${fmtPrice(cntV, unit)}</span>
+                          ) : (
+                            "—"
+                          )}
                         </td>
                       </Fragment>
                     );
@@ -151,6 +212,29 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                 </tr>
               );
             })}
+            {products.length > 1 && (
+              <tr className="nd-price-table__totals">
+                <td className="nd-sticky-col">
+                  <strong>{t("negotiation.history.totalValue", "Total value")}</strong>
+                </td>
+                <td className="num">
+                  <strong>
+                    {fmtWeight(
+                      products.reduce((s, p) => s + p.qtyLb / LB_PER_KG, 0),
+                      unit,
+                    )}{" "}
+                    {weightLabel(unit)}
+                  </strong>
+                </td>
+                <td className="num"><strong>{fmtUsd(askingTotal)}</strong></td>
+                {roundTotals.map((rt, i) => (
+                  <Fragment key={`tot-${i}`}>
+                    <td className="col-bid num"><strong>{rt.hasBid ? fmtUsd(rt.bid) : "—"}</strong></td>
+                    <td className="col-counter num"><strong>{rt.hasCounter ? fmtUsd(rt.counter) : "—"}</strong></td>
+                  </Fragment>
+                ))}
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
