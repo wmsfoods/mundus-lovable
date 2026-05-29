@@ -276,6 +276,13 @@ export default function SupplierNegotiationDetail() {
         </div>
       )}
 
+      {/* Full-width price history — placed above the negotiation grid */}
+      <PriceHistoryTable
+        products={d.products}
+        maxRoundShown={maxRoundShown}
+        agreedByName={agreedByName}
+      />
+
       <div className="nd-grid">
 
         {/* LEFT */}
