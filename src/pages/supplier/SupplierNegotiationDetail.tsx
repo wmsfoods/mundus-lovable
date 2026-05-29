@@ -276,7 +276,15 @@ export default function SupplierNegotiationDetail() {
         </div>
       )}
 
+      {/* Full-width price history — placed above the negotiation grid */}
+      <PriceHistoryTable
+        products={d.products}
+        maxRoundShown={maxRoundShown}
+        agreedByName={agreedByName}
+      />
+
       <div className="nd-grid">
+
         {/* LEFT */}
         <div>
           {/* Round / bid card */}
@@ -396,11 +404,6 @@ export default function SupplierNegotiationDetail() {
             currentRound={d.round}
             maxRounds={d.maxRounds}
             perspective="supplier"
-          />
-          <PriceHistoryTable
-            products={d.products}
-            maxRoundShown={maxRoundShown}
-            agreedByName={agreedByName}
           />
           {isReal && rawNeg && (
             <NegotiationActivityTab
