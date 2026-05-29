@@ -23,7 +23,7 @@ import { isChatEnabled } from "@/lib/negotiationEngine";
 import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
 import { OtherBidsPanel } from "@/components/negotiation/OtherBidsPanel";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, weightLabel } from "@/lib/units";
+import { fmtWeight, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
@@ -404,6 +404,10 @@ export default function SupplierNegotiationDetail() {
             currentRound={d.round}
             maxRounds={d.maxRounds}
             perspective="supplier"
+            askingTotalUsd={d.products.reduce(
+              (s, p) => s + (p.qtyLb / LB_PER_KG) * p.askingUsdKg,
+              0,
+            )}
           />
           {isReal && rawNeg && (
             <NegotiationActivityTab
