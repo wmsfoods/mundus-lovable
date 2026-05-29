@@ -432,6 +432,6 @@ const doc: DocContent = {
 
 export const CONTENT: Record<Lang, DocContent> = { pt: doc, en: doc, es: doc, zh: doc };
 
-export function PlatformDocDocument() {
-  return <AdminDocView content={CONTENT} />;
+export function PlatformDocDocument({ scrollTarget }: { scrollTarget?: string | null }) {
+  return <AdminDocView content={CONTENT} scrollTarget={scrollTarget} />;
 }
