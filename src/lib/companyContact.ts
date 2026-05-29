@@ -15,7 +15,18 @@ export async function getCompanyPrimaryContact(
 ): Promise<{ email: string; name: string } | null> {
   if (!companyId) return null;
   try {
-    // 1) company_users — masters first
+    // 0) SECURITY DEFINER RPC — works across companies for negotiation
+    //    counterparties (regular RLS would block buyer↔supplier lookups).
+    const { data: rpcRow } = await (supabase as any).rpc(
+      "get_company_primary_contact",
+      { p_company_id: companyId },
+    );
+    const rpc = Array.isArray(rpcRow) ? rpcRow[0] : rpcRow;
+    if (rpc?.email) {
+      return { email: rpc.email, name: rpc.full_name || "" };
+    }
+
+    // 1) company_users — masters first (fallback for same-company callers)
     const { data: cu } = await (supabase as any)
       .from("company_users")
       .select("email, full_name, role, status")
