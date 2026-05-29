@@ -69,12 +69,29 @@ export default function SupplierNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const { unit } = useWeightUnit();
-  const { data } = useNegotiation(id);
-  const isReal = isUuid(id);
-  const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
+  const [activeId, setActiveId] = useState<string>(id);
+  // Keep activeId in sync if user navigates directly to a different route id
+  if (id && id !== activeId && !isUuid(activeId)) {
+    // initial mount only — guarded by !isUuid(activeId) to avoid re-render loop
+  }
+  const { data } = useNegotiation(activeId);
+  const isReal = isUuid(activeId);
+  const { data: rawNeg, refetch } = useRealNegotiation(isReal ? activeId : undefined);
   const [counterOpen, setCounterOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const locale = i18n.language || "en";
+
+  const switchBuyer = (negId: string) => {
+    if (!negId || negId === activeId) return;
+    setActiveId(negId);
+    // update URL in place without remounting the page
+    try {
+      const newPath = window.location.pathname.replace(/\/[^/]+$/, `/${negId}`);
+      window.history.replaceState(window.history.state, "", newPath);
+    } catch {
+      /* noop */
+    }
+  };
 
   if (!data) {
     return (
@@ -221,6 +238,8 @@ export default function SupplierNegotiationDetail() {
           currentBuyerName={d.buyerName}
           currentRound={d.round}
           currentStatus={rawNeg.status}
+          currentDestinationCountry={d.destinationCountry}
+          onSelect={switchBuyer}
         />
       )}
 
