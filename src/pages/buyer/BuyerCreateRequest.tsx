@@ -585,11 +585,11 @@ export default function BuyerCreateRequest() {
         .single();
       setSubmitting(false);
       if (error || !data) return toast.error(error?.message ?? "Failed to create request");
-      toast.success("Request published to suppliers");
+      toast.success(isOnBehalf ? `Request created for ${actingAsCompany?.name ?? "buyer"}` : "Request published to suppliers");
       try {
         const { auditLog } = await import("@/lib/auditLog");
         auditLog({
-          action: "request.submitted",
+          action: isOnBehalf ? "request.created_on_behalf" : "request.submitted",
           category: "request",
           entityType: "buyer_request",
           entityId: (data as any).id,
@@ -597,15 +597,44 @@ export default function BuyerCreateRequest() {
           details: {
             totalKg: (payload as any)?.quantity_kg,
             destination: (payload as any)?.destination_country,
+            ...(isOnBehalf ? {
+              buyer_company_id: company.id,
+              buyer_company_name: actingAsCompany?.name ?? null,
+              created_by_admin: true,
+            } : {}),
           },
         });
       } catch { /* never break flow */ }
-      navigate("/buyer/requests");
+      navigate(isOnBehalf ? "/admin/offer-requests" : "/buyer/requests");
     }
   };
 
   return (
     <div className="bcr">
+      {isOnBehalf && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "#FEF3C7",
+            border: "1px solid #F59E0B",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#92400E",
+          }}
+        >
+          {actingAsCompany?.logo_url ? (
+            <img src={actingAsCompany.logo_url} alt="" style={{ width: 24, height: 24, borderRadius: 4, objectFit: "cover" }} />
+          ) : (
+            <span style={{ fontSize: 16 }}>🛒</span>
+          )}
+          <span>Creating request on behalf of <strong>{actingAsCompany?.name}</strong> (Managed by Mundus)</span>
+        </div>
+      )}
       {cloneFrom && !isEdit && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
