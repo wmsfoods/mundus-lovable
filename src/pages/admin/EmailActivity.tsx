@@ -296,7 +296,7 @@ export default function EmailActivity() {
       return;
     }
     const header = [
-      "Date", "Template", "Recipient", "Subject", "Status",
+      "Date", "Template", "Recipient", "Offer #", "Subject", "Status",
       "Sent at", "Opened at", "Clicked at", "Opens", "Clicks",
       "Bounced at", "Bounce reason", "Error",
     ];
@@ -308,7 +308,7 @@ export default function EmailActivity() {
     const lines = [header.join(",")];
     for (const r of filtered) {
       lines.push([
-        r.created_at, r.template_name ?? "", r.to_email, r.subject, r.status,
+        r.created_at, r.template_name ?? "", r.to_email, offerNoOf(r) ?? "", r.subject, r.status,
         r.sent_at ?? "", r.opened_at ?? "", r.clicked_at ?? "",
         r.open_count ?? 0, r.click_count ?? 0,
         r.bounced_at ?? "", r.bounce_reason ?? "", r.error_message ?? "",
@@ -421,7 +421,7 @@ export default function EmailActivity() {
       </div>
 
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Input placeholder="Search recipient or subject..." value={search} onChange={(e) => setSearch(e.target.value)}
+        <Input placeholder="Search recipient, subject or offer #..." value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ maxWidth: 260 }} />
         <select value={templateFilter} onChange={(e) => setTemplateFilter(e.target.value)}
           style={{ padding: "6px 10px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13 }}>
