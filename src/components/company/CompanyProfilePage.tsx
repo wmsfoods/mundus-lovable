@@ -809,7 +809,7 @@ function FieldLabel({ label, children }: { label: string; children: ReactNode })
 
 function AdminToggle({
   label, description, checked, onChange,
-}: { label: string; description: string; checked: boolean; onChange: (v: boolean) => void | Promise<void> }) {
+}: { label: string; description: string; checked: boolean; onChange: (v: boolean) => unknown | Promise<unknown> }) {
   const [busy, setBusy] = useState(false);
   return (
     <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, background: "#FDF2F8", borderRadius: 12, border: "1px solid #F9D0E0" }}>
