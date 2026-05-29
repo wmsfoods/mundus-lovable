@@ -73,9 +73,6 @@ export default function AdminCompanyDetail({ mode = "edit" }: Props) {
 }
 
 function AdminCompanyDetailUnified() {
-  // dynamic params via hook
-  // eslint-disable-next-line @typescript-eslint/no-var-requires
-  const { useParams } = require("react-router-dom") as typeof import("react-router-dom");
   const { id } = useParams<{ id: string }>();
   return (
     <div className="adm-body">
