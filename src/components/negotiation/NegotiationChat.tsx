@@ -232,6 +232,7 @@ export function NegotiationChat({
       const items = detected.map((d) => {
         const oi = offerItems.find((x) => x.id === d.itemId);
         return {
+          offer_item_id: oi?.id,
           name: d.itemName,
           quantity_kg: Number(oi?.amount ?? 0),
           price_per_kg: d.price,
@@ -255,28 +256,68 @@ export function NegotiationChat({
     }
   }
 
-  async function respondToProposal(msg: Message, action: "accepted" | "declined" | "countered") {
+  async function sendProposalFromComposer(items: ProposalItem[], note: string) {
+    if (sending) return;
+    setSending(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id ?? null;
+      if (!userId) return;
+      const total = items.reduce((s, it) => s + Number(it.price_per_kg) * Number(it.quantity_kg), 0);
+      await supabase.from("negotiation_messages").insert({
+        negotiation_id: negotiationId,
+        sender_user_id: userId,
+        sender_side: perspective,
+        message_type: "proposal",
+        content: note || "Formal proposal",
+        structured_data: { items, total_usd: total, note } as never,
+        proposal_status: "pending",
+      });
+      setComposerOpen(false);
+      setComposerSeed(null);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function respondToProposal(msg: Message, action: "accept" | "decline" | "counter" | "cancel") {
     if (actingOn) return;
     setActingOn(msg.id);
     try {
-      await supabase
-        .from("negotiation_messages")
-        .update({ proposal_status: action })
-        .eq("id", msg.id);
-      const userId = currentUserId;
-      if (userId) {
-        const label =
-          action === "accepted" ? "✓ Proposal accepted"
-          : action === "declined" ? "✗ Proposal declined"
-          : "↺ Counter requested";
-        await supabase.from("negotiation_messages").insert({
-          negotiation_id: negotiationId,
-          sender_user_id: userId,
-          sender_side: perspective,
-          message_type: "system",
-          content: label,
-        });
+      if (action === "accept") {
+        const { error } = await supabase.rpc("accept_chat_proposal", { p_message_id: msg.id });
+        if (error) { alert(error.message); return; }
+      } else if (action === "cancel") {
+        const { error } = await supabase.rpc("cancel_chat_proposal", { p_message_id: msg.id });
+        if (error) { alert(error.message); return; }
+      } else if (action === "decline") {
+        await supabase
+          .from("negotiation_messages")
+          .update({ proposal_status: "declined" })
+          .eq("id", msg.id);
+      } else if (action === "counter") {
+        // Pre-fill composer with the proposal's items, then open it.
+        const seed = (msg.structured_data?.items ?? []).map((it) => ({
+          offer_item_id: it.offer_item_id,
+          name: it.name,
+          quantity_kg: Number(it.quantity_kg) || 0,
+          price_per_kg: Number(it.price_per_kg) || 0,
+        }));
+        setComposerSeed(seed);
+        setComposerOpen(true);
       }
+    } finally {
+      setActingOn(null);
+    }
+  }
+
+  async function confirmSale(msg: Message) {
+    if (actingOn) return;
+    setActingOn(msg.id);
+    try {
+      const { error } = await supabase.rpc("confirm_chat_proposal", { p_message_id: msg.id });
+      if (error) { alert(error.message); return; }
+      setConfirmFor(null);
     } finally {
       setActingOn(null);
     }
