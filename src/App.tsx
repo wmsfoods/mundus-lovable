@@ -50,6 +50,7 @@ import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
+import AdminDocs from "./pages/admin/AdminDocs.tsx";
 import AdminImport from "./pages/admin/AdminImport.tsx";
 import EmailPreview from "./pages/admin/EmailPreview.tsx";
 import EmailQueue from "./pages/admin/EmailQueue.tsx";
@@ -259,6 +260,7 @@ const App = () => (
               <Route path="settings/team" element={<AdminTeam />} />
               <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
+              <Route path="docs" element={<AdminDocs />} />
               <Route path="import" element={<AdminImport />} />
               <Route path="migration" element={<AdminImport />} />
               <Route path="user-requests" element={<AdminUserRequests />} />

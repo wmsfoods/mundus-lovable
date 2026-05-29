@@ -5,18 +5,21 @@ import { BrandbookDocument } from "./BrandbookDocument";
 import { DiscoveryScriptDocument } from "./DiscoveryScriptDocument";
 import { BuyerTrainingDocument } from "./BuyerTrainingDocument";
 import { SupplierTrainingDocument } from "./SupplierTrainingDocument";
+import { PlatformDocDocument } from "./PlatformDocDocument";
 
-type SubTab = "admin" | "buyers" | "suppliers";
+type SubTab = "admin" | "buyers" | "suppliers" | "platform";
 
 const TABS: Array<{ k: SubTab; l: string }> = [
   { k: "admin", l: "Admin Docs" },
   { k: "buyers", l: "Buyers" },
   { k: "suppliers", l: "Suppliers" },
+  { k: "platform", l: "Plataforma" },
 ];
 
 export function DocsTab() {
   const [sub, setSub] = useState<SubTab>("buyers");
   const [adminDoc, setAdminDoc] = useState<"brandbook" | "discovery" | "buyer-training" | "supplier-training">("brandbook");
+  const [platformDoc, setPlatformDoc] = useState<"platform">("platform");
   return (
     <div>
       <div style={{ display: "flex", gap: 6, marginBottom: 16 }}>
@@ -79,6 +82,35 @@ export function DocsTab() {
       )}
       {sub === "buyers" && <BuyerGuideDocument />}
       {sub === "suppliers" && <SupplierGuideDocument />}
+      {sub === "platform" && (
+        <div>
+          <div style={{ display: "flex", gap: 6, marginBottom: 16, flexWrap: "wrap" }}>
+            {[
+              { k: "platform", l: "📐 Documentação da Plataforma" },
+            ].map((d) => (
+              <button
+                key={d.k}
+                type="button"
+                onClick={() => setPlatformDoc(d.k as "platform")}
+                style={{
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  border: "1px solid",
+                  borderColor: platformDoc === d.k ? "#9B2251" : "#e5e7eb",
+                  background: platformDoc === d.k ? "#fdf2f7" : "#fff",
+                  color: platformDoc === d.k ? "#9B2251" : "#374151",
+                  fontSize: 12,
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                {d.l}
+              </button>
+            ))}
+          </div>
+          {platformDoc === "platform" && <PlatformDocDocument />}
+        </div>
+      )}
     </div>
   );
 }
