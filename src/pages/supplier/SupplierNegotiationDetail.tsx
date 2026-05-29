@@ -375,7 +375,7 @@ export default function SupplierNegotiationDetail() {
                     {t("supplier.negotiations.detail.actions.sendCounter")}
                   </button>
                 )}
-                <button type="button" className="btn-accept" onClick={handleAccept} disabled={isReal && realExpired}>
+                <button type="button" className="btn-accept" onClick={handleAccept} disabled={isReal && (realExpired || realPending || realAccepted)}>
                   <CheckIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
                   {t("supplier.negotiations.detail.actions.acceptBid")}
                 </button>
