@@ -196,19 +196,23 @@ export default function SupplierCreateOffer() {
         const { data: auth } = await supabase.auth.getUser();
         const uid = auth.user?.id;
         if (!uid) return;
-        // Admin check — either profiles.role or users.is_mundus_admin
+        // Admin check — use SECURITY DEFINER RPC (single source of truth)
         let admin = false;
         try {
-          const { data: u } = await (supabase as any)
-            .from("users").select("is_mundus_admin").eq("id", uid).maybeSingle();
-          admin = !!(u as any)?.is_mundus_admin;
+          const { data: isAdmin } = await (supabase as any).rpc("is_mundus_admin");
+          admin = !!isAdmin;
         } catch { /* noop */ }
         if (!admin) {
           try {
-            const { data: p } = await (supabase as any)
-              .from("profiles").select("role").eq("id", uid).maybeSingle();
-            const r = (p as any)?.role;
-            admin = r === "mundus_admin" || r === "admin";
+            const { data: cu } = await (supabase as any)
+              .from("company_users")
+              .select("role, roles:role_id(name)")
+              .eq("user_id", uid)
+              .eq("status", "active");
+            admin = (cu || []).some((r: any) =>
+              r?.role === "mundus_admin" ||
+              ["mundus_admin","mundus_ops","mundus_sales","mundus_support"].includes(r?.roles?.name)
+            );
           } catch { /* noop */ }
         }
         if (cancelled) return;
