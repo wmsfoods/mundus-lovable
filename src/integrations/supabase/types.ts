@@ -825,6 +825,7 @@ export type Database = {
           name: string | null
           notes: string | null
           phone: string | null
+          plant_numbers: string[]
           state: string | null
           updated_at: string
           zip_code: string | null
@@ -841,6 +842,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           phone?: string | null
+          plant_numbers?: string[]
           state?: string | null
           updated_at?: string
           zip_code?: string | null
@@ -857,6 +859,7 @@ export type Database = {
           name?: string | null
           notes?: string | null
           phone?: string | null
+          plant_numbers?: string[]
           state?: string | null
           updated_at?: string
           zip_code?: string | null
