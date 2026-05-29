@@ -1,0 +1,332 @@
+/* ============================================================
+   Mundus · Negotiations (mobile-only redesign)
+   Applied for Supplier + Buyer mobile lists.
+   Desktop is untouched.
+   ============================================================ */
+
+@media (max-width: 768px) {
+
+  /* ---------- Page header (Negotiations / counts / bell) ---------- */
+  .mnc-page-head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 4px 0 14px;
+  }
+  .mnc-page-text { min-width: 0; }
+  .mnc-page-title {
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0 0 4px;
+    color: var(--fg);
+    letter-spacing: -0.01em;
+  }
+  .mnc-page-sub {
+    font-size: 13px;
+    color: var(--fg-muted);
+    margin: 0;
+  }
+  .mnc-page-right {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* ---------- Tabs (Needs you / Waiting / Closed) ---------- */
+  .mnc-tabs {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 6px;
+    background: #f3f4f6;
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .mnc-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 6px;
+    border-radius: 8px;
+    background: transparent;
+    border: 1.5px solid transparent;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--fg);
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .mnc-tab.is-active {
+    background: #fff;
+    border-color: var(--p800);
+    color: var(--fg);
+  }
+  .mnc-tab-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 18px;
+    padding: 0 6px;
+    border-radius: 9px;
+    background: #e5e7eb;
+    color: #4b5563;
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .mnc-tab.is-active .mnc-tab-count {
+    background: var(--p800);
+    color: #fff;
+  }
+
+  /* ---------- Group (parent offer) ---------- */
+  .mnc-group {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  .mnc-group-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid #f1f1f4;
+  }
+  .mnc-group-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    background: rgba(182, 71, 105, 0.08);
+    color: var(--p800);
+    flex-shrink: 0;
+  }
+  .mnc-group-text { min-width: 0; flex: 1; }
+  .mnc-group-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1.3;
+  }
+  .mnc-group-sub {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--fg-muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    align-items: center;
+  }
+  .mnc-group-ref { font-family: var(--font-mono, ui-monospace, monospace); }
+  .mnc-group-need {
+    color: var(--p800);
+    font-weight: 600;
+  }
+  .mnc-group-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  /* ---------- Single bid card ---------- */
+  .mnc-card {
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.05s;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .mnc-card:active { transform: scale(0.995); }
+  .mnc-card:focus-visible {
+    outline: none;
+    border-color: var(--p800);
+    box-shadow: 0 0 0 3px rgba(182, 71, 105, 0.18);
+  }
+
+  /* Top status bar */
+  .mnc-topbar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: transparent;
+  }
+  .mnc-topbar--action   { background: #f59e0b; }
+  .mnc-topbar--awaiting { background: #3b82f6; }
+  .mnc-topbar--final    { background: var(--p800); }
+  .mnc-topbar--accepted { background: #22c55e; }
+  .mnc-topbar--rejected { background: #d1d5db; }
+  .mnc-topbar--expired  { background: #d1d5db; }
+
+  .mnc-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 2px;
+  }
+  .mnc-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    flex-shrink: 0;
+  }
+  .mnc-avatar--slate  { background: #64748b; }
+  .mnc-avatar--indigo { background: #6366f1; }
+  .mnc-avatar--blue   { background: #3b82f6; }
+  .mnc-avatar--green  { background: #16a34a; }
+  .mnc-avatar--rose   { background: var(--p800); }
+  .mnc-avatar--amber  { background: #d97706; }
+
+  .mnc-head-text { min-width: 0; flex: 1; }
+  .mnc-party {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .mnc-party-name {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1.25;
+  }
+  .mnc-flag {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: #f1f1f4;
+    color: var(--fg-muted);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+  }
+  .mnc-subtitle {
+    margin-top: 2px;
+    font-size: 12px;
+    color: var(--fg-muted);
+    line-height: 1.3;
+  }
+
+  .mnc-status {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 999px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .mnc-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    display: inline-block;
+  }
+  .mnc-status-dot--blue  { background: #2563eb; }
+  .mnc-status-dot--green { background: #16a34a; }
+
+  .mnc-status--action    { background: #fef3c7; color: #92400e; }
+  .mnc-status--awaiting  { background: #dbeafe; color: #1e3a8a; }
+  .mnc-status--final     { background: rgba(182,71,105,0.12); color: var(--p800); }
+  .mnc-status--accepted  { background: #d1fae5; color: #065f46; }
+  .mnc-status--rejected  { background: #fee2e2; color: #991b1b; }
+  .mnc-status--expired   { background: #f3f4f6; color: #6b7280; }
+
+  /* 3-stat row */
+  .mnc-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    margin-top: 12px;
+    background: #f1f1f4;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+  .mnc-stat {
+    padding: 9px 10px;
+    background: #f7f7f8;
+    min-width: 0;
+  }
+  .mnc-stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--fg-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 2px;
+  }
+  .mnc-stat-value {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--fg);
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .mnc-stat--bid       { color: #2563eb; }
+  .mnc-stat--counter   { color: var(--p800); }
+  .mnc-stat--gap-pos   { color: #15803d; }
+  .mnc-stat--gap-neg   { color: #c0392b; }
+
+  /* Footer (round dots + date/timer) */
+  .mnc-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 11px;
+    font-size: 12px;
+    color: var(--fg-muted);
+    gap: 10px;
+  }
+  .mnc-round {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .mnc-dots { display: inline-flex; gap: 4px; }
+  .mnc-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #e5e7eb;
+  }
+  .mnc-dot.is-on { background: var(--p800); }
+  .mnc-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--fg-muted);
+    white-space: nowrap;
+  }
+
+  /* Hide legacy ListCard list when the new mobile list is in use */
+  .mnc-active ~ .lc-list,
+  .mnc-active + .lc-list {
+    display: none !important;
+  }
+}
