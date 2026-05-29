@@ -6,6 +6,7 @@ import { Check, Lock, Eye, Plus, Search as SearchIcon, Clock, DollarSign, Megaph
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
+import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import {
   containerCapacityKg,
@@ -41,14 +42,6 @@ const INCOTERMS = [
   { id: "EXW", name: "EXW - Ex Works" },
   { id: "DDP", name: "DDP - Delivered Duty Paid" },
   { id: "DAP", name: "DAP - Delivered at Place" },
-];
-
-const PAY_TERMS = [
-  "30% Advance, Balance TT - Against finalized doc copies",
-  "50% Advance, 50% Against BL copy",
-  "100% TT in advance",
-  "L/C at sight",
-  "L/C 30 days",
 ];
 
 const MOCK_CUSTOMERS = [
@@ -174,7 +167,11 @@ export default function SupplierCreateAuction() {
 
   /* Certs + payment */
   const [certifications, setCertifications] = useState<string[]>([]);
-  const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
+  const { terms: PAY_TERMS } = usePaymentTerms({ scope: "international" });
+  const [payTerm, setPayTerm] = useState<string>("");
+  useEffect(() => {
+    if (!payTerm && PAY_TERMS.length > 0) setPayTerm(PAY_TERMS[0]);
+  }, [PAY_TERMS, payTerm]);
 
   /* Visibility */
   const [visibility, setVisibility] = useState<"marketplace" | "invite">("marketplace");

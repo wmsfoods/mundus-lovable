@@ -1,38 +1,60 @@
-## Problema
+## Goal
+Replace the hardcoded `PAY_TERMS` / `PAYMENT_TERMS` arrays scattered across the app with a single source of truth in the database, and add support for "USA Domestic" terms that stay hidden until we introduce USA-Domestic deals.
 
-O `CompanyProfilePage` unificado não tem onde subir/trocar o **logo da empresa**. A funcionalidade existia só no antigo `AdminCompanyDetail` e ficou de fora ao migrar para o layout unificado — então hoje admin (em `/admin/companies/:id`), buyer e supplier (em `/(buyer|supplier)/company`) não conseguem mais alterar o logo.
+## 1. Database
 
-## Solução
+New table `public.payment_terms`:
+- `id uuid pk`
+- `label text unique` — e.g. "30% Advance, Balance TT"
+- `scope text not null default 'international'` — `'international'` or `'usa_domestic'`
+- `sort_order int`
+- `is_active boolean default true`
+- `created_at`, `updated_at`
 
-Trazer o mesmo padrão do `AdminCompanyDetail.uploadLogo` para dentro do `CompanyProfilePage`, exibido no card de identidade da empresa (onde já mostramos nome + tax id), funcionando para todas as 3 visões.
+GRANTs: `SELECT` to `anon` + `authenticated` (it's a public catalog like `cuts` / `ports`); full to `service_role`. RLS enabled; SELECT policy `true`; write restricted to `is_mundus_admin()`.
 
-### Comportamento
+Seed rows (in this order):
 
-- Logo redondo (96px) no topo do card de identidade, com clique para abrir file picker.
-- Placeholder com iniciais da empresa quando não houver `logo_url`.
-- Botão "Trocar logo" / overlay com ícone de câmera no hover.
-- Upload via `supabase.storage.from("avatars")` com processamento opcional por `@/lib/logoProcessor` (remove fundo, recorta para 400px quadrado, PNG).
-- Valida: precisa ser imagem, máx 5MB.
-- Após upload bem-sucedido: persiste `logo_url` em `companies` via `update().eq("id", companyId)` e atualiza estado local.
-- Estado `uploadingLogo` desabilita o botão e mostra spinner.
+**International (`scope='international'`):**
+1. 100% TT
+2. 100% Advance
+3. 100% LC at Sight
+4. 100% CAD
+5. 10% Advance, Balance TT
+6. 20% Advance, Balance TT
+7. 25% Advance, Balance TT
+8. 30% Advance, Balance TT
+9. 40% Advance, Balance TT
+10. 50% Advance, Balance TT
+11. 60% Advance, Balance TT
 
-### Permissões
+**USA Domestic (`scope='usa_domestic'`):**
+- 10/20/30/40/50% Advance, Balance 7 Days TIS
+- 10/20/30/40/50% Advance, Balance 14 Days TIS
+- 7 Net, 14 Net, 15 Net, 21 Net, 30 Net
+- Due on Receipt
 
-- Admin Mundus (`isAdminView`): sempre pode trocar.
-- Buyer/Supplier: pode trocar se for master da empresa (já é a regra existente em outros campos do `CompanyProfilePage` via RLS); botão sempre visível, e o backend retorna erro se sem permissão (toast trata).
+## 2. Frontend
 
-### Arquivos
+New hook `src/hooks/usePaymentTerms.ts`:
+```ts
+usePaymentTerms({ scope?: 'international' | 'usa_domestic' | 'all' })
+```
+Returns `{ terms: string[], loading }`. Defaults to `'international'` (since USA Domestic deals don't exist yet). Cached at module scope.
 
-- `src/components/company/CompanyProfilePage.tsx`
-  - Adiciona `logoInputRef`, `uploadingLogo`, função `uploadLogo` (cópia do padrão admin, usando `companyId` como folder).
-  - Renderiza bloco de logo dentro de `.cprofile-namecard` (ou logo acima dele), substituindo só a parte visual atual.
-- `src/styles/mundus-company.css` (ou CSS já existente do componente): pequenos ajustes para o avatar circular + overlay de hover.
+Replace hardcoded lists in:
+- `src/pages/supplier/SupplierCreateOffer.tsx` (remove `PAY_TERMS`)
+- `src/pages/supplier/SupplierCreateAuction.tsx` (remove `PAY_TERMS`)
+- `src/components/company/CompanyProfilePage.tsx` (remove `PAYMENT_TERMS`)
+- `src/components/company/TradePreferencesSection.tsx` (remove `PAYMENT_TERMS`)
 
-### Fora de escopo
+All four call sites pass `scope: 'international'` for now. When the USA Domestic flow lands, those screens can switch to `'usa_domestic'` or `'all'`.
 
-- Não mexer no fluxo "new company" do `AdminCompanyDetailLegacy` (ele já tem o upload próprio).
-- Não alterar policies — assumimos que as RLS de `companies` e do bucket `avatars` já estão corretas (eram usadas pelo admin antes).
+## 3. Non-goals (explicitly out)
+- No UI to manage the catalog yet (admin-managed via SQL/seed for now).
+- No changes to offers/orders schema — `payment_terms` stays a free-text label so existing data keeps working.
+- No "USA Domestic" toggle in Create Offer (we'll add when the broader feature lands).
 
-## Confirmação
-
-Posso seguir nesse formato (logo circular no topo do card de identidade, clicável, com auto-process via `logoProcessor`)? Se quiser, posso também adicionar um botão "Remover logo" — me diga se sim.
+## Technical notes
+- Catalog table mirrors the existing `ports` / `countries` pattern.
+- Hook fetches once and memoizes; falls back to a built-in list if the query fails so dropdowns never go empty.

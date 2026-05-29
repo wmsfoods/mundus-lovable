@@ -23,6 +23,7 @@ import { useNavigate } from "react-router-dom";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 import { countryFlag } from "@/lib/countryFlags";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
@@ -67,15 +68,6 @@ type CompanyRow = {
 
 const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine"];
 const INCOTERMS = ["FOB", "CFR", "CIF", "EXW", "DAP", "DDP"];
-const PAYMENT_TERMS = [
-  "30% Advance, Balance TT",
-  "100% TT in advance",
-  "Letter of Credit (L/C) at sight",
-  "Letter of Credit (L/C) 30 days",
-  "CAD - Cash Against Documents",
-  "Net 30",
-  "Net 60",
-];
 
 function newLocalId() {
   return `new-${Math.random().toString(36).slice(2, 10)}`;
@@ -93,6 +85,7 @@ export default function CompanyProfilePage({
   const { company: cur } = useCurrentCompany();
   const navigate = useNavigate();
   const companyId = companyIdOverride ?? cur?.id ?? null;
+  const { terms: PAYMENT_TERMS } = usePaymentTerms({ scope: "international" });
   // In admin view we resolve the profile-role from the company itself.
   const [adminFlags, setAdminFlags] = useState<{
     is_verified: boolean;
