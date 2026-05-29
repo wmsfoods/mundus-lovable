@@ -183,6 +183,26 @@ export function CounterOfferModal({
   const [bulkMode, setBulkMode] = useState<DeltaUnit>("amount");
   const [bulkValue, setBulkValue] = useState<string>("");
 
+  // Buyer-only: allow adjusting FCL count during counter-rounds, bounded by
+  // remaining availability on the parent offer (plus what's already reserved
+  // by this very negotiation).
+  const currentFcl = Math.max(1, Number(negotiation.fcl_count ?? 1));
+  const totalOfferFcl = Math.max(1, Number(negotiation.offer?.total_fcl ?? 1));
+  const fclAlloc = useRemainingFcl(negotiation.offer?.id ?? null, totalOfferFcl);
+  const maxSelectableFcl =
+    perspective === "buyer"
+      ? Math.max(currentFcl, fclAlloc.available + currentFcl)
+      : currentFcl;
+  const [fclCount, setFclCount] = useState<number>(currentFcl);
+  useEffect(() => {
+    if (!open) return;
+    setFclCount(currentFcl);
+  }, [open, currentFcl]);
+  useEffect(() => {
+    if (fclCount > maxSelectableFcl) setFclCount(maxSelectableFcl);
+    if (fclCount < 1) setFclCount(1);
+  }, [fclCount, maxSelectableFcl]);
+
   // Toggleable shortcuts ("Accept all", "Meet in middle") — clicking again reverts.
   type Shortcut = "accept_all" | "meet_middle";
   const [activeShortcut, setActiveShortcut] = useState<Shortcut | null>(null);
