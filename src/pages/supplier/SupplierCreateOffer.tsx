@@ -84,16 +84,6 @@ const INCOTERMS: Incoterm[] = [
   { id: "DAP", name: "DAP - Delivered at Place", extra: "city" },
 ];
 
-const PAY_TERMS = [
-  "30% Advance, Balance TT - Against finalized doc copies",
-  "50% Advance, 50% Against BL copy",
-  "100% TT in advance",
-  "L/C at sight",
-  "L/C 30 days",
-  "10% Advance, Balance TT - Against finalized doc copies",
-  "Open account 30 days",
-];
-
 const MOCK_CUSTOMERS = [
   { id: "c1", name: "Delta Imports", country: "China" },
   { id: "c2", name: "Gamma Buyers", country: "Argentina" },
@@ -380,7 +370,11 @@ export default function SupplierCreateOffer() {
   const [uniformFreight, setUniformFreight] = useState(false);
   const [uniformFreightValue, setUniformFreightValue] = useState("");
 
-  const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
+  const { terms: PAY_TERMS } = usePaymentTerms({ scope: "international" });
+  const [payTerm, setPayTerm] = useState<string>("");
+  useEffect(() => {
+    if (!payTerm && PAY_TERMS.length > 0) setPayTerm(PAY_TERMS[0]);
+  }, [PAY_TERMS, payTerm]);
   const [certifications, setCertifications] = useState<string[]>([]);
   // Whether buyers can edit per-item quantities in chat proposals (total must still match).
   const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
@@ -797,7 +791,7 @@ export default function SupplierCreateOffer() {
     if (src.condition === "Frozen" || src.condition === "Chilled") {
       setTemp(src.condition);
     }
-    if (src.paymentTerms && (PAY_TERMS as readonly string[]).includes(src.paymentTerms)) {
+    if (src.paymentTerms) {
       setPayTerm(src.paymentTerms);
     }
     const certs: string[] = [];
