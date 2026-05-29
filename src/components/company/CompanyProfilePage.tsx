@@ -779,6 +779,22 @@ function LocationCard({
             onChange={(e) => onChange({ est_number: e.target.value })}
             placeholder="e.g. 2872"
           />
+          <label className="cprofile-est-label" style={{ marginTop: 12 }}>
+            Additional Plant Numbers (comma-separated)
+          </label>
+          <input
+            className="cprofile-est-input"
+            value={(loc.plant_numbers || []).join(", ")}
+            onChange={(e) =>
+              onChange({
+                plant_numbers: e.target.value
+                  .split(",")
+                  .map((s) => s.trim())
+                  .filter(Boolean),
+              })
+            }
+            placeholder="e.g. 1234, 5678"
+          />
         </div>
       )}
     </div>
