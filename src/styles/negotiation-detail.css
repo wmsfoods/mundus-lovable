@@ -412,6 +412,79 @@
   margin-top: 2px;
 }
 
+/* ── Deal Progression — refined ── */
+.dp-asking {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: #f3f4f6;
+  border: 1px dashed #d1d5db;
+  border-radius: 10px;
+}
+.dp-asking__label { font-size: 13px; color: #6b7280; }
+.dp-asking__value {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+  font-variant-numeric: tabular-nums;
+}
+.dp-round {
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+.dp-round.is-current {
+  border-color: #8B2252;
+  box-shadow: 0 0 0 3px rgba(139, 34, 82, 0.06);
+}
+.dp-round__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.dp-round__title { font-size: 13px; color: #111827; }
+.dp-gap-pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: #f3f4f6;
+  color: #6b7280;
+  font-size: 11px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+.dp-round__row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  align-items: center;
+}
+.dp-round__col { min-width: 0; }
+.dp-round__label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+.dp-round__value {
+  font-size: 18px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.dp-round__value--bid { color: #1d4ed8; }
+.dp-round__value--counter { color: #8B2252; }
+.dp-round__arrow {
+  color: #9ca3af;
+  font-size: 16px;
+}
+
 /* ── Price details — full history (full-width redesign) ── */
 .nd-price-history { padding: 0; overflow: hidden; }
 .nd-price-history__head {

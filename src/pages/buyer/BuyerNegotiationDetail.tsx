@@ -21,7 +21,7 @@ import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiati
 import { NegotiationChat } from "@/components/negotiation/NegotiationChat";
 import { isChatEnabled } from "@/lib/negotiationEngine";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, weightLabel } from "@/lib/units";
+import { fmtWeight, weightLabel, LB_PER_KG } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
@@ -414,6 +414,10 @@ export default function BuyerNegotiationDetail() {
             currentRound={d.round}
             maxRounds={d.maxRounds}
             perspective="buyer"
+            askingTotalUsd={d.products.reduce(
+              (s, p) => s + (p.qtyLb / LB_PER_KG) * p.askingUsdKg,
+              0,
+            )}
           />
           {isReal && rawNeg && (
             <NegotiationActivityTab
