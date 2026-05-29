@@ -51,7 +51,6 @@ export function OtherBidsPanel({
         .select(
           `id, status, current_round, buyer_company_id,
            buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
-           offer:offers!negotiations_offer_id_fkey ( destination_country, destination_country_code ),
            rounds:round_proposals!round_proposals_negotiation_id_fkey (
              id, round,
              cut_rounds ( price_per_kg, quantity_kg )
@@ -82,7 +81,6 @@ export function OtherBidsPanel({
           status: String(n.status ?? ""),
           currentRound: Number(n.current_round ?? Math.ceil((last?.round ?? 1) / 2)),
           latestBidTotal: total,
-          destinationCountry: n.offer?.destination_country_code ?? n.offer?.destination_country ?? undefined,
           hasMessages: Array.isArray(n.messages) && n.messages.length > 0,
         });
       }
