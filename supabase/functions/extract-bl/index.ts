@@ -1,4 +1,5 @@
 // Bill of Lading extraction via Lovable AI Gateway (Gemini supports PDF + images)
+import { requireUser } from "../_shared/auth.ts";
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -42,6 +43,11 @@ Extract structured shipment data accurately. Use null for any field not present.
 - gross_weight_kg and number_of_packages must be numeric (no commas, no units)`;
 
 Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const auth = await requireUser(req);
+  if (!auth.ok) {
+    return new Response(auth.response.body, { status: auth.response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+  }
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
