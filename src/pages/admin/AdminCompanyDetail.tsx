@@ -59,7 +59,29 @@ function cutKey(protein: Protein, cut: string) {
   return `${protein}: ${cut}`;
 }
 
+import CompanyProfilePage from "@/components/company/CompanyProfilePage";
+
 export default function AdminCompanyDetail({ mode = "edit" }: Props) {
+  const params = (typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null);
+  // For existing companies, render the unified CompanyProfilePage in admin mode.
+  // The "new" flow keeps the legacy creation form below.
+  if (mode !== "new") {
+    // Pull :id from path because hooks are below; use useParams via inline import.
+    return <AdminCompanyDetailUnified />;
+  }
+  return <AdminCompanyDetailLegacy mode={mode} />;
+}
+
+function AdminCompanyDetailUnified() {
+  const { id } = useParams<{ id: string }>();
+  return (
+    <div className="adm-body">
+      <CompanyProfilePage role="admin" companyIdOverride={id} isAdminView />
+    </div>
+  );
+}
+
+function AdminCompanyDetailLegacy({ mode = "edit" }: Props) {
   const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();

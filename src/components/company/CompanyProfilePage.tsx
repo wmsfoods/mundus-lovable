@@ -12,15 +12,22 @@ import {
   X,
   Copy,
   Star,
+  Users as UsersIcon,
+  Shield,
+  Trash2,
+  CheckCircle2,
 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { countryFlag } from "@/lib/countryFlags";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
+import { auditLog } from "@/lib/auditLog";
 import "@/styles/mundus-address.css";
 
-type Role = "buyer" | "supplier";
+type Role = "buyer" | "supplier" | "admin";
 
 type LocationRow = {
   id: string;
@@ -72,9 +79,26 @@ function newLocalId() {
   return `new-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-export default function CompanyProfilePage({ role }: { role: Role }) {
+export default function CompanyProfilePage({
+  role,
+  companyIdOverride,
+  isAdminView = false,
+}: {
+  role: Role;
+  companyIdOverride?: string | null;
+  isAdminView?: boolean;
+}) {
   const { company: cur } = useCurrentCompany();
-  const companyId = cur?.id ?? null;
+  const navigate = useNavigate();
+  const companyId = companyIdOverride ?? cur?.id ?? null;
+  // In admin view we resolve the profile-role from the company itself.
+  const [adminFlags, setAdminFlags] = useState<{
+    is_verified: boolean;
+    status: string;
+    mundus_managed_supplier: boolean;
+    mundus_managed_buyer: boolean;
+    logo_url: string | null;
+  }>({ is_verified: false, status: "active", mundus_managed_supplier: false, mundus_managed_buyer: false, logo_url: null });
 
   const [company, setCompany] = useState<CompanyRow | null>(null);
   const [locations, setLocations] = useState<LocationRow[]>([]);
@@ -169,6 +193,13 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
           ports_of_shipment: hq.ports_of_shipment || [],
           is_buyer: hq.is_buyer,
           is_supplier: hq.is_supplier,
+        });
+        setAdminFlags({
+          is_verified: !!(hq as any).is_verified,
+          status: (hq as any).status ?? "active",
+          mundus_managed_supplier: !!(hq as any).mundus_managed_supplier,
+          mundus_managed_buyer: !!(hq as any).mundus_managed_buyer,
+          logo_url: (hq as any).logo_url ?? null,
         });
         const hqLoc: LocationRow = {
           id: hq.id,
@@ -396,14 +427,28 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
 
   const visibleLocations = locations.filter((l) => !l._deleted);
 
+  // Pick the most relevant profile-role for the "Buyer/Supplier profile" cards in admin view.
+  const effectiveRole: Exclude<Role, "admin"> =
+    role !== "admin"
+      ? role
+      : company.is_supplier
+        ? "supplier"
+        : "buyer";
+  const showBuyerCard = role === "admin" ? !!company.is_buyer : role === "buyer";
+  const showSupplierCard = role === "admin" ? !!company.is_supplier : role === "supplier";
+  const homePath = role === "admin" ? "/admin" : `/${role}`;
+  const breadcrumbs = role === "admin"
+    ? [{ label: "Admin", to: "/admin" }, { label: "Companies", to: "/admin/companies" }, { label: company.name || "Company" }]
+    : [{ label: "Home", to: homePath }, { label: "My Company" }];
+
   return (
     <div className="cprofile-page">
-      <Crumbs items={[{ label: "Home", to: `/${role}` }, { label: "My Company" }]} />
+      <Crumbs items={breadcrumbs} />
 
       {/* Header */}
       <div className="cprofile-header-bar">
         <div>
-          <h1 className="cprofile-title">My Company</h1>
+          <h1 className="cprofile-title">{role === "admin" ? company.name || "Company" : "My Company"}</h1>
           <p className="cprofile-sub">
             Update your company details, locations and plant numbers.
           </p>
@@ -426,7 +471,12 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
             onChange={(e) => patchCompany({ name: e.target.value })}
             placeholder="Company name"
           />
-          <span className={`cprofile-role-pill ${role}`}>{role.toUpperCase()}</span>
+          {company.is_supplier && (
+            <span className="cprofile-role-pill supplier">SUPPLIER</span>
+          )}
+          {company.is_buyer && (
+            <span className="cprofile-role-pill buyer">BUYER</span>
+          )}
         </div>
         <div className="cprofile-taxid">
           <span className="cprofile-tax-label">Tax ID:</span>
@@ -501,7 +551,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       </Section>
 
       {/* Supplier profile */}
-      {role === "supplier" && (
+      {showSupplierCard && (
         <Section
           icon={<Beef size={18} />}
           title="Supplier profile"
@@ -518,7 +568,7 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
       )}
 
       {/* Buyer profile */}
-      {role === "buyer" && (
+      {showBuyerCard && (
         <Section
           icon={<ShoppingCart size={18} />}
           title="Buyer profile"
@@ -582,15 +632,136 @@ export default function CompanyProfilePage({ role }: { role: Role }) {
             value={company.ports_of_shipment || []}
             onChange={(v) => patchCompany({ ports_of_shipment: v })}
             placeholder={
-              role === "supplier" && portOptions.length === 0
+              effectiveRole === "supplier" && portOptions.length === 0
                 ? "Add an office/factory location first…"
                 : "Add port…"
             }
             options={portOptions}
-            allowCustom={role === "buyer"}
+            allowCustom={effectiveRole === "buyer"}
           />
         </FieldLabel>
       </Section>
+
+      {/* Team / Users — shown for everyone (master can manage; others view-only) */}
+      <Section
+        icon={<UsersIcon size={18} />}
+        title="Team members"
+        subtitle="People with access to this company. Masters can invite, edit and disable."
+      >
+        <CompanyTeamPanel
+          companyId={companyId!}
+          isSupplier={!!company.is_supplier}
+          isBuyer={!!company.is_buyer}
+        />
+      </Section>
+
+      {/* Mundus Admin Controls — visible only when admin team views this record */}
+      {isAdminView && (
+        <Section
+          icon={<Shield size={18} />}
+          title="Mundus admin controls"
+          subtitle="These actions are only visible to the Mundus team."
+        >
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            <AdminToggle
+              label={`Verified ${adminFlags.is_verified ? "✓" : ""}`}
+              description="Marks the company as verified by Mundus."
+              checked={adminFlags.is_verified}
+              onChange={async (v) => {
+                const { error } = await (supabase as any).from("companies").update({ is_verified: v }).eq("id", companyId);
+                if (error) return toast.error(error.message);
+                setAdminFlags((s) => ({ ...s, is_verified: v }));
+                toast.success(v ? "Marked as verified" : "Verification removed");
+              }}
+            />
+            <AdminToggle
+              label="Active"
+              description="Inactive companies cannot transact on the platform."
+              checked={adminFlags.status === "active"}
+              onChange={async (v) => {
+                const next = v ? "active" : "inactive";
+                const { error } = await (supabase as any).from("companies").update({ status: next }).eq("id", companyId);
+                if (error) return toast.error(error.message);
+                setAdminFlags((s) => ({ ...s, status: next }));
+                toast.success(`Status set to ${next}`);
+              }}
+            />
+            {company.is_supplier && (
+              <AdminToggle
+                label="Mundus manages offers"
+                description="Allows the Mundus team to create and manage offers on behalf of this supplier."
+                checked={adminFlags.mundus_managed_supplier}
+                onChange={async (v) => {
+                  const { error } = await (supabase as any).from("companies").update({ mundus_managed_supplier: v }).eq("id", companyId);
+                  if (error) return toast.error(error.message);
+                  setAdminFlags((s) => ({ ...s, mundus_managed_supplier: v }));
+                  auditLog({ action: "company.mundus_managed_supplier_toggled", category: "company", entityType: "company", entityId: companyId!, details: { value: v } });
+                  toast.success(v ? "Mundus now manages offers for this supplier" : "Supplier manages their own offers");
+                }}
+              />
+            )}
+            {company.is_buyer && (
+              <AdminToggle
+                label="Mundus manages requests"
+                description="Allows the Mundus team to create and manage requests on behalf of this buyer."
+                checked={adminFlags.mundus_managed_buyer}
+                onChange={async (v) => {
+                  const { error } = await (supabase as any).from("companies").update({ mundus_managed_buyer: v }).eq("id", companyId);
+                  if (error) return toast.error(error.message);
+                  setAdminFlags((s) => ({ ...s, mundus_managed_buyer: v }));
+                  auditLog({ action: "company.mundus_managed_buyer_toggled", category: "company", entityType: "company", entityId: companyId!, details: { value: v } });
+                  toast.success(v ? "Mundus now manages requests for this buyer" : "Buyer manages their own requests");
+                }}
+              />
+            )}
+
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", paddingTop: 4 }}>
+              {company.is_supplier && adminFlags.mundus_managed_supplier && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/admin/create-offer?as_company=${companyId}`)}
+                  style={{ padding: "10px 16px", background: "#8B2252", color: "#fff", border: 0, borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+                >
+                  📝 Create Offer as {company.name}
+                </button>
+              )}
+              {company.is_buyer && adminFlags.mundus_managed_buyer && (
+                <button
+                  type="button"
+                  onClick={() => navigate(`/admin/create-request?as_company=${companyId}`)}
+                  style={{ padding: "10px 16px", background: "#2563EB", color: "#fff", border: 0, borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer" }}
+                >
+                  📝 Create Request as {company.name}
+                </button>
+              )}
+            </div>
+
+            <div style={{ height: 1, background: "#f1f5f9", margin: "8px 0" }} />
+
+            <button
+              type="button"
+              onClick={async () => {
+                if (!companyId) return;
+                const ok = window.confirm(`Delete ${company.name}? This cannot be undone.`);
+                if (!ok) return;
+                const { error } = await (supabase as any).from("companies").delete().eq("id", companyId);
+                if (error) return toast.error(error.message);
+                auditLog({ action: "company.deleted", category: "company", entityType: "company", entityId: companyId, entityLabel: company.name, severity: "warn" });
+                toast.success("Company deleted");
+                navigate("/admin/companies");
+              }}
+              style={{
+                alignSelf: "flex-start",
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "10px 14px", borderRadius: 8, border: "1px solid #fecaca",
+                background: "#fff", color: "#b91c1c", fontWeight: 600, fontSize: 13, cursor: "pointer",
+              }}
+            >
+              <Trash2 size={14} /> Delete company
+            </button>
+          </div>
+        </Section>
+      )}
     </div>
   );
 }
@@ -632,6 +803,31 @@ function FieldLabel({ label, children }: { label: string; children: ReactNode })
     <div className="cprofile-field">
       <label className="cprofile-label">{label}</label>
       {children}
+    </div>
+  );
+}
+
+function AdminToggle({
+  label, description, checked, onChange,
+}: { label: string; description: string; checked: boolean; onChange: (v: boolean) => unknown | Promise<unknown> }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: 12, background: "#FDF2F8", borderRadius: 12, border: "1px solid #F9D0E0" }}>
+      <label style={{ position: "relative", display: "inline-block", width: 36, height: 20, flexShrink: 0 }}>
+        <input
+          type="checkbox"
+          checked={checked}
+          disabled={busy}
+          onChange={async (e) => { setBusy(true); try { await onChange(e.target.checked); } finally { setBusy(false); } }}
+          style={{ opacity: 0, width: 0, height: 0 }}
+        />
+        <span style={{ position: "absolute", inset: 0, cursor: busy ? "wait" : "pointer", background: checked ? "#8B2252" : "#cbd5e1", borderRadius: 999, transition: "background 0.2s" }} />
+        <span style={{ position: "absolute", top: 2, left: checked ? 18 : 2, width: 16, height: 16, borderRadius: "50%", background: "#fff", transition: "left 0.2s", boxShadow: "0 1px 2px rgba(0,0,0,0.2)" }} />
+      </label>
+      <div>
+        <div style={{ fontWeight: 600, fontSize: 14 }}>{label}</div>
+        <div style={{ fontSize: 12, color: "#6B7280" }}>{description}</div>
+      </div>
     </div>
   );
 }
