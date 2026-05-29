@@ -618,21 +618,31 @@ function Header({
 }
 
 function ProposalCard({
-  message, isMine, senderName, busy, onAct,
+  message, isMine, senderName, busy, currentUserId, onAct, onConfirm,
 }: {
-  message: Message; isMine: boolean; senderName: string; busy: boolean;
-  onAct: (action: "accepted" | "declined" | "countered") => void;
+  message: Message;
+  isMine: boolean;
+  senderName: string;
+  busy: boolean;
+  currentUserId: string | null;
+  onAct: (action: "accept" | "decline" | "counter" | "cancel") => void;
+  onConfirm: () => void;
 }) {
   const data = message.structured_data ?? {};
   const items = data.items ?? [];
   const total = data.total_usd ?? items.reduce((s, it) => s + Number(it.price_per_kg) * Number(it.quantity_kg), 0);
   const status = message.proposal_status ?? "pending";
-  const decided = status !== "pending";
+  const decided = status !== "pending" && status !== "accepted_pending_confirmation";
+  const pendingConfirm = status === "accepted_pending_confirmation";
+  const iAmProposer = !!currentUserId && message.sender_user_id === currentUserId;
 
   const statusPill =
-    status === "accepted" ? { bg: "#dcfce7", fg: "#15803d", label: "Accepted" }
+    status === "accepted" ? { bg: "#dcfce7", fg: "#15803d", label: "Closed · Order created" }
+    : status === "accepted_pending_confirmation" ? { bg: "#fef9c3", fg: "#854d0e", label: "Awaiting proposer confirmation" }
     : status === "declined" ? { bg: "#fee2e2", fg: "#b91c1c", label: "Declined" }
     : status === "countered" ? { bg: "#fef3c7", fg: "#92400e", label: "Countered" }
+    : status === "superseded" ? { bg: "#e5e7eb", fg: "#374151", label: "Superseded" }
+    : status === "cancelled" ? { bg: "#e5e7eb", fg: "#374151", label: "Cancelled" }
     : { bg: "#e0e7ff", fg: "#3730a3", label: "Awaiting response" };
 
   return (
@@ -675,26 +685,47 @@ function ProposalCard({
           <div style={{ marginTop: 8, fontStyle: "italic", color: "hsl(var(--muted-foreground))" }}>“{data.note}”</div>
         )}
       </div>
-      {!isMine && !decided && (
+      {!isMine && !decided && !pendingConfirm && (
         <div style={{ display: "flex", gap: 6, padding: "8px 12px 12px" }}>
           <button
             type="button"
             disabled={busy}
-            onClick={() => onAct("accepted")}
+            onClick={() => onAct("accept")}
             style={btnStyle("#16a34a", "white")}
           >Accept</button>
           <button
             type="button"
             disabled={busy}
-            onClick={() => onAct("countered")}
+            onClick={() => onAct("counter")}
             style={btnStyle("hsl(var(--background))", "hsl(var(--foreground))", true)}
           >Counter</button>
           <button
             type="button"
             disabled={busy}
-            onClick={() => onAct("declined")}
+            onClick={() => onAct("decline")}
             style={btnStyle("hsl(var(--background))", "#b91c1c", true)}
           >Decline</button>
+        </div>
+      )}
+      {pendingConfirm && iAmProposer && (
+        <div style={{ display: "flex", gap: 6, padding: "8px 12px 12px" }}>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onConfirm}
+            style={btnStyle("#16a34a", "white")}
+          >Confirm sale & close deal</button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onAct("cancel")}
+            style={btnStyle("hsl(var(--background))", "#b91c1c", true)}
+          >Cancel</button>
+        </div>
+      )}
+      {pendingConfirm && !iAmProposer && (
+        <div style={{ padding: "8px 12px 12px", fontSize: 11, color: "hsl(var(--muted-foreground))", fontStyle: "italic" }}>
+          Accepted — waiting for {senderName} to confirm the sale.
         </div>
       )}
     </div>
