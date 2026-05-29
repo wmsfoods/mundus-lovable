@@ -50,6 +50,7 @@ export default function AdminShell() {
     { to: "/admin/analytics", label: t("admin.shell.nav.analytics"), icon: Activity as unknown as IconCmp },
     { to: "/admin/bi/market", label: "Market Intelligence", icon: LineChart as unknown as IconCmp },
     { to: "/admin/bi/negotiations", label: "Negotiation Funnel", icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi/demand", label: "Buyer Demand", icon: LineChart as unknown as IconCmp },
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
     { to: "/admin/user-requests", label: "User Requests", icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },
