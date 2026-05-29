@@ -181,6 +181,25 @@ export function NegotiationChat({
     return rows;
   }, [messages, rounds, agreedItems]);
 
+  // Last price per offer item from the most recent proposal in chat (any side).
+  // Used to enforce the same monotonic rule as the formal negotiation rounds:
+  //   - buyer cannot propose a price LOWER than the last proposal
+  //   - supplier cannot propose a price HIGHER than the last proposal
+  const lastProposalPrices = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.message_type !== "proposal") continue;
+      const items = m.structured_data?.items ?? [];
+      for (const it of items) {
+        if (it.offer_item_id && map[it.offer_item_id] == null) {
+          map[it.offer_item_id] = Number(it.price_per_kg) || 0;
+        }
+      }
+    }
+    return map;
+  }, [messages]);
+
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [feed.length, open]);
@@ -592,6 +611,8 @@ export function NegotiationChat({
           allowQty={allowQtyNegotiation && perspective === "buyer"}
           seed={composerSeed}
           busy={sending}
+          perspective={perspective}
+          lastPrices={lastProposalPrices}
           onClose={() => { setComposerOpen(false); setComposerSeed(null); }}
           onSubmit={(items, note) => sendProposalFromComposer(items, note)}
         />
