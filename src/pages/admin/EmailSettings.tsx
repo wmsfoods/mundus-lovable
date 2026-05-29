@@ -81,37 +81,47 @@ export default function EmailSettings() {
             </DialogContent>
           </Dialog>
         </div>
-        <div className="out-desktop-only out-table-wrap">
-          <table className="out-table">
-            <thead><tr><th>User</th><th>Provider</th><th>From</th><th>Status</th></tr></thead>
-            <tbody>
-              {ACCOUNTS.map((a) => (
-                <tr key={a.user}>
-                  <td>{a.user}</td>
-                  <td><span className="out-badge cat">{a.provider}</span></td>
-                  <td>{a.from}</td>
-                  <td><span className="out-pill sent">{a.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <div className="out-mobile-only out-list">
-          {ACCOUNTS.map((a) => (
-            <div key={a.user} className="out-item">
-              <div className="out-item-head">
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className="out-item-title">{a.user}</div>
-                  <div className="out-rec-mini-sub">{a.from}</div>
-                </div>
-                <span className="out-pill sent">{a.status}</span>
-              </div>
-              <div className="out-item-meta">
-                <span className="out-badge cat">{a.provider}</span>
-              </div>
+        {ACCOUNTS.length === 0 ? (
+          <div className="out-empty" style={{ textAlign: "center", padding: "40px 20px", color: "#94a3b8" }}>
+            <div style={{ fontSize: 32, marginBottom: 8 }}>📭</div>
+            <div style={{ fontWeight: 600, color: "#475569", marginBottom: 4 }}>No user accounts connected</div>
+            <div style={{ fontSize: 14 }}>Click "+ Connect" to link an email provider.</div>
+          </div>
+        ) : (
+          <>
+            <div className="out-desktop-only out-table-wrap">
+              <table className="out-table">
+                <thead><tr><th>User</th><th>Provider</th><th>From</th><th>Status</th></tr></thead>
+                <tbody>
+                  {ACCOUNTS.map((a) => (
+                    <tr key={a.user}>
+                      <td>{a.user}</td>
+                      <td><span className="out-badge cat">{a.provider}</span></td>
+                      <td>{a.from}</td>
+                      <td><span className="out-pill sent">{a.status}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          ))}
-        </div>
+            <div className="out-mobile-only out-list">
+              {ACCOUNTS.map((a) => (
+                <div key={a.user} className="out-item">
+                  <div className="out-item-head">
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div className="out-item-title">{a.user}</div>
+                      <div className="out-rec-mini-sub">{a.from}</div>
+                    </div>
+                    <span className="out-pill sent">{a.status}</span>
+                  </div>
+                  <div className="out-item-meta">
+                    <span className="out-badge cat">{a.provider}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
