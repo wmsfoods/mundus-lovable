@@ -36,6 +36,7 @@ type LocationRow = {
   country: string | null;
   zip_code: string | null;
   est_number: string | null;
+  plant_numbers: string[];
 };
 
 type CompanyRow = {
