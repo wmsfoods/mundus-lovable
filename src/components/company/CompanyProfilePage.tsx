@@ -85,6 +85,7 @@ export default function CompanyProfilePage({
   const { company: cur } = useCurrentCompany();
   const navigate = useNavigate();
   const companyId = companyIdOverride ?? cur?.id ?? null;
+  const { terms: PAYMENT_TERMS } = usePaymentTerms({ scope: "international" });
   // In admin view we resolve the profile-role from the company itself.
   const [adminFlags, setAdminFlags] = useState<{
     is_verified: boolean;
