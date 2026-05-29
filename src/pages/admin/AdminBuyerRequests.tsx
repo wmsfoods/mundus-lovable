@@ -387,6 +387,76 @@ export default function AdminBuyerRequests() {
           </div>
         </div>
       )}
+
+      {showCreateRequest && (
+        <div
+          onClick={() => setShowCreateRequest(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white", borderRadius: 12, padding: 20, maxWidth: 480, width: "100%",
+              maxHeight: "80vh", overflowY: "auto",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Create Request for…</h3>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: "6px 0 16px" }}>
+              Select a managed buyer to create a request on their behalf.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {managedBuyers.map((b) => (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => {
+                    setShowCreateRequest(false);
+                    navigate(`/admin/create-request?as_company=${b.id}`);
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "10px 14px", border: "1px solid #E5E7EB", borderRadius: 10,
+                    background: "white", cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  {b.logo_url ? (
+                    <img src={b.logo_url} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: "cover" }} />
+                  ) : (
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 6, background: "#FDF2F8",
+                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
+                    }}>🛒</div>
+                  )}
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{b.name}</div>
+                    <div style={{ fontSize: 12, color: "#6B7280" }}>{b.country ?? "—"}</div>
+                  </div>
+                </button>
+              ))}
+              {managedBuyers.length === 0 && (
+                <p style={{ fontSize: 13, color: "#9CA3AF", textAlign: "center", padding: 20 }}>
+                  No managed buyers. Go to Companies → toggle "Mundus manages requests for this buyer" first.
+                </p>
+              )}
+            </div>
+            <div style={{ marginTop: 14, textAlign: "right" }}>
+              <button
+                type="button"
+                onClick={() => setShowCreateRequest(false)}
+                style={{
+                  padding: "8px 14px", borderRadius: 8, border: "1px solid #E5E7EB",
+                  background: "white", cursor: "pointer", fontSize: 13,
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
