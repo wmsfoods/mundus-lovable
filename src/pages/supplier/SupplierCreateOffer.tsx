@@ -512,12 +512,18 @@ export default function SupplierCreateOffer() {
       };
       const wanted = Array.from(new Set(supplierCountries.map(norm).filter(Boolean)));
 
-      // Resolve country_ids via english_name (case-insensitive)
+      // Resolve country_ids via english_name or iso_code (handles names with spaces).
       const { data: countryRows } = await (supabase as any)
         .from("countries")
-        .select("id, english_name")
-        .or(wanted.map((n) => `english_name.ilike.${n}`).join(","));
-      let countryIds: string[] = (countryRows ?? []).map((r: any) => r.id);
+        .select("id, english_name, iso_code");
+      const wantedLc = new Set(wanted.map((w) => w.toLowerCase()));
+      let countryIds: string[] = (countryRows ?? [])
+        .filter(
+          (r: any) =>
+            wantedLc.has((r.english_name || "").toLowerCase()) ||
+            wantedLc.has((r.iso_code || "").toLowerCase()),
+        )
+        .map((r: any) => r.id);
       if (countryIds.length === 0) {
         // Last-resort fallback: load all ports so the user can still pick.
         const { data: all } = await (supabase as any)
