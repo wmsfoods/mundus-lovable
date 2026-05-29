@@ -549,67 +549,153 @@ export function CounterOfferModal({
         console.warn("[notifications] counter notification failed", e);
       }
 
-      // Fire email notification (best-effort, non-blocking)
-      try {
-        const offerTitle = items[0]?.customer_product?.name
-          ? items.length > 1
-            ? `Mix · ${items.length} items`
-            : items[0].customer_product.name
-          : "Offer";
+      // Fire email notification through the central queue (best-effort, non-blocking).
+      // Templates: bidReceived | counterReceived | dealClosed
+      (async () => {
+        try {
+          const offerTitle = items[0]?.customer_product?.name
+            ? items.length > 1
+              ? `Mix · ${items.length} items`
+              : items[0].customer_product.name
+            : "Offer";
+          const offerNumber = String(negotiation.offer?.offer_number ?? "");
+          const supplierCompanyId = negotiation.offer?.supplier_id;
+          const supplierCompany = negotiation.offer?.supplier_name ?? "Supplier";
+          const buyerCompanyId = negotiation.buyer_company_id;
+          const buyerCompany =
+            (negotiation as any).buyer_company?.name ??
+            (negotiation as any).buyer_company_name ??
+            "Buyer";
 
-        if (perspective === "buyer") {
-          supabase.functions.invoke("negotiation-notifications", {
-            body: {
-              action: "new_bid",
-              data: {
-                supplier_email: "supplier@example.com",
-                offer_title: offerTitle,
-                buyer_name: "Buyer",
-                round: displayRound,
-                max_rounds: MAX_DISPLAY_ROUNDS,
-                bid_total: counterTotal.toFixed(2),
-                asking_total: askingTotal.toFixed(2),
-                link: publicUrl(`/supplier/negotiations/${negotiation.id}`),
-              },
-            },
-          }).catch(() => {});
-        } else {
-          supabase.functions.invoke("negotiation-notifications", {
-            body: {
-              action: "new_counter",
-              data: {
-                buyer_email: "buyer@example.com",
-                offer_title: offerTitle,
-                supplier_name: "Supplier",
-                round: displayRound,
-                max_rounds: MAX_DISPLAY_ROUNDS,
-                counter_total: counterTotal.toFixed(2),
-                link: publicUrl(`/buyer/negotiations/${negotiation.id}`),
-              },
-            },
-          }).catch(() => {});
-        }
+          const [{ getCompanyPrimaryContact }, { sendEmailNotification }] = await Promise.all([
+            import("@/lib/companyContact"),
+            import("@/lib/emailSender"),
+          ]);
+          const [supplierContact, buyerContact] = await Promise.all([
+            getCompanyPrimaryContact(supplierCompanyId),
+            getCompanyPrimaryContact(buyerCompanyId),
+          ]);
 
-        if (allLockedNow) {
-          const settledValue = mergedAgreed.reduce((s, a) => {
-            const it = items.find((x) => x.id === a.offer_item_id);
-            return s + a.price_per_kg * Number(it?.amount ?? 0);
-          }, 0);
-          supabase.functions.invoke("negotiation-notifications", {
-            body: {
-              action: "bid_accepted",
-              data: {
-                to_email: perspective === "buyer" ? "supplier@example.com" : "buyer@example.com",
-                offer_title: offerTitle,
-                total_value: settledValue.toLocaleString(undefined, { maximumFractionDigits: 2 }),
-                link: publicUrl(`/supplier/negotiations/${negotiation.id}`),
-              },
-            },
-          }).catch(() => {});
+          const fmt = (n: number) =>
+            n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+          if (allLockedNow) {
+            const settledValue = mergedAgreed.reduce((s, a) => {
+              const it = items.find((x) => x.id === a.offer_item_id);
+              return s + a.price_per_kg * Number(it?.amount ?? 0);
+            }, 0);
+            const totalQty = items.reduce((s, it) => s + Number(it.amount || 0), 0);
+            const askingAvg =
+              totalQty > 0 ? askingTotal / totalQty : Number(items[0]?.price ?? 0);
+            const finalAvg = totalQty > 0 ? settledValue / totalQty : askingAvg;
+            const movementPct =
+              askingAvg > 0
+                ? (((finalAvg - askingAvg) / askingAvg) * 100).toFixed(1)
+                : "0.0";
+            const baseVars: any = {
+              cutName: offerTitle,
+              offerNumber,
+              quantity: fmt(totalQty),
+              rounds: displayRound,
+              askingPrice: askingAvg.toFixed(2),
+              finalPrice: finalAvg.toFixed(2),
+              movementPct,
+              totalValue: fmt(settledValue),
+              incoterm: negIncoterm,
+              origin: "",
+              originFlag: "",
+              destination: negotiation.port?.country?.english_name ?? "",
+              destFlag: "",
+              shipment: "",
+              supplierCompany,
+              buyerCompany,
+              advancePct: "30",
+              advanceAmount: fmt(settledValue * 0.3),
+              supplierCompanyId,
+            };
+            if (supplierContact?.email) {
+              await sendEmailNotification("dealClosed" as any, supplierContact.email, {
+                ...baseVars,
+                name: supplierContact.name || supplierCompany,
+              });
+            }
+            if (buyerContact?.email) {
+              await sendEmailNotification("dealClosed" as any, buyerContact.email, {
+                ...baseVars,
+                name: buyerContact.name || buyerCompany,
+              });
+            }
+            return;
+          }
+
+          const totalQty = openItems.reduce((s, it) => s + Number(it.amount || 0), 0);
+          const askingAvg =
+            totalQty > 0
+              ? openItems.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0) /
+                totalQty
+              : 0;
+          const counterAvg =
+            totalQty > 0
+              ? openItems.reduce((s, it) => {
+                  const price = accepted[it.id]
+                    ? theirPrices.get(it.id) ?? Number(it.price)
+                    : counters[it.id] ?? 0;
+                  return s + price * Number(it.amount);
+                }, 0) / totalQty
+              : 0;
+          const theirAvg =
+            totalQty > 0
+              ? openItems.reduce(
+                  (s, it) =>
+                    s + (theirPrices.get(it.id) ?? Number(it.price)) * Number(it.amount),
+                  0,
+                ) / totalQty
+              : 0;
+          const gap = Math.abs(askingAvg - counterAvg);
+          const gapPct = askingAvg > 0 ? ((gap / askingAvg) * 100).toFixed(1) : "0.0";
+
+          if (perspective === "buyer" && supplierContact?.email) {
+            // Buyer placed a counter-bid → notify supplier
+            await sendEmailNotification("bidReceived" as any, supplierContact.email, {
+              supplierName: supplierContact.name || supplierCompany,
+              buyerCompany,
+              offerNumber,
+              cutName: offerTitle,
+              round: displayRound,
+              maxRounds: MAX_DISPLAY_ROUNDS,
+              askingPrice: askingAvg.toFixed(2),
+              bidPrice: counterAvg.toFixed(2),
+              gap: gap.toFixed(2),
+              gapPct,
+              totalValue: fmt(counterTotal),
+              buyerFlag: "",
+              destination: negotiation.port?.country?.english_name ?? "",
+              destFlag: "",
+              supplierCompanyId,
+            } as any);
+          } else if (perspective === "supplier" && buyerContact?.email) {
+            // Supplier sent a counter → notify buyer
+            await sendEmailNotification("counterReceived" as any, buyerContact.email, {
+              buyerName: buyerContact.name || buyerCompany,
+              supplierCompany,
+              offerNumber,
+              cutName: offerTitle,
+              round: displayRound,
+              maxRounds: MAX_DISPLAY_ROUNDS,
+              askingPrice: askingAvg.toFixed(2),
+              yourBid: theirAvg.toFixed(2),
+              counterPrice: counterAvg.toFixed(2),
+              gap: gap.toFixed(2),
+              gapPct,
+              totalValue: fmt(counterTotal),
+              isLastRound: isFinal,
+              supplierCompanyId,
+            } as any);
+          }
+        } catch (e) {
+          console.warn("[email] counter/bid/deal queue failed", e);
         }
-      } catch (e) {
-        console.warn("notification failed", e);
-      }
+      })();
 
       onOpenChange(false);
       onSubmitted?.();
