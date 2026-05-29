@@ -874,6 +874,29 @@ export function CounterOfferModal({
           </div>
         )}
 
+        {/* Full per-product price history (collapsible) — gives the responder
+            the same multi-round visibility shown on the detail page. */}
+        {rounds.length > 0 && historyProducts.length > 0 && (
+          <details className="rounded-lg border border-border bg-muted/30 px-3 py-2 group" open>
+            <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center justify-between">
+              <span>Price history per product</span>
+              <span className="text-[10px] font-normal text-muted-foreground group-open:hidden">
+                Show
+              </span>
+              <span className="text-[10px] font-normal text-muted-foreground hidden group-open:inline">
+                Hide
+              </span>
+            </summary>
+            <div className="mt-3 -mx-1 overflow-x-auto">
+              <PriceHistoryTable
+                products={historyProducts}
+                maxRoundShown={historyMaxRound}
+                agreedByName={agreedByName}
+              />
+            </div>
+          </details>
+        )}
+
         {/* Bulk apply — unified responsive */}
         {openItems.length > 0 && (
           <div className="mt-3 rounded-lg border border-border p-3 flex flex-col gap-3">
