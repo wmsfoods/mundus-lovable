@@ -4127,6 +4127,9 @@ export type Database = {
       }
       negotiation_messages: {
         Row: {
+          accepted_at: string | null
+          accepted_by_user_id: string | null
+          confirmed_by_proposer_at: string | null
           content: string | null
           created_at: string | null
           emailed: boolean | null
@@ -4135,13 +4138,18 @@ export type Database = {
           is_read: boolean | null
           message_type: string | null
           negotiation_id: string
+          promoted_to_order_id: string | null
           proposal_status: string | null
           read_at: string | null
           sender_side: string
           sender_user_id: string
           structured_data: Json | null
+          superseded_at: string | null
         }
         Insert: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          confirmed_by_proposer_at?: string | null
           content?: string | null
           created_at?: string | null
           emailed?: boolean | null
@@ -4150,13 +4158,18 @@ export type Database = {
           is_read?: boolean | null
           message_type?: string | null
           negotiation_id: string
+          promoted_to_order_id?: string | null
           proposal_status?: string | null
           read_at?: string | null
           sender_side: string
           sender_user_id: string
           structured_data?: Json | null
+          superseded_at?: string | null
         }
         Update: {
+          accepted_at?: string | null
+          accepted_by_user_id?: string | null
+          confirmed_by_proposer_at?: string | null
           content?: string | null
           created_at?: string | null
           emailed?: boolean | null
@@ -4165,11 +4178,13 @@ export type Database = {
           is_read?: boolean | null
           message_type?: string | null
           negotiation_id?: string
+          promoted_to_order_id?: string | null
           proposal_status?: string | null
           read_at?: string | null
           sender_side?: string
           sender_user_id?: string
           structured_data?: Json | null
+          superseded_at?: string | null
         }
         Relationships: [
           {
@@ -4177,6 +4192,13 @@ export type Database = {
             columns: ["negotiation_id"]
             isOneToOne: false
             referencedRelation: "negotiations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negotiation_messages_promoted_to_order_id_fkey"
+            columns: ["promoted_to_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
             referencedColumns: ["id"]
           },
         ]
@@ -4758,6 +4780,7 @@ export type Database = {
       }
       offers: {
         Row: {
+          allow_quantity_negotiation: boolean
           container_size: string
           created_at: string | null
           cut_region: string
@@ -4787,6 +4810,7 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          allow_quantity_negotiation?: boolean
           container_size: string
           created_at?: string | null
           cut_region?: string
@@ -4816,6 +4840,7 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          allow_quantity_negotiation?: boolean
           container_size?: string
           created_at?: string | null
           cut_region?: string
@@ -6591,6 +6616,24 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _neg_parties: {
+        Args: { p_negotiation_id: string }
+        Returns: {
+          allow_qty: boolean
+          buyer_company_id: string
+          created_by_user_id: string
+          current_round: number
+          fcl_count: number
+          freight_cost_per_kg: number
+          incoterm: string
+          offer_id: string
+          office_id: string
+          port_id: string
+          status: string
+          supplier_company_id: string
+        }[]
+      }
+      accept_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       accept_negotiation: {
         Args: { p_negotiation_id: string; p_user_id: string }
         Returns: Json
@@ -6599,6 +6642,8 @@ export type Database = {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
       }
+      cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
+      confirm_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       current_user_company_id: { Args: never; Returns: string }
       current_user_company_ids: { Args: never; Returns: string[] }
       enqueue_app_notifications: {
