@@ -461,7 +461,9 @@ export function NegotiationChat({
                         isMine={isMine}
                         senderName={displayName(m)}
                         busy={actingOn === m.id}
+                        currentUserId={currentUserId}
                         onAct={(a) => respondToProposal(m, a)}
+                        onConfirm={() => setConfirmFor(m)}
                       />
                     );
                   }
