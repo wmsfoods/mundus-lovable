@@ -325,6 +325,27 @@ export const emailTemplates = {
     ctaLabel: "View Deal Details →",
   }),
 
+  dealAwaitingConfirmation: (vars: { name: string; cutName: string; offerNumber: string; totalValue: string; acceptedBy: "buyer" | "supplier"; counterpartyCompany: string; negotiationUrl: string }) => masterLayout({
+    heroTitle: "Action required: confirm the deal",
+    heroColor: "yellow",
+    preheader: `${vars.acceptedBy === "buyer" ? "Buyer" : "Supplier"} accepted M-${vars.offerNumber} — confirm to close.`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">Hi <strong>${vars.name}</strong>,</p>
+      <p style="margin:0 0 16px;">The <strong>${vars.acceptedBy === "buyer" ? "buyer" : "supplier"}</strong> accepted the negotiation on <strong>${vars.cutName}</strong> (M-${vars.offerNumber}) at:</p>
+      <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:16px 0;background-color:#FEF3C7;border:1px solid #FCD34D;border-radius:8px;">
+        <tr>
+          <td style="padding:16px;text-align:center;font-family:Arial,Helvetica,sans-serif;">
+            <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#92400E;">PROPOSED FINAL VALUE</p>
+            <p style="margin:0;font-size:28px;font-weight:800;color:#B45309;">US$ ${vars.totalValue}</p>
+          </td>
+        </tr>
+      </table>
+      <p style="margin:0 0 16px;">Review and click <strong>Confirm Deal</strong> on the negotiation page to officially close it and create the order.</p>
+    `,
+    ctaUrl: vars.negotiationUrl || `https://app.mundustrade.us`,
+    ctaLabel: "Review & Confirm Deal →",
+  }),
+
   negotiationRejected: (vars: { name: string; cutName: string; offerNumber: string; lastBid: string; lastCounter: string; gap: string; gapPct: string; rounds: number; reason?: string }) => masterLayout({
     heroTitle: "Negotiation Ended",
     heroColor: "gray",
