@@ -425,6 +425,7 @@ export default function SupplierNegotiationDetail() {
           enabled={isChatEnabled(rawNeg as any)}
           rounds={rawNeg.rounds?.map((r) => ({ id: r.id, round: r.round, created_at: r.created_at })) ?? []}
           agreedItems={rawNeg.agreed_items}
+          allowQtyNegotiation={!!rawNeg.offer?.allow_quantity_negotiation}
         />
       )}
 

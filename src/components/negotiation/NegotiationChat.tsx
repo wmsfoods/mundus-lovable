@@ -9,13 +9,18 @@ type NegotiationChatProps = {
   perspective: "buyer" | "supplier";
   offerItems: OfferItem[];
   enabled: boolean;
-  /** Raw round_proposals (from useRealNegotiation) — used to synthesize "Round N started" system events. */
   rounds?: { id: string; round: number; created_at: string }[];
-  /** Items already agreed (from negotiations.agreed_items jsonb) — synthesizes "Item agreed" events. */
   agreedItems?: unknown;
+  /** Whether buyers can edit per-item quantities. Defaults to false (locked). */
+  allowQtyNegotiation?: boolean;
 };
 
-type ProposalItem = { name: string; quantity_kg: number; price_per_kg: number };
+type ProposalItem = {
+  offer_item_id?: string;
+  name: string;
+  quantity_kg: number;
+  price_per_kg: number;
+};
 type ProposalData = { items?: ProposalItem[]; total_usd?: number; note?: string };
 
 type Message = {
@@ -27,6 +32,9 @@ type Message = {
   content: string | null;
   structured_data: ProposalData | null;
   proposal_status?: string | null;
+  accepted_by_user_id?: string | null;
+  superseded_at?: string | null;
+  promoted_to_order_id?: string | null;
   created_at: string;
 };
 
@@ -52,6 +60,7 @@ export function NegotiationChat({
   enabled,
   rounds,
   agreedItems,
+  allowQtyNegotiation = false,
 }: NegotiationChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
@@ -61,6 +70,9 @@ export function NegotiationChat({
   const [actingOn, setActingOn] = useState<string | null>(null);
   const [detected, setDetected] = useState<DetectedPrice[]>([]);
   const [dismissedFor, setDismissedFor] = useState<string>("");
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [composerSeed, setComposerSeed] = useState<ProposalItem[] | null>(null);
+  const [confirmFor, setConfirmFor] = useState<Message | null>(null);
   // Mobile collapsible: panel collapsed by default below 720px.
   const [isMobile, setIsMobile] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 720px)").matches : false,
@@ -220,6 +232,7 @@ export function NegotiationChat({
       const items = detected.map((d) => {
         const oi = offerItems.find((x) => x.id === d.itemId);
         return {
+          offer_item_id: oi?.id,
           name: d.itemName,
           quantity_kg: Number(oi?.amount ?? 0),
           price_per_kg: d.price,
@@ -243,28 +256,68 @@ export function NegotiationChat({
     }
   }
 
-  async function respondToProposal(msg: Message, action: "accepted" | "declined" | "countered") {
+  async function sendProposalFromComposer(items: ProposalItem[], note: string) {
+    if (sending) return;
+    setSending(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData?.user?.id ?? null;
+      if (!userId) return;
+      const total = items.reduce((s, it) => s + Number(it.price_per_kg) * Number(it.quantity_kg), 0);
+      await supabase.from("negotiation_messages").insert({
+        negotiation_id: negotiationId,
+        sender_user_id: userId,
+        sender_side: perspective,
+        message_type: "proposal",
+        content: note || "Formal proposal",
+        structured_data: { items, total_usd: total, note } as never,
+        proposal_status: "pending",
+      });
+      setComposerOpen(false);
+      setComposerSeed(null);
+    } finally {
+      setSending(false);
+    }
+  }
+
+  async function respondToProposal(msg: Message, action: "accept" | "decline" | "counter" | "cancel") {
     if (actingOn) return;
     setActingOn(msg.id);
     try {
-      await supabase
-        .from("negotiation_messages")
-        .update({ proposal_status: action })
-        .eq("id", msg.id);
-      const userId = currentUserId;
-      if (userId) {
-        const label =
-          action === "accepted" ? "✓ Proposal accepted"
-          : action === "declined" ? "✗ Proposal declined"
-          : "↺ Counter requested";
-        await supabase.from("negotiation_messages").insert({
-          negotiation_id: negotiationId,
-          sender_user_id: userId,
-          sender_side: perspective,
-          message_type: "system",
-          content: label,
-        });
+      if (action === "accept") {
+        const { error } = await supabase.rpc("accept_chat_proposal", { p_message_id: msg.id });
+        if (error) { alert(error.message); return; }
+      } else if (action === "cancel") {
+        const { error } = await supabase.rpc("cancel_chat_proposal", { p_message_id: msg.id });
+        if (error) { alert(error.message); return; }
+      } else if (action === "decline") {
+        await supabase
+          .from("negotiation_messages")
+          .update({ proposal_status: "declined" })
+          .eq("id", msg.id);
+      } else if (action === "counter") {
+        // Pre-fill composer with the proposal's items, then open it.
+        const seed = (msg.structured_data?.items ?? []).map((it) => ({
+          offer_item_id: it.offer_item_id,
+          name: it.name,
+          quantity_kg: Number(it.quantity_kg) || 0,
+          price_per_kg: Number(it.price_per_kg) || 0,
+        }));
+        setComposerSeed(seed);
+        setComposerOpen(true);
       }
+    } finally {
+      setActingOn(null);
+    }
+  }
+
+  async function confirmSale(msg: Message) {
+    if (actingOn) return;
+    setActingOn(msg.id);
+    try {
+      const { error } = await supabase.rpc("confirm_chat_proposal", { p_message_id: msg.id });
+      if (error) { alert(error.message); return; }
+      setConfirmFor(null);
     } finally {
       setActingOn(null);
     }
@@ -408,7 +461,9 @@ export function NegotiationChat({
                         isMine={isMine}
                         senderName={displayName(m)}
                         busy={actingOn === m.id}
+                        currentUserId={currentUserId}
                         onAct={(a) => respondToProposal(m, a)}
+                        onConfirm={() => setConfirmFor(m)}
                       />
                     );
                   }
@@ -489,6 +544,17 @@ export function NegotiationChat({
               borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--muted))",
               paddingBottom: isMobile ? "calc(12px + env(safe-area-inset-bottom))" : 12,
             }}>
+              <button
+                type="button"
+                onClick={() => { setComposerSeed(null); setComposerOpen(true); }}
+                title="Send a formal multi-item proposal"
+                style={{
+                  padding: "10px 12px", borderRadius: 8,
+                  background: "hsl(var(--background))", color: "hsl(var(--foreground))",
+                  border: "1px solid hsl(var(--border))", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", whiteSpace: "nowrap",
+                }}
+              >📋 Proposal</button>
               <input
                 type="text"
                 value={input}
@@ -519,6 +585,26 @@ export function NegotiationChat({
           </>
         )}
       </div>
+
+      {composerOpen && (
+        <ProposalComposerModal
+          offerItems={offerItems}
+          allowQty={allowQtyNegotiation && perspective === "buyer"}
+          seed={composerSeed}
+          busy={sending}
+          onClose={() => { setComposerOpen(false); setComposerSeed(null); }}
+          onSubmit={(items, note) => sendProposalFromComposer(items, note)}
+        />
+      )}
+
+      {confirmFor && (
+        <ConfirmSaleModal
+          message={confirmFor}
+          busy={actingOn === confirmFor.id}
+          onClose={() => setConfirmFor(null)}
+          onConfirm={() => confirmSale(confirmFor)}
+        />
+      )}
     </>
   );
 }
@@ -563,21 +649,31 @@ function Header({
 }
 
 function ProposalCard({
-  message, isMine, senderName, busy, onAct,
+  message, isMine, senderName, busy, currentUserId, onAct, onConfirm,
 }: {
-  message: Message; isMine: boolean; senderName: string; busy: boolean;
-  onAct: (action: "accepted" | "declined" | "countered") => void;
+  message: Message;
+  isMine: boolean;
+  senderName: string;
+  busy: boolean;
+  currentUserId: string | null;
+  onAct: (action: "accept" | "decline" | "counter" | "cancel") => void;
+  onConfirm: () => void;
 }) {
   const data = message.structured_data ?? {};
   const items = data.items ?? [];
   const total = data.total_usd ?? items.reduce((s, it) => s + Number(it.price_per_kg) * Number(it.quantity_kg), 0);
   const status = message.proposal_status ?? "pending";
-  const decided = status !== "pending";
+  const decided = status !== "pending" && status !== "accepted_pending_confirmation";
+  const pendingConfirm = status === "accepted_pending_confirmation";
+  const iAmProposer = !!currentUserId && message.sender_user_id === currentUserId;
 
   const statusPill =
-    status === "accepted" ? { bg: "#dcfce7", fg: "#15803d", label: "Accepted" }
+    status === "accepted" ? { bg: "#dcfce7", fg: "#15803d", label: "Closed · Order created" }
+    : status === "accepted_pending_confirmation" ? { bg: "#fef9c3", fg: "#854d0e", label: "Awaiting proposer confirmation" }
     : status === "declined" ? { bg: "#fee2e2", fg: "#b91c1c", label: "Declined" }
     : status === "countered" ? { bg: "#fef3c7", fg: "#92400e", label: "Countered" }
+    : status === "superseded" ? { bg: "#e5e7eb", fg: "#374151", label: "Superseded" }
+    : status === "cancelled" ? { bg: "#e5e7eb", fg: "#374151", label: "Cancelled" }
     : { bg: "#e0e7ff", fg: "#3730a3", label: "Awaiting response" };
 
   return (
@@ -620,26 +716,47 @@ function ProposalCard({
           <div style={{ marginTop: 8, fontStyle: "italic", color: "hsl(var(--muted-foreground))" }}>“{data.note}”</div>
         )}
       </div>
-      {!isMine && !decided && (
+      {!isMine && !decided && !pendingConfirm && (
         <div style={{ display: "flex", gap: 6, padding: "8px 12px 12px" }}>
           <button
             type="button"
             disabled={busy}
-            onClick={() => onAct("accepted")}
+            onClick={() => onAct("accept")}
             style={btnStyle("#16a34a", "white")}
           >Accept</button>
           <button
             type="button"
             disabled={busy}
-            onClick={() => onAct("countered")}
+            onClick={() => onAct("counter")}
             style={btnStyle("hsl(var(--background))", "hsl(var(--foreground))", true)}
           >Counter</button>
           <button
             type="button"
             disabled={busy}
-            onClick={() => onAct("declined")}
+            onClick={() => onAct("decline")}
             style={btnStyle("hsl(var(--background))", "#b91c1c", true)}
           >Decline</button>
+        </div>
+      )}
+      {pendingConfirm && iAmProposer && (
+        <div style={{ display: "flex", gap: 6, padding: "8px 12px 12px" }}>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={onConfirm}
+            style={btnStyle("#16a34a", "white")}
+          >Confirm sale & close deal</button>
+          <button
+            type="button"
+            disabled={busy}
+            onClick={() => onAct("cancel")}
+            style={btnStyle("hsl(var(--background))", "#b91c1c", true)}
+          >Cancel</button>
+        </div>
+      )}
+      {pendingConfirm && !iAmProposer && (
+        <div style={{ padding: "8px 12px 12px", fontSize: 11, color: "hsl(var(--muted-foreground))", fontStyle: "italic" }}>
+          Accepted — waiting for {senderName} to confirm the sale.
         </div>
       )}
     </div>
@@ -683,3 +800,201 @@ const mobileSheetStyle: React.CSSProperties = {
   borderRadius: 0,
   paddingTop: "env(safe-area-inset-top)",
 };
+
+/* ============================================================
+   ProposalComposerModal — multi-item formal proposal builder.
+   Quantities are locked unless `allowQty` is true (buyers only).
+   Total kg must equal the sum of offer item amounts — never partial.
+============================================================ */
+function ProposalComposerModal({
+  offerItems, allowQty, seed, busy, onClose, onSubmit,
+}: {
+  offerItems: OfferItem[];
+  allowQty: boolean;
+  seed: ProposalItem[] | null;
+  busy: boolean;
+  onClose: () => void;
+  onSubmit: (items: ProposalItem[], note: string) => void;
+}) {
+  const totalOfferedKg = useMemo(
+    () => offerItems.reduce((s, it) => s + Number(it.amount || 0), 0),
+    [offerItems]
+  );
+
+  const [rows, setRows] = useState<ProposalItem[]>(() => {
+    if (seed && seed.length) return seed.map((s) => ({ ...s }));
+    return offerItems.map((oi) => ({
+      offer_item_id: oi.id,
+      name: oi.name,
+      quantity_kg: Number(oi.amount || 0),
+      price_per_kg: Number(oi.price || 0),
+    }));
+  });
+  const [note, setNote] = useState("");
+
+  const sumKg = rows.reduce((s, r) => s + (Number(r.quantity_kg) || 0), 0);
+  const sumUsd = rows.reduce((s, r) => s + (Number(r.quantity_kg) || 0) * (Number(r.price_per_kg) || 0), 0);
+  const totalMatches = Math.abs(sumKg - totalOfferedKg) < 0.5; // tolerance: 0.5 kg
+  const allPricesValid = rows.every((r) => Number(r.price_per_kg) > 0);
+  const canSend = totalMatches && allPricesValid && rows.length > 0 && !busy;
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, zIndex: 90,
+        background: "rgba(0,0,0,0.45)", display: "flex",
+        alignItems: "center", justifyContent: "center", padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(640px, 100%)", maxHeight: "90vh", overflowY: "auto",
+          background: "hsl(var(--card))", borderRadius: 12,
+          border: "1px solid hsl(var(--border))", boxShadow: "0 10px 40px rgba(0,0,0,0.2)",
+        }}
+      >
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid hsl(var(--border))", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div style={{ fontWeight: 700, fontSize: 15 }}>📋 Send formal proposal</div>
+          <button type="button" onClick={onClose} style={{ background: "none", border: "none", fontSize: 20, cursor: "pointer", color: "hsl(var(--muted-foreground))" }}>×</button>
+        </div>
+        <div style={{ padding: 16 }}>
+          <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 10 }}>
+            {allowQty
+              ? "You may adjust per-item quantities, but the total kg must equal the original load (partial loads are not allowed)."
+              : "Quantities are locked by the supplier. You may only adjust prices."}
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", gap: 8, fontSize: 11, fontWeight: 600, color: "hsl(var(--muted-foreground))", padding: "0 4px" }}>
+              <div>Item</div>
+              <div style={{ textAlign: "right" }}>Quantity (kg)</div>
+              <div style={{ textAlign: "right" }}>Price/kg</div>
+              <div style={{ textAlign: "right" }}>Subtotal</div>
+            </div>
+            {rows.map((r, i) => {
+              const subtotal = (Number(r.quantity_kg) || 0) * (Number(r.price_per_kg) || 0);
+              return (
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", gap: 8, alignItems: "center" }}>
+                  <div style={{ fontSize: 13, fontWeight: 500 }}>{r.name}</div>
+                  <input
+                    type="number" min={0} step={1}
+                    value={r.quantity_kg}
+                    disabled={!allowQty}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setRows((cur) => cur.map((x, idx) => idx === i ? { ...x, quantity_kg: v } : x));
+                    }}
+                    style={{ padding: "6px 8px", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 13, textAlign: "right", background: allowQty ? "hsl(var(--background))" : "hsl(var(--muted))" }}
+                  />
+                  <input
+                    type="number" min={0} step={0.01}
+                    value={r.price_per_kg}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setRows((cur) => cur.map((x, idx) => idx === i ? { ...x, price_per_kg: v } : x));
+                    }}
+                    style={{ padding: "6px 8px", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 13, textAlign: "right", background: "hsl(var(--background))" }}
+                  />
+                  <div style={{ textAlign: "right", fontSize: 13, fontWeight: 600 }}>{fmtUsd(subtotal)}</div>
+                </div>
+              );
+            })}
+          </div>
+          <div style={{ marginTop: 12, padding: 10, borderRadius: 8, background: totalMatches ? "#dcfce7" : "#fee2e2", color: totalMatches ? "#15803d" : "#b91c1c", fontSize: 12, fontWeight: 600 }}>
+            Total: {new Intl.NumberFormat("en-US").format(sumKg)} kg / {new Intl.NumberFormat("en-US").format(totalOfferedKg)} kg required · {fmtUsd(sumUsd)}
+            {!totalMatches && <div style={{ fontWeight: 400, marginTop: 2 }}>Adjust quantities so the total matches the original load.</div>}
+          </div>
+          <textarea
+            placeholder="Optional note for the counterparty…"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            rows={2}
+            style={{ marginTop: 10, width: "100%", padding: "8px 10px", border: "1px solid hsl(var(--border))", borderRadius: 8, fontSize: 13, fontFamily: "inherit", background: "hsl(var(--background))", color: "hsl(var(--foreground))", boxSizing: "border-box", resize: "vertical" }}
+          />
+        </div>
+        <div style={{ padding: "12px 18px", borderTop: "1px solid hsl(var(--border))", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="button" onClick={onClose} disabled={busy}
+            style={{ padding: "8px 14px", borderRadius: 8, background: "hsl(var(--background))", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--border))", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            Cancel
+          </button>
+          <button type="button" onClick={() => onSubmit(rows, note.trim())} disabled={!canSend}
+            style={{ padding: "8px 14px", borderRadius: 8, background: canSend ? "#16a34a" : "#a3a3a3", color: "white", border: "none", fontSize: 13, fontWeight: 700, cursor: canSend ? "pointer" : "not-allowed" }}>
+            {busy ? "Sending…" : "Send proposal"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ============================================================
+   ConfirmSaleModal — final double-confirmation by the proposer.
+   Confirming closes the negotiation and creates the order via RPC.
+============================================================ */
+function ConfirmSaleModal({
+  message, busy, onClose, onConfirm,
+}: {
+  message: Message;
+  busy: boolean;
+  onClose: () => void;
+  onConfirm: () => void;
+}) {
+  const data = message.structured_data ?? {};
+  const items = data.items ?? [];
+  const total = data.total_usd ?? items.reduce((s, it) => s + Number(it.price_per_kg) * Number(it.quantity_kg), 0);
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      style={{
+        position: "fixed", inset: 0, zIndex: 95,
+        background: "rgba(0,0,0,0.5)", display: "flex",
+        alignItems: "center", justifyContent: "center", padding: 16,
+      }}
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        style={{
+          width: "min(480px, 100%)",
+          background: "hsl(var(--card))", borderRadius: 12,
+          border: "1px solid hsl(var(--border))",
+        }}
+      >
+        <div style={{ padding: "14px 18px", borderBottom: "1px solid hsl(var(--border))", fontWeight: 700, fontSize: 15 }}>
+          Confirm sale & close deal
+        </div>
+        <div style={{ padding: 16, fontSize: 13, color: "hsl(var(--foreground))" }}>
+          <p style={{ marginTop: 0, marginBottom: 12 }}>
+            The counterparty accepted your proposal. Confirming will <strong>close this negotiation</strong> and <strong>create an order</strong> with the values below. This cannot be undone.
+          </p>
+          <div style={{ border: "1px solid hsl(var(--border))", borderRadius: 8, overflow: "hidden", fontSize: 12 }}>
+            {items.map((it, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", borderBottom: "1px solid hsl(var(--border))" }}>
+                <span>{it.name}</span>
+                <span>{new Intl.NumberFormat("en-US").format(Number(it.quantity_kg))} kg · {fmtUsd(Number(it.price_per_kg))}/kg</span>
+              </div>
+            ))}
+            <div style={{ display: "flex", justifyContent: "space-between", padding: "10px", background: "hsl(var(--muted))", fontWeight: 700 }}>
+              <span>Total</span>
+              <span>{fmtUsd(Number(total))}</span>
+            </div>
+          </div>
+        </div>
+        <div style={{ padding: "12px 18px", borderTop: "1px solid hsl(var(--border))", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+          <button type="button" onClick={onClose} disabled={busy}
+            style={{ padding: "8px 14px", borderRadius: 8, background: "hsl(var(--background))", color: "hsl(var(--foreground))", border: "1px solid hsl(var(--border))", fontSize: 13, fontWeight: 600, cursor: "pointer" }}>
+            Not yet
+          </button>
+          <button type="button" onClick={onConfirm} disabled={busy}
+            style={{ padding: "8px 14px", borderRadius: 8, background: "#16a34a", color: "white", border: "none", fontSize: 13, fontWeight: 700, cursor: busy ? "not-allowed" : "pointer" }}>
+            {busy ? "Confirming…" : "Confirm & create order"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

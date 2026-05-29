@@ -1,46 +1,93 @@
-## Problema identificado
+## Decisões confirmadas
 
-O sistema está tratando `total_fcl` como divisor em alguns lugares. Exemplo atual:
+1. **Aceite no chat fecha o deal imediatamente** (não consome rodada, não importa se é round 1 ou 4) → gera order na hora.
+2. **Confirmação dupla**: quem fez a proposta precisa confirmar antes do fechamento (modal "Confirm sale at $X").
+3. **Chat manual por enquanto** (motor automático fica para depois — mesmo padrão atual).
+4. **Quem pode propor**: a partir do round 3 (regra atual `CHAT_ENABLED_FROM_ROUND`), qualquer lado, a qualquer momento. Independente do fluxo de rodadas paralelo.
+5. **Quantidade**: bloqueada por padrão. Supplier decide na criação da offer se aceita ajuste. Mesmo com ajuste permitido, **o total ofertado deve bater** (soma das qty dos itens = `offer.total_kg` original).
 
-```text
-27,000 kg × US$ 5.90/kg = US$ 159,300.00 por container/FCL
-mas a tela mostra: 159,300 / 5 = US$ 31,860.00
-```
+## Modelo de dados
 
-Isso está errado para a regra da Mundus: a quantidade lançada em offer/request é o mix de UM container. O número de containers disponíveis indica quantos containers idênticos existem; não deve alterar o preço unitário do container.
+**Migration:**
+- `offers.allow_quantity_negotiation boolean default false` — toggle na criação da offer.
+- `negotiation_messages`:
+  - `promoted_to_order_id uuid null` — se aceito, referência ao order criado.
+  - `confirmed_by_proposer_at timestamptz null` — segundo aceite (autor).
+  - `superseded_at timestamptz null` — proposta invalidada por nova rodada oficial.
+- RPC `accept_chat_proposal(p_message_id uuid)` — SECURITY DEFINER:
+  - Valida: negociação ativa, round ≥ 3, status pending, aceitador ≠ autor.
+  - Marca `proposal_status='accepted_pending_confirmation'` + grava `accepted_at`, `accepted_by`.
+  - **Não fecha ainda** — espera confirmação do autor.
+- RPC `confirm_chat_proposal(p_message_id uuid)`:
+  - Só o autor original pode chamar.
+  - Valida itens contra `allow_quantity_negotiation`:
+    - Sempre: `sum(quantity_kg) == offer.total_kg`.
+    - Se `allow_quantity_negotiation=false`: cada item.quantity_kg deve bater com `offer_items.amount` original.
+  - Cria `round_proposal` "selado" + `cut_rounds` com os valores aceitos (para trilha auditável).
+  - Atualiza `negotiations.agreed_items`, `status='bid_accepted'`, `settled_total_value`.
+  - Cria `orders` + `order_items` (reaproveita lógica do `accept_negotiation`).
+  - Marca message `promoted_to_order_id`, `confirmed_by_proposer_at`.
+- Trigger: ao inserir novo `round_proposal` "oficial" depois de proposta pendente → marcar pending messages como `superseded_at=now()`.
 
-## Plano de correção
+## UX
 
-1. **Centralizar a regra de preço por FCL**
-   - Criar/usar um helper de cálculo para deixar claro:
-     - `containerValueUsd = soma(item.amount_kg × item.price_per_kg)`
-     - `totalInventoryValueUsd = containerValueUsd × total_fcl`
-   - O valor principal “Total Value / per FCL” deve sempre mostrar `containerValueUsd`.
+### Compose Proposal (chat, round ≥ 3)
+- Botão "Send formal proposal" abre **ProposalComposer** inline:
+  - Tabela read-only de qty (se `allow_quantity_negotiation=false`) ou editável (se true) com avisos.
+  - Coluna preço editável (pré-preenchida com último valor da rodada).
+  - Validação ao vivo: badge vermelho se `sum(qty) ≠ total_kg`.
+  - Total recalculado.
+  - Note opcional ("Pode chegar em 5.77?").
+- Envia → cria message `message_type='proposal'` com `structured_data { items[], total_usd, note, allow_qty }`.
 
-2. **Corrigir Supplier + Admin Offer Detail**
-   - Em `useRealSupplierOffers.ts`, remover a divisão por `total_fcl`.
-   - `pricePerFclUsd` passa a ser o valor real de um container/FCL.
-   - Em `OfferDetailLayout.tsx`, manter o hero como valor por FCL e deixar o resumo de inventário como `valor por FCL × FCLs`, ou renomear visualmente para evitar confusão.
-   - Como `/admin/offers/:id` reutiliza a tela de supplier, o Admin Detail será corrigido junto.
+### Receber Proposal
+- **ProposalCard** mostra:
+  - Tabela linha por linha: produto, qty, $/kg, subtotal.
+  - Total destacado.
+  - Note do autor.
+  - Status chip (Pending / Accepted by counterparty — awaiting confirmation / Sealed / Superseded / Declined).
+- Botões para a contraparte: **Accept**, **Decline**.
+  - Accept → chama `accept_chat_proposal` → toast "Awaiting confirmation from {author}".
+  - Card muda de cor e mostra "Awaiting {author} confirmation".
+- Após accept, autor original vê **ConfirmSaleModal**:
+  - Título: "Confirm sale at $X total"
+  - Tabela final dos itens
+  - Aviso: "This will close the negotiation and create order #XXX"
+  - Botões: **Confirm & close deal** / **Cancel** (reabre proposal como pending)
+  - Confirm → chama `confirm_chat_proposal` → toast "Deal closed", redirect para order.
 
-3. **Corrigir Buyer Offer Detail**
-   - Em `BuyerOfferDetail.tsx`, remover `grossValue / total_fcl`.
-   - O valor principal deve ser `grossValue`, ou seja, o valor de 1 container/FCL.
-   - A área do buyer deve continuar mostrando quantos FCLs estão disponíveis, mas sem dividir o preço.
+### Save-guards visuais
+- Se `allow_quantity_negotiation=false` e usuário tenta editar qty: input disabled com tooltip "Supplier locked quantities for this offer".
+- Se `sum(qty) ≠ total_kg`: botão "Send proposal" disabled com mensagem "Total must equal {total_kg} kg".
 
-4. **Revisar pontos relacionados para não quebrar negociação**
-   - Verificar modais de bid/counter e listas de negociação para garantir que continuam calculando valor conforme a quantidade de FCL escolhida na negociação.
-   - A regra esperada é:
-     - visualização da offer: valor por container/FCL
-     - negociação/order: valor do container negociado × FCLs selecionados pelo buyer
+### Offer Create
+- Em `SupplierCreateOffer.tsx`, novo toggle:
+  > ☐ **Allow buyers to negotiate item quantities** (total must always equal {total_kg} kg)
+  - Default off.
+  - Tooltip explicando.
 
-5. **Atualizar documentação interna**
-   - Ajustar a regra em `/admin/docs` para ficar explícito em PT-BR:
-     - quantidade por item = por container
-     - preço por FCL = soma do mix de um container
-     - total inventory value = preço por FCL × containers disponíveis
-     - nunca dividir por containers disponíveis.
+## Edge cases
 
-6. **Validação**
-   - Procurar novamente no código qualquer padrão de divisão por `total_fcl` aplicado a valor.
-   - Conferir o exemplo da tela: 27,000 kg × 5.90 = US$ 159,300.00 como valor por FCL, tanto em Supplier quanto Buyer/Admin.
+- **Proposal pendente + nova rodada oficial** → proposta marcada `superseded`, botões Accept/Confirm desabilitam, card mostra "Superseded by Round N".
+- **Expiration da negociação** → proposta também expira, accept bloqueado.
+- **Author cancela antes da contraparte aceitar** → message `proposal_status='cancelled'`.
+- **Negotiation com múltiplos buyers (OtherBidsPanel)** → proposal/aceite afetam só a negociação atual; demais buyers seguem normal. Quando deal fecha por chat, mesma lógica de `sold_out` em `accept_negotiation` aplica (`v_sold_fcls >= v_total_fcl`).
+
+## Arquivos afetados
+
+**SQL**: 1 migration (coluna offers + colunas messages + 2 RPCs + 1 trigger).
+
+**Frontend**:
+- `src/components/negotiation/NegotiationChat.tsx` — reescrever `ProposalCard` + novo `ProposalComposer` + `ConfirmSaleModal`.
+- `src/pages/supplier/SupplierCreateOffer.tsx` — toggle `allow_quantity_negotiation`.
+- `src/hooks/useRealNegotiation.ts` — refetch após confirm; expor `offer.allow_quantity_negotiation`.
+- `src/lib/negotiationEngine.ts` — helper `canStartChatProposal(neg)` (round ≥ 3 + status ativo + não expirado).
+- i18n: novas strings (pt/en/es/fr/zh) para composer, modal, statuses.
+
+**Mobile**: ProposalComposer e ConfirmSaleModal renderizam como bottom sheet em < 768px (padrão do projeto).
+
+## Não está nesta etapa
+
+- Motor automático de aceite (segue manual, igual ao resto da negociação).
+- Edição parcial de itens (drop de linha) — fica para v2 quando `allow_quantity_negotiation` evoluir.
+- Histórico de propostas canceladas no `PriceHistoryTable` (só rounds oficiais aparecem lá; chat tem sua própria timeline).

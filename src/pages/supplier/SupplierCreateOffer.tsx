@@ -382,6 +382,24 @@ export default function SupplierCreateOffer() {
 
   const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
   const [certifications, setCertifications] = useState<string[]>([]);
+  // Whether buyers can edit per-item quantities in chat proposals (total must still match).
+  const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
+
+  // Hydrate allow_quantity_negotiation when editing an existing offer.
+  useEffect(() => {
+    if (!editOffer?.offerId) return;
+    supabase
+      .from("offers")
+      .select("allow_quantity_negotiation")
+      .eq("id", editOffer.offerId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && typeof (data as any).allow_quantity_negotiation === "boolean") {
+          setAllowQtyNegotiation(Boolean((data as any).allow_quantity_negotiation));
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editOffer?.offerId]);
 
   const [cuts, setCuts] = useState<Cut[]>([]);
   const [cutImgs, setCutImgs] = useState<Record<string, string>>({});
@@ -1184,6 +1202,7 @@ export default function SupplierCreateOffer() {
               origin_port_id: originPortId || null,
               ...(originCountryVal ? { origin_country: originCountryVal } : {}),
               ...(originPortLabel ? { origin_port: originPortLabel } : {}),
+              allow_quantity_negotiation: allowQtyNegotiation,
               updated_at: new Date().toISOString(),
             })
             .eq("id", editOffer.offerId);
@@ -1223,6 +1242,7 @@ export default function SupplierCreateOffer() {
               : null,
             request_id: fromRequest?.requestId ?? null,
             cut_region: cutRegion,
+            allow_quantity_negotiation: allowQtyNegotiation,
           })
           .select("id, offer_number")
           .single();
@@ -2248,6 +2268,39 @@ export default function SupplierCreateOffer() {
                 </button>
               ))}
             </div>
+          </div>
+
+          {/* Negotiation rules */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">Negotiation rules</div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: 12,
+                border: "1px solid hsl(var(--border))",
+                borderRadius: 8,
+                background: "hsl(var(--muted))",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowQtyNegotiation}
+                onChange={(e) => setAllowQtyNegotiation(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: "hsl(var(--foreground))" }}>
+                  Allow buyers to negotiate item quantities
+                </div>
+                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
+                  When on, buyers may redistribute kg across items inside a chat proposal.
+                  The total offered kg must always match the original offer — partial loads are never allowed.
+                </div>
+              </div>
+            </label>
           </div>
 
           {/* Payment terms */}
