@@ -1332,69 +1332,19 @@ export default function SupplierCreateOffer() {
           }
           cutId = cutRow.id;
 
-          // Resolve/create standard_products row for this cut (FK target for customer_products)
-          let standardProductId: string | null = null;
-          if (cutRow.product_number != null) {
-            const { data: existingSp } = await supabase
-              .from("standard_products")
-              .select("id")
-              .eq("product_number", cutRow.product_number)
-              .maybeSingle();
-            if (existingSp) standardProductId = existingSp.id;
+          // Resolve/create customer_product via SECURITY DEFINER RPC
+          // (handles product_categories + standard_products + customer_products server-side,
+          // bypassing RLS on the global catalog tables in a safe, authorized way).
+          const { data: cpId, error: rpcErr } = await supabase.rpc("resolve_customer_product", {
+            p_company_id: supplierId,
+            p_cut_id: cutId,
+          });
+          if (rpcErr || !cpId) {
+            throw new Error(
+              `resolve_customer_product: ${rpcErr?.message || rpcErr?.details || rpcErr?.hint || "no id returned"}`,
+            );
           }
-          if (!standardProductId) {
-            // Resolve product_category by code (beef/pork/poultry/lamb)
-            const catCode = (cutRow.category || c.cat || "beef").toString().toLowerCase();
-            let categoryId: string | null = null;
-            const { data: existingCat } = await supabase
-              .from("product_categories")
-              .select("id")
-              .eq("code", catCode)
-              .maybeSingle();
-            if (existingCat) {
-              categoryId = existingCat.id;
-            } else {
-              const { data: newCat, error: catErr } = await supabase
-                .from("product_categories")
-                .insert({ code: catCode, name_en: catCode })
-                .select("id").single();
-              if (catErr || !newCat) throw catErr ?? new Error("product_categories insert failed");
-              categoryId = newCat.id;
-            }
-            const { data: newSp, error: spErr } = await supabase
-              .from("standard_products")
-              .insert({
-                product_category_id: categoryId,
-                description: cutRow.name,
-                is_active: true,
-                ...(cutRow.product_number != null ? { product_number: cutRow.product_number } : {}),
-              })
-              .select("id").single();
-            if (spErr || !newSp) throw spErr ?? new Error("standard_products insert failed");
-            standardProductId = newSp.id;
-          }
-
-          // find or create customer_product (FK -> standard_products.id)
-          const { data: existing } = await supabase
-            .from("customer_products")
-            .select("id")
-            .eq("company_id", supplierId)
-            .eq("standard_product_id", standardProductId)
-            .maybeSingle();
-          let customerProductId = existing?.id;
-          if (!customerProductId) {
-            const { data: created, error: cpErr } = await supabase
-              .from("customer_products")
-              .insert({
-                company_id: supplierId,
-                standard_product_id: standardProductId,
-                name: cutRow.name,
-                is_active: true,
-              })
-              .select("id").single();
-            if (cpErr || !created) throw cpErr ?? new Error("customer_products insert returned no data");
-            customerProductId = created.id;
-          }
+          const customerProductId = cpId as string;
           itemsRows.push({
             offer_id: offer.id,
             customer_product_id: customerProductId,
@@ -1409,7 +1359,12 @@ export default function SupplierCreateOffer() {
           });
         }
       } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
+        const m =
+          (e as any)?.message ||
+          (e as any)?.details ||
+          (e as any)?.hint ||
+          (e as any)?.code ||
+          (typeof e === "string" ? e : JSON.stringify(e));
         throw new Error(`Step 2 failed: customer_products — ${m}`);
       }
 
