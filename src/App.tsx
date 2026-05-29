@@ -260,6 +260,7 @@ const App = () => (
               <Route path="settings/team" element={<AdminTeam />} />
               <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
+              <Route path="docs" element={<AdminDocs />} />
               <Route path="import" element={<AdminImport />} />
               <Route path="migration" element={<AdminImport />} />
               <Route path="user-requests" element={<AdminUserRequests />} />
