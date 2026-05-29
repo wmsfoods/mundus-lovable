@@ -7,10 +7,11 @@ import { sendEmailNotification } from "@/lib/emailSender";
 
 export async function acceptNegotiation(
   neg: RealNegotiationRow,
-  _perspective: "supplier" | "buyer" = "supplier",
+  perspective: "supplier" | "buyer" = "supplier",
 ): Promise<boolean> {
-  // Use the RPC so the order/order_items are created atomically and
-  // the offer is marked sold_out when FCLs run out.
+  // Two-step confirmation: this only moves the negotiation to
+  // `pending_confirmation`. The counterparty must call confirmNegotiation
+  // to actually close the deal and create the order.
   const { data: authData, error: authError } = await supabase.auth.getUser();
   const userId = authData.user?.id ?? null;
   if (authError || !userId) {
@@ -20,6 +21,7 @@ export async function acceptNegotiation(
   const { error } = await supabase.rpc("accept_negotiation", {
     p_negotiation_id: neg.id,
     p_user_id: userId,
+    p_accepted_by: perspective,
   });
   if (error) {
     const msg = String(error.message ?? "");
@@ -30,19 +32,115 @@ export async function acceptNegotiation(
     }
     return false;
   }
-  toast.success("Bid accepted! Order will be created.");
+  auditLog({
+    action: "negotiation.accepted_pending_confirmation",
+    category: "negotiation",
+    entityType: "negotiation",
+    entityId: neg.id,
+    details: { acceptedBy: perspective },
+  });
+
+  // Notify counterparty (in-app + email) that they must confirm.
+  (async () => {
+    try {
+      const items = neg.offer?.items ?? [];
+      const supplierCompanyId = neg.offer?.supplier_id;
+      const buyerCompanyId = (neg as any).buyer_company_id;
+      const supplierCompany = neg.offer?.supplier_name ?? "Supplier";
+      const buyerCompany =
+        (neg as any).buyer_company?.name ?? (neg as any).buyer_company_name ?? "Buyer";
+      const offerNumber = String(neg.offer?.offer_number ?? "");
+      const cutName = items[0]?.customer_product?.name ?? "Offer";
+      const settledValue =
+        (neg as any).settled_total_value ??
+        (neg as any).accepted_total_value ??
+        items.reduce((s, it) => s + Number(it.price) * Number(it.amount || 0), 0);
+      const fmt = (n: number) =>
+        n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      // Counterparty = whoever did NOT accept
+      const counterpartyIsSupplier = perspective === "buyer";
+      const counterpartyCompanyId = counterpartyIsSupplier ? supplierCompanyId : buyerCompanyId;
+      const counterpartyCompanyName = counterpartyIsSupplier ? supplierCompany : buyerCompany;
+      const negotiationUrl = `https://app.mundustrade.us/${counterpartyIsSupplier ? "supplier" : "buyer"}/negotiations/${neg.id}`;
+      const cp = await getCompanyPrimaryContact(counterpartyCompanyId);
+      if (cp?.email) {
+        await sendEmailNotification("dealAwaitingConfirmation" as any, cp.email, {
+          name: cp.name || counterpartyCompanyName,
+          cutName,
+          offerNumber,
+          totalValue: fmt(Number(settledValue) || 0),
+          acceptedBy: perspective,
+          counterpartyCompany: counterpartyIsSupplier ? buyerCompany : supplierCompany,
+          negotiationUrl,
+          supplierCompanyId,
+        });
+      }
+      // In-app notification to active users of the counterparty company
+      try {
+        const { data: targets } = await supabase.rpc("get_company_active_user_ids", {
+          p_company_id: counterpartyCompanyId,
+        });
+        const userIds = (targets as any[] | null)?.map((r) => r.user_id).filter(Boolean) ?? [];
+        if (userIds.length > 0) {
+          await supabase.rpc("enqueue_app_notifications", {
+            p_user_ids: userIds,
+            p_company_id: counterpartyCompanyId ?? null,
+            p_title: counterpartyIsSupplier
+              ? "Buyer accepted — confirm the deal"
+              : "Supplier accepted your bid — confirm the deal",
+            p_body: `${cutName} · M-${offerNumber} · US$ ${fmt(Number(settledValue) || 0)}`,
+            p_icon: "handshake",
+            p_category: "negotiation",
+            p_link_url: `/${counterpartyIsSupplier ? "supplier" : "buyer"}/negotiations/${neg.id}`,
+            p_link_label: "Review & Confirm",
+            p_related_type: "negotiation",
+            p_related_id: neg.id,
+          });
+        }
+      } catch (e) {
+        console.warn("[notify] awaitingConfirmation in-app failed", e);
+      }
+    } catch (e) {
+      console.warn("[email] dealAwaitingConfirmation queue failed", e);
+    }
+  })();
+
+  return true;
+}
+
+/** Counterparty confirms a pending acceptance — this actually closes the deal. */
+export async function confirmNegotiation(neg: RealNegotiationRow): Promise<boolean> {
+  const { data: authData, error: authError } = await supabase.auth.getUser();
+  const userId = authData.user?.id ?? null;
+  if (authError || !userId) {
+    toast.error("Please sign in again before confirming.");
+    return false;
+  }
+  const { data, error } = await supabase.rpc("confirm_negotiation", {
+    p_negotiation_id: neg.id,
+    p_user_id: userId,
+  });
+  if (error) {
+    const msg = String(error.message ?? "");
+    if (msg.includes("not_counterparty")) {
+      toast.error("Only the counterparty (the side that did not accept) can confirm.");
+    } else if (msg.includes("invalid_status")) {
+      toast.error("This negotiation is no longer awaiting confirmation.");
+    } else {
+      toast.error(msg || "Failed to confirm");
+    }
+    return false;
+  }
+  toast.success("🎉 Deal confirmed — order created.");
   auditLog({
     action: "negotiation.deal_closed",
     category: "negotiation",
     entityType: "negotiation",
     entityId: neg.id,
-    details: {
-      finalValue: (neg as any).current_price_per_kg ?? (neg as any).price_per_kg ?? null,
-      rounds: (neg as any).current_round ?? null,
-    },
+    details: { confirmedFromPending: true, orderId: (data as any)?.order_id ?? null },
   });
 
-  // Fire dealClosed e-mails through the central queue (best-effort, non-blocking).
+  // Send the dealClosed emails to both sides (best-effort).
   (async () => {
     try {
       const items = neg.offer?.items ?? [];
@@ -55,16 +153,15 @@ export async function acceptNegotiation(
       const cutName = items[0]?.customer_product?.name ?? "Offer";
       const totalQty = items.reduce((s, it) => s + Number(it.amount || 0), 0);
       const settledValue =
-        (neg as any).settled_total_value ??
+        (data as any)?.settled_total_value ??
+        (neg as any).accepted_total_value ??
         items.reduce((s, it) => s + Number(it.price) * Number(it.amount || 0), 0);
       const askingAvg =
         totalQty > 0
-          ? items.reduce((s, it) => s + Number(it.price) * Number(it.amount || 0), 0) /
-            totalQty
+          ? items.reduce((s, it) => s + Number(it.price) * Number(it.amount || 0), 0) / totalQty
           : 0;
       const finalAvg = totalQty > 0 ? settledValue / totalQty : askingAvg;
-      const fmt = (n: number) =>
-        n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+      const fmt = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
       const baseVars: any = {
         cutName,
         offerNumber,
