@@ -181,6 +181,25 @@ export function NegotiationChat({
     return rows;
   }, [messages, rounds, agreedItems]);
 
+  // Last price per offer item from the most recent proposal in chat (any side).
+  // Used to enforce the same monotonic rule as the formal negotiation rounds:
+  //   - buyer cannot propose a price LOWER than the last proposal
+  //   - supplier cannot propose a price HIGHER than the last proposal
+  const lastProposalPrices = useMemo(() => {
+    const map: Record<string, number> = {};
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const m = messages[i];
+      if (m.message_type !== "proposal") continue;
+      const items = m.structured_data?.items ?? [];
+      for (const it of items) {
+        if (it.offer_item_id && map[it.offer_item_id] == null) {
+          map[it.offer_item_id] = Number(it.price_per_kg) || 0;
+        }
+      }
+    }
+    return map;
+  }, [messages]);
+
   useEffect(() => {
     if (bodyRef.current) bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
   }, [feed.length, open]);
@@ -592,6 +611,8 @@ export function NegotiationChat({
           allowQty={allowQtyNegotiation && perspective === "buyer"}
           seed={composerSeed}
           busy={sending}
+          perspective={perspective}
+          lastPrices={lastProposalPrices}
           onClose={() => { setComposerOpen(false); setComposerSeed(null); }}
           onSubmit={(items, note) => sendProposalFromComposer(items, note)}
         />
@@ -807,12 +828,14 @@ const mobileSheetStyle: React.CSSProperties = {
    Total kg must equal the sum of offer item amounts — never partial.
 ============================================================ */
 function ProposalComposerModal({
-  offerItems, allowQty, seed, busy, onClose, onSubmit,
+  offerItems, allowQty, seed, busy, perspective, lastPrices, onClose, onSubmit,
 }: {
   offerItems: OfferItem[];
   allowQty: boolean;
   seed: ProposalItem[] | null;
   busy: boolean;
+  perspective: "buyer" | "supplier";
+  lastPrices: Record<string, number>;
   onClose: () => void;
   onSubmit: (items: ProposalItem[], note: string) => void;
 }) {
@@ -836,7 +859,22 @@ function ProposalComposerModal({
   const sumUsd = rows.reduce((s, r) => s + (Number(r.quantity_kg) || 0) * (Number(r.price_per_kg) || 0), 0);
   const totalMatches = Math.abs(sumKg - totalOfferedKg) < 0.5; // tolerance: 0.5 kg
   const allPricesValid = rows.every((r) => Number(r.price_per_kg) > 0);
-  const canSend = totalMatches && allPricesValid && rows.length > 0 && !busy;
+  // Per-item monotonic rule vs. last proposal in chat.
+  // Buyer must propose >= last price; supplier must propose <= last price.
+  const priceViolations = rows.map((r) => {
+    const last = r.offer_item_id ? lastPrices[r.offer_item_id] : undefined;
+    if (!last || last <= 0) return null;
+    const p = Number(r.price_per_kg) || 0;
+    if (perspective === "buyer" && p < last) {
+      return { last, msg: `Must be ≥ ${fmtUsd(last)}/kg (buyer cannot lower previous proposal)` };
+    }
+    if (perspective === "supplier" && p > last) {
+      return { last, msg: `Must be ≤ ${fmtUsd(last)}/kg (supplier cannot raise previous proposal)` };
+    }
+    return null;
+  });
+  const hasPriceViolation = priceViolations.some((v) => v !== null);
+  const canSend = totalMatches && allPricesValid && !hasPriceViolation && rows.length > 0 && !busy;
 
   return (
     <div
@@ -876,8 +914,10 @@ function ProposalComposerModal({
             </div>
             {rows.map((r, i) => {
               const subtotal = (Number(r.quantity_kg) || 0) * (Number(r.price_per_kg) || 0);
+              const violation = priceViolations[i];
+              const last = r.offer_item_id ? lastPrices[r.offer_item_id] : undefined;
               return (
-                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", gap: 8, alignItems: "center" }}>
+                <div key={i} style={{ display: "grid", gridTemplateColumns: "1fr 110px 110px 110px", gap: 8, alignItems: "center", rowGap: 2 }}>
                   <div style={{ fontSize: 13, fontWeight: 500 }}>{r.name}</div>
                   <input
                     type="number" min={0} step={1}
@@ -896,9 +936,14 @@ function ProposalComposerModal({
                       const v = Number(e.target.value);
                       setRows((cur) => cur.map((x, idx) => idx === i ? { ...x, price_per_kg: v } : x));
                     }}
-                    style={{ padding: "6px 8px", border: "1px solid hsl(var(--border))", borderRadius: 6, fontSize: 13, textAlign: "right", background: "hsl(var(--background))" }}
+                    style={{ padding: "6px 8px", border: `1px solid ${violation ? "#dc2626" : "hsl(var(--border))"}`, borderRadius: 6, fontSize: 13, textAlign: "right", background: "hsl(var(--background))" }}
                   />
                   <div style={{ textAlign: "right", fontSize: 13, fontWeight: 600 }}>{fmtUsd(subtotal)}</div>
+                  {(violation || (last && last > 0)) && (
+                    <div style={{ gridColumn: "1 / -1", fontSize: 10, color: violation ? "#b91c1c" : "hsl(var(--muted-foreground))", textAlign: "right", marginBottom: 4 }}>
+                      {violation ? violation.msg : `Last proposal: ${fmtUsd(last!)}/kg`}
+                    </div>
+                  )}
                 </div>
               );
             })}
