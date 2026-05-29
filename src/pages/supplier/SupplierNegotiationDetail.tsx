@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -9,12 +9,10 @@ import {
   CheckIcon,
   XIcon,
   KnifeForkIcon,
-  SparkleIcon,
 } from "@/components/icons";
 import {
   useNegotiation,
   type NegotiationDetail,
-  type NegotiationProduct,
 } from "@/hooks/useNegotiations";
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
@@ -25,10 +23,12 @@ import { isChatEnabled } from "@/lib/negotiationEngine";
 import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
 import { OtherBidsPanel } from "@/components/negotiation/OtherBidsPanel";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
+import { fmtWeight, weightLabel } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
+import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
+import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
@@ -58,11 +58,6 @@ function fmtDate(iso: string, locale: string) {
 }
 function fmtDateShort(iso: string, locale: string) {
   return new Intl.DateTimeFormat(locale, { month: "short", day: "2-digit" }).format(new Date(iso));
-}
-
-function getPerRoundKg(p: NegotiationProduct, type: "bid" | "counter", round: number): number | undefined {
-  const key = `${type}R${round}UsdKg` as keyof NegotiationProduct;
-  return p[key] as number | undefined;
 }
 
 export default function SupplierNegotiationDetail() {
@@ -395,123 +390,17 @@ export default function SupplierNegotiationDetail() {
 
         {/* RIGHT */}
         <div>
-          {/* Timeline */}
-          <div className="nd-card">
-            <div className="nd-timeline-head">
-              <span className="tl-head-title">
-                <SparkleIcon size={14} />
-                {t("supplier.negotiations.detail.timeline")}
-              </span>
-              <span className="tl-head-meta">
-                {t("supplier.negotiations.detail.roundOf", { round: d.round, max: d.maxRounds })}
-              </span>
-            </div>
-            <div className="nd-timeline-flow">
-              {d.rounds.map((r, i) => {
-                const labelKey =
-                  r.type === "bid"
-                    ? "supplier.negotiations.detail.timelineLabel.bid"
-                    : r.isCurrent
-                      ? "supplier.negotiations.detail.timelineLabel.counterCurrent"
-                      : "supplier.negotiations.detail.timelineLabel.counter";
-                const pillClass =
-                  r.type === "bid"
-                    ? "tl-pill tl-pill--bid"
-                    : r.isCurrent
-                      ? "tl-pill tl-pill--counter tl-pill--current"
-                      : "tl-pill tl-pill--counter";
-                return (
-                  <Fragment key={`${r.type}-${r.round}-${i}`}>
-                    {i > 0 && <span className="tl-sep">→</span>}
-                    <span className={pillClass}>
-                      <span className="tl-pill-label">{t(labelKey, { n: r.round })}</span>
-                      <span>{fmtUsd(r.totalUsd, 2)}</span>
-                    </span>
-                  </Fragment>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Price details */}
-          <div className="nd-card">
-            <div className="nd-card-head">
-              <strong>{t("supplier.negotiations.detail.priceDetails")}</strong>
-            </div>
-            <div className="nd-price-scroll-wrap" style={{ overflowX: "auto" }}>
-              <table className="nd-price-table">
-                <thead>
-                  <tr>
-                    <th>{t("supplier.negotiations.detail.col.product")}</th>
-                    <th>{t("supplier.negotiations.detail.col.qty", { unit: weightLabel(unit), defaultValue: "Qty ({{unit}})" })}</th>
-                    <th>{t("supplier.negotiations.detail.col.asking")}</th>
-                    {Array.from({ length: maxRoundShown }, (_, i) => (
-                      <Fragment key={`h-${i}`}>
-                      <th className="col-bid">{t("supplier.negotiations.detail.col.bidR", { n: i + 1 })}</th>
-                      <th className="col-counter">{t("supplier.negotiations.detail.col.counterR", { n: i + 1 })}</th>
-                      </Fragment>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {d.products.map((p) => {
-                    const qtyKg = p.qtyLb / LB_PER_KG;
-                    const agreed = agreedByName.get(p.name);
-                    const rowStyle = agreed
-                      ? { background: "rgba(34,197,94,0.06)" }
-                      : undefined;
-                    return (
-                      <tr key={p.name} style={rowStyle}>
-                        <td>
-                          <span className="product-name">
-                            {agreed && <span aria-hidden style={{ marginRight: 4 }}>🔒</span>}
-                            {p.name}
-                          </span>
-                          <span className="product-pack">{p.pack}</span>
-                          {agreed && (
-                            <span
-                              className="inline-block ml-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
-                              style={{ background: "rgba(34,197,94,0.15)", color: "#15803d" }}
-                            >
-                              {t("negotiation.agreedBadge", {
-                                defaultValue: "Agreed at ${{price}}/{{unit}}",
-                                price: fmtPrice(agreed.price, unit),
-                                unit: weightLabel(unit),
-                              })}
-                            </span>
-                          )}
-                        </td>
-                        <td>{fmtWeight(qtyKg, unit)}</td>
-                        <td>${fmtPrice(p.askingUsdKg, unit)}</td>
-                        {Array.from({ length: maxRoundShown }, (_, i) => {
-                          const round = i + 1;
-                          const bidV = getPerRoundKg(p, "bid", round);
-                          const cntV = getPerRoundKg(p, "counter", round);
-                          const isCurrentCounter = round === maxRoundShown;
-                          const showAgreedInLast = agreed && isCurrentCounter;
-                          return (
-                            <Fragment key={`v-${i}`}>
-                              <td className="col-bid">{bidV != null ? `$${fmtPrice(bidV, unit)}` : "—"}</td>
-                              <td
-                                className={`col-counter${isCurrentCounter ? " col-counter--current" : ""}`}
-                                style={showAgreedInLast ? { color: "#15803d", fontWeight: 600 } : undefined}
-                              >
-                                {showAgreedInLast
-                                  ? `$${fmtPrice(agreed!.price, unit)} 🔒`
-                                  : cntV != null
-                                    ? `$${fmtPrice(cntV, unit)}`
-                                    : "—"}
-                              </td>
-                            </Fragment>
-                          );
-                        })}
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <DealProgressionCard
+            rounds={d.rounds}
+            currentRound={d.round}
+            maxRounds={d.maxRounds}
+            perspective="supplier"
+          />
+          <PriceHistoryTable
+            products={d.products}
+            maxRoundShown={maxRoundShown}
+            agreedByName={agreedByName}
+          />
         </div>
       </div>
 
