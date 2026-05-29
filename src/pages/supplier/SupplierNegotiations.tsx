@@ -6,7 +6,6 @@ import { Mail } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
-import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
 import { NegotiationsFilterSheet } from "@/components/marketplace/NegotiationsFilterSheet";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
