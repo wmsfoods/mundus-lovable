@@ -249,6 +249,7 @@ const doc: DocContent = {
           ["Total FCL", "Até 20 containers por offer", "Definido no passo 3 do Create Offer."],
         ]},
         { kind: "p", text: "Volume total da oferta = (soma dos itens de um container) × total_fcl. A UI mostra o volume por container para o usuário entender o ‘molde’." },
+        { kind: "callout", text: "VALOR. ‘Total Value / per FCL’ = soma(qty_por_item × preço_por_kg) de UM container. NUNCA divida esse valor por total_fcl. O total do inventário disponível é per-FCL × total_fcl. Vale para Supplier, Buyer e Admin." },
 
         { kind: "h3", text: "Unidades kg / lbs (src/lib/units.ts)" },
         { kind: "ul", items: [

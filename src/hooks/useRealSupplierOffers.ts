@@ -76,7 +76,10 @@ export function useRealSupplierOffers() {
         const askingPrice = items.reduce((s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0), 0);
         const floorPrice = items.reduce((s, it) => s + Number(it.minimum_price ?? it.price ?? 0) * Number(it.amount ?? 0), 0);
         const fclCount = Number(o.total_fcl ?? 1) || 1;
-        const pricePerFclUsd = fclCount > 0 ? askingPrice / fclCount : askingPrice;
+        // `askingPrice` is already the value of ONE container (mix qty × price).
+        // total_fcl is the number of identical containers available — it must
+        // NOT divide the per-FCL value.
+        const pricePerFclUsd = askingPrice;
         const firstName = items[0]?.customer_product?.name ?? null;
         const formattedNumber = formatOfferNumber(o.offer_number, o.created_at);
         const title =
