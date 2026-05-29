@@ -262,7 +262,9 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
     return {
       name: it.customer_product?.name ?? "—",
       pack: "—",
-      qtyLb: Number(it.amount),
+      // it.amount is stored in kg in DB. Detail pages divide by LB_PER_KG
+      // expecting lb here, so convert kg → lb before exposing.
+      qtyLb: Number(it.amount) * 2.20462262185,
       askingUsdKg: Number(it.price),
       bidR1UsdKg: (m["bidR1UsdKg"] as number) ?? Number(it.price),
       counterR1UsdKg: (m["counterR1UsdKg"] as number) ?? Number(it.price),
