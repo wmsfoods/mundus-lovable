@@ -2270,6 +2270,39 @@ export default function SupplierCreateOffer() {
             </div>
           </div>
 
+          {/* Negotiation rules */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">Negotiation rules</div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: 12,
+                border: "1px solid hsl(var(--border))",
+                borderRadius: 8,
+                background: "hsl(var(--muted))",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowQtyNegotiation}
+                onChange={(e) => setAllowQtyNegotiation(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: "hsl(var(--foreground))" }}>
+                  Allow buyers to negotiate item quantities
+                </div>
+                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
+                  When on, buyers may redistribute kg across items inside a chat proposal.
+                  The total offered kg must always match the original offer — partial loads are never allowed.
+                </div>
+              </div>
+            </label>
+          </div>
+
           {/* Payment terms */}
           <div className="cov4-sec">
             <div className="cov4-sec-t">Payment terms</div>
