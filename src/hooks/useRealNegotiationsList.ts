@@ -54,6 +54,7 @@ export function useRealNegotiationsList(role: Role) {
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
           order_id,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
+          buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
           offer:offers!inner (
             id, offer_number, created_at, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,

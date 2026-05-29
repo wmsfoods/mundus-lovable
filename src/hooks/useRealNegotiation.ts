@@ -115,6 +115,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           rejection_cooldown_until, current_round, chat_enabled,
           order_id,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
+          buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
           offer:offers (
             id, offer_number, created_at, supplier_id, supplier_name, status, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
