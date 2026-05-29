@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, Activity,
   Users, BarChart3, Beef, Globe, Ship, Coins, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw, LineChart,
-  Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox,
+  Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox, BookOpen,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
@@ -84,6 +84,7 @@ export default function AdminShell() {
     { to: "/admin/settings/audit", label: t("admin.shell.nav.audit"), icon: History as unknown as IconCmp },
     { to: "/admin/settings/flags", label: t("admin.shell.nav.flags"), icon: Flag as unknown as IconCmp },
     { to: "/admin/import", label: "Import", icon: RefreshCw as unknown as IconCmp },
+    { to: "/admin/docs", label: "Documentação", icon: BookOpen as unknown as IconCmp, groupLabel: "RECURSOS" },
   ];
 
   const ADMIN_BOTTOM: BottomNavItem[] = [
