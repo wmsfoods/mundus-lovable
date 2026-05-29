@@ -29,6 +29,7 @@ import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
 import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
+import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
@@ -401,6 +402,13 @@ export default function SupplierNegotiationDetail() {
             maxRoundShown={maxRoundShown}
             agreedByName={agreedByName}
           />
+          {isReal && rawNeg && (
+            <NegotiationActivityTab
+              negotiation={rawNeg}
+              buyerLabel={d.buyerName}
+              supplierLabel={rawNeg.offer?.supplier_name ?? "Supplier"}
+            />
+          )}
         </div>
       </div>
 
@@ -426,6 +434,7 @@ export default function SupplierNegotiationDetail() {
           onOpenChange={setCounterOpen}
           negotiation={rawNeg}
           perspective="supplier"
+          counterpartyLabel={`Buyer: ${d.buyerName}`}
           onSubmitted={() => refetch()}
         />
       )}

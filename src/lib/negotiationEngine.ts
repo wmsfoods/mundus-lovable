@@ -18,16 +18,16 @@ export function isChatEnabled(
   return (neg.current_round ?? 1) >= CHAT_ENABLED_FROM_ROUND;
 }
 
-/** Validate price direction for buyer: each bid must be >= previous bid */
+/** Validate price direction for buyer: each bid must be STRICTLY greater than previous bid */
 export function validateBuyerBidDirection(
   previousBidPricePerKg: number | null,
   newBidPricePerKg: number,
 ): { valid: boolean; message?: string } {
   if (previousBidPricePerKg === null) return { valid: true };
-  if (newBidPricePerKg >= previousBidPricePerKg) return { valid: true };
+  if (newBidPricePerKg > previousBidPricePerKg + 1e-9) return { valid: true };
   return {
     valid: false,
-    message: `Bid must be ≥ your previous bid ($${previousBidPricePerKg.toFixed(2)}/kg). You cannot lower your offer.`,
+    message: `Bid must be GREATER than your previous bid ($${previousBidPricePerKg.toFixed(2)}/kg). You cannot match or lower it.`,
   };
 }
 

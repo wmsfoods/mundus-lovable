@@ -4,12 +4,13 @@ import { supabase } from "@/integrations/supabase/client";
 interface OtherBidRow {
   id: string;
   buyerName: string;
-  contactName?: string;
   status: string;
   currentRound: number;
   latestBidTotal: number;
   destinationCountry?: string;
   hasMessages?: boolean;
+  itemsSignature?: string;
+  isCurrent?: boolean;
 }
 
 interface Props {
@@ -25,8 +26,12 @@ interface Props {
 
 /**
  * Sidebar panel shown to the supplier on a negotiation detail page.
- * Lists every OTHER active negotiation on the same offer, with the buyer's
- * latest bid total. Highlights the best offer and the one currently open.
+ * Lists every active bid on the same offer (including the one currently
+ * being viewed). Highlights the best bid, detects ties, and flags when
+ * tied bids share the exact same per-item amounts.
+ *
+ * Rule: bids that have never been placed (total = 0) are hidden.
+ * Rule: buyer label is always "Buyer: <Name>" — no avatar/initials.
  */
 export function OtherBidsPanel({
   currentNegotiationId,
@@ -53,12 +58,11 @@ export function OtherBidsPanel({
            buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
            rounds:round_proposals!round_proposals_negotiation_id_fkey (
              id, round,
-             cut_rounds ( price_per_kg, quantity_kg )
+             cut_rounds ( offer_item_id, price_per_kg, quantity_kg )
            ),
            messages:negotiation_messages ( id )`,
         )
-        .eq("offer_id", offerId)
-        .neq("id", currentNegotiationId);
+        .eq("offer_id", offerId);
       if (cancelled || !negs) {
         if (!cancelled) {
           setRows([]);
@@ -68,13 +72,16 @@ export function OtherBidsPanel({
       }
       const out: OtherBidRow[] = [];
       for (const n of negs as any[]) {
-        // latest BUYER round = highest odd round
         const buyerRounds = (n.rounds ?? []).filter((r: any) => r.round % 2 === 1);
         const last = buyerRounds.sort((a: any, b: any) => b.round - a.round)[0];
         const total = (last?.cut_rounds ?? []).reduce(
           (s: number, c: any) => s + Number(c.price_per_kg) * Number(c.quantity_kg),
           0,
         );
+        const sig = [...(last?.cut_rounds ?? [])]
+          .map((c: any) => `${c.offer_item_id}:${Number(c.price_per_kg).toFixed(4)}@${Number(c.quantity_kg).toFixed(2)}`)
+          .sort()
+          .join("|");
         out.push({
           id: n.id,
           buyerName: n.buyer?.name ?? "Buyer",
@@ -82,6 +89,8 @@ export function OtherBidsPanel({
           currentRound: Number(n.current_round ?? Math.ceil((last?.round ?? 1) / 2)),
           latestBidTotal: total,
           hasMessages: Array.isArray(n.messages) && n.messages.length > 0,
+          itemsSignature: sig,
+          isCurrent: n.id === currentNegotiationId,
         });
       }
       setRows(out);
@@ -93,59 +102,47 @@ export function OtherBidsPanel({
   }, [offerId, currentNegotiationId]);
 
   if (loading) return null;
-  if (rows.length === 0) return null;
+  // Always render a row for the current negotiation even if data is stale.
+  const merged: OtherBidRow[] = rows.length
+    ? rows
+    : [{
+        id: currentNegotiationId,
+        buyerName: currentBuyerName,
+        status: currentStatus,
+        currentRound,
+        latestBidTotal: currentBuyerTotal,
+        destinationCountry: currentDestinationCountry,
+        isCurrent: true,
+      }];
+  const placed = merged.filter((b) => b.latestBidTotal > 0);
+  if (placed.length === 0) return null;
 
-  type Row = {
-    id: string;
-    buyerName: string;
-    latestBidTotal: number;
-    status: string;
-    currentRound: number;
-    destinationCountry?: string;
-    hasMessages?: boolean;
-    isCurrent: boolean;
-  };
-  const allBids: Row[] = [
-    {
-      id: currentNegotiationId,
-      buyerName: currentBuyerName,
-      latestBidTotal: currentBuyerTotal,
-      status: currentStatus,
-      currentRound,
-      destinationCountry: currentDestinationCountry,
-      isCurrent: true,
-    },
-    ...rows.map((r) => ({ ...r, isCurrent: false })),
-  ];
-  const sortedByValue: Row[] = [...allBids].sort((a, b) => b.latestBidTotal - a.latestBidTotal);
+  const sortedByValue = [...placed].sort((a, b) => b.latestBidTotal - a.latestBidTotal);
   const bestId = sortedByValue[0]?.id;
+  const bestTotal = sortedByValue[0]?.latestBidTotal ?? 0;
+  const tieGroup = sortedByValue.filter((b) => b.latestBidTotal === bestTotal);
+  const bestSig = tieGroup[0]?.itemsSignature;
+  const sameAmounts =
+    tieGroup.length > 1 && !!bestSig && tieGroup.every((b) => b.itemsSignature === bestSig);
   const rankById = new Map(sortedByValue.map((b, i) => [b.id, i + 1]));
 
   const currentRank = rankById.get(currentNegotiationId) ?? 1;
   const visibleCount = 3;
   const hidden = Math.max(0, sortedByValue.length - visibleCount);
-  let visible: Row[] = expanded ? sortedByValue : sortedByValue.slice(0, visibleCount);
-  if (!expanded && currentRank > visibleCount) {
+  let visible = expanded ? sortedByValue : sortedByValue.slice(0, visibleCount);
+  if (!expanded && currentRank > visibleCount && sortedByValue[currentRank - 1]) {
     visible = [...visible, sortedByValue[currentRank - 1]];
   }
+  // Dedupe by id to avoid duplicate React keys when the current row is
+  // already in the top slice.
+  visible = Array.from(new Map(visible.map((b) => [b.id, b])).values());
 
   const flag = (cc?: string) => {
     if (!cc || cc.length !== 2) return null;
     const code = cc.toUpperCase();
-    const emoji = String.fromCodePoint(
-      ...[...code].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65),
-    );
+    const emoji = String.fromCodePoint(...[...code].map((c) => 0x1f1e6 + c.charCodeAt(0) - 65));
     return <span style={{ fontSize: 16 }} aria-hidden>{emoji}</span>;
   };
-
-  const initials = (name: string) =>
-    name
-      .split(/\s+/)
-      .map((s) => s[0])
-      .filter(Boolean)
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
 
   const handleSelect = (negId: string, isCurrent: boolean) => {
     if (isCurrent) return;
@@ -175,18 +172,28 @@ export function OtherBidsPanel({
             color: "#4338CA",
           }}
         >
-          {allBids.length} bid{allBids.length === 1 ? "" : "s"}
+          {placed.length} bid{placed.length === 1 ? "" : "s"}
         </span>
       </div>
+
       <div style={{ fontWeight: 600, fontSize: 13, color: "#059669", marginBottom: 10 }}>
-        Best bid: ${sortedByValue[0].latestBidTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })} —{" "}
-        {sortedByValue[0].buyerName}
+        Best bid: ${bestTotal.toLocaleString(undefined, { maximumFractionDigits: 0 })} —{" "}
+        {tieGroup.length > 1
+          ? tieGroup.map((b) => `Buyer: ${b.buyerName}`).join(" and ")
+          : `Buyer: ${sortedByValue[0].buyerName}`}
+        {tieGroup.length > 1 && (
+          <div style={{ fontSize: 11, fontWeight: 500, color: "#6B7280", marginTop: 2 }}>
+            {tieGroup.length} buyers tied at the same total
+            {sameAmounts ? " · same amounts per item" : " · different per-item amounts"}
+          </div>
+        )}
       </div>
+
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {visible.map((b) => {
           const rank = rankById.get(b.id) ?? 0;
           const isBest = b.id === bestId;
-          const isCurrent = b.isCurrent;
+          const isCurrent = !!b.isCurrent;
           const borderColor = isCurrent ? (isBest ? "#8B2252" : "#2563EB") : "#E5E7EB";
           const bg = isCurrent ? "#FDF2F8" : "#fff";
           return (
@@ -231,26 +238,17 @@ export function OtherBidsPanel({
               >
                 {rank}
               </span>
-              <span
-                aria-hidden
-                style={{
-                  width: 32,
-                  height: 32,
-                  borderRadius: 999,
-                  background: "#F3F4F6",
-                  color: "#374151",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: 11,
-                  fontWeight: 700,
-                  flexShrink: 0,
-                }}
-              >
-                {initials(b.buyerName)}
-              </span>
               <div style={{ minWidth: 0, flex: 1 }}>
-                <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", display: "flex", alignItems: "center", gap: 6 }}>
+                <div
+                  style={{
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#111827",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                  }}
+                >
                   <span style={{ overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     Buyer: {b.buyerName}
                   </span>
@@ -309,7 +307,7 @@ export function OtherBidsPanel({
                     letterSpacing: 0.4,
                   }}
                 >
-                  {isBest ? "BEST" : "total bid"}
+                  {isBest ? (tieGroup.length > 1 ? "TIED BEST" : "BEST") : "total bid"}
                 </div>
               </div>
               <span aria-hidden style={{ color: "#9CA3AF", fontSize: 14 }}>›</span>
