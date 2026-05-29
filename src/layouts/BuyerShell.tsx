@@ -80,9 +80,7 @@ function BuyerShellInner() {
       label: "Admin",
       icon: UsersIcon as unknown as SidebarItem["icon"],
       children: [
-        { to: "/buyer/users", label: t("shell.nav.users"), icon: UsersIcon },
         { to: "/buyer/company", label: t("shell.nav.myCompany", { defaultValue: "My Company" }), icon: HomeIcon },
-        { to: "/buyer/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
       ],
     },
   ];
