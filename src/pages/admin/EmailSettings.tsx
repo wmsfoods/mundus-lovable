@@ -8,13 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "sonner";
 
-const ACCOUNTS = [
-  { user: "Fernando Costa", provider: "zoho", from: "fernando@mundustrade.com", status: "active" },
-  { user: "Monica Reis", provider: "microsoft", from: "monica@mundustrade.com", status: "active" },
-  { user: "System Default", provider: "zoho", from: "contact@mundustrade.com", status: "active" },
-];
+const ACCOUNTS: { user: string; provider: string; from: string; status: string }[] = [];
 
-const USERS = ["Fernando Costa", "Monica Reis", "Yuri Almeida", "System Default"];
+const USERS: string[] = [];
 
 export default function EmailSettings() {
   const [open, setOpen] = useState(false);
