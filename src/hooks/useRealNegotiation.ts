@@ -28,6 +28,7 @@ export type RealNegotiationRow = {
   chat_enabled: boolean | null;
   order_id: string | null;
   order: { id: string; order_number: number | null } | null;
+  buyer: { id: string; name: string | null } | null;
   offer: {
     id: string;
     offer_number: number;
