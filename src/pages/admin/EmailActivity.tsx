@@ -213,7 +213,14 @@ export default function EmailActivity() {
       }
       if (dateFrom && new Date(r.created_at) < new Date(dateFrom)) return false;
       if (dateTo && new Date(r.created_at) > new Date(dateTo + "T23:59:59")) return false;
-      if (q && !r.to_email.toLowerCase().includes(q) && !r.subject.toLowerCase().includes(q)) return false;
+      if (q) {
+        const offerNo = (offerNoOf(r) ?? "").toLowerCase();
+        if (
+          !r.to_email.toLowerCase().includes(q) &&
+          !r.subject.toLowerCase().includes(q) &&
+          !offerNo.includes(q)
+        ) return false;
+      }
       return true;
     });
   }, [rows, search, templateFilter, statusFilter, dateFrom, dateTo]);
