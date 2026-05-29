@@ -27,6 +27,7 @@ import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
 import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
+import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
@@ -412,6 +413,13 @@ export default function BuyerNegotiationDetail() {
             products={d.products}
             maxRoundShown={maxRoundShown}
           />
+          {isReal && rawNeg && (
+            <NegotiationActivityTab
+              negotiation={rawNeg}
+              buyerLabel={rawNeg.buyer?.name ?? "You"}
+              supplierLabel={d.supplierName}
+            />
+          )}
         </div>
       </div>
 
