@@ -6601,6 +6601,23 @@ export type Database = {
       }
       current_user_company_id: { Args: never; Returns: string }
       current_user_company_ids: { Args: never; Returns: string[] }
+      enqueue_email: {
+        Args: {
+          p_html_body: string
+          p_subject: string
+          p_template_name: string
+          p_template_vars?: Json
+          p_to_email: string
+        }
+        Returns: string
+      }
+      get_company_primary_contact: {
+        Args: { p_company_id: string }
+        Returns: {
+          email: string
+          full_name: string
+        }[]
+      }
       increment_offer_views: { Args: { offer_id: string }; Returns: undefined }
       is_company_master: { Args: { _company_id: string }; Returns: boolean }
       is_mundus_admin: { Args: never; Returns: boolean }
