@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
+import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay, LB_PER_KG } from "@/lib/units";
 import {
   MAX_DISPLAY_ROUNDS,
   getAgreedItems,
@@ -31,6 +31,7 @@ import {
   getIncotermBannerLabel,
 } from "@/lib/incotermPricing";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { PriceHistoryTable, type PriceHistoryProduct } from "@/components/negotiation/PriceHistoryTable";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
@@ -112,6 +113,53 @@ export function CounterOfferModal({
   const displayRound = Math.ceil(nextRaw / 2);
   const isFinal = isFinalDisplayRound(displayRound);
   const exhausted = isCounterExhausted(negotiation); // nextRaw would exceed MAX_RAW_ROUNDS
+
+  // Per-product historical bid/counter prices for all completed rounds.
+  // Mirrors the Price History table on the negotiation detail page.
+  const historyProducts = useMemo<PriceHistoryProduct[]>(() => {
+    const perItem = new Map<string, Record<string, number>>();
+    for (const rp of rounds) {
+      const isBid = rp.round % 2 === 1;
+      const disp = Math.ceil(rp.round / 2);
+      const key = `${isBid ? "bid" : "counter"}R${disp}UsdKg`;
+      for (const c of rp.cut_rounds ?? []) {
+        const m = perItem.get(c.offer_item_id) ?? {};
+        m[key] = Number(c.price_per_kg);
+        perItem.set(c.offer_item_id, m);
+      }
+    }
+    return items.map((it) => {
+      const m = perItem.get(it.id) ?? {};
+      return {
+        name: it.customer_product?.name ?? "—",
+        pack: "—",
+        qtyLb: Number(it.amount) * LB_PER_KG,
+        askingUsdKg: Number(it.price),
+        bidR1UsdKg: m["bidR1UsdKg"],
+        counterR1UsdKg: m["counterR1UsdKg"],
+        bidR2UsdKg: m["bidR2UsdKg"],
+        counterR2UsdKg: m["counterR2UsdKg"],
+        bidR3UsdKg: m["bidR3UsdKg"],
+        counterR3UsdKg: m["counterR3UsdKg"],
+        bidR4UsdKg: m["bidR4UsdKg"],
+        counterR4UsdKg: m["counterR4UsdKg"],
+      } as PriceHistoryProduct;
+    });
+  }, [rounds, items]);
+  const historyMaxRound = Math.min(
+    MAX_DISPLAY_ROUNDS,
+    Math.max(displayRound, ...rounds.map((r) => Math.ceil(r.round / 2)), 1),
+  );
+  const agreedByName = useMemo(() => {
+    const map = new Map<string, { price: number; round: number }>();
+    for (const a of existingAgreed) {
+      const it = items.find((i) => i.id === a.offer_item_id);
+      if (it?.customer_product?.name) {
+        map.set(it.customer_product.name, { price: a.price_per_kg, round: a.agreed_round });
+      }
+    }
+    return map;
+  }, [existingAgreed, items]);
 
   // Latest "other side" prices per offer_item — what we're responding to.
   // Supplier responds to latest bid (odd round); buyer responds to latest counter (even round).
@@ -824,6 +872,29 @@ export function CounterOfferModal({
               );
             })}
           </div>
+        )}
+
+        {/* Full per-product price history (collapsible) — gives the responder
+            the same multi-round visibility shown on the detail page. */}
+        {rounds.length > 0 && historyProducts.length > 0 && (
+          <details className="rounded-lg border border-border bg-muted/30 px-3 py-2 group" open>
+            <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center justify-between">
+              <span>Price history per product</span>
+              <span className="text-[10px] font-normal text-muted-foreground group-open:hidden">
+                Show
+              </span>
+              <span className="text-[10px] font-normal text-muted-foreground hidden group-open:inline">
+                Hide
+              </span>
+            </summary>
+            <div className="mt-3 -mx-1 overflow-x-auto">
+              <PriceHistoryTable
+                products={historyProducts}
+                maxRoundShown={historyMaxRound}
+                agreedByName={agreedByName}
+              />
+            </div>
+          </details>
         )}
 
         {/* Bulk apply — unified responsive */}
