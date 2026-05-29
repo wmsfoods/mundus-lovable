@@ -25,6 +25,7 @@ type RequestRow = {
 };
 
 type ManagedSupplier = { id: string; name: string; country: string | null; logo_url: string | null };
+type ManagedBuyer = { id: string; name: string; country: string | null; logo_url: string | null };
 
 type Filter = "all" | "new" | "with_responses" | "offer_sent" | "closed";
 
@@ -58,6 +59,8 @@ export default function AdminBuyerRequests() {
   const [filter, setFilter] = useState<Filter>("all");
   const [search, setSearch] = useState("");
   const [managedSuppliers, setManagedSuppliers] = useState<ManagedSupplier[]>([]);
+  const [managedBuyers, setManagedBuyers] = useState<ManagedBuyer[]>([]);
+  const [showCreateRequest, setShowCreateRequest] = useState(false);
   const [pickerRequest, setPickerRequest] = useState<RequestRow | null>(null);
 
   useEffect(() => {
@@ -79,11 +82,19 @@ export default function AdminBuyerRequests() {
           .order("name"),
       ]);
 
+      const { data: buyers } = await supabase
+        .from("companies")
+        .select("id, name, country, logo_url")
+        .eq("mundus_managed_buyer", true)
+        .eq("is_buyer", true)
+        .is("deleted_at", null)
+        .order("name");
+
       const list = (reqs ?? []) as RequestRow[];
       const buyerIds = Array.from(new Set(list.map((r) => r.buyer_company_id)));
       const reqIds = list.map((r) => r.id);
 
-      const [{ data: buyers }, { data: linkedOffers }] = await Promise.all([
+      const [{ data: buyersForRows }, { data: linkedOffers }] = await Promise.all([
         buyerIds.length
           ? supabase.from("companies").select("id, name").in("id", buyerIds)
           : Promise.resolve({ data: [] as any[] }),
@@ -96,7 +107,7 @@ export default function AdminBuyerRequests() {
           : Promise.resolve({ data: [] as any[] }),
       ]);
 
-      const buyerMap = new Map((buyers ?? []).map((b: any) => [b.id, b.name]));
+      const buyerMap = new Map((buyersForRows ?? []).map((b: any) => [b.id, b.name]));
       const offerMap = new Map<string, RequestRow["linked_offers"]>();
       (linkedOffers ?? []).forEach((o: any) => {
         const arr = offerMap.get(o.request_id) ?? [];
@@ -113,6 +124,7 @@ export default function AdminBuyerRequests() {
         }))
       );
       setManagedSuppliers((suppliers as any) ?? []);
+      setManagedBuyers((buyers as any) ?? []);
       setLoading(false);
     })();
     return () => { cancelled = true; };
