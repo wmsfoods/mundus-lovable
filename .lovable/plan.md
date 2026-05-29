@@ -1,79 +1,89 @@
-# Admin: Create Request on behalf of managed buyer
+## Direção corrigida
 
-## Análise — zero conflito confirmado
+Pelas imagens, o **layout-padrão é o do buyer/supplier** (`My Company` com cards Locations · Contact · Profile · Trade Preferences). É esse visual que vai ser o "canônico" — e o **admin da Mundus passa a usá-lo também** quando abre o registro de uma empresa. Hoje está o contrário: cada lado tem sua tela.
 
-Validei o prompt contra o código atual. O padrão equivalente já existe e funciona no lado supplier:
-- `AdminOffers.tsx` (linha 362) navega para `/admin/create-offer?as_company={id}`.
-- `App.tsx` (linha 273) monta `<Route path="create-offer" element={<SupplierCreateOffer />} />` dentro do shell `/admin`.
-- `SupplierCreateOffer.tsx` (linhas 187, 225) lê `as_company` via `searchParams` e opera em modo on-behalf.
+Sobre as perguntas:
 
-Para o lado buyer já temos tudo pronto também:
-- `BuyerCreateRequest.tsx` usa `useCurrentCompany()` e referencia `company.id` em apenas 3 pontos (linhas 157, 548, 558) — substituição cirúrgica por um `effectiveCompanyId`.
-- `AdminBuyerRequests.tsx` é a página de listagem onde entra o botão.
-- Coluna `mundus_managed_buyer` em `companies` já existe (usada hoje no app).
-- `requestNumber.ts`, parse de cuts, notificações: ficam intocados (são chamados depois do submit, mesma rotina).
+- *"O admin que você colocou ai é o admin da Mundus?"* — Sim. Em todo o sistema, "admin" = membro da equipe Mundus (verificado via `is_mundus_admin()`). Buyers/Suppliers não têm papel "admin" sobre a plataforma; o equivalente deles é `master_buyer`/`master_supplier`, que manda **dentro da própria empresa**, mas nunca pode deletar a empresa nem alterar flags Mundus.
+- *Manage / Delete* — fica **escondido** do buyer/supplier. Só aparece para quem passa em `is_mundus_admin()`.
 
-Nenhuma regra de negócio muda. Nenhum schema novo. Nenhuma RPC nova. Sem reescrita do wizard. Sem impacto no fluxo `/buyer/requests/new`. Sem mexer em negociações, FCL, confirm/accept, chat, etc.
+## O que vai mudar
 
-## Mudanças (escopo mínimo)
+### 1. Componente único `CompanyRecordView`
 
-### 1. Rota admin
-`src/App.tsx`: adicionar dentro do grupo `/admin` (ao lado de `create-offer`):
+Extrair o conteúdo atual de `src/components/company/CompanyProfilePage.tsx` (o layout das imagens) para um componente reutilizável:
+
+```text
+src/components/company/CompanyRecordView.tsx
+  props:
+    companyId: string
+    viewerRole: "buyer" | "supplier" | "admin"
+    embedded?: boolean   // true = sem Crumbs/PageTitle (uso interno em outras telas)
 ```
-<Route path="create-request" element={<BuyerCreateRequest />} />
-```
-Já fica protegida pelo `RequireAdmin` existente.
 
-### 2. Botão + modal "Create Request for…"
-`src/pages/admin/AdminBuyerRequests.tsx`:
-- Botão **"+ Create Request"** no header (wine `#8B2252`), mesma posição/estilo do "+ Create Offer" em `AdminOffers`.
-- Modal **"Create Request for…"** copiando 1:1 o markup/estilo do modal "Create Offer for…" do `AdminOffers` (mesmo overlay, card, row, Cancel).
-- Query: `companies` onde `mundus_managed_buyer = true AND is_buyer = true AND deleted_at IS NULL`, order by name. Linhas: logo (fallback 🛒) + nome + país.
-- Subtitle: "Select a managed buyer to create a request on their behalf."
-- Empty state: "No managed buyers. Go to Companies → toggle 'Mundus manages requests for this buyer' first."
-- Seleção → navega para `/admin/create-request?as_company={companyId}`.
+Esse componente renderiza **sempre os mesmos cards**, na mesma ordem das imagens anexadas:
 
-### 3. Modo on-behalf no `BuyerCreateRequest.tsx`
-Espelhar exatamente como `SupplierCreateOffer` faz:
-- Ler `as_company` via `useSearchParams()`.
-- Se presente **E** `useIsMundusAdmin().isAdmin === true`: resolver `effectiveCompanyId = as_company`; senão `effectiveCompanyId = company.id` (fallback do não-admin é silencioso, nunca spoof).
-- Carregar dados da target buyer (protein profile, cuts preferidos, ports salvos, contato primário, defaults) usando `effectiveCompanyId` — mesmo pattern do supplier flow para popular o wizard.
-- Banner de contexto no topo: "Creating request on behalf of **{Buyer Company Name}**" + logo (clone visual do banner do supplier flow).
-- Substituir os 3 usos de `company.id` (linhas 157, 548, 558) por `effectiveCompanyId`. `buyer_company_id` no insert = `effectiveCompanyId`.
-- Submit roda **toda** a pipeline atual (request number, parse cuts, notificações) — nada é pulado.
-- Sem `as_company` → comportamento atual do `/buyer/requests/new` inalterado.
+1. Header da empresa (nome + Tax ID + chip BUYER/SUPPLIER + logo)
+2. **Locations** (HQ + Offices/Factories) — substitui as páginas atuais `SupplierOffices` / a aba "Plants" do admin
+3. **Contact & website**
+4. **Supplier profile** ou **Buyer profile** (proteínas + cuts) conforme `is_supplier`/`is_buyer`
+5. **Trade Preferences**
+6. **Team / Users** (novo card colapsável, ver §3)
+7. **Mundus admin controls** (novo card — ver §2, visível só se `viewerRole === "admin"`)
 
-### 4. Traceability
-- `created_user_id` = admin atual (actor); `company_id` (buyer) = target.
-- `auditLog`: `{ action: "request.created_on_behalf", category: "request", entityType: "request", entityId: newRequestId, details: { buyer_company_id, buyer_company_name, created_by_admin: true } }`. Só se chamar fora do path normal de buyer (gate por `isAdmin && as_company`).
-- Não inventar colunas novas. Se o offer flow já marca alguma flag análoga (a verificar no submit do SupplierCreateOffer), espelhar — caso contrário, audit log é suficiente.
+A página antiga do admin (`AdminCompanyDetail.tsx` com 7 abas próprias) é substituída por esse mesmo `CompanyRecordView` com `viewerRole="admin"`.
 
-### 5. RLS / Permissões
-Antes de codar, conferir as policies da tabela `requests` (ou equivalente usada por `BuyerCreateRequest`):
-- Se já permite `is_mundus_admin()` inserir para `company_id` arbitrário (como faz no offers path), nada a mudar.
-- Se o offer flow usa uma SECURITY DEFINER RPC, espelhar a mesma estratégia para requests.
-- Sem alteração se a policy admin já cobre — só validar.
+### 2. Controles administrativos isolados
 
-### 6. i18n
-Adicionar em `en/pt/es/fr/zh.json`:
-- `admin.requests.createBtn` "Create Request"
-- `admin.requests.createForTitle` "Create Request for…"
-- `admin.requests.createForSubtitle` "Select a managed buyer to create a request on their behalf."
-- `admin.requests.createForEmpty` "No managed buyers. Go to Companies → toggle 'Mundus manages requests for this buyer' first."
-- `request.onBehalfBanner` "Creating request on behalf of {{company}}"
-- + Cancel/close já existem.
+Tudo que hoje vive no admin e **não pode** vazar para buyer/supplier vira um card no fim da tela, renderizado só quando `viewerRole === "admin"`:
 
-## Não-regressão / checklist de conflito
+- Toggles "Mundus manages offers (supplier)" e "Mundus manages requests (buyer)"
+- Toggle `is_verified`
+- Mudar `status` (active/inactive)
+- Editar `is_buyer` / `is_supplier`
+- Botão **Delete company** (com confirmação)
+- Botão **Act on behalf**
 
-| Área | Risco | Mitigação |
-|---|---|---|
-| `/buyer/requests/new` | Mudança em `BuyerCreateRequest` quebrar buyer normal | Tudo gated em `as_company && isAdmin`; fallback usa `company.id` como hoje |
-| RLS de `requests` | Insert admin pode falhar | Validar policy antes; reusar abordagem do offer flow se necessário |
-| `requestNumber`, parse-cuts, notificações | Pipeline pular para admin | Submit chama exatamente o mesmo handler |
-| Negotiation/FCL/chat/confirm | — | Não tocados |
-| Não-admin com `?as_company=` na URL | Spoof | Ignorado, cai em `company.id` |
-| Schema | — | Zero migration |
-| Tipos Supabase | — | Sem nova tabela/coluna |
+Para buyer/supplier esses controles simplesmente não existem na árvore React — não é só CSS hidden. Backend continua protegido por RLS / triggers (`crm_companies_prevent_delete_if_onboarded`, `tg_company_users_block_admin_escalation`, etc.).
 
-## Resposta direta
-Sim, dá pra implementar com **zero conflito**. É 100% espelho do fluxo já existente do supplier, reusando o wizard atual do buyer. As únicas mudanças são: 1 rota nova no admin, 1 botão+modal em `AdminBuyerRequests`, e 4 ajustes pontuais no `BuyerCreateRequest` (read param, resolve company, banner, audit). Nenhuma lógica de negócio, negociação, ou schema é alterada.
+### 3. Users e Offices dentro de My Company
+
+Conforme pedido: **eliminar as páginas dedicadas** e mover o conteúdo para cards dentro do `CompanyRecordView`:
+
+- **Locations**: já é parte do layout-padrão; ganha as contagens hoje exclusivas do `SupplierOffices` (users/offers/orders por escritório) num formato discreto.
+- **Team**: novo card "Team members" reaproveitando `CompanyTeamPanel` (mesmo componente do admin). Master pode convidar / editar / desativar; demais usuários só visualizam.
+
+Rotas atuais continuam respondendo, mas redirecionam:
+
+| Rota antiga | Comportamento novo |
+|---|---|
+| `/buyer/company` | renderiza `CompanyRecordView viewerRole="buyer"` |
+| `/supplier/company` | renderiza `CompanyRecordView viewerRole="supplier"` |
+| `/buyer/users` | redirect para `/buyer/company#team` |
+| `/supplier/users` | redirect para `/supplier/company#team` |
+| `/supplier/offices` | redirect para `/supplier/company#locations` |
+| `/admin/companies/:id` | renderiza `CompanyRecordView viewerRole="admin" companyId={id}` |
+
+A sidebar do buyer/supplier perde os itens "Users" e "Offices" (ou eles viram âncoras dentro de My Company — definimos no momento da implementação, ambas são triviais).
+
+### 4. Permissões — regras finais
+
+| Ação | Mundus admin | Master buyer/supplier | Demais usuários |
+|---|:---:|:---:|:---:|
+| Ver My Company | ✅ | ✅ | ✅ |
+| Editar dados gerais, locations, preferências | ✅ | ✅ | ❌ |
+| Convidar / desativar usuários do time | ✅ | ✅ | ❌ |
+| Toggles Mundus-managed, verified, status | ✅ | ❌ (oculto) | ❌ |
+| Delete company | ✅ | ❌ (oculto) | ❌ |
+
+Vamos garantir no momento da implementação que as policies de UPDATE em `companies`, `company_about`, `company_plants`, `company_certifications`, `company_documents`, `company_preferences`, `company_users` permitem o master da própria empresa. Se faltar alguma, fazemos uma migration mínima só de policies — sem mexer em schema.
+
+## Fora de escopo
+
+- Nada de novas tabelas/colunas.
+- Não toca em fluxos de oferta/negociação/orders.
+- Não muda menu/sidebar global além de remover os itens redundantes.
+
+## Resultado
+
+Buyer, supplier e admin abrem o registro de empresa e vêem **a mesma tela** das imagens anexadas. A diferença para a Mundus é só um card extra no rodapé com as ações administrativas (toggles + delete). Sem páginas separadas para Users e Offices.
