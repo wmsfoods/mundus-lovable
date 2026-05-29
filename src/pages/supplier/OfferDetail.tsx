@@ -26,6 +26,7 @@ import { notifyCompanyUsers } from "@/lib/notifications";
 import { auditLog } from "@/lib/auditLog";
 import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { OfferDetailLayout, type OfferItemRow } from "@/components/offer/OfferDetailLayout";
+import { countryFlag } from "@/lib/countryFlags";
 
 export default function SupplierOfferDetail() {
   const { id = "" } = useParams<{ id: string }>();
@@ -43,6 +44,7 @@ export default function SupplierOfferDetail() {
     incoterm: string | null;
     created_at: string;
     updated_at: string;
+    buyer?: { id: string; name: string | null; country: string | null } | null;
   }>>([]);
 
   useEffect(() => {
@@ -51,12 +53,13 @@ export default function SupplierOfferDetail() {
     (async () => {
       const { data } = await supabase
         .from("negotiations")
-        .select("id, status, buyer_company_id, incoterm, created_at, updated_at")
+        .select(`id, status, buyer_company_id, incoterm, created_at, updated_at,
+          buyer:companies!negotiations_buyer_company_id_fkey ( id, name, country )`)
         .eq("offer_id", id)
         .not("status", "in", "(expired,offer_withdrawn)")
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
-      if (!cancelled) setNegotiations(data ?? []);
+      if (!cancelled) setNegotiations((data as any) ?? []);
     })();
     return () => { cancelled = true; };
   }, [id]);
@@ -380,8 +383,15 @@ export default function SupplierOfferDetail() {
             🤝 Active Negotiations ({negotiations.length})
           </div>
           {negotiations.map((n) => {
-            const isAwaiting = n.status === "awaiting_supplier";
-            const isClosed = n.status === "bid_accepted";
+            const statusMap: Record<string, { label: string; bg: string; fg: string }> = {
+              awaiting_supplier: { label: "Waiting your reply", bg: "#fee2e2", fg: "#b91c1c" },
+              pending_buyer_review: { label: "Waiting buyer reply", bg: "#fef3c7", fg: "#92400e" },
+              bid_accepted: { label: "Accepted", bg: "#dcfce7", fg: "#15803d" },
+              offer_rejected: { label: "Rejected", bg: "#f3f4f6", fg: "#4b5563" },
+            };
+            const s = statusMap[n.status] ?? { label: n.status.replace(/_/g, " "), bg: "#fef3c7", fg: "#92400e" };
+            const buyerName = n.buyer?.name?.trim() || `Buyer #${n.buyer_company_id.slice(0, 8)}`;
+            const flag = countryFlag(n.buyer?.country);
             return (
               <a
                 key={n.id}
@@ -401,18 +411,24 @@ export default function SupplierOfferDetail() {
                   fontSize: 12,
                 }}
               >
-                <span>Buyer #{n.buyer_company_id.slice(0, 8)} · {n.incoterm || "FOB"}</span>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <span aria-hidden style={{ fontSize: 14 }}>{flag}</span>
+                  <span style={{ fontWeight: 600 }}>{buyerName}</span>
+                  {n.buyer?.country && (
+                    <span style={{ color: "#6b7280" }}>· {n.buyer.country}</span>
+                  )}
+                </span>
                 <span
                   style={{
                     padding: "2px 8px",
                     borderRadius: 10,
                     fontSize: 10,
                     fontWeight: 600,
-                    background: isClosed ? "#dcfce7" : isAwaiting ? "#fee2e2" : "#fef3c7",
-                    color: isClosed ? "#15803d" : isAwaiting ? "#b91c1c" : "#92400e",
+                    background: s.bg,
+                    color: s.fg,
                   }}
                 >
-                  {n.status.replace(/_/g, " ")}
+                  {s.label}
                 </span>
               </a>
             );
