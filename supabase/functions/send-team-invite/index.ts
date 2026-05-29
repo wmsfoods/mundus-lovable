@@ -205,6 +205,7 @@ Deno.serve(async (req) => {
 
     let emailSent = false
     let emailError: string | null = null
+    let resendId: string | null = null
     if (LOVABLE_API_KEY && RESEND_API_KEY) {
       const resp = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
         method: 'POST',
@@ -222,11 +223,32 @@ Deno.serve(async (req) => {
       })
       if (resp.ok) {
         emailSent = true
+        try {
+          const j = await resp.json()
+          resendId = j?.id ?? j?.data?.id ?? null
+        } catch { /* ignore */ }
       } else {
         emailError = `resend_${resp.status}: ${await resp.text()}`
       }
     } else {
       emailError = 'missing_resend_credentials'
+    }
+
+    // Log a copy in email_queue so it shows up in Admin → Email Activity.
+    try {
+      await admin.from('email_queue').insert({
+        to_email: email,
+        subject,
+        html_body: html,
+        template_name: 'teamInvite',
+        template_vars: { company_id, full_name, role, language, link },
+        status: emailSent ? 'sent' : 'failed',
+        sent_at: emailSent ? new Date().toISOString() : null,
+        error_message: emailError,
+        resend_id: resendId,
+      })
+    } catch (e) {
+      console.warn('email_queue log failed', e)
     }
 
     return new Response(JSON.stringify({

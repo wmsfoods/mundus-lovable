@@ -83,10 +83,16 @@ Deno.serve(async (req) => {
           const err = await res.text();
           throw new Error(`Resend ${res.status}: ${err}`);
         }
+        let resendId: string | null = null;
+        try {
+          const j = await res.json();
+          resendId = j?.id ?? j?.data?.id ?? null;
+        } catch { /* non-json ok */ }
         await supabase.from("email_queue").update({
           status: "sent",
           sent_at: new Date().toISOString(),
           error_message: null,
+          resend_id: resendId,
         }).eq("id", email.id);
         sent++;
       } catch (e: any) {
