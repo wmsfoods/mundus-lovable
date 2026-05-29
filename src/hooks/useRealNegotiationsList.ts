@@ -141,7 +141,7 @@ function lastTotals(r: RealNegotiationRow) {
     else counter = total;
     maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
   }
-  if (counter === 0) counter = yourBid; // pre-counter UI fallback
+  // No fallback: counter remains 0 when supplier hasn't sent one yet (UI shows "—")
   return { yourBid, counter, displayRound: maxRoundDisplay };
 }
 
@@ -198,11 +198,12 @@ function groupForSupplier(rows: RealNegotiationRow[]): ParentOffer[] {
     const { yourBid, counter, displayRound } = lastTotals(r);
     const destCountry = r.port?.country?.english_name ?? "—";
     const destPort = r.port?.name ?? "—";
+    const buyerName = r.buyer?.name ?? "Buyer";
     const bid: NegotiationBid = {
       id: r.id,
       parentOfferId: parentId,
-      buyerName: "Buyer", // No company name yet — could fetch later
-      buyerInitials: "BR",
+      buyerName,
+      buyerInitials: initialsOf(buyerName),
       buyerCountryCode: countryToCode(destCountry),
       buyerContact: undefined,
       round: displayRound,
@@ -311,11 +312,12 @@ export function toSupplierDetail(r: RealNegotiationRow): NegotiationDetail {
   const buyer = toBuyerDetail(r);
   const destCountry = r.port?.country?.english_name ?? "—";
   const destPort = r.port?.name ?? "—";
+  const buyerName = r.buyer?.name ?? "Buyer";
   return {
     id: buyer.id,
     parentOfferId: `po-${r.offer!.id}`,
-    buyerName: "Buyer",
-    buyerInitials: "BR",
+    buyerName,
+    buyerInitials: initialsOf(buyerName),
     buyerCountryCode: countryToCode(destCountry),
     buyerContact: undefined,
     round: buyer.round,
