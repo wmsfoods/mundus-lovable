@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -9,12 +9,10 @@ import {
   CheckIcon,
   XIcon,
   KnifeForkIcon,
-  SparkleIcon,
 } from "@/components/icons";
 import {
   useNegotiation,
   type NegotiationDetail,
-  type NegotiationProduct,
 } from "@/hooks/useNegotiations";
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
@@ -25,7 +23,7 @@ import { isChatEnabled } from "@/lib/negotiationEngine";
 import { ShareWithSupplierCard } from "@/components/supplier/ShareWithSupplierCard";
 import { OtherBidsPanel } from "@/components/negotiation/OtherBidsPanel";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
+import { fmtWeight, weightLabel } from "@/lib/units";
 import { NegotiationProgressCard } from "@/components/negotiation/NegotiationProgressCard";
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
@@ -60,11 +58,6 @@ function fmtDate(iso: string, locale: string) {
 }
 function fmtDateShort(iso: string, locale: string) {
   return new Intl.DateTimeFormat(locale, { month: "short", day: "2-digit" }).format(new Date(iso));
-}
-
-function getPerRoundKg(p: NegotiationProduct, type: "bid" | "counter", round: number): number | undefined {
-  const key = `${type}R${round}UsdKg` as keyof NegotiationProduct;
-  return p[key] as number | undefined;
 }
 
 export default function SupplierNegotiationDetail() {
