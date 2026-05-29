@@ -544,6 +544,17 @@ export function NegotiationChat({
               borderTop: "1px solid hsl(var(--border))", background: "hsl(var(--muted))",
               paddingBottom: isMobile ? "calc(12px + env(safe-area-inset-bottom))" : 12,
             }}>
+              <button
+                type="button"
+                onClick={() => { setComposerSeed(null); setComposerOpen(true); }}
+                title="Send a formal multi-item proposal"
+                style={{
+                  padding: "10px 12px", borderRadius: 8,
+                  background: "hsl(var(--background))", color: "hsl(var(--foreground))",
+                  border: "1px solid hsl(var(--border))", fontSize: 13, fontWeight: 600,
+                  cursor: "pointer", whiteSpace: "nowrap",
+                }}
+              >📋 Proposal</button>
               <input
                 type="text"
                 value={input}
@@ -574,6 +585,26 @@ export function NegotiationChat({
           </>
         )}
       </div>
+
+      {composerOpen && (
+        <ProposalComposerModal
+          offerItems={offerItems}
+          allowQty={allowQtyNegotiation && perspective === "buyer"}
+          seed={composerSeed}
+          busy={sending}
+          onClose={() => { setComposerOpen(false); setComposerSeed(null); }}
+          onSubmit={(items, note) => sendProposalFromComposer(items, note)}
+        />
+      )}
+
+      {confirmFor && (
+        <ConfirmSaleModal
+          message={confirmFor}
+          busy={actingOn === confirmFor.id}
+          onClose={() => setConfirmFor(null)}
+          onConfirm={() => confirmSale(confirmFor)}
+        />
+      )}
     </>
   );
 }
