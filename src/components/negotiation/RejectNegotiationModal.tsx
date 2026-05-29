@@ -11,8 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
-import { publicUrl } from "@/lib/publicUrl";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
+import { getCompanyPrimaryContact } from "@/lib/companyContact";
+import { sendEmailNotification } from "@/lib/emailSender";
 
 export interface RejectNegotiationModalProps {
   open: boolean;
@@ -64,22 +65,41 @@ export function RejectNegotiationModal({
         .eq("id", negotiation.id);
       if (error) throw error;
 
-      // Fire email notification (best-effort)
-      try {
-        supabase.functions.invoke("negotiation-notifications", {
-          body: {
-            action: "bid_rejected",
-            data: {
-              buyer_email: "buyer@example.com",
-              offer_title: "Offer",
-              reason: notes.trim() || null,
-              marketplace_link: publicUrl("/buyer/marketplace"),
-            },
-          },
-        }).catch(() => {});
-      } catch (e) {
-        console.warn("rejection notification failed", e);
-      }
+      // Fire negotiationRejected e-mails through the central queue (best-effort).
+      (async () => {
+        try {
+          const items = negotiation.offer?.items ?? [];
+          const offerNumber = String(negotiation.offer?.offer_number ?? "");
+          const cutName = items[0]?.customer_product?.name ?? "Offer";
+          const baseVars: any = {
+            cutName,
+            offerNumber,
+            lastBid: Number(items[0]?.price ?? 0).toFixed(2),
+            lastCounter: Number(items[0]?.price ?? 0).toFixed(2),
+            gap: "0.00",
+            gapPct: "0.0",
+            rounds: (negotiation as any).current_round ?? 1,
+            reason: notes.trim() || reason,
+            supplierCompanyId: negotiation.offer?.supplier_id,
+          };
+          const [s, b] = await Promise.all([
+            getCompanyPrimaryContact(negotiation.offer?.supplier_id),
+            getCompanyPrimaryContact((negotiation as any).buyer_company_id),
+          ]);
+          if (s?.email)
+            await sendEmailNotification("negotiationRejected" as any, s.email, {
+              ...baseVars,
+              name: s.name || negotiation.offer?.supplier_name || "Supplier",
+            });
+          if (b?.email)
+            await sendEmailNotification("negotiationRejected" as any, b.email, {
+              ...baseVars,
+              name: b.name || "Buyer",
+            });
+        } catch (e) {
+          console.warn("[email] negotiationRejected queue failed", e);
+        }
+      })();
 
       toast.success(t("negotiation.reject.successToast", "Negotiation rejected"));
       onOpenChange(false);
