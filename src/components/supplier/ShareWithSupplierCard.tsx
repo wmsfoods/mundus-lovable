@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Mail, Copy, Check } from "lucide-react";
+import { Mail, Copy, Check, ChevronDown } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,7 @@ export function ShareWithSupplierCard({ negotiationId, buyerLabel }: Props) {
   const [loading, setLoading] = useState(true);
   const [email, setEmail] = useState("");
   const [copied, setCopied] = useState(false);
+  const [open, setOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -118,7 +119,12 @@ export function ShareWithSupplierCard({ negotiationId, buyerLabel }: Props) {
       className="rounded-xl border p-4 mb-4"
       style={{ background: "rgba(139,34,82,0.04)", borderColor: "rgba(139,34,82,0.25)" }}
     >
-      <div className="flex items-start gap-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-start gap-3 w-full text-left"
+        aria-expanded={open}
+      >
         <div
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg"
           style={{ background: "#8B2252", color: "#fff" }}
@@ -134,8 +140,17 @@ export function ShareWithSupplierCard({ negotiationId, buyerLabel }: Props) {
               ? t("supplier.share.subtitleUsed")
               : t("supplier.share.subtitle")}
           </p>
+        </div>
+        <ChevronDown
+          size={18}
+          className="shrink-0 text-muted-foreground transition-transform"
+          style={{ transform: open ? "rotate(180deg)" : "rotate(0deg)" }}
+        />
+      </button>
 
-          <div className="mt-3 flex gap-2">
+      {open && (
+        <div className="mt-3 pl-12">
+          <div className="flex gap-2">
             <Input
               readOnly
               value={displayLink}
@@ -196,7 +211,7 @@ export function ShareWithSupplierCard({ negotiationId, buyerLabel }: Props) {
             })}
           </div>
         </div>
-      </div>
+      )}
     </div>
   );
 }

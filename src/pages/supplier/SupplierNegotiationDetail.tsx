@@ -1,4 +1,4 @@
-import { Fragment, useState, type CSSProperties } from "react";
+import { Fragment, useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -69,12 +69,31 @@ export default function SupplierNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const { unit } = useWeightUnit();
-  const { data } = useNegotiation(id);
-  const isReal = isUuid(id);
-  const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
+  const [activeId, setActiveId] = useState<string>(id);
+  // If the route param changes via real navigation (e.g. admin opens a
+  // different negotiation from the list), follow it. Inline switches use
+  // history.replaceState so :id stays the same and this effect is a no-op.
+  useEffect(() => {
+    if (id) setActiveId(id);
+  }, [id]);
+  const { data } = useNegotiation(activeId);
+  const isReal = isUuid(activeId);
+  const { data: rawNeg, refetch } = useRealNegotiation(isReal ? activeId : undefined);
   const [counterOpen, setCounterOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const locale = i18n.language || "en";
+
+  const switchBuyer = (negId: string) => {
+    if (!negId || negId === activeId) return;
+    setActiveId(negId);
+    // update URL in place without remounting the page
+    try {
+      const newPath = window.location.pathname.replace(/\/[^/]+$/, `/${negId}`);
+      window.history.replaceState(window.history.state, "", newPath);
+    } catch {
+      /* noop */
+    }
+  };
 
   if (!data) {
     return (
@@ -221,6 +240,8 @@ export default function SupplierNegotiationDetail() {
           currentBuyerName={d.buyerName}
           currentRound={d.round}
           currentStatus={rawNeg.status}
+          currentDestinationCountry={d.destinationCountry}
+          onSelect={switchBuyer}
         />
       )}
 
