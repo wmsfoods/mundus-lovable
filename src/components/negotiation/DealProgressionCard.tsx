@@ -85,7 +85,7 @@ export function DealProgressionCard({ rounds, currentRound, maxRounds, perspecti
 
       <div className="dp-rounds">
         {orderedRounds.map((rn) => {
-          const slot = byRound.get(rn)!;
+          const slot = byRound.get(rn) ?? {};
           const bid = slot.bid;
           const counter = slot.counter;
           const gapAbs =
