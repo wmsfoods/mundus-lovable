@@ -9,13 +9,18 @@ type NegotiationChatProps = {
   perspective: "buyer" | "supplier";
   offerItems: OfferItem[];
   enabled: boolean;
-  /** Raw round_proposals (from useRealNegotiation) — used to synthesize "Round N started" system events. */
   rounds?: { id: string; round: number; created_at: string }[];
-  /** Items already agreed (from negotiations.agreed_items jsonb) — synthesizes "Item agreed" events. */
   agreedItems?: unknown;
+  /** Whether buyers can edit per-item quantities. Defaults to false (locked). */
+  allowQtyNegotiation?: boolean;
 };
 
-type ProposalItem = { name: string; quantity_kg: number; price_per_kg: number };
+type ProposalItem = {
+  offer_item_id?: string;
+  name: string;
+  quantity_kg: number;
+  price_per_kg: number;
+};
 type ProposalData = { items?: ProposalItem[]; total_usd?: number; note?: string };
 
 type Message = {
@@ -27,6 +32,9 @@ type Message = {
   content: string | null;
   structured_data: ProposalData | null;
   proposal_status?: string | null;
+  accepted_by_user_id?: string | null;
+  superseded_at?: string | null;
+  promoted_to_order_id?: string | null;
   created_at: string;
 };
 
