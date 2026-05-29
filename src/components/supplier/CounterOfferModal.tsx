@@ -155,7 +155,7 @@ export function CounterOfferModal({
     for (const a of existingAgreed) {
       const it = items.find((i) => i.id === a.offer_item_id);
       if (it?.customer_product?.name) {
-        map.set(it.customer_product.name, { price: a.price_per_kg, round: a.round });
+        map.set(it.customer_product.name, { price: a.price_per_kg, round: a.agreed_round });
       }
     }
     return map;
