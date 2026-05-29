@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export type NegotiationStatus =
   | "awaiting_supplier"
   | "pending_buyer_review"
+  | "pending_confirmation"
   | "bid_accepted"
   | "offer_rejected"
   | "offer_exhausted"
@@ -53,7 +54,7 @@ export interface AdminNegotiationRow {
   latest_supplier_counter: number | null;
 }
 
-const ACTIVE_STATUSES: NegotiationStatus[] = ["awaiting_supplier", "pending_buyer_review"];
+const ACTIVE_STATUSES: NegotiationStatus[] = ["awaiting_supplier", "pending_buyer_review", "pending_confirmation"];
 
 export function useAdminNegotiations() {
   const [rows, setRows] = useState<AdminNegotiationRow[]>([]);

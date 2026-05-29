@@ -6,6 +6,7 @@ const NEGOTIATION_TEMPLATES: EmailTemplateName[] = [
   "bidReceived" as EmailTemplateName,
   "counterReceived" as EmailTemplateName,
   "dealClosed" as EmailTemplateName,
+  "dealAwaitingConfirmation" as EmailTemplateName,
   "negotiationRejected" as EmailTemplateName,
   "staleNudge" as EmailTemplateName,
 ];

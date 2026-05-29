@@ -4249,6 +4249,11 @@ export type Database = {
       }
       negotiations: {
         Row: {
+          accepted_at: string | null
+          accepted_by: string | null
+          accepted_by_user_id: string | null
+          accepted_round_proposal_id: string | null
+          accepted_total_value: number | null
           agreed_items: Json
           buyer_company_id: string
           buyer_message: string | null
@@ -4280,6 +4285,11 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          accepted_by_user_id?: string | null
+          accepted_round_proposal_id?: string | null
+          accepted_total_value?: number | null
           agreed_items?: Json
           buyer_company_id: string
           buyer_message?: string | null
@@ -4311,6 +4321,11 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          accepted_at?: string | null
+          accepted_by?: string | null
+          accepted_by_user_id?: string | null
+          accepted_round_proposal_id?: string | null
+          accepted_total_value?: number | null
           agreed_items?: Json
           buyer_company_id?: string
           buyer_message?: string | null
@@ -6616,6 +6631,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      _finalize_negotiation_close: {
+        Args: { p_negotiation_id: string }
+        Returns: string
+      }
       _neg_parties: {
         Args: { p_negotiation_id: string }
         Returns: {
@@ -6635,7 +6654,11 @@ export type Database = {
       }
       accept_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       accept_negotiation: {
-        Args: { p_negotiation_id: string; p_user_id: string }
+        Args: {
+          p_accepted_by: string
+          p_negotiation_id: string
+          p_user_id: string
+        }
         Returns: Json
       }
       accept_team_invitation: {
@@ -6644,6 +6667,10 @@ export type Database = {
       }
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       confirm_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
+      confirm_negotiation: {
+        Args: { p_negotiation_id: string; p_user_id: string }
+        Returns: Json
+      }
       current_user_company_id: { Args: never; Returns: string }
       current_user_company_ids: { Args: never; Returns: string[] }
       enqueue_app_notifications: {
