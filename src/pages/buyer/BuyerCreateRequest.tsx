@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
 import { Check } from "lucide-react";
@@ -9,6 +9,7 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { useAuth } from "@/contexts/AuthContext";
 import { countryFlag } from "@/lib/countryFlags";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
@@ -41,9 +42,29 @@ export default function BuyerCreateRequest() {
   const { editId } = useParams<{ editId?: string }>();
   const isEdit = !!editId;
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const asCompanyId = searchParams.get("as_company");
   const cloneFrom = (location.state as any)?.cloneFrom as Record<string, any> | undefined;
   const { markets, cutsByCategory } = useSupplierOfferData();
-  const { company } = useCurrentCompany();
+  const { company: realCompany } = useCurrentCompany();
+  const { isAdmin: isAdminActor } = useIsMundusAdmin();
+  const [actingAsCompany, setActingAsCompany] = useState<any>(null);
+
+  useEffect(() => {
+    if (!asCompanyId || !isAdminActor) { setActingAsCompany(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("companies").select("*").eq("id", asCompanyId).maybeSingle();
+      if (!cancelled) setActingAsCompany(data ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [asCompanyId, isAdminActor]);
+
+  // Effective buyer company — admin acting on behalf of a managed buyer overrides
+  // the current user's company context for the entire wizard.
+  const company: any = (isAdminActor && actingAsCompany) ? actingAsCompany : realCompany;
+  const isOnBehalf = !!(isAdminActor && actingAsCompany);
   const { user } = useAuth();
   const { unit } = useWeightUnit();
   const [submitting, setSubmitting] = useState(false);
