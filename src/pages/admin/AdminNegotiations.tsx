@@ -35,6 +35,7 @@ const INPUT_STYLE: React.CSSProperties = {
 const STATUS_STYLES: Record<NegotiationStatus, string> = {
   awaiting_supplier: "bg-red-100 text-red-800 border border-red-200",
   pending_buyer_review: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+  pending_confirmation: "bg-amber-100 text-amber-900 border border-amber-300",
   bid_accepted: "bg-green-100 text-green-800 border border-green-200",
   offer_rejected: "bg-zinc-200 text-zinc-700 border border-zinc-300",
   offer_exhausted: "bg-zinc-200 text-zinc-700 border border-zinc-300",
