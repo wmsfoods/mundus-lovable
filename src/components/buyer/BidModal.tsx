@@ -300,84 +300,46 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     }
     setSubmitting(true);
     try {
-      // Check if buyer already has an active negotiation for this offer
-      const { data: existing } = await supabase
-        .from("negotiations")
-        .select("id, status")
-        .eq("offer_id", offer.id)
-        .eq("buyer_company_id", buyerCompanyId)
-        .in("status", ["awaiting_supplier", "pending_buyer_review"])
-        .maybeSingle();
-      if (existing?.id) {
-        toast.info(t("buyer.bid.alreadyActive", "You already have an active negotiation for this offer."));
-        clearDraft(offer.id);
-        onOpenChange(false);
-        navigate(`/buyer/negotiations/${existing.id}`);
-        return;
-      }
-
-      const { data: neg, error: negErr } = await supabase
-        .from("negotiations")
-        .insert({
-          offer_id: offer.id,
-          buyer_company_id: buyerCompanyId,
-          created_by_user_id: buyerUserId,
-          port_id: portId || null,
-          freight_cost_per_kg: freightPerKg,
-          insurance_per_kg: insurancePerKg,
-          fcl_count: fclCount,
-          incoterm,
-          status: "awaiting_supplier",
-          expires_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
-          buyer_message: message.trim() ? message.trim() : null,
-        })
-        .select("id")
-        .single();
-      if (negErr || !neg) throw negErr ?? new Error("negotiation insert failed");
-
-      const { data: rp, error: rpErr } = await supabase
-        .from("round_proposals")
-        .insert({
-          negotiation_id: neg.id,
-          round: 1,
-          created_by_user_id: buyerUserId,
-          side: "buyer",
-          type: "bid",
-          message: message.trim() || null,
-          incoterm,
-          freight_per_kg: freightPerKg,
-          insurance_per_kg: insurancePerKg,
-        })
-        .select("id")
-        .single();
-      if (rpErr || !rp) throw rpErr ?? new Error("round_proposals insert failed");
-
       // Persist the FOB-equivalent price so it can be compared against the
       // supplier's asking directly. The buyer's bid was entered against the
       // *effective* (incoterm-adjusted) price, so strip the add-on back off.
       const addOn = getIncotermAddOn(incoterm, freightPerKg, insurancePerKg);
-      const cutRows = offer.items.map((it) => {
+      const bidItems = offer.items.map((it) => {
         const enteredEffective =
           typeof bids[it.id] === "number"
             ? (bids[it.id] as number)
             : effectiveAsking(Number(it.price));
         const fobBid = Math.max(0, enteredEffective - addOn);
         return {
-          round_proposal_id: rp.id,
           offer_item_id: it.id,
           price_per_kg: fobBid,
           quantity_kg: Number(it.amount),
         };
       });
-      const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
-      if (crErr) throw crErr;
 
-      // Generate a public response token so the supplier can reply via email link
-      // without logging in. Failure here is non-fatal — log but don't break the bid.
-      const { error: tokErr } = await supabase
-        .from("negotiation_tokens")
-        .insert({ negotiation_id: neg.id });
-      if (tokErr) console.warn("token insert failed", tokErr.message);
+      const { data: submitResult, error: submitErr } = await (supabase as any).rpc("submit_initial_bid", {
+        p_offer_id: offer.id,
+        p_buyer_company_id: buyerCompanyId,
+        p_created_by_user_id: buyerUserId,
+        p_port_id: portId || null,
+        p_freight_cost_per_kg: freightPerKg,
+        p_insurance_per_kg: insurancePerKg,
+        p_fcl_count: fclCount,
+        p_incoterm: incoterm,
+        p_buyer_message: message.trim() || null,
+        p_items: bidItems,
+      });
+      if (submitErr) throw submitErr;
+      const negotiationId = submitResult?.negotiation_id as string | undefined;
+      if (!negotiationId) throw new Error("Bid submission did not return a negotiation id");
+
+      if (submitResult?.existing) {
+        toast.info(t("buyer.bid.alreadyActive", "You already have an active negotiation for this offer."));
+        clearDraft(offer.id);
+        onOpenChange(false);
+        navigate(`/buyer/negotiations/${negotiationId}`);
+        return;
+      }
 
       toast.success(t("buyer.bid.successToast"));
       try {
@@ -386,7 +348,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           action: "bid.placed",
           category: "negotiation",
           entityType: "negotiation",
-          entityId: neg.id as string,
+          entityId: negotiationId,
           details: { round: 1 },
         });
       } catch { /* never break flow */ }
@@ -399,9 +361,9 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         body: `${company?.name ?? "A buyer"} placed a bid on offer #${offer.offer_number}`,
         icon: "dollar",
         category: "negotiations",
-        linkUrl: `/supplier/negotiations/${neg.id}`,
+        linkUrl: `/supplier/negotiations/${negotiationId}`,
         relatedType: "negotiation",
-        relatedId: neg.id,
+        relatedId: negotiationId,
       }).catch(() => {});
 
       // Best-effort branded email to first supplier contact (lazy import)
