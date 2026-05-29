@@ -6602,6 +6602,10 @@ export type Database = {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
         Returns: Json
       }
+      resolve_customer_product: {
+        Args: { p_company_id: string; p_cut_id: string }
+        Returns: string
+      }
       submit_initial_bid: {
         Args: {
           p_buyer_company_id: string
