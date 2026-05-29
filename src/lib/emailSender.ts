@@ -21,21 +21,23 @@ async function queueOne(
   const subjectFn = emailSubjects[templateName];
   const subject = (subjectPrefix ? subjectPrefix : "") +
     (subjectFn ? subjectFn(vars) : "Mundus Trade Notification");
-  const { data: queued, error } = await (supabase as any).from("email_queue").insert({
-    to_email: to,
-    subject,
-    html_body: html,
-    template_name: templateName,
-    template_vars: vars,
-    status: "queued",
-  }).select("id").single();
+  // Use SECURITY DEFINER RPC so non-admin authenticated users can both
+  // insert into email_queue and read back the new id (the table's SELECT
+  // policy is admin-only).
+  const { data: newId, error } = await (supabase as any).rpc("enqueue_email", {
+    p_to_email: to,
+    p_subject: subject,
+    p_html_body: html,
+    p_template_name: templateName,
+    p_template_vars: vars ?? {},
+  });
   if (error) {
     console.warn("[sendEmail] Queue failed:", error.message);
     return;
   }
-  if (queued?.id) {
+  if (newId) {
     supabase.functions
-      .invoke("send-email", { body: { email_id: queued.id } })
+      .invoke("send-email", { body: { email_id: newId } })
       .catch((e) => console.warn("[sendEmail] dispatch failed", e));
   }
 }
