@@ -1,93 +1,67 @@
-## Decisões confirmadas
+## Goal
 
-1. **Aceite no chat fecha o deal imediatamente** (não consome rodada, não importa se é round 1 ou 4) → gera order na hora.
-2. **Confirmação dupla**: quem fez a proposta precisa confirmar antes do fechamento (modal "Confirm sale at $X").
-3. **Chat manual por enquanto** (motor automático fica para depois — mesmo padrão atual).
-4. **Quem pode propor**: a partir do round 3 (regra atual `CHAT_ENABLED_FROM_ROUND`), qualquer lado, a qualquer momento. Independente do fluxo de rodadas paralelo.
-5. **Quantidade**: bloqueada por padrão. Supplier decide na criação da offer se aceita ajuste. Mesmo com ajuste permitido, **o total ofertado deve bater** (soma das qty dos itens = `offer.total_kg` original).
+Make the per-product price history match the attached reference ("Price details — full history") and stop being squeezed into the narrow right column. It needs room to breathe horizontally because every negotiation can reach 4 rounds (Bid + Counter each).
 
-## Modelo de dados
+## Where it appears today
 
-**Migration:**
-- `offers.allow_quantity_negotiation boolean default false` — toggle na criação da offer.
-- `negotiation_messages`:
-  - `promoted_to_order_id uuid null` — se aceito, referência ao order criado.
-  - `confirmed_by_proposer_at timestamptz null` — segundo aceite (autor).
-  - `superseded_at timestamptz null` — proposta invalidada por nova rodada oficial.
-- RPC `accept_chat_proposal(p_message_id uuid)` — SECURITY DEFINER:
-  - Valida: negociação ativa, round ≥ 3, status pending, aceitador ≠ autor.
-  - Marca `proposal_status='accepted_pending_confirmation'` + grava `accepted_at`, `accepted_by`.
-  - **Não fecha ainda** — espera confirmação do autor.
-- RPC `confirm_chat_proposal(p_message_id uuid)`:
-  - Só o autor original pode chamar.
-  - Valida itens contra `allow_quantity_negotiation`:
-    - Sempre: `sum(quantity_kg) == offer.total_kg`.
-    - Se `allow_quantity_negotiation=false`: cada item.quantity_kg deve bater com `offer_items.amount` original.
-  - Cria `round_proposal` "selado" + `cut_rounds` com os valores aceitos (para trilha auditável).
-  - Atualiza `negotiations.agreed_items`, `status='bid_accepted'`, `settled_total_value`.
-  - Cria `orders` + `order_items` (reaproveita lógica do `accept_negotiation`).
-  - Marca message `promoted_to_order_id`, `confirmed_by_proposer_at`.
-- Trigger: ao inserir novo `round_proposal` "oficial" depois de proposta pendente → marcar pending messages como `superseded_at=now()`.
+- `src/pages/buyer/BuyerNegotiationDetail.tsx` — inside the right column, below `DealProgressionCard`.
+- `src/pages/supplier/SupplierNegotiationDetail.tsx` — inside the right column, below `DealProgressionCard`.
+- Admin (`/admin/negotiations/:id`) reuses `SupplierNegotiationDetail`, so the supplier change automatically covers the admin view (confirmed in `src/App.tsx`).
+- Also embedded as a recap inside `CounterOfferModal` — left untouched.
 
-## UX
+## What changes
 
-### Compose Proposal (chat, round ≥ 3)
-- Botão "Send formal proposal" abre **ProposalComposer** inline:
-  - Tabela read-only de qty (se `allow_quantity_negotiation=false`) ou editável (se true) com avisos.
-  - Coluna preço editável (pré-preenchida com último valor da rodada).
-  - Validação ao vivo: badge vermelho se `sum(qty) ≠ total_kg`.
-  - Total recalculado.
-  - Note opcional ("Pode chegar em 5.77?").
-- Envia → cria message `message_type='proposal'` com `structured_data { items[], total_usd, note, allow_qty }`.
+### 1. Move it out of the right column → full-width, above the rounds card
 
-### Receber Proposal
-- **ProposalCard** mostra:
-  - Tabela linha por linha: produto, qty, $/kg, subtotal.
-  - Total destacado.
-  - Note do autor.
-  - Status chip (Pending / Accepted by counterparty — awaiting confirmation / Sealed / Superseded / Declined).
-- Botões para a contraparte: **Accept**, **Decline**.
-  - Accept → chama `accept_chat_proposal` → toast "Awaiting confirmation from {author}".
-  - Card muda de cor e mostra "Awaiting {author} confirmation".
-- Após accept, autor original vê **ConfirmSaleModal**:
-  - Título: "Confirm sale at $X total"
-  - Tabela final dos itens
-  - Aviso: "This will close the negotiation and create order #XXX"
-  - Botões: **Confirm & close deal** / **Cancel** (reabre proposal como pending)
-  - Confirm → chama `confirm_chat_proposal` → toast "Deal closed", redirect para order.
+On both Buyer and Supplier detail pages, render `PriceHistoryTable` as a standalone full-width block placed:
 
-### Save-guards visuais
-- Se `allow_quantity_negotiation=false` e usuário tenta editar qty: input disabled com tooltip "Supplier locked quantities for this offer".
-- Se `sum(qty) ≠ total_kg`: botão "Send proposal" disabled com mensagem "Total must equal {total_kg} kg".
+- Below the existing top banners (note from buyer/supplier, `DealClosedBanner`, final round / expired warnings).
+- Above the `<div className="nd-grid">` two-column layout that holds the round card and `DealProgressionCard`.
 
-### Offer Create
-- Em `SupplierCreateOffer.tsx`, novo toggle:
-  > ☐ **Allow buyers to negotiate item quantities** (total must always equal {total_kg} kg)
-  - Default off.
-  - Tooltip explicando.
+Result: full page width, never cramped, sits naturally above the round/deal cards on every perspective.
 
-## Edge cases
+### 2. Redesign the card visual to match the screenshot
 
-- **Proposal pendente + nova rodada oficial** → proposta marcada `superseded`, botões Accept/Confirm desabilitam, card mostra "Superseded by Round N".
-- **Expiration da negociação** → proposta também expira, accept bloqueado.
-- **Author cancela antes da contraparte aceitar** → message `proposal_status='cancelled'`.
-- **Negotiation com múltiplos buyers (OtherBidsPanel)** → proposal/aceite afetam só a negociação atual; demais buyers seguem normal. Quando deal fecha por chat, mesma lógica de `sold_out` em `accept_negotiation` aplica (`v_sold_fcls >= v_total_fcl`).
+Update `src/components/negotiation/PriceHistoryTable.tsx` so it renders:
 
-## Arquivos afetados
+- Header bar with a small document icon + bold title "Price details — full history" on the left, and a right-aligned summary chip "Asking + N rounds · $<startTotal> → $<currentTotal>".
+- A grouped header row (visually segmented per round):
+  - `PRODUCT | QTY (LB) | START · ASKING | ROUND 1 (BID | COUNTER) | ROUND 2 (BID | COUNTER) | … | ROUND N · FINAL`
+  - Last round labelled `ROUND N · FINAL` when it equals `MAX_DISPLAY_ROUNDS` (4).
+  - Round group cells share a subtle banded background to read like a grouped column.
+- Per-product rows: product name (bold) + pack subtitle, quantity in selected unit, asking price, then each round's Bid (green) and Counter (red/pink with soft pill background) — `—` when missing. Preserves the existing 🔒 / "Agreed at" badge logic.
+- A bold "Total value" footer row that multiplies each price column by total kg and sums across products, so the user can scan totals horizontally just like in the reference.
+- Horizontal scroll fallback for narrow viewports / 4-round case (`overflow-x:auto`), with sticky first column so the product name stays visible while scrolling.
 
-**SQL**: 1 migration (coluna offers + colunas messages + 2 RPCs + 1 trigger).
+### 3. Styling
 
-**Frontend**:
-- `src/components/negotiation/NegotiationChat.tsx` — reescrever `ProposalCard` + novo `ProposalComposer` + `ConfirmSaleModal`.
-- `src/pages/supplier/SupplierCreateOffer.tsx` — toggle `allow_quantity_negotiation`.
-- `src/hooks/useRealNegotiation.ts` — refetch após confirm; expor `offer.allow_quantity_negotiation`.
-- `src/lib/negotiationEngine.ts` — helper `canStartChatProposal(neg)` (round ≥ 3 + status ativo + não expirado).
-- i18n: novas strings (pt/en/es/fr/zh) para composer, modal, statuses.
+Add the new styles to `src/styles/negotiation-detail.css` (where the other `.nd-*` rules live) under a new `.nd-price-history` namespace:
 
-**Mobile**: ProposalComposer e ConfirmSaleModal renderizam como bottom sheet em < 768px (padrão do projeto).
+- Card chrome (rounded border, soft shadow) matching other `.nd-card` blocks.
+- Round-group banding (`background: hsl(var(--muted) / 0.4)` on header + zebra on the round cell pair).
+- Bid cell color = success token; Counter cell = destructive token; counter pill = destructive @ low opacity.
+- Sticky `PRODUCT` column (`position: sticky; left: 0`).
+- Footer total row separated by a top border, bold.
 
-## Não está nesta etapa
+All colors via existing HSL semantic tokens — no hard-coded hex.
 
-- Motor automático de aceite (segue manual, igual ao resto da negociação).
-- Edição parcial de itens (drop de linha) — fica para v2 quando `allow_quantity_negotiation` evoluir.
-- Histórico de propostas canceladas no `PriceHistoryTable` (só rounds oficiais aparecem lá; chat tem sua própria timeline).
+### 4. Props / API
+
+`PriceHistoryTable` keeps the same props (`products`, `maxRoundShown`, `agreedByName`, optional `i18nPrefix`). Internally it now also computes:
+
+- `startTotalUsd = Σ asking * qtyKg`
+- `currentTotalUsd = Σ (lastKnownPricePerKg) * qtyKg` (uses agreed price if locked, else last counter, else last bid, else asking)
+
+These feed the header summary chip. No callers need to change.
+
+### 5. Out of scope
+
+- No changes to negotiation business logic, RPCs, rounds engine, or to the `CounterOfferModal` embedded recap.
+- No data-model changes.
+
+## Files touched
+
+- `src/components/negotiation/PriceHistoryTable.tsx` — redesigned markup + header summary + totals row + sticky column.
+- `src/styles/negotiation-detail.css` — new `.nd-price-history` styles.
+- `src/pages/buyer/BuyerNegotiationDetail.tsx` — move render call above `.nd-grid`.
+- `src/pages/supplier/SupplierNegotiationDetail.tsx` — move render call above `.nd-grid` (covers admin view too).
