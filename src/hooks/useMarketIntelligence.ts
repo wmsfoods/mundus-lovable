@@ -84,7 +84,7 @@ export function useMarketIntelligence(range: BIDateRange) {
         .in("offer_id", offerIds);
       if (itemsErr) throw itemsErr;
 
-      const cpIds = Array.from(new Set((items ?? []).map((i) => i.customer_product_id)));
+      const cpIds = Array.from(new Set((items ?? []).map((i: any) => String(i.customer_product_id))));
       const { data: cps, error: cpErr } = cpIds.length
         ? await supabase
             .from("customer_products")
@@ -93,7 +93,7 @@ export function useMarketIntelligence(range: BIDateRange) {
         : { data: [], error: null } as any;
       if (cpErr) throw cpErr;
 
-      const spIds = Array.from(new Set((cps ?? []).map((c: any) => c.standard_product_id).filter(Boolean)));
+      const spIds = Array.from(new Set(((cps ?? []) as any[]).map((c) => c.standard_product_id).filter(Boolean))) as string[];
       const { data: sps } = spIds.length
         ? await supabase
             .from("standard_products")
@@ -101,7 +101,7 @@ export function useMarketIntelligence(range: BIDateRange) {
             .in("id", spIds)
         : { data: [] } as any;
 
-      const pcIds = Array.from(new Set((sps ?? []).map((s: any) => s.product_category_id).filter(Boolean)));
+      const pcIds = Array.from(new Set(((sps ?? []) as any[]).map((s) => s.product_category_id).filter(Boolean))) as string[];
       const { data: pcs } = pcIds.length
         ? await supabase
             .from("product_categories")
@@ -109,10 +109,10 @@ export function useMarketIntelligence(range: BIDateRange) {
             .in("id", pcIds)
         : { data: [] } as any;
 
-      const offerById = new Map((offers ?? []).map((o) => [o.id, o]));
-      const cpById = new Map((cps ?? []).map((c: any) => [c.id, c]));
-      const spById = new Map((sps ?? []).map((s: any) => [s.id, s]));
-      const pcById = new Map((pcs ?? []).map((p: any) => [p.id, p]));
+      const offerById = new Map<string, any>(((offers ?? []) as any[]).map((o) => [o.id, o]));
+      const cpById = new Map<string, any>(((cps ?? []) as any[]).map((c) => [c.id, c]));
+      const spById = new Map<string, any>(((sps ?? []) as any[]).map((s) => [s.id, s]));
+      const pcById = new Map<string, any>(((pcs ?? []) as any[]).map((p) => [p.id, p]));
 
       // Aggregations
       const trendMap = new Map<string, { sumPx: number; n: number; volume: number }>();
