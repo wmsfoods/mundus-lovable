@@ -7,7 +7,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY =
-  Deno.env.get("RESEND_API_KEY") || "re_APWMMN9H_PjbBKigYBDSgpnXXpcVdiArZ";
+  Deno.env.get("RESEND_API_KEY") || "";
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
 const ADMIN_EMAIL = "fn@mundustrade.com";
 const WINE = "#8B2252";

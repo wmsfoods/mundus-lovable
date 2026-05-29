@@ -1,5 +1,6 @@
 // Apollo people/match enrichment — reveals email and (optionally) phone.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { requireAdmin } from "../_shared/auth.ts";
 
 const APOLLO_BASE = "https://api.apollo.io/api/v1";
 
@@ -12,6 +13,8 @@ function json(body: Record<string, unknown>, status = 200) {
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const auth = await requireAdmin(req);
+  if (!auth.ok) return new Response(auth.response.body, { status: auth.response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   const apiKey = Deno.env.get("apollo") ?? Deno.env.get("APOLLO_API_KEY");
   if (!apiKey) return json({ ok: false, error: "apollo_api_key_missing" });

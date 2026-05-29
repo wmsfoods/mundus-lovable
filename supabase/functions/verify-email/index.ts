@@ -51,7 +51,7 @@ serve(async (req) => {
       console.log(`[VERIFY] Code for ${normalizedEmail}: ${verificationCode}`);
 
       // Send email via Resend
-      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "re_APWMMN9H_PjbBKigYBDSgpnXXpcVdiArZ";
+      const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
       if (RESEND_API_KEY) {
         const emailRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
