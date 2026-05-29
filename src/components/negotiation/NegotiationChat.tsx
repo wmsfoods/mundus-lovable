@@ -60,6 +60,7 @@ export function NegotiationChat({
   enabled,
   rounds,
   agreedItems,
+  allowQtyNegotiation = false,
 }: NegotiationChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [userNames, setUserNames] = useState<Record<string, string>>({});
@@ -69,6 +70,9 @@ export function NegotiationChat({
   const [actingOn, setActingOn] = useState<string | null>(null);
   const [detected, setDetected] = useState<DetectedPrice[]>([]);
   const [dismissedFor, setDismissedFor] = useState<string>("");
+  const [composerOpen, setComposerOpen] = useState(false);
+  const [composerSeed, setComposerSeed] = useState<ProposalItem[] | null>(null);
+  const [confirmFor, setConfirmFor] = useState<Message | null>(null);
   // Mobile collapsible: panel collapsed by default below 720px.
   const [isMobile, setIsMobile] = useState<boolean>(() =>
     typeof window !== "undefined" ? window.matchMedia("(max-width: 720px)").matches : false,
