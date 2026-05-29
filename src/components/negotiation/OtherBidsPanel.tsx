@@ -194,6 +194,8 @@ export function OtherBidsPanel({
           const rank = rankById.get(b.id) ?? 0;
           const isBest = b.id === bestId;
           const isCurrent = !!b.isCurrent;
+          const isTied = tieGroup.length > 1 && b.latestBidTotal === bestTotal;
+          const isTiedSame = isTied && sameAmounts;
           const borderColor = isCurrent ? (isBest ? "#8B2252" : "#2563EB") : "#E5E7EB";
           const bg = isCurrent ? "#FDF2F8" : "#fff";
           return (
@@ -264,6 +266,40 @@ export function OtherBidsPanel({
                       }}
                     >
                       viewing
+                    </span>
+                  )}
+                  {isTiedSame && (
+                    <span
+                      title="Tied at the same total with the same per-item amounts"
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#065F46",
+                        background: "rgba(5,150,105,0.12)",
+                        padding: "1px 6px",
+                        borderRadius: 999,
+                        letterSpacing: 0.3,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Tied · same amounts
+                    </span>
+                  )}
+                  {isTied && !isTiedSame && (
+                    <span
+                      title="Tied at the same total but different per-item amounts"
+                      style={{
+                        fontSize: 10,
+                        fontWeight: 700,
+                        color: "#92400E",
+                        background: "rgba(217,119,6,0.12)",
+                        padding: "1px 6px",
+                        borderRadius: 999,
+                        letterSpacing: 0.3,
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      Tied
                     </span>
                   )}
                 </div>
