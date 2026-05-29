@@ -216,12 +216,13 @@ function OfferDetailContent({
 
   const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
 
-  const grossValue = items.reduce(
+  // Value of ONE container (mix qty × price). The buyer creates orders per
+  // container; `total_fcl` is how many identical containers are available and
+  // must NOT divide the per-FCL value.
+  const totalValuePerFcl = items.reduce(
     (s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0),
     0
   );
-  const fclCount = offer.total_fcl ?? 1;
-  const totalValuePerFcl = grossValue / Math.max(1, fclCount);
 
   const originCode = countryToCode(offer.origin_country);
 
