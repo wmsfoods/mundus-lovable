@@ -426,6 +426,7 @@ export default function SupplierNegotiationDetail() {
           onOpenChange={setCounterOpen}
           negotiation={rawNeg}
           perspective="supplier"
+          counterpartyLabel={`Buyer: ${d.buyerName}`}
           onSubmitted={() => refetch()}
         />
       )}

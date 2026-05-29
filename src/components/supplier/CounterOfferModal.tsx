@@ -70,6 +70,9 @@ export interface CounterOfferModalProps {
   negotiation: RealNegotiationRow;
   perspective?: "supplier" | "buyer";
   onSubmitted?: () => void;
+  /** Display name of the counterparty to confirm in the modal header.
+   *  E.g. supplier sending a counter to "Buyer: Acme Foods". */
+  counterpartyLabel?: string;
 }
 
 export function CounterOfferModal({
@@ -78,6 +81,7 @@ export function CounterOfferModal({
   negotiation,
   perspective = "supplier",
   onSubmitted,
+  counterpartyLabel,
 }: CounterOfferModalProps) {
   const { t } = useTranslation();
   const { unit } = useWeightUnit();
@@ -294,7 +298,7 @@ export function CounterOfferModal({
           out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(2)})`;
         }
       }
-      // Must be ≥ previous buyer bid
+      // Must be STRICTLY GREATER than previous buyer bid (no match, no lower)
       const buyerRounds = rounds.filter((r) => r.round % 2 === 1);
       const lastBuyerRound = buyerRounds[buyerRounds.length - 1];
       if (lastBuyerRound) {
@@ -302,8 +306,8 @@ export function CounterOfferModal({
           if (accepted[it.id] || out[it.id]) continue;
           const v = counters[it.id];
           const prevBid = lastBuyerRound.cut_rounds?.find((c) => c.offer_item_id === it.id);
-          if (prevBid && v != null && v < Number(prevBid.price_per_kg) - 1e-9) {
-            out[it.id] = `Bid must be ≥ your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
+          if (prevBid && v != null && v <= Number(prevBid.price_per_kg) + 1e-9) {
+            out[it.id] = `Bid must be GREATER than your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
           }
         }
       }
@@ -713,7 +717,25 @@ export function CounterOfferModal({
           <DialogTitle>
             {t(titleKey)} — {t("supplier.counter.roundOf", { round: displayRound, max: MAX_DISPLAY_ROUNDS })}
           </DialogTitle>
-          <DialogDescription>{t(`${perspective}.counter.subtitle`)}</DialogDescription>
+          <DialogDescription>
+            {counterpartyLabel && (
+              <span
+                style={{
+                  display: "inline-block",
+                  marginRight: 8,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  background: "#FDF2F8",
+                  color: "#8B2252",
+                  fontWeight: 600,
+                  fontSize: 12,
+                }}
+              >
+                → {counterpartyLabel}
+              </span>
+            )}
+            {t(`${perspective}.counter.subtitle`)}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Offer summary header */}
