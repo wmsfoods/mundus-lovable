@@ -51,7 +51,12 @@ export function DealProgressionCard({ rounds, currentRound, maxRounds, perspecti
     slot[r.type] = r;
     byRound.set(r.round, slot);
   }
-  const orderedRounds = Array.from(byRound.keys()).sort((a, b) => a - b);
+  // Render every round 1..max(seen, currentRound) so PENDING rounds show
+  // explicitly as "—" instead of being hidden. This makes it obvious when
+  // the buyer's next bid or the supplier's next counter hasn't been sent.
+  const maxSeen = Array.from(byRound.keys()).reduce((m, n) => Math.max(m, n), 0);
+  const upTo = Math.max(maxSeen, currentRound, 1);
+  const orderedRounds = Array.from({ length: upTo }, (_, i) => i + 1);
 
   const bidLabel =
     perspective === "buyer"
