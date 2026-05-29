@@ -1,0 +1,11 @@
+# Mundus Trade
+
+> B2B marketplace for global meat trading — connecting suppliers and buyers across beef, pork, poultry, and ovine.
+
+Mundus Trade is an authenticated platform for international meat trading. Suppliers publish offers (FCL containers, IMPS cuts, incoterms, ports), buyers send requests and run structured negotiations up to 8 rounds with full price history. Most product surfaces require sign-in.
+
+## Pages
+
+- [Home](/): Platform overview and entry point.
+- [Sign in](/login): Existing buyer, supplier, or admin sign-in.
+- [Create account](/signup): Apply to join as a buyer or supplier.

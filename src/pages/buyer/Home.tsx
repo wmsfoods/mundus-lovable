@@ -64,6 +64,7 @@ export default function BuyerHome() {
   const proteinKeys = ["beef", "pork", "poultry", "ovine"] as const;
   return (
     <>
+      <h1 className="sr-only">Buyer Dashboard — Sourcing Overview</h1>
       <section className="hero sh-hero">
         <span className="sh-hero-glow sh-hero-glow--a" aria-hidden />
         <span className="sh-hero-glow sh-hero-glow--b" aria-hidden />

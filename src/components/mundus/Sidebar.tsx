@@ -147,7 +147,7 @@ export function Sidebar({
       <aside className={`sb ${mobileOpen ? "is-open" : ""} ${collapsed ? "is-collapsed" : ""}`.trim()}>
         <div className="sb-logo">
           {collapsed ? (
-            <img src={mundusMonogram} alt="Mundus" className="sb-monogram" draggable={false} />
+            <img src={mundusMonogram} alt="Mundus Trade Logo" className="sb-monogram" draggable={false} />
           ) : (
             <Logo />
           )}

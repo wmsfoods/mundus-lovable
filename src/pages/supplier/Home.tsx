@@ -119,6 +119,7 @@ export default function SupplierHome() {
 
   return (
     <>
+      <h1 className="sr-only">Supplier Dashboard — Sales Overview</h1>
       <section className="hero sh-hero">
         <span className="sh-hero-glow sh-hero-glow--a" aria-hidden />
         <span className="sh-hero-glow sh-hero-glow--b" aria-hidden />
