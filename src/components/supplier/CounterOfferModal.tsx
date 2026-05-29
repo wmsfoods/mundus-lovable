@@ -31,6 +31,8 @@ import {
   getIncotermBannerLabel,
 } from "@/lib/incotermPricing";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { PriceHistoryTable, type PriceHistoryProduct } from "@/components/negotiation/PriceHistoryTable";
+import { LB_PER_KG } from "@/lib/units";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
