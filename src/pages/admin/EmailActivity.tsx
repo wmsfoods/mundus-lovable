@@ -4,6 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { RefreshCw, RotateCw, Mail, Download, Radio } from "lucide-react";
+import {
+  ResponsiveContainer,
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip as RTooltip,
+  CartesianGrid,
+  BarChart,
+  Bar,
+  ReferenceLine,
+} from "recharts";
 
 type Row = {
   id: string;
@@ -88,6 +100,58 @@ function TypeBadge({ type }: { type: string | null }) {
   );
 }
 
+function offerNoOf(r: Row): string | null {
+  const v = r.template_vars;
+  const n = v?.offerNumber ?? v?.offer_number ?? v?.offerNo;
+  return n ? `M-${String(n).replace(/^M-/, "")}` : null;
+}
+
+function MetricCard({
+  title, value, data, color, riskAt, legend,
+}: {
+  title: string; value: string;
+  data: { day: string; value: number }[];
+  color: string; riskAt?: number;
+  legend?: { label: string; count: number; pct: string; color: string }[];
+}) {
+  return (
+    <div style={{
+      background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12,
+      padding: 16, display: "flex", flexDirection: "column", gap: 10, minHeight: 280,
+    }}>
+      <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", color: "#6b7280" }}>{title}</div>
+      <div style={{ fontSize: 28, fontWeight: 600, color: "#0f172a", lineHeight: 1 }}>{value}</div>
+      <div style={{ flex: 1, minHeight: 140 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 8, right: 8, left: -10, bottom: 0 }}>
+            <CartesianGrid stroke="#f1f5f9" vertical={false} strokeDasharray="3 3" />
+            <XAxis dataKey="day" tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+            <YAxis tick={{ fontSize: 10, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={36} />
+            <RTooltip cursor={{ fill: "#f8fafc" }} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+            {riskAt !== undefined && (
+              <ReferenceLine y={riskAt} stroke="#F97316" strokeDasharray="4 4" label={{ value: "RISK", fill: "#F97316", fontSize: 10, position: "insideTopLeft" }} />
+            )}
+            <Bar dataKey="value" fill={color} radius={[3, 3, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+      {legend && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: 12 }}>
+          {legend.map(l => (
+            <div key={l.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <span style={{ display: "flex", alignItems: "center", gap: 6, color: "#374151" }}>
+                <span style={{ width: 8, height: 8, borderRadius: "50%", background: l.color }} />
+                {l.label}
+              </span>
+              <span style={{ color: "#6b7280" }}>{l.count} <strong style={{ color: "#0f172a" }}>{l.pct}</strong></span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function EmailActivity() {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(false);
@@ -149,7 +213,14 @@ export default function EmailActivity() {
       }
       if (dateFrom && new Date(r.created_at) < new Date(dateFrom)) return false;
       if (dateTo && new Date(r.created_at) > new Date(dateTo + "T23:59:59")) return false;
-      if (q && !r.to_email.toLowerCase().includes(q) && !r.subject.toLowerCase().includes(q)) return false;
+      if (q) {
+        const offerNo = (offerNoOf(r) ?? "").toLowerCase();
+        if (
+          !r.to_email.toLowerCase().includes(q) &&
+          !r.subject.toLowerCase().includes(q) &&
+          !offerNo.includes(q)
+        ) return false;
+      }
       return true;
     });
   }, [rows, search, templateFilter, statusFilter, dateFrom, dateTo]);
@@ -172,6 +243,52 @@ export default function EmailActivity() {
     failed: filtered.filter(e => e.status === "failed").length,
   }), [filtered]);
 
+  // ---- Resend-style metrics (per-day buckets, last N days from filter) ----
+  const metrics = useMemo(() => {
+    const days: { key: string; day: string }[] = [];
+    const span = 15;
+    const today = new Date();
+    for (let i = span - 1; i >= 0; i--) {
+      const d = new Date(today); d.setDate(today.getDate() - i);
+      const key = d.toISOString().slice(0, 10);
+      days.push({ key, day: d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) });
+    }
+    const idx = new Map(days.map((d, i) => [d.key, i]));
+    const buckets = days.map(d => ({
+      day: d.day, sent: 0, opened: 0, clicked: 0, bounced: 0,
+    }));
+    for (const r of filtered) {
+      const k = (r.created_at ?? "").slice(0, 10);
+      const i = idx.get(k);
+      if (i === undefined) continue;
+      buckets[i].sent += 1;
+      if (r.opened_at) buckets[i].opened += 1;
+      if (r.clicked_at) buckets[i].clicked += 1;
+      if (r.bounced_at) buckets[i].bounced += 1;
+    }
+    const total = filtered.length || 1;
+    const pct = (n: number) => `${((n / total) * 100).toFixed(2)}%`;
+    const ratePer = (key: "opened" | "clicked" | "bounced") =>
+      buckets.map(b => ({ day: b.day, value: b.sent > 0 ? Math.round((b[key] / b.sent) * 100) : 0 }));
+    const countPer = (key: "sent" | "bounced") =>
+      buckets.map(b => ({ day: b.day, value: b[key] }));
+    return {
+      totalEmails: filtered.length,
+      deliverability: filtered.length
+        ? `${(((filtered.length - stats.bounced - stats.failed) / filtered.length) * 100).toFixed(2)}%`
+        : "—",
+      bounceRate: pct(stats.bounced),
+      complainRate: "0%",
+      openRate: pct(stats.opened),
+      clickRate: pct(stats.clicked),
+      bounceData: countPer("bounced"),
+      complainData: buckets.map(b => ({ day: b.day, value: 0 })),
+      openData: ratePer("opened"),
+      clickData: ratePer("clicked"),
+      deliveryData: buckets.map(b => ({ day: b.day, value: b.sent })),
+    };
+  }, [filtered, stats]);
+
   const retryEmail = async (id: string) => {
     await (supabase as any).from("email_queue")
       .update({ status: "queued", error_message: null }).eq("id", id);
@@ -186,7 +303,7 @@ export default function EmailActivity() {
       return;
     }
     const header = [
-      "Date", "Template", "Recipient", "Subject", "Status",
+      "Date", "Template", "Recipient", "Offer #", "Subject", "Status",
       "Sent at", "Opened at", "Clicked at", "Opens", "Clicks",
       "Bounced at", "Bounce reason", "Error",
     ];
@@ -198,7 +315,7 @@ export default function EmailActivity() {
     const lines = [header.join(",")];
     for (const r of filtered) {
       lines.push([
-        r.created_at, r.template_name ?? "", r.to_email, r.subject, r.status,
+        r.created_at, r.template_name ?? "", r.to_email, offerNoOf(r) ?? "", r.subject, r.status,
         r.sent_at ?? "", r.opened_at ?? "", r.clicked_at ?? "",
         r.open_count ?? 0, r.click_count ?? 0,
         r.bounced_at ?? "", r.bounce_reason ?? "", r.error_message ?? "",
@@ -253,8 +370,65 @@ export default function EmailActivity() {
         <KPICard icon="❌" label="Failed" value={stats.failed} color="#DC2626" />
       </div>
 
+      {/* Resend-style metrics dashboard */}
+      <div style={{
+        background: "#fff", border: "1px solid #e5e7eb", borderRadius: 12, padding: 16,
+        display: "flex", flexDirection: "column", gap: 12,
+      }}>
+        <div style={{ display: "flex", alignItems: "baseline", gap: 28 }}>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", color: "#6b7280" }}>Emails</div>
+            <div style={{ fontSize: 28, fontWeight: 600, color: "#0f172a" }}>{metrics.totalEmails}</div>
+          </div>
+          <div>
+            <div style={{ fontSize: 11, letterSpacing: 0.5, textTransform: "uppercase", color: "#6b7280" }}>Deliverability rate</div>
+            <div style={{ fontSize: 28, fontWeight: 600, color: "#0f172a" }}>{metrics.deliverability}</div>
+          </div>
+        </div>
+        <div style={{ height: 220 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={metrics.deliveryData} margin={{ top: 8, right: 12, left: -10, bottom: 0 }}>
+              <defs>
+                <linearGradient id="emailGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.35} />
+                  <stop offset="100%" stopColor="#3b82f6" stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid stroke="#f1f5f9" vertical={false} strokeDasharray="3 3" />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+              <YAxis tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} width={36} />
+              <RTooltip contentStyle={{ fontSize: 12, borderRadius: 8 }} />
+              <Area type="monotone" dataKey="value" stroke="#3b82f6" strokeWidth={2} fill="url(#emailGrad)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: 12 }}>
+        <MetricCard
+          title="Bounce rate" value={metrics.bounceRate} data={metrics.bounceData}
+          color="#fb7185" riskAt={4}
+          legend={[{ label: "Bounced", count: stats.bounced, pct: metrics.bounceRate, color: "#fb7185" }]}
+        />
+        <MetricCard
+          title="Complain rate" value={metrics.complainRate} data={metrics.complainData}
+          color="#f59e0b" riskAt={0.08}
+          legend={[{ label: "Complained", count: 0, pct: "0%", color: "#f59e0b" }]}
+        />
+        <MetricCard
+          title="Open rate" value={metrics.openRate} data={metrics.openData}
+          color="#3b82f6"
+          legend={[{ label: "Opened", count: stats.opened, pct: metrics.openRate, color: "#3b82f6" }]}
+        />
+        <MetricCard
+          title="Click rate" value={metrics.clickRate} data={metrics.clickData}
+          color="#a78bfa"
+          legend={[{ label: "Clicked", count: stats.clicked, pct: metrics.clickRate, color: "#a78bfa" }]}
+        />
+      </div>
+
       <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-        <Input placeholder="Search recipient or subject..." value={search} onChange={(e) => setSearch(e.target.value)}
+        <Input placeholder="Search recipient, subject or offer #..." value={search} onChange={(e) => setSearch(e.target.value)}
           style={{ maxWidth: 260 }} />
         <select value={templateFilter} onChange={(e) => setTemplateFilter(e.target.value)}
           style={{ padding: "6px 10px", border: "1px solid #d1d5db", borderRadius: 6, fontSize: 13 }}>
@@ -279,9 +453,9 @@ export default function EmailActivity() {
           <thead style={{ background: "#f9fafb", fontSize: 11, textTransform: "uppercase", color: "#6b7280" }}>
             <tr>
               <th style={{ textAlign: "left", padding: 10 }}>Date</th>
-              <th style={{ textAlign: "left", padding: 10 }}>Type</th>
+              <th style={{ textAlign: "left", padding: 10 }}>Template</th>
               <th style={{ textAlign: "left", padding: 10 }}>Recipient</th>
-              <th style={{ textAlign: "left", padding: 10 }}>Subject</th>
+              <th style={{ textAlign: "left", padding: 10 }}>Offer #</th>
               <th style={{ textAlign: "left", padding: 10 }}>Status</th>
             </tr>
           </thead>
@@ -300,7 +474,9 @@ export default function EmailActivity() {
                   <td style={{ padding: 10, color: "#6b7280", whiteSpace: "nowrap" }}>{fmt(e.created_at)}</td>
                   <td style={{ padding: 10 }}><TypeBadge type={e.template_name} /></td>
                   <td style={{ padding: 10 }}>{e.to_email}</td>
-                  <td style={{ padding: 10, maxWidth: 320, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }} title={e.subject}>{e.subject}</td>
+                  <td style={{ padding: 10, fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", color: "#0f172a" }}>
+                    {offerNoOf(e) ?? <span style={{ color: "#9CA3AF" }}>—</span>}
+                  </td>
                   <td style={{ padding: 10 }}><StatusFlow email={e} /></td>
                 </tr>
                 {expandedId === e.id && (
