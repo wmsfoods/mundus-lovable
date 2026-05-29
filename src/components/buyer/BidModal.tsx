@@ -27,7 +27,6 @@ import {
   getIncotermAddOn,
 } from "@/lib/incotermPricing";
 import { useRemainingFcl } from "@/hooks/useRemainingFcl";
-import { notifyCompanyUsers } from "@/lib/notifications";
 
 const MIN_BID_PCT = 0.7; // initial bid must be ≥ 70% of asking (max 30% discount)
 

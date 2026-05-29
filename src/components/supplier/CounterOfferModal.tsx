@@ -31,7 +31,6 @@ import {
   getIncotermAddOn,
   getIncotermBannerLabel,
 } from "@/lib/incotermPricing";
-import { notifyCompanyUsers } from "@/lib/notifications";
 import { PriceHistoryTable, type PriceHistoryProduct } from "@/components/negotiation/PriceHistoryTable";
 
 type Anchor = "self" | "other";
