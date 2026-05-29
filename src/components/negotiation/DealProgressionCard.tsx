@@ -15,24 +15,15 @@ type Props = {
   maxRounds: number;
   /** "buyer" -> the counterparty label is "Supplier"; "supplier" -> "Buyer" */
   perspective: "buyer" | "supplier";
+  /** Original asking total (USD per FCL) — shown as the "start" row */
+  askingTotalUsd?: number;
 };
 
-function fmtUsd(v: number, fractionDigits = 2) {
+function fmtUsd(v: number, fractionDigits = 0) {
   return `$${new Intl.NumberFormat("en-US", {
     minimumFractionDigits: fractionDigits,
     maximumFractionDigits: fractionDigits,
   }).format(v)}`;
-}
-function fmtSignedUsd(v: number) {
-  const sign = v > 0 ? "+" : v < 0 ? "−" : "";
-  return `${sign}$${new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(Math.abs(v))}`;
-}
-function fmtPct(v: number) {
-  const sign = v > 0 ? "+" : v < 0 ? "−" : "";
-  return `${sign}${Math.abs(v).toFixed(1)}%`;
 }
 
 /**
@@ -41,7 +32,7 @@ function fmtPct(v: number) {
  * gap delta (absolute + %) between them so users can see how the negotiation
  * is converging.
  */
-export function DealProgressionCard({ rounds, currentRound, maxRounds, perspective }: Props) {
+export function DealProgressionCard({ rounds, currentRound, maxRounds, perspective, askingTotalUsd }: Props) {
   const { t } = useTranslation();
 
   // Group rounds by round number
@@ -83,105 +74,58 @@ export function DealProgressionCard({ rounds, currentRound, maxRounds, perspecti
         </span>
       </div>
 
+      {askingTotalUsd != null && (
+        <div className="dp-asking">
+          <span className="dp-asking__label">
+            {t("negotiation.progression.askingStart", "Asking (start)")}
+          </span>
+          <span className="dp-asking__value">{fmtUsd(askingTotalUsd)}</span>
+        </div>
+      )}
+
       <div className="dp-rounds">
         {orderedRounds.map((rn) => {
           const slot = byRound.get(rn) ?? {};
           const bid = slot.bid;
           const counter = slot.counter;
           const gapAbs =
-            bid && counter ? counter.totalUsd - bid.totalUsd : undefined;
-          const gapPct =
-            bid && counter && bid.totalUsd ? (gapAbs! / bid.totalUsd) * 100 : undefined;
+            bid && counter ? Math.abs(counter.totalUsd - bid.totalUsd) : undefined;
           const isCurrent = !!(bid?.isCurrent || counter?.isCurrent);
           return (
             <div
               key={rn}
-              className="dp-round"
-              style={{
-                border: `1px solid ${isCurrent ? "#8B2252" : "#e5e7eb"}`,
-                background: isCurrent ? "rgba(139,34,82,0.04)" : "#fff",
-                borderRadius: 10,
-                padding: 12,
-                marginBottom: 10,
-              }}
+              className={`dp-round${isCurrent ? " is-current" : ""}`}
             >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 8,
-                }}
-              >
-                <strong style={{ fontSize: 13 }}>
+              <div className="dp-round__head">
+                <strong className="dp-round__title">
                   {t("negotiation.progression.round", {
                     defaultValue: "Round {{n}}",
                     n: rn,
                   })}
                 </strong>
-                {isCurrent && (
-                  <span
-                    style={{
-                      fontSize: 10,
-                      fontWeight: 700,
-                      letterSpacing: 0.5,
-                      padding: "2px 8px",
-                      borderRadius: 999,
-                      background: "#8B2252",
-                      color: "#fff",
-                    }}
-                  >
-                    {t("negotiation.progression.current", "CURRENT")}
+                {gapAbs != null && (
+                  <span className="dp-gap-pill">
+                    {t("negotiation.progression.gap", {
+                      defaultValue: "gap {{value}}",
+                      value: fmtUsd(gapAbs),
+                    })}
                   </span>
                 )}
               </div>
 
-              <div
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "1fr 1fr 1fr",
-                  gap: 8,
-                  alignItems: "center",
-                }}
-              >
-                <div>
-                  <div style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase", fontWeight: 600 }}>
-                    {bidLabel}
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+              <div className="dp-round__row">
+                <div className="dp-round__col">
+                  <div className="dp-round__label">{bidLabel}</div>
+                  <div className="dp-round__value dp-round__value--bid">
                     {bid ? fmtUsd(bid.totalUsd) : "—"}
                   </div>
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  {gapAbs != null ? (
-                    <>
-                      <div
-                        style={{
-                          fontSize: 11,
-                          color: gapAbs > 0 ? "#b45309" : gapAbs < 0 ? "#15803d" : "#6b7280",
-                          fontWeight: 600,
-                        }}
-                      >
-                        {fmtSignedUsd(gapAbs)}
-                      </div>
-                      <div
-                        style={{
-                          fontSize: 10,
-                          color: "#6b7280",
-                        }}
-                      >
-                        {fmtPct(gapPct!)}
-                      </div>
-                    </>
-                  ) : (
-                    <span style={{ fontSize: 11, color: "#9ca3af" }}>—</span>
-                  )}
+                <div className="dp-round__arrow" aria-hidden>
+                  →
                 </div>
-                <div style={{ textAlign: "right" }}>
-                  <div style={{ fontSize: 10, color: "#6b7280", textTransform: "uppercase", fontWeight: 600 }}>
-                    {counterLabel}
-                  </div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: "#111827" }}>
+                <div className="dp-round__col">
+                  <div className="dp-round__label">{counterLabel}</div>
+                  <div className="dp-round__value dp-round__value--counter">
                     {counter ? fmtUsd(counter.totalUsd) : "—"}
                   </div>
                 </div>
