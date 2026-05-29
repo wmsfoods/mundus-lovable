@@ -36,12 +36,12 @@ export default function Profile() {
     (async () => {
       const { data } = await supabase
         .from("users")
-        .select("avatar_url, full_name")
+        .select("avatar_url, name")
         .eq("id", user.id)
         .maybeSingle();
       if (!cancelled) {
         setAvatarUrl((data?.avatar_url as string | null) ?? null);
-        setFullName(((data?.full_name as string | null) ?? "").trim());
+        setFullName(((data?.name as string | null) ?? "").trim());
       }
     })();
     return () => { cancelled = true; };
@@ -144,7 +144,7 @@ export default function Profile() {
     try {
       const { error } = await supabase
         .from("users")
-        .update({ full_name: trimmed })
+        .update({ name: trimmed })
         .eq("id", user.id);
       if (error) throw error;
       setFullName(trimmed);
