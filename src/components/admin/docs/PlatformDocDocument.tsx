@@ -1,5 +1,17 @@
 import { AdminDocView, type DocContent, type Lang } from "./AdminDocRenderer";
 
+export type ChangelogEntry = { date: string; section: string; change: string };
+
+/**
+ * Histórico de versões deste documento.
+ * Adicione uma nova linha SEMPRE que atualizar uma seção.
+ * Mantenha em ordem cronológica decrescente (mais recente primeiro).
+ */
+export const PLATFORM_CHANGELOG: ChangelogEntry[] = [
+  { date: "2026-05-29", section: "13 — Changelog", change: "Criada a seção de versões/changelog do documento." },
+  { date: "2026-05-29", section: "Documentação", change: "Adicionado Relatório de Gaps e busca por palavras-chave na aba de docs." },
+];
+
 const doc: DocContent = {
   tagline: "Documentação técnica e funcional da plataforma Mundus",
   hero: "Como a Mundus funciona, papel a papel, tela a tela, regra a regra.",
@@ -400,10 +412,25 @@ const doc: DocContent = {
         { kind: "callout", text: "Sempre que uma rota, regra ou edge function mudar, atualize este documento. A fonte de verdade é o código — este texto deve segui-lo." },
       ],
     },
+
+    // ── 13. CHANGELOG ─────────────────────────────────────────────
+    {
+      kicker: "13 — CHANGELOG",
+      title: "Versões & histórico de alterações",
+      blocks: [
+        { kind: "lede", text: "Use esta área para registrar QUANDO cada seção foi atualizada. A lista é renderizada a partir de PLATFORM_CHANGELOG (topo deste arquivo) — basta adicionar uma nova linha no array." },
+        { kind: "callout", text: "Convenção: data no formato YYYY-MM-DD, identifique a seção alterada e descreva a mudança em uma frase curta. Mantenha a entrada mais recente no topo." },
+        {
+          kind: "table",
+          head: ["Data", "Seção", "Alteração"],
+          rows: PLATFORM_CHANGELOG.map((e) => [e.date, e.section, e.change]),
+        },
+      ],
+    },
   ],
 };
 
-const CONTENT: Record<Lang, DocContent> = { pt: doc, en: doc, es: doc, zh: doc };
+export const CONTENT: Record<Lang, DocContent> = { pt: doc, en: doc, es: doc, zh: doc };
 
 export function PlatformDocDocument() {
   return <AdminDocView content={CONTENT} />;
