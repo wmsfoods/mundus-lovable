@@ -54,7 +54,7 @@ export function NegotiationActivityTab({ negotiation, buyerLabel, supplierLabel 
     (async () => {
       const { data } = await supabase
         .from("negotiation_messages")
-        .select("id, created_at, sender_side, body")
+        .select("id, created_at, sender_side, content")
         .eq("negotiation_id", negotiation.id)
         .order("created_at", { ascending: true });
       if (cancelled) return;
@@ -105,7 +105,7 @@ export function NegotiationActivityTab({ negotiation, buyerLabel, supplierLabel 
             ? `Supplier: ${supplierLabel}`
             : "Mundus",
       title: "Message",
-      detail: String(m.body ?? "").slice(0, 280),
+      detail: String(m.content ?? "").slice(0, 280),
     });
   }
 
