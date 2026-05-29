@@ -6682,6 +6682,17 @@ export type Database = {
           supplier_company_id: string
         }[]
       }
+      _notify_company: {
+        Args: {
+          p_body: string
+          p_company_id: string
+          p_icon: string
+          p_link_url: string
+          p_related_id: string
+          p_title: string
+        }
+        Returns: undefined
+      }
       accept_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       accept_negotiation: {
         Args: {
