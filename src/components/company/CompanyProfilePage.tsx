@@ -203,7 +203,7 @@ export default function CompanyProfilePage({
         (supabase as any)
         .from("companies")
         .select(
-          "id, name, tax_id, phone, website, protein_profiles, buyer_protein_profile, preferred_cuts, preferred_payment_terms, preferred_incoterms, countries_of_operation, ports_of_shipment, is_buyer, is_supplier, office_name, address, city, state, country, zip_code, est_number"
+          "id, name, tax_id, phone, website, protein_profiles, buyer_protein_profile, preferred_cuts, preferred_payment_terms, preferred_incoterms, countries_of_operation, ports_of_shipment, is_buyer, is_supplier, office_name, address, city, state, country, zip_code, est_number, is_verified, status, mundus_managed_supplier, mundus_managed_buyer, logo_url"
         )
           .eq("id", companyId),
         (supabase as any)
