@@ -327,7 +327,7 @@ export const emailTemplates = {
 
   dealAwaitingConfirmation: (vars: { name: string; cutName: string; offerNumber: string; totalValue: string; acceptedBy: "buyer" | "supplier"; counterpartyCompany: string; negotiationUrl: string }) => masterLayout({
     heroTitle: "Action required: confirm the deal",
-    heroColor: "yellow",
+    heroColor: "amber",
     preheader: `${vars.acceptedBy === "buyer" ? "Buyer" : "Supplier"} accepted M-${vars.offerNumber} — confirm to close.`,
     bodyHtml: `
       <p style="margin:0 0 16px;">Hi <strong>${vars.name}</strong>,</p>
@@ -498,6 +498,7 @@ export const emailSubjects: Record<EmailTemplateName, (vars: any) => string> = {
   bidReceived: (v) => `New Bid on M-${v.offerNumber}: ${v.cutName} — US$ ${v.totalValue}`,
   counterReceived: (v) => `Counter Offer on M-${v.offerNumber}: ${v.cutName} — Round ${v.round}`,
   dealClosed: (v) => `🎉 Deal Closed! M-${v.offerNumber} — US$ ${v.totalValue}`,
+  dealAwaitingConfirmation: (v) => `⏳ Action required: confirm M-${v.offerNumber} (US$ ${v.totalValue})`,
   negotiationRejected: (v) => `Negotiation Ended — M-${v.offerNumber}`,
   orderStatusUpdate: (v) => `Order Update: M-${v.offerNumber} — ${v.statusLabel}`,
   staleNudge: (v) => `⏰ Negotiation waiting — M-${v.offerNumber}`,
