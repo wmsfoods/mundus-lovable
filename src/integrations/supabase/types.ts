@@ -2945,6 +2945,7 @@ export type Database = {
           click_count: number
           clicked_at: string | null
           created_at: string
+          delivered_at: string | null
           error_message: string | null
           html_body: string
           id: string
@@ -2964,6 +2965,7 @@ export type Database = {
           click_count?: number
           clicked_at?: string | null
           created_at?: string
+          delivered_at?: string | null
           error_message?: string | null
           html_body: string
           id?: string
@@ -2983,6 +2985,7 @@ export type Database = {
           click_count?: number
           clicked_at?: string | null
           created_at?: string
+          delivered_at?: string | null
           error_message?: string | null
           html_body?: string
           id?: string
