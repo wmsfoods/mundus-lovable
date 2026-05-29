@@ -109,7 +109,7 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
       try {
         const [
           offersRes, negsRes, ordersRes, companiesRes,
-          negRoundsRes, recentNegsRes, offerItemsRes, buyerReqsRes, marketsRes,
+          negRoundsRes, recentNegsRes, offerItemsRes, buyerReqsRes, marketsRes, usersRes,
         ] = await Promise.all([
           safeQuery(() => supabase.from("offers").select("id, status, supplier_id, created_at, deleted_at").is("deleted_at", null)),
           safeQuery(() => supabase.from("negotiations").select("id, status, offer_id, buyer_company_id, settled_total_value, created_at, updated_at, deleted_at").is("deleted_at", null)),
@@ -120,6 +120,7 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
           safeQuery(() => supabase.from("offer_items").select("id, offer_id, category, quantity_kg, price_per_kg")),
           safeQuery(() => supabase.from("buyer_requests").select("id, destination_country, created_at, status").is("deleted_at", null)),
           safeQuery(() => supabase.from("offer_markets").select("offer_id, country_name")),
+          safeQuery(() => supabase.from("users").select("id, created_at, deleted_at").is("deleted_at", null)),
         ]);
 
       warnAdminQuery("offers", offersRes.error);
@@ -141,6 +142,7 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
       const items = (offerItemsRes.data ?? []) as any[];
       const requests = (buyerReqsRes.data ?? []) as any[];
       const offerMarkets = (marketsRes.data ?? []) as any[];
+      const users = (usersRes.data ?? []) as any[];
 
       const closedDeals = negs.filter(n => n.status === "bid_accepted");
       const gmv = closedDeals.reduce((s, n) => s + Number(n.settled_total_value ?? 0), 0);
@@ -150,7 +152,8 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
       const winRate = totalNegs > 0 ? closedDeals.length / totalNegs : 0;
 
       const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
-      const newSignups = companies.filter(c => c.created_at && c.created_at >= thirtyDaysAgo).length;
+      // Count real platform user signups (not admin-created company records)
+      const newSignups = users.filter(u => u.created_at && u.created_at >= thirtyDaysAgo).length;
       const avgDealSize = closedDeals.length > 0 ? gmv / closedDeals.length : 0;
 
       const cycles = closedDeals.map(n => {
