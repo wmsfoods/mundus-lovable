@@ -122,7 +122,12 @@ export function getExpirationInfo(expiresAt: string | null | undefined): Expirat
 export function isNegotiationExpired(neg: { status: string; expires_at?: string | null } | null | undefined): boolean {
   if (!neg) return false;
   if (neg.status === "expired") return true;
-  if (neg.status !== "awaiting_supplier" && neg.status !== "pending_buyer_review") return false;
+  if (
+    neg.status !== "awaiting_supplier" &&
+    neg.status !== "pending_buyer_review" &&
+    neg.status !== "pending_confirmation"
+  )
+    return false;
   const info = getExpirationInfo(neg.expires_at ?? null);
   return !!info?.expired;
 }
