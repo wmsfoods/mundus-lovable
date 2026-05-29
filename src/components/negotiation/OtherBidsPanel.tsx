@@ -133,6 +133,9 @@ export function OtherBidsPanel({
   if (!expanded && currentRank > visibleCount && sortedByValue[currentRank - 1]) {
     visible = [...visible, sortedByValue[currentRank - 1]];
   }
+  // Dedupe by id to avoid duplicate React keys when the current row is
+  // already in the top slice.
+  visible = Array.from(new Map(visible.map((b) => [b.id, b])).values());
 
   const flag = (cc?: string) => {
     if (!cc || cc.length !== 2) return null;
