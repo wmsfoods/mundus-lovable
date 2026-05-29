@@ -3,20 +3,7 @@ import { toast } from "sonner";
 import { Plus, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { countryFlag } from "@/lib/countryFlags";
-
-const PAYMENT_TERMS = [
-  "30% Advance, Balance TT",
-  "10% Advance, Balance TT",
-  "50% Advance, Balance TT",
-  "100% Advance",
-  "LC at Sight",
-  "LC 30 Days",
-  "LC 60 Days",
-  "LC 90 Days",
-  "CAD",
-  "Open Account 30 Days",
-  "Open Account 60 Days",
-];
+import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 
 const INCOTERMS = ["FOB", "CFR", "CIF", "EXW", "FCA", "DAP", "DDP"];
 
@@ -44,6 +31,7 @@ type Props = {
 export default function TradePreferencesSection({ companyId, canEdit, defaultCountry }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { terms: PAYMENT_TERMS } = usePaymentTerms({ scope: "international" });
   const [val, setVal] = useState<TradePrefsValue>({
     preferred_payment_terms: null,
     preferred_incoterms: [],
