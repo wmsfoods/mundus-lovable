@@ -88,6 +88,8 @@ export type BuyerNegotiationProduct = {
   counterR2UsdKg?: number;
   bidR3UsdKg?: number;
   counterR3UsdKg?: number;
+  bidR4UsdKg?: number;
+  counterR4UsdKg?: number;
 };
 
 export type BuyerNegotiationRound = {
