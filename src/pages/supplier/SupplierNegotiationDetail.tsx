@@ -1,4 +1,4 @@
-import { Fragment, useState, type CSSProperties } from "react";
+import { Fragment, useEffect, useState, type CSSProperties } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -70,10 +70,12 @@ export default function SupplierNegotiationDetail() {
   const { t, i18n } = useTranslation();
   const { unit } = useWeightUnit();
   const [activeId, setActiveId] = useState<string>(id);
-  // Keep activeId in sync if user navigates directly to a different route id
-  if (id && id !== activeId && !isUuid(activeId)) {
-    // initial mount only — guarded by !isUuid(activeId) to avoid re-render loop
-  }
+  // If the route param changes via real navigation (e.g. admin opens a
+  // different negotiation from the list), follow it. Inline switches use
+  // history.replaceState so :id stays the same and this effect is a no-op.
+  useEffect(() => {
+    if (id) setActiveId(id);
+  }, [id]);
   const { data } = useNegotiation(activeId);
   const isReal = isUuid(activeId);
   const { data: rawNeg, refetch } = useRealNegotiation(isReal ? activeId : undefined);
