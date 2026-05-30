@@ -513,3 +513,143 @@ function MenuItem({ icon, label, onClick, disabled }: { icon: React.ReactNode; l
     </button>
   );
 }
+
+function CLevelCardRow({
+  row: r,
+  domainMatch,
+  enrichingId,
+  onViewCompany,
+  onQualify,
+  onEnrich,
+}: {
+  row: CLevelRow;
+  domainMatch?: DomainMatch;
+  enrichingId: string | null;
+  onViewCompany: (companyId: string) => void;
+  onQualify: (row: CLevelRow, type: "buyer" | "supplier") => void;
+  onEnrich: (row: CLevelRow) => void;
+}) {
+  const [showQualify, setShowQualify] = useState(false);
+  const country = r.country || r.company_country || "";
+  const initials = (r.full_name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "?";
+  const isEnriching = enrichingId === r.id;
+  const btnStyle: React.CSSProperties = {
+    background: "transparent", border: "1px solid #E5E7EB", borderRadius: 6,
+    padding: "6px 10px", fontSize: 12, fontWeight: 600, cursor: "pointer",
+    color: "#111827", display: "inline-flex", alignItems: "center", gap: 4,
+  };
+  return (
+    <div className="adm-panel" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+        <span className="adm-table-av crm-av-blue" style={{ flexShrink: 0, background: "#F5F3FF", color: "#6D28D9" }}>
+          {initials}
+        </span>
+        <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <strong style={{ fontSize: 14 }}>{r.full_name}</strong>
+            <span
+              title="C-Level"
+              style={{
+                background: "#F5F3FF", color: "#6D28D9", padding: "1px 6px",
+                borderRadius: 8, fontSize: 10, fontWeight: 700, border: "1px solid #DDD6FE",
+              }}
+            >
+              👔
+            </span>
+          </div>
+          {r.job_title && (
+            <span style={{ fontSize: 12, color: "#6B7280" }}>{r.job_title}</span>
+          )}
+          {r.company_name && (
+            <span style={{ fontSize: 12, color: "#374151", display: "inline-flex", alignItems: "center", gap: 4 }}>
+              {country && <span>{countryFlag(country)}</span>}
+              <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{r.company_name}</span>
+            </span>
+          )}
+        </div>
+      </div>
+
+      {(r.email || r.linkedin) && (
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", fontSize: 12 }}>
+          {r.email && (
+            <span style={{ color: "#374151", overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%" }}>
+              {r.email}
+            </span>
+          )}
+          {r.linkedin && (
+            <a
+              href={r.linkedin}
+              target="_blank"
+              rel="noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              style={{ color: "#2563EB", display: "inline-flex", alignItems: "center", gap: 4 }}
+            >
+              LinkedIn <ExternalLink size={11} />
+            </a>
+          )}
+        </div>
+      )}
+
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+        <DomainMatchBadge match={domainMatch} />
+        {r.qualified_as ? (
+          <span style={{ padding: "2px 8px", borderRadius: 8, fontSize: 11, fontWeight: 600, background: "#D1FAE5", color: "#065F46" }}>
+            ✅ {r.qualified_as === "buyer" ? "Buyer" : "Supplier"}
+          </span>
+        ) : (
+          <span style={{ padding: "2px 8px", borderRadius: 8, fontSize: 11, fontWeight: 600, background: "#FEF3C7", color: "#92400E" }}>
+            Pending
+          </span>
+        )}
+      </div>
+
+      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+        {r.company_id && (
+          <button type="button" style={btnStyle} onClick={() => onViewCompany(r.company_id!)}>
+            <Eye size={12} /> View company
+          </button>
+        )}
+        {!r.qualified_as && (
+          showQualify ? (
+            <>
+              <button
+                type="button"
+                style={{ ...btnStyle, borderColor: "#2563EB", color: "#2563EB" }}
+                onClick={() => { setShowQualify(false); onQualify(r, "buyer"); }}
+              >
+                <ShoppingCart size={12} /> → Buyer
+              </button>
+              <button
+                type="button"
+                style={{ ...btnStyle, borderColor: "#059669", color: "#059669" }}
+                onClick={() => { setShowQualify(false); onQualify(r, "supplier"); }}
+              >
+                <Factory size={12} /> → Supplier
+              </button>
+              <button type="button" style={btnStyle} onClick={() => setShowQualify(false)}>
+                Cancel
+              </button>
+            </>
+          ) : (
+            <button type="button" style={btnStyle} onClick={() => setShowQualify(true)}>
+              Qualify →
+            </button>
+          )
+        )}
+        {!r.apollo_enriched_at && r.company_id && (
+          <button
+            type="button"
+            style={btnStyle}
+            disabled={isEnriching}
+            onClick={() => onEnrich(r)}
+          >
+            {isEnriching
+              ? <Loader2 size={12} className="animate-spin" />
+              : <Sparkles size={12} />}
+            {isEnriching ? "Enriching…" : "Enrich"}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
