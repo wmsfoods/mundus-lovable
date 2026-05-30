@@ -1187,7 +1187,17 @@ export default function SupplierCreateOffer() {
 
       // Resolve selected origin port → country / display string
       const selectedOriginPort = originPorts.find((p) => p.id === originPortId) || null;
-      const originCountryVal = selectedOriginPort?.country ?? null;
+      // Phase 3: prefer origin derived from selected plants when uniform.
+      const plantCountries = Array.from(
+        new Set(
+          cuts
+            .map((c) => (c.plantId ? plantById.get(c.plantId)?.country : null))
+            .filter((x): x is string => !!x),
+        ),
+      );
+      const derivedFromPlant = plantCountries.length === 1 ? plantCountries[0] : null;
+      const originCountryVal =
+        derivedFromPlant ?? selectedOriginPort?.country ?? null;
       const originPortLabel = selectedOriginPort
         ? `${selectedOriginPort.name}${selectedOriginPort.code ? ` (${selectedOriginPort.code})` : ""}`
         : null;
