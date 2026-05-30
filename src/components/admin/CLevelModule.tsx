@@ -316,7 +316,7 @@ export default function CLevelModule() {
   return (
     <div>
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
+      <div className="clvl-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
         <KPI label="Total C-Levels" value={kpis.total} color="#7C3AED" />
         <KPI label="With Email" value={kpis.withEmail} color="#2563EB" />
         <KPI label="LinkedIn Only" value={kpis.linkedInOnly} color="#0891B2" />
@@ -325,7 +325,7 @@ export default function CLevelModule() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
+      <div className="clvl-filters" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
         <div className="adm-search" style={{ flex: "1 1 240px", minWidth: 240 }}>
           <Search size={14} />
           <input
@@ -335,6 +335,7 @@ export default function CLevelModule() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
+        <div className="clvl-filter-row" style={{ display: "contents" }}>
         <CountryFilterPopover countries={countryCounts} selected={selectedCountries} onChange={setSelectedCountries} />
         <select className="crm-select" value={titleFilter} onChange={(e) => setTitleFilter(e.target.value as any)}>
           <option value="all">All titles</option>
@@ -356,6 +357,7 @@ export default function CLevelModule() {
           <option value="name">A-Z Name</option>
           <option value="company">A-Z Company</option>
         </select>
+        </div>
       </div>
 
       <div style={{ fontSize: 12, color: "#6B7280", margin: "4px 2px 8px" }}>
