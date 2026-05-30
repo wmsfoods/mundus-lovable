@@ -25,6 +25,8 @@ import { BarChart3, LineChart, ShoppingBag, Settings2 } from "lucide-react";
 import { Gavel, Globe } from "lucide-react";
 import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
 import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 
 export default function SupplierShell() {
   return (
@@ -49,6 +51,9 @@ function SupplierShellInner() {
   useEffect(() => { setSidebarManual(null); }, [location.pathname]);
   const userName = user?.email?.split("@")[0] ?? "User";
   const { openUpsell } = useInsightsUpsell();
+  const { isGlobalDirector } = useActiveOffice();
+  const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
+  const showDirectorTools = isGlobalDirector || isMundusAdmin;
   const stackMode = isMobile && isStackRoute(location.pathname);
 
   const featureForPath = (to: string): UpsellFeature | null => {
@@ -95,6 +100,11 @@ function SupplierShellInner() {
           icon: LineChart as unknown as SidebarItem["icon"],
           proBadge: true,
         },
+        ...(showDirectorTools ? [{
+          to: "/supplier/insights/cut-comparison",
+          label: t("supplier.insights.nav.cutComparison", { defaultValue: "Cut Comparison" }),
+          icon: Globe as unknown as SidebarItem["icon"],
+        }] : []),
         { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
       ],
     },
