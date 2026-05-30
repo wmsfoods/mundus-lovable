@@ -1019,6 +1019,62 @@ export type Database = {
           },
         ]
       }
+      company_subscriptions: {
+        Row: {
+          cancel_at_period_end: boolean | null
+          canceled_at: string | null
+          company_id: string
+          created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
+          id: string
+          plan: string
+          status: string
+          stripe_customer_id: string
+          stripe_price_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          company_id: string
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan: string
+          status?: string
+          stripe_customer_id: string
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cancel_at_period_end?: boolean | null
+          canceled_at?: string | null
+          company_id?: string
+          created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
+          id?: string
+          plan?: string
+          status?: string
+          stripe_customer_id?: string
+          stripe_price_id?: string | null
+          stripe_subscription_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "company_subscriptions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: true
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       company_team_members: {
         Row: {
           company_id: string
@@ -6843,6 +6899,10 @@ export type Database = {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
       }
+      admin_set_subscription_status: {
+        Args: { p_status: string; p_subscription_id: string }
+        Returns: Json
+      }
       assign_request_to_office: {
         Args: { p_office_id: string; p_request_id: string; p_user_id: string }
         Returns: Json
@@ -6851,6 +6911,7 @@ export type Database = {
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       company_family_ids: { Args: { p_company_id: string }; Returns: string[] }
       company_family_root: { Args: { p_company_id: string }; Returns: string }
+      company_has_pro: { Args: { p_company_id: string }; Returns: boolean }
       confirm_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       confirm_negotiation: {
         Args: { p_negotiation_id: string; p_user_id: string }
