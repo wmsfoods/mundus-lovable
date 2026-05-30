@@ -224,6 +224,11 @@
       "allOfficesFamily": "所有办公室 · {{family}}",
       "allOfficesConsolidated": "所有办公室（合并）",
       "directorBadge": "总监"
+    },
+    "officeIndicator": {
+      "viewing": "正在查看:{{office}}",
+      "showAll": "✕ 显示全部",
+      "assignedOfficeHint": "(您的指定办事处)"
     }
   },
   "dashboard": {
@@ -2030,6 +2035,60 @@
           },
           "perks": "[\"每月绩效报告发送至您的收件箱\",\"任何指标或图表的无限CSV导出\",\"每个团队成员的自定义日期范围和保存视图\",\"买家级别钻取和完整的谈判历史\"]"
         }
+      }
+    },
+    "multiOffice": {
+      "requests": {
+        "tabUnassigned": "待分配",
+        "tabAssigned": "已分配",
+        "assignToOffice": "分配到办事处 ▾",
+        "assigning": "分配中…",
+        "assignedToast": "请求已分配",
+        "assignedToastDesc": "已通知该办事处。",
+        "assignError": "无法分配",
+        "assignErrorUnknown": "未知错误",
+        "badgeAssignedTo": "{{office}}",
+        "emptyHqUnassigned": "没有等待分配的请求。",
+        "emptyHqAssigned": "尚未分配任何请求。",
+        "emptyOffice": "尚未向您的办事处分配请求。"
+      },
+      "rollup": {
+        "sectionTitle": "按办事处",
+        "allOffices": "所有办事处",
+        "active": "进行中",
+        "openNeg": "进行中谈判",
+        "closed": "已成交",
+        "inbound": "新请求",
+        "incomingRequests": "收到的请求",
+        "loading": "加载中…"
+      }
+    },
+    "cutComparison": {
+      "nav": "分割对比",
+      "title": "分割对比",
+      "subtitle": "您家族的工厂对比匿名市场 — 仅显示汇总,绝不显示竞争对手身份。",
+      "directorOnly": "此视图仅对全球总监开放。",
+      "filter": {
+        "cut": "分割",
+        "cutPlaceholder": "选择分割…",
+        "destination": "目的国(可选)",
+        "destinationPlaceholder": "例如:中国"
+      },
+      "table": {
+        "origin": "原产地",
+        "avgAsk": "平均报价 USD/kg",
+        "recentClosed": "近期成交 USD/kg",
+        "sample": "样本数",
+        "pickCut": "选择要对比的分割。",
+        "loading": "加载中…",
+        "noFamilyOffers": "您的家族暂未对此分割提交报价。",
+        "anonMarket": "匿名市场",
+        "insufficient": "市场数据不足(至少需要 3 个样本)",
+        "bandFormat": "{{low}} – 中位数 {{med}} – {{high}}"
+      },
+      "chart": {
+        "title": "价格区间(市场对比您的报价)",
+        "marketRange": "市场区间"
       }
     }
   },
