@@ -1069,6 +1069,16 @@ export default function SupplierCreateOffer() {
     { key: "cuts",     label: "Add at least one product / cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
     { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
     { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
+    {
+      key: "plants",
+      label: "Pick a plant for every cut",
+      done:
+        cuts.length > 0 &&
+        cuts.every((c) =>
+          allowedPlants.length > 0 ? !!c.plantId : !!c.plant || !!c.plantId,
+        ),
+      anchor: "sec-cuts",
+    },
   ];
   const stepsDone = publishSteps.filter((s) => s.done).length;
   const nextStep  = publishSteps.find((s) => !s.done);
