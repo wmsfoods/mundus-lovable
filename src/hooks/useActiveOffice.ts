@@ -9,7 +9,33 @@ type UserOfficeAssignment = { company_id: string; role: string | null };
 
 export function useActiveOffice() {
   const { company } = useCurrentCompany();
-  const { offices: allOffices, loading } = useCompanyOffices(company?.id ?? null);
+  // Resolve the family root for this company so we fetch the full sibling tree
+  // (HQ + child offices) instead of just the current node. Important for users
+  // assigned to a child office (e.g. supplier_global_director on a regional
+  // office) — they still need to see every office in the family.
+  // TODO phase 3: switch to DB helper `company_family_ids` if offices grow
+  // beyond a single level of nesting.
+  const [rootCompanyId, setRootCompanyId] = useState<string | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      if (!company?.id) {
+        setRootCompanyId(null);
+        return;
+      }
+      const { data } = await (supabase as any)
+        .from("companies")
+        .select("parent_company_id")
+        .eq("id", company.id)
+        .maybeSingle();
+      if (cancelled) return;
+      setRootCompanyId(((data as any)?.parent_company_id as string | null) ?? company.id);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [company?.id]);
+  const { offices: allOffices, loading } = useCompanyOffices(rootCompanyId);
   const [activeOfficeId, setActiveOfficeId] = useState<string | null>(null);
 
   const [userRole, setUserRole] = useState<string | null>(null);
