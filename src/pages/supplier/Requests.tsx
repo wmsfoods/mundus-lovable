@@ -336,7 +336,7 @@ export default function SupplierRequests() {
                         background: "#ecfeff", color: "#0e7490",
                         fontSize: 10, fontWeight: 700,
                       }}>
-                        🏢 {assignedOffice.office_name || assignedOffice.name}
+                        🏢 {t("supplier.multiOffice.requests.badgeAssignedTo", { office: assignedOffice.office_name || assignedOffice.name })}
                       </span>
                     </div>
                   )}
@@ -397,7 +397,9 @@ export default function SupplierRequests() {
                         style={{ minWidth: 160 }}
                       >
                         <option value="">
-                          {assigning === r.id ? "Assigning…" : "Assign to office ▾"}
+                          {assigning === r.id
+                            ? t("supplier.multiOffice.requests.assigning")
+                            : t("supplier.multiOffice.requests.assignToOffice")}
                         </option>
                         {familyOffices.map((o) => (
                           <option key={o.id} value={o.id}>
