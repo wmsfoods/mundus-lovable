@@ -1,108 +1,129 @@
-# Phase 3 — Office-aware Create Offer wizard
+# Phase 3.5 + Phase 4 — Multi-office supplier model
 
-Make `SupplierCreateOffer.tsx` (used by both supplier and admin on-behalf) respect the active office: only offer plants and destination markets the office is allowed to use, record plant **per cut**, derive origin from plants, and tag the offer with `office_id`. Mobile-first, fully i18n (en/pt/es/fr/zh).
+Two related phases shipped together: routing inbound requests through HQ to a single office, and giving the Global Director a consolidated family experience plus an anonymized cross-supplier benchmark.
 
-## 1. Migration (schema fix first)
+---
 
-New migration `*_offer_items_plant_id.sql`:
-- `ALTER TABLE public.offer_items ADD COLUMN plant_id uuid REFERENCES public.company_plants(id);`
-- `CREATE INDEX idx_offer_items_plant ON public.offer_items(plant_id);`
-- `COMMENT ON COLUMN public.offers.plant_id IS 'DEPRECATED: convenience pointer to first cut's plant. Source of truth is offer_items.plant_id (supports Mix FCL across plants).';`
-- No new RLS — `offer_items` write policy already scopes by family via parent offer. Plants are already family-scoped, so a cross-family `plant_id` would be rejected by the UI (and could be validated in a future trigger if abuse is seen).
+## Phase 3.5 — Request routing (HQ → office)
 
-## 2. New hooks
+### 1. Database migration
 
-`src/hooks/useOfficeAllowedPlants.ts`
-- Input: `officeId` (the acting office).
-- Query `office_plants` joined with `company_plants` for that office. Filter `is_active = true`.
-- Fallback: if no `office_plants` rows exist for that office, return ALL family plants (via `company_family_ids(officeId)` → `company_plants.company_id IN (...)`), plus a `fallback: true` flag so the UI can show the hint.
-- Returns `{ plants, fallback, loading }`.
+Add to `buyer_requests`:
+- `assigned_office_id uuid` (FK `companies.id`, nullable)
+- `assigned_by_user_id uuid` (FK `users.id`, nullable)
+- `assigned_at timestamptz`
+- `routing_status text NOT NULL DEFAULT 'unassigned'` CHECK in (`unassigned`,`assigned`)
+- Indexes on `assigned_office_id` and `routing_status`
 
-`src/hooks/useOfficeAllowedMarkets.ts`
-- Same pattern using `office_markets` joined with `markets` + `countries`.
-- Fallback to all markets if none configured, with `fallback: true`.
-- Returns `{ markets, fallback, loading }`.
+Helper + RPCs (all SECURITY DEFINER, `search_path=public`):
+- `is_family_hq(company)` → bool (any child exists)
+- `assign_request_to_office(p_request_id, p_office_id, p_user_id)` enforcing:
+  - office must be in the family of `target_supplier_id` (or its own family if target null)
+  - caller must be mundus admin OR family global director OR HQ-root member (NOT an office-locked operator — checked by verifying `cu.company_id = company_family_root(office)`)
+  - sets routing fields and `routing_status='assigned'`
+- `GRANT EXECUTE ... TO authenticated`
 
-Both run under RLS — no special privileges needed.
+RLS tightening on `buyer_requests`: within a family-HQ supplier, an office-locked operator sees a request only when `assigned_office_id` ∈ their office scope. HQ-pool viewers (admin/director/HQ-root member) always see family requests. Single-office suppliers keep current behavior. Implemented via a helper predicate referencing `company_family_root` / `is_family_hq` to avoid recursion.
 
-## 3. Resolve the "acting office"
+Backfill: existing rows for family suppliers → `routing_status='unassigned'`; existing rows for single-office targets remain visible as today (policy ignores `routing_status` when target is not a family HQ).
 
-Inside the wizard, compute `actingOfficeId`:
-- Admin on-behalf (`?as_company=...`) → that company id.
-- Global director in "All Offices" mode → none yet → show **office picker** (§6) before the wizard content; once chosen, that id is the acting office for the session.
-- Otherwise → `activeOfficeId ?? company.id` (existing behavior).
+### 2. Auto-route stub (defined, NOT wired)
 
-Store in local state `actingOfficeId`. Pass to `useOfficeAllowedPlants` / `useOfficeAllowedMarkets`.
+- Add `companies.auto_route_requests boolean DEFAULT false` (lightest option — column on HQ company).
+- Define `auto_route_request(p_request_id)` that, given the request's destination country, looks up the family office whose `office_markets` covers it; if exactly one match, calls `assign_request_to_office`; otherwise no-op. Header comment: "enable in a later phase; HQ assigns manually for now." No trigger, no caller.
 
-## 4. Per-cut plant selector (core change)
+### 3. Notification triggers (best-effort)
 
-In the cut row UI (existing "Plant" text field around line 2594) and in the "Add new cut" form (line 2832 area):
-- Replace free-text/manual plant input with a **Select** populated from `allowedPlants`.
-- Item label: `"{plant_number} · {name} {flag}"` (e.g. `421 · Barretos 🇧🇷`). Use `countryFlag()` from `@/lib/countryFlags`.
-- Store the plant's `id` in `c.plant_id` (rename internal field from string `plant` → `plant_id`; keep `plant_number` for display/back-compat with `offer_items.plant_number`).
-- If `fallback: true`, render a subtle hint above the cut list: *"Showing all group plants — office plant access not yet configured."*
-- Validation: every cut must have `plant_id` set before Next/Publish. Add to the existing `validations` list (`{ key: "plants", label: "Select a plant for each cut", done: cuts.every(c => c.plant_id) }`).
-- Hide the "Manage plant numbers" link for non-master operators (use `isMaster` from `useActiveOffice`). Keep visible for masters/admins/directors.
+- AFTER INSERT on `buyer_requests` where target supplier is a family HQ → notify HQ pool ("New request for {Family} — assign to an office").
+- AFTER UPDATE of `assigned_office_id` (null → not null) → notify that office's members ("New request assigned to {Office}").
+- Reuse `_notify_company` pattern; email via existing `enqueue_email` infra. Wrapped in `BEGIN ... EXCEPTION WHEN OTHERS THEN ...` so notification failure never blocks the write.
 
-## 5. Derive Country of Origin from plants
+### 4. Frontend — Supplier Requests page
 
-- Compute `selectedPlantCountries = distinct(plants[c.plant_id].country)`.
-- If length === 1 → set `originCountryVal` to that country, render the existing input as read-only with helper *"Origin: {country} — from selected plants"*.
-- If length > 1 → show all distinct origins joined (`"Brazil, Paraguay"`) read-only; persist the first cut's plant country into `offers.origin_country`.
-- Origin Port: if all selected plants share the same `origin_port_id`, pre-select that port in the Logistics step (user can still override).
+Refactor `src/pages/supplier/Requests.tsx` + `src/hooks/useBuyerRequests.ts` to use Phase 2 scope + the new routing fields, with three modes derived from `useActiveOffice()`:
 
-## 6. Destination markets — scoped to office
+- **HQ inbox** (admin / global director / HQ-root member of a family): two tabs `Unassigned` / `Assigned`. Unassigned rows show an `Assign to office ▾` dropdown listing the family's offices (loaded via `company_family_ids` on the HQ); selecting one calls `assign_request_to_office` and optimistically moves the row to Assigned. Assigned tab shows office badge + who/when.
+- **Office operator**: single list filtered to `assigned_office_id = active office id`. No assign UI.
+- **Single-office supplier**: unchanged.
 
-- The destination country/market multiselect (around line 821, "matchedMarkets") must filter from `allowedMarkets` only.
-- If a destination was pre-filled from a request that the office isn't configured for, show the chip with a warning style and a tooltip *"This office isn't configured to sell to {country} — ask your director to grant the market."* and **block publish** until removed.
-- Destination Port options in Logistics follow naturally (already filtered by selected countries).
-- Show the same `fallback: true` hint above the market chips if no `office_markets` configured.
+Create-offer path from an assigned request passes the assigned office as acting office (Phase 3 wizard reads it).
 
-## 7. Persist `office_id`
+### 5. Dashboard fix
 
-In `handlePublish`, set `office_id: actingOfficeId` (replaces today's `activeOfficeId ?? supplierId` fallback). For admin on-behalf, `actingOfficeId === as_company`. This closes the Phase 2 TODO so "My Offers" filtering by office works end-to-end.
+In `src/hooks/useSupplierDashboard.ts` replace the marketplace-wide `incomingRequests` query (line 110, TODO at 113) with scope-aware counting:
+- HQ/All Offices: family unassigned + assigned-but-unanswered.
+- Office focus / operator: `assigned_office_id = activeOfficeId` and no response yet.
+- Single-office: today's logic.
 
-Also write `offer_items.plant_id` (new column) and `offer_items.plant_number` (keep for now) from each cut row. Set `offers.plant_id` = first cut's `plant_id` (convenience; null if mixed and you prefer — choose first for compatibility with current reads).
+### 6. i18n
 
-## 8. Global Director office picker
+Add keys under `requests.routing.*` to all 5 locales: `hqInbox`, `unassigned`, `assigned`, `assignToOffice`, `assignedTo`, `assignedBy`, `assignedAt`, `routingPending`, `noOfficeAssigned`, assignment error toasts, notification titles/bodies.
 
-New small component `SelectActingOfficeCard.tsx` rendered ABOVE the wizard when `isGlobalDirector && isAllOffices`:
-- Lists the family's offices (from `useActiveOffice().offices`) as tappable cards (44px min height, flag + office name + HQ badge).
-- On select → set `actingOfficeId` in local state; the wizard mounts/continues with that office's scopes.
-- Sticky on mobile, plain card on desktop. If a director already focused a specific office in the switcher, skip the picker entirely.
+---
 
-## 9. Review step
+## Phase 4 — Global Director experience
 
-Update the existing review block (around line 3021 where it currently shows `· Plant {c.plant}`):
-- Per cut line: `"{cut name} — {qty} kg @ ${price}/kg · 🇧🇷 421 Barretos"`.
-- Add an "Origin: ..." line derived from §5.
-- Mobile: each cut renders as a stacked card with the plant chip under the cut name (no wide table).
+### 1. Consolidated supplier dashboard ("All Offices" mode)
 
-## 10. i18n
+Extend `src/pages/supplier/SupplierHome.tsx` + `useSupplierDashboard`:
+- When `useActiveOffice().isGlobalDirector && !focusedOfficeId`, fetch with `scopeIds = company_family_ids(root)`.
+- Aggregated KPIs across the family + new **By-office breakdown** (small cards/bars): per office show active offers, open negotiations, closed deals (count & value), incoming/assigned requests.
+- Tapping an office card calls the OfficeSwitcher to focus that office (deep-link).
+- Recent activity list (offers / negotiations / deals) decorated with an office badge.
+- Reuse existing dashboard query shapes; grouping done by `office_id` (or `supplier_id` fallback).
 
-Add keys under `supplier.createOffer.*` in all 5 locales (`en`, `pt`, `es`, `fr`, `zh`):
-- `plantPerCut`, `selectPlant`, `plantRequired`, `originFromPlants`, `marketBlockedForOffice`, `fallbackPlantsHint`, `fallbackMarketsHint`, `pickActingOffice`, `pickActingOfficeHint`.
+### 2. Act-anywhere verification
 
-## 11. Constraints honored
+- Smoke-check that opening any offer / negotiation / sale across offices from the consolidated lists doesn't throw on RLS (family scope already permits action).
+- Net-new "Create Offer" in consolidated mode keeps the Phase 3 §6 office picker.
+- Confirm no UI gate blocks director actions because of office focus (focus is a view filter, not a permission gate).
 
-- Security: UI only offers in-scope plants/markets; RLS already enforces at DB.
-- Backward-compat: suppliers with no offices/office_plants see all family plants via fallback (with hint). Behavior preserved.
-- No changes to negotiation/order flows. No changes to request-routing (Phase 3.5).
-- Mobile-first: 44px tap targets, no clipped dropdowns (use existing `Select` from `@/components/ui/select` with `position="popper"`).
+### 3. Cut Comparison page
 
-## Files
+New route `/supplier/insights/cut-comparison`, gated to `supplier_global_director` + mundus admin. Sidebar entry added only for those roles.
 
-**New**
-- `supabase/migrations/<ts>_offer_items_plant_id.sql`
-- `src/hooks/useOfficeAllowedPlants.ts`
-- `src/hooks/useOfficeAllowedMarkets.ts`
-- `src/components/supplier/SelectActingOfficeCard.tsx`
+Filters: cut (standard_product) [required], destination market, FCL size, incoterm, time window (default last 180 days).
 
-**Edited**
-- `src/pages/supplier/SupplierCreateOffer.tsx` (the bulk of the work)
-- `src/i18n/locales/{en,pt,es,fr,zh}.json`
+Two data sources:
+- **Own family**: rows by origin country (from each plant), columns avg asking USD/kg, recent closed USD/kg, FCL value, sample count. Sourced from `offers`/`offer_items`/closed `orders` where supplier ∈ `user_supplier_scope_ids()`.
+- **Anonymized market**: single row from the new RPC.
 
-## Out of scope (this phase)
-- Request-routing & per-office request assignment (Phase 3.5).
-- Admin UI to configure `office_plants` / `office_markets` (assumed already present from Phase 1 setup; if missing, surface as a follow-up).
-- Dropping `offers.plant_id` (left in place, only commented as deprecated).
+New RPC `market_cut_benchmark(p_standard_product_id, p_destination_country, p_since)` → `(sample_count, min, median, max)` aggregating ALL suppliers' `offer_items` for that standard product. SECURITY DEFINER, returns aggregates only, never identifying columns. Min-sample guard: if `sample_count < 3`, the function returns the count but NULLs for min/median/max; UI shows "Insufficient market data". `GRANT EXECUTE TO authenticated`.
+
+UI: comparison table (horizontal scroll on mobile) + simple price-by-origin vs market-band chart using existing Recharts components.
+
+### 4. Director-only navigation
+
+In `src/components/supplier/SupplierShell.tsx` (or wherever the sidebar lives), conditionally render "Consolidated" home variant and "Cut Comparison" entry only when `isGlobalDirector || isMundusAdmin`.
+
+### 5. i18n
+
+Add keys under `supplier.consolidated.*` and `supplier.cutComparison.*` to all 5 locales.
+
+---
+
+## Security guarantees
+
+- Office operators never see unassigned family requests (enforced in RLS + server-side RPC; UI also hides controls).
+- `assign_request_to_office` validates caller role server-side; cannot be bypassed by client.
+- Global Director scope is always limited to their own family via `user_supplier_scope_ids()`.
+- `market_cut_benchmark` is the ONLY cross-supplier read; returns aggregates only and suppresses values when `sample_count < 3` to prevent single-competitor reverse-engineering.
+
+## Non-goals / out of scope
+
+- Auto-routing remains OFF (stub only).
+- No changes to buyer side beyond the request still being created the same way.
+- No changes to single-office suppliers' UX.
+- No changes to existing negotiation/order flows.
+
+## Files touched (high level)
+
+Migrations: 1 new (routing fields, helpers, RPCs, RLS update, notification triggers, auto-route stub, `auto_route_requests` column, `market_cut_benchmark`).
+
+Frontend:
+- `src/pages/supplier/Requests.tsx`, `src/hooks/useBuyerRequests.ts`
+- `src/hooks/useSupplierDashboard.ts`, `src/pages/supplier/SupplierHome.tsx`
+- New `src/pages/supplier/insights/CutComparison.tsx` + route
+- Supplier sidebar/shell for director-only nav
+- New `src/components/supplier/AssignOfficeMenu.tsx`, `src/components/supplier/ByOfficeBreakdown.tsx`
+- i18n files (5 locales)
