@@ -10,6 +10,8 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { useBuyerScope } from "@/hooks/useBuyerScope";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useAuth } from "@/contexts/AuthContext";
 import { countryFlag } from "@/lib/countryFlags";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
@@ -48,6 +50,28 @@ export default function BuyerCreateRequest() {
   const { markets, cutsByCategory } = useSupplierOfferData();
   const { company: realCompany } = useCurrentCompany();
   const { isAdmin: isAdminActor } = useIsMundusAdmin();
+  const { scopeIds: buyerScopeIds } = useBuyerScope();
+  const { activeOfficeId, isAllOffices, role: officeRole } = useActiveOffice();
+  const isBuyerDirector = officeRole === "buyer_global_director";
+  const [familyOffices, setFamilyOffices] = useState<Array<{ id: string; name: string }>>([]);
+  const [targetOfficeId, setTargetOfficeId] = useState<string>("");
+  useEffect(() => {
+    if (!isBuyerDirector || buyerScopeIds.length <= 1) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("companies")
+        .select("id, name")
+        .in("id", buyerScopeIds)
+        .order("name");
+      if (!cancelled) setFamilyOffices((data ?? []) as any);
+    })();
+    return () => { cancelled = true; };
+  }, [isBuyerDirector, buyerScopeIds.join(",")]);
+  useEffect(() => {
+    if (!isBuyerDirector) return;
+    if (!isAllOffices && activeOfficeId) setTargetOfficeId(activeOfficeId);
+  }, [isBuyerDirector, isAllOffices, activeOfficeId]);
   const [actingAsCompany, setActingAsCompany] = useState<any>(null);
 
   useEffect(() => {
