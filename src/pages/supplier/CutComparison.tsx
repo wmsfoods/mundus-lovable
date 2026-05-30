@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { BarChart3 } from "lucide-react";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
@@ -11,6 +12,7 @@ type OwnRow = { originCountry: string; avgAsk: number | null; recentClosed: numb
 type BenchRow = { sample_count: number; min_usd_kg: number | null; median_usd_kg: number | null; max_usd_kg: number | null };
 
 export default function CutComparison() {
+  const { t } = useTranslation();
   const fam = useFamilyContext();
   const { isAdmin } = useIsMundusAdmin();
   const allowed = fam.isGlobalDirector || isAdmin;
@@ -88,10 +90,10 @@ export default function CutComparison() {
   if (!allowed) {
     return (
       <>
-        <Crumbs items={[{ label: "Home", to: "/supplier" }, { label: "Cut Comparison" }]} />
-        <PageTitle icon={BarChart3 as any} title="Cut Comparison" />
+        <Crumbs items={[{ label: "Home", to: "/supplier" }, { label: t("supplier.cutComparison.nav") }]} />
+        <PageTitle icon={BarChart3 as any} title={t("supplier.cutComparison.title")} />
         <div className="empty-state" style={{ padding: 24 }}>
-          This view is available to Global Directors only.
+          {t("supplier.cutComparison.directorOnly")}
         </div>
       </>
     );
@@ -99,28 +101,28 @@ export default function CutComparison() {
 
   return (
     <>
-      <Crumbs items={[{ label: "Home", to: "/supplier" }, { label: "Cut Comparison" }]} />
+      <Crumbs items={[{ label: "Home", to: "/supplier" }, { label: t("supplier.cutComparison.nav") }]} />
       <PageTitle
         icon={BarChart3 as any}
-        title="Cut Comparison"
-        subtitle="Your family's plants vs the anonymized market — aggregates only, never competitor identities."
+        title={t("supplier.cutComparison.title")}
+        subtitle={t("supplier.cutComparison.subtitle")}
       />
 
       <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginBottom: 16 }}>
         <label style={{ display: "block", fontSize: 12 }}>
-          <div style={{ marginBottom: 4, color: "var(--fg-muted)" }}>Cut</div>
+          <div style={{ marginBottom: 4, color: "var(--fg-muted)" }}>{t("supplier.cutComparison.filter.cut")}</div>
           <select className="btn-tb" style={{ width: "100%" }} value={productId} onChange={(e) => setProductId(e.target.value)}>
-            <option value="">Select a cut…</option>
+            <option value="">{t("supplier.cutComparison.filter.cutPlaceholder")}</option>
             {products.map((p) => (<option key={p.id} value={p.id}>{p.name}</option>))}
           </select>
         </label>
         <label style={{ display: "block", fontSize: 12 }}>
-          <div style={{ marginBottom: 4, color: "var(--fg-muted)" }}>Destination country (optional)</div>
+          <div style={{ marginBottom: 4, color: "var(--fg-muted)" }}>{t("supplier.cutComparison.filter.destination")}</div>
           <input
             className="btn-tb"
             style={{ width: "100%" }}
             value={destination}
-            placeholder="e.g. China"
+            placeholder={t("supplier.cutComparison.filter.destinationPlaceholder")}
             onChange={(e) => setDestination(e.target.value)}
           />
         </label>
@@ -130,21 +132,21 @@ export default function CutComparison() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>Origin</th>
-              <th>Avg asking USD/kg</th>
-              <th>Recent closed USD/kg</th>
-              <th>Sample</th>
+              <th>{t("supplier.cutComparison.table.origin")}</th>
+              <th>{t("supplier.cutComparison.table.avgAsk")}</th>
+              <th>{t("supplier.cutComparison.table.recentClosed")}</th>
+              <th>{t("supplier.cutComparison.table.sample")}</th>
             </tr>
           </thead>
           <tbody>
             {!productId ? (
-              <tr className="empty-row"><td colSpan={4}>Pick a cut to compare.</td></tr>
+              <tr className="empty-row"><td colSpan={4}>{t("supplier.cutComparison.table.pickCut")}</td></tr>
             ) : loading ? (
-              <tr className="empty-row"><td colSpan={4}>Loading…</td></tr>
+              <tr className="empty-row"><td colSpan={4}>{t("supplier.cutComparison.table.loading")}</td></tr>
             ) : (
               <>
                 {ownRows.length === 0 ? (
-                  <tr className="empty-row"><td colSpan={4}>No offers from your family for this cut yet.</td></tr>
+                  <tr className="empty-row"><td colSpan={4}>{t("supplier.cutComparison.table.noFamilyOffers")}</td></tr>
                 ) : ownRows.map((r) => (
                   <tr key={r.originCountry}>
                     <td>🏭 {r.originCountry}</td>
@@ -154,13 +156,13 @@ export default function CutComparison() {
                   </tr>
                 ))}
                 <tr style={{ background: "#f8fafc" }}>
-                  <td><strong>Anonymized market</strong></td>
+                  <td><strong>{t("supplier.cutComparison.table.anonMarket")}</strong></td>
                   <td colSpan={2}>
                     {bench == null
                       ? "—"
                       : insufficient
-                        ? <em>Insufficient market data (need ≥ 3 samples)</em>
-                        : `${fmt(benchLow)} – median ${fmt(bench.median_usd_kg)} – ${fmt(benchHigh)}`}
+                        ? <em>{t("supplier.cutComparison.table.insufficient")}</em>
+                        : t("supplier.cutComparison.table.bandFormat", { low: fmt(benchLow), med: fmt(bench.median_usd_kg), high: fmt(benchHigh) })}
                   </td>
                   <td>{bench?.sample_count ?? 0}</td>
                 </tr>
@@ -172,15 +174,15 @@ export default function CutComparison() {
 
       {bench && !insufficient && (
         <div style={{ marginTop: 16, border: "1px solid var(--border)", borderRadius: 12, padding: 16, background: "#fff" }}>
-          <div style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 8 }}>Price band (market vs your offers)</div>
-          <PriceBandChart ownRows={ownRows} bench={bench} />
+          <div style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 8 }}>{t("supplier.cutComparison.chart.title")}</div>
+          <PriceBandChart ownRows={ownRows} bench={bench} marketRangeLabel={t("supplier.cutComparison.chart.marketRange")} />
         </div>
       )}
     </>
   );
 }
 
-function PriceBandChart({ ownRows, bench }: { ownRows: OwnRow[]; bench: BenchRow }) {
+function PriceBandChart({ ownRows, bench, marketRangeLabel }: { ownRows: OwnRow[]; bench: BenchRow; marketRangeLabel: string }) {
   const all: number[] = [
     ...(bench.min_usd_kg != null ? [bench.min_usd_kg] : []),
     ...(bench.max_usd_kg != null ? [bench.max_usd_kg] : []),
@@ -202,7 +204,7 @@ function PriceBandChart({ ownRows, bench }: { ownRows: OwnRow[]; bench: BenchRow
             width: `calc(${pct(bench.max_usd_kg)} - ${pct(bench.min_usd_kg)})`,
             background: "#bfdbfe", borderRadius: 999,
           }}
-          title="Market range"
+          title={marketRangeLabel}
         />
       )}
       {ownRows.map((r, i) =>
