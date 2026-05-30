@@ -603,7 +603,7 @@ function CLevelCardRow({
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+      <div className="clvl-card-actions" style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
         {r.company_id && (
           <button type="button" style={btnStyle} onClick={() => onViewCompany(r.company_id!)}>
             <Eye size={12} /> View company
