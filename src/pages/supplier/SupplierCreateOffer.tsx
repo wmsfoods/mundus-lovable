@@ -1290,6 +1290,7 @@ export default function SupplierCreateOffer() {
         minimum_amount: number; maximum_amount: number;
         condition: string; aging_method: string | null;
         packaging: string | null;
+        plant_id: string | null;
       };
       const itemsRows: OfferItemInsert[] = [];
       try {
