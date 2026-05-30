@@ -1,129 +1,73 @@
-# Phase 3.5 + Phase 4 — Multi-office supplier model
+## Phase 5 — Buyer multi-office model
 
-Two related phases shipped together: routing inbound requests through HQ to a single office, and giving the Global Director a consolidated family experience plus an anonymized cross-supplier benchmark.
+Apply the supplier family/office pattern to buyers, **simpler** (no plants, no markets, no HQ routing inbox). Reuse the generic family helpers from Phase 1 (`company_family_root`, `company_family_ids`, `is_family_global_director`) — they're company-type-agnostic.
 
----
+### 1. Database / RLS
 
-## Phase 3.5 — Request routing (HQ → office)
+New migration:
 
-### 1. Database migration
+- **Role**: add `'buyer_global_director'` to the `roles` seed and accept it in `company_users.role` / `team_invitations.profile_type` enums/checks (mirroring `supplier_global_director`).
+- **Generic scope helper**: create `public.user_buyer_scope_ids()` mirroring `user_supplier_scope_ids()` — same recursion, but filters `my_companies` to buyer companies (`is_buyer = true`) and uses `is_family_global_director` to decide self-vs-family expansion.
+- **RLS updates**:
+  - `buyer_requests`: SELECT/INSERT/UPDATE allowed when `buyer_company_id IN (SELECT user_buyer_scope_ids())` OR `is_mundus_admin()`. Supplier-side routing policies unchanged.
+  - `negotiations`: update `user_can_access_negotiation` so the buyer branch reads `n.buyer_company_id IN (SELECT user_buyer_scope_ids())` instead of equality with `current_user_company_id()`. Supplier branch and admin branch untouched.
+  - `orders`: buyer-side SELECT widened from `buyer_company_id = current_user_company_id()` to `buyer_company_id IN (SELECT user_buyer_scope_ids())`.
+- **Verify** the recursion returns self for a buyer with `parent_company_id IS NULL` and no children (single-office buyers untouched).
 
-Add to `buyer_requests`:
-- `assigned_office_id uuid` (FK `companies.id`, nullable)
-- `assigned_by_user_id uuid` (FK `users.id`, nullable)
-- `assigned_at timestamptz`
-- `routing_status text NOT NULL DEFAULT 'unassigned'` CHECK in (`unassigned`,`assigned`)
-- Indexes on `assigned_office_id` and `routing_status`
+### 2. Scope hook (generalize, don't duplicate)
 
-Helper + RPCs (all SECURITY DEFINER, `search_path=public`):
-- `is_family_hq(company)` → bool (any child exists)
-- `assign_request_to_office(p_request_id, p_office_id, p_user_id)` enforcing:
-  - office must be in the family of `target_supplier_id` (or its own family if target null)
-  - caller must be mundus admin OR family global director OR HQ-root member (NOT an office-locked operator — checked by verifying `cu.company_id = company_family_root(office)`)
-  - sets routing fields and `routing_status='assigned'`
-- `GRANT EXECUTE ... TO authenticated`
+- Rename `useSupplierScope` → `useCompanyScope` (keep a thin `useSupplierScope` re-export to avoid breaking imports) and add `useBuyerScope` as the buyer-side alias. Logic is identical because `useActiveOffice` + `companies.parent_company_id` already drive it.
+- Extend `useActiveOffice`:
+  - Treat `buyer_global_director` as master-like (same code path as `supplier_global_director`).
+  - Expose `isGlobalDirector = userRole in ('supplier_global_director','buyer_global_director')` — symmetric, no separate flag needed.
 
-RLS tightening on `buyer_requests`: within a family-HQ supplier, an office-locked operator sees a request only when `assigned_office_id` ∈ their office scope. HQ-pool viewers (admin/director/HQ-root member) always see family requests. Single-office suppliers keep current behavior. Implemented via a helper predicate referencing `company_family_root` / `is_family_hq` to avoid recursion.
+### 3. Buyer hooks — apply scope
 
-Backfill: existing rows for family suppliers → `routing_status='unassigned'`; existing rows for single-office targets remain visible as today (policy ignores `routing_status` when target is not a family HQ).
+Replace `eq('buyer_company_id', company.id)` with `in('buyer_company_id', scopeIds)`, gate on `loading`, and add `scopeIds` to react-query keys, in:
 
-### 2. Auto-route stub (defined, NOT wired)
+- `src/hooks/useBuyerRequests.ts` (list; detail-by-id unchanged)
+- `src/hooks/useBuyerNegotiations.ts`
+- `src/hooks/useBuyerOrders.ts`
+- `src/hooks/useBuyerDashboard.ts` (all counters)
+- `src/hooks/useBuyerDemand.ts` / procurement intelligence aggregations
 
-- Add `companies.auto_route_requests boolean DEFAULT false` (lightest option — column on HQ company).
-- Define `auto_route_request(p_request_id)` that, given the request's destination country, looks up the family office whose `office_markets` covers it; if exactly one match, calls `assign_request_to_office`; otherwise no-op. Header comment: "enable in a later phase; HQ assigns manually for now." No trigger, no caller.
+### 4. Buyer offices UI
 
-### 3. Notification triggers (best-effort)
+- Reuse `SupplierOffices.tsx` already routed at `/buyer/offices`. Add a `mode: 'supplier' | 'buyer'` prop (or detect from current shell) to:
+  - Hide the **Plants** and **Markets** tabs/sections for buyer families.
+  - Force `is_buyer=true` on create/edit child offices.
+  - Show per-office counters relevant to buyers: requests / negotiations / orders.
+- `CreateBuyerProfileModal` role dropdown: add **Buyer Global Director**.
 
-- AFTER INSERT on `buyer_requests` where target supplier is a family HQ → notify HQ pool ("New request for {Family} — assign to an office").
-- AFTER UPDATE of `assigned_office_id` (null → not null) → notify that office's members ("New request assigned to {Office}").
-- Reuse `_notify_company` pattern; email via existing `enqueue_email` infra. Wrapped in `BEGIN ... EXCEPTION WHEN OTHERS THEN ...` so notification failure never blocks the write.
+### 5. OfficeSwitcher + buyer consolidated dashboard
 
-### 4. Frontend — Supplier Requests page
+- `OfficeSwitcher` already generic — for a buyer global director it will show "All Offices · {Family}" + each office automatically once `useActiveOffice` accepts the new role.
+- Buyer Home (consolidated mode): reuse supplier Phase 4 rollup components (`ByOfficeRollup` pattern) adapted to buyer entities — by-office cards for requests/negotiations/orders, office badge on recent activity rows; tapping an office focuses it.
+- Operators/masters: behavior unchanged — only their office.
 
-Refactor `src/pages/supplier/Requests.tsx` + `src/hooks/useBuyerRequests.ts` to use Phase 2 scope + the new routing fields, with three modes derived from `useActiveOffice()`:
+### 6. Buyer global director — act anywhere
 
-- **HQ inbox** (admin / global director / HQ-root member of a family): two tabs `Unassigned` / `Assigned`. Unassigned rows show an `Assign to office ▾` dropdown listing the family's offices (loaded via `company_family_ids` on the HQ); selecting one calls `assign_request_to_office` and optimistically moves the row to Assigned. Assigned tab shows office badge + who/when.
-- **Office operator**: single list filtered to `assigned_office_id = active office id`. No assign UI.
-- **Single-office supplier**: unchanged.
+- `BuyerCreateRequest`: when `isAllOffices && isBuyerGlobalDirector`, show an **Office picker** (required) and stamp `buyer_company_id` = chosen office id. In focus mode, default to the focused office.
+- Negotiation actions (bid/counter/accept/chat/confirm) already use the user's identity → RLS allows family-wide buyer action automatically once §1 lands. No code change needed beyond confirming the action buttons render based on scope membership, not company-id equality.
 
-Create-offer path from an assigned request passes the assigned office as acting office (Phase 3 wizard reads it).
+### 7. i18n
 
-### 5. Dashboard fix
+Add keys in all 5 locales (`en/pt/es/fr/zh.json`):
 
-In `src/hooks/useSupplierDashboard.ts` replace the marketplace-wide `incomingRequests` query (line 110, TODO at 113) with scope-aware counting:
-- HQ/All Offices: family unassigned + assigned-but-unanswered.
-- Office focus / operator: `assigned_office_id = activeOfficeId` and no response yet.
-- Single-office: today's logic.
+- `roles.buyer_global_director`
+- `buyer.multiOffice.officePickerLabel` / `placeholder` / `requiredError`
+- `buyer.multiOffice.rollup.*` (titles, empty states, by-office card labels)
+- `buyer.offices.*` (page title, empty state, create/edit modal labels for buyer mode)
+- `shell.officeIndicator.buyerAllOffices`
 
-### 6. i18n
+### 8. Out of scope (explicit)
 
-Add keys under `requests.routing.*` to all 5 locales: `hqInbox`, `unassigned`, `assigned`, `assignToOffice`, `assignedTo`, `assignedBy`, `assignedAt`, `routingPending`, `noOfficeAssigned`, assignment error toasts, notification titles/bodies.
+- No `office_plants`, no `office_markets`, no `assign_request_to_office`, no HQ inbox for buyers.
+- Supplier side, admin flows, single-office buyer behavior: untouched.
 
----
+### Technical notes
 
-## Phase 4 — Global Director experience
-
-### 1. Consolidated supplier dashboard ("All Offices" mode)
-
-Extend `src/pages/supplier/SupplierHome.tsx` + `useSupplierDashboard`:
-- When `useActiveOffice().isGlobalDirector && !focusedOfficeId`, fetch with `scopeIds = company_family_ids(root)`.
-- Aggregated KPIs across the family + new **By-office breakdown** (small cards/bars): per office show active offers, open negotiations, closed deals (count & value), incoming/assigned requests.
-- Tapping an office card calls the OfficeSwitcher to focus that office (deep-link).
-- Recent activity list (offers / negotiations / deals) decorated with an office badge.
-- Reuse existing dashboard query shapes; grouping done by `office_id` (or `supplier_id` fallback).
-
-### 2. Act-anywhere verification
-
-- Smoke-check that opening any offer / negotiation / sale across offices from the consolidated lists doesn't throw on RLS (family scope already permits action).
-- Net-new "Create Offer" in consolidated mode keeps the Phase 3 §6 office picker.
-- Confirm no UI gate blocks director actions because of office focus (focus is a view filter, not a permission gate).
-
-### 3. Cut Comparison page
-
-New route `/supplier/insights/cut-comparison`, gated to `supplier_global_director` + mundus admin. Sidebar entry added only for those roles.
-
-Filters: cut (standard_product) [required], destination market, FCL size, incoterm, time window (default last 180 days).
-
-Two data sources:
-- **Own family**: rows by origin country (from each plant), columns avg asking USD/kg, recent closed USD/kg, FCL value, sample count. Sourced from `offers`/`offer_items`/closed `orders` where supplier ∈ `user_supplier_scope_ids()`.
-- **Anonymized market**: single row from the new RPC.
-
-New RPC `market_cut_benchmark(p_standard_product_id, p_destination_country, p_since)` → `(sample_count, min, median, max)` aggregating ALL suppliers' `offer_items` for that standard product. SECURITY DEFINER, returns aggregates only, never identifying columns. Min-sample guard: if `sample_count < 3`, the function returns the count but NULLs for min/median/max; UI shows "Insufficient market data". `GRANT EXECUTE TO authenticated`.
-
-UI: comparison table (horizontal scroll on mobile) + simple price-by-origin vs market-band chart using existing Recharts components.
-
-### 4. Director-only navigation
-
-In `src/components/supplier/SupplierShell.tsx` (or wherever the sidebar lives), conditionally render "Consolidated" home variant and "Cut Comparison" entry only when `isGlobalDirector || isMundusAdmin`.
-
-### 5. i18n
-
-Add keys under `supplier.consolidated.*` and `supplier.cutComparison.*` to all 5 locales.
-
----
-
-## Security guarantees
-
-- Office operators never see unassigned family requests (enforced in RLS + server-side RPC; UI also hides controls).
-- `assign_request_to_office` validates caller role server-side; cannot be bypassed by client.
-- Global Director scope is always limited to their own family via `user_supplier_scope_ids()`.
-- `market_cut_benchmark` is the ONLY cross-supplier read; returns aggregates only and suppresses values when `sample_count < 3` to prevent single-competitor reverse-engineering.
-
-## Non-goals / out of scope
-
-- Auto-routing remains OFF (stub only).
-- No changes to buyer side beyond the request still being created the same way.
-- No changes to single-office suppliers' UX.
-- No changes to existing negotiation/order flows.
-
-## Files touched (high level)
-
-Migrations: 1 new (routing fields, helpers, RPCs, RLS update, notification triggers, auto-route stub, `auto_route_requests` column, `market_cut_benchmark`).
-
-Frontend:
-- `src/pages/supplier/Requests.tsx`, `src/hooks/useBuyerRequests.ts`
-- `src/hooks/useSupplierDashboard.ts`, `src/pages/supplier/SupplierHome.tsx`
-- New `src/pages/supplier/insights/CutComparison.tsx` + route
-- Supplier sidebar/shell for director-only nav
-- New `src/components/supplier/AssignOfficeMenu.tsx`, `src/components/supplier/ByOfficeBreakdown.tsx`
-- i18n files (5 locales)
+- `companies` table already supports `parent_company_id` + `is_buyer` — no schema changes needed beyond the role enum/check.
+- Keep one generalized scope helper (`useCompanyScope`) used by both sides to avoid drift.
+- All buyer queries must wait for `scope.loading === false` (same pattern proven on supplier side) to avoid empty-scope flashes.
+- Verification: (a) single-office buyer sees own data only; (b) two sibling buyer offices cannot see each other's requests/negotiations/orders; (c) buyer global director sees family rollup and can create a request for any office; (d) supplier-side policies unchanged (regression-test request inbox + negotiation visibility).
