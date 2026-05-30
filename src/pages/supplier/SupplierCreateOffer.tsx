@@ -2595,14 +2595,42 @@ export default function SupplierCreateOffer() {
                       </select>
                     </td>
                     <td>
-                      <input
-                        type="text"
-                        className="cov4-inline-edit"
-                        value={c.plant || ""}
-                        placeholder="—"
-                        onChange={(e) => updateCutField(c.id, "plant", e.target.value)}
-                        style={{ width: 70 }}
-                      />
+                      {allowedPlants.length > 0 ? (
+                        <select
+                          className="cov4-inline-edit"
+                          value={c.plantId || ""}
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            const p = plantById.get(id);
+                            setCuts((prev) =>
+                              prev.map((x) =>
+                                x.id === c.id
+                                  ? { ...x, plantId: id || undefined, plant: p?.plant_number || "" }
+                                  : x,
+                              ),
+                            );
+                          }}
+                          style={{ minWidth: 130 }}
+                        >
+                          <option value="">Select plant…</option>
+                          {allowedPlants.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.plant_number ? `${p.plant_number} · ` : ""}
+                              {p.name}
+                              {p.country_code ? ` (${p.country_code})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="cov4-inline-edit"
+                          value={c.plant || ""}
+                          placeholder="—"
+                          onChange={(e) => updateCutField(c.id, "plant", e.target.value)}
+                          style={{ width: 70 }}
+                        />
+                      )}
                     </td>
                     <td className="num">
                       <input
