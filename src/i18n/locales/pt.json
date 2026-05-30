@@ -224,6 +224,11 @@
       "allOfficesFamily": "Todos os escritórios · {{family}}",
       "allOfficesConsolidated": "Todos os escritórios (Consolidado)",
       "directorBadge": "Diretor"
+    },
+    "officeIndicator": {
+      "viewing": "Visualizando: {{office}}",
+      "showAll": "✕ Mostrar todos",
+      "assignedOfficeHint": "(seu escritório atribuído)"
     }
   },
   "dashboard": {
@@ -2044,6 +2049,60 @@
             "Drilldown por comprador com histórico completo de negociação"
           ]
         }
+      }
+    },
+    "multiOffice": {
+      "requests": {
+        "tabUnassigned": "Aguardando roteamento",
+        "tabAssigned": "Atribuídas",
+        "assignToOffice": "Atribuir ao escritório ▾",
+        "assigning": "Atribuindo…",
+        "assignedToast": "Solicitação atribuída",
+        "assignedToastDesc": "O escritório foi notificado.",
+        "assignError": "Não foi possível atribuir",
+        "assignErrorUnknown": "Erro desconhecido",
+        "badgeAssignedTo": "{{office}}",
+        "emptyHqUnassigned": "Nenhuma solicitação aguardando roteamento.",
+        "emptyHqAssigned": "Nenhuma solicitação atribuída ainda.",
+        "emptyOffice": "Nenhuma solicitação atribuída ao seu escritório."
+      },
+      "rollup": {
+        "sectionTitle": "Por escritório",
+        "allOffices": "Todos os escritórios",
+        "active": "Ativas",
+        "openNeg": "Negociações abertas",
+        "closed": "Fechadas",
+        "inbound": "Recebidas",
+        "incomingRequests": "Solicitações recebidas",
+        "loading": "Carregando…"
+      }
+    },
+    "cutComparison": {
+      "nav": "Comparação de cortes",
+      "title": "Comparação de cortes",
+      "subtitle": "Plantas da sua família vs mercado anonimizado — apenas agregados, nunca identidades de concorrentes.",
+      "directorOnly": "Esta visão está disponível apenas para Diretores Globais.",
+      "filter": {
+        "cut": "Corte",
+        "cutPlaceholder": "Selecione um corte…",
+        "destination": "País de destino (opcional)",
+        "destinationPlaceholder": "ex.: China"
+      },
+      "table": {
+        "origin": "Origem",
+        "avgAsk": "Pedido médio USD/kg",
+        "recentClosed": "Fechados recentes USD/kg",
+        "sample": "Amostra",
+        "pickCut": "Escolha um corte para comparar.",
+        "loading": "Carregando…",
+        "noFamilyOffers": "Sua família ainda não tem ofertas para este corte.",
+        "anonMarket": "Mercado anonimizado",
+        "insufficient": "Dados de mercado insuficientes (mínimo 3 amostras)",
+        "bandFormat": "{{low}} – mediana {{med}} – {{high}}"
+      },
+      "chart": {
+        "title": "Faixa de preço (mercado vs suas ofertas)",
+        "marketRange": "Faixa de mercado"
       }
     }
   },

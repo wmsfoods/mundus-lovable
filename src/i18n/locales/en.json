@@ -224,6 +224,11 @@
       "allOfficesFamily": "All Offices · {{family}}",
       "allOfficesConsolidated": "All Offices (Consolidated)",
       "directorBadge": "Director"
+    },
+    "officeIndicator": {
+      "viewing": "Viewing: {{office}}",
+      "showAll": "✕ Show all",
+      "assignedOfficeHint": "(your assigned office)"
     }
   },
   "dashboard": {
@@ -2044,6 +2049,60 @@
             "Buyer-level drilldown with full negotiation history"
           ]
         }
+      }
+    },
+    "multiOffice": {
+      "requests": {
+        "tabUnassigned": "Needs routing",
+        "tabAssigned": "Assigned",
+        "assignToOffice": "Assign to office ▾",
+        "assigning": "Assigning…",
+        "assignedToast": "Request assigned",
+        "assignedToastDesc": "The office has been notified.",
+        "assignError": "Could not assign",
+        "assignErrorUnknown": "Unknown error",
+        "badgeAssignedTo": "{{office}}",
+        "emptyHqUnassigned": "No requests waiting for routing.",
+        "emptyHqAssigned": "No requests assigned yet.",
+        "emptyOffice": "No requests assigned to your office yet."
+      },
+      "rollup": {
+        "sectionTitle": "By office",
+        "allOffices": "All Offices",
+        "active": "Active",
+        "openNeg": "Open neg.",
+        "closed": "Closed",
+        "inbound": "Inbound",
+        "incomingRequests": "Incoming requests",
+        "loading": "Loading…"
+      }
+    },
+    "cutComparison": {
+      "nav": "Cut Comparison",
+      "title": "Cut Comparison",
+      "subtitle": "Your family's plants vs the anonymized market — aggregates only, never competitor identities.",
+      "directorOnly": "This view is available to Global Directors only.",
+      "filter": {
+        "cut": "Cut",
+        "cutPlaceholder": "Select a cut…",
+        "destination": "Destination country (optional)",
+        "destinationPlaceholder": "e.g. China"
+      },
+      "table": {
+        "origin": "Origin",
+        "avgAsk": "Avg asking USD/kg",
+        "recentClosed": "Recent closed USD/kg",
+        "sample": "Sample",
+        "pickCut": "Pick a cut to compare.",
+        "loading": "Loading…",
+        "noFamilyOffers": "No offers from your family for this cut yet.",
+        "anonMarket": "Anonymized market",
+        "insufficient": "Insufficient market data (need ≥ 3 samples)",
+        "bandFormat": "{{low}} – median {{med}} – {{high}}"
+      },
+      "chart": {
+        "title": "Price band (market vs your offers)",
+        "marketRange": "Market range"
       }
     }
   },
