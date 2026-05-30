@@ -2864,25 +2864,29 @@ export default function SupplierCreateOffer() {
                       </select>
                     </td>
                     <td>
-                      {companyPlants.length > 0 && !plantManual["__nf"] ? (
+                      {allowedPlants.length > 0 ? (
                         <select
-                          value={nf.plant}
+                          value={nf.plantId || ""}
                           onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "__custom__") {
-                              setPlantManual((p) => ({ ...p, __nf: true }));
-                              setNf((p) => ({ ...p, plant: "" }));
-                            } else {
-                              setNf((p) => ({ ...p, plant: v }));
-                            }
+                            const id = e.target.value;
+                            const p = plantById.get(id);
+                            setNf((prev) => ({
+                              ...prev,
+                              plantId: id || undefined,
+                              plant: p?.plant_number || "",
+                            }));
                           }}
-                          title="USDA/SIF establishment number"
+                          title="Office-granted plant"
+                          style={{ minWidth: 140 }}
                         >
-                          <option value="">Select...</option>
-                          {companyPlants.map((p) => (
-                            <option key={p} value={p}>{p}</option>
+                          <option value="">Select plant…</option>
+                          {allowedPlants.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.plant_number ? `${p.plant_number} · ` : ""}
+                              {p.name}
+                              {p.country_code ? ` (${p.country_code})` : ""}
+                            </option>
                           ))}
-                          <option value="__custom__">+ Enter manually</option>
                         </select>
                       ) : (
                         <input
