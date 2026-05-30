@@ -129,7 +129,7 @@ export function useRealNegotiationsList(role: Role) {
     return () => {
       cancelled = true;
     };
-  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, scopeLoading, scopeKey, refreshKey]);
+  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, scopeLoading, scopeKey, buyerScopeLoading, buyerScopeIds.join(","), refreshKey]);
 
   if (role === "buyer") {
     const offerCount = buyerGroups.length;
