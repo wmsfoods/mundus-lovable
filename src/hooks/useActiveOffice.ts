@@ -66,7 +66,10 @@ export function useActiveOffice() {
   const isMaster =
     userRole === "master_supplier" ||
     userRole === "master_buyer" ||
-    userRole === "mundus_admin";
+    userRole === "mundus_admin" ||
+    userRole === "supplier_global_director";
+
+  const isGlobalDirector = userRole === "supplier_global_director";
 
   // Fail open: if we couldn't resolve the user's context, show all offices
   // so we don't break existing behavior.
@@ -122,6 +125,7 @@ export function useActiveOffice() {
     isAllOffices,
     showAllOfficesOption,
     isMaster,
+    isGlobalDirector,
     userRole,
     loading: loading || !userCtxLoaded,
   };
