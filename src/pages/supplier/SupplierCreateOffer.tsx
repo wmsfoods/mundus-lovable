@@ -1402,6 +1402,7 @@ export default function SupplierCreateOffer() {
             condition: temp,
             aging_method: c.ag === "None" ? null : c.ag,
             packaging: c.pkg || null,
+            plant_id: c.plantId ?? null,
           });
         }
       } catch (e) {
