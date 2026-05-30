@@ -341,13 +341,22 @@ export default function AdminProspects() {
       ) : (
       <>
       {/* funnel tiles */}
-      <div className="crm-funnel-tiles">
+      <div
+        className="crm-funnel-tiles"
+        style={{
+          overflowX: "auto",
+          flexWrap: "nowrap",
+          WebkitOverflowScrolling: "touch",
+          paddingBottom: 4,
+        }}
+      >
         {STAGES.map((s) => (
           <button
             type="button"
             key={s}
             className={`crm-tile ${stage === s ? "is-active" : ""}`}
             onClick={() => setStage((cur) => (cur === s ? "all" : s))}
+            style={{ flexShrink: 0 }}
           >
             <span className="l">{t(`admin.crm.stages.${s}`)}</span>
             <span className="v">{counts[s]}</span>
@@ -476,7 +485,7 @@ export default function AdminProspects() {
           </button>
         </div>
       )}
-      <div className="adm-panel" style={{ padding: 0 }}>
+      <div className="adm-panel adm-only-desktop" style={{ padding: 0 }}>
         <div className="adm-table-wrap">
           <table className="adm-table">
             <colgroup>
@@ -575,6 +584,23 @@ export default function AdminProspects() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* mobile cards */}
+      <div className="adm-only-mobile adm-cards-stack">
+        {list.map((p) => (
+          <ProspectCardRow
+            key={p.id}
+            prospect={p}
+            onOpen={() => nav(`/admin/crm/prospects/${p.id}`)}
+            t={t}
+          />
+        ))}
+        {list.length === 0 && (
+          <div className="adm-panel" style={{ padding: 16, textAlign: "center", color: "#6B7280", fontSize: 13 }}>
+            {loading ? "…" : t("admin.crm.empty")}
+          </div>
+        )}
       </div>
 
       <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
