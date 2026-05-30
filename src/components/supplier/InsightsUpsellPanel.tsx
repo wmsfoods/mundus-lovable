@@ -1,7 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { PRO_PRICE_MONTHLY, planForFeature, startProCheckout } from "@/lib/proSubscription";
 import {
   X,
   TrendingDown,
@@ -13,6 +15,7 @@ import {
   Globe,
   Timer,
   Mail,
+  Loader2,
   ArrowRight,
   Wallet,
   Truck,
@@ -82,6 +85,8 @@ const FEATURES: Record<
 
 export function InsightsUpsellPanel({ open, feature, onClose }: Props) {
   const { t } = useTranslation();
+  const { company } = useCurrentCompany();
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     if (!open) return;
@@ -102,9 +107,29 @@ export function InsightsUpsellPanel({ open, feature, onClose }: Props) {
   const cfg = FEATURES[feature];
   const root = cfg.i18nRoot;
 
-  const handleEarlyAccess = () => {
-    toast.success(t("supplier.insights.upsell.earlyAccessToast"));
-    onClose();
+  const side: "supplier" | "buyer" = feature === "procurement" ? "buyer" : "supplier";
+  const plan = planForFeature(feature, side);
+  const price = PRO_PRICE_MONTHLY[plan];
+
+  const handleUpgrade = async () => {
+    if (!company?.id) {
+      toast.error(t("billing.errors.noCompany"));
+      return;
+    }
+    try {
+      setSubmitting(true);
+      const url = await startProCheckout({
+        company_id: company.id,
+        plan,
+        success_url: `${window.location.origin}/${side}/subscription-success`,
+        cancel_url: window.location.href,
+      });
+      window.location.href = url;
+    } catch (e) {
+      console.error(e);
+      toast.error(t("billing.errors.checkoutFailed"));
+      setSubmitting(false);
+    }
   };
 
   const mailtoHref = `mailto:sales@mundus.com?subject=${encodeURIComponent(
@@ -178,9 +203,9 @@ export function InsightsUpsellPanel({ open, feature, onClose }: Props) {
 
           <div className="ins-upsell-launching">
             <span className="ins-upsell-launching__pill">
-              {t("supplier.insights.upsell.launching")}
+              {t("billing.upgrade.billedMonthly")}
             </span>
-            <span>{t("supplier.insights.upsell.pricing")}</span>
+            <span>{t("billing.upgrade.cancelAnytime")}</span>
           </div>
         </div>
 
@@ -188,10 +213,20 @@ export function InsightsUpsellPanel({ open, feature, onClose }: Props) {
           <button
             type="button"
             className="ins-upsell-btn ins-upsell-btn--primary"
-            onClick={handleEarlyAccess}
+            onClick={handleUpgrade}
+            disabled={submitting}
           >
-            {t("supplier.insights.upsell.earlyAccess")}
-            <ArrowRight size={14} />
+            {submitting ? (
+              <>
+                <Loader2 size={14} className="animate-spin" />
+                {t("billing.upgrade.redirecting")}
+              </>
+            ) : (
+              <>
+                {t("billing.upgrade.cta", { price })}
+                <ArrowRight size={14} />
+              </>
+            )}
           </button>
           <a
             href={mailtoHref}
