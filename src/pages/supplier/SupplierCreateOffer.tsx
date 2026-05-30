@@ -231,6 +231,22 @@ export default function SupplierCreateOffer() {
   // Effective company — admin acting on behalf of a managed supplier overrides
   // the current user's company context for the entire form.
   const company: any = (isAdminActor && actingAsCompany) ? actingAsCompany : realCompany;
+
+  /* ─── Phase 3: resolve the ACTING OFFICE for this wizard session ───
+   * Admin on-behalf: as_company is the office.
+   * Normal supplier: the active office (or company id as fallback).
+   * Global Director in "All Offices" must explicitly pick — handled by
+   * the office picker below; until they pick, actingOfficeId = null. */
+  const [directorChosenOfficeId, setDirectorChosenOfficeId] = useState<string | null>(null);
+  const actingOfficeId: string | null = isAdminActor
+    ? (asCompanyId ?? null)
+    : (activeOfficeId ?? directorChosenOfficeId ?? company?.id ?? null);
+
+  const { plants: allowedPlants, fallback: plantsFallback } =
+    useOfficeAllowedPlants(actingOfficeId);
+  const { allowedCountryIds, fallback: marketsFallback } =
+    useOfficeAllowedMarkets(actingOfficeId);
+
   type FromRequest = {
     requestId: string;
     requestNumber: string;
