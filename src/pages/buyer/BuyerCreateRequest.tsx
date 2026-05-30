@@ -51,8 +51,8 @@ export default function BuyerCreateRequest() {
   const { company: realCompany } = useCurrentCompany();
   const { isAdmin: isAdminActor } = useIsMundusAdmin();
   const { scopeIds: buyerScopeIds } = useBuyerScope();
-  const { activeOfficeId, isAllOffices, role: officeRole } = useActiveOffice();
-  const isBuyerDirector = officeRole === "buyer_global_director";
+  const { activeOfficeId, isAllOffices, isBuyerGlobalDirector } = useActiveOffice();
+  const isBuyerDirector = isBuyerGlobalDirector;
   const [familyOffices, setFamilyOffices] = useState<Array<{ id: string; name: string }>>([]);
   const [targetOfficeId, setTargetOfficeId] = useState<string>("");
   useEffect(() => {
