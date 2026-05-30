@@ -3,12 +3,14 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useSupplierScope } from "@/hooks/useSupplierScope";
+import { useFamilyContext } from "@/hooks/useFamilyContext";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export function useSupplierDashboard() {
   const { company } = useCurrentCompany();
   const companyId = company?.id ?? null;
   const { scopeIds, loading: scopeLoading } = useSupplierScope();
+  const fam = useFamilyContext();
   const scopeKey = scopeIds.join(",");
   const scopeReady = !scopeLoading && scopeIds.length > 0;
   const qc = useQueryClient();
@@ -108,15 +110,29 @@ export function useSupplierDashboard() {
   });
 
   const incomingRequests = useQuery({
-    queryKey: ["sup-dash-incoming-requests"],
+    queryKey: ["sup-dash-incoming-requests", companyId, scopeKey, fam.familyRootId, fam.isFamilyHq, fam.isHqLevelUser],
+    enabled: !!companyId && scopeReady && !fam.loading,
     queryFn: async () => {
-      // TODO phase 3/5: scope incoming requests by office markets
-      // (buyer_requests is currently marketplace-wide, no office link yet).
-      const { count } = await supabase
+      let q = supabase
         .from("buyer_requests")
         .select("id", { count: "exact", head: true })
         .in("status", ["new", "with_responses"])
         .is("deleted_at", null);
+
+      if (fam.isFamilyHq && fam.isHqLevelUser && fam.familyRootId) {
+        // HQ pool: family-targeted requests (assigned or not) + assigned to any family office
+        const officeFilter = fam.familyOfficeIds.length
+          ? `,assigned_office_id.in.(${fam.familyOfficeIds.join(",")})`
+          : "";
+        q = q.or(`target_supplier_id.eq.${fam.familyRootId}${officeFilter}`);
+      } else if (fam.isFamilyHq && !fam.isHqLevelUser && scopeIds.length) {
+        // Office operator inside a family: only what's been routed to me
+        q = q.in("assigned_office_id", scopeIds);
+      } else {
+        // Single-office supplier — direct + targeted
+        q = q.or(`target_supplier_id.is.null,target_supplier_id.in.(${scopeIds.join(",")})`);
+      }
+      const { count } = await q;
       return count ?? 0;
     },
   });
