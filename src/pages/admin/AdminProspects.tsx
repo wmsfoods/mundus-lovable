@@ -341,13 +341,22 @@ export default function AdminProspects() {
       ) : (
       <>
       {/* funnel tiles */}
-      <div className="crm-funnel-tiles">
+      <div
+        className="crm-funnel-tiles"
+        style={{
+          overflowX: "auto",
+          flexWrap: "nowrap",
+          WebkitOverflowScrolling: "touch",
+          paddingBottom: 4,
+        }}
+      >
         {STAGES.map((s) => (
           <button
             type="button"
             key={s}
             className={`crm-tile ${stage === s ? "is-active" : ""}`}
             onClick={() => setStage((cur) => (cur === s ? "all" : s))}
+            style={{ flexShrink: 0 }}
           >
             <span className="l">{t(`admin.crm.stages.${s}`)}</span>
             <span className="v">{counts[s]}</span>
@@ -476,7 +485,7 @@ export default function AdminProspects() {
           </button>
         </div>
       )}
-      <div className="adm-panel" style={{ padding: 0 }}>
+      <div className="adm-panel adm-only-desktop" style={{ padding: 0 }}>
         <div className="adm-table-wrap">
           <table className="adm-table">
             <colgroup>
@@ -577,6 +586,23 @@ export default function AdminProspects() {
         </div>
       </div>
 
+      {/* mobile cards */}
+      <div className="adm-only-mobile adm-cards-stack">
+        {list.map((p) => (
+          <ProspectCardRow
+            key={p.id}
+            prospect={p}
+            onOpen={() => nav(`/admin/crm/prospects/${p.id}`)}
+            t={t}
+          />
+        ))}
+        {list.length === 0 && (
+          <div className="adm-panel" style={{ padding: 16, textAlign: "center", color: "#6B7280", fontSize: 13 }}>
+            {loading ? "…" : t("admin.crm.empty")}
+          </div>
+        )}
+      </div>
+
       <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
       </div>
@@ -623,6 +649,71 @@ export default function AdminProspects() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function ProspectCardRow({
+  prospect: p,
+  onOpen,
+  t,
+}: {
+  prospect: Prospect;
+  onOpen: () => void;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+}) {
+  const primary = p.contacts?.find((c) => c.isPrimary) ?? p.contacts?.[0];
+  const contactName = primary?.fullName || p.contactName;
+  const loc = [p.city, p.country].filter((x) => x && x !== "—").join(", ");
+  return (
+    <div
+      className="adm-panel"
+      onClick={onOpen}
+      style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}
+    >
+      <span
+        className="adm-table-av crm-av-blue"
+        style={{ flexShrink: 0 }}
+      >
+        {p.initials}
+      </span>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+          <strong style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {p.companyName}
+          </strong>
+          {p.estGmv != null && (
+            <span style={{ fontSize: 12, color: "#6B7280", whiteSpace: "nowrap" }}>{fmtGmv(p.estGmv)}</span>
+          )}
+        </div>
+        <div style={{ fontSize: 12, color: "#6B7280", display: "inline-flex", alignItems: "center", gap: 4 }}>
+          {p.country && <span>{countryFlag(p.country)}</span>}
+          <span>{loc || p.country || "—"}</span>
+        </div>
+        {contactName && contactName !== "—" && (
+          <div style={{ fontSize: 12, color: "#374151", display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{contactName}</span>
+            {p.hasCLevel && (
+              <span
+                title="C-Level decision maker"
+                style={{
+                  background: "#F5F3FF", color: "#6D28D9", padding: "1px 6px",
+                  borderRadius: 8, fontSize: 10, fontWeight: 700, border: "1px solid #DDD6FE",
+                }}
+              >
+                👔 C-Level
+              </span>
+            )}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+          <span className={`pill ${p.leadType}`}>{t(`admin.crm.roles.${p.role}`)}</span>
+          <span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span>
+        </div>
+        <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>
+          {p.lastActivity?.when ?? "—"}
+        </div>
+      </div>
     </div>
   );
 }

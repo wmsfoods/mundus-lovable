@@ -1,43 +1,81 @@
-## Plano
+# Mobile layout parity: Prospects + C-Level
 
-### 1. Limpar mock do chat
-- `DELETE FROM negotiation_messages` (remove as 3 linhas existentes).
+Apply the existing `AdminCompanies` mobile-card pattern to `AdminProspects.tsx` and `CLevelModule.tsx`. Desktop layout, data, filters, and logic stay untouched. No new CSS rules — reuse `adm-only-desktop`, `adm-only-mobile`, `adm-cards-stack`, `adm-panel`, `pill`, `adm-chip`, `adm-table-av` already in `mundus-admin.css`.
 
-### 2. Fan-out de notificações movido para o banco (fonte da verdade)
+## 1. AdminProspects.tsx
 
-Hoje a gravação em `app_notifications` depende de `notifyCompanyUsers()` ser chamada no front, dentro do `BidModal`/`CounterOfferModal`, como "best-effort". Resultado: `app_notifications` está com 0 linhas mesmo após 15 rounds reais. Vamos resolver no banco, com triggers `SECURITY DEFINER`, para cobrir TODOS os caminhos (modal, RPC, edge, admin on behalf).
+**Funnel tiles (mobile-friendly horizontal scroll)**
+- On the existing `.crm-funnel-tiles` container, merge inline style: `overflowX: "auto"`, `flexWrap: "nowrap"`, `WebkitOverflowScrolling: "touch"`, `paddingBottom: 4`.
+- On each tile button, add `flexShrink: 0`.
 
-**Função utilitária**
-- `notify_negotiation_event(p_negotiation_id, p_event, p_actor_user_id)` — resolve buyer/supplier/admin, monta título/body, descobre destinatários via `get_company_active_user_ids`, insere em `app_notifications` pulando `user_id` inválido (loop 1-a-1, `EXCEPTION WHEN foreign_key_violation` por linha para nunca abortar o lote).
+**Desktop/mobile split**
+- Add `adm-only-desktop` to the className of the `<div className="adm-panel" style={{ padding: 0 }}>` that wraps the prospects table.
+- Right after it (before the pagination row), insert:
+  ```jsx
+  <div className="adm-only-mobile adm-cards-stack">
+    {list.map((p) => (
+      <ProspectCardRow
+        key={p.id}
+        prospect={p}
+        onOpen={() => nav(`/admin/crm/prospects/${p.id}`)}
+      />
+    ))}
+  </div>
+  ```
 
-**Triggers**
-1. `round_proposals AFTER INSERT` →
-   - `round = 1` e `side = 'buyer'` → notifica supplier: *"New bid received"*.
-   - `round > 1` e criador pertence ao supplier → notifica buyer: *"Counter-offer received"*.
-   - `round > 1` e criador pertence ao buyer → notifica supplier: *"New bid received (round X)"*.
-2. `negotiations AFTER UPDATE OF status` →
-   - `pending_confirmation` → notifica counterparty: *"Confirme o deal"* (icon handshake).
-   - `bid_accepted` (deal fechado) → notifica ambos os lados: *"🎉 Deal closed"* + linkar order.
-   - `offer_rejected` → notifica counterparty: *"Negotiation rejected"*.
-3. `negotiation_messages AFTER UPDATE` quando `proposal_status` muda para `accepted_pending_confirmation` ou `accepted` → notifica o proposer/contraparte do chat.
+**New local component `ProspectCardRow`** (added at bottom of file, same pattern as AdminCompanies `CardRow`):
+- Root: `div.adm-panel`, `onClick={onOpen}`, `style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}`.
+- Left: initials avatar (`adm-table-av`, same size as desktop).
+- Right (flex column, `flex: 1, minWidth: 0`):
+  1. Row 1: company name (bold 14px, truncate) on left; `#company_number` muted 12px right-aligned if present.
+  2. Row 2: country flag + `city, country` — muted 12px.
+  3. Row 3: contact name 12px + inline 👔 badge when `hasCLevel`.
+  4. Row 4: `pill buyer|supplier` + `pill stage-{stage}` chips inline.
+  5. Row 5: Est. GMV muted 12px (if present), right-aligned.
+  6. Row 6: last activity / `updatedAt` muted 11px.
+- Reuse identical `t(...)` keys used in the desktop row.
 
-Categoria padronizada como `"negotiations"` (plural) em todos os pontos (corrige o bug em `CounterOfferActions.ts` que usa `"negotiation"` singular e some do filtro do dropdown).
+## 2. CLevelModule.tsx
 
-### 3. Limpeza no front
-- Remover as chamadas `notifyCompanyUsers` duplicadas de `BidModal.tsx`, `CounterOfferModal.tsx` e `CounterOfferActions.ts` (agora redundantes e fonte de inconsistência de categoria/título). Emails continuam disparados do front como hoje.
+**Desktop/mobile split**
+- Add `adm-only-desktop` to the panel wrapping the C-Level table.
+- Right after, insert:
+  ```jsx
+  <div className="adm-only-mobile adm-cards-stack">
+    {visibleRows.map((r) => (
+      <CLevelCardRow
+        key={r.id}
+        row={r}
+        domainMatch={domainMatches[r.id]}
+        enrichingId={enrichingId}
+        onViewCompany={(id) => nav(`/admin/crm/prospects/${id}`)}
+        onQualify={qualifyAs}
+        onEnrich={enrichOne}
+      />
+    ))}
+  </div>
+  ```
 
-### 4. Validação
-- `psql` para confirmar que após um INSERT em `round_proposals` aparecem linhas em `app_notifications`.
-- Conferir bell na UI (preview) com usuário logado.
+**New local component `CLevelCardRow`**:
+- Root: `div.adm-panel`, `style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}`.
+- Header row (flex, gap 12): initials avatar left; column right with full name (bold 14px) + 👔 inline, job title muted 12px, company name + flag muted 12px.
+- Contact line: truncated email 12px; LinkedIn icon link if present (`stopPropagation` on click).
+- Chips row: `DomainMatchBadge` (reused as-is) + status pill (Qualified green / Pending yellow — same classes as desktop).
+- Action row at the bottom:
+  - "View company" text button when `company_id` exists.
+  - "Qualify →" toggles local `showQualify` state revealing inline "→ Buyer" / "→ Supplier" buttons calling `onQualify`.
+  - "Enrich" button when not enriched, disabled while `enrichingId === r.id`.
+- Replaces the `MoreVertical` dropdown on mobile only (desktop unchanged).
 
-### Detalhes técnicos
-- Triggers em `SECURITY DEFINER` com `SET search_path = public`.
-- Loop por destinatário com `BEGIN ... EXCEPTION WHEN foreign_key_violation THEN CONTINUE; END;` para tolerar `user_id` órfão.
-- `related_id` enviado como `uuid` (coluna é uuid).
-- `app_notifications` já está no publication `supabase_realtime` ✅ — o sininho atualiza em tempo real.
-- Nenhuma alteração em RLS/grants (tabela já tem políticas corretas).
+## What stays untouched
 
-### Fora de escopo
-- Página `/buyer/chat` (mocks em arquivo) — não tocar agora.
-- Email/Resend — sem mudança.
-- Negociações antigas não recebem notificações retroativas.
+- All desktop markup, table columns, widths, sorting, filters.
+- Data hooks, pagination state, qualify/enrich/bulk-delete logic.
+- `mundus-admin.css` (no edits — only class usage).
+- `DomainMatchBadge`, i18n keys.
+
+## Technical notes
+
+- Components are local functions, not exported, matching `AdminCompanies.CardRow`.
+- Mobile/desktop visibility purely via existing `adm-only-*` classes (CSS media-query gated).
+- No new files; no behaviour or backend changes.
