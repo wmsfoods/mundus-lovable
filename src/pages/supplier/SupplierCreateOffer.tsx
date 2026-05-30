@@ -1616,6 +1616,71 @@ export default function SupplierCreateOffer() {
           ⚠️ Creating offer as <strong>{actingAsCompany.name}</strong> (Managed by Mundus)
         </div>
       )}
+      {/* Phase 3: Global Director must pick an office when in "All Offices" mode */}
+      {!isAdminActor && isGlobalDirector && isAllOffices && (
+        <div
+          style={{
+            padding: "10px 14px",
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+          }}
+        >
+          <strong style={{ color: "#1E40AF" }}>Create offer for:</strong>
+          <select
+            value={directorChosenOfficeId ?? ""}
+            onChange={(e) => setDirectorChosenOfficeId(e.target.value || null)}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 6,
+              border: "1.5px solid #93C5FD",
+              background: "#fff",
+              fontSize: 13,
+              minWidth: 220,
+              minHeight: 44,
+            }}
+          >
+            <option value="">— Select office —</option>
+            {visibleOffices.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.office_name || o.name} {o.office_country ? `· ${o.office_country}` : ""}
+              </option>
+            ))}
+          </select>
+          {!directorChosenOfficeId && (
+            <span style={{ color: "#1E40AF", fontSize: 12 }}>
+              Pick the office this offer will be booked under.
+            </span>
+          )}
+        </div>
+      )}
+      {/* Phase 3: fallback hints when grants are not yet configured */}
+      {actingOfficeId && (plantsFallback || marketsFallback) && (
+        <div
+          style={{
+            padding: "8px 12px",
+            background: "#FFFBEB",
+            border: "1px solid #FDE68A",
+            borderRadius: 8,
+            marginBottom: 12,
+            fontSize: 12,
+            color: "#92400E",
+          }}
+        >
+          {plantsFallback && (
+            <div>Showing all group plants — office plant access not yet configured.</div>
+          )}
+          {marketsFallback && (
+            <div>Showing all destination markets — office market access not yet configured.</div>
+          )}
+        </div>
+      )}
       {fromRequest && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
