@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
+import { useSupplierScope } from "./useSupplierScope";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 import {
   countryToCode,
@@ -30,6 +31,8 @@ export function useRealNegotiationsList(role: Role) {
   const [error, setError] = useState<Error | null>(null);
   const { activeOfficeId, isAllOffices } = useActiveOffice();
   const { company, loading: companyLoading } = useCurrentCompany();
+  const { scopeIds, loading: scopeLoading } = useSupplierScope();
+  const scopeKey = scopeIds.join(",");
   // Buyers always see all negotiations regardless of supplier office.
   const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
   const [refreshKey, setRefreshKey] = useState(0);
@@ -39,7 +42,7 @@ export function useRealNegotiationsList(role: Role) {
 
   useEffect(() => {
     let cancelled = false;
-    if (companyLoading || !company?.id) {
+    if (companyLoading || !company?.id || (role === "supplier" && scopeLoading)) {
       setLoading(true);
       return;
     }
@@ -72,9 +75,18 @@ export function useRealNegotiationsList(role: Role) {
         )
         .order("updated_at", { ascending: false });
 
-      q = role === "buyer"
-        ? q.eq("buyer_company_id", company!.id)
-        : q.eq("offer.supplier_id", company!.id);
+      if (role === "buyer") {
+        q = q.eq("buyer_company_id", company!.id);
+      } else {
+        // Scope by the supplier's family/office focus. RLS still enforces
+        // cross-family isolation at the DB layer.
+        if (scopeIds.length === 0) {
+          setSupplierGroups([]);
+          setLoading(false);
+          return;
+        }
+        q = q.in("offer.supplier_id", scopeIds);
+      }
 
       if (applyOfficeFilter) {
         // Include negotiations explicitly assigned to this office AND
@@ -108,7 +120,7 @@ export function useRealNegotiationsList(role: Role) {
     return () => {
       cancelled = true;
     };
-  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, refreshKey]);
+  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, scopeLoading, scopeKey, refreshKey]);
 
   if (role === "buyer") {
     const offerCount = buyerGroups.length;

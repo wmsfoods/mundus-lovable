@@ -218,6 +218,12 @@
       "create": "Créer",
       "negotiations": "Chat",
       "myOffers": "Offres"
+    },
+    "officeSwitcher": {
+      "allOffices": "Tous les bureaux",
+      "allOfficesFamily": "Tous les bureaux · {{family}}",
+      "allOfficesConsolidated": "Tous les bureaux (Consolidé)",
+      "directorBadge": "Directeur"
     }
   },
   "dashboard": {
@@ -1524,7 +1530,8 @@
           "acceptComingSoon": "Accepter la Commande — bientôt disponible",
           "rejectComingSoon": "Rejeter la Commande — bientôt disponible"
         }
-      }
+      },
+      "emptyForOffice": "Aucune vente pour {{office}}."
     },
     "offers": {
       "createOffer": "Créer Offre +",
@@ -1623,7 +1630,8 @@
       "crumbHome": "Accueil",
       "title": "Offres",
       "showing": "Affichage de {{from}} à {{to}} articles sur {{total}} résultats",
-      "sortBy": "Trier par"
+      "sortBy": "Trier par",
+      "emptyForOffice": "Aucune offre pour {{office}}."
     },
     "createOffer": {
       "title": "Nouvelle offre",
@@ -1880,7 +1888,10 @@
         "sendInvoiceDraft": "Envoyer le brouillon de facture",
         "viewSale": "Voir la vente",
         "issueBalanceInvoice": "Émettre la facture de solde"
-      }
+      },
+      "emptyOffersForOffice": "Aucune offre pour {{office}}.",
+      "emptySalesForOffice": "Aucune vente pour {{office}}.",
+      "showingOffice": "Affichage de {{office}}"
     },
     "company": {
       "title": "Mon entreprise",

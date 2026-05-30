@@ -10,6 +10,7 @@ import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import type { Sale } from "@/data/mockSales";
 import { StatusBadge, getStatusLabel } from "@/lib/orderStatus";
 import { useSupplierSales } from "@/hooks/useSupplierSales";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { DealsFilterBar } from "@/components/marketplace/DealsFilterBar";
 import {
   EMPTY_FILTER,
@@ -22,6 +23,14 @@ const PAGE_SIZE = 10;
 export default function SupplierSales() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { activeOffice, isAllOffices } = useActiveOffice();
+  const emptyMsg =
+    activeOffice && !isAllOffices
+      ? t("supplier.sales.emptyForOffice", {
+          defaultValue: "No sales yet for {{office}}.",
+          office: activeOffice.office_name || activeOffice.name,
+        })
+      : t("supplier.sales.empty");
 
   const { data: sales } = useSupplierSales();
   const [page, setPage] = useState(1);
@@ -165,7 +174,7 @@ export default function SupplierSales() {
             ))}
             {slice.length === 0 && (
               <tr className="empty-row">
-                <td colSpan={5}>{t("supplier.sales.empty")}</td>
+                <td colSpan={5}>{emptyMsg}</td>
               </tr>
             )}
           </tbody>
@@ -174,7 +183,7 @@ export default function SupplierSales() {
 
       <ListCardList>
         {slice.length === 0 ? (
-          <div className="empty-state">{t("supplier.sales.empty")}</div>
+          <div className="empty-state">{emptyMsg}</div>
         ) : (
           slice.map((s) => (
             <ListCard

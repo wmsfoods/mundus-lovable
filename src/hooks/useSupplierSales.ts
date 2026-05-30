@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useSupplierScope } from "@/hooks/useSupplierScope";
 import type { Sale } from "@/data/mockSales";
 import { normalizeStatus } from "@/lib/orderStatus";
 
@@ -11,12 +12,15 @@ function fmtDate(iso: string): string {
 
 export function useSupplierSales() {
   const { company, loading: companyLoading } = useCurrentCompany();
+  const { scopeIds, loading: scopeLoading } = useSupplierScope();
+  const scopeKey = scopeIds.join(",");
   const [data, setData] = useState<Sale[]>([]);
   const [isLoading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (companyLoading) return;
+    if (companyLoading || scopeLoading) return;
     if (!company?.id) { setData([]); setLoading(false); return; }
+    if (scopeIds.length === 0) { setData([]); setLoading(false); return; }
     let cancelled = false;
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
     const load = async () => {
@@ -24,7 +28,7 @@ export function useSupplierSales() {
       const { data: offerRows } = await supabase
         .from("offers")
         .select("id")
-        .eq("supplier_id", company.id);
+        .in("supplier_id", scopeIds);
       const offerIds = (offerRows ?? []).map((o: { id: string }) => o.id);
       if (offerIds.length === 0) { setData([]); setLoading(false); return; }
       const { data: rows, error: qErr } = await supabase
@@ -109,7 +113,7 @@ export function useSupplierSales() {
       if (reloadTimer) clearTimeout(reloadTimer);
       supabase.removeChannel(channel);
     };
-  }, [company?.id, companyLoading, company?.name]);
+  }, [company?.id, companyLoading, company?.name, scopeLoading, scopeKey]);
 
   return { data, isLoading };
 }

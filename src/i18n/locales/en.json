@@ -218,6 +218,12 @@
       "create": "Create",
       "negotiations": "Chat",
       "myOffers": "Offers"
+    },
+    "officeSwitcher": {
+      "allOffices": "All Offices",
+      "allOfficesFamily": "All Offices · {{family}}",
+      "allOfficesConsolidated": "All Offices (Consolidated)",
+      "directorBadge": "Director"
     }
   },
   "dashboard": {
@@ -1529,7 +1535,8 @@
           "acceptComingSoon": "Accept Order — coming soon",
           "rejectComingSoon": "Reject Order — coming soon"
         }
-      }
+      },
+      "emptyForOffice": "No sales yet for {{office}}."
     },
     "offers": {
       "heroTitle": "Track your orders easily and quickly.",
@@ -1628,7 +1635,8 @@
           "shipment": "Shipment",
           "packing": "\n"
         }
-      }
+      },
+      "emptyForOffice": "No offers yet for {{office}}."
     },
     "createOffer": {
       "title": "New offer",
@@ -1885,7 +1893,10 @@
         "sendInvoiceDraft": "Send invoice draft",
         "viewSale": "View sale",
         "issueBalanceInvoice": "Issue balance invoice"
-      }
+      },
+      "emptyOffersForOffice": "No offers yet for {{office}}.",
+      "emptySalesForOffice": "No sales yet for {{office}}.",
+      "showingOffice": "Showing {{office}}"
     },
     "company": {
       "title": "My Company",

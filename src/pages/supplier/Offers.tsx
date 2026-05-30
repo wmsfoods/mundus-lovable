@@ -15,6 +15,7 @@ import {
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { ProteinFilter, categoryToProtein, type ProteinKey } from "@/components/marketplace/ProteinFilter";
 import { useSupplierProteins } from "@/hooks/useSupplierProteins";
 import { OfficeIndicator } from "@/components/mundus/OfficeIndicator";
@@ -32,6 +33,7 @@ export default function SupplierOffers() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { offers: realOffers, loading: realLoading } = useRealSupplierOffers();
+  const { activeOffice, isAllOffices } = useActiveOffice();
 
   const [shown, setShown] = useState(PAGE_SIZE);
   const [sortBy, setSortBy] = useState<"newest" | "oldest" | "priceDesc" | "priceAsc">("newest");
@@ -235,7 +237,14 @@ export default function SupplierOffers() {
         </div>
       ) : visible.length === 0 ? (
         <div className="empty-state" style={{ textAlign: "center", padding: "48px 16px" }}>
-          <p style={{ marginBottom: 12 }}>{t("supplier.offers.empty", "No offers yet. Create your first offer.")}</p>
+          <p style={{ marginBottom: 12 }}>
+            {activeOffice && !isAllOffices
+              ? t("supplier.offers.emptyForOffice", {
+                  defaultValue: "No offers yet for {{office}}.",
+                  office: activeOffice.office_name || activeOffice.name,
+                })
+              : t("supplier.offers.empty", "No offers yet. Create your first offer.")}
+          </p>
           <button type="button" className="so-new-btn" onClick={() => navigate("/supplier/offers/new")}>
             <PlusIcon size={14} /> {t("supplier.offers.newOffer")}
           </button>
