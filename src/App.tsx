@@ -34,6 +34,8 @@ import BuyerRequestDetail from "./pages/buyer/BuyerRequestDetail.tsx";
 import BuyerCreateRequest from "./pages/buyer/BuyerCreateRequest.tsx";
 import BuyerChat from "./pages/buyer/BuyerChat.tsx";
 import ProcurementIntelligence from "./pages/buyer/ProcurementIntelligence.tsx";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess.tsx";
+import { RequirePro } from "./components/billing/RequirePro.tsx";
 import AdminShell from "./pages/admin/AdminShell.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
@@ -184,7 +186,15 @@ const App = () => (
               <Route path="requests/:id" element={<BuyerRequestDetail />} />
               <Route path="chat" element={<BuyerChat />} />
               <Route path="chat/:conversationId" element={<BuyerChat />} />
-              <Route path="procurement-intelligence" element={<ProcurementIntelligence />} />
+              <Route
+                path="procurement-intelligence"
+                element={
+                  <RequirePro feature="procurement" side="buyer">
+                    <ProcurementIntelligence />
+                  </RequirePro>
+                }
+              />
+              <Route path="subscription-success" element={<SubscriptionSuccess side="buyer" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
@@ -214,9 +224,31 @@ const App = () => (
               <Route path="offices" element={<SupplierOffices />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
-              <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
-              <Route path="insights/analytics" element={<SupplierAnalytics />} />
-              <Route path="insights/cut-comparison" element={<CutComparison />} />
+              <Route
+                path="insights/price-benchmark"
+                element={
+                  <RequirePro feature="price-benchmark" side="supplier">
+                    <PriceBenchmark />
+                  </RequirePro>
+                }
+              />
+              <Route
+                path="insights/analytics"
+                element={
+                  <RequirePro feature="analytics" side="supplier">
+                    <SupplierAnalytics />
+                  </RequirePro>
+                }
+              />
+              <Route
+                path="insights/cut-comparison"
+                element={
+                  <RequirePro feature="cut-comparison" side="supplier">
+                    <CutComparison />
+                  </RequirePro>
+                }
+              />
+              <Route path="subscription-success" element={<SubscriptionSuccess side="supplier" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>

@@ -28,7 +28,7 @@
     "complete": "Finalizar",
     "signOut": "Cerrar sesión",
     "signedOut": "Sesión cerrada",
-    "loading": "Cargando...",
+    "loading": "Cargando…",
     "search": "Buscar",
     "save": "Guardar",
     "close": "Cerrar",
@@ -3339,6 +3339,58 @@
       "expired": "Esta invitación ha expirado. Solicita una nueva.",
       "passwordShort": "La contraseña debe tener al menos 8 caracteres.",
       "passwordMismatch": "Las contraseñas no coinciden."
+    }
+  },
+  "billing": {
+    "plans": {
+      "supplier_pro": "Mundus PRO (Proveedor)",
+      "buyer_pro": "Mundus PRO (Comprador)"
+    },
+    "upgrade": {
+      "cta": "Suscribirse — US${{price}}/mes",
+      "billedMonthly": "Facturación mensual",
+      "cancelAnytime": "Cancela cuando quieras",
+      "redirecting": "Redirigiendo al checkout…"
+    },
+    "errors": {
+      "noCompany": "Ninguna empresa seleccionada.",
+      "checkoutFailed": "No se pudo iniciar el checkout. Inténtalo de nuevo.",
+      "portalFailed": "No se pudo abrir el portal de facturación."
+    },
+    "requirePro": {
+      "eyebrow": "Mundus PRO",
+      "title": "Esta función forma parte de Mundus PRO",
+      "lede": "Desbloquea inteligencia de mercado, analítica y benchmarks avanzados para todo tu equipo.",
+      "perMonth": "mes",
+      "contactSales": "Contactar a ventas"
+    },
+    "success": {
+      "title": "Bienvenido a Mundus PRO",
+      "lede": "Tu suscripción está activa. Las funciones PRO están disponibles para toda la empresa.",
+      "cta": "Ir a PRO",
+      "autoRedirect": "Serás redirigido automáticamente en unos segundos.",
+      "unlocks": {
+        "supplier": [
+          "Price benchmark",
+          "Analítica avanzada",
+          "Comparación de cortes entre oficinas"
+        ],
+        "buyer": [
+          "Inteligencia de compras",
+          "Benchmarks de mercado",
+          "Insights entre oficinas"
+        ]
+      }
+    },
+    "section": {
+      "title": "Facturación y suscripción",
+      "managePortal": "Gestionar facturación en Stripe",
+      "renewsOn": "Se renueva el {{date}}",
+      "cancelsOn": "Se cancela el {{date}}",
+      "canceledUntil": "Cancelado — acceso hasta {{date}}",
+      "pastDue": "Tu último pago falló. Actualiza tu método de pago para mantener Mundus PRO activo.",
+      "fixPayment": "Actualizar método de pago",
+      "noSubscription": "Sin suscripción activa. Suscríbete a Mundus PRO desde US${{price}}/mes."
     }
   }
 }
