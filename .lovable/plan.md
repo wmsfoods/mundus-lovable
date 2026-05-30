@@ -1,106 +1,108 @@
-## Phase 2 — Front-end office scoping (supplier side)
+# Phase 3 — Office-aware Create Offer wizard
 
-Scope is **front-end + hooks only**. No DB changes. No changes to buyer/admin flows or to the create-offer write path (TODO note only). RLS keeps the hard guarantee; this phase makes the UI compute the correct office focus.
+Make `SupplierCreateOffer.tsx` (used by both supplier and admin on-behalf) respect the active office: only offer plants and destination markets the office is allowed to use, record plant **per cut**, derive origin from plants, and tag the offer with `office_id`. Mobile-first, fully i18n (en/pt/es/fr/zh).
 
----
+## 1. Migration (schema fix first)
 
-### 1. `src/hooks/useActiveOffice.ts` — Global Director awareness
+New migration `*_offer_items_plant_id.sql`:
+- `ALTER TABLE public.offer_items ADD COLUMN plant_id uuid REFERENCES public.company_plants(id);`
+- `CREATE INDEX idx_offer_items_plant ON public.offer_items(plant_id);`
+- `COMMENT ON COLUMN public.offers.plant_id IS 'DEPRECATED: convenience pointer to first cut's plant. Source of truth is offer_items.plant_id (supports Mix FCL across plants).';`
+- No new RLS — `offer_items` write policy already scopes by family via parent offer. Plants are already family-scoped, so a cross-family `plant_id` would be rejected by the UI (and could be validated in a future trigger if abuse is seen).
 
-- Extend `isMaster` to also include `supplier_global_director`.
-- Add `isGlobalDirector = userRole === "supplier_global_director"` and return it.
-- For a Global Director, `visibleOffices` = entire family (HQ + all child offices), not only `user_offices` assignments. Reuse `useCompanyOffices` — it already returns HQ + `parent_company_id = currentCompanyId`, which matches the current one-level office tree. Add a small note that if offices later have children, swap to a recursive query / DB helper (`company_family_ids`).
-- Keep everything else identical: localStorage persistence, auto-lock single office, stale-office clearing, "All Offices (Consolidated)" option for masters/directors.
-- Return shape adds: `isGlobalDirector: boolean`.
+## 2. New hooks
 
-### 2. New `src/hooks/useSupplierScope.ts` — single source of truth
+`src/hooks/useOfficeAllowedPlants.ts`
+- Input: `officeId` (the acting office).
+- Query `office_plants` joined with `company_plants` for that office. Filter `is_active = true`.
+- Fallback: if no `office_plants` rows exist for that office, return ALL family plants (via `company_family_ids(officeId)` → `company_plants.company_id IN (...)`), plus a `fallback: true` flag so the UI can show the hint.
+- Returns `{ plants, fallback, loading }`.
 
-Thin wrapper around `useActiveOffice` + `useCurrentCompany`:
+`src/hooks/useOfficeAllowedMarkets.ts`
+- Same pattern using `office_markets` joined with `markets` + `countries`.
+- Fallback to all markets if none configured, with `fallback: true`.
+- Returns `{ markets, fallback, loading }`.
 
-```text
-{ scopeIds, activeOfficeId, isAllOffices, isGlobalDirector, loading }
-```
+Both run under RLS — no special privileges needed.
 
-Logic:
-- `loading` true while `useActiveOffice.loading` or company loading → callers must wait.
-- A specific office is active → `scopeIds = [activeOfficeId]` (focus mode, applies even to Global Director).
-- "All Offices" consolidated → `scopeIds = visibleOffices.map(o => o.id)`.
-- Single-office operator (auto-locked) → `scopeIds = [their office id]`.
-- Fallback (no offices resolvable yet but company known) → `scopeIds = [company.id]` to avoid querying empty arrays.
+## 3. Resolve the "acting office"
 
-All four hooks below consume this and nothing else for scope.
+Inside the wizard, compute `actingOfficeId`:
+- Admin on-behalf (`?as_company=...`) → that company id.
+- Global director in "All Offices" mode → none yet → show **office picker** (§6) before the wizard content; once chosen, that id is the acting office for the session.
+- Otherwise → `activeOfficeId ?? company.id` (existing behavior).
 
-### 3. `src/hooks/useRealSupplierOffers.ts`
+Store in local state `actingOfficeId`. Pass to `useOfficeAllowedPlants` / `useOfficeAllowedMarkets`.
 
-- Remove the "intentionally not applied" comment + behaviour.
-- Use `useSupplierScope`; gate the query on `!scope.loading && scopeIds.length > 0` (mirror existing `companyLoading` guard).
-- Replace `.eq("supplier_id", supplierId)` → `.in("supplier_id", scopeIds)`.
-- Include `scopeIds.join(",")` (or activeOfficeId + isAllOffices) in the realtime channel key / refetch deps so switching office refetches.
-- Mapping, realtime, sort: unchanged.
+## 4. Per-cut plant selector (core change)
 
-### 4. `src/hooks/useRealNegotiationsList.ts` (supplier branch only)
+In the cut row UI (existing "Plant" text field around line 2594) and in the "Add new cut" form (line 2832 area):
+- Replace free-text/manual plant input with a **Select** populated from `allowedPlants`.
+- Item label: `"{plant_number} · {name} {flag}"` (e.g. `421 · Barretos 🇧🇷`). Use `countryFlag()` from `@/lib/countryFlags`.
+- Store the plant's `id` in `c.plant_id` (rename internal field from string `plant` → `plant_id`; keep `plant_number` for display/back-compat with `offer_items.plant_number`).
+- If `fallback: true`, render a subtle hint above the cut list: *"Showing all group plants — office plant access not yet configured."*
+- Validation: every cut must have `plant_id` set before Next/Publish. Add to the existing `validations` list (`{ key: "plants", label: "Select a plant for each cut", done: cuts.every(c => c.plant_id) }`).
+- Hide the "Manage plant numbers" link for non-master operators (use `isMaster` from `useActiveOffice`). Keep visible for masters/admins/directors.
 
-- For `role === "supplier"`:
-  - Replace `q.eq("offer.supplier_id", company.id)` with `q.in("offer.supplier_id", scopeIds)`.
-  - Keep the existing `office_id = activeOfficeId OR office_id IS NULL` tolerance only when a single office is focused, so legacy rows with null `office_id` still appear. When `isAllOffices`, drop the office_id filter entirely.
-- Buyer branch unchanged.
-- Add scope to react-query key.
+## 5. Derive Country of Origin from plants
 
-### 5. `src/hooks/useSupplierSales.ts`
+- Compute `selectedPlantCountries = distinct(plants[c.plant_id].country)`.
+- If length === 1 → set `originCountryVal` to that country, render the existing input as read-only with helper *"Origin: {country} — from selected plants"*.
+- If length > 1 → show all distinct origins joined (`"Brazil, Paraguay"`) read-only; persist the first cut's plant country into `offers.origin_country`.
+- Origin Port: if all selected plants share the same `origin_port_id`, pre-select that port in the Logistics step (user can still override).
 
-- Use `useSupplierScope`.
-- Replace `.eq("supplier_id", company.id)` in the offer-ids lookup with `.in("supplier_id", scopeIds)`.
-- Gate on scope loading; include scope in query key.
+## 6. Destination markets — scoped to office
 
-### 6. `src/hooks/useSupplierDashboard.ts`
+- The destination country/market multiselect (around line 821, "matchedMarkets") must filter from `allowedMarkets` only.
+- If a destination was pre-filled from a request that the office isn't configured for, show the chip with a warning style and a tooltip *"This office isn't configured to sell to {country} — ask your director to grant the market."* and **block publish** until removed.
+- Destination Port options in Logistics follow naturally (already filtered by selected countries).
+- Show the same `fallback: true` hint above the market chips if no `office_markets` configured.
 
-- Use `useSupplierScope`.
-- All `.eq("supplier_id", companyId)` (activeOffers, totalOffers, offerIds source) → `.in("supplier_id", scopeIds)`.
-- Negotiation counts derive from `offerIds` → automatically scoped, leave the derivation.
-- `incomingRequests` stays marketplace-wide; add: `// TODO phase 3/5: scope incoming requests by office markets`.
-- Include `scopeIds` in every affected `queryKey` so switching office refetches.
+## 7. Persist `office_id`
 
-### 7. `src/components/mundus/OfficeSwitcher.tsx` — polish
+In `handlePublish`, set `office_id: actingOfficeId` (replaces today's `activeOfficeId ?? supplierId` fallback). For admin on-behalf, `actingOfficeId === as_company`. This closes the Phase 2 TODO so "My Offers" filtering by office works end-to-end.
 
-- Keep "hide when only one office" behaviour.
-- When `isGlobalDirector`, label the consolidated row "All Offices · {Family Name}" and show a small "Director" badge/chip next to the trigger.
-- Verify mobile usability: 44px tap targets, dropdown not clipped inside Topbar. If the Topbar currently hides controls on mobile, surface the switcher in the mobile drawer/header so office context is always reachable. (Touches only Topbar/mobile drawer presentation; no logic changes.)
+Also write `offer_items.plant_id` (new column) and `offer_items.plant_number` (keep for now) from each cut row. Set `offers.plant_id` = first cut's `plant_id` (convenience; null if mixed and you prefer — choose first for compatibility with current reads).
 
-### 8. Empty / focus states
+## 8. Global Director office picker
 
-When a single office is focused and a list is empty, show a friendly message that names the office, e.g.:
-- Offers: "No offers yet for {Office Name}"
-- Sales: "No sales yet for {Office Name}"
-- Negotiations: "No negotiations yet for {Office Name}"
-- Dashboard cards: subtle "Showing {Office Name}" hint above the KPI grid when not in "All Offices".
+New small component `SelectActingOfficeCard.tsx` rendered ABOVE the wizard when `isGlobalDirector && isAllOffices`:
+- Lists the family's offices (from `useActiveOffice().offices`) as tappable cards (44px min height, flag + office name + HQ badge).
+- On select → set `actingOfficeId` in local state; the wizard mounts/continues with that office's scopes.
+- Sticky on mobile, plain card on desktop. If a director already focused a specific office in the switcher, skip the picker entirely.
 
-Generic empty states remain for "All Offices" / single-office operators.
+## 9. Review step
 
-### 9. i18n (en/pt/es/fr/zh)
+Update the existing review block (around line 3021 where it currently shows `· Plant {c.plant}`):
+- Per cut line: `"{cut name} — {qty} kg @ ${price}/kg · 🇧🇷 421 Barretos"`.
+- Add an "Origin: ..." line derived from §5.
+- Mobile: each cut renders as a stacked card with the plant chip under the cut name (no wide table).
 
-New keys under existing `supplier` / `shell` namespaces:
-- `officeSwitcher.allOfficesFamily` ("All Offices · {{family}}")
-- `officeSwitcher.directorBadge` ("Director")
-- `emptyStates.noOffersForOffice`, `noSalesForOffice`, `noNegotiationsForOffice`
-- `dashboard.showingOffice` ("Showing {{office}}")
+## 10. i18n
 
-Add to all 5 locale files.
+Add keys under `supplier.createOffer.*` in all 5 locales (`en`, `pt`, `es`, `fr`, `zh`):
+- `plantPerCut`, `selectPlant`, `plantRequired`, `originFromPlants`, `marketBlockedForOffice`, `fallbackPlantsHint`, `fallbackMarketsHint`, `pickActingOffice`, `pickActingOfficeHint`.
 
-### 10. Guardrails / non-goals
+## 11. Constraints honored
 
-- No DB, RLS, migrations, edge-function changes.
-- Buyer + admin code paths untouched.
-- Create-offer wizard: if it doesn't persist `office_id` from active office today, add `// TODO phase 3: persist office_id from useActiveOffice on offer insert` near the insert call — do not change behaviour.
-- Never query without `scopeIds`; never bypass the helper. RLS will still block cross-family leakage, but the UI must never widen scope by accident.
+- Security: UI only offers in-scope plants/markets; RLS already enforces at DB.
+- Backward-compat: suppliers with no offices/office_plants see all family plants via fallback (with hint). Behavior preserved.
+- No changes to negotiation/order flows. No changes to request-routing (Phase 3.5).
+- Mobile-first: 44px tap targets, no clipped dropdowns (use existing `Select` from `@/components/ui/select` with `position="popper"`).
 
-### Technical details
+## Files
 
-- Files changed: `useActiveOffice.ts`, `useRealSupplierOffers.ts`, `useRealNegotiationsList.ts`, `useSupplierSales.ts`, `useSupplierDashboard.ts`, `OfficeSwitcher.tsx`, supplier list/dashboard pages (empty-state strings only), 5 locale files.
-- Files added: `src/hooks/useSupplierScope.ts`.
-- React Query keys must include `scopeIds` (stable join) so office switches trigger refetch instead of stale cache hits.
-- All scope-consuming hooks short-circuit while `scope.loading` to avoid the "query with wrong scope then flip" race.
+**New**
+- `supabase/migrations/<ts>_offer_items_plant_id.sql`
+- `src/hooks/useOfficeAllowedPlants.ts`
+- `src/hooks/useOfficeAllowedMarkets.ts`
+- `src/components/supplier/SelectActingOfficeCard.tsx`
 
-### Open questions / red flags
+**Edited**
+- `src/pages/supplier/SupplierCreateOffer.tsx` (the bulk of the work)
+- `src/i18n/locales/{en,pt,es,fr,zh}.json`
 
-1. `useCompanyOffices` currently expands one level (`id = X OR parent_company_id = X`). For Phase 2 this matches reality, but if a Global Director's family ever has nested offices, the visible set will be incomplete. Plan keeps the one-level query and leaves a TODO to switch to the DB helper `company_family_ids` if/when needed. **Confirm one-level is acceptable for Phase 2.**
-2. The "All Offices · {Family Name}" label needs a family display name. Easiest source is the HQ company's `name`. **OK to use HQ name as family name?**
-3. Legacy negotiations with `office_id IS NULL`: kept visible when a single office is focused (current behaviour). Confirm we keep that tolerance rather than hiding legacy rows.
+## Out of scope (this phase)
+- Request-routing & per-office request assignment (Phase 3.5).
+- Admin UI to configure `office_plants` / `office_markets` (assumed already present from Phase 1 setup; if missing, surface as a follow-up).
+- Dropping `offers.plant_id` (left in place, only commented as deprecated).

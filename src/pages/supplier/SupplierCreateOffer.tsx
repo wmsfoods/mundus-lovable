@@ -17,6 +17,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import {
+  useOfficeAllowedPlants,
+  useOfficeAllowedMarkets,
+  type AllowedPlant,
+} from "@/hooks/useOfficeScopedAccess";
 import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 import {
   toDisplay,
@@ -112,6 +117,10 @@ type Cut = {
   floor: string;
   notes: string;
   plant: string;
+  /** Phase 3: office-scoped plant UUID (FK to company_plants). Source of
+   *  truth for `offer_items.plant_id`. `plant` (string) is kept for
+   *  backward-compat display of plant_number. */
+  plantId?: string;
 };
 
 type IncoExtras = {
@@ -161,7 +170,7 @@ function validatePricePair(ask: string | number | null | undefined, floor: strin
 
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "\n", gr: "\n", ag: "None",
-  qty: "", ask: "", floor: "", notes: "", plant: "",
+  qty: "", ask: "", floor: "", notes: "", plant: "", plantId: undefined,
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -173,7 +182,8 @@ export default function SupplierCreateOffer() {
   // Support both legacy `?from=` (supplier flow) and `?from_request=` (admin flow)
   const fromRequestId = searchParams.get("from") || searchParams.get("from_request");
   const location = useLocation();
-  const { activeOfficeId } = useActiveOffice();
+  const { activeOfficeId, isGlobalDirector, isAllOffices, offices: visibleOffices } =
+    useActiveOffice();
   const { company: realCompany, loading: companyLoading } = useCurrentCompany();
   const asCompanyId = searchParams.get("as_company");
   const [actingAsCompany, setActingAsCompany] = useState<any>(null);
@@ -222,6 +232,22 @@ export default function SupplierCreateOffer() {
   // Effective company — admin acting on behalf of a managed supplier overrides
   // the current user's company context for the entire form.
   const company: any = (isAdminActor && actingAsCompany) ? actingAsCompany : realCompany;
+
+  /* ─── Phase 3: resolve the ACTING OFFICE for this wizard session ───
+   * Admin on-behalf: as_company is the office.
+   * Normal supplier: the active office (or company id as fallback).
+   * Global Director in "All Offices" must explicitly pick — handled by
+   * the office picker below; until they pick, actingOfficeId = null. */
+  const [directorChosenOfficeId, setDirectorChosenOfficeId] = useState<string | null>(null);
+  const actingOfficeId: string | null = isAdminActor
+    ? (asCompanyId ?? null)
+    : (activeOfficeId ?? directorChosenOfficeId ?? company?.id ?? null);
+
+  const { plants: allowedPlants, fallback: plantsFallback } =
+    useOfficeAllowedPlants(actingOfficeId);
+  const { allowedCountryIds, fallback: marketsFallback } =
+    useOfficeAllowedMarkets(actingOfficeId);
+
   type FromRequest = {
     requestId: string;
     requestNumber: string;
@@ -447,40 +473,22 @@ export default function SupplierCreateOffer() {
 
   const [showPreview, setShowPreview] = useState(false);
 
-  /* Supplier plant numbers (USDA/SIF establishment numbers) loaded from
-     the current user's company profile. Used to populate the per-cut
-     "Plant Numbers" dropdown. */
-  const [companyPlants, setCompanyPlants] = useState<string[]>([]);
+  /* Phase 3: per-cut plant selector is now sourced from `allowedPlants`
+     (office-scoped, with family fallback). Legacy plant_numbers strings
+     are still surfaced for display under `c.plant`. */
+  const companyPlants: string[] = useMemo(
+    () =>
+      allowedPlants
+        .map((p) => p.plant_number || "")
+        .filter((s) => s && s.length > 0),
+    [allowedPlants],
+  );
   const [plantManual, setPlantManual] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (!company?.id) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const [{ data: co }, { data: locs }] = await Promise.all([
-          supabase.from("companies").select("plant_numbers").eq("id", company.id).maybeSingle(),
-          (supabase as any)
-            .from("company_locations")
-            .select("plant_numbers, location_type, est_number")
-            .eq("company_id", company.id),
-        ]);
-        if (cancelled) return;
-        const merged = new Set<string>();
-        ((co as any)?.plant_numbers as string[] | null ?? []).forEach((p) => p && merged.add(p));
-        ((locs as any[]) ?? []).forEach((l) => {
-          ((l?.plant_numbers as string[] | null) ?? []).forEach((p) => p && merged.add(p));
-          if (l?.location_type === "factory" && l?.est_number) merged.add(String(l.est_number));
-        });
-        setCompanyPlants([...merged]);
-      } catch {
-        /* no-op: anonymous or no company; falls back to free text input */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [company?.id]);
+  const plantById = useMemo(() => {
+    const m = new Map<string, AllowedPlant>();
+    allowedPlants.forEach((p) => m.set(p.id, p));
+    return m;
+  }, [allowedPlants]);
 
   /* ── Origin port (filtered by supplier's countries) ─────────── */
   const [supplierCountries, setSupplierCountries] = useState<string[]>([]);
@@ -1062,6 +1070,16 @@ export default function SupplierCreateOffer() {
     { key: "cuts",     label: "Add at least one product / cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
     { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
     { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
+    {
+      key: "plants",
+      label: "Pick a plant for every cut",
+      done:
+        cuts.length > 0 &&
+        cuts.every((c) =>
+          allowedPlants.length > 0 ? !!c.plantId : !!c.plant || !!c.plantId,
+        ),
+      anchor: "sec-cuts",
+    },
   ];
   const stepsDone = publishSteps.filter((s) => s.done).length;
   const nextStep  = publishSteps.find((s) => !s.done);
@@ -1170,7 +1188,17 @@ export default function SupplierCreateOffer() {
 
       // Resolve selected origin port → country / display string
       const selectedOriginPort = originPorts.find((p) => p.id === originPortId) || null;
-      const originCountryVal = selectedOriginPort?.country ?? null;
+      // Phase 3: prefer origin derived from selected plants when uniform.
+      const plantCountries = Array.from(
+        new Set(
+          cuts
+            .map((c) => (c.plantId ? plantById.get(c.plantId)?.country : null))
+            .filter((x): x is string => !!x),
+        ),
+      );
+      const derivedFromPlant = plantCountries.length === 1 ? plantCountries[0] : null;
+      const originCountryVal =
+        derivedFromPlant ?? selectedOriginPort?.country ?? null;
       const originPortLabel = selectedOriginPort
         ? `${selectedOriginPort.name}${selectedOriginPort.code ? ` (${selectedOriginPort.code})` : ""}`
         : null;
@@ -1190,6 +1218,8 @@ export default function SupplierCreateOffer() {
               total_fcl: totalFcl,
               is_halal: certifications.includes("Halal"),
               is_kosher: certifications.includes("Kosher"),
+              office_id: actingOfficeId ?? supplierId,
+              plant_id: cuts[0]?.plantId ?? null,
               exw_pickup_location: selInco.includes("EXW")
                 ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
                 : null,
@@ -1231,7 +1261,8 @@ export default function SupplierCreateOffer() {
             total_fcl: totalFcl,
             is_halal: certifications.includes("Halal"),
             is_kosher: certifications.includes("Kosher"),
-            office_id: activeOfficeId ?? supplierId,
+            office_id: actingOfficeId ?? supplierId,
+            plant_id: cuts[0]?.plantId ?? null,
             exw_pickup_location: selInco.includes("EXW")
               ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
               : null,
@@ -1260,6 +1291,7 @@ export default function SupplierCreateOffer() {
         minimum_amount: number; maximum_amount: number;
         condition: string; aging_method: string | null;
         packaging: string | null;
+        plant_id: string | null;
       };
       const itemsRows: OfferItemInsert[] = [];
       try {
@@ -1371,6 +1403,7 @@ export default function SupplierCreateOffer() {
             condition: temp,
             aging_method: c.ag === "None" ? null : c.ag,
             packaging: c.pkg || null,
+            plant_id: c.plantId ?? null,
           });
         }
       } catch (e) {
@@ -1581,6 +1614,71 @@ export default function SupplierCreateOffer() {
           }}
         >
           ⚠️ Creating offer as <strong>{actingAsCompany.name}</strong> (Managed by Mundus)
+        </div>
+      )}
+      {/* Phase 3: Global Director must pick an office when in "All Offices" mode */}
+      {!isAdminActor && isGlobalDirector && isAllOffices && (
+        <div
+          style={{
+            padding: "10px 14px",
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+          }}
+        >
+          <strong style={{ color: "#1E40AF" }}>Create offer for:</strong>
+          <select
+            value={directorChosenOfficeId ?? ""}
+            onChange={(e) => setDirectorChosenOfficeId(e.target.value || null)}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 6,
+              border: "1.5px solid #93C5FD",
+              background: "#fff",
+              fontSize: 13,
+              minWidth: 220,
+              minHeight: 44,
+            }}
+          >
+            <option value="">— Select office —</option>
+            {visibleOffices.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.office_name || o.name} {o.office_country ? `· ${o.office_country}` : ""}
+              </option>
+            ))}
+          </select>
+          {!directorChosenOfficeId && (
+            <span style={{ color: "#1E40AF", fontSize: 12 }}>
+              Pick the office this offer will be booked under.
+            </span>
+          )}
+        </div>
+      )}
+      {/* Phase 3: fallback hints when grants are not yet configured */}
+      {actingOfficeId && (plantsFallback || marketsFallback) && (
+        <div
+          style={{
+            padding: "8px 12px",
+            background: "#FFFBEB",
+            border: "1px solid #FDE68A",
+            borderRadius: 8,
+            marginBottom: 12,
+            fontSize: 12,
+            color: "#92400E",
+          }}
+        >
+          {plantsFallback && (
+            <div>Showing all group plants — office plant access not yet configured.</div>
+          )}
+          {marketsFallback && (
+            <div>Showing all destination markets — office market access not yet configured.</div>
+          )}
         </div>
       )}
       {fromRequest && (
@@ -1809,11 +1907,14 @@ export default function SupplierCreateOffer() {
           {/* Market chips */}
           <div id="sec-markets" className="cov4-chips">
             {(() => {
-              const byName = new Map(MARKETS.map((m) => [m.n, m]));
+              const SCOPED_MARKETS = allowedCountryIds
+                ? MARKETS.filter((m) => allowedCountryIds.has(m.id))
+                : MARKETS;
+              const byName = new Map(SCOPED_MARKETS.map((m) => [m.n, m]));
               const primary = PRIMARY_MARKETS.map((n) => byName.get(n)).filter(Boolean) as Market[];
               const primaryIds = new Set(primary.map((m) => m.id));
               const extraSelected = selMarkets.filter((m) => !primaryIds.has(m.id));
-              const others = MARKETS.filter((m) => !primaryIds.has(m.id));
+              const others = SCOPED_MARKETS.filter((m) => !primaryIds.has(m.id));
               return (
                 <>
                   {primary.map((m) => {
@@ -2588,14 +2689,42 @@ export default function SupplierCreateOffer() {
                       </select>
                     </td>
                     <td>
-                      <input
-                        type="text"
-                        className="cov4-inline-edit"
-                        value={c.plant || ""}
-                        placeholder="—"
-                        onChange={(e) => updateCutField(c.id, "plant", e.target.value)}
-                        style={{ width: 70 }}
-                      />
+                      {allowedPlants.length > 0 ? (
+                        <select
+                          className="cov4-inline-edit"
+                          value={c.plantId || ""}
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            const p = plantById.get(id);
+                            setCuts((prev) =>
+                              prev.map((x) =>
+                                x.id === c.id
+                                  ? { ...x, plantId: id || undefined, plant: p?.plant_number || "" }
+                                  : x,
+                              ),
+                            );
+                          }}
+                          style={{ minWidth: 130 }}
+                        >
+                          <option value="">Select plant…</option>
+                          {allowedPlants.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.plant_number ? `${p.plant_number} · ` : ""}
+                              {p.name}
+                              {p.country_code ? ` (${p.country_code})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="cov4-inline-edit"
+                          value={c.plant || ""}
+                          placeholder="—"
+                          onChange={(e) => updateCutField(c.id, "plant", e.target.value)}
+                          style={{ width: 70 }}
+                        />
+                      )}
                     </td>
                     <td className="num">
                       <input
@@ -2829,25 +2958,29 @@ export default function SupplierCreateOffer() {
                       </select>
                     </td>
                     <td>
-                      {companyPlants.length > 0 && !plantManual["__nf"] ? (
+                      {allowedPlants.length > 0 ? (
                         <select
-                          value={nf.plant}
+                          value={nf.plantId || ""}
                           onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "__custom__") {
-                              setPlantManual((p) => ({ ...p, __nf: true }));
-                              setNf((p) => ({ ...p, plant: "" }));
-                            } else {
-                              setNf((p) => ({ ...p, plant: v }));
-                            }
+                            const id = e.target.value;
+                            const p = plantById.get(id);
+                            setNf((prev) => ({
+                              ...prev,
+                              plantId: id || undefined,
+                              plant: p?.plant_number || "",
+                            }));
                           }}
-                          title="USDA/SIF establishment number"
+                          title="Office-granted plant"
+                          style={{ minWidth: 140 }}
                         >
-                          <option value="">Select...</option>
-                          {companyPlants.map((p) => (
-                            <option key={p} value={p}>{p}</option>
+                          <option value="">Select plant…</option>
+                          {allowedPlants.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.plant_number ? `${p.plant_number} · ` : ""}
+                              {p.name}
+                              {p.country_code ? ` (${p.country_code})` : ""}
+                            </option>
                           ))}
-                          <option value="__custom__">+ Enter manually</option>
                         </select>
                       ) : (
                         <input

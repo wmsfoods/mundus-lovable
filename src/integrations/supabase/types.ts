@@ -4618,6 +4618,7 @@ export type Database = {
           minimum_price: number
           offer_id: string
           packaging: string | null
+          plant_id: string | null
           plant_number: string | null
           price: number
         }
@@ -4634,6 +4635,7 @@ export type Database = {
           minimum_price: number
           offer_id: string
           packaging?: string | null
+          plant_id?: string | null
           plant_number?: string | null
           price: number
         }
@@ -4650,6 +4652,7 @@ export type Database = {
           minimum_price?: number
           offer_id?: string
           packaging?: string | null
+          plant_id?: string | null
           plant_number?: string | null
           price?: number
         }
@@ -4666,6 +4669,13 @@ export type Database = {
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_items_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "company_plants"
             referencedColumns: ["id"]
           },
         ]
