@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useFamilyContext } from "@/hooks/useFamilyContext";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
@@ -19,6 +20,7 @@ type Row = {
  */
 export default function ByOfficeRollup() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const fam = useFamilyContext();
   const { setActiveOffice } = useActiveOffice();
   const [rows, setRows] = useState<Row[]>([]);
@@ -71,7 +73,7 @@ export default function ByOfficeRollup() {
   return (
     <section style={{ margin: "16px 0" }}>
       <div className="sec-head">
-        <h3>By office</h3>
+        <h3>{t("supplier.multiOffice.rollup.sectionTitle")}</h3>
       </div>
       <div
         style={{
@@ -81,7 +83,7 @@ export default function ByOfficeRollup() {
         }}
       >
         {loading ? (
-          <div className="empty-state" style={{ padding: 16, color: "#6b7280" }}>Loading…</div>
+          <div className="empty-state" style={{ padding: 16, color: "#6b7280" }}>{t("supplier.multiOffice.rollup.loading")}</div>
         ) : rows.map((r) => (
           <button
             key={r.id}
@@ -101,10 +103,10 @@ export default function ByOfficeRollup() {
           >
             <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8 }}>{r.name}</div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, fontSize: 12 }}>
-              <span style={{ color: "var(--fg-muted)" }}>Active</span><span style={{ fontWeight: 600 }}>{r.activeOffers}</span>
-              <span style={{ color: "var(--fg-muted)" }}>Open neg.</span><span style={{ fontWeight: 600 }}>{r.openNegs}</span>
-              <span style={{ color: "var(--fg-muted)" }}>Closed</span><span style={{ fontWeight: 600 }}>{r.closedDeals}</span>
-              <span style={{ color: "var(--fg-muted)" }}>Inbound</span><span style={{ fontWeight: 600 }}>{r.inboundRequests}</span>
+              <span style={{ color: "var(--fg-muted)" }}>{t("supplier.multiOffice.rollup.active")}</span><span style={{ fontWeight: 600 }}>{r.activeOffers}</span>
+              <span style={{ color: "var(--fg-muted)" }}>{t("supplier.multiOffice.rollup.openNeg")}</span><span style={{ fontWeight: 600 }}>{r.openNegs}</span>
+              <span style={{ color: "var(--fg-muted)" }}>{t("supplier.multiOffice.rollup.closed")}</span><span style={{ fontWeight: 600 }}>{r.closedDeals}</span>
+              <span style={{ color: "var(--fg-muted)" }}>{t("supplier.multiOffice.rollup.incomingRequests")}</span><span style={{ fontWeight: 600 }}>{r.inboundRequests}</span>
             </div>
           </button>
         ))}
