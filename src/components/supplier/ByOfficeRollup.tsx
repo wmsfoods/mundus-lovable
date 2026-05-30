@@ -31,17 +31,15 @@ export default function ByOfficeRollup() {
     (async () => {
       const officeIds = fam.offices.map((o) => o.id);
       const [offersRes, negsRes, ordersRes, reqRes] = await Promise.all([
-        supabase.from("offers").select("id, supplier_id, status").in("supplier_id", officeIds).is("deleted_at", null),
-        supabase.from("negotiations").select("id, offer_id, status").is("deleted_at", null),
-        supabase.from("orders").select("id, supplier_id, status").in("supplier_id", officeIds),
-        supabase.from("buyer_requests").select("id, assigned_office_id, status").in("assigned_office_id", officeIds).is("deleted_at", null).in("status", ["new","with_responses"]),
+        (supabase as any).from("offers").select("id, supplier_id, status").in("supplier_id", officeIds).is("deleted_at", null),
+        (supabase as any).from("negotiations").select("id, offer_id, status").is("deleted_at", null),
+        (supabase as any).from("orders").select("id, supplier_id, status").in("supplier_id", officeIds),
+        (supabase as any).from("buyer_requests").select("id, assigned_office_id, status").in("assigned_office_id", officeIds).is("deleted_at", null).in("status", ["new","with_responses"]),
       ]);
       const offers = (offersRes.data ?? []) as any[];
       const negs = (negsRes.data ?? []) as any[];
       const orders = (ordersRes.data ?? []) as any[];
       const reqs = (reqRes.data ?? []) as any[];
-      const offerToOffice = new Map<string, string>();
-      offers.forEach((o) => offerToOffice.set(o.id, o.supplier_id));
       const next: Row[] = fam.offices.map((o) => {
         const myOffers = offers.filter((x) => x.supplier_id === o.id);
         const myOfferIds = new Set(myOffers.map((x) => x.id));
