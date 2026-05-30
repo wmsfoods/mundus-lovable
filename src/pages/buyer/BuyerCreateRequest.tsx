@@ -600,7 +600,7 @@ export default function BuyerCreateRequest() {
         .from("buyer_requests")
         .insert({
           ...payload,
-          buyer_company_id: company.id,
+          buyer_company_id: (isBuyerDirector && targetOfficeId) ? targetOfficeId : company.id,
           buyer_user_id: user?.id ?? null,
           status: "new",
           attachments: uploaded,
