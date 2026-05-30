@@ -93,9 +93,14 @@ export function useActiveOffice() {
     userRole === "master_supplier" ||
     userRole === "master_buyer" ||
     userRole === "mundus_admin" ||
-    userRole === "supplier_global_director";
+    userRole === "supplier_global_director" ||
+    userRole === "buyer_global_director";
 
-  const isGlobalDirector = userRole === "supplier_global_director";
+  const isGlobalDirector =
+    userRole === "supplier_global_director" ||
+    userRole === "buyer_global_director";
+  const isSupplierGlobalDirector = userRole === "supplier_global_director";
+  const isBuyerGlobalDirector = userRole === "buyer_global_director";
 
   // Fail open: if we couldn't resolve the user's context, show all offices
   // so we don't break existing behavior.
@@ -152,6 +157,8 @@ export function useActiveOffice() {
     showAllOfficesOption,
     isMaster,
     isGlobalDirector,
+    isSupplierGlobalDirector,
+    isBuyerGlobalDirector,
     userRole,
     loading: loading || !userCtxLoaded,
   };
