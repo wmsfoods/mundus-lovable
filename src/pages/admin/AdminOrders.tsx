@@ -133,7 +133,7 @@ export default function AdminOrders() {
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
     const { error } = await supabase
       .from("orders")
-      .update({ status: newStatus, updated_at: new Date().toISOString() } as never)
+      .update({ status: newStatus } as never)
       .eq("id", id);
     if (error) {
       toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
