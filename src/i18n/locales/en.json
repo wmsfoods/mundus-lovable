@@ -28,7 +28,7 @@
     "complete": "Complete",
     "signOut": "Log out",
     "signedOut": "Signed out",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "search": "Search",
     "save": "Save",
     "close": "Close",
@@ -3339,6 +3339,58 @@
       "expired": "This invitation has expired. Please ask for a new one.",
       "passwordShort": "Password must be at least 8 characters.",
       "passwordMismatch": "Passwords do not match."
+    }
+  },
+  "billing": {
+    "plans": {
+      "supplier_pro": "Mundus PRO (Supplier)",
+      "buyer_pro": "Mundus PRO (Buyer)"
+    },
+    "upgrade": {
+      "cta": "Upgrade — ${{price}}/mo",
+      "billedMonthly": "Billed monthly",
+      "cancelAnytime": "Cancel anytime",
+      "redirecting": "Redirecting to checkout…"
+    },
+    "errors": {
+      "noCompany": "No company selected.",
+      "checkoutFailed": "Could not start checkout. Please try again.",
+      "portalFailed": "Could not open the billing portal."
+    },
+    "requirePro": {
+      "eyebrow": "Mundus PRO",
+      "title": "This feature is part of Mundus PRO",
+      "lede": "Unlock advanced market intelligence, analytics and benchmarking for your whole team.",
+      "perMonth": "month",
+      "contactSales": "Contact sales"
+    },
+    "success": {
+      "title": "Welcome to Mundus PRO",
+      "lede": "Your subscription is active. PRO features are now unlocked across your company.",
+      "cta": "Go to PRO",
+      "autoRedirect": "You will be redirected automatically in a few seconds.",
+      "unlocks": {
+        "supplier": [
+          "Price benchmark",
+          "Advanced analytics",
+          "Cut comparison across offices"
+        ],
+        "buyer": [
+          "Procurement intelligence",
+          "Market benchmarks",
+          "Cross-office insights"
+        ]
+      }
+    },
+    "section": {
+      "title": "Billing & Subscription",
+      "managePortal": "Manage billing in Stripe",
+      "renewsOn": "Renews on {{date}}",
+      "cancelsOn": "Cancels on {{date}}",
+      "canceledUntil": "Canceled — access until {{date}}",
+      "pastDue": "Your last payment failed. Please update your payment method to keep Mundus PRO active.",
+      "fixPayment": "Update payment method",
+      "noSubscription": "No active subscription. Upgrade to Mundus PRO from ${{price}}/mo."
     }
   }
 }

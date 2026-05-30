@@ -28,7 +28,7 @@
     "complete": "完成",
     "signOut": "退出",
     "signedOut": "已退出",
-    "loading": "正在加载...",
+    "loading": "加载中…",
     "search": "搜索",
     "save": "保存",
     "close": "关闭",
@@ -3325,6 +3325,58 @@
       "expired": "此邀请已过期,请重新申请。",
       "passwordShort": "密码至少需要 8 个字符。",
       "passwordMismatch": "两次输入的密码不一致。"
+    }
+  },
+  "billing": {
+    "plans": {
+      "supplier_pro": "Mundus PRO（供应商）",
+      "buyer_pro": "Mundus PRO（采购方）"
+    },
+    "upgrade": {
+      "cta": "升级 — 每月 ${{price}}",
+      "billedMonthly": "按月计费",
+      "cancelAnytime": "随时取消",
+      "redirecting": "正在跳转至支付页…"
+    },
+    "errors": {
+      "noCompany": "未选择公司。",
+      "checkoutFailed": "无法启动支付流程，请重试。",
+      "portalFailed": "无法打开账单门户。"
+    },
+    "requirePro": {
+      "eyebrow": "Mundus PRO",
+      "title": "此功能属于 Mundus PRO",
+      "lede": "为整个团队解锁高级市场情报、分析和基准对比。",
+      "perMonth": "月",
+      "contactSales": "联系销售"
+    },
+    "success": {
+      "title": "欢迎使用 Mundus PRO",
+      "lede": "您的订阅已生效，公司全员均可使用 PRO 功能。",
+      "cta": "进入 PRO",
+      "autoRedirect": "几秒后将自动跳转。",
+      "unlocks": {
+        "supplier": [
+          "价格基准",
+          "高级分析",
+          "跨办事处切割对比"
+        ],
+        "buyer": [
+          "采购情报",
+          "市场基准",
+          "跨办事处洞察"
+        ]
+      }
+    },
+    "section": {
+      "title": "账单与订阅",
+      "managePortal": "在 Stripe 中管理账单",
+      "renewsOn": "{{date}} 续费",
+      "cancelsOn": "{{date}} 取消",
+      "canceledUntil": "已取消 — 可使用至 {{date}}",
+      "pastDue": "上次付款失败，请更新付款方式以保持 Mundus PRO 启用。",
+      "fixPayment": "更新付款方式",
+      "noSubscription": "暂无活跃订阅。Mundus PRO 起价每月 ${{price}}。"
     }
   }
 }
