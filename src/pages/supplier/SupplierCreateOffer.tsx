@@ -182,7 +182,8 @@ export default function SupplierCreateOffer() {
   // Support both legacy `?from=` (supplier flow) and `?from_request=` (admin flow)
   const fromRequestId = searchParams.get("from") || searchParams.get("from_request");
   const location = useLocation();
-  const { activeOfficeId } = useActiveOffice();
+  const { activeOfficeId, isGlobalDirector, isAllOffices, offices: visibleOffices } =
+    useActiveOffice();
   const { company: realCompany, loading: companyLoading } = useCurrentCompany();
   const asCompanyId = searchParams.get("as_company");
   const [actingAsCompany, setActingAsCompany] = useState<any>(null);
