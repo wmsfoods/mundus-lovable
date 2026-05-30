@@ -17,6 +17,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import {
+  useOfficeAllowedPlants,
+  useOfficeAllowedMarkets,
+  type AllowedPlant,
+} from "@/hooks/useOfficeScopedAccess";
 import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 import {
   toDisplay,
