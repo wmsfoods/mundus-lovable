@@ -8,10 +8,11 @@ import { BuyerTrainingDocument } from "./BuyerTrainingDocument";
 import { SupplierTrainingDocument } from "./SupplierTrainingDocument";
 import { PlatformDocDocument, CONTENT as PLATFORM_CONTENT } from "./PlatformDocDocument";
 import { GapReportDocument, CONTENT as GAP_CONTENT } from "./GapReportDocument";
+import { MultiOfficeDocument, CONTENT as MULTIOFFICE_CONTENT } from "./MultiOfficeDocument";
 import { searchDocs, type DocRegistryEntry } from "./docSearch";
 
 type SubTab = "admin" | "buyers" | "suppliers" | "platform";
-type PlatformDoc = "platform" | "gaps";
+type PlatformDoc = "platform" | "gaps" | "multioffice";
 
 const TABS: Array<{ k: SubTab; l: string }> = [
   { k: "admin", l: "Admin Docs" },
@@ -30,6 +31,7 @@ export function DocsTab() {
   const registry = useMemo<DocRegistryEntry[]>(() => [
     { key: "platform", label: "Plataforma · Documentação", content: PLATFORM_CONTENT.pt },
     { key: "gaps", label: "Plataforma · Relatório de Gaps", content: GAP_CONTENT.pt },
+    { key: "multioffice", label: "Plataforma · Multi-Office Model", content: MULTIOFFICE_CONTENT.pt },
   ], []);
 
   const results = useMemo(() => searchDocs(query, registry), [query, registry]);
@@ -189,6 +191,7 @@ export function DocsTab() {
             {[
               { k: "platform", l: "📐 Documentação da Plataforma" },
               { k: "gaps", l: "🧩 Relatório de Gaps" },
+              { k: "multioffice", l: "🏢 Multi-Office Model" },
             ].map((d) => (
               <button
                 key={d.k}
@@ -212,6 +215,7 @@ export function DocsTab() {
           </div>
           {platformDoc === "platform" && <PlatformDocDocument scrollTarget={scrollTarget} />}
           {platformDoc === "gaps" && <GapReportDocument scrollTarget={scrollTarget} />}
+          {platformDoc === "multioffice" && <MultiOfficeDocument scrollTarget={scrollTarget} />}
         </div>
       )}
     </div>
