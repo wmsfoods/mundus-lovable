@@ -14,6 +14,7 @@ import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
+import ByOfficeRollup from "@/components/supplier/ByOfficeRollup";
 import { supabase } from "@/integrations/supabase/client";
 
 type SupplierKpi = {
@@ -73,7 +74,7 @@ export default function SupplierHome() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { activeOffice, isAllOffices } = useActiveOffice();
+  const { activeOffice, isAllOffices, isGlobalDirector } = useActiveOffice();
   const officeFocus = activeOffice && !isAllOffices;
   const officeName = officeFocus ? (activeOffice.office_name || activeOffice.name) : "";
   const greetingKey = useGreetingKey();
@@ -183,6 +184,8 @@ export default function SupplierHome() {
       <div className="stats">
         {kpis.map((k) => <StatCard key={k.key} k={k} t={t} />)}
       </div>
+
+      {isGlobalDirector && isAllOffices && <ByOfficeRollup />}
 
       <div className="sec-head">
         <h3>{t("supplier.home.recentOffers")}</h3>
