@@ -2,11 +2,15 @@ import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useSupplierScope } from "@/hooks/useSupplierScope";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export function useSupplierDashboard() {
   const { company } = useCurrentCompany();
   const companyId = company?.id ?? null;
+  const { scopeIds, loading: scopeLoading } = useSupplierScope();
+  const scopeKey = scopeIds.join(",");
+  const scopeReady = !scopeLoading && scopeIds.length > 0;
   const qc = useQueryClient();
   const invalidate = useCallback(() => {
     qc.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("sup-dash-") });
@@ -17,13 +21,13 @@ export function useSupplierDashboard() {
   useRealtimeRefresh({ table: "buyer_requests", onRefresh: invalidate, enabled: !!companyId });
 
   const activeOffers = useQuery({
-    queryKey: ["sup-dash-active-offers", companyId],
-    enabled: !!companyId,
+    queryKey: ["sup-dash-active-offers", companyId, scopeKey],
+    enabled: !!companyId && scopeReady,
     queryFn: async () => {
       const { count } = await supabase
         .from("offers")
         .select("id", { count: "exact", head: true })
-        .eq("supplier_id", companyId!)
+        .in("supplier_id", scopeIds)
         .eq("status", "active")
         .is("deleted_at", null);
       return count ?? 0;
@@ -31,26 +35,26 @@ export function useSupplierDashboard() {
   });
 
   const totalOffers = useQuery({
-    queryKey: ["sup-dash-total-offers", companyId],
-    enabled: !!companyId,
+    queryKey: ["sup-dash-total-offers", companyId, scopeKey],
+    enabled: !!companyId && scopeReady,
     queryFn: async () => {
       const { count } = await supabase
         .from("offers")
         .select("id", { count: "exact", head: true })
-        .eq("supplier_id", companyId!)
+        .in("supplier_id", scopeIds)
         .is("deleted_at", null);
       return count ?? 0;
     },
   });
 
   const offerIds = useQuery({
-    queryKey: ["sup-dash-offer-ids", companyId],
-    enabled: !!companyId,
+    queryKey: ["sup-dash-offer-ids", companyId, scopeKey],
+    enabled: !!companyId && scopeReady,
     queryFn: async () => {
       const { data } = await supabase
         .from("offers")
         .select("id")
-        .eq("supplier_id", companyId!)
+        .in("supplier_id", scopeIds)
         .is("deleted_at", null);
       return (data ?? []).map((o) => o.id);
     },
@@ -59,8 +63,8 @@ export function useSupplierDashboard() {
   const ids = offerIds.data ?? [];
 
   const pendingNegs = useQuery({
-    queryKey: ["sup-dash-pending-negs", companyId, ids.length],
-    enabled: !!companyId && offerIds.isFetched,
+    queryKey: ["sup-dash-pending-negs", companyId, scopeKey, ids.length],
+    enabled: !!companyId && scopeReady && offerIds.isFetched,
     queryFn: async () => {
       if (!ids.length) return 0;
       const { count } = await supabase
@@ -74,8 +78,8 @@ export function useSupplierDashboard() {
   });
 
   const inNegotiation = useQuery({
-    queryKey: ["sup-dash-in-neg", companyId, ids.length],
-    enabled: !!companyId && offerIds.isFetched,
+    queryKey: ["sup-dash-in-neg", companyId, scopeKey, ids.length],
+    enabled: !!companyId && scopeReady && offerIds.isFetched,
     queryFn: async () => {
       if (!ids.length) return 0;
       const { count } = await supabase
@@ -89,8 +93,8 @@ export function useSupplierDashboard() {
   });
 
   const closedDeals = useQuery({
-    queryKey: ["sup-dash-closed", companyId, ids.length],
-    enabled: !!companyId && offerIds.isFetched,
+    queryKey: ["sup-dash-closed", companyId, scopeKey, ids.length],
+    enabled: !!companyId && scopeReady && offerIds.isFetched,
     queryFn: async () => {
       if (!ids.length) return 0;
       const { count } = await supabase
@@ -106,6 +110,8 @@ export function useSupplierDashboard() {
   const incomingRequests = useQuery({
     queryKey: ["sup-dash-incoming-requests"],
     queryFn: async () => {
+      // TODO phase 3/5: scope incoming requests by office markets
+      // (buyer_requests is currently marketplace-wide, no office link yet).
       const { count } = await supabase
         .from("buyer_requests")
         .select("id", { count: "exact", head: true })
