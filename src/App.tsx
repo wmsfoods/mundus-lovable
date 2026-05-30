@@ -101,6 +101,7 @@ import SupplierCompany from "./pages/supplier/SupplierCompany.tsx";
 import SupplierOffices from "./pages/supplier/SupplierOffices.tsx";
 import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
+import CutComparison from "./pages/supplier/CutComparison.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
 import Notifications from "./pages/Notifications.tsx";
@@ -215,6 +216,7 @@ const App = () => (
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
               <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
               <Route path="insights/analytics" element={<SupplierAnalytics />} />
+              <Route path="insights/cut-comparison" element={<CutComparison />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
