@@ -848,6 +848,12 @@ export default function CompanyProfilePage({
           </div>
         </Section>
       )}
+
+      {role !== "admin" && companyId && (
+        <div style={{ marginTop: 16 }}>
+          <BillingSection side={role as "supplier" | "buyer"} />
+        </div>
+      )}
     </div>
   );
 }
