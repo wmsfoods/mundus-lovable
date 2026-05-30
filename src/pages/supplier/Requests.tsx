@@ -302,7 +302,15 @@ export default function SupplierRequests() {
             {loading ? (
               <tr className="empty-row"><td colSpan={10}>Loading…</td></tr>
             ) : slice.length === 0 ? (
-              <tr className="empty-row"><td colSpan={10}>No active requests right now.</td></tr>
+              <tr className="empty-row"><td colSpan={10}>{
+                showHqInbox
+                  ? (inboxTab === "unassigned"
+                      ? t("supplier.multiOffice.requests.emptyHqUnassigned")
+                      : t("supplier.multiOffice.requests.emptyHqAssigned"))
+                  : (fam.isFamilyHq && fam.isOfficeOperator
+                      ? t("supplier.multiOffice.requests.emptyOffice")
+                      : "No active requests right now.")
+              }</td></tr>
             ) : slice.map((r) => {
               const resp = responseMap[r.id];
               const acceptedNeg = resp?.negotiations.find((n) => n.status === "bid_accepted");
@@ -449,7 +457,15 @@ export default function SupplierRequests() {
 
       <ListCardList>
         {slice.length === 0 ? (
-          <div className="empty-state">{loading ? "Loading…" : "No active requests."}</div>
+          <div className="empty-state">{loading ? "Loading…" : (
+            showHqInbox
+              ? (inboxTab === "unassigned"
+                  ? t("supplier.multiOffice.requests.emptyHqUnassigned")
+                  : t("supplier.multiOffice.requests.emptyHqAssigned"))
+              : (fam.isFamilyHq && fam.isOfficeOperator
+                  ? t("supplier.multiOffice.requests.emptyOffice")
+                  : "No active requests.")
+          )}</div>
         ) : slice.map((r) => {
           const resp = responseMap[r.id];
           const acceptedNeg = resp?.negotiations.find((n) => n.status === "bid_accepted");
