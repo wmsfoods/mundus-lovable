@@ -4,7 +4,10 @@ import { createClient } from "npm:@supabase/supabase-js@2";
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") ?? "", {
   apiVersion: "2024-12-18.acacia",
 });
-const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
+const webhookSecrets = [
+  Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "",
+  Deno.env.get("STRIPE_WEBHOOK_SECRET_THIN") ?? "",
+].filter((s) => s.length > 0);
 
 const admin = createClient(
   Deno.env.get("SUPABASE_URL")!,
@@ -15,11 +18,19 @@ Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("ok");
   const sig = req.headers.get("stripe-signature");
   const raw = await req.text();
-  let event: Stripe.Event;
-  try {
-    event = await stripe.webhooks.constructEventAsync(raw, sig ?? "", webhookSecret);
-  } catch (e) {
-    console.error("invalid signature", e);
+  let event: Stripe.Event | null = null;
+  let lastErr: unknown = null;
+  for (const secret of webhookSecrets) {
+    try {
+      event = await stripe.webhooks.constructEventAsync(raw, sig ?? "", secret);
+      lastErr = null;
+      break;
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  if (!event) {
+    console.error("invalid signature", lastErr);
     return new Response("invalid signature", { status: 400 });
   }
 
