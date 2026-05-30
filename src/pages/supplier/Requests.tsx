@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ClipboardIcon, SearchIcon } from "@/components/icons";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
@@ -38,6 +39,7 @@ function fmtDate(iso: string) {
 
 export default function SupplierRequests() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const { company } = useCurrentCompany();
   const { user } = useAuth();
   const fam = useFamilyContext();
@@ -187,12 +189,19 @@ export default function SupplierRequests() {
         p_user_id: user.id,
       });
       if (error) throw error;
-      toast({ title: "Request assigned", description: "The office has been notified." });
+      toast({
+        title: t("supplier.multiOffice.requests.assignedToast"),
+        description: t("supplier.multiOffice.requests.assignedToastDesc"),
+      });
       setRows((rs) => rs.map((r) => r.id === requestId
         ? ({ ...r, routing_status: "assigned", assigned_office_id: officeId, assigned_at: new Date().toISOString() } as any)
         : r));
     } catch (e: any) {
-      toast({ title: "Could not assign", description: e?.message ?? "Unknown error", variant: "destructive" });
+      toast({
+        title: t("supplier.multiOffice.requests.assignError"),
+        description: e?.message ?? t("supplier.multiOffice.requests.assignErrorUnknown"),
+        variant: "destructive",
+      });
     } finally {
       setAssigning(null);
     }
@@ -247,7 +256,9 @@ export default function SupplierRequests() {
                     textTransform: "capitalize",
                   }}
                 >
-                  {tab === "unassigned" ? "Needs routing" : "Assigned"} · {count}
+                  {tab === "unassigned"
+                    ? t("supplier.multiOffice.requests.tabUnassigned")
+                    : t("supplier.multiOffice.requests.tabAssigned")} · {count}
                 </button>
               );
             })}
