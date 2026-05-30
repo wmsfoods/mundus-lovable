@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
 import { useSupplierScope } from "./useSupplierScope";
+import { useBuyerScope } from "./useBuyerScope";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 import {
   countryToCode,
@@ -32,6 +33,7 @@ export function useRealNegotiationsList(role: Role) {
   const { activeOfficeId, isAllOffices } = useActiveOffice();
   const { company, loading: companyLoading } = useCurrentCompany();
   const { scopeIds, loading: scopeLoading } = useSupplierScope();
+  const { scopeIds: buyerScopeIds, loading: buyerScopeLoading } = useBuyerScope();
   const scopeKey = scopeIds.join(",");
   // Buyers always see all negotiations regardless of supplier office.
   const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
@@ -42,7 +44,9 @@ export function useRealNegotiationsList(role: Role) {
 
   useEffect(() => {
     let cancelled = false;
-    if (companyLoading || !company?.id || (role === "supplier" && scopeLoading)) {
+    if (companyLoading || !company?.id ||
+        (role === "supplier" && scopeLoading) ||
+        (role === "buyer" && buyerScopeLoading)) {
       setLoading(true);
       return;
     }
@@ -76,7 +80,12 @@ export function useRealNegotiationsList(role: Role) {
         .order("updated_at", { ascending: false });
 
       if (role === "buyer") {
-        q = q.eq("buyer_company_id", company!.id);
+        if (buyerScopeIds.length === 0) {
+          setBuyerGroups([]);
+          setLoading(false);
+          return;
+        }
+        q = q.in("buyer_company_id", buyerScopeIds);
       } else {
         // Scope by the supplier's family/office focus. RLS still enforces
         // cross-family isolation at the DB layer.
@@ -120,7 +129,7 @@ export function useRealNegotiationsList(role: Role) {
     return () => {
       cancelled = true;
     };
-  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, scopeLoading, scopeKey, refreshKey]);
+  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, scopeLoading, scopeKey, buyerScopeLoading, buyerScopeIds.join(","), refreshKey]);
 
   if (role === "buyer") {
     const offerCount = buyerGroups.length;

@@ -2,11 +2,15 @@ import { useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useBuyerScope } from "@/hooks/useBuyerScope";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export function useBuyerDashboard() {
   const { company } = useCurrentCompany();
   const companyId = company?.id ?? null;
+  const { scopeIds, loading: scopeLoading } = useBuyerScope();
+  const scopeKey = scopeIds.join(",");
+  const ready = !scopeLoading && scopeIds.length > 0;
   const qc = useQueryClient();
   const invalidate = useCallback(() => {
     qc.invalidateQueries({ predicate: (q) => String(q.queryKey[0] ?? "").startsWith("buyer-dash-") });
@@ -17,13 +21,13 @@ export function useBuyerDashboard() {
   useRealtimeRefresh({ table: "buyer_requests", onRefresh: invalidate, enabled: !!companyId });
 
   const negotiations = useQuery({
-    queryKey: ["buyer-dash-negs", companyId],
-    enabled: !!companyId,
+    queryKey: ["buyer-dash-negs", scopeKey],
+    enabled: ready,
     queryFn: async () => {
       const { count } = await supabase
         .from("negotiations")
         .select("id", { count: "exact", head: true })
-        .eq("buyer_company_id", companyId!)
+        .in("buyer_company_id", scopeIds)
         .not("status", "in", "(expired,offer_withdrawn,bid_accepted)")
         .is("deleted_at", null);
       return count ?? 0;
@@ -31,13 +35,13 @@ export function useBuyerDashboard() {
   });
 
   const closedDeals = useQuery({
-    queryKey: ["buyer-dash-deals", companyId],
-    enabled: !!companyId,
+    queryKey: ["buyer-dash-deals", scopeKey],
+    enabled: ready,
     queryFn: async () => {
       const { count } = await supabase
         .from("negotiations")
         .select("id", { count: "exact", head: true })
-        .eq("buyer_company_id", companyId!)
+        .in("buyer_company_id", scopeIds)
         .eq("status", "bid_accepted")
         .is("deleted_at", null);
       return count ?? 0;
@@ -45,26 +49,26 @@ export function useBuyerDashboard() {
   });
 
   const orders = useQuery({
-    queryKey: ["buyer-dash-orders", companyId],
-    enabled: !!companyId,
+    queryKey: ["buyer-dash-orders", scopeKey],
+    enabled: ready,
     queryFn: async () => {
       const { count } = await supabase
         .from("orders")
         .select("id", { count: "exact", head: true })
-        .eq("buyer_company_id", companyId!)
+        .in("buyer_company_id", scopeIds)
         .is("deleted_at", null);
       return count ?? 0;
     },
   });
 
   const requests = useQuery({
-    queryKey: ["buyer-dash-requests", companyId],
-    enabled: !!companyId,
+    queryKey: ["buyer-dash-requests", scopeKey],
+    enabled: ready,
     queryFn: async () => {
       const { count } = await supabase
         .from("buyer_requests")
         .select("id", { count: "exact", head: true })
-        .eq("buyer_company_id", companyId!)
+        .in("buyer_company_id", scopeIds)
         .in("status", ["new", "with_responses"])
         .is("deleted_at", null);
       return count ?? 0;

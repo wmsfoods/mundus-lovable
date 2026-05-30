@@ -6950,6 +6950,7 @@ export type Database = {
       }
       track_email_click: { Args: { email_id: string }; Returns: undefined }
       track_email_open: { Args: { email_id: string }; Returns: undefined }
+      user_buyer_scope_ids: { Args: never; Returns: string[] }
       user_can_access_negotiation: {
         Args: { p_negotiation_id: string }
         Returns: boolean

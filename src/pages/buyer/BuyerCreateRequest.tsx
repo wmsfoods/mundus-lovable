@@ -10,6 +10,8 @@ import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, Command
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { useBuyerScope } from "@/hooks/useBuyerScope";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useAuth } from "@/contexts/AuthContext";
 import { countryFlag } from "@/lib/countryFlags";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
@@ -48,6 +50,28 @@ export default function BuyerCreateRequest() {
   const { markets, cutsByCategory } = useSupplierOfferData();
   const { company: realCompany } = useCurrentCompany();
   const { isAdmin: isAdminActor } = useIsMundusAdmin();
+  const { scopeIds: buyerScopeIds } = useBuyerScope();
+  const { activeOfficeId, isAllOffices, isBuyerGlobalDirector } = useActiveOffice();
+  const isBuyerDirector = isBuyerGlobalDirector;
+  const [familyOffices, setFamilyOffices] = useState<Array<{ id: string; name: string }>>([]);
+  const [targetOfficeId, setTargetOfficeId] = useState<string>("");
+  useEffect(() => {
+    if (!isBuyerDirector || buyerScopeIds.length <= 1) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("companies")
+        .select("id, name")
+        .in("id", buyerScopeIds)
+        .order("name");
+      if (!cancelled) setFamilyOffices((data ?? []) as any);
+    })();
+    return () => { cancelled = true; };
+  }, [isBuyerDirector, buyerScopeIds.join(",")]);
+  useEffect(() => {
+    if (!isBuyerDirector) return;
+    if (!isAllOffices && activeOfficeId) setTargetOfficeId(activeOfficeId);
+  }, [isBuyerDirector, isAllOffices, activeOfficeId]);
   const [actingAsCompany, setActingAsCompany] = useState<any>(null);
 
   useEffect(() => {
@@ -576,7 +600,7 @@ export default function BuyerCreateRequest() {
         .from("buyer_requests")
         .insert({
           ...payload,
-          buyer_company_id: company.id,
+          buyer_company_id: (isBuyerDirector && targetOfficeId) ? targetOfficeId : company.id,
           buyer_user_id: user?.id ?? null,
           status: "new",
           attachments: uploaded,
@@ -633,6 +657,34 @@ export default function BuyerCreateRequest() {
             <span style={{ fontSize: 16 }}>🛒</span>
           )}
           <span>Creating request on behalf of <strong>{actingAsCompany?.name}</strong> (Managed by Mundus)</span>
+        </div>
+      )}
+      {isBuyerDirector && familyOffices.length > 1 && !isEdit && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+            color: "#1E3A8A",
+          }}
+        >
+          <strong>Create for office:</strong>
+          <select
+            value={targetOfficeId}
+            onChange={(e) => setTargetOfficeId(e.target.value)}
+            style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #BFDBFE", background: "#fff" }}
+          >
+            <option value="">— Select office —</option>
+            {familyOffices.map((o) => (
+              <option key={o.id} value={o.id}>{o.name}</option>
+            ))}
+          </select>
         </div>
       )}
       {cloneFrom && !isEdit && (

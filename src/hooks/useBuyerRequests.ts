@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useBuyerScope } from "@/hooks/useBuyerScope";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
 export type BuyerRequestStatus =
@@ -41,6 +42,7 @@ export type BuyerRequestRow = {
 
 export function useBuyerRequests() {
   const { company } = useCurrentCompany();
+  const { scopeIds, loading: scopeLoading } = useBuyerScope();
   const [data, setData] = useState<BuyerRequestRow[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -49,14 +51,15 @@ export function useBuyerRequests() {
   useRealtimeRefresh({ table: "buyer_requests", onRefresh: bump, enabled: !!company?.id });
 
   useEffect(() => {
-    if (!company?.id) return;
+    if (scopeLoading) return;
+    if (!scopeIds.length) { setData([]); setLoading(false); return; }
     let cancelled = false;
     setLoading(true);
     (async () => {
       const { data, error } = await supabase
         .from("buyer_requests")
         .select("*")
-        .eq("buyer_company_id", company.id)
+        .in("buyer_company_id", scopeIds)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
       if (cancelled) return;
@@ -67,7 +70,7 @@ export function useBuyerRequests() {
     return () => {
       cancelled = true;
     };
-  }, [company?.id, refreshKey]);
+  }, [scopeIds.join(","), scopeLoading, refreshKey]);
 
   const counts = {
     all: data.length,
