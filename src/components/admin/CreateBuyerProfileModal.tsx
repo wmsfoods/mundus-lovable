@@ -202,6 +202,7 @@ export function CreateBuyerProfileModal({
               <Field label="Role">
                 <select style={inputStyle} value={form.role} onChange={(e) => upd("role", e.target.value)}>
                   <option value="master_buyer">Master Buyer</option>
+                  <option value="buyer_global_director">Buyer Global Director</option>
                   <option value="procurement_manager">Procurement Manager</option>
                   <option value="buyer_operator">Buyer Operator</option>
                   <option value="viewer">Viewer</option>
