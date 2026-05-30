@@ -1841,11 +1841,14 @@ export default function SupplierCreateOffer() {
           {/* Market chips */}
           <div id="sec-markets" className="cov4-chips">
             {(() => {
-              const byName = new Map(MARKETS.map((m) => [m.n, m]));
+              const SCOPED_MARKETS = allowedCountryIds
+                ? MARKETS.filter((m) => allowedCountryIds.has(m.id))
+                : MARKETS;
+              const byName = new Map(SCOPED_MARKETS.map((m) => [m.n, m]));
               const primary = PRIMARY_MARKETS.map((n) => byName.get(n)).filter(Boolean) as Market[];
               const primaryIds = new Set(primary.map((m) => m.id));
               const extraSelected = selMarkets.filter((m) => !primaryIds.has(m.id));
-              const others = MARKETS.filter((m) => !primaryIds.has(m.id));
+              const others = SCOPED_MARKETS.filter((m) => !primaryIds.has(m.id));
               return (
                 <>
                   {primary.map((m) => {
