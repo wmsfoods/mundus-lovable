@@ -385,6 +385,9 @@ export type Database = {
         Row: {
           additional_info: string | null
           any_origin: boolean | null
+          assigned_at: string | null
+          assigned_by_user_id: string | null
+          assigned_office_id: string | null
           attachments: Json | null
           buyer_company_id: string
           buyer_user_id: string | null
@@ -402,6 +405,7 @@ export type Database = {
           product_name: string
           quantity_kg: number
           request_number: number
+          routing_status: string
           shipment_date: string | null
           specification: string | null
           status: string | null
@@ -413,6 +417,9 @@ export type Database = {
         Insert: {
           additional_info?: string | null
           any_origin?: boolean | null
+          assigned_at?: string | null
+          assigned_by_user_id?: string | null
+          assigned_office_id?: string | null
           attachments?: Json | null
           buyer_company_id: string
           buyer_user_id?: string | null
@@ -430,6 +437,7 @@ export type Database = {
           product_name: string
           quantity_kg: number
           request_number?: number
+          routing_status?: string
           shipment_date?: string | null
           specification?: string | null
           status?: string | null
@@ -441,6 +449,9 @@ export type Database = {
         Update: {
           additional_info?: string | null
           any_origin?: boolean | null
+          assigned_at?: string | null
+          assigned_by_user_id?: string | null
+          assigned_office_id?: string | null
           attachments?: Json | null
           buyer_company_id?: string
           buyer_user_id?: string | null
@@ -458,6 +469,7 @@ export type Database = {
           product_name?: string
           quantity_kg?: number
           request_number?: number
+          routing_status?: string
           shipment_date?: string | null
           specification?: string | null
           status?: string | null
@@ -467,6 +479,20 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "buyer_requests_assigned_by_user_id_fkey"
+            columns: ["assigned_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buyer_requests_assigned_office_id_fkey"
+            columns: ["assigned_office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "buyer_requests_buyer_company_id_fkey"
             columns: ["buyer_company_id"]
@@ -486,6 +512,7 @@ export type Database = {
       companies: {
         Row: {
           address: string
+          auto_route_requests: boolean
           business_types: string | null
           buyer_protein_profile: string[] | null
           city: string | null
@@ -529,6 +556,7 @@ export type Database = {
         }
         Insert: {
           address: string
+          auto_route_requests?: boolean
           business_types?: string | null
           buyer_protein_profile?: string[] | null
           city?: string | null
@@ -572,6 +600,7 @@ export type Database = {
         }
         Update: {
           address?: string
+          auto_route_requests?: boolean
           business_types?: string | null
           buyer_protein_profile?: string[] | null
           city?: string | null
@@ -6814,6 +6843,11 @@ export type Database = {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
       }
+      assign_request_to_office: {
+        Args: { p_office_id: string; p_request_id: string; p_user_id: string }
+        Returns: Json
+      }
+      auto_route_request: { Args: { p_request_id: string }; Returns: Json }
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       company_family_ids: { Args: { p_company_id: string }; Returns: string[] }
       company_family_root: { Args: { p_company_id: string }; Returns: string }
@@ -6868,7 +6902,25 @@ export type Database = {
         Args: { p_company_id: string }
         Returns: boolean
       }
+      is_family_hq: { Args: { p_company_id: string }; Returns: boolean }
+      is_family_hq_member: {
+        Args: { p_any_company_in_family: string }
+        Returns: boolean
+      }
       is_mundus_admin: { Args: never; Returns: boolean }
+      market_cut_benchmark: {
+        Args: {
+          p_destination_country?: string
+          p_since?: string
+          p_standard_product_id: string
+        }
+        Returns: {
+          max_usd_kg: number
+          median_usd_kg: number
+          min_usd_kg: number
+          sample_count: number
+        }[]
+      }
       reject_negotiation: {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
         Returns: Json
