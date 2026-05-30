@@ -28,6 +28,7 @@ import { countryFlag } from "@/lib/countryFlags";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
 import { auditLog } from "@/lib/auditLog";
+import { BillingSection } from "@/components/billing/BillingSection";
 import "@/styles/mundus-address.css";
 
 type Role = "buyer" | "supplier" | "admin";
