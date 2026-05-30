@@ -218,6 +218,12 @@
       "create": "Criar",
       "negotiations": "Chat",
       "myOffers": "Ofertas"
+    },
+    "officeSwitcher": {
+      "allOffices": "Todos os escritórios",
+      "allOfficesFamily": "Todos os escritórios · {{family}}",
+      "allOfficesConsolidated": "Todos os escritórios (Consolidado)",
+      "directorBadge": "Diretor"
     }
   },
   "dashboard": {
@@ -1529,7 +1535,8 @@
           "acceptComingSoon": "Aceitar Pedido — em breve",
           "rejectComingSoon": "Rejeitar Pedido — em breve"
         }
-      }
+      },
+      "emptyForOffice": "Sem vendas ainda para {{office}}."
     },
     "offers": {
       "heroTitle": "Acompanhe seus pedidos com facilidade.",
@@ -1628,7 +1635,8 @@
           "shipment": "Embarque",
           "packing": "\n"
         }
-      }
+      },
+      "emptyForOffice": "Sem ofertas ainda para {{office}}."
     },
     "createOffer": {
       "title": "Nova oferta",
@@ -1885,7 +1893,10 @@
         "sendInvoiceDraft": "Enviar minuta",
         "viewSale": "Ver venda",
         "issueBalanceInvoice": "Emitir saldo"
-      }
+      },
+      "emptyOffersForOffice": "Sem ofertas ainda para {{office}}.",
+      "emptySalesForOffice": "Sem vendas ainda para {{office}}.",
+      "showingOffice": "Exibindo {{office}}"
     },
     "company": {
       "title": "Minha Empresa",

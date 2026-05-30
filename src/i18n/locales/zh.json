@@ -218,6 +218,12 @@
       "create": "创建",
       "negotiations": "聊天",
       "myOffers": "报价"
+    },
+    "officeSwitcher": {
+      "allOffices": "所有办公室",
+      "allOfficesFamily": "所有办公室 · {{family}}",
+      "allOfficesConsolidated": "所有办公室（合并）",
+      "directorBadge": "总监"
     }
   },
   "dashboard": {
@@ -1524,7 +1530,8 @@
           "acceptComingSoon": "接受订单 — 即将推出",
           "rejectComingSoon": "拒绝订单 — 即将推出"
         }
-      }
+      },
+      "emptyForOffice": "{{office}} 暂无销售。"
     },
     "offers": {
       "createOffer": "创建报价 +",
@@ -1623,7 +1630,8 @@
       "crumbHome": "首页",
       "title": "报价",
       "showing": "显示 {{from}} - {{to}} 条，共 {{total}} 条结果",
-      "sortBy": "排序方式"
+      "sortBy": "排序方式",
+      "emptyForOffice": "{{office}} 暂无报价。"
     },
     "createOffer": {
       "title": "新报价",
@@ -1880,7 +1888,10 @@
         "sendInvoiceDraft": "发送发票草稿",
         "viewSale": "查看销售详情",
         "issueBalanceInvoice": "开具余额发票"
-      }
+      },
+      "emptyOffersForOffice": "{{office}} 暂无报价。",
+      "emptySalesForOffice": "{{office}} 暂无销售。",
+      "showingOffice": "显示 {{office}}"
     },
     "company": {
       "title": "我的公司",
