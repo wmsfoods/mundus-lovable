@@ -659,6 +659,34 @@ export default function BuyerCreateRequest() {
           <span>Creating request on behalf of <strong>{actingAsCompany?.name}</strong> (Managed by Mundus)</span>
         </div>
       )}
+      {isBuyerDirector && familyOffices.length > 1 && !isEdit && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+            color: "#1E3A8A",
+          }}
+        >
+          <strong>Create for office:</strong>
+          <select
+            value={targetOfficeId}
+            onChange={(e) => setTargetOfficeId(e.target.value)}
+            style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #BFDBFE", background: "#fff" }}
+          >
+            <option value="">— Select office —</option>
+            {familyOffices.map((o) => (
+              <option key={o.id} value={o.id}>{o.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       {cloneFrom && !isEdit && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
