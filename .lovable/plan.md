@@ -1,73 +1,62 @@
-## Phase 5 — Buyer multi-office model
+## Objetivo
 
-Apply the supplier family/office pattern to buyers, **simpler** (no plants, no markets, no HQ routing inbox). Reuse the generic family helpers from Phase 1 (`company_family_root`, `company_family_ids`, `is_family_global_director`) — they're company-type-agnostic.
+Adicionar uma nova documentação formal **"Modelo Multi-Office (Fases 1-5)"** dentro de `/admin/docs` → aba **Plataforma**, ao lado de "Documentação da Plataforma" e "Relatório de Gaps", cobrindo tudo o que foi construído: arquitetura, papéis, fluxo de roteamento HQ → office, Global Director, isolamento por RLS e onde clicar para configurar.
 
-### 1. Database / RLS
+## Onde aparece
 
-New migration:
+`Admin → Documents → Plataforma → 🏢 Multi-Office Model`
 
-- **Role**: add `'buyer_global_director'` to the `roles` seed and accept it in `company_users.role` / `team_invitations.profile_type` enums/checks (mirroring `supplier_global_director`).
-- **Generic scope helper**: create `public.user_buyer_scope_ids()` mirroring `user_supplier_scope_ids()` — same recursion, but filters `my_companies` to buyer companies (`is_buyer = true`) and uses `is_family_global_director` to decide self-vs-family expansion.
-- **RLS updates**:
-  - `buyer_requests`: SELECT/INSERT/UPDATE allowed when `buyer_company_id IN (SELECT user_buyer_scope_ids())` OR `is_mundus_admin()`. Supplier-side routing policies unchanged.
-  - `negotiations`: update `user_can_access_negotiation` so the buyer branch reads `n.buyer_company_id IN (SELECT user_buyer_scope_ids())` instead of equality with `current_user_company_id()`. Supplier branch and admin branch untouched.
-  - `orders`: buyer-side SELECT widened from `buyer_company_id = current_user_company_id()` to `buyer_company_id IN (SELECT user_buyer_scope_ids())`.
-- **Verify** the recursion returns self for a buyer with `parent_company_id IS NULL` and no children (single-office buyers untouched).
+Mesmo padrão visual dos outros docs (capa, kickers, cards, tabelas, passos numerados, callouts) — usando o `AdminDocView` existente. Sem mexer em backend.
 
-### 2. Scope hook (generalize, don't duplicate)
+## Arquivos
 
-- Rename `useSupplierScope` → `useCompanyScope` (keep a thin `useSupplierScope` re-export to avoid breaking imports) and add `useBuyerScope` as the buyer-side alias. Logic is identical because `useActiveOffice` + `companies.parent_company_id` already drive it.
-- Extend `useActiveOffice`:
-  - Treat `buyer_global_director` as master-like (same code path as `supplier_global_director`).
-  - Expose `isGlobalDirector = userRole in ('supplier_global_director','buyer_global_director')` — symmetric, no separate flag needed.
+**Criar**
+- `src/components/admin/docs/MultiOfficeDocument.tsx` — novo `DocContent` registrado em PT (e replicado para en/es/zh como os outros docs da aba Plataforma fazem hoje).
 
-### 3. Buyer hooks — apply scope
+**Editar**
+- `src/components/admin/docs/DocsTab.tsx` — adicionar a opção `multioffice` no seletor da aba Plataforma e incluir o novo doc no `registry` da busca.
 
-Replace `eq('buyer_company_id', company.id)` with `in('buyer_company_id', scopeIds)`, gate on `loading`, and add `scopeIds` to react-query keys, in:
+## Estrutura das seções do novo documento
 
-- `src/hooks/useBuyerRequests.ts` (list; detail-by-id unchanged)
-- `src/hooks/useBuyerNegotiations.ts`
-- `src/hooks/useBuyerOrders.ts`
-- `src/hooks/useBuyerDashboard.ts` (all counters)
-- `src/hooks/useBuyerDemand.ts` / procurement intelligence aggregations
+1. **00 — Visão geral** — o que é o modelo, por que existe, glossário (HQ, Office, Family, Global Director, Operator).
+2. **01 — Arquitetura de Companies** — `companies.parent_company_id`, family root, `office_plants`, `office_markets`. Tabela de colunas.
+3. **02 — Papéis e permissões** — `master_supplier/buyer`, `supplier_global_director`, `buyer_global_director`, HQ member, office operator. Cards comparando visibilidade.
+4. **03 — Como configurar offices** — passos numerados: `/admin/crm` → Company detail → criar filhos → definir plantas e mercados.
+5. **04 — Como configurar o team** — `CompanyTeamPanel`, convite via `send-team-invite`, escopos (office / HQ / Global Director).
+6. **05 — Fluxo de Request → Office** — passos numerados do buyer até o operator do office, com `auto_route_request`, `assign_request_to_office`, status (`unassigned`, `assigned`), HQ Inbox vs Office Inbox. Inclui um diagrama ASCII em bloco `quote`/`callout`.
+7. **06 — Experiência do Global Director** — `ByOfficeRollup`, `CutComparison`, `market_cut_benchmark` (mínimo 3 amostras), act-anywhere.
+8. **07 — Isolamento e segurança (RLS)** — `user_supplier_scope_ids()`, `user_buyer_scope_ids()`, garantias entre offices da mesma family, comportamento para mundus admin.
+9. **08 — Checklist de QA** — cenários por fase (criar office, atribuir request, login como operator, login como director, ver rollup, comparar cuts).
+10. **09 — Rotas relevantes** — tabela com `/admin/crm`, `/supplier/requests`, `/supplier/rollup`, `/supplier/cuts/compare`, `/buyer/requests/new`.
+11. **10 — Changelog** — entrada inicial "2026-05-30 — Publicação do documento Multi-Office Fases 1-5".
 
-### 4. Buyer offices UI
+## Diagrama do fluxo
 
-- Reuse `SupplierOffices.tsx` already routed at `/buyer/offices`. Add a `mode: 'supplier' | 'buyer'` prop (or detect from current shell) to:
-  - Hide the **Plants** and **Markets** tabs/sections for buyer families.
-  - Force `is_buyer=true` on create/edit child offices.
-  - Show per-office counters relevant to buyers: requests / negotiations / orders.
-- `CreateBuyerProfileModal` role dropdown: add **Buyer Global Director**.
+Renderizado dentro do próprio doc como ASCII art em um bloco `quote` (não usar Mermaid, para manter coerência visual com os outros docs e impressão em PDF):
 
-### 5. OfficeSwitcher + buyer consolidated dashboard
+```text
+Buyer Request → HQ (target_supplier_id)
+        │
+        ▼
+auto_route_request (office_markets)
+   ├─ match único → assigned_office_id + routing_status='assigned'
+   └─ ambíguo    → HQ Inbox (unassigned)
+                        │
+                        ▼
+            HQ / Global Director
+            "Assign to office ▾" → assign_request_to_office
+                        │
+                        ▼
+                  Office Operator
+              vê em Office Inbox (Assigned)
+                e responde com oferta
+```
 
-- `OfficeSwitcher` already generic — for a buyer global director it will show "All Offices · {Family}" + each office automatically once `useActiveOffice` accepts the new role.
-- Buyer Home (consolidated mode): reuse supplier Phase 4 rollup components (`ByOfficeRollup` pattern) adapted to buyer entities — by-office cards for requests/negotiations/orders, office badge on recent activity rows; tapping an office focuses it.
-- Operators/masters: behavior unchanged — only their office.
+## i18n
 
-### 6. Buyer global director — act anywhere
+Como os outros docs de Plataforma (`PlatformDocDocument`, `GapReportDocument`) registram o mesmo `DocContent` para todos os idiomas, este vai seguir o mesmo padrão (PT como fonte; en/es/zh apontando para o mesmo objeto). Tradução real fica como tarefa futura — anotado no changelog.
 
-- `BuyerCreateRequest`: when `isAllOffices && isBuyerGlobalDirector`, show an **Office picker** (required) and stamp `buyer_company_id` = chosen office id. In focus mode, default to the focused office.
-- Negotiation actions (bid/counter/accept/chat/confirm) already use the user's identity → RLS allows family-wide buyer action automatically once §1 lands. No code change needed beyond confirming the action buttons render based on scope membership, not company-id equality.
+## Fora do escopo
 
-### 7. i18n
-
-Add keys in all 5 locales (`en/pt/es/fr/zh.json`):
-
-- `roles.buyer_global_director`
-- `buyer.multiOffice.officePickerLabel` / `placeholder` / `requiredError`
-- `buyer.multiOffice.rollup.*` (titles, empty states, by-office card labels)
-- `buyer.offices.*` (page title, empty state, create/edit modal labels for buyer mode)
-- `shell.officeIndicator.buyerAllOffices`
-
-### 8. Out of scope (explicit)
-
-- No `office_plants`, no `office_markets`, no `assign_request_to_office`, no HQ inbox for buyers.
-- Supplier side, admin flows, single-office buyer behavior: untouched.
-
-### Technical notes
-
-- `companies` table already supports `parent_company_id` + `is_buyer` — no schema changes needed beyond the role enum/check.
-- Keep one generalized scope helper (`useCompanyScope`) used by both sides to avoid drift.
-- All buyer queries must wait for `scope.loading === false` (same pattern proven on supplier side) to avoid empty-scope flashes.
-- Verification: (a) single-office buyer sees own data only; (b) two sibling buyer offices cannot see each other's requests/negotiations/orders; (c) buyer global director sees family rollup and can create a request for any office; (d) supplier-side policies unchanged (regression-test request inbox + negotiation visibility).
+- Sem screenshots embutidos (a `AdminDocView` atual não suporta imagens; manteríamos consistência). Se quiser fotos depois, abrimos um patch dedicado para estender o renderer com um bloco `image`.
+- Sem mudanças em RLS, hooks ou rotas — só conteúdo de documentação.
