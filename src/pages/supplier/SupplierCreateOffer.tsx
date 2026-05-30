@@ -112,6 +112,10 @@ type Cut = {
   floor: string;
   notes: string;
   plant: string;
+  /** Phase 3: office-scoped plant UUID (FK to company_plants). Source of
+   *  truth for `offer_items.plant_id`. `plant` (string) is kept for
+   *  backward-compat display of plant_number. */
+  plantId?: string;
 };
 
 type IncoExtras = {
@@ -161,7 +165,7 @@ function validatePricePair(ask: string | number | null | undefined, floor: strin
 
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "\n", gr: "\n", ag: "None",
-  qty: "", ask: "", floor: "", notes: "", plant: "",
+  qty: "", ask: "", floor: "", notes: "", plant: "", plantId: undefined,
 };
 
 /* ══════════════════════════════════════════════════════════
