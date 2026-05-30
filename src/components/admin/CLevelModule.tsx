@@ -335,7 +335,6 @@ export default function CLevelModule() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <div className="clvl-filter-row" style={{ display: "contents" }}>
         <CountryFilterPopover countries={countryCounts} selected={selectedCountries} onChange={setSelectedCountries} />
         <select className="crm-select" value={titleFilter} onChange={(e) => setTitleFilter(e.target.value as any)}>
           <option value="all">All titles</option>
@@ -357,7 +356,6 @@ export default function CLevelModule() {
           <option value="name">A-Z Name</option>
           <option value="company">A-Z Company</option>
         </select>
-        </div>
       </div>
 
       <div style={{ fontSize: 12, color: "#6B7280", margin: "4px 2px 8px" }}>
