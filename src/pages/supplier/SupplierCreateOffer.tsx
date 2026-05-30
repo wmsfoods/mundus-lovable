@@ -472,40 +472,22 @@ export default function SupplierCreateOffer() {
 
   const [showPreview, setShowPreview] = useState(false);
 
-  /* Supplier plant numbers (USDA/SIF establishment numbers) loaded from
-     the current user's company profile. Used to populate the per-cut
-     "Plant Numbers" dropdown. */
-  const [companyPlants, setCompanyPlants] = useState<string[]>([]);
+  /* Phase 3: per-cut plant selector is now sourced from `allowedPlants`
+     (office-scoped, with family fallback). Legacy plant_numbers strings
+     are still surfaced for display under `c.plant`. */
+  const companyPlants: string[] = useMemo(
+    () =>
+      allowedPlants
+        .map((p) => p.plant_number || "")
+        .filter((s) => s && s.length > 0),
+    [allowedPlants],
+  );
   const [plantManual, setPlantManual] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    if (!company?.id) return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const [{ data: co }, { data: locs }] = await Promise.all([
-          supabase.from("companies").select("plant_numbers").eq("id", company.id).maybeSingle(),
-          (supabase as any)
-            .from("company_locations")
-            .select("plant_numbers, location_type, est_number")
-            .eq("company_id", company.id),
-        ]);
-        if (cancelled) return;
-        const merged = new Set<string>();
-        ((co as any)?.plant_numbers as string[] | null ?? []).forEach((p) => p && merged.add(p));
-        ((locs as any[]) ?? []).forEach((l) => {
-          ((l?.plant_numbers as string[] | null) ?? []).forEach((p) => p && merged.add(p));
-          if (l?.location_type === "factory" && l?.est_number) merged.add(String(l.est_number));
-        });
-        setCompanyPlants([...merged]);
-      } catch {
-        /* no-op: anonymous or no company; falls back to free text input */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [company?.id]);
+  const plantById = useMemo(() => {
+    const m = new Map<string, AllowedPlant>();
+    allowedPlants.forEach((p) => m.set(p.id, p));
+    return m;
+  }, [allowedPlants]);
 
   /* ── Origin port (filtered by supplier's countries) ─────────── */
   const [supplierCountries, setSupplierCountries] = useState<string[]>([]);
