@@ -884,7 +884,10 @@ export type Database = {
           country_code: string | null
           created_at: string
           id: string
+          is_active: boolean
           name: string
+          origin_port_id: string | null
+          plant_number: string | null
           sort_order: number | null
           updated_at: string
           vet_registrations: string | null
@@ -898,7 +901,10 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           id?: string
+          is_active?: boolean
           name: string
+          origin_port_id?: string | null
+          plant_number?: string | null
           sort_order?: number | null
           updated_at?: string
           vet_registrations?: string | null
@@ -912,7 +918,10 @@ export type Database = {
           country_code?: string | null
           created_at?: string
           id?: string
+          is_active?: boolean
           name?: string
+          origin_port_id?: string | null
+          plant_number?: string | null
           sort_order?: number | null
           updated_at?: string
           vet_registrations?: string | null
@@ -923,6 +932,13 @@ export type Database = {
             columns: ["company_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_plants_origin_port_id_fkey"
+            columns: ["origin_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
             referencedColumns: ["id"]
           },
         ]
@@ -4812,6 +4828,7 @@ export type Database = {
           origin_port: string | null
           origin_port_id: string | null
           payment_terms: string
+          plant_id: string | null
           price: number | null
           request_id: string | null
           shipment_month: number
@@ -4842,6 +4859,7 @@ export type Database = {
           origin_port?: string | null
           origin_port_id?: string | null
           payment_terms: string
+          plant_id?: string | null
           price?: number | null
           request_id?: string | null
           shipment_month: number
@@ -4872,6 +4890,7 @@ export type Database = {
           origin_port?: string | null
           origin_port_id?: string | null
           payment_terms?: string
+          plant_id?: string | null
           price?: number | null
           request_id?: string | null
           shipment_month?: number
@@ -4900,6 +4919,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "offers_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "company_plants"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "offers_request_id_fkey"
             columns: ["request_id"]
             isOneToOne: false
@@ -4911,6 +4937,78 @@ export type Database = {
             columns: ["supplier_id"]
             isOneToOne: false
             referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      office_markets: {
+        Row: {
+          created_at: string
+          id: string
+          market_id: string
+          office_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          market_id: string
+          office_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          market_id?: string
+          office_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "office_markets_market_id_fkey"
+            columns: ["market_id"]
+            isOneToOne: false
+            referencedRelation: "markets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "office_markets_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      office_plants: {
+        Row: {
+          created_at: string
+          id: string
+          office_id: string
+          plant_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          office_id: string
+          plant_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          office_id?: string
+          plant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "office_plants_office_id_fkey"
+            columns: ["office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "office_plants_plant_id_fkey"
+            columns: ["plant_id"]
+            isOneToOne: false
+            referencedRelation: "company_plants"
             referencedColumns: ["id"]
           },
         ]
@@ -6707,6 +6805,8 @@ export type Database = {
         Returns: Json
       }
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
+      company_family_ids: { Args: { p_company_id: string }; Returns: string[] }
+      company_family_root: { Args: { p_company_id: string }; Returns: string }
       confirm_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       confirm_negotiation: {
         Args: { p_negotiation_id: string; p_user_id: string }
@@ -6754,6 +6854,10 @@ export type Database = {
       }
       increment_offer_views: { Args: { offer_id: string }; Returns: undefined }
       is_company_master: { Args: { _company_id: string }; Returns: boolean }
+      is_family_global_director: {
+        Args: { p_company_id: string }
+        Returns: boolean
+      }
       is_mundus_admin: { Args: never; Returns: boolean }
       reject_negotiation: {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
@@ -6792,6 +6896,7 @@ export type Database = {
         Args: { p_buyer_company_id: string; p_created_by_user_id: string }
         Returns: boolean
       }
+      user_supplier_scope_ids: { Args: never; Returns: string[] }
     }
     Enums: {
       auction_bid_status: "submitted" | "winning" | "lost" | "withdrawn"
