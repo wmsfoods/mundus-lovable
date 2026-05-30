@@ -1217,6 +1217,8 @@ export default function SupplierCreateOffer() {
               total_fcl: totalFcl,
               is_halal: certifications.includes("Halal"),
               is_kosher: certifications.includes("Kosher"),
+              office_id: actingOfficeId ?? supplierId,
+              plant_id: cuts[0]?.plantId ?? null,
               exw_pickup_location: selInco.includes("EXW")
                 ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
                 : null,
