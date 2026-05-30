@@ -12,6 +12,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
 import { supabase } from "@/integrations/supabase/client";
 
