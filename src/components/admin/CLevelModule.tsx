@@ -362,8 +362,8 @@ export default function CLevelModule() {
         {loading ? "Loading…" : `Showing ${visibleRows.length} of ${totalCount.toLocaleString()} C-Level contacts`}
       </div>
 
-      {/* Table */}
-      <div className="adm-panel" style={{ padding: 0 }}>
+      {/* Table (desktop) */}
+      <div className="adm-panel adm-only-desktop" style={{ padding: 0 }}>
         <div className="adm-table-wrap">
           <table className="adm-table">
             <thead>
@@ -467,6 +467,26 @@ export default function CLevelModule() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile cards */}
+      <div className="adm-only-mobile adm-cards-stack">
+        {visibleRows.map((r) => (
+          <CLevelCardRow
+            key={r.id}
+            row={r}
+            domainMatch={domainMatches[r.id]}
+            enrichingId={enrichingId}
+            onViewCompany={(id) => nav(`/admin/crm/prospects/${id}`)}
+            onQualify={qualifyAs}
+            onEnrich={enrichOne}
+          />
+        ))}
+        {visibleRows.length === 0 && (
+          <div className="adm-panel" style={{ padding: 16, textAlign: "center", color: "#6B7280", fontSize: 13 }}>
+            {loading ? "…" : "No C-Level contacts found"}
+          </div>
+        )}
       </div>
 
       <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
