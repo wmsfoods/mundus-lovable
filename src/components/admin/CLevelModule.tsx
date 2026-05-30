@@ -316,7 +316,7 @@ export default function CLevelModule() {
   return (
     <div>
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
+      <div className="clvl-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(150px, 1fr))", gap: 12, marginBottom: 20 }}>
         <KPI label="Total C-Levels" value={kpis.total} color="#7C3AED" />
         <KPI label="With Email" value={kpis.withEmail} color="#2563EB" />
         <KPI label="LinkedIn Only" value={kpis.linkedInOnly} color="#0891B2" />
@@ -325,7 +325,7 @@ export default function CLevelModule() {
       </div>
 
       {/* Filters */}
-      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
+      <div className="clvl-filters" style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
         <div className="adm-search" style={{ flex: "1 1 240px", minWidth: 240 }}>
           <Search size={14} />
           <input
@@ -603,7 +603,7 @@ function CLevelCardRow({
         )}
       </div>
 
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+      <div className="clvl-card-actions" style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
         {r.company_id && (
           <button type="button" style={btnStyle} onClick={() => onViewCompany(r.company_id!)}>
             <Eye size={12} /> View company

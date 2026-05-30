@@ -320,3 +320,135 @@
   background: color-mix(in srgb, #f59e0b 12%, transparent);
   color: var(--adm-text-secondary, #374151); border: 1px solid color-mix(in srgb, #f59e0b 30%, transparent);
 }
+
+/* ====================================================================== */
+/* Mobile pass — Prospect detail + C-Level records (≤768px)                */
+/* ====================================================================== */
+@media (max-width: 768px) {
+  /* ---- Prospect detail header ---- */
+  .crm-detail-head {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+  }
+  .crm-detail-head .crm-detail-av {
+    width: 64px; height: 64px; font-size: 20px;
+  }
+  .crm-detail-head .crm-cell-stack { align-items: center; text-align: center; }
+  .crm-detail-head .crm-detail-name { font-size: 18px; line-height: 1.2; }
+
+  /* Action buttons → 2-col grid, full width, 40px tap */
+  .crm-detail-head .crm-header-actions.psp-actions-wrap {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    justify-content: stretch;
+  }
+  .crm-detail-head .crm-header-actions.psp-actions-wrap > button {
+    width: 100%;
+    min-height: 40px;
+    justify-content: center;
+    font-size: 12px;
+  }
+
+  /* Chips → horizontal scroll strip */
+  .crm-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-left: -12px; margin-right: -12px;
+    padding: 4px 12px 6px;
+  }
+  .crm-chips::-webkit-scrollbar { display: none; }
+  .crm-chips > * { flex-shrink: 0; }
+
+  /* Tighter panels inside prospect detail */
+  .adm-body > .adm-panel { padding: 12px; }
+
+  /* Form fields: comfier touch */
+  .psp-grid-2 { gap: 8px 12px; }
+  .psp-input { height: 40px; font-size: 13px; }
+  .psp-input[type="email"], .psp-input[type="text"] { font-size: 16px; }
+
+  /* Contact card */
+  .psp-contact-card { padding: 12px 10px 14px; }
+  .psp-contact-del {
+    position: static;
+    margin-top: 10px;
+    width: 100%;
+    min-height: 40px;
+    justify-content: center;
+    border: 1px solid var(--adm-danger, #DC2626);
+    color: var(--adm-danger, #DC2626);
+    border-radius: 10px;
+  }
+
+  /* Timeline events */
+  .crm-evt-line {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+  .crm-evt-when { font-size: 11px; color: var(--adm-text-tertiary); }
+
+  /* Drawers — sticky safe-area footer */
+  .psp-drawer-foot {
+    position: sticky; bottom: 0;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+  }
+  .psp-scrm-foot {
+    position: sticky; bottom: 0;
+    padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+  }
+  .psp-scrm-foot > button { flex: 1; min-height: 44px; justify-content: center; }
+
+  /* SearchPeople drawer rows */
+  .psp-drawer-section { padding: 12px; }
+  .psp-drawer-section .psp-badge,
+  .psp-drawer-section .psp-reveal { min-height: 32px; }
+
+  /* ---- C-Level module ---- */
+  .clvl-kpis {
+    display: flex !important;
+    grid-template-columns: none !important;
+    gap: 8px !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    margin-left: -12px; margin-right: -12px;
+    padding: 0 12px 4px;
+  }
+  .clvl-kpis::-webkit-scrollbar { display: none; }
+  .clvl-kpis > * { flex: 0 0 auto; min-width: 140px; }
+
+  .clvl-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 8px !important;
+  }
+  .clvl-filters .adm-search { width: 100%; min-width: 0 !important; flex: 1 1 100% !important; }
+  .clvl-filters .crm-select,
+  .clvl-filters > button { height: 40px; font-size: 13px; width: 100%; }
+
+  /* C-Level mobile card actions */
+  .clvl-card-actions {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px !important;
+  }
+  .clvl-card-actions > button { width: 100%; min-height: 36px; justify-content: center; }
+  .clvl-card-actions > button.clvl-card-action-full { grid-column: 1 / -1; }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .crm-detail-head .crm-header-actions.psp-actions-wrap {
+    grid-template-columns: 1fr;
+  }
+}
