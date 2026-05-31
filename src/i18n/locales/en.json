@@ -3391,6 +3391,7 @@
       "pastDue": "Your last payment failed. Please update your payment method to keep Mundus PRO active.",
       "fixPayment": "Update payment method",
       "noSubscription": "No active subscription. Upgrade to Mundus PRO from ${{price}}/mo."
-    }
+    },
+    "salesConfirmation": "Thanks! The Mundus Operations team will reach out within 24 hours."
   }
 }

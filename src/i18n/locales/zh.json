@@ -3377,6 +3377,7 @@
       "pastDue": "上次付款失败，请更新付款方式以保持 Mundus PRO 启用。",
       "fixPayment": "更新付款方式",
       "noSubscription": "暂无活跃订阅。Mundus PRO 起价每月 ${{price}}。"
-    }
+    },
+    "salesConfirmation": "感谢您！Mundus 运营团队将在 24 小时内与您联系。"
   }
 }

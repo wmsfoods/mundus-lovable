@@ -132,9 +132,10 @@ export function InsightsUpsellPanel({ open, feature, onClose }: Props) {
     }
   };
 
-  const mailtoHref = `mailto:sales@mundus.com?subject=${encodeURIComponent(
-    cfg.salesSubject,
-  )}&body=${encodeURIComponent(t("supplier.insights.upsell.salesBody"))}`;
+  const handleContactSales = () => {
+    toast.success(t("billing.salesConfirmation"));
+    onClose();
+  };
 
   return createPortal(
     <div className={`ins-upsell-root ${open ? "is-open" : ""}`} aria-hidden={!open}>
@@ -228,15 +229,14 @@ export function InsightsUpsellPanel({ open, feature, onClose }: Props) {
               </>
             )}
           </button>
-          <a
-            href={mailtoHref}
+          <button
+            type="button"
             className="ins-upsell-btn ins-upsell-btn--secondary"
-            target="_blank"
-            rel="noreferrer"
+            onClick={handleContactSales}
           >
             <Mail size={14} />
             {t("supplier.insights.upsell.contactSales")}
-          </a>
+          </button>
         </footer>
       </aside>
     </div>,

@@ -3377,6 +3377,7 @@
       "pastDue": "Votre dernier paiement a échoué. Mettez à jour votre moyen de paiement pour garder Mundus PRO actif.",
       "fixPayment": "Mettre à jour le paiement",
       "noSubscription": "Aucun abonnement actif. Passez à Mundus PRO à partir de {{price}} $/mois."
-    }
+    },
+    "salesConfirmation": "Merci ! L'équipe Opérations de Mundus vous contactera sous 24 heures."
   }
 }
