@@ -109,6 +109,7 @@ export default function SupplierNegotiationDetail() {
   }
 
   const d: NegotiationDetail = data;
+  useStackHeader({ title: d.parentTitle });
   const gapAbs = d.yourCounterUsd - d.latestBidUsd;
   const gapPct = (gapAbs / d.latestBidUsd) * 100;
   // Knob position: map gap as % of asking range. Clamp 0-100.
