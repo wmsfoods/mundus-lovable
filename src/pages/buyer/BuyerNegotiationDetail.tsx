@@ -30,6 +30,7 @@ import { DealProgressionCard } from "@/components/negotiation/DealProgressionCar
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
 import { OfferAvailabilityChip } from "@/components/negotiation/OfferAvailabilityChip";
+import { useStackHeader } from "@/contexts/StackHeaderContext";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
@@ -89,6 +90,7 @@ export default function BuyerNegotiationDetail() {
   }
 
   const d: BuyerNegotiationDetail = data;
+  useStackHeader({ title: d.parentTitle });
   const gapAbs = d.supplierCounterUsd - d.yourBidUsd;
   const gapPct = (gapAbs / d.yourBidUsd) * 100;
   const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
