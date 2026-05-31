@@ -29,7 +29,9 @@ test.describe('Supplier Audit', () => {
     await page.waitForLoadState('networkidle');
     await page.click('button:has-text("Create Offer"), a:has-text("Create Offer")');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Select Weight Unit, text=Unit')).toBeVisible({ timeout: 10000 });
+    await expect(
+      page.locator('text=Select Weight Unit').or(page.locator('text=Unit'))
+    ).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=kg')).toBeVisible();
     await expect(page.locator('text=lbs')).toBeVisible();
   });
@@ -38,7 +40,9 @@ test.describe('Supplier Audit', () => {
     await page.goto('/supplier/customers');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=My Customers')).toBeVisible();
-    await expect(page.locator('text=COMPANY NAME, th:has-text("Company")')).toBeVisible();
+    await expect(
+      page.locator('text=COMPANY NAME').or(page.locator('th:has-text("Company")'))
+    ).toBeVisible();
     await expect(page.locator('button:has-text("Invite Customer"), button:has-text("Invite")')).toBeVisible();
   });
 
@@ -64,7 +68,9 @@ test.describe('Supplier Audit', () => {
     await page.goto('/supplier/sales');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=Sales')).toBeVisible();
-    await expect(page.locator('text=DEAL ID, text=Track your orders')).toBeVisible();
+    await expect(
+      page.locator('text=DEAL ID').or(page.locator('text=Track your orders'))
+    ).toBeVisible();
   });
 
   test('Negotiations page loads', async ({ page }) => {
@@ -99,7 +105,11 @@ test.describe('Supplier Audit', () => {
     for (const route of routes) {
       await page.goto(route);
       await page.waitForLoadState('networkidle');
-      const is404 = await page.locator('text=404, text=Not Found, text=Page not found').isVisible();
+      const is404 = await page
+        .locator('text=404')
+        .or(page.locator('text=Not Found'))
+        .or(page.locator('text=Page not found'))
+        .isVisible();
       if (is404) broken.push(route);
     }
     expect(broken, `Broken routes: ${broken.join(', ')}`).toHaveLength(0);
@@ -118,21 +128,33 @@ test.describe('Buyer Audit', () => {
   test('Buyer home loads', async ({ page }) => {
     await page.goto('/buyer/home');
     await page.waitForLoadState('networkidle');
-    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    const is404 = await page
+      .locator('text=404')
+      .or(page.locator('text=Not Found'))
+      .or(page.locator('text=Page not found'))
+      .isVisible();
     expect(is404).toBe(false);
   });
 
   test('Buyer offers page loads', async ({ page }) => {
     await page.goto('/buyer/offers');
     await page.waitForLoadState('networkidle');
-    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    const is404 = await page
+      .locator('text=404')
+      .or(page.locator('text=Not Found'))
+      .or(page.locator('text=Page not found'))
+      .isVisible();
     expect(is404).toBe(false);
   });
 
   test('Buyer negotiations page loads', async ({ page }) => {
     await page.goto('/buyer/negotiations');
     await page.waitForLoadState('networkidle');
-    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    const is404 = await page
+      .locator('text=404')
+      .or(page.locator('text=Not Found'))
+      .or(page.locator('text=Page not found'))
+      .isVisible();
     expect(is404).toBe(false);
   });
 
@@ -145,7 +167,11 @@ test.describe('Buyer Audit', () => {
     for (const route of routes) {
       await page.goto(route);
       await page.waitForLoadState('networkidle');
-      const is404 = await page.locator('text=404, text=Not Found, text=Page not found').isVisible();
+      const is404 = await page
+        .locator('text=404')
+        .or(page.locator('text=Not Found'))
+        .or(page.locator('text=Page not found'))
+        .isVisible();
       if (is404) broken.push(route);
       console.log(`${is404 ? '❌' : '✅'} ${route}`);
     }
@@ -165,7 +191,11 @@ test.describe('Admin Audit', () => {
   test('Admin dashboard loads with metrics', async ({ page }) => {
     await page.goto('/admin/dashboard');
     await page.waitForLoadState('networkidle');
-    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    const is404 = await page
+      .locator('text=404')
+      .or(page.locator('text=Not Found'))
+      .or(page.locator('text=Page not found'))
+      .isVisible();
     expect(is404).toBe(false);
   });
 
@@ -178,7 +208,11 @@ test.describe('Admin Audit', () => {
     for (const route of routes) {
       await page.goto(route);
       await page.waitForLoadState('networkidle');
-      const is404 = await page.locator('text=404, text=Not Found, text=Page not found').isVisible();
+      const is404 = await page
+        .locator('text=404')
+        .or(page.locator('text=Not Found'))
+        .or(page.locator('text=Page not found'))
+        .isVisible();
       if (is404) broken.push(route);
       console.log(`${is404 ? '❌' : '✅'} ${route}`);
     }
