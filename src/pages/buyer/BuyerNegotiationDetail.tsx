@@ -30,6 +30,7 @@ import { DealProgressionCard } from "@/components/negotiation/DealProgressionCar
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
 import { OfferAvailabilityChip } from "@/components/negotiation/OfferAvailabilityChip";
+import { useStackHeader } from "@/contexts/StackHeaderContext";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
