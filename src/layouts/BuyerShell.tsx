@@ -65,21 +65,22 @@ function BuyerShellInner() {
       label: "Operations",
       icon: Settings2 as unknown as SidebarItem["icon"],
       children: [
-        {
-          to: "/buyer/procurement-intelligence",
-          label: t("buyer.procurement.nav", { defaultValue: "Procurement Intelligence" }),
-          icon: BarChart3 as unknown as SidebarItem["icon"],
-          proBadge: true,
-        },
-        {
-          to: "https://market-us.mundustrade.com",
-          label: t("shell.nav.marketIntelligence"),
-          icon: Globe as unknown as SidebarItem["icon"],
-          external: true,
-          proBadge: true,
-        },
         { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
       ],
+    },
+    {
+      to: "/buyer/procurement-intelligence",
+      label: t("buyer.procurement.nav", { defaultValue: "Procurement Intelligence" }),
+      icon: BarChart3 as unknown as SidebarItem["icon"],
+      proBadge: true,
+      groupLabel: t("shell.nav.mundusIntel"),
+    },
+    {
+      to: "https://market-us.mundustrade.com",
+      label: t("shell.nav.marketIntelligence"),
+      icon: Globe as unknown as SidebarItem["icon"],
+      external: true,
+      proBadge: true,
     },
     {
       type: "section",
