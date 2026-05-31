@@ -437,3 +437,7 @@
   .ins-upsell-root.is-open .ins-upsell-panel { transform: translateY(0); }
   .ins-upsell-foot { padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
 }
+/* Mobile Way — let shell .app-main handle padding */
+@media (max-width: 1023px) {
+  .ins-page { padding: 0; gap: 14px; }
+}
