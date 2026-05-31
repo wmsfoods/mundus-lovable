@@ -87,8 +87,15 @@ Deno.serve(async (req) => {
         const existing = await stripe.customers.retrieve(customerId);
         if ((existing as any)?.deleted) customerId = null;
       } catch (err: any) {
-        if (err?.code === "resource_missing") {
-          console.warn("stale stripe_customer_id, recreating", customerId);
+        const code = err?.code ?? err?.raw?.code;
+        const type = err?.type ?? err?.raw?.type;
+        const status = err?.statusCode ?? err?.raw?.statusCode;
+        if (
+          code === "resource_missing" ||
+          type === "StripeInvalidRequestError" ||
+          status === 404
+        ) {
+          console.warn("stale stripe_customer_id, recreating", customerId, code, type);
           customerId = null;
         } else {
           throw err;
