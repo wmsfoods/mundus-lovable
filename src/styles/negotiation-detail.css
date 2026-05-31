@@ -104,7 +104,7 @@
   grid-template-columns: 58fr 42fr;
   gap: 16px;
 }
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .nd-grid { grid-template-columns: 1fr; }
 }
 
@@ -558,7 +558,7 @@
 .nd-price-table__totals .nd-sticky-col { background: #fafbfc; }
 .nd-price-table__group-row .nd-sticky-col { background: #f8fafc; }
 
-@media (max-width: 720px) {
+@media (max-width: 1023px) {
   .nd-price-history__head { flex-direction: column; align-items: flex-start; }
   .nd-price-table--grouped th,
   .nd-price-table--grouped td { padding: 8px 10px; font-size: 11px; }
@@ -575,7 +575,7 @@
 }
 
 /* Mobile tweaks (pocket version) */
-@media (max-width: 640px) {
+@media (max-width: 1023px) {
   .nd-header { padding: 14px; gap: 10px; }
   .nd-avatar { width: 40px; height: 40px; border-radius: 10px; }
   .nd-h-text h1 { font-size: 16px; }
@@ -588,4 +588,46 @@
   .nd-actions button { flex: 1 1 100%; }
   .nd-buyer-info dl { grid-template-columns: 1fr; gap: 4px; }
   .nd-buyer-info dd { text-align: left; }
+}
+
+/* Mobile Way: stack-mode tweaks for negotiation detail.
+   StackHeader already shows title + back; collapse the in-page header
+   to a compact meta strip and turn the chips into a horizontal
+   scroll-snap row for one-handed scanning. */
+.app-shell.is-stack .nd-header {
+  padding: 10px 12px;
+  gap: 10px;
+  margin-bottom: 8px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  border-bottom: 1px solid #f1f5f9;
+}
+.app-shell.is-stack .nd-header .nd-avatar { display: none; }
+.app-shell.is-stack .nd-header .nd-h-text h1 { display: none; }
+.app-shell.is-stack .nd-header .nd-sub { font-size: 12px; margin-top: 0; }
+.app-shell.is-stack .nd-h-right { margin-top: 0; width: auto; }
+
+@media (max-width: 1023px) {
+  .nd-meta-chips {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
+    margin-left: -12px;
+    margin-right: -12px;
+    padding: 0 12px 4px;
+    scrollbar-width: none;
+  }
+  .nd-meta-chips::-webkit-scrollbar { display: none; }
+  .nd-meta-chips .chip { flex: 0 0 auto; scroll-snap-align: start; }
+
+  .nd-actions {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .nd-actions button {
+    min-height: 44px;
+    font-size: 14px;
+  }
 }
