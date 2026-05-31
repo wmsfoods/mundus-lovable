@@ -29,6 +29,33 @@ function renderMdItem(
   onProBadgeClick?: (i: SidebarItem) => void,
 ) {
   const I = item.icon;
+  if (item.external) {
+    return (
+      <a
+        key={item.to}
+        href={item.to}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={`md-item ${item.accent ? "is-accent" : ""}`.trim()}
+        onClick={onClose}
+      >
+        <I size={20} />
+        <span>{item.label}</span>
+        {item.proBadge && (
+          <ProBadge
+            onClick={
+              onProBadgeClick
+                ? () => {
+                    onClose();
+                    onProBadgeClick(item);
+                  }
+                : undefined
+            }
+          />
+        )}
+      </a>
+    );
+  }
   return (
     <NavLink
       key={item.to}
