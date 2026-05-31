@@ -429,7 +429,7 @@ export default function SupplierAuctionDetail() {
           </div>
 
           {/* Bid rankings — desktop table */}
-          <div className="mt-5 rounded-xl border border-border overflow-hidden hidden md:block">
+          <div className="mt-5 rounded-xl border border-border overflow-hidden hidden lg:block">
             <table className="w-full text-sm">
               <thead className="bg-muted/50">
                 <tr className="text-left text-xs uppercase text-muted-foreground">
@@ -512,7 +512,7 @@ export default function SupplierAuctionDetail() {
           </div>
 
           {/* Bid rankings — mobile cards */}
-          <div className="mt-5 flex flex-col gap-2.5 md:hidden">
+          <div className="mt-5 flex flex-col gap-2.5 lg:hidden">
             {bids.map((b) => {
               const isExp = expanded === b.id;
               const rc = rankColors(b.rank);
