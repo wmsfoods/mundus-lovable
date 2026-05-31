@@ -4,7 +4,7 @@
    Desktop is untouched.
    ============================================================ */
 
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
 
   /* ---------- Page header (Negotiations / counts / bell) ---------- */
   .mnc-page-head {

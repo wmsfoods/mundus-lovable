@@ -459,7 +459,7 @@ function MobileNegoList({
     .filter((g) => g._bids.length > 0);
 
   return (
-    <div className="mnc-active md:hidden">
+    <div className="mnc-active lg:hidden">
       <MobileNegoTabs<MobileTab>
         value={tab}
         onChange={onTabChange}
