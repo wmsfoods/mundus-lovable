@@ -71,6 +71,13 @@ function BuyerShellInner() {
           icon: BarChart3 as unknown as SidebarItem["icon"],
           proBadge: true,
         },
+        {
+          to: "https://market-us.mundustrade.com",
+          label: t("shell.nav.marketIntelligence"),
+          icon: Globe as unknown as SidebarItem["icon"],
+          external: true,
+          proBadge: true,
+        },
         { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
       ],
     },
