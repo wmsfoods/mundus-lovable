@@ -90,6 +90,7 @@ export default function BuyerNegotiationDetail() {
   }
 
   const d: BuyerNegotiationDetail = data;
+  useStackHeader({ title: d.parentTitle });
   const gapAbs = d.supplierCounterUsd - d.yourBidUsd;
   const gapPct = (gapAbs / d.yourBidUsd) * 100;
   const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
