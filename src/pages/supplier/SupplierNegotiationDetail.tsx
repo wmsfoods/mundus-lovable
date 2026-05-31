@@ -81,6 +81,7 @@ export default function SupplierNegotiationDetail() {
   const [counterOpen, setCounterOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
   const locale = i18n.language || "en";
+  useStackHeader({ title: data?.parentTitle ?? "Negotiation" });
 
   const switchBuyer = (negId: string) => {
     if (!negId || negId === activeId) return;
@@ -109,7 +110,6 @@ export default function SupplierNegotiationDetail() {
   }
 
   const d: NegotiationDetail = data;
-  useStackHeader({ title: d.parentTitle });
   const gapAbs = d.yourCounterUsd - d.latestBidUsd;
   const gapPct = (gapAbs / d.latestBidUsd) * 100;
   // Knob position: map gap as % of asking range. Clamp 0-100.
