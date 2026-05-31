@@ -1,66 +1,219 @@
-import { test } from '@playwright/test';
-import { loginAsSupplier, snap } from '../helpers/auth.js';
+import { test, expect } from '@playwright/test';
+import { loginAsSupplier } from '../helpers/auth.js';
 
-const SUPPLIER_ROUTES = [
-  { path: '/home', label: 'home' },
-  { path: '/supplier/customers', label: 'customers' },
-  { path: '/supplier/offer-requests', label: 'offer-requests' },
-  { path: '/supplier/offers', label: 'offers' },
-  { path: '/supplier/sales', label: 'sales' },
-  { path: '/supplier/negotiations', label: 'negotiations' },
-  { path: '/supplier/users', label: 'users' },
-  { path: '/supplier/insights/price-benchmark', label: 'price-benchmark' },
-  { path: '/supplier/insights/analytics', label: 'analytics' },
-  { path: '/supplier/insights/cut-comparison', label: 'cut-comparison' },
-];
+// ─── SUPPLIER AUDIT ───────────────────────────────────────────────
+test.describe('Supplier Audit', () => {
 
-const BUYER_ROUTES = [
-  { path: '/buyer/home', label: 'buyer-home' },
-  { path: '/buyer/offers', label: 'buyer-offers' },
-  { path: '/buyer/offer-requests', label: 'buyer-offer-requests' },
-  { path: '/buyer/negotiations', label: 'buyer-negotiations' },
-  { path: '/buyer/orders', label: 'buyer-orders' },
-  { path: '/buyer/users', label: 'buyer-users' },
-  { path: '/buyer/procurement-intelligence', label: 'buyer-procurement' },
-];
+  test.beforeEach(async ({ page }) => {
+    if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
+    await loginAsSupplier(page);
+  });
 
-const ADMIN_ROUTES = [
-  { path: '/admin/dashboard', label: 'admin-dashboard' },
-  { path: '/admin/users', label: 'admin-users' },
-  { path: '/admin/companies', label: 'admin-companies' },
-  { path: '/admin/offers', label: 'admin-offers' },
-  { path: '/admin/negotiations', label: 'admin-negotiations' },
-  { path: '/admin/sales', label: 'admin-sales' },
-];
+  test('Home dashboard loads with KPI cards', async ({ page }) => {
+    await page.goto('/home');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Active Offers')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Total Offers')).toBeVisible();
+    await expect(page.locator('text=In Negotiation')).toBeVisible();
+  });
 
-async function auditRoutes(page, routes, prefix) {
-  for (const route of routes) {
-    try {
-      await page.goto(route.path);
+  test('Offers page loads and has Create Offer button', async ({ page }) => {
+    await page.goto('/supplier/offers');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Offers')).toBeVisible();
+    await expect(page.locator('button:has-text("Create Offer"), a:has-text("Create Offer")')).toBeVisible();
+  });
+
+  test('Create Offer wizard opens and shows Unit step', async ({ page }) => {
+    await page.goto('/supplier/offers');
+    await page.waitForLoadState('networkidle');
+    await page.click('button:has-text("Create Offer"), a:has-text("Create Offer")');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Select Weight Unit, text=Unit')).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=kg')).toBeVisible();
+    await expect(page.locator('text=lbs')).toBeVisible();
+  });
+
+  test('Customers page loads with table columns', async ({ page }) => {
+    await page.goto('/supplier/customers');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=My Customers')).toBeVisible();
+    await expect(page.locator('text=COMPANY NAME, th:has-text("Company")')).toBeVisible();
+    await expect(page.locator('button:has-text("Invite Customer"), button:has-text("Invite")')).toBeVisible();
+  });
+
+  test('Invite Customer modal opens', async ({ page }) => {
+    await page.goto('/supplier/customers');
+    await page.waitForLoadState('networkidle');
+    await page.click('button:has-text("Invite Customer"), button:has-text("Invite")');
+    await page.waitForTimeout(1000);
+    await expect(page.locator('text=Invite New Customer')).toBeVisible();
+    await expect(page.locator('input[placeholder*="Company"], input[placeholder*="Acme"]')).toBeVisible();
+  });
+
+  test('Offer Requests page loads with all columns', async ({ page }) => {
+    await page.goto('/supplier/offer-requests');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=My offer requests')).toBeVisible();
+    await expect(page.locator('text=REQUEST NUMBER')).toBeVisible();
+    await expect(page.locator('text=INCOTERMS')).toBeVisible();
+    await expect(page.locator('text=STATUS')).toBeVisible();
+  });
+
+  test('Sales page loads with status badges', async ({ page }) => {
+    await page.goto('/supplier/sales');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Sales')).toBeVisible();
+    await expect(page.locator('text=DEAL ID, text=Track your orders')).toBeVisible();
+  });
+
+  test('Negotiations page loads', async ({ page }) => {
+    await page.goto('/supplier/negotiations');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Negotiations')).toBeVisible();
+  });
+
+  test('Users page loads with Invite User button', async ({ page }) => {
+    await page.goto('/supplier/users');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Users')).toBeVisible();
+    await expect(page.locator('button:has-text("Invite User")')).toBeVisible();
+  });
+
+  test('Mundus Intel section visible in sidebar', async ({ page }) => {
+    await page.goto('/home');
+    await page.waitForLoadState('networkidle');
+    await expect(page.locator('text=Mundus Intel')).toBeVisible();
+    await expect(page.locator('text=Price Benchmark')).toBeVisible();
+    await expect(page.locator('text=Market Intelligence')).toBeVisible();
+    await expect(page.locator('text=Cut Comparison')).toBeVisible();
+  });
+
+  test('No broken routes — none should show 404', async ({ page }) => {
+    const routes = [
+      '/home', '/supplier/offers', '/supplier/customers',
+      '/supplier/offer-requests', '/supplier/sales',
+      '/supplier/negotiations', '/supplier/users',
+    ];
+    const broken = [];
+    for (const route of routes) {
+      await page.goto(route);
       await page.waitForLoadState('networkidle');
-      await page.waitForTimeout(1500);
-      await snap(page, `${prefix}-${route.label}`);
-      console.log(`✅ ${route.path} → ${page.url()}`);
-    } catch (e) {
-      console.log(`⚠️ ${route.path} failed: ${e.message}`);
+      const is404 = await page.locator('text=404, text=Not Found, text=Page not found').isVisible();
+      if (is404) broken.push(route);
     }
-  }
-}
+    expect(broken, `Broken routes: ${broken.join(', ')}`).toHaveLength(0);
+  });
 
-test('Visual audit — supplier pages', async ({ page }) => {
-  if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
-  await loginAsSupplier(page);
-  await auditRoutes(page, SUPPLIER_ROUTES, '09');
 });
 
-test('Visual audit — buyer pages', async ({ page }) => {
-  if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
-  await loginAsSupplier(page);
-  await auditRoutes(page, BUYER_ROUTES, '09');
+// ─── BUYER AUDIT ──────────────────────────────────────────────────
+test.describe('Buyer Audit', () => {
+
+  test.beforeEach(async ({ page }) => {
+    if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
+    await loginAsSupplier(page);
+  });
+
+  test('Buyer home loads', async ({ page }) => {
+    await page.goto('/buyer/home');
+    await page.waitForLoadState('networkidle');
+    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    expect(is404).toBe(false);
+  });
+
+  test('Buyer offers page loads', async ({ page }) => {
+    await page.goto('/buyer/offers');
+    await page.waitForLoadState('networkidle');
+    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    expect(is404).toBe(false);
+  });
+
+  test('Buyer negotiations page loads', async ({ page }) => {
+    await page.goto('/buyer/negotiations');
+    await page.waitForLoadState('networkidle');
+    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    expect(is404).toBe(false);
+  });
+
+  test('No broken buyer routes', async ({ page }) => {
+    const routes = [
+      '/buyer/home', '/buyer/offers', '/buyer/offer-requests',
+      '/buyer/negotiations', '/buyer/orders', '/buyer/users',
+    ];
+    const broken = [];
+    for (const route of routes) {
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
+      const is404 = await page.locator('text=404, text=Not Found, text=Page not found').isVisible();
+      if (is404) broken.push(route);
+      console.log(`${is404 ? '❌' : '✅'} ${route}`);
+    }
+    expect(broken, `Broken buyer routes: ${broken.join(', ')}`).toHaveLength(0);
+  });
+
 });
 
-test('Visual audit — admin pages', async ({ page }) => {
-  if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
-  await loginAsSupplier(page);
-  await auditRoutes(page, ADMIN_ROUTES, '09');
+// ─── ADMIN AUDIT ──────────────────────────────────────────────────
+test.describe('Admin Audit', () => {
+
+  test.beforeEach(async ({ page }) => {
+    if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
+    await loginAsSupplier(page);
+  });
+
+  test('Admin dashboard loads with metrics', async ({ page }) => {
+    await page.goto('/admin/dashboard');
+    await page.waitForLoadState('networkidle');
+    const is404 = await page.locator('text=404, text=Not Found').isVisible();
+    expect(is404).toBe(false);
+  });
+
+  test('No broken admin routes', async ({ page }) => {
+    const routes = [
+      '/admin/dashboard', '/admin/users', '/admin/companies',
+      '/admin/offers', '/admin/negotiations', '/admin/sales',
+    ];
+    const broken = [];
+    for (const route of routes) {
+      await page.goto(route);
+      await page.waitForLoadState('networkidle');
+      const is404 = await page.locator('text=404, text=Not Found, text=Page not found').isVisible();
+      if (is404) broken.push(route);
+      console.log(`${is404 ? '❌' : '✅'} ${route}`);
+    }
+    expect(broken, `Broken admin routes: ${broken.join(', ')}`).toHaveLength(0);
+  });
+
+});
+
+// ─── STRIPE / PRO GATE AUDIT ──────────────────────────────────────
+test.describe('PRO Gate Audit', () => {
+
+  test.beforeEach(async ({ page }) => {
+    if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
+    await loginAsSupplier(page);
+  });
+
+  test('Price Benchmark route renders something', async ({ page }) => {
+    await page.goto('/supplier/insights/price-benchmark');
+    await page.waitForLoadState('networkidle');
+    const is404 = await page.locator('text=404').isVisible();
+    expect(is404).toBe(false);
+  });
+
+  test('Analytics route renders something', async ({ page }) => {
+    await page.goto('/supplier/insights/analytics');
+    await page.waitForLoadState('networkidle');
+    const is404 = await page.locator('text=404').isVisible();
+    expect(is404).toBe(false);
+  });
+
+  test('Cut Comparison route renders something', async ({ page }) => {
+    await page.goto('/supplier/insights/cut-comparison');
+    await page.waitForLoadState('networkidle');
+    const is404 = await page.locator('text=404').isVisible();
+    expect(is404).toBe(false);
+  });
+
 });
