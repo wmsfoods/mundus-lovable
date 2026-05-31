@@ -241,7 +241,7 @@ export default function SupplierAuctionDetail() {
       <button
         type="button"
         onClick={() => navigate("/supplier/auctions")}
-        className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-3"
+        className="btn-back inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-3"
       >
         <ArrowLeft size={14} /> {t("supplier.auctionDetail.back")}
       </button>
