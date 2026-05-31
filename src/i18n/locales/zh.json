@@ -28,7 +28,7 @@
     "complete": "完成",
     "signOut": "退出",
     "signedOut": "已退出",
-    "loading": "正在加载...",
+    "loading": "加载中…",
     "search": "搜索",
     "save": "保存",
     "close": "关闭",
@@ -43,7 +43,8 @@
     "language": "语言",
     "english": "英语",
     "portuguese": "葡萄牙语",
-    "spanish": "西班牙语"
+    "spanish": "西班牙语",
+    "signIn": "登录"
   },
   "auth": {
     "login": "登录",
@@ -211,12 +212,25 @@
       "offerRequests": "报价请求",
       "myCompany": "我的公司",
       "messages": "消息",
-      "chat": "聊天"
+      "chat": "聊天",
+      "marketIntelligence": "市场情报",
+      "mundusIntel": "Mundus Intel"
     },
     "bottom": {
       "create": "创建",
       "negotiations": "聊天",
       "myOffers": "报价"
+    },
+    "officeSwitcher": {
+      "allOffices": "所有办公室",
+      "allOfficesFamily": "所有办公室 · {{family}}",
+      "allOfficesConsolidated": "所有办公室（合并）",
+      "directorBadge": "总监"
+    },
+    "officeIndicator": {
+      "viewing": "正在查看:{{office}}",
+      "showAll": "✕ 显示全部",
+      "assignedOfficeHint": "(您的指定办事处)"
     }
   },
   "dashboard": {
@@ -1339,13 +1353,13 @@
       }
     },
     "share": {
-      "title": "与供应商分享此投标",
-      "subtitle": "供应商可以使用此安全链接查看和回复 — 无需登录。",
-      "subtitleUsed": "此链接已被供应商使用。",
+      "title": "与买家分享此谈判",
+      "subtitle": "买家可以使用此安全链接查看和回复 — 无需登录。",
+      "subtitleUsed": "此链接已被买家使用。",
       "loading": "正在准备分享链接…",
       "copy": "复制链接",
       "copied": "已复制！",
-      "supplierEmail": "供应商电子邮件 (可选)",
+      "supplierEmail": "买家电子邮件 (可选)",
       "saveEmail": "保存",
       "emailSaved": "电子邮件已保存",
       "sendEmail": "发送电子邮件",
@@ -1523,7 +1537,8 @@
           "acceptComingSoon": "接受订单 — 即将推出",
           "rejectComingSoon": "拒绝订单 — 即将推出"
         }
-      }
+      },
+      "emptyForOffice": "{{office}} 暂无销售。"
     },
     "offers": {
       "createOffer": "创建报价 +",
@@ -1622,7 +1637,8 @@
       "crumbHome": "首页",
       "title": "报价",
       "showing": "显示 {{from}} - {{to}} 条，共 {{total}} 条结果",
-      "sortBy": "排序方式"
+      "sortBy": "排序方式",
+      "emptyForOffice": "{{office}} 暂无报价。"
     },
     "createOffer": {
       "title": "新报价",
@@ -1879,7 +1895,10 @@
         "sendInvoiceDraft": "发送发票草稿",
         "viewSale": "查看销售详情",
         "issueBalanceInvoice": "开具余额发票"
-      }
+      },
+      "emptyOffersForOffice": "{{office}} 暂无报价。",
+      "emptySalesForOffice": "{{office}} 暂无销售。",
+      "showingOffice": "显示 {{office}}"
     },
     "company": {
       "title": "我的公司",
@@ -2018,6 +2037,60 @@
           },
           "perks": "[\"每月绩效报告发送至您的收件箱\",\"任何指标或图表的无限CSV导出\",\"每个团队成员的自定义日期范围和保存视图\",\"买家级别钻取和完整的谈判历史\"]"
         }
+      }
+    },
+    "multiOffice": {
+      "requests": {
+        "tabUnassigned": "待分配",
+        "tabAssigned": "已分配",
+        "assignToOffice": "分配到办事处 ▾",
+        "assigning": "分配中…",
+        "assignedToast": "请求已分配",
+        "assignedToastDesc": "已通知该办事处。",
+        "assignError": "无法分配",
+        "assignErrorUnknown": "未知错误",
+        "badgeAssignedTo": "{{office}}",
+        "emptyHqUnassigned": "没有等待分配的请求。",
+        "emptyHqAssigned": "尚未分配任何请求。",
+        "emptyOffice": "尚未向您的办事处分配请求。"
+      },
+      "rollup": {
+        "sectionTitle": "按办事处",
+        "allOffices": "所有办事处",
+        "active": "进行中",
+        "openNeg": "进行中谈判",
+        "closed": "已成交",
+        "inbound": "新请求",
+        "incomingRequests": "收到的请求",
+        "loading": "加载中…"
+      }
+    },
+    "cutComparison": {
+      "nav": "分割对比",
+      "title": "分割对比",
+      "subtitle": "您家族的工厂对比匿名市场 — 仅显示汇总,绝不显示竞争对手身份。",
+      "directorOnly": "此视图仅对全球总监开放。",
+      "filter": {
+        "cut": "分割",
+        "cutPlaceholder": "选择分割…",
+        "destination": "目的国(可选)",
+        "destinationPlaceholder": "例如:中国"
+      },
+      "table": {
+        "origin": "原产地",
+        "avgAsk": "平均报价 USD/kg",
+        "recentClosed": "近期成交 USD/kg",
+        "sample": "样本数",
+        "pickCut": "选择要对比的分割。",
+        "loading": "加载中…",
+        "noFamilyOffers": "您的家族暂未对此分割提交报价。",
+        "anonMarket": "匿名市场",
+        "insufficient": "市场数据不足(至少需要 3 个样本)",
+        "bandFormat": "{{low}} – 中位数 {{med}} – {{high}}"
+      },
+      "chart": {
+        "title": "价格区间(市场对比您的报价)",
+        "marketRange": "市场区间"
       }
     }
   },
@@ -2174,7 +2247,7 @@
         "find_people": "发现个人",
         "lists": "列表",
         "marketplace": "市场",
-        "products": "产品与切割",
+        "products": "项目",
         "markets": "市场",
         "ports": "港口",
         "finance": "财务",
@@ -2219,7 +2292,8 @@
         "web_scrape": "网络抓取",
         "apollo": "Mundus Intelligence",
         "manual": "手动",
-        "inbound": "入站"
+        "inbound": "入站",
+        "wms_import": "WMS"
       },
       "table": {
         "company": "公司",
@@ -2409,7 +2483,37 @@
           "insight": "见解",
           "sources": "来源公司",
           "category": "类别",
-          "empty": "尚未记录任何学习内容"
+          "empty": "尚未记录任何学习内容",
+          "log": {
+            "title": "每周学习日志",
+            "subtitle": "每周结束时填写——15 分钟的复盘，避免重复同样的错误。",
+            "thisWeek": "本周",
+            "newWeek": "+ 新建一周",
+            "addPrevious": "补填往周",
+            "colWeek": "周",
+            "colFilled": "填写日",
+            "colWorked": "有效的做法",
+            "colWorkedHint": "战术、方式、对话",
+            "colStuck": "受阻之处",
+            "colStuckHint": "异议、阶段、人员",
+            "colNext": "下周调整",
+            "colNextHint": "具体行动",
+            "placeholderWorked": "本周哪些行动产生了实质成效？",
+            "placeholderStuck": "哪里浪费了时间或失去了信任？",
+            "placeholderNext": "下周可执行的一项具体改变",
+            "filterQuarter": "所有季度",
+            "filterSearch": "搜索…",
+            "insightsTitle": "智能洞察",
+            "insightsRepeating": "反复出现的阻碍",
+            "insightsPending": "待跟进事项",
+            "insightsEmpty": "记录几周后即可看到规律",
+            "weeksLogged": "已记录周数",
+            "streak": "连续周数",
+            "savedAt": "已保存",
+            "saving": "保存中…",
+            "emptyTitle": "开始你的第一份每周复盘",
+            "emptyCta": "记录本周"
+          }
         },
         "modal": {
           "addCompany": "添加公司",
@@ -2964,7 +3068,7 @@
           "noImage": "暂无图片",
           "imageUploaded": "图片已上传"
         },
-        "title": "产品和部位",
+        "title": "项目",
         "subtitle": "管理市场上的部位目录",
         "searchPlaceholder": "搜索部位名称或产品编号...",
         "allCategories": "所有类别",
@@ -3063,7 +3167,7 @@
         "supplier_main": "供应商 · 主菜单",
         "supplier_insights": "供应商 · 洞察",
         "supplier_future": "供应商 · 即将推出",
-        "admin_crm": "管理员 · CRM",
+        "admin_crm": "WMS",
         "admin_ops": "管理员 · 运营",
         "admin_marketplace": "管理员 · 市场",
         "admin_finance": "管理员 · 财务"
@@ -3133,5 +3237,149 @@
     "dateFrom": "起始日期",
     "dateTo": "截止日期",
     "noResults": "没有与您筛选条件匹配的结果"
+  },
+  "whatsapp": {
+    "share_offer": "您好！请查看Mundus Trade上的报价：{{url}}",
+    "share_request": "您好！请查看Mundus Trade上的需求：{{url}}",
+    "contact_supplier": "您好！我对您在Mundus Trade上的报价感兴趣，我们聊聊吧。",
+    "contact_buyer": "您好！我看到了您在Mundus Trade上的需求，我想提供报价。",
+    "send_message": "通过WhatsApp发送",
+    "share": "通过WhatsApp分享"
+  },
+  "team": {
+    "form": {
+      "title": {
+        "edit": "编辑用户",
+        "invite": "邀请用户"
+      },
+      "subtitle": {
+        "edit": "更新此团队成员的详细信息和权限。",
+        "invite": "发送邀请邮件 — 用户将在首次登录时设置密码。"
+      },
+      "fields": {
+        "name": "姓名",
+        "email": "电子邮箱",
+        "profileType": "账户类型",
+        "jobTitle": "职位",
+        "phone": "电话",
+        "notes": "备注"
+      },
+      "placeholders": {
+        "jobTitle": "例如:销售总监",
+        "notes": "关于此用户的内部备注…"
+      },
+      "profile": {
+        "master_buyer": "主采购员(完全访问)",
+        "procurement": "采购",
+        "import_manager": "进口经理",
+        "quality_control": "质量控制",
+        "logistics": "物流",
+        "master_supplier": "主供应商(完全访问)",
+        "operator": "操作员",
+        "export_manager": "出口经理"
+      },
+      "status": {
+        "active": "已激活",
+        "inactive": "未激活"
+      },
+      "account": {
+        "activeTitle": "账户已激活",
+        "inactiveTitle": "账户未激活",
+        "activeHint": "用户可以登录并访问此工作区。",
+        "inactiveHint": "在重新激活之前,用户无法登录。"
+      },
+      "meta": {
+        "created": "创建于",
+        "lastLogin": "最近登录",
+        "userId": "用户编号"
+      },
+      "actions": {
+        "save": "保存更改",
+        "sendInvite": "发送邀请",
+        "delete": "删除用户"
+      },
+      "confirmDelete": "删除此用户?此操作无法撤销。",
+      "toast": {
+        "updated": "用户已更新。",
+        "deleted": "用户已删除。",
+        "inviteSent": "邀请邮件已发送至 {{email}}。",
+        "inviteCreated": "已为 {{email}} 创建邀请(邮件待发送)。"
+      },
+      "errors": {
+        "nameEmailRequired": "姓名和邮箱为必填项。",
+        "noCompany": "未选择公司。",
+        "saveFailed": "保存失败。"
+      }
+    }
+  },
+  "inviteAccept": {
+    "title": "接受邀请",
+    "subtitle": "您好 {{name}},请设置密码以访问您的工作区。",
+    "email": "电子邮箱",
+    "password": "密码",
+    "confirm": "确认密码",
+    "cta": "接受并继续",
+    "success": "欢迎!正在跳转到您的工作区…",
+    "errors": {
+      "title": "邀请不可用",
+      "invalid": "此邀请链接无效或已过期。",
+      "alreadyAccepted": "此邀请已被接受,请直接登录。",
+      "expired": "此邀请已过期,请重新申请。",
+      "passwordShort": "密码至少需要 8 个字符。",
+      "passwordMismatch": "两次输入的密码不一致。"
+    }
+  },
+  "billing": {
+    "plans": {
+      "supplier_pro": "Mundus PRO（供应商）",
+      "buyer_pro": "Mundus PRO（采购方）"
+    },
+    "upgrade": {
+      "cta": "升级 — 每月 ${{price}}",
+      "billedMonthly": "按月计费",
+      "cancelAnytime": "随时取消",
+      "redirecting": "正在跳转至支付页…"
+    },
+    "errors": {
+      "noCompany": "未选择公司。",
+      "checkoutFailed": "无法启动支付流程，请重试。",
+      "portalFailed": "无法打开账单门户。"
+    },
+    "requirePro": {
+      "eyebrow": "Mundus PRO",
+      "title": "此功能属于 Mundus PRO",
+      "lede": "为整个团队解锁高级市场情报、分析和基准对比。",
+      "perMonth": "月",
+      "contactSales": "联系销售"
+    },
+    "success": {
+      "title": "欢迎使用 Mundus PRO",
+      "lede": "您的订阅已生效，公司全员均可使用 PRO 功能。",
+      "cta": "进入 PRO",
+      "autoRedirect": "几秒后将自动跳转。",
+      "unlocks": {
+        "supplier": [
+          "价格基准",
+          "高级分析",
+          "跨办事处切割对比"
+        ],
+        "buyer": [
+          "采购情报",
+          "市场基准",
+          "跨办事处洞察"
+        ]
+      }
+    },
+    "section": {
+      "title": "账单与订阅",
+      "managePortal": "在 Stripe 中管理账单",
+      "renewsOn": "{{date}} 续费",
+      "cancelsOn": "{{date}} 取消",
+      "canceledUntil": "已取消 — 可使用至 {{date}}",
+      "pastDue": "上次付款失败，请更新付款方式以保持 Mundus PRO 启用。",
+      "fixPayment": "更新付款方式",
+      "noSubscription": "暂无活跃订阅。Mundus PRO 起价每月 ${{price}}。"
+    },
+    "salesConfirmation": "感谢您！Mundus 运营团队将在 24 小时内与您联系。"
   }
 }

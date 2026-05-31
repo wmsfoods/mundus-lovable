@@ -35,6 +35,7 @@ const INPUT_STYLE: React.CSSProperties = {
 const STATUS_STYLES: Record<NegotiationStatus, string> = {
   awaiting_supplier: "bg-red-100 text-red-800 border border-red-200",
   pending_buyer_review: "bg-yellow-100 text-yellow-800 border border-yellow-200",
+  pending_confirmation: "bg-amber-100 text-amber-900 border border-amber-300",
   bid_accepted: "bg-green-100 text-green-800 border border-green-200",
   offer_rejected: "bg-zinc-200 text-zinc-700 border border-zinc-300",
   offer_exhausted: "bg-zinc-200 text-zinc-700 border border-zinc-300",
@@ -426,6 +427,18 @@ function NegotiationRow({
           <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
             <span>{countryFlag(r.supplier_country)}</span>
             <span>{r.supplier_name ?? "—"}</span>
+            {r.is_managed_supplier && (
+              <span
+                title="Managed by Mundus — act on behalf of this supplier"
+                style={{
+                  fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 4,
+                  background: "#FDF2F8", color: "#8B2252", border: "1px solid #FBCFE8",
+                  textTransform: "uppercase", letterSpacing: 0.4,
+                }}
+              >
+                🏛 Managed
+              </span>
+            )}
           </div>
         </td>
         <td>

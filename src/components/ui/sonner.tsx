@@ -1,14 +1,11 @@
-import { useTheme } from "next-themes";
 import { Toaster as Sonner, toast } from "sonner";
 
 type ToasterProps = React.ComponentProps<typeof Sonner>;
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme();
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme="light"
       className="toaster group"
       position="top-center"
       offset={{ top: 24, right: 24, bottom: 24, left: 24 }}
@@ -20,7 +17,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       richColors
       closeButton
-      // Keep toasts inside the viewport on small screens.
       style={
         {
           "--width": "min(380px, calc(100vw - 32px))",

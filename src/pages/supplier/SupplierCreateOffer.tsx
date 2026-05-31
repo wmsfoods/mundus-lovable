@@ -1,9 +1,10 @@
-import { Fragment, useCallback, useState, useEffect, useRef } from "react";
+import { Fragment, useCallback, useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
+import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
@@ -16,6 +17,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import {
+  useOfficeAllowedPlants,
+  useOfficeAllowedMarkets,
+  type AllowedPlant,
+} from "@/hooks/useOfficeScopedAccess";
+import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 import {
   toDisplay,
   fromDisplay,
@@ -32,9 +39,34 @@ import {
    DATA — markets & cuts come from Supabase via useSupplierOfferData
    ══════════════════════════════════════════════════════════ */
 type Market = OfferMarket;
-const SPECS = ["Boneless", "Bone-In"];
-const PKGS = ["\n", "Carton Box", "IWP (Individually Wrapped)", "Bulk"];
-const GRADES = ["Not specified", "Low", "Medium", "High", "Prime"];
+const SPECS = ["Bone-In", "Boneless", "Offals"];
+
+/** Normalize a raw bone_spec value coming from the DB (cuts.bone_spec)
+ *  to one of the options rendered in the Spec dropdown. */
+function normalizeSpec(raw: string | null | undefined): string {
+  const v = (raw ?? "").trim().toLowerCase();
+  if (v === "boneless") return "Boneless";
+  if (v === "bone-in" || v === "bone in" || v === "bonein") return "Bone-In";
+  if (v === "offals" || v === "offal") return "Offals";
+  return "Bone-In";
+}
+const PACKING_OPTIONS: Record<string, string[]> = {
+  Beef: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Pork: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Lamb: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Ovine: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Veal: ["IWP", "VP", "Bulk", "Tray", "Bag"],
+  Poultry: ["IWP", "VP", "IQF", "Bulk"],
+};
+const PACKING_TOOLTIPS: Record<string, string> = {
+  IWP: "Individually Wrapped Pieces",
+  VP: "Vacuum Packed",
+  IQF: "Individually Quick Frozen",
+  Bulk: "Bulk packed in boxes",
+  Tray: "Tray packed",
+  Bag: "Bag packed",
+};
+const US_GRADES = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
 const AGINGS = ["None", "Wet Aged", "Dry Aged"];
 
 // Primary destination markets shown as chips (in this order).
@@ -56,16 +88,6 @@ const INCOTERMS: Incoterm[] = [
   { id: "EXW", name: "EXW - Ex Works", extra: "city" },
   { id: "DDP", name: "DDP - Delivered Duty Paid", extra: "city" },
   { id: "DAP", name: "DAP - Delivered at Place", extra: "city" },
-];
-
-const PAY_TERMS = [
-  "30% Advance, Balance TT - Against finalized doc copies",
-  "50% Advance, 50% Against BL copy",
-  "100% TT in advance",
-  "L/C at sight",
-  "L/C 30 days",
-  "10% Advance, Balance TT - Against finalized doc copies",
-  "Open account 30 days",
 ];
 
 const MOCK_CUSTOMERS = [
@@ -95,6 +117,10 @@ type Cut = {
   floor: string;
   notes: string;
   plant: string;
+  /** Phase 3: office-scoped plant UUID (FK to company_plants). Source of
+   *  truth for `offer_items.plant_id`. `plant` (string) is kept for
+   *  backward-compat display of plant_number. */
+  plantId?: string;
 };
 
 type IncoExtras = {
@@ -144,7 +170,7 @@ function validatePricePair(ask: string | number | null | undefined, floor: strin
 
 const EMPTY_NF: Omit<Cut, "id"> = {
   cat: "Beef", cut: "", spec: "Boneless", pkg: "\n", gr: "\n", ag: "None",
-  qty: "", ask: "", floor: "", notes: "", plant: "",
+  qty: "", ask: "", floor: "", notes: "", plant: "", plantId: undefined,
 };
 
 /* ══════════════════════════════════════════════════════════
@@ -153,30 +179,131 @@ const EMPTY_NF: Omit<Cut, "id"> = {
 export default function SupplierCreateOffer() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const fromRequestId = searchParams.get("from");
+  // Support both legacy `?from=` (supplier flow) and `?from_request=` (admin flow)
+  const fromRequestId = searchParams.get("from") || searchParams.get("from_request");
   const location = useLocation();
-  const { activeOfficeId } = useActiveOffice();
-  const { company, loading: companyLoading } = useCurrentCompany();
-  const fromRequest = (location.state as any)?.fromRequest as
-    | {
-        requestId: string;
-        requestNumber: string;
-        client: string;
-        product: string;
-        category: string;
-        specification: string;
-        quantity: number;
-        targetPrice: number;
-        destinationCountry: string;
-        destinationPort: string;
-        incoterms: string;
-        containerSize: string;
-        containerCount: number;
-        temperature: string;
-        shipmentDate: string;
-        additionalInfo: string | null;
+  const { activeOfficeId, isGlobalDirector, isAllOffices, offices: visibleOffices } =
+    useActiveOffice();
+  const { company: realCompany, loading: companyLoading } = useCurrentCompany();
+  const asCompanyId = searchParams.get("as_company");
+  const [actingAsCompany, setActingAsCompany] = useState<any>(null);
+  const [isAdminActor, setIsAdminActor] = useState(false);
+
+  useEffect(() => {
+    if (!asCompanyId) { setActingAsCompany(null); return; }
+    let cancelled = false;
+    (async () => {
+      try {
+        const { data: auth } = await supabase.auth.getUser();
+        const uid = auth.user?.id;
+        if (!uid) return;
+        // Admin check — use SECURITY DEFINER RPC (single source of truth)
+        let admin = false;
+        try {
+          const { data: isAdmin } = await (supabase as any).rpc("is_mundus_admin");
+          admin = !!isAdmin;
+        } catch { /* noop */ }
+        if (!admin) {
+          try {
+            const { data: cu } = await (supabase as any)
+              .from("company_users")
+              .select("role, roles:role_id(name)")
+              .eq("user_id", uid)
+              .eq("status", "active");
+            admin = (cu || []).some((r: any) =>
+              r?.role === "mundus_admin" ||
+              ["mundus_admin","mundus_ops","mundus_sales","mundus_support"].includes(r?.roles?.name)
+            );
+          } catch { /* noop */ }
+        }
+        if (cancelled) return;
+        setIsAdminActor(admin);
+        if (!admin) return;
+        const { data: c } = await supabase
+          .from("companies").select("*").eq("id", asCompanyId).maybeSingle();
+        if (!cancelled) setActingAsCompany(c ?? null);
+      } catch (e) {
+        console.warn("[as_company] load failed", e);
       }
-    | undefined;
+    })();
+    return () => { cancelled = true; };
+  }, [asCompanyId]);
+
+  // Effective company — admin acting on behalf of a managed supplier overrides
+  // the current user's company context for the entire form.
+  const company: any = (isAdminActor && actingAsCompany) ? actingAsCompany : realCompany;
+
+  /* ─── Phase 3: resolve the ACTING OFFICE for this wizard session ───
+   * Admin on-behalf: as_company is the office.
+   * Normal supplier: the active office (or company id as fallback).
+   * Global Director in "All Offices" must explicitly pick — handled by
+   * the office picker below; until they pick, actingOfficeId = null. */
+  const [directorChosenOfficeId, setDirectorChosenOfficeId] = useState<string | null>(null);
+  const actingOfficeId: string | null = isAdminActor
+    ? (asCompanyId ?? null)
+    : (activeOfficeId ?? directorChosenOfficeId ?? company?.id ?? null);
+
+  const { plants: allowedPlants, fallback: plantsFallback } =
+    useOfficeAllowedPlants(actingOfficeId);
+  const { allowedCountryIds, fallback: marketsFallback } =
+    useOfficeAllowedMarkets(actingOfficeId);
+
+  type FromRequest = {
+    requestId: string;
+    requestNumber: string;
+    client: string;
+    product: string;
+    category: string;
+    specification: string;
+    quantity: number;
+    targetPrice: number;
+    destinationCountry: string;
+    destinationPort: string;
+    incoterms: string;
+    containerSize: string;
+    containerCount: number;
+    temperature: string;
+    shipmentDate: string;
+    additionalInfo: string | null;
+  };
+  const stateFromRequest = (location.state as any)?.fromRequest as FromRequest | undefined;
+  const [loadedFromRequest, setLoadedFromRequest] = useState<FromRequest | null>(null);
+  // When opened via `?from_request=UUID` (e.g. admin path) and no state was
+  // passed, fetch the buyer request from the DB and synthesize the same shape.
+  useEffect(() => {
+    if (stateFromRequest) return;
+    if (!fromRequestId) return;
+    let cancelled = false;
+    (async () => {
+      const { data: r } = await supabase
+        .from("buyer_requests")
+        .select("*, buyer_company:companies!buyer_requests_buyer_company_id_fkey(name)")
+        .eq("id", fromRequestId)
+        .maybeSingle();
+      if (cancelled || !r) return;
+      const reqNo = `R-${String((r as any).request_number ?? 0).padStart(6, "0")}-${new Date((r as any).created_at).getFullYear()}`;
+      setLoadedFromRequest({
+        requestId: (r as any).id,
+        requestNumber: reqNo,
+        client: (r as any).buyer_company?.name ?? "Buyer",
+        product: (r as any).product_name ?? "",
+        category: (r as any).category ?? "",
+        specification: (r as any).specification ?? "",
+        quantity: Number((r as any).quantity_kg ?? 0),
+        targetPrice: (r as any).target_price_usd != null ? Number((r as any).target_price_usd) : 0,
+        destinationCountry: (r as any).destination_country ?? "",
+        destinationPort: (r as any).destination_port ?? "",
+        incoterms: (r as any).incoterm ?? "",
+        containerSize: (r as any).container_size ?? "40ft",
+        containerCount: (r as any).container_count ?? 1,
+        temperature: (r as any).temperature ?? "Frozen",
+        shipmentDate: (r as any).shipment_date ?? "",
+        additionalInfo: (r as any).additional_info ?? "",
+      });
+    })();
+    return () => { cancelled = true; };
+  }, [fromRequestId, stateFromRequest]);
+  const fromRequest: FromRequest | undefined = stateFromRequest ?? loadedFromRequest ?? undefined;
   const cloneFrom = (location.state as any)?.cloneFrom as
     | {
         category: string;
@@ -226,6 +353,30 @@ export default function SupplierCreateOffer() {
   const [moreMktsOpen, setMoreMktsOpen] = useState(false);
   const [cutPickerOpen, setCutPickerOpen] = useState(false);
 
+  // Supplier protein profile → controls which categories appear in the form.
+  const [supplierProteins, setSupplierProteins] = useState<string[]>([]);
+  useEffect(() => {
+    if (!company?.id) {
+      setSupplierProteins([...DEFAULT_PROTEINS]);
+      return;
+    }
+    supabase
+      .from("companies")
+      .select("protein_profiles")
+      .eq("id", company.id)
+      .maybeSingle()
+      .then(({ data }) => setSupplierProteins(resolveProteinProfile((data as any)?.protein_profiles)));
+  }, [company?.id]);
+
+  const filteredCutsByCategory = useMemo(() => {
+    const out: typeof cutsByCategory = {} as any;
+    for (const cat of Object.keys(cutsByCategory)) {
+      if (supplierProteins.includes(cat)) out[cat] = cutsByCategory[cat];
+    }
+    // Failsafe: if the profile filters out everything available, fall back to the full catalog.
+    return Object.keys(out).length === 0 ? cutsByCategory : out;
+  }, [cutsByCategory, supplierProteins]);
+
   const [selMarkets, setSelMarkets] = useState<Market[]>([]);
   const [mktCfg, setMktCfg] = useState<Record<string, MktCfg>>({});
   const [csize, setCsize] = useState<"20ft" | "40ft">("40ft");
@@ -246,8 +397,30 @@ export default function SupplierCreateOffer() {
   const [uniformFreight, setUniformFreight] = useState(false);
   const [uniformFreightValue, setUniformFreightValue] = useState("");
 
-  const [payTerm, setPayTerm] = useState(PAY_TERMS[0]);
+  const { terms: PAY_TERMS } = usePaymentTerms({ scope: "international" });
+  const [payTerm, setPayTerm] = useState<string>("");
+  useEffect(() => {
+    if (!payTerm && PAY_TERMS.length > 0) setPayTerm(PAY_TERMS[0]);
+  }, [PAY_TERMS, payTerm]);
   const [certifications, setCertifications] = useState<string[]>([]);
+  // Whether buyers can edit per-item quantities in chat proposals (total must still match).
+  const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
+
+  // Hydrate allow_quantity_negotiation when editing an existing offer.
+  useEffect(() => {
+    if (!editOffer?.offerId) return;
+    supabase
+      .from("offers")
+      .select("allow_quantity_negotiation")
+      .eq("id", editOffer.offerId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data && typeof (data as any).allow_quantity_negotiation === "boolean") {
+          setAllowQtyNegotiation(Boolean((data as any).allow_quantity_negotiation));
+        }
+      });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editOffer?.offerId]);
 
   const [cuts, setCuts] = useState<Cut[]>([]);
   const [cutImgs, setCutImgs] = useState<Record<string, string>>({});
@@ -255,9 +428,38 @@ export default function SupplierCreateOffer() {
   const [newImgPrev, setNewImgPrev] = useState<string | null>(null);
   const [nf, setNf] = useState<Omit<Cut, "id">>({ ...EMPTY_NF });
 
+  // Keep `nf.cat` (the add-row category selector) inside the supplier's profile.
+  useEffect(() => {
+    const keys = Object.keys(filteredCutsByCategory);
+    if (keys.length === 0) return;
+    if (!keys.includes(nf.cat)) {
+      setNf((p) => ({ ...p, cat: keys[0], cut: "", cutId: undefined, cutImage: null }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredCutsByCategory]);
+
   // Cut nomenclature region (only meaningful when company is US-based and category is Beef)
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
   const isUsCompany = (company?.country ?? "").trim().toLowerCase() === "united states";
+  // Show US Grade column only for US suppliers whose destinations are all US.
+  const isUsMarketName = (n: string) => {
+    const v = (n ?? "").trim().toLowerCase();
+    return v === "united states" || v === "us" || v === "usa" || v === "u.s.a.";
+  };
+  const showGradeColumn =
+    isUsCompany &&
+    selMarkets.length > 0 &&
+    selMarkets.every((m) => isUsMarketName(m.n));
+  // Dynamic nomenclature toggle label based on the supplier's proteins.
+  // 1 protein → "Beef"; 2 → "Beef & Pork"; 0 → "" (falls back to "Cuts").
+  const usToggleProteinLabel = (() => {
+    const ps = supplierProteins.filter((p) =>
+      (PROTEINS_WITH_US_NOMENCLATURE as readonly string[]).includes(p)
+    );
+    if (ps.length === 0) return "";
+    if (ps.length === 1) return ps[0] + " ";
+    return ps.join(" & ") + " ";
+  })();
 
   const [distMarketplace, setDistMarketplace] = useState(true);
   const [distAllCustomers, setDistAllCustomers] = useState(false);
@@ -271,32 +473,120 @@ export default function SupplierCreateOffer() {
 
   const [showPreview, setShowPreview] = useState(false);
 
-  /* Supplier plant numbers (USDA/SIF establishment numbers) loaded from
-     the current user's company profile. Used to populate the per-cut
-     "Plant Numbers" dropdown. */
-  const [companyPlants, setCompanyPlants] = useState<string[]>([]);
+  /* Phase 3: per-cut plant selector is now sourced from `allowedPlants`
+     (office-scoped, with family fallback). Legacy plant_numbers strings
+     are still surfaced for display under `c.plant`. */
+  const companyPlants: string[] = useMemo(
+    () =>
+      allowedPlants
+        .map((p) => p.plant_number || "")
+        .filter((s) => s && s.length > 0),
+    [allowedPlants],
+  );
   const [plantManual, setPlantManual] = useState<Record<string, boolean>>({});
+  const plantById = useMemo(() => {
+    const m = new Map<string, AllowedPlant>();
+    allowedPlants.forEach((p) => m.set(p.id, p));
+    return m;
+  }, [allowedPlants]);
+
+  /* ── Origin port (filtered by supplier's countries) ─────────── */
+  const [supplierCountries, setSupplierCountries] = useState<string[]>([]);
+  const [originPorts, setOriginPorts] = useState<
+    Array<{ id: string; name: string; code: string | null; city: string | null; country: string }>
+  >([]);
+  const [originPortId, setOriginPortId] = useState<string>("");
+  const [originPickerOpen, setOriginPickerOpen] = useState(false);
 
   useEffect(() => {
+    if (!company?.id) return;
     let cancelled = false;
     (async () => {
-      try {
-        const { data, error } = await supabase
-          .from("companies")
-          .select("plant_numbers")
-          .limit(1)
-          .maybeSingle();
-        if (cancelled || error || !data) return;
-        const list = (data as any).plant_numbers as string[] | null;
-        if (list && list.length > 0) setCompanyPlants(list);
-      } catch {
-        /* no-op: anonymous or no company; falls back to free text input */
-      }
+      const countries = new Set<string>();
+      const { data: parent } = await (supabase as any)
+        .from("companies")
+        .select("country")
+        .eq("id", company.id)
+        .maybeSingle();
+      if (parent?.country) countries.add(parent.country);
+      const { data: children } = await (supabase as any)
+        .from("companies")
+        .select("country")
+        .eq("parent_company_id", company.id);
+      (children ?? []).forEach((o: any) => {
+        if (o?.country) countries.add(o.country);
+      });
+      if (!cancelled) setSupplierCountries([...countries]);
     })();
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [company?.id]);
+
+  useEffect(() => {
+    if (supplierCountries.length === 0) {
+      setOriginPorts([]);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      // Country name normalization (codes & locale variants → english_name)
+      const norm = (c: string): string => {
+        const map: Record<string, string> = {
+          BR: "Brazil", BRA: "Brazil", Brasil: "Brazil",
+          US: "United States", USA: "United States", "U.S.": "United States", "U.S.A.": "United States",
+          AR: "Argentina", ARG: "Argentina",
+          CN: "China", CHN: "China",
+          HK: "Hong Kong", HKG: "Hong Kong",
+          KR: "South Korea", "Korea, Republic of": "South Korea",
+        };
+        return map[c] || c;
+      };
+      const wanted = Array.from(new Set(supplierCountries.map(norm).filter(Boolean)));
+
+      // Resolve country_ids via english_name or iso_code (handles names with spaces).
+      const { data: countryRows } = await (supabase as any)
+        .from("countries")
+        .select("id, english_name, iso_code");
+      const wantedLc = new Set(wanted.map((w) => w.toLowerCase()));
+      let countryIds: string[] = (countryRows ?? [])
+        .filter(
+          (r: any) =>
+            wantedLc.has((r.english_name || "").toLowerCase()) ||
+            wantedLc.has((r.iso_code || "").toLowerCase()),
+        )
+        .map((r: any) => r.id);
+      if (countryIds.length === 0) {
+        // Last-resort fallback: load all ports so the user can still pick.
+        const { data: all } = await (supabase as any)
+          .from("ports")
+          .select("id, name, code, country_id, countries:country_id(english_name)")
+          .order("name");
+        if (!cancelled) {
+          setOriginPorts(
+            (all ?? []).map((p: any) => ({
+              id: p.id, name: p.name, code: p.code, city: null,
+              country: p.countries?.english_name ?? "",
+            })),
+          );
+        }
+        return;
+      }
+      const { data } = await (supabase as any)
+        .from("ports")
+        .select("id, name, code, country_id, countries:country_id(english_name)")
+        .in("country_id", countryIds)
+        .order("name");
+      if (cancelled) return;
+      setOriginPorts(
+        (data ?? []).map((p: any) => ({
+          id: p.id, name: p.name, code: p.code, city: null,
+          country: p.countries?.english_name ?? "",
+        })),
+      );
+    })();
+    return () => { cancelled = true; };
+  }, [supplierCountries]);
 
   const [mlOpen, setMlOpen] = useState(false);
   const [routeSources, setRouteSources] = useState<Record<string, MarketplaceRate["source"]>>({});
@@ -419,7 +709,7 @@ export default function SupplierCreateOffer() {
             (c) => c.displayName.toLowerCase().includes(cutName.toLowerCase()) ||
                    cutName.toLowerCase().includes(c.displayName.toLowerCase())
           );
-          const spec = specInner || boneSpec || matched?.bone_spec || fromRequest.specification || "Boneless";
+          const spec = normalizeSpec(boneSpec || matched?.bone_spec || fromRequest.specification || specInner);
           parsedCuts.push({
             id: Date.now().toString() + Math.random().toString(36).slice(2, 6),
             cat: cat0,
@@ -468,7 +758,7 @@ export default function SupplierCreateOffer() {
         cut: matched?.displayName || cutName,
         cutId: matched?.id,
         cutImage: matched?.image_url ?? null,
-        spec: matched?.bone_spec || fromRequest.specification || "Boneless",
+        spec: normalizeSpec(matched?.bone_spec || fromRequest.specification),
         pkg: "\n",
         gr: "\n",
         ag: "None",
@@ -510,7 +800,7 @@ export default function SupplierCreateOffer() {
     if (src.condition === "Frozen" || src.condition === "Chilled") {
       setTemp(src.condition);
     }
-    if (src.paymentTerms && (PAY_TERMS as readonly string[]).includes(src.paymentTerms)) {
+    if (src.paymentTerms) {
       setPayTerm(src.paymentTerms);
     }
     const certs: string[] = [];
@@ -519,6 +809,10 @@ export default function SupplierCreateOffer() {
     setCertifications(certs);
     if (src.cutRegion === "us" || src.cutRegion === "global") {
       setCutRegion(src.cutRegion);
+    }
+
+    if ((src as any).originPortId) {
+      setOriginPortId((src as any).originPortId as string);
     }
 
     // Incoterms
@@ -574,7 +868,7 @@ export default function SupplierCreateOffer() {
         cut: matched?.displayName || it.name,
         cutId: matched?.id,
         cutImage: matched?.image_url ?? null,
-        spec: matched?.bone_spec || "Boneless",
+        spec: normalizeSpec(matched?.bone_spec),
         pkg: "\n",
         gr: "\n",
         ag: it.agingMethod || "None",
@@ -776,6 +1070,16 @@ export default function SupplierCreateOffer() {
     { key: "cuts",     label: "Add at least one product / cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
     { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
     { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
+    {
+      key: "plants",
+      label: "Pick a plant for every cut",
+      done:
+        cuts.length > 0 &&
+        cuts.every((c) =>
+          allowedPlants.length > 0 ? !!c.plantId : !!c.plant || !!c.plantId,
+        ),
+      anchor: "sec-cuts",
+    },
   ];
   const stepsDone = publishSteps.filter((s) => s.done).length;
   const nextStep  = publishSteps.find((s) => !s.done);
@@ -882,6 +1186,23 @@ export default function SupplierCreateOffer() {
       const totalKg = cuts.reduce((s, c) => s + (parseFloat(c.qty) || 0), 0);
       const totalFcl = containerCount;
 
+      // Resolve selected origin port → country / display string
+      const selectedOriginPort = originPorts.find((p) => p.id === originPortId) || null;
+      // Phase 3: prefer origin derived from selected plants when uniform.
+      const plantCountries = Array.from(
+        new Set(
+          cuts
+            .map((c) => (c.plantId ? plantById.get(c.plantId)?.country : null))
+            .filter((x): x is string => !!x),
+        ),
+      );
+      const derivedFromPlant = plantCountries.length === 1 ? plantCountries[0] : null;
+      const originCountryVal =
+        derivedFromPlant ?? selectedOriginPort?.country ?? null;
+      const originPortLabel = selectedOriginPort
+        ? `${selectedOriginPort.name}${selectedOriginPort.code ? ` (${selectedOriginPort.code})` : ""}`
+        : null;
+
       // 1. Create offer
       let offer: { id: string; offer_number: number };
       if (isEditing && editOffer) {
@@ -897,10 +1218,16 @@ export default function SupplierCreateOffer() {
               total_fcl: totalFcl,
               is_halal: certifications.includes("Halal"),
               is_kosher: certifications.includes("Kosher"),
+              office_id: actingOfficeId ?? supplierId,
+              plant_id: cuts[0]?.plantId ?? null,
               exw_pickup_location: selInco.includes("EXW")
                 ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
                 : null,
               cut_region: cutRegion,
+              origin_port_id: originPortId || null,
+              ...(originCountryVal ? { origin_country: originCountryVal } : {}),
+              ...(originPortLabel ? { origin_port: originPortLabel } : {}),
+              allow_quantity_negotiation: allowQtyNegotiation,
               updated_at: new Date().toISOString(),
             })
             .eq("id", editOffer.offerId);
@@ -924,8 +1251,9 @@ export default function SupplierCreateOffer() {
             supplier_id: supplierId,
             supplier_name: supplierName,
             status: "active",
-            origin_country: "Brazil",
-            origin_port: "Santos (BRSSZ)",
+            origin_country: originCountryVal ?? (company?.country ?? null),
+            origin_port: originPortLabel,
+            origin_port_id: originPortId || null,
             shipment_month,
             shipment_year,
             payment_terms: payTerm,
@@ -933,12 +1261,14 @@ export default function SupplierCreateOffer() {
             total_fcl: totalFcl,
             is_halal: certifications.includes("Halal"),
             is_kosher: certifications.includes("Kosher"),
-            office_id: activeOfficeId ?? supplierId,
+            office_id: actingOfficeId ?? supplierId,
+            plant_id: cuts[0]?.plantId ?? null,
             exw_pickup_location: selInco.includes("EXW")
               ? ((incoExtras.exwCity || "").trim().slice(0, 255) || null)
               : null,
             request_id: fromRequest?.requestId ?? null,
             cut_region: cutRegion,
+            allow_quantity_negotiation: allowQtyNegotiation,
           })
           .select("id, offer_number")
           .single();
@@ -961,6 +1291,7 @@ export default function SupplierCreateOffer() {
         minimum_amount: number; maximum_amount: number;
         condition: string; aging_method: string | null;
         packaging: string | null;
+        plant_id: string | null;
       };
       const itemsRows: OfferItemInsert[] = [];
       try {
@@ -1048,69 +1379,19 @@ export default function SupplierCreateOffer() {
           }
           cutId = cutRow.id;
 
-          // Resolve/create standard_products row for this cut (FK target for customer_products)
-          let standardProductId: string | null = null;
-          if (cutRow.product_number != null) {
-            const { data: existingSp } = await supabase
-              .from("standard_products")
-              .select("id")
-              .eq("product_number", cutRow.product_number)
-              .maybeSingle();
-            if (existingSp) standardProductId = existingSp.id;
+          // Resolve/create customer_product via SECURITY DEFINER RPC
+          // (handles product_categories + standard_products + customer_products server-side,
+          // bypassing RLS on the global catalog tables in a safe, authorized way).
+          const { data: cpId, error: rpcErr } = await supabase.rpc("resolve_customer_product", {
+            p_company_id: supplierId,
+            p_cut_id: cutId,
+          });
+          if (rpcErr || !cpId) {
+            throw new Error(
+              `resolve_customer_product: ${rpcErr?.message || rpcErr?.details || rpcErr?.hint || "no id returned"}`,
+            );
           }
-          if (!standardProductId) {
-            // Resolve product_category by code (beef/pork/poultry/lamb)
-            const catCode = (cutRow.category || c.cat || "beef").toString().toLowerCase();
-            let categoryId: string | null = null;
-            const { data: existingCat } = await supabase
-              .from("product_categories")
-              .select("id")
-              .eq("code", catCode)
-              .maybeSingle();
-            if (existingCat) {
-              categoryId = existingCat.id;
-            } else {
-              const { data: newCat, error: catErr } = await supabase
-                .from("product_categories")
-                .insert({ code: catCode, name_en: catCode })
-                .select("id").single();
-              if (catErr || !newCat) throw catErr ?? new Error("product_categories insert failed");
-              categoryId = newCat.id;
-            }
-            const { data: newSp, error: spErr } = await supabase
-              .from("standard_products")
-              .insert({
-                product_category_id: categoryId,
-                description: cutRow.name,
-                is_active: true,
-                ...(cutRow.product_number != null ? { product_number: cutRow.product_number } : {}),
-              })
-              .select("id").single();
-            if (spErr || !newSp) throw spErr ?? new Error("standard_products insert failed");
-            standardProductId = newSp.id;
-          }
-
-          // find or create customer_product (FK -> standard_products.id)
-          const { data: existing } = await supabase
-            .from("customer_products")
-            .select("id")
-            .eq("company_id", supplierId)
-            .eq("standard_product_id", standardProductId)
-            .maybeSingle();
-          let customerProductId = existing?.id;
-          if (!customerProductId) {
-            const { data: created, error: cpErr } = await supabase
-              .from("customer_products")
-              .insert({
-                company_id: supplierId,
-                standard_product_id: standardProductId,
-                name: cutRow.name,
-                is_active: true,
-              })
-              .select("id").single();
-            if (cpErr || !created) throw cpErr ?? new Error("customer_products insert returned no data");
-            customerProductId = created.id;
-          }
+          const customerProductId = cpId as string;
           itemsRows.push({
             offer_id: offer.id,
             customer_product_id: customerProductId,
@@ -1122,10 +1403,16 @@ export default function SupplierCreateOffer() {
             condition: temp,
             aging_method: c.ag === "None" ? null : c.ag,
             packaging: c.pkg || null,
+            plant_id: c.plantId ?? null,
           });
         }
       } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
+        const m =
+          (e as any)?.message ||
+          (e as any)?.details ||
+          (e as any)?.hint ||
+          (e as any)?.code ||
+          (typeof e === "string" ? e : JSON.stringify(e));
         throw new Error(`Step 2 failed: customer_products — ${m}`);
       }
 
@@ -1192,23 +1479,39 @@ export default function SupplierCreateOffer() {
       try {
         const freightInserts: Array<{ offer_id: string; port_id: string; cost: number; insurance: number }> = [];
         const insuranceVal = parseFloat(incoExtras.cifInsurance ?? "") || 0;
+        const uuidRe = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        const seen = new Set<string>();
         for (const m of selMarkets) {
           const cfg = mktCfg[m.id];
           if (!cfg) continue;
           for (const pid of cfg.sp) {
+            const portId = typeof pid === "object" && pid !== null ? (pid as any).id : pid;
+            if (!portId || !uuidRe.test(String(portId))) {
+              console.warn("[publish] skipping invalid port_id", { market: m.id, pid });
+              continue;
+            }
+            if (seen.has(portId)) continue;
+            seen.add(portId);
             const rawFreight = uniformFreight
               ? uniformFreightValue
-              : (cfg.sm || cfg.sp.length <= 1) ? cfg.gf : (cfg.pf[pid] ?? "");
-            const cost = parseFloat(rawFreight) || 0;
-            freightInserts.push({ offer_id: offer.id, port_id: pid, cost, insurance: insuranceVal });
+              : (cfg.sm || cfg.sp.length <= 1) ? cfg.gf : (cfg.pf[portId] ?? "");
+            const cost = parseFloat(String(rawFreight ?? "").replace(/,/g, "")) || 0;
+            freightInserts.push({ offer_id: offer.id as string, port_id: portId, cost, insurance: insuranceVal });
           }
         }
         if (freightInserts.length > 0) {
           const { error } = await supabase.from("freight_options").insert(freightInserts);
-          if (error) throw error;
+          if (error) {
+            console.error("[publish] freight_options insert failed:", error, freightInserts);
+            throw error;
+          }
         }
       } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
+        const m =
+          (e as any)?.message ||
+          (e as any)?.details ||
+          (e as any)?.hint ||
+          (typeof e === "string" ? e : JSON.stringify(e));
         throw new Error(`Step 6 failed: freight_options — ${m}`);
       }
 
@@ -1260,9 +1563,9 @@ export default function SupplierCreateOffer() {
         }
       }
       if (isEditing && editOffer) {
-        navigate(`/supplier/offers/${editOffer.offerId}`);
+        navigate(isAdminActor && asCompanyId ? `/admin/offers/${editOffer.offerId}` : `/supplier/offers/${editOffer.offerId}`);
       } else {
-        navigate("/supplier/offers");
+        navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
       }
     } catch (e: unknown) {
       // If we created an offer but something failed afterward, clean it up
@@ -1274,18 +1577,110 @@ export default function SupplierCreateOffer() {
         await supabase.from("freight_options").delete().eq("offer_id", offerId);
         await supabase.from("offers").delete().eq("id", offerId);
       }
-      const msg = e instanceof Error ? e.message : "Failed to publish offer";
+      const msg =
+        (e as any)?.message ||
+        (e as any)?.details ||
+        (e as any)?.hint ||
+        (typeof e === "string" ? e : JSON.stringify(e)) ||
+        "Failed to publish offer";
+      console.error("[publish] Error:", e);
       toast.error(msg);
     } finally {
       setPublishing(false);
     }
   };
   const handleCancel = () => {
-    if (confirm("Discard this offer?")) navigate("/supplier/offers");
+    if (confirm("Discard this offer?")) {
+      navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
+    }
   };
 
   return (
     <div className="cov4">
+      {isAdminActor && actingAsCompany && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "#FEF3C7",
+            border: "1px solid #F59E0B",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#92400E",
+          }}
+        >
+          ⚠️ Creating offer as <strong>{actingAsCompany.name}</strong> (Managed by Mundus)
+        </div>
+      )}
+      {/* Phase 3: Global Director must pick an office when in "All Offices" mode */}
+      {!isAdminActor && isGlobalDirector && isAllOffices && (
+        <div
+          style={{
+            padding: "10px 14px",
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+          }}
+        >
+          <strong style={{ color: "#1E40AF" }}>Create offer for:</strong>
+          <select
+            value={directorChosenOfficeId ?? ""}
+            onChange={(e) => setDirectorChosenOfficeId(e.target.value || null)}
+            style={{
+              padding: "6px 10px",
+              borderRadius: 6,
+              border: "1.5px solid #93C5FD",
+              background: "#fff",
+              fontSize: 13,
+              minWidth: 220,
+              minHeight: 44,
+            }}
+          >
+            <option value="">— Select office —</option>
+            {visibleOffices.map((o) => (
+              <option key={o.id} value={o.id}>
+                {o.office_name || o.name} {o.office_country ? `· ${o.office_country}` : ""}
+              </option>
+            ))}
+          </select>
+          {!directorChosenOfficeId && (
+            <span style={{ color: "#1E40AF", fontSize: 12 }}>
+              Pick the office this offer will be booked under.
+            </span>
+          )}
+        </div>
+      )}
+      {/* Phase 3: fallback hints when grants are not yet configured */}
+      {actingOfficeId && (plantsFallback || marketsFallback) && (
+        <div
+          style={{
+            padding: "8px 12px",
+            background: "#FFFBEB",
+            border: "1px solid #FDE68A",
+            borderRadius: 8,
+            marginBottom: 12,
+            fontSize: 12,
+            color: "#92400E",
+          }}
+        >
+          {plantsFallback && (
+            <div>Showing all group plants — office plant access not yet configured.</div>
+          )}
+          {marketsFallback && (
+            <div>Showing all destination markets — office market access not yet configured.</div>
+          )}
+        </div>
+      )}
       {fromRequest && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
@@ -1347,7 +1742,6 @@ export default function SupplierCreateOffer() {
           </div>
         </div>
         <div className="cov4-hdr-r">
-          <span className="cov4-orig-badge">🇧🇷 Brazil · Santos (BRSSZ)</span>
           <div className="cov4-tgl" role="group" aria-label="Unit">
             {(["kg", "lbs"] as const).map((u) => (
               <button
@@ -1374,6 +1768,92 @@ export default function SupplierCreateOffer() {
         {/* ═══════════ LEFT PANEL ═══════════ */}
         <aside className="cov4-panel cov4-panel-l">
           <SectionHeader icon="🌍" t="Markets & freight" s="Countries, ports, freight costs" />
+
+          {/* ── Origin Port ─────────────────────────────────── */}
+          <div style={{ marginBottom: 20 }}>
+            <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>
+              Origin Port
+            </label>
+            {supplierCountries.length === 1 && (
+              <span style={{ fontSize: 12, color: "#6B7280", marginBottom: 6, display: "block" }}>
+                {supplierCountries[0]}
+              </span>
+            )}
+            <Popover open={originPickerOpen} onOpenChange={setOriginPickerOpen}>
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  style={{
+                    width: "100%",
+                    maxWidth: 420,
+                    textAlign: "left",
+                    padding: "9px 12px",
+                    border: "1.5px solid #D1D5DB",
+                    borderRadius: 8,
+                    background: "#fff",
+                    fontSize: 14,
+                    color: originPortId ? "#111827" : "#9CA3AF",
+                    cursor: "pointer",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                  }}
+                >
+                  {(() => {
+                    const p = originPorts.find((x) => x.id === originPortId);
+                    if (!p) return "Select origin port…";
+                    return `${p.name}${p.code ? ` (${p.code})` : ""} — ${p.country}`;
+                  })()}
+                  <span style={{ color: "#9CA3AF" }}>▾</span>
+                </button>
+              </PopoverTrigger>
+              <PopoverContent className="p-0" style={{ width: 420 }}>
+                <Command>
+                  <CommandInput placeholder="Search ports…" />
+                  <CommandList>
+                    <CommandEmpty>
+                      {supplierCountries.length === 0
+                        ? "Set your company country in My Company first."
+                        : "No ports found."}
+                    </CommandEmpty>
+                    {supplierCountries.map((c) => {
+                      const list = originPorts.filter((p) => p.country === c);
+                      if (list.length === 0) return null;
+                      return (
+                        <CommandGroup key={c} heading={c}>
+                          {list.map((p) => (
+                            <CommandItem
+                              key={p.id}
+                              value={`${p.name} ${p.code ?? ""} ${p.city ?? ""} ${p.country}`}
+                              onSelect={() => {
+                                setOriginPortId(p.id);
+                                setOriginPickerOpen(false);
+                              }}
+                            >
+                              <Check
+                                className="mr-2 h-4 w-4"
+                                style={{ opacity: originPortId === p.id ? 1 : 0 }}
+                              />
+                              <span>
+                                {p.name}
+                                {p.code ? ` (${p.code})` : ""}
+                                {p.city ? ` — ${p.city}` : ""}
+                              </span>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      );
+                    })}
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+            {supplierCountries.length > 1 && (
+              <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
+                Showing ports from: {supplierCountries.join(", ")}
+              </p>
+            )}
+          </div>
 
           {/* Container & Temp */}
           <div className="cov4-cfg-row">
@@ -1427,11 +1907,14 @@ export default function SupplierCreateOffer() {
           {/* Market chips */}
           <div id="sec-markets" className="cov4-chips">
             {(() => {
-              const byName = new Map(MARKETS.map((m) => [m.n, m]));
+              const SCOPED_MARKETS = allowedCountryIds
+                ? MARKETS.filter((m) => allowedCountryIds.has(m.id))
+                : MARKETS;
+              const byName = new Map(SCOPED_MARKETS.map((m) => [m.n, m]));
               const primary = PRIMARY_MARKETS.map((n) => byName.get(n)).filter(Boolean) as Market[];
               const primaryIds = new Set(primary.map((m) => m.id));
               const extraSelected = selMarkets.filter((m) => !primaryIds.has(m.id));
-              const others = MARKETS.filter((m) => !primaryIds.has(m.id));
+              const others = SCOPED_MARKETS.filter((m) => !primaryIds.has(m.id));
               return (
                 <>
                   {primary.map((m) => {
@@ -1883,6 +2366,39 @@ export default function SupplierCreateOffer() {
             </div>
           </div>
 
+          {/* Negotiation rules */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">Negotiation rules</div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: 12,
+                border: "1px solid hsl(var(--border))",
+                borderRadius: 8,
+                background: "hsl(var(--muted))",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowQtyNegotiation}
+                onChange={(e) => setAllowQtyNegotiation(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: "hsl(var(--foreground))" }}>
+                  Allow buyers to negotiate item quantities
+                </div>
+                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
+                  When on, buyers may redistribute kg across items inside a chat proposal.
+                  The total offered kg must always match the original offer — partial loads are never allowed.
+                </div>
+              </div>
+            </label>
+          </div>
+
           {/* Payment terms */}
           <div className="cov4-sec">
             <div className="cov4-sec-t">Payment terms</div>
@@ -1943,7 +2459,7 @@ export default function SupplierCreateOffer() {
             </button>
             {cutRegion === "us" && (
               <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 380, marginLeft: 8 }}>
-                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef Product / Cuts</strong>. To select Global beef cuts, click the <strong>🌐 Global Beef Product / Cuts</strong> button above to switch.
+                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef &amp; Pork Product / Cuts (IMPS)</strong>. To switch, use the <strong>🌐 Global Product / Cuts</strong> button above.
               </span>
             )}
           </div>
@@ -2027,7 +2543,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global Beef Product / Cuts
+                  🌐 Global {usToggleProteinLabel}Cuts
                 </button>
                 <button
                   type="button"
@@ -2047,7 +2563,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US Beef Product / Cuts (IMPS)
+                  🇺🇸 US {usToggleProteinLabel}Cuts (IMPS)
                 </button>
                 {cuts.length > 0 && (
                   <button
@@ -2079,7 +2595,9 @@ export default function SupplierCreateOffer() {
                 )}
                 {cuts.length > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF", marginLeft: 4 }}>
-                    {cutRegion === "us" ? "🇺🇸 Using US Beef Product / Cuts (IMPS)" : "🌐 Using Global Beef Product / Cuts"} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
+                    {cutRegion === "us"
+                      ? `🇺🇸 Using US ${usToggleProteinLabel}Cuts (IMPS)`
+                      : `🌐 Using Global ${usToggleProteinLabel}Cuts`} · {cuts.length} Product / Cut{cuts.length > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
@@ -2087,14 +2605,14 @@ export default function SupplierCreateOffer() {
             <table className="cov4-tbl">
               <thead>
                 <tr>
-                  <th style={{ width: 44 }}>Photo</th>
-                  <th>PRODUCT / CUT</th>
-                  <th>Spec</th>
-                  <th>Packaging</th>
-                  <th>{"\n"}</th>
-                  <th>Aging</th>
-                  <th title="USDA/SIF establishment number">Plant #</th>
-                  <th className="num">{qLbl}</th>
+                  <th style={{ width: 48 }}>Photo</th>
+                  <th style={{ width: 120 }}>Protein</th>
+                  <th style={{ width: 180 }}>Item / Cut</th>
+                  <th style={{ width: 90 }}>Spec</th>
+                  {showGradeColumn && <th style={{ width: 100 }}>Grade</th>}
+                  <th style={{ width: 120 }}>Packing</th>
+                  <th style={{ width: 80 }} title="USDA/SIF establishment number">Plant #</th>
+                  <th className="num" style={{ width: 100 }}>{qLbl}</th>
                   <th className="num">
                     Ask {pLbl}
                     {multiInco && (
@@ -2102,7 +2620,7 @@ export default function SupplierCreateOffer() {
                     )}
                   </th>
                   <th className="num">
-                    Floor {pLbl}
+                    Floor {pLbl} <span style={{ fontWeight: 400, opacity: 0.7, textTransform: "none" }}>(optional)</span>
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
@@ -2119,7 +2637,7 @@ export default function SupplierCreateOffer() {
                       </th>
                     </Fragment>
                   ))}
-                  <th>Notes</th>
+                  <th style={{ width: 120 }}>Notes</th>
                   <th style={{ width: 28 }} aria-label="actions" />
                 </tr>
               </thead>
@@ -2134,7 +2652,8 @@ export default function SupplierCreateOffer() {
                         isMobile={isMobile}
                       />
                     </td>
-                    <td><span className="cov4-cut-nm">{c.cat} {c.cut}</span></td>
+                    <td><span className="cov4-cut-nm" style={{ fontWeight: 600 }}>{c.cat}</span></td>
+                    <td><span className="cov4-cut-nm">{c.cut}</span></td>
                     <td>
                       <select
                         className="cov4-inline-edit"
@@ -2144,42 +2663,68 @@ export default function SupplierCreateOffer() {
                         {SPECS.map((x) => <option key={x}>{x}</option>)}
                       </select>
                     </td>
+                    {showGradeColumn && (
+                      <td>
+                        <select
+                          className="cov4-inline-edit"
+                          value={c.gr === "\n" ? "" : c.gr}
+                          onChange={(e) => updateCutField(c.id, "gr", e.target.value)}
+                        >
+                          <option value="">—</option>
+                          {US_GRADES.map((x) => <option key={x}>{x}</option>)}
+                        </select>
+                      </td>
+                    )}
                     <td>
                       <select
                         className="cov4-inline-edit"
-                        value={c.pkg}
+                        value={c.pkg === "\n" ? "" : c.pkg}
                         onChange={(e) => updateCutField(c.id, "pkg", e.target.value)}
+                        title={PACKING_TOOLTIPS[c.pkg] || ""}
                       >
-                        {PKGS.map((x) => <option key={x}>{x}</option>)}
+                        <option value="">—</option>
+                        {(PACKING_OPTIONS[c.cat] || PACKING_OPTIONS.Beef).map((x) => (
+                          <option key={x} value={x} title={PACKING_TOOLTIPS[x]}>{x}</option>
+                        ))}
                       </select>
                     </td>
                     <td>
-                      <select
-                        className="cov4-inline-edit"
-                        value={c.gr}
-                        onChange={(e) => updateCutField(c.id, "gr", e.target.value)}
-                      >
-                        {GRADES.map((x) => <option key={x}>{x}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <select
-                        className="cov4-inline-edit"
-                        value={c.ag}
-                        onChange={(e) => updateCutField(c.id, "ag", e.target.value)}
-                      >
-                        {AGINGS.map((x) => <option key={x}>{x}</option>)}
-                      </select>
-                    </td>
-                    <td>
-                      <input
-                        type="text"
-                        className="cov4-inline-edit"
-                        value={c.plant || ""}
-                        placeholder="—"
-                        onChange={(e) => updateCutField(c.id, "plant", e.target.value)}
-                        style={{ width: 70 }}
-                      />
+                      {allowedPlants.length > 0 ? (
+                        <select
+                          className="cov4-inline-edit"
+                          value={c.plantId || ""}
+                          onChange={(e) => {
+                            const id = e.target.value;
+                            const p = plantById.get(id);
+                            setCuts((prev) =>
+                              prev.map((x) =>
+                                x.id === c.id
+                                  ? { ...x, plantId: id || undefined, plant: p?.plant_number || "" }
+                                  : x,
+                              ),
+                            );
+                          }}
+                          style={{ minWidth: 130 }}
+                        >
+                          <option value="">Select plant…</option>
+                          {allowedPlants.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.plant_number ? `${p.plant_number} · ` : ""}
+                              {p.name}
+                              {p.country_code ? ` (${p.country_code})` : ""}
+                            </option>
+                          ))}
+                        </select>
+                      ) : (
+                        <input
+                          type="text"
+                          className="cov4-inline-edit"
+                          value={c.plant || ""}
+                          placeholder="—"
+                          onChange={(e) => updateCutField(c.id, "plant", e.target.value)}
+                          style={{ width: 70 }}
+                        />
+                      )}
                     </td>
                     <td className="num">
                       <input
@@ -2321,17 +2866,18 @@ export default function SupplierCreateOffer() {
                       </label>
                     </td>
                     <td>
-                      <div style={{ display: "flex", gap: 4 }}>
-                        <select
-                          value={nf.cat}
-                          onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null }))}
-                        >
-                          {Object.keys(cutsByCategory).map((c) => (
-                            <option key={c} value={c}>
-                              {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
-                            </option>
-                          ))}
-                        </select>
+                      <select
+                        value={nf.cat}
+                        onChange={(e) => setNf((p) => ({ ...p, cat: e.target.value, cut: "", cutId: undefined, cutImage: null, pkg: "" }))}
+                      >
+                        {Object.keys(filteredCutsByCategory).map((c) => (
+                          <option key={c} value={c}>
+                            {t(`admin.marketplace.cuts.categories.${c}`, { defaultValue: c })}
+                          </option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
                         <Popover open={cutPickerOpen} onOpenChange={setCutPickerOpen}>
                           <PopoverTrigger asChild>
                             <button
@@ -2349,15 +2895,15 @@ export default function SupplierCreateOffer() {
                               <SearchIcon size={12} style={{ opacity: 0.5 }} />
                             </button>
                           </PopoverTrigger>
-                          <PopoverContent className="p-0 w-[300px]" align="start">
+                          <PopoverContent className="p-0 w-[320px]" align="start">
                             <Command>
                               <CommandInput placeholder={tm("searchCutsPh") as string} />
                               <CommandList className="max-h-[320px]">
                                 <CommandEmpty>{tm("noCuts")}</CommandEmpty>
                                 <CommandGroup>
-                                  {(cutsByCategory[nf.cat] || [])
+                                  {(filteredCutsByCategory[nf.cat] || [])
                                     .filter((c) => {
-                                      if (nf.cat !== "Beef") return c.region === "global";
+                                      if (!["Beef", "Pork"].includes(nf.cat)) return c.region === "global";
                                       if (cutRegion === "us") return c.region === "us" || c.bone_spec === "Offals";
                                       return c.region === "global";
                                     })
@@ -2370,8 +2916,8 @@ export default function SupplierCreateOffer() {
                                           ...p,
                                           cutId: c.id,
                                           cut: c.displayName,
-                                          cutImage: c.image_url ?? null,
-                                          spec: c.bone_spec ?? p.spec,
+                                         cutImage: c.image_url ?? null,
+                                         spec: normalizeSpec(c.bone_spec),
                                         }));
                                         if (c.image_url) setNewImgPrev(c.image_url);
                                         setCutPickerOpen(false);
@@ -2389,32 +2935,52 @@ export default function SupplierCreateOffer() {
                             </Command>
                           </PopoverContent>
                         </Popover>
-                      </div>
                     </td>
                     <td><select value={nf.spec} onChange={(e) => setNf((p) => ({ ...p, spec: e.target.value }))}>{SPECS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.pkg} onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}>{PKGS.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((x) => <option key={x}>{x}</option>)}</select></td>
-                    <td><select value={nf.ag} onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((x) => <option key={x}>{x}</option>)}</select></td>
+                    {showGradeColumn && (
+                      <td>
+                        <select value={nf.gr === "\n" ? "" : nf.gr} onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>
+                          <option value="">—</option>
+                          {US_GRADES.map((x) => <option key={x}>{x}</option>)}
+                        </select>
+                      </td>
+                    )}
                     <td>
-                      {companyPlants.length > 0 && !plantManual["__nf"] ? (
+                      <select
+                        value={nf.pkg === "\n" ? "" : nf.pkg}
+                        onChange={(e) => setNf((p) => ({ ...p, pkg: e.target.value }))}
+                        title={PACKING_TOOLTIPS[nf.pkg] || ""}
+                      >
+                        <option value="">—</option>
+                        {(PACKING_OPTIONS[nf.cat] || PACKING_OPTIONS.Beef).map((x) => (
+                          <option key={x} value={x} title={PACKING_TOOLTIPS[x]}>{x}</option>
+                        ))}
+                      </select>
+                    </td>
+                    <td>
+                      {allowedPlants.length > 0 ? (
                         <select
-                          value={nf.plant}
+                          value={nf.plantId || ""}
                           onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "__custom__") {
-                              setPlantManual((p) => ({ ...p, __nf: true }));
-                              setNf((p) => ({ ...p, plant: "" }));
-                            } else {
-                              setNf((p) => ({ ...p, plant: v }));
-                            }
+                            const id = e.target.value;
+                            const p = plantById.get(id);
+                            setNf((prev) => ({
+                              ...prev,
+                              plantId: id || undefined,
+                              plant: p?.plant_number || "",
+                            }));
                           }}
-                          title="USDA/SIF establishment number"
+                          title="Office-granted plant"
+                          style={{ minWidth: 140 }}
                         >
-                          <option value="">Select...</option>
-                          {companyPlants.map((p) => (
-                            <option key={p} value={p}>{p}</option>
+                          <option value="">Select plant…</option>
+                          {allowedPlants.map((p) => (
+                            <option key={p.id} value={p.id}>
+                              {p.plant_number ? `${p.plant_number} · ` : ""}
+                              {p.name}
+                              {p.country_code ? ` (${p.country_code})` : ""}
+                            </option>
                           ))}
-                          <option value="__custom__">+ Enter manually</option>
                         </select>
                       ) : (
                         <input

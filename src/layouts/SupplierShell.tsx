@@ -25,6 +25,8 @@ import { BarChart3, LineChart, ShoppingBag, Settings2 } from "lucide-react";
 import { Gavel, Globe } from "lucide-react";
 import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
 import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 
 export default function SupplierShell() {
   return (
@@ -49,6 +51,9 @@ function SupplierShellInner() {
   useEffect(() => { setSidebarManual(null); }, [location.pathname]);
   const userName = user?.email?.split("@")[0] ?? "User";
   const { openUpsell } = useInsightsUpsell();
+  const { isGlobalDirector } = useActiveOffice();
+  const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
+  const showDirectorTools = isGlobalDirector || isMundusAdmin;
   const stackMode = isMobile && isStackRoute(location.pathname);
 
   const featureForPath = (to: string): UpsellFeature | null => {
@@ -83,30 +88,41 @@ function SupplierShellInner() {
       label: "Operations",
       icon: Settings2 as unknown as SidebarItem["icon"],
       children: [
-        {
-          to: "/supplier/insights/price-benchmark",
-          label: t("supplier.insights.nav.priceBenchmark"),
-          icon: BarChart3 as unknown as SidebarItem["icon"],
-          proBadge: true,
-        },
-        {
-          to: "/supplier/insights/analytics",
-          label: t("supplier.insights.nav.analytics"),
-          icon: LineChart as unknown as SidebarItem["icon"],
-          proBadge: true,
-        },
         { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
       ],
     },
+    {
+      to: "/supplier/insights/price-benchmark",
+      label: t("supplier.insights.nav.priceBenchmark"),
+      icon: BarChart3 as unknown as SidebarItem["icon"],
+      proBadge: true,
+      groupLabel: t("shell.nav.mundusIntel"),
+    },
+    {
+      to: "/supplier/insights/analytics",
+      label: t("supplier.insights.nav.analytics"),
+      icon: LineChart as unknown as SidebarItem["icon"],
+      proBadge: true,
+    },
+    {
+      to: "https://market-us.mundustrade.com",
+      label: t("shell.nav.marketIntelligence"),
+      icon: Globe as unknown as SidebarItem["icon"],
+      external: true,
+      proBadge: true,
+    },
+    ...(showDirectorTools ? [{
+      to: "/supplier/insights/cut-comparison",
+      label: t("supplier.insights.nav.cutComparison", { defaultValue: "Cut Comparison" }),
+      icon: Globe as unknown as SidebarItem["icon"],
+    }] : []),
     {
       type: "section",
       key: "admin",
       label: "Admin",
       icon: UsersIcon as unknown as SidebarItem["icon"],
       children: [
-        { to: "/supplier/users", label: t("shell.nav.users"), icon: UsersIcon },
         { to: "/supplier/company", label: t("shell.nav.myCompany"), icon: HomeIcon },
-        { to: "/supplier/offices", label: "Offices", icon: Globe as unknown as SidebarItem["icon"] },
       ],
     },
   ];

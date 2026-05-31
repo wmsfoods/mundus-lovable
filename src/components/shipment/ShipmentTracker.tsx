@@ -1,6 +1,63 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
+/**
+ * Resolve a stored BL value (storage path OR legacy public URL) to a fresh
+ * signed URL and open it. The bl-documents bucket is private and scoped via
+ * RLS to the order's buyer / supplier / Mundus admins.
+ */
+async function resolveBLUrl(value: string): Promise<string | null> {
+  if (!value) return null;
+  // Extract storage path from legacy public URL form: ".../bl-documents/<path>"
+  let path = value;
+  const marker = "/bl-documents/";
+  const idx = value.indexOf(marker);
+  if (idx >= 0) path = value.slice(idx + marker.length);
+  const { data, error } = await supabase.storage
+    .from("bl-documents")
+    .createSignedUrl(path, 3600);
+  if (error || !data?.signedUrl) return null;
+  return data.signedUrl;
+}
+
+function BLDocLink({
+  value,
+  mode,
+  children,
+}: {
+  value: string;
+  mode: "view" | "download";
+  children: React.ReactNode;
+}) {
+  const [busy, setBusy] = useState(false);
+  const handle = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (busy) return;
+    setBusy(true);
+    const url = await resolveBLUrl(value);
+    setBusy(false);
+    if (!url) {
+      alert("Could not open document — you may not have access.");
+      return;
+    }
+    if (mode === "download") {
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    } else {
+      window.open(url, "_blank", "noopener,noreferrer");
+    }
+  };
+  return (
+    <a href="#" onClick={handle} aria-busy={busy}>
+      {children}
+    </a>
+  );
+}
+
 type ShipmentContainer = {
   id: string;
   order_id: string | null;
@@ -266,8 +323,8 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
       cacheControl: "3600", upsert: false, contentType: file.type,
     });
     if (upErr) { setExtractError(`Upload failed: ${upErr.message}`); return; }
-    const { data: pub } = supabase.storage.from("bl-documents").getPublicUrl(path);
-    const url = pub.publicUrl;
+    // Bucket is private — store the storage path; signed URLs are issued on demand.
+    const url = path;
     const patch: Partial<ShipmentContainer> = kind === "final"
       ? { bl_document_url: url }
       : { bl_draft_url: url };
@@ -516,17 +573,17 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
                 {current.bl_document_url && (
                   <div>
                     <strong>📄 BL Document:</strong>{" "}
-                    <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                    <BLDocLink value={current.bl_document_url} mode="view">View</BLDocLink>
                     {" · "}
-                    <a href={current.bl_document_url} download>Download</a>
+                    <BLDocLink value={current.bl_document_url} mode="download">Download</BLDocLink>
                   </div>
                 )}
                 {current.bl_draft_url && (
                   <div>
                     <strong>📋 Draft BL:</strong>{" "}
-                    <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                    <BLDocLink value={current.bl_draft_url} mode="view">View</BLDocLink>
                     {" · "}
-                    <a href={current.bl_draft_url} download>Download</a>
+                    <BLDocLink value={current.bl_draft_url} mode="download">Download</BLDocLink>
                   </div>
                 )}
               </div>
@@ -540,17 +597,17 @@ export function ShipmentTracker({ orderId, fclCount = 1, readOnly = false }: Pro
             {current.bl_document_url && (
               <div>
                 <strong>📄 BL Document:</strong>{" "}
-                <a href={current.bl_document_url} target="_blank" rel="noopener noreferrer">View</a>
+                <BLDocLink value={current.bl_document_url} mode="view">View</BLDocLink>
                 {" · "}
-                <a href={current.bl_document_url} download>Download</a>
+                <BLDocLink value={current.bl_document_url} mode="download">Download</BLDocLink>
               </div>
             )}
             {current.bl_draft_url && (
               <div>
                 <strong>📋 Draft BL:</strong>{" "}
-                <a href={current.bl_draft_url} target="_blank" rel="noopener noreferrer">View</a>
+                <BLDocLink value={current.bl_draft_url} mode="view">View</BLDocLink>
                 {" · "}
-                <a href={current.bl_draft_url} download>Download</a>
+                <BLDocLink value={current.bl_draft_url} mode="download">Download</BLDocLink>
               </div>
             )}
           </div>
@@ -840,9 +897,9 @@ function ExtractionReview({
           ✕ Dismiss
         </button>
         {blUrl && (
-          <a className="shp-carrier-btn shp-btn-ghost" href={blUrl} target="_blank" rel="noopener noreferrer">
-            📄 View BL
-          </a>
+          <BLDocLink value={blUrl} mode="view">
+            <span className="shp-carrier-btn shp-btn-ghost">📄 View BL</span>
+          </BLDocLink>
         )}
       </div>
     </div>

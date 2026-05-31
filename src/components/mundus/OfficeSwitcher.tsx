@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ChevronDownIcon, CheckIcon } from "@/components/icons";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { countryFlag } from "@/lib/countryFlags";
@@ -11,7 +12,9 @@ export function OfficeSwitcher() {
     hasMultipleOffices,
     isAllOffices,
     showAllOfficesOption,
+    isGlobalDirector,
   } = useActiveOffice();
+  const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -32,8 +35,19 @@ export function OfficeSwitcher() {
     return (a.office_name || a.name || "").localeCompare(b.office_name || b.name || "");
   });
 
+  const hq = sorted.find((o) => !o.parent_company_id);
+  const familyName = hq?.name || hq?.office_name || "";
+  const allOfficesLabel = isGlobalDirector && familyName
+    ? t("shell.officeSwitcher.allOfficesFamily", {
+        defaultValue: "All Offices · {{family}}",
+        family: familyName,
+      })
+    : t("shell.officeSwitcher.allOffices", { defaultValue: "All Offices" });
+  const consolidatedLabel = t("shell.officeSwitcher.allOfficesConsolidated", {
+    defaultValue: "All Offices (Consolidated)",
+  });
   const currentLabel = isAllOffices
-    ? "All Offices"
+    ? allOfficesLabel
     : activeOffice?.office_name || activeOffice?.name || "Office";
 
   return (
@@ -44,9 +58,27 @@ export function OfficeSwitcher() {
         className="office-switcher-btn"
         aria-haspopup="menu"
         aria-expanded={open}
+        style={{ minHeight: 44 }}
       >
         <span>🌐</span>
         <span className="office-switcher-label">{currentLabel}</span>
+        {isGlobalDirector && (
+          <span
+            className="office-switcher-director-badge"
+            style={{
+              fontSize: 10,
+              fontWeight: 600,
+              padding: "2px 6px",
+              borderRadius: 4,
+              background: "hsl(var(--primary) / 0.12)",
+              color: "hsl(var(--primary))",
+              letterSpacing: 0.3,
+              textTransform: "uppercase",
+            }}
+          >
+            {t("shell.officeSwitcher.directorBadge", { defaultValue: "Director" })}
+          </span>
+        )}
         <ChevronDownIcon size={14} />
       </button>
 
@@ -60,9 +92,12 @@ export function OfficeSwitcher() {
                   setActiveOffice(null);
                   setOpen(false);
                 }}
+                style={{ minHeight: 44 }}
               >
                 <span>🌐</span>
-                <span style={{ flex: 1 }}>All Offices (Consolidated)</span>
+                <span style={{ flex: 1 }}>
+                  {isGlobalDirector && familyName ? allOfficesLabel : consolidatedLabel}
+                </span>
                 {isAllOffices && <CheckIcon size={14} />}
               </button>
               <hr />
@@ -84,6 +119,7 @@ export function OfficeSwitcher() {
                   setActiveOffice(o.id);
                   setOpen(false);
                 }}
+                style={{ minHeight: 44 }}
               >
                 <span>{icon}</span>
                 {flag && <span>{flag}</span>}

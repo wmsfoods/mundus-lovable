@@ -5,11 +5,11 @@ import {
   FlagSVG,
   EyeIcon,
   MessageIcon,
-  ClockIcon,
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
+import "@/styles/mundus-offer-card-tooltip.css";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
@@ -20,17 +20,10 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   sold_out:    { bg: "#dcfce7", fg: "#166534", dot: "#16a34a" },
 };
 
-function hashId(id: string): number {
-  let h = 0;
-  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
-  return h;
-}
 function derive(o: SupplierOffer) {
-  const h = hashId(o.id);
   return {
-    views: (h % 200) + 30,
-    proposals: h % 7,
-    daysLeft: (h % 45) + 1,
+    views: o.viewCount ?? 0,
+    proposals: o.proposalCount ?? 0,
     volumeMt: Math.round(o.totalKg / 1000),
   };
 }
@@ -53,6 +46,8 @@ export function SupplierOfferCard({
     ? extraDest > 0 ? `${firstDest.name} +${extraDest}` : firstDest.name
     : "—";
   const firstIncoterm = o.incoterms[0] ?? "—";
+  const extraIncoterms = Math.max(0, o.incoterms.length - 1);
+  const incotermLabel = extraIncoterms > 0 ? `${firstIncoterm} +${extraIncoterms}` : firstIncoterm;
   const visibleCuts = o.items.slice(0, 3);
   const moreCuts = Math.max(0, o.items.length - visibleCuts.length);
   const d = derive(o);
@@ -160,14 +155,34 @@ export function SupplierOfferCard({
       <div className="oc-meta-grid">
         <div className="cm">
           <span className="cm-label">{t("supplier.offers.card.destination")}</span>
-          <span className="cm-value">
+          <span className="cm-value dest-hover-wrap">
             {firstDest && <FlagSVG code={firstDest.code} size={13} />}
             {destLabel}
+            {o.destinations.length > 1 && (
+              <div className="dest-tooltip">
+                <div className="dest-tooltip-title">Available destinations:</div>
+                {o.destinations.map((d, i) => (
+                  <div key={i} className="dest-tooltip-row">
+                    <FlagSVG code={d.code} size={12} /> {d.name}
+                  </div>
+                ))}
+              </div>
+            )}
           </span>
         </div>
         <div className="cm">
           <span className="cm-label">{t("supplier.offers.card.incoterm")}</span>
-          <span className="cm-value">{firstIncoterm}</span>
+          <span className="cm-value dest-hover-wrap">
+            {incotermLabel}
+            {extraIncoterms > 0 && (
+              <div className="dest-tooltip">
+                <div className="dest-tooltip-title">Available incoterms:</div>
+                {o.incoterms.map((inc, i) => (
+                  <div key={i} className="dest-tooltip-row">{inc}</div>
+                ))}
+              </div>
+            )}
+          </span>
         </div>
         <div className="cm">
           <span className="cm-label">{t("supplier.offers.card.shipment")}</span>
@@ -182,7 +197,6 @@ export function SupplierOfferCard({
       <div className="oc-stats">
         <span><EyeIcon size={12} /> <strong>{d.views}</strong> {t("supplier.offers.card.views")}</span>
         <span><MessageIcon size={12} /> <strong>{d.proposals}</strong> {t("supplier.offers.card.proposals")}</span>
-        <span className={d.daysLeft <= 7 ? "is-warn" : ""}><ClockIcon size={12} /> {t("supplier.offers.card.daysLeft", { n: d.daysLeft })}</span>
       </div>
 
       <div className="oc-footer">

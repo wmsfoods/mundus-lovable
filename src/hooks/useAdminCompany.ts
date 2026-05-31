@@ -27,6 +27,8 @@ export type AdminCompanyFull = {
   onboarded_from_prospect_id: string | null;
   created_at: string | null;
   updated_at: string | null;
+  mundus_managed_supplier?: boolean | null;
+  mundus_managed_buyer?: boolean | null;
 };
 
 export type CompanyPatch = Partial<Omit<AdminCompanyFull, "id" | "company_number" | "created_at" | "updated_at">>;

@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { requireUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,7 @@ const corsHeaders = {
 };
 
 const RESEND_KEY =
-  Deno.env.get("RESEND_API_KEY") ?? "re_APWMMN9H_PjbBKigYBDSgpnXXpcVdiArZ";
+  Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -104,6 +105,8 @@ const templates: Record<string, (d: D) => { to: string; subject: string; html: s
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const auth = await requireUser(req);
+  if (!auth.ok) return new Response(auth.response.body, { status: auth.response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   try {
     const { action, data } = await req.json();

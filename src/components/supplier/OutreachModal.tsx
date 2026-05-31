@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import DOMPurify from "dompurify";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Modal } from "@/components/mundus/Modal";
@@ -152,7 +153,7 @@ export function OutreachModal({ offer, open, onClose, onSent }: Props) {
             </button>
           </div>
           {showPreview ? (
-            <div style={{ border: "1px solid var(--border,#eee)", borderRadius: 8, padding: 12, maxHeight: 320, overflow: "auto", background: "#fff" }} dangerouslySetInnerHTML={{ __html: body }} />
+            <div style={{ border: "1px solid var(--border,#eee)", borderRadius: 8, padding: 12, maxHeight: 320, overflow: "auto", background: "#fff" }} dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(body) }} />
           ) : (
             <textarea
               className="input"

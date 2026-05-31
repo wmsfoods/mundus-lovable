@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useSupplierScope } from "@/hooks/useSupplierScope";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 import { countryToCode } from "@/lib/countryCodes";
@@ -15,6 +16,8 @@ export function useRealSupplierOffers() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { company, loading: companyLoading } = useCurrentCompany();
+  const { scopeIds, loading: scopeLoading } = useSupplierScope();
+  const scopeKey = scopeIds.join(",");
   const supplierId = company?.id ?? null;
   const [refreshKey, setRefreshKey] = useState(0);
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
@@ -23,14 +26,14 @@ export function useRealSupplierOffers() {
 
   useEffect(() => {
     let cancelled = false;
-    if (companyLoading) {
+    if (companyLoading || scopeLoading) {
       // Wait for the real company to resolve so we don't briefly query a
       // different (mock) supplier's offers and then replace them with an
       // empty list once the real id arrives.
       setLoading(true);
       return;
     }
-    if (!supplierId) {
+    if (!supplierId || scopeIds.length === 0) {
       setOffers([]);
       setLoading(false);
       return;
@@ -41,21 +44,21 @@ export function useRealSupplierOffers() {
       const query = supabase
         .from("offers")
         .select(`
-          id, offer_number, status, origin_country, origin_port,
+          id, offer_number, status, origin_country, origin_port, view_count,
           shipment_month, shipment_year, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location,
           items:offer_items ( id, amount, price, minimum_price, condition, packaging,
             customer_product:customer_products ( id, name ) ),
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
-          incoterms:offer_allowed_incoterms ( incoterm_type )
+          incoterms:offer_allowed_incoterms ( incoterm_type ),
+          negotiations ( id )
         `)
-        .eq("supplier_id", supplierId)
+        .in("supplier_id", scopeIds)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
-      // Always return ALL offers belonging to the supplier company. The active
-      // office filter is intentionally not applied here so the "My Offers"
-      // listing surfaces every offer the supplier owns, including offers tied
-      // to legacy/external office_ids or offers without an office assigned.
+      // Scope by active office focus: a single office returns only that
+      // office's offers; "All Offices" returns the whole family. RLS at the
+      // DB layer remains the hard guarantee for cross-family isolation.
       const { data, error: err } = await query;
       if (cancelled) return;
       if (err) {
@@ -75,7 +78,10 @@ export function useRealSupplierOffers() {
         const askingPrice = items.reduce((s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0), 0);
         const floorPrice = items.reduce((s, it) => s + Number(it.minimum_price ?? it.price ?? 0) * Number(it.amount ?? 0), 0);
         const fclCount = Number(o.total_fcl ?? 1) || 1;
-        const pricePerFclUsd = fclCount > 0 ? askingPrice / fclCount : askingPrice;
+        // `askingPrice` is already the value of ONE container (mix qty × price).
+        // total_fcl is the number of identical containers available — it must
+        // NOT divide the per-FCL value.
+        const pricePerFclUsd = askingPrice;
         const firstName = items[0]?.customer_product?.name ?? null;
         const formattedNumber = formatOfferNumber(o.offer_number, o.created_at);
         const title =
@@ -125,13 +131,15 @@ export function useRealSupplierOffers() {
             pricePerKgUsd: Number(it.price ?? 0),
           })),
           active: o.status === "active",
+          viewCount: Number(o.view_count ?? 0),
+          proposalCount: Array.isArray(o.negotiations) ? o.negotiations.length : 0,
         };
       });
       setOffers(mapped);
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [supplierId, companyLoading, refreshKey]);
+  }, [supplierId, companyLoading, scopeLoading, scopeKey, refreshKey]);
 
   return { offers, loading, error };
 }

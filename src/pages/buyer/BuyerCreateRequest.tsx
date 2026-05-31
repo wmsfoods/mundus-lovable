@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { useNavigate, useParams, useLocation, useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { ClipboardIcon, XIcon, PlusIcon, SparkleIcon, UploadIcon, FileIcon } from "@/components/icons";
 import { Check } from "lucide-react";
@@ -9,6 +9,9 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { useBuyerScope } from "@/hooks/useBuyerScope";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useAuth } from "@/contexts/AuthContext";
 import { countryFlag } from "@/lib/countryFlags";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
@@ -41,9 +44,51 @@ export default function BuyerCreateRequest() {
   const { editId } = useParams<{ editId?: string }>();
   const isEdit = !!editId;
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const asCompanyId = searchParams.get("as_company");
   const cloneFrom = (location.state as any)?.cloneFrom as Record<string, any> | undefined;
   const { markets, cutsByCategory } = useSupplierOfferData();
-  const { company } = useCurrentCompany();
+  const { company: realCompany } = useCurrentCompany();
+  const { isAdmin: isAdminActor } = useIsMundusAdmin();
+  const { scopeIds: buyerScopeIds } = useBuyerScope();
+  const { activeOfficeId, isAllOffices, isBuyerGlobalDirector } = useActiveOffice();
+  const isBuyerDirector = isBuyerGlobalDirector;
+  const [familyOffices, setFamilyOffices] = useState<Array<{ id: string; name: string }>>([]);
+  const [targetOfficeId, setTargetOfficeId] = useState<string>("");
+  useEffect(() => {
+    if (!isBuyerDirector || buyerScopeIds.length <= 1) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("companies")
+        .select("id, name")
+        .in("id", buyerScopeIds)
+        .order("name");
+      if (!cancelled) setFamilyOffices((data ?? []) as any);
+    })();
+    return () => { cancelled = true; };
+  }, [isBuyerDirector, buyerScopeIds.join(",")]);
+  useEffect(() => {
+    if (!isBuyerDirector) return;
+    if (!isAllOffices && activeOfficeId) setTargetOfficeId(activeOfficeId);
+  }, [isBuyerDirector, isAllOffices, activeOfficeId]);
+  const [actingAsCompany, setActingAsCompany] = useState<any>(null);
+
+  useEffect(() => {
+    if (!asCompanyId || !isAdminActor) { setActingAsCompany(null); return; }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("companies").select("*").eq("id", asCompanyId).maybeSingle();
+      if (!cancelled) setActingAsCompany(data ?? null);
+    })();
+    return () => { cancelled = true; };
+  }, [asCompanyId, isAdminActor]);
+
+  // Effective buyer company — admin acting on behalf of a managed buyer overrides
+  // the current user's company context for the entire wizard.
+  const company: any = (isAdminActor && actingAsCompany) ? actingAsCompany : realCompany;
+  const isOnBehalf = !!(isAdminActor && actingAsCompany);
   const { user } = useAuth();
   const { unit } = useWeightUnit();
   const [submitting, setSubmitting] = useState(false);
@@ -362,8 +407,8 @@ export default function BuyerCreateRequest() {
     return acc;
   }, [cutsByCategory, selectedCategories]);
   const cuts = useMemo(() => {
-    const hasBeef = selectedCategories.includes("Beef");
-    if (!hasBeef) return allCuts.filter((c) => (c as any).region !== "us");
+    const hasUsCapable = selectedCategories.some((c) => c === "Beef" || c === "Pork");
+    if (!hasUsCapable) return allCuts.filter((c) => (c as any).region !== "us");
     if (cutRegion === "us") return allCuts.filter((c) => (c as any).region === "us" || c.bone_spec === "Offals");
     return allCuts.filter((c) => (c as any).region !== "us");
   }, [allCuts, selectedCategories, cutRegion]);
@@ -555,7 +600,7 @@ export default function BuyerCreateRequest() {
         .from("buyer_requests")
         .insert({
           ...payload,
-          buyer_company_id: company.id,
+          buyer_company_id: (isBuyerDirector && targetOfficeId) ? targetOfficeId : company.id,
           buyer_user_id: user?.id ?? null,
           status: "new",
           attachments: uploaded,
@@ -564,11 +609,11 @@ export default function BuyerCreateRequest() {
         .single();
       setSubmitting(false);
       if (error || !data) return toast.error(error?.message ?? "Failed to create request");
-      toast.success("Request published to suppliers");
+      toast.success(isOnBehalf ? `Request created for ${actingAsCompany?.name ?? "buyer"}` : "Request published to suppliers");
       try {
         const { auditLog } = await import("@/lib/auditLog");
         auditLog({
-          action: "request.submitted",
+          action: isOnBehalf ? "request.created_on_behalf" : "request.submitted",
           category: "request",
           entityType: "buyer_request",
           entityId: (data as any).id,
@@ -576,15 +621,72 @@ export default function BuyerCreateRequest() {
           details: {
             totalKg: (payload as any)?.quantity_kg,
             destination: (payload as any)?.destination_country,
+            ...(isOnBehalf ? {
+              buyer_company_id: company.id,
+              buyer_company_name: actingAsCompany?.name ?? null,
+              created_by_admin: true,
+            } : {}),
           },
         });
       } catch { /* never break flow */ }
-      navigate("/buyer/requests");
+      navigate(isOnBehalf ? "/admin/offer-requests" : "/buyer/requests");
     }
   };
 
   return (
     <div className="bcr">
+      {isOnBehalf && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "#FEF3C7",
+            border: "1px solid #F59E0B",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+            fontWeight: 600,
+            color: "#92400E",
+          }}
+        >
+          {actingAsCompany?.logo_url ? (
+            <img src={actingAsCompany.logo_url} alt="" style={{ width: 24, height: 24, borderRadius: 4, objectFit: "cover" }} />
+          ) : (
+            <span style={{ fontSize: 16 }}>🛒</span>
+          )}
+          <span>Creating request on behalf of <strong>{actingAsCompany?.name}</strong> (Managed by Mundus)</span>
+        </div>
+      )}
+      {isBuyerDirector && familyOffices.length > 1 && !isEdit && (
+        <div
+          style={{
+            padding: "10px 16px",
+            background: "#EFF6FF",
+            border: "1px solid #BFDBFE",
+            borderRadius: 8,
+            marginBottom: 12,
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            fontSize: 13,
+            color: "#1E3A8A",
+          }}
+        >
+          <strong>Create for office:</strong>
+          <select
+            value={targetOfficeId}
+            onChange={(e) => setTargetOfficeId(e.target.value)}
+            style={{ padding: "6px 10px", borderRadius: 6, border: "1px solid #BFDBFE", background: "#fff" }}
+          >
+            <option value="">— Select office —</option>
+            {familyOffices.map((o) => (
+              <option key={o.id} value={o.id}>{o.name}</option>
+            ))}
+          </select>
+        </div>
+      )}
       {cloneFrom && !isEdit && (
         <div
           className="rounded-lg p-4 mb-4 flex items-start gap-3"
@@ -756,7 +858,7 @@ export default function BuyerCreateRequest() {
           </div>
 
           {/* Cut nomenclature toggle */}
-          {selectedCategories.includes("Beef") && (
+          {(selectedCategories.includes("Beef") || selectedCategories.includes("Pork")) && (
             <div className="bcr-card" style={{ padding: "12px 16px" }}>
               <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8, color: "#374151" }}>
                 Cut Nomenclature
@@ -776,7 +878,7 @@ export default function BuyerCreateRequest() {
                     opacity: (filledRows > 0 && String(cutRegion) !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global Beef Cuts
+                  🌐 Global Beef &amp; Pork Cuts
                 </button>
                 <button
                   type="button"
@@ -792,7 +894,7 @@ export default function BuyerCreateRequest() {
                     opacity: (filledRows > 0 && String(cutRegion) !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US Beef Cuts (IMPS)
+                  🇺🇸 US Beef &amp; Pork Cuts (IMPS)
                 </button>
                 {filledRows > 0 && (
                   <button
@@ -814,13 +916,13 @@ export default function BuyerCreateRequest() {
                 )}
                 {filledRows > 0 && (
                   <span style={{ fontSize: 11, color: "#9CA3AF" }}>
-                    {cutRegion === "us" ? "🇺🇸 US Beef Product / Cuts" : "🌐 Global Beef Product / Cuts"} · {filledRows} Product / Cut{filledRows > 1 ? "s" : ""} added
+                    {cutRegion === "us" ? "🇺🇸 US Beef & Pork Product / Cuts (IMPS)" : "🌐 Global Beef & Pork Product / Cuts"} · {filledRows} Product / Cut{filledRows > 1 ? "s" : ""} added
                   </span>
                 )}
               </div>
               {cutRegion === "us" && (
                 <div style={{ fontSize: 12, color: "#6B7280", marginTop: 6 }}>
-                  💡 US Beef Cuts use IMPS/NAMP nomenclature, recommended when sourcing from American suppliers
+                  💡 US Beef &amp; Pork Cuts use IMPS/NAMP nomenclature, recommended when sourcing from American suppliers
                 </div>
               )}
             </div>

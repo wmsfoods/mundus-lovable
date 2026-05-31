@@ -11,6 +11,7 @@
 @import "./styles/mundus-supplier-home.css";
 @import "./styles/mundus-supplier-offers.css";
 @import "./styles/mundus-negotiations.css";
+@import "./styles/mundus-negotiations-mobile.css";
 @import "./styles/negotiation-detail.css";
 @import "./styles/mundus-create-offer.css";
 @import "./styles/mundus-create-offer-v2.css";
@@ -228,48 +229,6 @@ html {
     --lh-normal: 1.5;
   }
 
-  .dark {
-    --background: 220 20% 8%;
-    --foreground: 220 14% 96%;
-    --card: 220 18% 12%;
-    --card-foreground: 220 14% 96%;
-    --popover: 220 18% 12%;
-    --popover-foreground: 220 14% 96%;
-    --primary: 340 44% 55%;
-    --primary-foreground: 0 0% 100%;
-    --secondary: 220 14% 18%;
-    --secondary-foreground: 220 14% 96%;
-    --muted: 220 14% 18%;
-    --muted-foreground: 220 9% 60%;
-    --accent: 340 30% 22%;
-    --accent-foreground: 340 60% 80%;
-    --destructive: 0 62% 30%;
-    --destructive-foreground: 0 0% 100%;
-    --border: 220 14% 20%;
-    --input: 220 14% 20%;
-    --ring: 340 44% 55%;
-    --sidebar-background: 220 18% 10%;
-    --sidebar-foreground: 220 14% 96%;
-    --sidebar-primary: 340 44% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 340 30% 20%;
-    --sidebar-accent-foreground: 340 60% 80%;
-    --sidebar-border: 220 14% 20%;
-    --sidebar-ring: 340 44% 55%;
-
-    --toast-success-bg: 150 100% 8%;
-    --toast-success-border: 147 70% 24%;
-    --toast-success-text: 150 86% 72%;
-    --toast-info-bg: 215 100% 10%;
-    --toast-info-border: 223 70% 26%;
-    --toast-info-text: 216 87% 72%;
-    --toast-warning-bg: 46 100% 10%;
-    --toast-warning-border: 42 70% 28%;
-    --toast-warning-text: 46 87% 72%;
-    --toast-error-bg: 358 76% 12%;
-    --toast-error-border: 357 70% 28%;
-    --toast-error-text: 358 100% 84%;
-  }
 }
 
 @layer base {
@@ -313,5 +272,15 @@ html {
 :where(a, button, input, textarea, select):focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+}
+
+/* Remove spinners from number inputs everywhere */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 

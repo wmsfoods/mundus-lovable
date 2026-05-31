@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -6,7 +7,7 @@ const corsHeaders = {
 };
 
 const RESEND_API_KEY =
-  Deno.env.get("RESEND_API_KEY") || "re_APWMMN9H_PjbBKigYBDSgpnXXpcVdiArZ";
+  Deno.env.get("RESEND_API_KEY") || "";
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
 const ADMIN_EMAIL = "fn@mundustrade.com";
 const WINE = "#8B2252";
@@ -121,6 +122,60 @@ async function sendEmail(to: string, subject: string, html: string) {
   return res.json();
 }
 
+// Logs a copy of every signup-related e-mail into `email_queue` so it
+// appears in the Admin → Email Activity dashboard. Best-effort; never
+// blocks the actual send.
+async function logToQueue(opts: {
+  to: string;
+  subject: string;
+  html: string;
+  template: string;
+  vars: Record<string, unknown>;
+  resendId?: string | null;
+  errorMessage?: string | null;
+}) {
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) return;
+    const sb = createClient(url, key);
+    await sb.from("email_queue").insert({
+      to_email: opts.to,
+      subject: opts.subject,
+      html_body: opts.html,
+      template_name: opts.template,
+      template_vars: opts.vars,
+      status: opts.errorMessage ? "failed" : "sent",
+      sent_at: opts.errorMessage ? null : new Date().toISOString(),
+      error_message: opts.errorMessage ?? null,
+      resend_id: opts.resendId ?? null,
+    });
+  } catch (e) {
+    console.warn("[signup-notifications] logToQueue failed", e);
+  }
+}
+
+async function sendAndLog(
+  to: string,
+  subject: string,
+  html: string,
+  template: string,
+  vars: Record<string, unknown>,
+) {
+  try {
+    const r = await sendEmail(to, subject, html);
+    const resendId = (r as any)?.id ?? (r as any)?.data?.id ?? null;
+    await logToQueue({ to, subject, html, template, vars, resendId });
+    return r;
+  } catch (e) {
+    await logToQueue({
+      to, subject, html, template, vars,
+      errorMessage: e instanceof Error ? e.message : String(e),
+    });
+    throw e;
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   try {
@@ -129,14 +184,16 @@ serve(async (req) => {
 
     if (action === "user_confirmation") {
       const { userEmail, userName, companyName } = body;
-      await sendEmail(
+      await sendAndLog(
         userEmail,
         "Welcome to Mundus Trade — Registration Received",
         userConfirmationHtml(userName || "", companyName || ""),
+        "signupConfirmation",
+        { userName, companyName },
       );
     } else if (action === "admin_notification") {
       const { userEmail, userName, companyName, role, registrationCountry, taxId } = body;
-      await sendEmail(
+      await sendAndLog(
         ADMIN_EMAIL,
         `🔔 New User Registration — ${companyName || userName}`,
         adminNotificationHtml({
@@ -147,20 +204,26 @@ serve(async (req) => {
           registrationCountry: registrationCountry || "",
           taxId: taxId || "",
         }),
+        "signupAdminNotification",
+        { userName, userEmail, companyName, role, registrationCountry, taxId },
       );
     } else if (action === "approval") {
       const { userEmail, userName } = body;
-      await sendEmail(
+      await sendAndLog(
         userEmail,
         "✅ Your Mundus Trade Account Has Been Approved!",
         approvalHtml(userName || ""),
+        "signupApproved",
+        { userName },
       );
     } else if (action === "rejection") {
       const { userEmail, userName } = body;
-      await sendEmail(
+      await sendAndLog(
         userEmail,
         "Mundus Trade — Registration Update",
         rejectionHtml(userName || ""),
+        "signupRejected",
+        { userName },
       );
     } else {
       return new Response(JSON.stringify({ error: "Unknown action" }), {

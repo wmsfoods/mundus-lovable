@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { requireUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,8 @@ const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY") || "";
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  const auth = await requireUser(req);
+  if (!auth.ok) return new Response(auth.response.body, { status: auth.response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
 
   try {
     const { fileBase64, fileType, companyName, taxId, registrationCountry } = await req.json();
@@ -50,7 +53,7 @@ Respond in JSON ONLY (no markdown, no backticks):
 }`;
 
     if (fileType === "application/pdf") {
-      const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") || "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";
+      const ANTHROPIC_API_KEY = Deno.env.get("ANTHROPIC_API_KEY") || "";
       if (!ANTHROPIC_API_KEY) {
         return new Response(
           JSON.stringify({

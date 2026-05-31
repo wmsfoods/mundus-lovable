@@ -13,10 +13,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { publicUrl } from "@/lib/publicUrl";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
+import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay, LB_PER_KG } from "@/lib/units";
 import {
   MAX_DISPLAY_ROUNDS,
   getAgreedItems,
@@ -27,11 +26,12 @@ import {
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useRemainingFcl } from "@/hooks/useRemainingFcl";
 import {
   getIncotermAddOn,
   getIncotermBannerLabel,
 } from "@/lib/incotermPricing";
-import { notifyCompanyUsers } from "@/lib/notifications";
+import { PriceHistoryTable, type PriceHistoryProduct } from "@/components/negotiation/PriceHistoryTable";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
@@ -71,6 +71,9 @@ export interface CounterOfferModalProps {
   negotiation: RealNegotiationRow;
   perspective?: "supplier" | "buyer";
   onSubmitted?: () => void;
+  /** Display name of the counterparty to confirm in the modal header.
+   *  E.g. supplier sending a counter to "Buyer: Acme Foods". */
+  counterpartyLabel?: string;
 }
 
 export function CounterOfferModal({
@@ -79,6 +82,7 @@ export function CounterOfferModal({
   negotiation,
   perspective = "supplier",
   onSubmitted,
+  counterpartyLabel,
 }: CounterOfferModalProps) {
   const { t } = useTranslation();
   const { unit } = useWeightUnit();
@@ -110,6 +114,53 @@ export function CounterOfferModal({
   const isFinal = isFinalDisplayRound(displayRound);
   const exhausted = isCounterExhausted(negotiation); // nextRaw would exceed MAX_RAW_ROUNDS
 
+  // Per-product historical bid/counter prices for all completed rounds.
+  // Mirrors the Price History table on the negotiation detail page.
+  const historyProducts = useMemo<PriceHistoryProduct[]>(() => {
+    const perItem = new Map<string, Record<string, number>>();
+    for (const rp of rounds) {
+      const isBid = rp.round % 2 === 1;
+      const disp = Math.ceil(rp.round / 2);
+      const key = `${isBid ? "bid" : "counter"}R${disp}UsdKg`;
+      for (const c of rp.cut_rounds ?? []) {
+        const m = perItem.get(c.offer_item_id) ?? {};
+        m[key] = Number(c.price_per_kg);
+        perItem.set(c.offer_item_id, m);
+      }
+    }
+    return items.map((it) => {
+      const m = perItem.get(it.id) ?? {};
+      return {
+        name: it.customer_product?.name ?? "—",
+        pack: "—",
+        qtyLb: Number(it.amount) * LB_PER_KG,
+        askingUsdKg: Number(it.price),
+        bidR1UsdKg: m["bidR1UsdKg"],
+        counterR1UsdKg: m["counterR1UsdKg"],
+        bidR2UsdKg: m["bidR2UsdKg"],
+        counterR2UsdKg: m["counterR2UsdKg"],
+        bidR3UsdKg: m["bidR3UsdKg"],
+        counterR3UsdKg: m["counterR3UsdKg"],
+        bidR4UsdKg: m["bidR4UsdKg"],
+        counterR4UsdKg: m["counterR4UsdKg"],
+      } as PriceHistoryProduct;
+    });
+  }, [rounds, items]);
+  const historyMaxRound = Math.min(
+    MAX_DISPLAY_ROUNDS,
+    Math.max(displayRound, ...rounds.map((r) => Math.ceil(r.round / 2)), 1),
+  );
+  const agreedByName = useMemo(() => {
+    const map = new Map<string, { price: number; round: number }>();
+    for (const a of existingAgreed) {
+      const it = items.find((i) => i.id === a.offer_item_id);
+      if (it?.customer_product?.name) {
+        map.set(it.customer_product.name, { price: a.price_per_kg, round: a.agreed_round });
+      }
+    }
+    return map;
+  }, [existingAgreed, items]);
+
   // Latest "other side" prices per offer_item — what we're responding to.
   // Supplier responds to latest bid (odd round); buyer responds to latest counter (even round).
   const theirPrices = useMemo(() => {
@@ -130,6 +181,26 @@ export function CounterOfferModal({
   const [bulkAnchor, setBulkAnchor] = useState<Anchor>("self");
   const [bulkMode, setBulkMode] = useState<DeltaUnit>("amount");
   const [bulkValue, setBulkValue] = useState<string>("");
+
+  // Buyer-only: allow adjusting FCL count during counter-rounds, bounded by
+  // remaining availability on the parent offer (plus what's already reserved
+  // by this very negotiation).
+  const currentFcl = Math.max(1, Number(negotiation.fcl_count ?? 1));
+  const totalOfferFcl = Math.max(1, Number(negotiation.offer?.total_fcl ?? 1));
+  const fclAlloc = useRemainingFcl(negotiation.offer?.id ?? null, totalOfferFcl);
+  const maxSelectableFcl =
+    perspective === "buyer"
+      ? Math.max(currentFcl, fclAlloc.available + currentFcl)
+      : currentFcl;
+  const [fclCount, setFclCount] = useState<number>(currentFcl);
+  useEffect(() => {
+    if (!open) return;
+    setFclCount(currentFcl);
+  }, [open, currentFcl]);
+  useEffect(() => {
+    if (fclCount > maxSelectableFcl) setFclCount(maxSelectableFcl);
+    if (fclCount < 1) setFclCount(1);
+  }, [fclCount, maxSelectableFcl]);
 
   // Toggleable shortcuts ("Accept all", "Meet in middle") — clicking again reverts.
   type Shortcut = "accept_all" | "meet_middle";
@@ -295,7 +366,7 @@ export function CounterOfferModal({
           out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(2)})`;
         }
       }
-      // Must be ≥ previous buyer bid
+      // Must be STRICTLY GREATER than previous buyer bid (no match, no lower)
       const buyerRounds = rounds.filter((r) => r.round % 2 === 1);
       const lastBuyerRound = buyerRounds[buyerRounds.length - 1];
       if (lastBuyerRound) {
@@ -303,8 +374,8 @@ export function CounterOfferModal({
           if (accepted[it.id] || out[it.id]) continue;
           const v = counters[it.id];
           const prevBid = lastBuyerRound.cut_rounds?.find((c) => c.offer_item_id === it.id);
-          if (prevBid && v != null && v < Number(prevBid.price_per_kg) - 1e-9) {
-            out[it.id] = `Bid must be ≥ your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
+          if (prevBid && v != null && v <= Number(prevBid.price_per_kg) + 1e-9) {
+            out[it.id] = `Bid must be GREATER than your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
           }
         }
       }
@@ -341,6 +412,48 @@ export function CounterOfferModal({
     return out;
   }, [perspective, openItems, accepted, buyerInitialBid, counters, rounds, unit]);
   const errorCount = Object.keys(errors).length;
+
+  /**
+   * Per-row reference value displayed under the input as a hint.
+   *  - Buyer R2+ : floor = previous buyer bid for this item
+   *  - Buyer R1  : (handled in BidModal — not used here)
+   *  - Supplier  : ceiling = previous supplier counter, else asking price
+   */
+  const hintRefs = useMemo(() => {
+    const map = new Map<string, { kind: "min" | "max"; price: number; label: string }>();
+    if (perspective === "buyer") {
+      const buyerRounds = rounds.filter((r) => r.round % 2 === 1);
+      const lastBuyerRound = buyerRounds[buyerRounds.length - 1];
+      if (!lastBuyerRound) return map;
+      for (const c of lastBuyerRound.cut_rounds ?? []) {
+        map.set(c.offer_item_id, {
+          kind: "min",
+          price: Number(c.price_per_kg),
+          label: "your previous bid",
+        });
+      }
+    } else {
+      const supplierRounds = rounds.filter((r) => r.round % 2 === 0);
+      const lastSupplierRound = supplierRounds[supplierRounds.length - 1];
+      for (const it of openItems) {
+        const prev = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
+        if (prev) {
+          map.set(it.id, {
+            kind: "max",
+            price: Number(prev.price_per_kg),
+            label: "your previous counter",
+          });
+        } else {
+          map.set(it.id, {
+            kind: "max",
+            price: Number(it.price),
+            label: "asking price",
+          });
+        }
+      }
+    }
+    return map;
+  }, [perspective, rounds, openItems]);
 
   const deductionFeedback = useMemo(() => {
     if (perspective !== "buyer" || bulkMode !== "percent") return null;
@@ -405,6 +518,10 @@ export function CounterOfferModal({
         agreed_items: mergedAgreed,
         updated_at: new Date().toISOString(),
       };
+      // Buyer may adjust container quantity within remaining availability.
+      if (perspective === "buyer" && fclCount !== currentFcl) {
+        update.fcl_count = fclCount;
+      }
       const trimmed = message.trim();
       if (perspective === "buyer") {
         update.buyer_message = trimmed ? trimmed : null;
@@ -446,128 +563,156 @@ export function CounterOfferModal({
         });
       } catch { /* never break flow */ }
 
-      // In-app notifications (best-effort, non-blocking)
-      try {
-        const supplierCompanyId = negotiation.offer?.supplier_id;
-        const supplierName = negotiation.offer?.supplier_name ?? "Supplier";
-        const buyerCompanyId = negotiation.buyer_company_id;
-        const offerNum = negotiation.offer?.offer_number;
-        const label = offerNum ? `offer #${offerNum}` : "your negotiation";
+      // In-app notifications now generated by DB triggers
+      // (trg_notify_round_proposal + trg_notify_negotiation_status).
 
-        if (allLockedNow) {
-          // Deal closed — notify both sides
-          if (supplierCompanyId) {
-            notifyCompanyUsers({
-              companyId: supplierCompanyId,
-              title: "🎉 Deal closed!",
-              body: `Negotiation on ${label} accepted — order created`,
-              icon: "check",
-              category: "orders",
-              linkUrl: `/supplier/negotiations/${negotiation.id}`,
-              relatedType: "negotiation",
-              relatedId: negotiation.id,
-            }).catch(() => {});
+      // Fire email notification through the central queue (best-effort, non-blocking).
+      // Templates: bidReceived | counterReceived | dealClosed
+      (async () => {
+        try {
+          const offerTitle = items[0]?.customer_product?.name
+            ? items.length > 1
+              ? `Mix · ${items.length} items`
+              : items[0].customer_product.name
+            : "Offer";
+          const offerNumber = String(negotiation.offer?.offer_number ?? "");
+          const supplierCompanyId = negotiation.offer?.supplier_id;
+          const supplierCompany = negotiation.offer?.supplier_name ?? "Supplier";
+          const buyerCompanyId = negotiation.buyer_company_id;
+          const buyerCompany =
+            (negotiation as any).buyer_company?.name ??
+            (negotiation as any).buyer_company_name ??
+            "Buyer";
+
+          const [{ getCompanyPrimaryContact }, { sendEmailNotification }] = await Promise.all([
+            import("@/lib/companyContact"),
+            import("@/lib/emailSender"),
+          ]);
+          const [supplierContact, buyerContact] = await Promise.all([
+            getCompanyPrimaryContact(supplierCompanyId),
+            getCompanyPrimaryContact(buyerCompanyId),
+          ]);
+
+          const fmt = (n: number) =>
+            n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+
+          if (allLockedNow) {
+            const settledValue = mergedAgreed.reduce((s, a) => {
+              const it = items.find((x) => x.id === a.offer_item_id);
+              return s + a.price_per_kg * Number(it?.amount ?? 0);
+            }, 0);
+            const totalQty = items.reduce((s, it) => s + Number(it.amount || 0), 0);
+            const askingAvg =
+              totalQty > 0 ? askingTotal / totalQty : Number(items[0]?.price ?? 0);
+            const finalAvg = totalQty > 0 ? settledValue / totalQty : askingAvg;
+            const movementPct =
+              askingAvg > 0
+                ? (((finalAvg - askingAvg) / askingAvg) * 100).toFixed(1)
+                : "0.0";
+            const baseVars: any = {
+              cutName: offerTitle,
+              offerNumber,
+              quantity: fmt(totalQty),
+              rounds: displayRound,
+              askingPrice: askingAvg.toFixed(2),
+              finalPrice: finalAvg.toFixed(2),
+              movementPct,
+              totalValue: fmt(settledValue),
+              incoterm: negIncoterm,
+              origin: "",
+              originFlag: "",
+              destination: negotiation.port?.country?.english_name ?? "",
+              destFlag: "",
+              shipment: "",
+              supplierCompany,
+              buyerCompany,
+              advancePct: "30",
+              advanceAmount: fmt(settledValue * 0.3),
+              supplierCompanyId,
+            };
+            if (supplierContact?.email) {
+              await sendEmailNotification("dealClosed" as any, supplierContact.email, {
+                ...baseVars,
+                name: supplierContact.name || supplierCompany,
+              });
+            }
+            if (buyerContact?.email) {
+              await sendEmailNotification("dealClosed" as any, buyerContact.email, {
+                ...baseVars,
+                name: buyerContact.name || buyerCompany,
+              });
+            }
+            return;
           }
-          if (buyerCompanyId) {
-            notifyCompanyUsers({
-              companyId: buyerCompanyId,
-              title: "🎉 Deal closed!",
-              body: `Negotiation on ${label} accepted — order created`,
-              icon: "check",
-              category: "orders",
-              linkUrl: `/buyer/negotiations/${negotiation.id}`,
-              relatedType: "negotiation",
-              relatedId: negotiation.id,
-            }).catch(() => {});
+
+          const totalQty = openItems.reduce((s, it) => s + Number(it.amount || 0), 0);
+          const askingAvg =
+            totalQty > 0
+              ? openItems.reduce((s, it) => s + Number(it.price) * Number(it.amount), 0) /
+                totalQty
+              : 0;
+          const counterAvg =
+            totalQty > 0
+              ? openItems.reduce((s, it) => {
+                  const price = accepted[it.id]
+                    ? theirPrices.get(it.id) ?? Number(it.price)
+                    : counters[it.id] ?? 0;
+                  return s + price * Number(it.amount);
+                }, 0) / totalQty
+              : 0;
+          const theirAvg =
+            totalQty > 0
+              ? openItems.reduce(
+                  (s, it) =>
+                    s + (theirPrices.get(it.id) ?? Number(it.price)) * Number(it.amount),
+                  0,
+                ) / totalQty
+              : 0;
+          const gap = Math.abs(askingAvg - counterAvg);
+          const gapPct = askingAvg > 0 ? ((gap / askingAvg) * 100).toFixed(1) : "0.0";
+
+          if (perspective === "buyer" && supplierContact?.email) {
+            // Buyer placed a counter-bid → notify supplier
+            await sendEmailNotification("bidReceived" as any, supplierContact.email, {
+              supplierName: supplierContact.name || supplierCompany,
+              buyerCompany,
+              offerNumber,
+              cutName: offerTitle,
+              round: displayRound,
+              maxRounds: MAX_DISPLAY_ROUNDS,
+              askingPrice: askingAvg.toFixed(2),
+              bidPrice: counterAvg.toFixed(2),
+              gap: gap.toFixed(2),
+              gapPct,
+              totalValue: fmt(counterTotal),
+              buyerFlag: "",
+              destination: negotiation.port?.country?.english_name ?? "",
+              destFlag: "",
+              supplierCompanyId,
+            } as any);
+          } else if (perspective === "supplier" && buyerContact?.email) {
+            // Supplier sent a counter → notify buyer
+            await sendEmailNotification("counterReceived" as any, buyerContact.email, {
+              buyerName: buyerContact.name || buyerCompany,
+              supplierCompany,
+              offerNumber,
+              cutName: offerTitle,
+              round: displayRound,
+              maxRounds: MAX_DISPLAY_ROUNDS,
+              askingPrice: askingAvg.toFixed(2),
+              yourBid: theirAvg.toFixed(2),
+              counterPrice: counterAvg.toFixed(2),
+              gap: gap.toFixed(2),
+              gapPct,
+              totalValue: fmt(counterTotal),
+              isLastRound: isFinal,
+              supplierCompanyId,
+            } as any);
           }
-        } else if (perspective === "buyer" && supplierCompanyId) {
-          notifyCompanyUsers({
-            companyId: supplierCompanyId,
-            title: "New bid received",
-            body: `Buyer sent a new bid on ${label} (round ${displayRound})`,
-            icon: "dollar",
-            category: "negotiations",
-            linkUrl: `/supplier/negotiations/${negotiation.id}`,
-            relatedType: "negotiation",
-            relatedId: negotiation.id,
-          }).catch(() => {});
-        } else if (perspective === "supplier" && buyerCompanyId) {
-          notifyCompanyUsers({
-            companyId: buyerCompanyId,
-            title: "Counter-offer received",
-            body: `${supplierName} sent a counter on ${label} (round ${displayRound})`,
-            icon: "dollar",
-            category: "negotiations",
-            linkUrl: `/buyer/negotiations/${negotiation.id}`,
-            relatedType: "negotiation",
-            relatedId: negotiation.id,
-          }).catch(() => {});
+        } catch (e) {
+          console.warn("[email] counter/bid/deal queue failed", e);
         }
-      } catch (e) {
-        console.warn("[notifications] counter notification failed", e);
-      }
-
-      // Fire email notification (best-effort, non-blocking)
-      try {
-        const offerTitle = items[0]?.customer_product?.name
-          ? items.length > 1
-            ? `Mix · ${items.length} items`
-            : items[0].customer_product.name
-          : "Offer";
-
-        if (perspective === "buyer") {
-          supabase.functions.invoke("negotiation-notifications", {
-            body: {
-              action: "new_bid",
-              data: {
-                supplier_email: "supplier@example.com",
-                offer_title: offerTitle,
-                buyer_name: "Buyer",
-                round: displayRound,
-                max_rounds: MAX_DISPLAY_ROUNDS,
-                bid_total: counterTotal.toFixed(2),
-                asking_total: askingTotal.toFixed(2),
-                link: publicUrl(`/supplier/negotiations/${negotiation.id}`),
-              },
-            },
-          }).catch(() => {});
-        } else {
-          supabase.functions.invoke("negotiation-notifications", {
-            body: {
-              action: "new_counter",
-              data: {
-                buyer_email: "buyer@example.com",
-                offer_title: offerTitle,
-                supplier_name: "Supplier",
-                round: displayRound,
-                max_rounds: MAX_DISPLAY_ROUNDS,
-                counter_total: counterTotal.toFixed(2),
-                link: publicUrl(`/buyer/negotiations/${negotiation.id}`),
-              },
-            },
-          }).catch(() => {});
-        }
-
-        if (allLockedNow) {
-          const settledValue = mergedAgreed.reduce((s, a) => {
-            const it = items.find((x) => x.id === a.offer_item_id);
-            return s + a.price_per_kg * Number(it?.amount ?? 0);
-          }, 0);
-          supabase.functions.invoke("negotiation-notifications", {
-            body: {
-              action: "bid_accepted",
-              data: {
-                to_email: perspective === "buyer" ? "supplier@example.com" : "buyer@example.com",
-                offer_title: offerTitle,
-                total_value: settledValue.toLocaleString(undefined, { maximumFractionDigits: 2 }),
-                link: publicUrl(`/supplier/negotiations/${negotiation.id}`),
-              },
-            },
-          }).catch(() => {});
-        }
-      } catch (e) {
-        console.warn("notification failed", e);
-      }
+      })();
 
       onOpenChange(false);
       onSubmitted?.();
@@ -586,7 +731,25 @@ export function CounterOfferModal({
           <DialogTitle>
             {t(titleKey)} — {t("supplier.counter.roundOf", { round: displayRound, max: MAX_DISPLAY_ROUNDS })}
           </DialogTitle>
-          <DialogDescription>{t(`${perspective}.counter.subtitle`)}</DialogDescription>
+          <DialogDescription>
+            {counterpartyLabel && (
+              <span
+                style={{
+                  display: "inline-block",
+                  marginRight: 8,
+                  padding: "2px 8px",
+                  borderRadius: 999,
+                  background: "#FDF2F8",
+                  color: "#8B2252",
+                  fontWeight: 600,
+                  fontSize: 12,
+                }}
+              >
+                → {counterpartyLabel}
+              </span>
+            )}
+            {t(`${perspective}.counter.subtitle`)}
+          </DialogDescription>
         </DialogHeader>
 
         {/* Offer summary header */}
@@ -638,11 +801,15 @@ export function CounterOfferModal({
 
         {isFinal && !exhausted && (
           <div
-            className="rounded-md px-3 py-2 text-xs font-medium border"
+            className="rounded-md px-3 py-3 text-xs border"
             style={{ background: "#fef3c7", color: "#92400e", borderColor: "#fcd34d" }}
           >
-            ⚠️ {t("engine.finalRound.banner",
-              "Final Round — This is the last chance to reach agreement. Unresolved items will be cancelled after this round.")}
+            <div className="font-bold text-sm" style={{ color: "#92400e" }}>⚠️ Final Round</div>
+            <div className="mt-1" style={{ color: "#78350f" }}>
+              {perspective === "supplier"
+                ? "This is the last round of negotiation on this offer. You can send this counter to the buyer for final evaluation, accept the buyer's current bid, reject, or send a message."
+                : "This is the last round of negotiation on this offer. You can accept the supplier's counter, reject, or send a message."}
+            </div>
           </div>
         )}
 
@@ -673,8 +840,66 @@ export function CounterOfferModal({
           </div>
         )}
 
+        {/* Full per-product price history (collapsible) — gives the responder
+            the same multi-round visibility shown on the detail page. */}
+        {rounds.length > 0 && historyProducts.length > 0 && (
+          <details className="rounded-lg border border-border bg-muted/30 px-3 py-2 group" open>
+            <summary className="cursor-pointer select-none text-xs font-semibold uppercase tracking-wide text-muted-foreground flex items-center justify-between">
+              <span>Price history per product</span>
+              <span className="text-[10px] font-normal text-muted-foreground group-open:hidden">
+                Show
+              </span>
+              <span className="text-[10px] font-normal text-muted-foreground hidden group-open:inline">
+                Hide
+              </span>
+            </summary>
+            <div className="mt-3 -mx-1 overflow-x-auto">
+              <PriceHistoryTable
+                products={historyProducts}
+                maxRoundShown={historyMaxRound}
+                agreedByName={agreedByName}
+              />
+            </div>
+          </details>
+        )}
+
         {/* Bulk apply — unified responsive */}
         {openItems.length > 0 && (
+          <>
+          {perspective === "buyer" && totalOfferFcl > 1 && (
+            <div className="mt-3 rounded-lg border border-border p-3 flex flex-wrap items-center gap-3">
+              <div className="flex flex-col">
+                <span className="text-[11px] uppercase font-semibold text-muted-foreground">
+                  Containers (FCL)
+                </span>
+                <span className="text-[11px] text-muted-foreground">
+                  Adjust how many you want on this negotiation
+                </span>
+              </div>
+              <select
+                value={fclCount}
+                onChange={(e) => setFclCount(Number(e.target.value))}
+                className="h-9 px-2 rounded-md border border-border text-sm tabular-nums bg-background"
+                disabled={maxSelectableFcl < 1}
+              >
+                {Array.from({ length: Math.max(1, maxSelectableFcl) }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>
+                    {n} FCL{n > 1 ? "s" : ""}
+                  </option>
+                ))}
+              </select>
+              <span className="text-xs text-muted-foreground">
+                <strong className="text-foreground tabular-nums">{fclAlloc.available + currentFcl}</strong> of {totalOfferFcl} available
+                {fclAlloc.sold > 0 && <> · {fclAlloc.sold} sold</>}
+                {Math.max(0, fclAlloc.inNegotiation - currentFcl) > 0 && (
+                  <> · {fclAlloc.inNegotiation - currentFcl} reserved by others</>
+                )}
+                {fclCount !== currentFcl && (
+                  <> · <span style={{ color: "#8B2252", fontWeight: 600 }}>changing from {currentFcl}</span></>
+                )}
+              </span>
+            </div>
+          )}
           <div className="mt-3 rounded-lg border border-border p-3 flex flex-col gap-3">
             <div className="text-xs uppercase font-semibold text-muted-foreground">
               {perspective === "buyer" ? "Apply bid in all items" : "Apply counter in all items"}
@@ -725,13 +950,13 @@ export function CounterOfferModal({
                 </button>
               </div>
               <Input
-                type="number"
-                step={bulkMode === "percent" ? "0.1" : "0.01"}
-                min="0"
-                max={bulkMode === "percent" ? "30" : undefined}
+                type="text"
                 inputMode="decimal"
                 value={bulkValue}
-                onChange={(e) => setBulkValue(e.target.value)}
+                onChange={(e) => {
+                  const v = e.target.value.replace(/,/g, ".");
+                  if (v === "" || /^\d*\.?\d*$/.test(v)) setBulkValue(v);
+                }}
                 placeholder={bulkMode === "percent" ? "e.g. 3%" : `e.g. 0.10 $/${wLbl}`}
                 className="h-9 w-32 text-right tabular-nums text-xs"
               />
@@ -788,6 +1013,7 @@ export function CounterOfferModal({
               </button>
             </div>
           </div>
+          </>
         )}
 
         {/* Cuts — desktop table */}
@@ -842,14 +1068,15 @@ export function CounterOfferModal({
                     </td>
                     <td className="px-3 py-2 text-right">
                       <Input
-                        type="number"
-                        step="0.01"
-                        min="0"
+                        type="text"
+                        inputMode="decimal"
                         readOnly={isAccepted}
                         value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
                         onChange={(e) => {
                           if (isAccepted) return;
-                          const v = parseFloat(e.target.value);
+                          const raw = e.target.value.replace(/,/g, ".");
+                          if (raw !== "" && !/^\d*\.?\d*$/.test(raw)) return;
+                          const v = parseFloat(raw);
                           const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
                           handleManualCounterChange(it.id, kg);
                         }}
@@ -862,6 +1089,13 @@ export function CounterOfferModal({
                       {errors[it.id] && (
                         <div className="text-[11px] text-destructive mt-1 max-w-[200px] ml-auto">
                           {errors[it.id]}
+                        </div>
+                      )}
+                      {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
+                        <div className="text-[10px] text-muted-foreground mt-1 max-w-[200px] ml-auto text-right">
+                          {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
+                          {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                          {" "}({hintRefs.get(it.id)!.label})
                         </div>
                       )}
                     </td>
@@ -945,15 +1179,15 @@ export function CounterOfferModal({
                     {t("supplier.counter.col.yourCounter")} ({pLbl})
                   </div>
                   <Input
-                    type="number"
-                    step="0.01"
-                    min="0"
+                    type="text"
                     inputMode="decimal"
                     readOnly={isAccepted}
                     value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
                     onChange={(e) => {
                       if (isAccepted) return;
-                      const v = parseFloat(e.target.value);
+                      const raw = e.target.value.replace(/,/g, ".");
+                      if (raw !== "" && !/^\d*\.?\d*$/.test(raw)) return;
+                      const v = parseFloat(raw);
                       const kg = Number.isFinite(v) ? fromDisplay(v, "price", unit) : 0;
                       handleManualCounterChange(it.id, kg);
                     }}
@@ -965,6 +1199,13 @@ export function CounterOfferModal({
                   />
                   {errors[it.id] && (
                     <div className="text-[11px] text-destructive mt-1">{errors[it.id]}</div>
+                  )}
+                  {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
+                      {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                      {" "}({hintRefs.get(it.id)!.label})
+                    </div>
                   )}
                   {!isAccepted && Math.abs(d) > 0.001 && (
                     <div className="text-[11px] tabular-nums mt-1" style={{ color: d > 0 ? "#15803d" : "#b45309" }}>

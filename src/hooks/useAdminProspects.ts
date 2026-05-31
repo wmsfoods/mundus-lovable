@@ -7,7 +7,7 @@ export type ProspectStage =
 export type ProspectRole = "potential_buyer" | "potential_supplier";
 export type ProspectSource =
   | "linkedin" | "trade_show" | "referral" | "web_scrape"
-  | "apollo" | "manual" | "inbound";
+  | "apollo" | "manual" | "inbound" | "wms_import";
 
 export type LeadType = "buyer" | "supplier" | "buyer_supplier";
 export type DecisionLevel = "c_level" | "vp" | "director" | "manager" | "specialist" | "other";
@@ -68,6 +68,7 @@ export interface Prospect {
   mundusCompanyId?: string;
   deactivationReason?: string;
   deactivatedAt?: string;
+  hasCLevel?: boolean;
 }
 
 export const STAGES: ProspectStage[] = [
@@ -160,10 +161,6 @@ type Seed = Omit<
 >;
 
 const SEEDS: Seed[] = [
-  // SUPPLIERS
-  { companyName: "JBS Brasil", country: "BR", role: "potential_supplier", stage: "qualified", owner: "FN", estGmv: 4_200_000, source: "linkedin", contactName: "Carlos Mendonça", contactEmail: "carlos.mendonca@jbs.com.br", notes: "Major BR exporter, multiple plants approved for CN/EU." },
-  // BUYERS
-  { companyName: "Tokyo Premium Imports", country: "JP", role: "potential_buyer", stage: "qualified", owner: "FN", estGmv: 3_800_000, source: "trade_show", contactName: "Hiroshi Yamada", contactEmail: "h.yamada@tokyo-premium.jp", notes: "Wagyu and premium aged cuts, restaurant supply." },
 ];
 
 function buildInitial(): Prospect[] {

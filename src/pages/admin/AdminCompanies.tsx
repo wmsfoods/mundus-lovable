@@ -1,8 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from "lucide-react";
 import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
+import { CreateBuyerProfileModal } from "@/components/admin/CreateBuyerProfileModal";
+import { supabase } from "@/integrations/supabase/client";
+import { CountryMultiFilter } from "@/components/admin/CountryMultiFilter";
+import { countryFlag } from "@/lib/countryFlags";
 import {
   useAdminCompanies,
   companyType,
@@ -43,16 +47,19 @@ export default function AdminCompanies() {
   const navigate = useNavigate();
   const { rows, loading, error } = useAdminCompanies();
   const [createSupplierOpen, setCreateSupplierOpen] = useState(false);
+  const [createBuyerOpen, setCreateBuyerOpen] = useState(false);
 
   const [search, setSearch] = useState("");
+  const [teamMatchIds, setTeamMatchIds] = useState<Set<string>>(new Set());
+  const [teamSearching, setTeamSearching] = useState(false);
   const [typeF, setTypeF] = useState<CompanyTypeFilter>("all");
   const [statusF, setStatusF] = useState<CompanyStatusFilter>("all");
-  const [country, setCountry] = useState<string>("all");
+  const [countries, setCountries] = useState<string[]>([]);
 
-  const countries = useMemo(() => {
+  const availableCountries = useMemo(() => {
     const s = new Set<string>();
     rows.forEach((r) => r.country && s.add(r.country));
-    return Array.from(s).sort();
+    return s;
   }, [rows]);
 
   const totals = useMemo(() => {
@@ -60,6 +67,31 @@ export default function AdminCompanies() {
     rows.forEach((r) => { if ((r.status ?? "active") !== "active") inactive++; });
     return { total: rows.length, active: rows.length - inactive };
   }, [rows]);
+
+  // Search team members (team_invitations) when query has 2+ chars; collect company_ids.
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 2) {
+      setTeamMatchIds(new Set());
+      setTeamSearching(false);
+      return;
+    }
+    let cancelled = false;
+    setTeamSearching(true);
+    const run = async () => {
+      const { data, error } = await supabase
+        .from("team_invitations")
+        .select("company_id")
+        .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
+        .limit(500);
+      if (cancelled) return;
+      if (error || !data) { setTeamMatchIds(new Set()); setTeamSearching(false); return; }
+      setTeamMatchIds(new Set(data.map((r: any) => r.company_id).filter(Boolean)));
+      setTeamSearching(false);
+    };
+    const h = setTimeout(run, 200);
+    return () => { cancelled = true; clearTimeout(h); };
+  }, [search]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -71,14 +103,15 @@ export default function AdminCompanies() {
       const isActive = (r.status ?? "active") === "active";
       if (statusF === "active" && !isActive) return false;
       if (statusF === "inactive" && isActive) return false;
-      if (country !== "all" && r.country !== country) return false;
+      if (countries.length > 0 && (!r.country || !countries.includes(r.country))) return false;
       if (q) {
         const hay = `${r.name} ${r.country ?? ""} ${r.city ?? ""} #${r.company_number}`.toLowerCase();
-        if (!hay.includes(q)) return false;
+        const matchesTeam = teamMatchIds.has(r.id);
+        if (!hay.includes(q) && !matchesTeam) return false;
       }
       return true;
     });
-  }, [rows, search, typeF, statusF, country]);
+  }, [rows, search, typeF, statusF, countries, teamMatchIds]);
 
   return (
     <div className="adm-body">
@@ -97,6 +130,14 @@ export default function AdminCompanies() {
             onClick={() => setCreateSupplierOpen(true)}
           >
             <Plus size={14} style={{ marginRight: 4, display: "inline" }} /> Create Supplier Profile
+          </button>
+          <button
+            type="button"
+            className="crm-btn-primary"
+            style={{ background: "#2563EB", color: "white", borderRadius: 6, padding: "8px 12px", fontSize: 13, fontWeight: 600, border: "none", cursor: "pointer" }}
+            onClick={() => setCreateBuyerOpen(true)}
+          >
+            <Plus size={14} style={{ marginRight: 4, display: "inline" }} /> Create Buyer Profile
           </button>
           <button type="button" className="crm-btn-primary" onClick={() => navigate("/admin/companies/new")}>
             <Plus size={14} style={{ marginRight: 4 }} /> {t("admin.companies.actions.new")}
@@ -120,10 +161,12 @@ export default function AdminCompanies() {
           <option value="active">{t("admin.companies.filters.active")}</option>
           <option value="inactive">{t("admin.companies.filters.inactive")}</option>
         </select>
-        <select className="crm-select" value={country} onChange={(e) => setCountry(e.target.value)}>
-          <option value="all">{t("admin.companies.filters.allCountries")}</option>
-          {countries.map((c) => <option key={c} value={c}>{c}</option>)}
-        </select>
+        <CountryMultiFilter
+          value={countries}
+          onChange={setCountries}
+          available={availableCountries}
+          placeholder={t("admin.companies.filters.allCountries")}
+        />
         <select className="crm-select" value={typeF} onChange={(e) => setTypeF(e.target.value as CompanyTypeFilter)}>
           <option value="all">{t("admin.companies.filters.allTypes")}</option>
           <option value="buyer">{t("admin.companies.filters.buyer")}</option>
@@ -187,6 +230,11 @@ export default function AdminCompanies() {
         onClose={() => setCreateSupplierOpen(false)}
         onCreated={(id) => navigate(`/admin/companies/${id}`)}
       />
+      <CreateBuyerProfileModal
+        open={createBuyerOpen}
+        onClose={() => setCreateBuyerOpen(false)}
+        onCreated={(id) => navigate(`/admin/companies/${id}`)}
+      />
     </div>
   );
 }
@@ -207,9 +255,17 @@ function Row({
     <tr onClick={onOpen} style={{ cursor: "pointer" }}>
       <td>
         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-          <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12 }}>
-            {initials(row.name)}
-          </span>
+          {row.logo_url ? (
+            <img
+              src={row.logo_url}
+              alt={row.name}
+              style={{ width: 32, height: 32, borderRadius: 8, objectFit: "cover", background: "#fff", border: "1px solid #e5e7eb", flexShrink: 0 }}
+            />
+          ) : (
+            <span style={{ width: 32, height: 32, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 12, flexShrink: 0 }}>
+              {initials(row.name)}
+            </span>
+          )}
           <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
             <strong>{row.name}</strong>
             <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>#{row.company_number}</span>
@@ -217,7 +273,14 @@ function Row({
         </div>
       </td>
       <td><TypeChip type={k} t={t} /></td>
-      <td>{[row.city, row.country].filter(Boolean).join(", ") || "—"}</td>
+      <td>
+        {row.country ? (
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+            <span style={{ fontSize: 14 }}>{countryFlag(row.country)}</span>
+            <span>{[row.city, row.country].filter(Boolean).join(", ")}</span>
+          </span>
+        ) : "—"}
+      </td>
       <td>
         {(row.protein_profiles ?? []).length > 0 ? (
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
@@ -236,9 +299,16 @@ function Row({
       </td>
       <td>{fmtDate(row.onboarded_at ?? row.created_at, locale)}</td>
       <td>
-        <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
-          {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
-        </span>
+        <div style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+          <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
+            {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
+          </span>
+          {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
+            <span title="Managed by Mundus team" style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 999, background: "#FDF2F8", color: "#8B2252", border: "1px solid #F9D0E0", lineHeight: 1.4, whiteSpace: "nowrap" }}>
+              🏢 Managed
+            </span>
+          )}
+        </div>
       </td>
       <td onClick={(e) => e.stopPropagation()}>
         <div style={{ position: "relative", display: "inline-flex", gap: 4 }}>
@@ -289,16 +359,25 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
   const isActive = (row.status ?? "active") === "active";
   return (
     <div className="adm-panel" onClick={onOpen} style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}>
-      <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
-        {initials(row.name)}
-      </span>
+      {row.logo_url ? (
+        <img
+          src={row.logo_url}
+          alt={row.name}
+          style={{ width: 40, height: 40, borderRadius: 8, objectFit: "cover", background: "#fff", border: "1px solid #e5e7eb", flexShrink: 0 }}
+        />
+      ) : (
+        <span style={{ width: 40, height: 40, borderRadius: 8, background: "linear-gradient(135deg, #8B2252, #7f1d3a)", color: "#fff", display: "inline-flex", alignItems: "center", justifyContent: "center", fontWeight: 600, fontSize: 13, flexShrink: 0 }}>
+          {initials(row.name)}
+        </span>
+      )}
       <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
         <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
           <strong style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis" }}>{row.name}</strong>
           <span style={{ fontSize: 11, color: "var(--fg-muted, #6b7280)" }}>#{row.company_number}</span>
         </div>
-        <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)" }}>
-          {[row.city, row.country].filter(Boolean).join(", ") || "—"}
+        <div style={{ fontSize: 12, color: "var(--fg-muted, #6b7280)", display: "inline-flex", alignItems: "center", gap: 4 }}>
+          {row.country && <span>{countryFlag(row.country)}</span>}
+          <span>{[row.city, row.country].filter(Boolean).join(", ") || "—"}</span>
         </div>
         {(row.protein_profiles ?? []).length > 0 && (
           <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 2 }}>
@@ -312,6 +391,11 @@ function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: str
           <span className={`adm-chip ${isActive ? "is-buyer" : ""}`}>
             {isActive ? t("admin.companies.filters.active") : t("admin.companies.filters.inactive")}
           </span>
+          {(row.mundus_managed_supplier || row.mundus_managed_buyer) && (
+            <span style={{ fontSize: 9, fontWeight: 600, padding: "1px 5px", borderRadius: 999, background: "#FDF2F8", color: "#8B2252", border: "1px solid #F9D0E0", lineHeight: 1.4, whiteSpace: "nowrap" }}>
+              🏢 Managed
+            </span>
+          )}
           {row.is_verified && (
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "#16a34a", fontSize: 11, fontWeight: 600 }}>
               <CheckCircle2 size={12} /> {t("common.yes")}

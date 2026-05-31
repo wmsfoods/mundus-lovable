@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useBuyerScope } from "@/hooks/useBuyerScope";
 
 export type BuyerOrderStatus = string;
 
@@ -101,10 +102,11 @@ export function useBuyerOrders() {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { company, loading: companyLoading } = useCurrentCompany();
+  const { scopeIds, loading: scopeLoading } = useBuyerScope();
 
   useEffect(() => {
-    if (companyLoading) return;
-    if (!company?.id) { setData([]); setLoading(false); return; }
+    if (companyLoading || scopeLoading) return;
+    if (!scopeIds.length) { setData([]); setLoading(false); return; }
     let cancelled = false;
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
     const load = async () => {
@@ -112,7 +114,7 @@ export function useBuyerOrders() {
       const { data: rows, error: qErr } = await supabase
         .from('orders')
         .select(SELECT)
-        .eq('buyer_company_id', company.id)
+        .in('buyer_company_id', scopeIds)
         .is('deleted_at', null)
         .order('placed_at', { ascending: false, nullsFirst: false })
         .order('created_at', { ascending: false });
@@ -127,7 +129,7 @@ export function useBuyerOrders() {
     };
     void load();
     const channel = supabase
-      .channel('buyer-orders-list')
+      .channel(`buyer-orders-${company.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
         if (reloadTimer) clearTimeout(reloadTimer);
         reloadTimer = setTimeout(() => { if (!cancelled) void load(); }, 400);
@@ -138,7 +140,7 @@ export function useBuyerOrders() {
       if (reloadTimer) clearTimeout(reloadTimer);
       supabase.removeChannel(channel);
     };
-  }, [company?.id, companyLoading]);
+  }, [company?.id, companyLoading, scopeIds.join(","), scopeLoading]);
 
   return { data, isLoading, error };
 }
@@ -148,10 +150,11 @@ export function useBuyerOrder(id: string) {
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { company, loading: companyLoading } = useCurrentCompany();
+  const { scopeIds, loading: scopeLoading } = useBuyerScope();
 
   useEffect(() => {
-    if (companyLoading) return;
-    if (!company?.id) { setData(null); setLoading(false); return; }
+    if (companyLoading || scopeLoading) return;
+    if (!scopeIds.length) { setData(null); setLoading(false); return; }
     let cancelled = false;
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
     let orderUuid: string | null = null;
@@ -160,7 +163,7 @@ export function useBuyerOrder(id: string) {
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
       const isNum = /^\d+$/.test(id);
       let q = supabase.from('orders').select(SELECT)
-        .eq('buyer_company_id', company.id)
+        .in('buyer_company_id', scopeIds)
         .is('deleted_at', null);
       if (isUuid) q = q.eq('id', id);
       else if (isNum) q = q.eq('order_number', Number(id));
@@ -191,7 +194,7 @@ export function useBuyerOrder(id: string) {
       if (reloadTimer) clearTimeout(reloadTimer);
       supabase.removeChannel(channel);
     };
-  }, [id, company?.id, companyLoading]);
+  }, [id, company?.id, companyLoading, scopeIds.join(","), scopeLoading]);
 
   return { data, isLoading, error };
 }

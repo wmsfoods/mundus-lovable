@@ -28,7 +28,7 @@
     "complete": "Complete",
     "signOut": "Log out",
     "signedOut": "Signed out",
-    "loading": "Loading...",
+    "loading": "Loading…",
     "search": "Search",
     "save": "Save",
     "close": "Close",
@@ -43,7 +43,8 @@
     "language": "Language",
     "english": "English",
     "portuguese": "Português",
-    "spanish": "Español"
+    "spanish": "Español",
+    "signIn": "Sign in"
   },
   "auth": {
     "login": "Log in",
@@ -211,12 +212,25 @@
       "offerRequests": "Offer Requests",
       "myCompany": "My Company",
       "messages": "Messages",
-      "chat": "Chat"
+      "chat": "Chat",
+      "marketIntelligence": "Market Intelligence",
+      "mundusIntel": "Mundus Intel"
     },
     "bottom": {
       "create": "Create",
       "negotiations": "Chat",
       "myOffers": "Offers"
+    },
+    "officeSwitcher": {
+      "allOffices": "All Offices",
+      "allOfficesFamily": "All Offices · {{family}}",
+      "allOfficesConsolidated": "All Offices (Consolidated)",
+      "directorBadge": "Director"
+    },
+    "officeIndicator": {
+      "viewing": "Viewing: {{office}}",
+      "showAll": "✕ Show all",
+      "assignedOfficeHint": "(your assigned office)"
     }
   },
   "dashboard": {
@@ -1189,13 +1203,13 @@
       }
     },
     "share": {
-      "title": "Share this bid with the supplier",
-      "subtitle": "The supplier can review and respond using this secure link — no login required.",
-      "subtitleUsed": "This link has already been used by the supplier.",
+      "title": "Share this negotiation with the buyer",
+      "subtitle": "The buyer can review and respond using this secure link — no login required.",
+      "subtitleUsed": "This link has already been used by the buyer.",
       "loading": "Preparing share link…",
       "copy": "Copy link",
       "copied": "Copied!",
-      "supplierEmail": "Supplier email (optional)",
+      "supplierEmail": "Buyer email (optional)",
       "saveEmail": "Save",
       "emailSaved": "Email saved",
       "sendEmail": "Send email",
@@ -1528,7 +1542,8 @@
           "acceptComingSoon": "Accept Order — coming soon",
           "rejectComingSoon": "Reject Order — coming soon"
         }
-      }
+      },
+      "emptyForOffice": "No sales yet for {{office}}."
     },
     "offers": {
       "heroTitle": "Track your orders easily and quickly.",
@@ -1627,7 +1642,8 @@
           "shipment": "Shipment",
           "packing": "\n"
         }
-      }
+      },
+      "emptyForOffice": "No offers yet for {{office}}."
     },
     "createOffer": {
       "title": "New offer",
@@ -1884,7 +1900,10 @@
         "sendInvoiceDraft": "Send invoice draft",
         "viewSale": "View sale",
         "issueBalanceInvoice": "Issue balance invoice"
-      }
+      },
+      "emptyOffersForOffice": "No offers yet for {{office}}.",
+      "emptySalesForOffice": "No sales yet for {{office}}.",
+      "showingOffice": "Showing {{office}}"
     },
     "company": {
       "title": "My Company",
@@ -2032,6 +2051,60 @@
             "Buyer-level drilldown with full negotiation history"
           ]
         }
+      }
+    },
+    "multiOffice": {
+      "requests": {
+        "tabUnassigned": "Needs routing",
+        "tabAssigned": "Assigned",
+        "assignToOffice": "Assign to office ▾",
+        "assigning": "Assigning…",
+        "assignedToast": "Request assigned",
+        "assignedToastDesc": "The office has been notified.",
+        "assignError": "Could not assign",
+        "assignErrorUnknown": "Unknown error",
+        "badgeAssignedTo": "{{office}}",
+        "emptyHqUnassigned": "No requests waiting for routing.",
+        "emptyHqAssigned": "No requests assigned yet.",
+        "emptyOffice": "No requests assigned to your office yet."
+      },
+      "rollup": {
+        "sectionTitle": "By office",
+        "allOffices": "All Offices",
+        "active": "Active",
+        "openNeg": "Open neg.",
+        "closed": "Closed",
+        "inbound": "Inbound",
+        "incomingRequests": "Incoming requests",
+        "loading": "Loading…"
+      }
+    },
+    "cutComparison": {
+      "nav": "Cut Comparison",
+      "title": "Cut Comparison",
+      "subtitle": "Your family's plants vs the anonymized market — aggregates only, never competitor identities.",
+      "directorOnly": "This view is available to Global Directors only.",
+      "filter": {
+        "cut": "Cut",
+        "cutPlaceholder": "Select a cut…",
+        "destination": "Destination country (optional)",
+        "destinationPlaceholder": "e.g. China"
+      },
+      "table": {
+        "origin": "Origin",
+        "avgAsk": "Avg asking USD/kg",
+        "recentClosed": "Recent closed USD/kg",
+        "sample": "Sample",
+        "pickCut": "Pick a cut to compare.",
+        "loading": "Loading…",
+        "noFamilyOffers": "No offers from your family for this cut yet.",
+        "anonMarket": "Anonymized market",
+        "insufficient": "Insufficient market data (need ≥ 3 samples)",
+        "bandFormat": "{{low}} – median {{med}} – {{high}}"
+      },
+      "chart": {
+        "title": "Price band (market vs your offers)",
+        "marketRange": "Market range"
       }
     }
   },
@@ -2188,7 +2261,7 @@
         "find_people": "Find People",
         "lists": "Lists",
         "marketplace": "Marketplace",
-        "products": "Products & product / cuts",
+        "products": "Items",
         "markets": "Markets",
         "ports": "Ports",
         "finance": "Finance",
@@ -2323,7 +2396,8 @@
         "web_scrape": "Web scrape",
         "apollo": "Mundus Intelligence",
         "manual": "Manual",
-        "inbound": "Inbound"
+        "inbound": "Inbound",
+        "wms_import": "WMS"
       },
       "table": {
         "company": "Company",
@@ -2551,7 +2625,37 @@
           "insight": "Insight",
           "sources": "Source companies",
           "category": "Category",
-          "empty": "No learnings recorded yet"
+          "empty": "No learnings recorded yet",
+          "log": {
+            "title": "Weekly Learning Log",
+            "subtitle": "Fill in at the end of each week — 15 minutes of retrospective that prevents repeating the same mistakes.",
+            "thisWeek": "THIS WEEK",
+            "newWeek": "+ New week",
+            "addPrevious": "Backfill previous weeks",
+            "colWeek": "Week",
+            "colFilled": "Filled",
+            "colWorked": "What worked",
+            "colWorkedHint": "tactic, approach, conversation",
+            "colStuck": "What got stuck",
+            "colStuckHint": "objection, stage, person",
+            "colNext": "Next-week adjustment",
+            "colNextHint": "concrete action",
+            "placeholderWorked": "What moved the needle this week?",
+            "placeholderStuck": "Where did we lose time or trust?",
+            "placeholderNext": "One concrete change for next week",
+            "filterQuarter": "All quarters",
+            "filterSearch": "Search…",
+            "insightsTitle": "Smart insights",
+            "insightsRepeating": "Recurring blocker",
+            "insightsPending": "Pending follow-through",
+            "insightsEmpty": "Log a few weeks to see patterns",
+            "weeksLogged": "weeks logged",
+            "streak": "week streak",
+            "savedAt": "Saved",
+            "saving": "Saving…",
+            "emptyTitle": "Start your first weekly retrospective",
+            "emptyCta": "Log this week"
+          }
         },
         "modal": {
           "addCompany": "Add Company",
@@ -2991,7 +3095,7 @@
         }
       },
       "cuts": {
-        "title": "Products & Product / Cuts",
+        "title": "Items",
         "subtitle": "Manage the meat product / cuts catalog for the marketplace",
         "searchPlaceholder": "Search product / cut name or product number...",
         "allCategories": "All categories",
@@ -3077,7 +3181,7 @@
         "supplier_main": "Supplier · Main Menu",
         "supplier_insights": "Supplier · Insights",
         "supplier_future": "Supplier · Coming Soon",
-        "admin_crm": "Admin · CRM",
+        "admin_crm": "WMS",
         "admin_ops": "Admin · Operations",
         "admin_marketplace": "Admin · Marketplace",
         "admin_finance": "Admin · Finance"
@@ -3147,5 +3251,149 @@
     "title": "Notifications",
     "markAllRead": "Mark all as read",
     "empty": "No notifications yet"
+  },
+  "whatsapp": {
+    "share_offer": "Hi! Check out this offer on Mundus Trade: {{url}}",
+    "share_request": "Hi! Check out this request on Mundus Trade: {{url}}",
+    "contact_supplier": "Hi! I'm interested in your offer on Mundus Trade. Let's discuss.",
+    "contact_buyer": "Hi! I saw your request on Mundus Trade. I'd like to make an offer.",
+    "send_message": "Send via WhatsApp",
+    "share": "Share via WhatsApp"
+  },
+  "team": {
+    "form": {
+      "title": {
+        "edit": "Edit User",
+        "invite": "Invite User"
+      },
+      "subtitle": {
+        "edit": "Update this team member's details and permissions.",
+        "invite": "Send an invitation email — they will set their password on first login."
+      },
+      "fields": {
+        "name": "Name",
+        "email": "E-mail",
+        "profileType": "Profile Type",
+        "jobTitle": "Job title",
+        "phone": "Phone",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "jobTitle": "e.g. Sales Director",
+        "notes": "Internal notes about this user…"
+      },
+      "profile": {
+        "master_buyer": "Master Buyer (full access)",
+        "procurement": "Procurement",
+        "import_manager": "Import Manager",
+        "quality_control": "Quality Control",
+        "logistics": "Logistics",
+        "master_supplier": "Master Supplier (full access)",
+        "operator": "Operator",
+        "export_manager": "Export Manager"
+      },
+      "status": {
+        "active": "Active",
+        "inactive": "Inactive"
+      },
+      "account": {
+        "activeTitle": "Account active",
+        "inactiveTitle": "Account inactive",
+        "activeHint": "User can sign in and access this workspace.",
+        "inactiveHint": "User cannot sign in until reactivated."
+      },
+      "meta": {
+        "created": "CREATED",
+        "lastLogin": "LAST LOGIN",
+        "userId": "USER ID"
+      },
+      "actions": {
+        "save": "Save changes",
+        "sendInvite": "Send invite",
+        "delete": "Delete user"
+      },
+      "confirmDelete": "Delete this user? This cannot be undone.",
+      "toast": {
+        "updated": "User updated.",
+        "deleted": "User deleted.",
+        "inviteSent": "Invitation email sent to {{email}}.",
+        "inviteCreated": "Invitation created for {{email}} (email pending)."
+      },
+      "errors": {
+        "nameEmailRequired": "Name and email are required.",
+        "noCompany": "No company selected.",
+        "saveFailed": "Save failed."
+      }
+    }
+  },
+  "inviteAccept": {
+    "title": "Accept your invitation",
+    "subtitle": "Hi {{name}}, set a password to access your workspace.",
+    "email": "E-mail",
+    "password": "Password",
+    "confirm": "Confirm password",
+    "cta": "Accept and continue",
+    "success": "Welcome! Redirecting to your workspace…",
+    "errors": {
+      "title": "Invitation unavailable",
+      "invalid": "This invitation link is invalid or has expired.",
+      "alreadyAccepted": "This invitation has already been accepted. Please sign in.",
+      "expired": "This invitation has expired. Please ask for a new one.",
+      "passwordShort": "Password must be at least 8 characters.",
+      "passwordMismatch": "Passwords do not match."
+    }
+  },
+  "billing": {
+    "plans": {
+      "supplier_pro": "Mundus PRO (Supplier)",
+      "buyer_pro": "Mundus PRO (Buyer)"
+    },
+    "upgrade": {
+      "cta": "Upgrade — ${{price}}/mo",
+      "billedMonthly": "Billed monthly",
+      "cancelAnytime": "Cancel anytime",
+      "redirecting": "Redirecting to checkout…"
+    },
+    "errors": {
+      "noCompany": "No company selected.",
+      "checkoutFailed": "Could not start checkout. Please try again.",
+      "portalFailed": "Could not open the billing portal."
+    },
+    "requirePro": {
+      "eyebrow": "Mundus PRO",
+      "title": "This feature is part of Mundus PRO",
+      "lede": "Unlock advanced market intelligence, analytics and benchmarking for your whole team.",
+      "perMonth": "month",
+      "contactSales": "Contact sales"
+    },
+    "success": {
+      "title": "Welcome to Mundus PRO",
+      "lede": "Your subscription is active. PRO features are now unlocked across your company.",
+      "cta": "Go to PRO",
+      "autoRedirect": "You will be redirected automatically in a few seconds.",
+      "unlocks": {
+        "supplier": [
+          "Price benchmark",
+          "Advanced analytics",
+          "Cut comparison across offices"
+        ],
+        "buyer": [
+          "Procurement intelligence",
+          "Market benchmarks",
+          "Cross-office insights"
+        ]
+      }
+    },
+    "section": {
+      "title": "Billing & Subscription",
+      "managePortal": "Manage billing in Stripe",
+      "renewsOn": "Renews on {{date}}",
+      "cancelsOn": "Cancels on {{date}}",
+      "canceledUntil": "Canceled — access until {{date}}",
+      "pastDue": "Your last payment failed. Please update your payment method to keep Mundus PRO active.",
+      "fixPayment": "Update payment method",
+      "noSubscription": "No active subscription. Upgrade to Mundus PRO from ${{price}}/mo."
+    },
+    "salesConfirmation": "Thanks! The Mundus Operations team will reach out within 24 hours."
   }
 }

@@ -78,6 +78,19 @@ function getEmpty(): AdminAnalytics {
   };
 }
 
+function warnAdminQuery(name: string, error: unknown) {
+  if (error) console.warn(`[admin-analytics] ${name} query failed`, error);
+}
+
+async function safeQuery<T = any>(fn: () => any): Promise<{ data: T[]; error: any; count?: number }> {
+  try {
+    const res = await fn();
+    return { data: (res?.data ?? []) as T[], error: res?.error ?? null, count: res?.count };
+  } catch (error) {
+    return { data: [], error };
+  }
+}
+
 function getRelativeTime(iso: string | null | undefined): string {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
@@ -93,20 +106,32 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
   const { data, isLoading } = useQuery({
     queryKey: ["admin-analytics-live"],
     queryFn: async (): Promise<AdminAnalytics> => {
-      const [
-        offersRes, negsRes, ordersRes, companiesRes,
-        negRoundsRes, recentNegsRes, offerItemsRes, buyerReqsRes, marketsRes,
-      ] = await Promise.all([
-        supabase.from("offers").select("id, status, supplier_id, created_at, deleted_at").is("deleted_at", null),
-        supabase.from("negotiations").select("id, status, offer_id, buyer_company_id, settled_total_value, created_at, updated_at, deleted_at").is("deleted_at", null),
-        supabase.from("orders").select("id, status, created_at, deleted_at").is("deleted_at", null),
-        supabase.from("companies").select("id, name, country, is_supplier, is_buyer, created_at, deleted_at").is("deleted_at", null),
-        supabase.from("round_proposals").select("id, negotiation_id, round"),
-        supabase.from("negotiations").select("id, status, updated_at, buyer_company_id, offer_id").is("deleted_at", null).order("updated_at", { ascending: false }).limit(10),
-        supabase.from("offer_items").select("id, offer_id, category, quantity_kg, price_per_kg"),
-        supabase.from("buyer_requests").select("id, destination_country, created_at, status").is("deleted_at", null),
-        supabase.from("offer_markets").select("offer_id, country_name"),
-      ]);
+      try {
+        const [
+          offersRes, negsRes, ordersRes, companiesRes,
+          negRoundsRes, recentNegsRes, offerItemsRes, buyerReqsRes, marketsRes, usersRes,
+        ] = await Promise.all([
+          safeQuery(() => supabase.from("offers").select("id, status, supplier_id, created_at, deleted_at").is("deleted_at", null)),
+          safeQuery(() => supabase.from("negotiations").select("id, status, offer_id, buyer_company_id, settled_total_value, created_at, updated_at, deleted_at").is("deleted_at", null)),
+          safeQuery(() => supabase.from("orders").select("id, status, created_at, deleted_at").is("deleted_at", null)),
+          safeQuery(() => supabase.from("companies").select("id, name, country, is_supplier, is_buyer, created_at, deleted_at").is("deleted_at", null)),
+          safeQuery(() => supabase.from("round_proposals").select("id, negotiation_id, round")),
+          safeQuery(() => supabase.from("negotiations").select("id, status, updated_at, buyer_company_id, offer_id").is("deleted_at", null).order("updated_at", { ascending: false }).limit(10)),
+          safeQuery(() => supabase.from("offer_items").select("id, offer_id, category, quantity_kg, price_per_kg")),
+          safeQuery(() => supabase.from("buyer_requests").select("id, destination_country, created_at, status").is("deleted_at", null)),
+          safeQuery(() => supabase.from("offer_markets").select("offer_id, country_name")),
+          safeQuery(() => supabase.from("users").select("id, created_at, deleted_at").is("deleted_at", null)),
+        ]);
+
+      warnAdminQuery("offers", offersRes.error);
+      warnAdminQuery("negotiations", negsRes.error);
+      warnAdminQuery("orders", ordersRes.error);
+      warnAdminQuery("companies", companiesRes.error);
+      warnAdminQuery("round_proposals", negRoundsRes.error);
+      warnAdminQuery("recent_negotiations", recentNegsRes.error);
+      warnAdminQuery("offer_items", offerItemsRes.error);
+      warnAdminQuery("buyer_requests", buyerReqsRes.error);
+      warnAdminQuery("offer_markets", marketsRes.error);
 
       const offers = (offersRes.data ?? []) as any[];
       const negs = (negsRes.data ?? []) as any[];
@@ -117,6 +142,7 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
       const items = (offerItemsRes.data ?? []) as any[];
       const requests = (buyerReqsRes.data ?? []) as any[];
       const offerMarkets = (marketsRes.data ?? []) as any[];
+      const users = (usersRes.data ?? []) as any[];
 
       const closedDeals = negs.filter(n => n.status === "bid_accepted");
       const gmv = closedDeals.reduce((s, n) => s + Number(n.settled_total_value ?? 0), 0);
@@ -126,7 +152,8 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
       const winRate = totalNegs > 0 ? closedDeals.length / totalNegs : 0;
 
       const thirtyDaysAgo = new Date(Date.now() - 30 * 86400000).toISOString();
-      const newSignups = companies.filter(c => c.created_at && c.created_at >= thirtyDaysAgo).length;
+      // Count real platform user signups (not admin-created company records)
+      const newSignups = users.filter(u => u.created_at && u.created_at >= thirtyDaysAgo).length;
       const avgDealSize = closedDeals.length > 0 ? gmv / closedDeals.length : 0;
 
       const cycles = closedDeals.map(n => {
@@ -208,7 +235,7 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
 
       const maxRounds: Record<string, number> = {};
       for (const r of rounds) {
-        const rn = Number(r.round ?? 0);
+        const rn = Number(r.round_number ?? r.round ?? 0);
         if (!maxRounds[r.negotiation_id] || rn > maxRounds[r.negotiation_id]) {
           maxRounds[r.negotiation_id] = rn;
         }
@@ -306,9 +333,15 @@ export function useAdminAnalytics(): AdminAnalytics & { loading: boolean } {
         avgByProduct,
         opsQueue: [],
       };
+      } catch (error) {
+        console.warn("[admin-analytics] failed to load dashboard data", error);
+        return getEmpty();
+      }
     },
     staleTime: 60_000,
     refetchInterval: 120_000,
+    retry: 1,
+    throwOnError: false,
   });
 
   return { ...(data ?? getEmpty()), loading: isLoading };

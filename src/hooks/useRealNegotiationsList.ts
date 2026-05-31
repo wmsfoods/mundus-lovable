@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
+import { useSupplierScope } from "./useSupplierScope";
+import { useBuyerScope } from "./useBuyerScope";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 import {
   countryToCode,
@@ -30,6 +32,9 @@ export function useRealNegotiationsList(role: Role) {
   const [error, setError] = useState<Error | null>(null);
   const { activeOfficeId, isAllOffices } = useActiveOffice();
   const { company, loading: companyLoading } = useCurrentCompany();
+  const { scopeIds, loading: scopeLoading } = useSupplierScope();
+  const { scopeIds: buyerScopeIds, loading: buyerScopeLoading } = useBuyerScope();
+  const scopeKey = scopeIds.join(",");
   // Buyers always see all negotiations regardless of supplier office.
   const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
   const [refreshKey, setRefreshKey] = useState(0);
@@ -39,7 +44,9 @@ export function useRealNegotiationsList(role: Role) {
 
   useEffect(() => {
     let cancelled = false;
-    if (companyLoading || !company?.id) {
+    if (companyLoading || !company?.id ||
+        (role === "supplier" && scopeLoading) ||
+        (role === "buyer" && buyerScopeLoading)) {
       setLoading(true);
       return;
     }
@@ -54,6 +61,7 @@ export function useRealNegotiationsList(role: Role) {
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
           order_id,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
+          buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
           offer:offers!inner (
             id, offer_number, created_at, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
@@ -71,9 +79,23 @@ export function useRealNegotiationsList(role: Role) {
         )
         .order("updated_at", { ascending: false });
 
-      q = role === "buyer"
-        ? q.eq("buyer_company_id", company!.id)
-        : q.eq("offer.supplier_id", company!.id);
+      if (role === "buyer") {
+        if (buyerScopeIds.length === 0) {
+          setBuyerGroups([]);
+          setLoading(false);
+          return;
+        }
+        q = q.in("buyer_company_id", buyerScopeIds);
+      } else {
+        // Scope by the supplier's family/office focus. RLS still enforces
+        // cross-family isolation at the DB layer.
+        if (scopeIds.length === 0) {
+          setSupplierGroups([]);
+          setLoading(false);
+          return;
+        }
+        q = q.in("offer.supplier_id", scopeIds);
+      }
 
       if (applyOfficeFilter) {
         // Include negotiations explicitly assigned to this office AND
@@ -107,7 +129,7 @@ export function useRealNegotiationsList(role: Role) {
     return () => {
       cancelled = true;
     };
-  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, refreshKey]);
+  }, [role, applyOfficeFilter, activeOfficeId, company?.id, companyLoading, scopeLoading, scopeKey, buyerScopeLoading, buyerScopeIds.join(","), refreshKey]);
 
   if (role === "buyer") {
     const offerCount = buyerGroups.length;
@@ -140,7 +162,7 @@ function lastTotals(r: RealNegotiationRow) {
     else counter = total;
     maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
   }
-  if (counter === 0) counter = yourBid; // pre-counter UI fallback
+  // No fallback: counter remains 0 when supplier hasn't sent one yet (UI shows "—")
   return { yourBid, counter, displayRound: maxRoundDisplay };
 }
 
@@ -197,11 +219,12 @@ function groupForSupplier(rows: RealNegotiationRow[]): ParentOffer[] {
     const { yourBid, counter, displayRound } = lastTotals(r);
     const destCountry = r.port?.country?.english_name ?? "—";
     const destPort = r.port?.name ?? "—";
+    const buyerName = r.buyer?.name ?? "Buyer";
     const bid: NegotiationBid = {
       id: r.id,
       parentOfferId: parentId,
-      buyerName: "Buyer", // No company name yet — could fetch later
-      buyerInitials: "BR",
+      buyerName,
+      buyerInitials: initialsOf(buyerName),
       buyerCountryCode: countryToCode(destCountry),
       buyerContact: undefined,
       round: displayRound,
@@ -262,7 +285,9 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
     return {
       name: it.customer_product?.name ?? "—",
       pack: "—",
-      qtyLb: Number(it.amount),
+      // it.amount is stored in kg in DB. Detail pages divide by LB_PER_KG
+      // expecting lb here, so convert kg → lb before exposing.
+      qtyLb: Number(it.amount) * 2.20462262185,
       askingUsdKg: Number(it.price),
       bidR1UsdKg: (m["bidR1UsdKg"] as number) ?? Number(it.price),
       counterR1UsdKg: (m["counterR1UsdKg"] as number) ?? Number(it.price),
@@ -270,6 +295,8 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
       counterR2UsdKg: m["counterR2UsdKg"] as number | undefined,
       bidR3UsdKg: m["bidR3UsdKg"] as number | undefined,
       counterR3UsdKg: m["counterR3UsdKg"] as number | undefined,
+      bidR4UsdKg: m["bidR4UsdKg"] as number | undefined,
+      counterR4UsdKg: m["counterR4UsdKg"] as number | undefined,
     };
   });
 
@@ -308,11 +335,12 @@ export function toSupplierDetail(r: RealNegotiationRow): NegotiationDetail {
   const buyer = toBuyerDetail(r);
   const destCountry = r.port?.country?.english_name ?? "—";
   const destPort = r.port?.name ?? "—";
+  const buyerName = r.buyer?.name ?? "Buyer";
   return {
     id: buyer.id,
     parentOfferId: `po-${r.offer!.id}`,
-    buyerName: "Buyer",
-    buyerInitials: "BR",
+    buyerName,
+    buyerInitials: initialsOf(buyerName),
     buyerCountryCode: countryToCode(destCountry),
     buyerContact: undefined,
     round: buyer.round,

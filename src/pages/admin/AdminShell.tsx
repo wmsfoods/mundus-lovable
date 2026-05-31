@@ -2,9 +2,9 @@ import { useEffect, useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
-  LayoutDashboard, Building, Package, MessagesSquare, ShieldCheck, AlertTriangle, Activity,
-  Users, BarChart3, Beef, Globe, Ship, Coins, Percent, Users2, History, Flag, Mail, Megaphone, FileText, AtSign,
-  Search as SearchIcon, UserSearch, ClipboardList, UserCheck,
+  LayoutDashboard, Building, Package, MessagesSquare, Activity,
+  Users, BarChart3, Beef, Globe, Ship, Coins, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw, LineChart,
+  Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox, BookOpen,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
@@ -48,14 +48,17 @@ export default function AdminShell() {
   const ADMIN_NAV: SidebarItem[] = [
     { to: "/admin/dashboard", label: t("admin.shell.nav.dashboard"), icon: LayoutDashboard as unknown as IconCmp, groupLabel: t("admin.shell.nav.overview") },
     { to: "/admin/analytics", label: t("admin.shell.nav.analytics"), icon: Activity as unknown as IconCmp },
+    { to: "/admin/bi", label: "Executive Overview", icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi/market", label: "Market Intelligence", icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi/negotiations", label: "Negotiation Funnel", icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi/demand", label: "Buyer Demand", icon: LineChart as unknown as IconCmp },
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
     { to: "/admin/user-requests", label: "User Requests", icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },
+    { to: "/admin/offer-requests", label: "Offer Requests", icon: Inbox as unknown as IconCmp },
     { to: "/admin/offers", label: "All Offers", icon: Package as unknown as IconCmp },
     { to: "/admin/deals", label: t("admin.shell.nav.deals"), icon: Package as unknown as IconCmp },
     { to: "/admin/negotiations", label: t("admin.shell.nav.negotiations"), icon: MessagesSquare as unknown as IconCmp },
-    { to: "/admin/verifications", label: t("admin.shell.nav.verifications"), icon: ShieldCheck as unknown as IconCmp, badge: 8 },
-    { to: "/admin/disputes", label: t("admin.shell.nav.disputes"), icon: AlertTriangle as unknown as IconCmp, badge: 3 },
 
     { to: "/admin/crm/prospects", label: t("admin.shell.nav.prospects"), icon: Users as unknown as IconCmp, groupLabel: t("admin.shell.nav.crm") },
     { to: "/admin/crm/pipeline", label: t("admin.shell.nav.pipeline"), icon: BarChart3 as unknown as IconCmp },
@@ -72,12 +75,16 @@ export default function AdminShell() {
     { to: "/admin/outreach/campaigns", label: t("admin.outreach.nav.campaigns", "Campaigns"), icon: Megaphone as unknown as IconCmp },
     { to: "/admin/outreach/templates", label: t("admin.outreach.nav.templates", "Templates"), icon: FileText as unknown as IconCmp },
     { to: "/admin/settings/email", label: t("admin.outreach.nav.email_settings", "Email Settings"), icon: AtSign as unknown as IconCmp },
+    { to: "/admin/email-activity", label: "Email Activity", icon: Mail as unknown as IconCmp },
 
     { to: "/admin/finance/revenue", label: t("admin.shell.nav.revenue"), icon: Coins as unknown as IconCmp, groupLabel: t("admin.shell.nav.finance") },
+    { to: "/admin/whats/conversas", label: "Mundus Whats", icon: MessageCircle as unknown as IconCmp, groupLabel: "COMMUNICATION" },
 
     { to: "/admin/settings/team", label: t("admin.shell.nav.team"), icon: Users2 as unknown as IconCmp, groupLabel: t("admin.shell.nav.settings") },
     { to: "/admin/settings/audit", label: t("admin.shell.nav.audit"), icon: History as unknown as IconCmp },
     { to: "/admin/settings/flags", label: t("admin.shell.nav.flags"), icon: Flag as unknown as IconCmp },
+    { to: "/admin/import", label: "Import", icon: RefreshCw as unknown as IconCmp },
+    { to: "/admin/docs", label: "Documents", icon: BookOpen as unknown as IconCmp, groupLabel: "RESOURCES" },
   ];
 
   const ADMIN_BOTTOM: BottomNavItem[] = [
@@ -85,7 +92,7 @@ export default function AdminShell() {
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp },
     { to: "/admin/deals", label: t("admin.shell.nav.deals"), icon: Package as unknown as IconCmp, accent: true },
     { to: "/admin/crm/prospects", label: t("admin.shell.nav.prospects"), icon: Users as unknown as IconCmp },
-    { to: "/admin/verifications", label: t("admin.shell.nav.verifications"), icon: ShieldCheck as unknown as IconCmp },
+    
   ];
 
   return (

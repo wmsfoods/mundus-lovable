@@ -65,7 +65,7 @@ export default function Login() {
       <div className="flex justify-end px-4 pt-3 md:px-6 md:pt-4">
         <LanguageSwitcher variant="pill" />
       </div>
-      <div className="flex flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
+      <main className="flex flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
         {/* Carousel — desktop only; hidden on mobile */}
         <div className="relative hidden md:block w-full md:max-w-[600px] md:aspect-square overflow-hidden rounded-[2.5rem] shadow-sm">
           {slides.map((src, i) => (
@@ -170,16 +170,16 @@ export default function Login() {
             </Link>
           </p>
 
-          <div className="mt-8 flex justify-center gap-6 text-xs text-gray-400">
+          <div className="mt-8 flex justify-center gap-6 text-xs text-gray-600">
             <a href="#" className="underline">{t("common.termsLink")}</a>
             <a href="#" className="underline">{t("common.privacyLink")}</a>
           </div>
           </div>
-      </div>
+      </main>
 
       {/* Footer — desktop only */}
       <footer className="hidden md:block border-t border-gray-100 py-5">
-        <div className="flex items-center justify-center gap-3 text-xs text-gray-500">
+        <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
           <img src={mundusLogo} alt="Mundus Trade" className="h-5 w-auto opacity-80" />
           <span>{t("common.copyright")}</span>
         </div>

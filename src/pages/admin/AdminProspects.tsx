@@ -1,17 +1,39 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Search, Upload, Plus, KanbanSquare, Table as TableIcon, Trash2, X } from "lucide-react";
+import { Search, Upload, Plus, KanbanSquare, Table as TableIcon, Trash2, X, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
-  useAdminProspects, getStageCounts, STAGES,
+  STAGES,
   OWNERS, type ProspectStage,
   type Prospect,
 } from "@/hooks/useAdminProspects";
 import { AddProspectModal } from "@/components/admin/AddProspectModal";
 import { ImportProspectsModal } from "@/components/admin/ImportProspectsModal";
 import { supabase } from "@/integrations/supabase/client";
+import { bulkEnrichByCompanyIds } from "@/lib/prospectEnrich";
+import { Pagination } from "@/components/mundus/Pagination";
+import { CountryFilterPopover } from "@/components/admin/CountryFilterPopover";
+import { countryFlag } from "@/lib/countryFlags";
+import CLevelModule from "@/components/admin/CLevelModule";
+
+const PAGE_SIZE = 50;
+
+// DB crm_companies.stage → UI ProspectStage
+const DB_TO_UI_STAGE: Record<string, ProspectStage> = {
+  cold: "new", warm: "researching", contacted: "contacted",
+  qualified: "qualified", onboarding: "onboarding",
+  onboarded: "onboarded", lost: "lost",
+};
+const UI_TO_DB_STAGE: Record<ProspectStage, string> = {
+  new: "cold", researching: "warm", contacted: "contacted",
+  qualified: "qualified", onboarding: "onboarding",
+  onboarded: "onboarded", lost: "lost",
+};
+
+// Escape commas / parens that would break PostgREST .or() syntax
+const sanitizeOr = (s: string) => s.replace(/[,()]/g, " ").trim();
 
 const fmtGmv = (v?: number) =>
   v == null ? "—" : v >= 1_000_000 ? `$${(v / 1_000_000).toFixed(1)}M` : `$${Math.round(v / 1000)}k`;
@@ -19,43 +41,191 @@ const fmtGmv = (v?: number) =>
 export default function AdminProspects() {
   const { t } = useTranslation();
   const nav = useNavigate();
-  const mockList = useAdminProspects();
-  const [dbList, setDbList] = useState<Prospect[]>([]);
+  const [section, setSection] = useState<"prospects" | "c_level">("prospects");
+  const [list, setList] = useState<Prospect[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
+  const [loading, setLoading] = useState(false);
   const [refreshTick, setRefreshTick] = useState(0);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [deleting, setDeleting] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [enriching, setEnriching] = useState(false);
+  const [enrichProgress, setEnrichProgress] = useState<{ done: number; total: number } | null>(null);
 
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [stage, setStage] = useState<ProspectStage | "all">("all");
+  const [role, setRole] = useState<"all" | "buyer" | "supplier">("all");
+  const [owner, setOwner] = useState<string>("all");
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [countryCounts, setCountryCounts] = useState<Array<{ name: string; count: number }>>([]);
+  const [page, setPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"created_at" | "updated_at" | "name">("created_at");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [addOpen, setAddOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+
+  // Stage tile counts (global, independent of filters)
+  const [stageCounts, setStageCounts] = useState<Record<ProspectStage, number>>({
+    new: 0, researching: 0, contacted: 0, qualified: 0, onboarding: 0, onboarded: 0, lost: 0,
+  });
+  const [globalTotal, setGlobalTotal] = useState(0);
+  const counts = stageCounts;
+  const activeCount = Math.max(0, globalTotal - counts.lost - counts.onboarded);
+
+  // Debounce search input
+  useEffect(() => {
+    const t = setTimeout(() => { setDebouncedSearch(search); setPage(1); }, 300);
+    return () => clearTimeout(t);
+  }, [search]);
+
+  // Load distinct countries once
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("crm_companies")
-        .select("id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin)")
-        .order("created_at", { ascending: false })
-        .limit(500);
+        .select("country")
+        .not("country", "is", null)
+        .limit(5000);
       if (cancelled || !data) return;
-      const mapped: Prospect[] = data.map((c: any) => {
+      const counts: Record<string, number> = {};
+      for (const row of data as any[]) {
+        const name = (row.country || "").trim();
+        if (!name) continue;
+        counts[name] = (counts[name] ?? 0) + 1;
+      }
+      setCountryCounts(
+        Object.entries(counts)
+          .map(([name, count]) => ({ name, count }))
+          .sort((a, b) => b.count - a.count),
+      );
+    })();
+    return () => { cancelled = true; };
+  }, [refreshTick]);
+
+  // KPI/stage counts (parallel head:exact queries)
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const dbStages = ["cold", "warm", "contacted", "qualified", "onboarding", "onboarded", "lost"] as const;
+      const results = await Promise.all([
+        supabase.from("crm_companies").select("id", { count: "exact", head: true }),
+        ...dbStages.map((s) =>
+          supabase.from("crm_companies").select("id", { count: "exact", head: true }).eq("stage", s),
+        ),
+      ]);
+      if (cancelled) return;
+      const [total, ...stageRes] = results;
+      setGlobalTotal(total.count ?? 0);
+      const next: Record<ProspectStage, number> = {
+        new: 0, researching: 0, contacted: 0, qualified: 0, onboarding: 0, onboarded: 0, lost: 0,
+      };
+      stageRes.forEach((r, i) => {
+        const ui = DB_TO_UI_STAGE[dbStages[i]];
+        if (ui) next[ui] = r.count ?? 0;
+      });
+      setStageCounts(next);
+    })();
+    return () => { cancelled = true; };
+  }, [refreshTick]);
+
+  // Paginated list query with server-side filters/search
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      let contactCompanyIds: string[] | null = null;
+      const s = sanitizeOr(debouncedSearch);
+      if (s) {
+        // Look up contacts matching the search to include their parent companies
+        const { data: cMatches } = await supabase
+          .from("crm_contacts")
+          .select("company_id")
+          .or(`full_name.ilike.%${s}%,email.ilike.%${s}%,phone.ilike.%${s}%`)
+          .limit(500);
+        contactCompanyIds = Array.from(
+          new Set((cMatches || []).map((r: any) => r.company_id).filter(Boolean)),
+        );
+      }
+
+      // Exclude companies whose ONLY contacts are unqualified c_level (those live in C-Level tab)
+      let excludeCompanyIds: string[] = [];
+      {
+        const { data: clOnly } = await supabase
+          .from("crm_contacts")
+          .select("company_id, seniority, qualified_as")
+          .not("company_id", "is", null)
+          .limit(10000);
+        const byCo: Record<string, { total: number; cl_unqualified: number }> = {};
+        for (const c of (clOnly || []) as any[]) {
+          const k = c.company_id;
+          if (!byCo[k]) byCo[k] = { total: 0, cl_unqualified: 0 };
+          byCo[k].total += 1;
+          if (c.seniority === "c_level" && !c.qualified_as) byCo[k].cl_unqualified += 1;
+        }
+        excludeCompanyIds = Object.entries(byCo)
+          .filter(([, v]) => v.total > 0 && v.total === v.cl_unqualified)
+          .map(([id]) => id);
+      }
+
+
+      let q = supabase
+        .from("crm_companies")
+        .select(
+          "id,name,domain,country,city,company_type,stage,source,created_at,updated_at,annual_revenue,industry,website,linkedin_url,onboarded_at,mundus_company_id,crm_contacts(id,full_name,email,phone,linkedin,seniority)",
+          { count: "exact" },
+        )
+        .order(sortBy, { ascending: sortDir === "asc" });
+
+      if (stage !== "all") q = q.eq("stage", UI_TO_DB_STAGE[stage]);
+      if (role === "buyer") q = q.eq("company_type", "buyer");
+      if (role === "supplier") q = q.eq("company_type", "supplier");
+      if (selectedCountries.length > 0) q = q.in("country", selectedCountries);
+      if (excludeCompanyIds.length > 0) q = q.not("id", "in", `(${excludeCompanyIds.join(",")})`);
+
+      if (s) {
+        const orParts = [
+          `name.ilike.%${s}%`,
+          `domain.ilike.%${s}%`,
+          `country.ilike.%${s}%`,
+          `city.ilike.%${s}%`,
+          `industry.ilike.%${s}%`,
+          `wms_company_name.ilike.%${s}%`,
+        ];
+        if (contactCompanyIds && contactCompanyIds.length) {
+          orParts.push(`id.in.(${contactCompanyIds.join(",")})`);
+        }
+        q = q.or(orParts.join(","));
+      }
+
+      q = q.range((page - 1) * PAGE_SIZE, page * PAGE_SIZE - 1);
+
+      const { data, count, error } = await q;
+      if (cancelled) return;
+      if (error) {
+        console.error("[AdminProspects] query error", error);
+        setList([]); setTotalCount(0); setLoading(false);
+        return;
+      }
+      const mapped: Prospect[] = (data || []).map((c: any) => {
         const primary = c.crm_contacts?.[0] ?? null;
-        const stageMap: Record<string, ProspectStage> = {
-          cold: "new", warm: "researching", contacted: "contacted",
-          qualified: "qualified", onboarding: "onboarding",
-          onboarded: "onboarded", lost: "lost",
-        };
-        const stage = stageMap[c.stage] ?? "new";
-        const role = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
+        const hasCLevel = (c.crm_contacts || []).some((x: any) => x?.seniority === "c_level");
+        const uiStage = DB_TO_UI_STAGE[c.stage] ?? "new";
+        const r = c.company_type === "supplier" ? "potential_supplier" : "potential_buyer";
         return {
           id: c.id,
           companyName: c.name,
           initials: (c.name || "?").replace(/[^A-Za-z]/g, "").slice(0, 2).toUpperCase() || "?",
           country: c.country || "—",
-          role,
-          source: (c.source as any) || "manual",
+          role: r,
+          source: (c.source as any) || "wms_import",
           contactName: primary?.full_name || "—",
           contactEmail: primary?.email || "—",
           contactPhone: primary?.phone || undefined,
+          hasCLevel,
           notes: "",
-          stage,
+          stage: uiStage,
           owner: "FN",
           ownerName: "Fernando Nascimento",
           estGmv: c.annual_revenue ?? undefined,
@@ -63,53 +233,35 @@ export default function AdminProspects() {
           updatedAt: c.updated_at,
           lastActivity: { type: "system", when: "just now" },
           activity: [],
-          leadType: role === "potential_buyer" ? "buyer" : "supplier",
+          leadType: r === "potential_buyer" ? "buyer" : "supplier",
           city: c.city ?? undefined,
           industry: c.industry ?? undefined,
           website: c.website ?? undefined,
           companyLinkedin: c.linkedin_url ?? undefined,
           contacts: [],
           isActive: true,
-          isOnboarded: stage === "onboarded" || !!c.onboarded_at,
+          isOnboarded: uiStage === "onboarded" || !!c.onboarded_at,
           mundusCompanyId: c.mundus_company_id ?? undefined,
         } as Prospect;
       });
-      setDbList(mapped);
+      setList(mapped);
+      setTotalCount(count ?? 0);
+      setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [refreshTick]);
+  }, [debouncedSearch, stage, role, owner, selectedCountries, page, refreshTick, sortBy, sortDir]);
 
-  const list = useMemo(() => [...dbList, ...mockList], [dbList, mockList]);
+  // Reset page when non-search filters change
+  useEffect(() => { setPage(1); }, [stage, role, owner, selectedCountries, sortBy, sortDir]);
 
-  const [search, setSearch] = useState("");
-  const [stage, setStage] = useState<ProspectStage | "all">("all");
-  const [role, setRole] = useState<"all" | "buyer" | "supplier">("all");
-  const [owner, setOwner] = useState<string>("all");
-  const [addOpen, setAddOpen] = useState(false);
-  const [importOpen, setImportOpen] = useState(false);
-
-  const counts = useMemo(() => getStageCounts(list), [list]);
-  const totalCount = list.length;
-  const activeCount = totalCount - counts.lost - counts.onboarded;
-
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return list.filter((p) => {
-      if (stage !== "all" && p.stage !== stage) return false;
-      if (role !== "all") {
-        if (role === "buyer" && p.role !== "potential_buyer") return false;
-        if (role === "supplier" && p.role !== "potential_supplier") return false;
-      }
-      if (owner !== "all" && p.owner !== owner) return false;
-      if (q && !`${p.companyName} ${p.contactName} ${p.country}`.toLowerCase().includes(q)) return false;
-      return true;
-    });
-  }, [list, search, stage, role, owner]);
+  const totalPages = Math.max(1, Math.ceil(totalCount / PAGE_SIZE));
+  const rangeFrom = totalCount === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const rangeTo = Math.min(page * PAGE_SIZE, totalCount);
 
   const isDbId = (id: string) => !id.startsWith("pr-");
   const deletableFiltered = useMemo(
-    () => filtered.filter((p) => isDbId(p.id) && !p.isOnboarded && !p.mundusCompanyId),
-    [filtered],
+    () => list.filter((p) => isDbId(p.id) && !p.isOnboarded && !p.mundusCompanyId),
+    [list],
   );
   const pageAllSelected = deletableFiltered.length > 0 && deletableFiltered.every((p) => selectedIds.has(p.id));
   const pageSomeSelected = deletableFiltered.some((p) => selectedIds.has(p.id));
@@ -166,14 +318,45 @@ export default function AdminProspects() {
         </div>
       </div>
 
+      {/* Section tabs */}
+      <div style={{ display: "flex", gap: 2, background: "#F3F4F6", borderRadius: 10, padding: 3, marginBottom: 20, width: "fit-content" }}>
+        <button type="button" onClick={() => setSection("prospects")} style={{
+          padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+          background: section === "prospects" ? "white" : "transparent",
+          border: "none", cursor: "pointer",
+          boxShadow: section === "prospects" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+          color: section === "prospects" ? "#111827" : "#6B7280",
+        }}>🎯 Prospects</button>
+        <button type="button" onClick={() => setSection("c_level")} style={{
+          padding: "8px 20px", borderRadius: 8, fontSize: 13, fontWeight: 600,
+          background: section === "c_level" ? "white" : "transparent",
+          border: "none", cursor: "pointer",
+          boxShadow: section === "c_level" ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+          color: section === "c_level" ? "#111827" : "#6B7280",
+        }}>👔 C-Level</button>
+      </div>
+
+      {section === "c_level" ? (
+        <CLevelModule />
+      ) : (
+      <>
       {/* funnel tiles */}
-      <div className="crm-funnel-tiles">
+      <div
+        className="crm-funnel-tiles"
+        style={{
+          overflowX: "auto",
+          flexWrap: "nowrap",
+          WebkitOverflowScrolling: "touch",
+          paddingBottom: 4,
+        }}
+      >
         {STAGES.map((s) => (
           <button
             type="button"
             key={s}
             className={`crm-tile ${stage === s ? "is-active" : ""}`}
             onClick={() => setStage((cur) => (cur === s ? "all" : s))}
+            style={{ flexShrink: 0 }}
           >
             <span className="l">{t(`admin.crm.stages.${s}`)}</span>
             <span className="v">{counts[s]}</span>
@@ -208,10 +391,42 @@ export default function AdminProspects() {
           <option value="all">{t("admin.crm.filters.allOwners")}</option>
           {OWNERS.map((o) => <option key={o.initials} value={o.initials}>{o.initials} — {o.name}</option>)}
         </select>
+        <CountryFilterPopover
+          countries={countryCounts}
+          selected={selectedCountries}
+          onChange={setSelectedCountries}
+        />
+        <select
+          className="crm-select"
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value as any)}
+        >
+          <option value="created_at">Created date</option>
+          <option value="updated_at">Updated date</option>
+          <option value="name">Company name</option>
+        </select>
+        <button
+          type="button"
+          className="crm-select"
+          onClick={() => setSortDir((d) => (d === "asc" ? "desc" : "asc"))}
+          title={sortDir === "asc" ? "Ascending" : "Descending"}
+          style={{ cursor: "pointer", fontWeight: 600 }}
+        >
+          {sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+        </button>
         <div className="crm-seg">
           <button type="button" className="crm-seg-btn is-active" aria-label="Table"><TableIcon size={14} /></button>
           <Link to="/admin/crm/pipeline" className="crm-seg-btn" aria-label="Kanban"><KanbanSquare size={14} /></Link>
         </div>
+      </div>
+
+      <div style={{ fontSize: 12, color: "var(--adm-text-tertiary, #6B7280)", margin: "4px 2px 8px" }}>
+        {t("admin.crm.results.showing", {
+          from: rangeFrom,
+          to: rangeTo,
+          total: totalCount.toLocaleString(),
+          defaultValue: "Showing {{from}}-{{to}} of {{total}} results",
+        })}
       </div>
 
       {/* table */}
@@ -224,6 +439,36 @@ export default function AdminProspects() {
             {t("admin.crm.bulkDelete.selected", { count: selectedIds.size, defaultValue: "{{count}} selected" })}
           </strong>
           <div style={{ flex: 1 }} />
+          <button
+            type="button"
+            className="crm-btn-outline"
+            disabled={enriching}
+            onClick={async () => {
+              const ids = [...selectedIds];
+              setEnriching(true);
+              setEnrichProgress({ done: 0, total: ids.length });
+              toast.info(`Enriching ${ids.length} prospect(s) via Apollo…`);
+              try {
+                const r = await bulkEnrichByCompanyIds(ids, (done, total) =>
+                  setEnrichProgress({ done, total }),
+                );
+                toast.success(`Enriched: ${r.success} ✓ · ${r.failed} failed`);
+                setRefreshTick((x) => x + 1);
+              } catch (e: any) {
+                toast.error("Enrich failed: " + (e?.message ?? "unknown"));
+              } finally {
+                setEnriching(false);
+                setEnrichProgress(null);
+              }
+            }}
+            style={{ borderColor: "#2563EB", color: "#2563EB" }}
+          >
+            {enriching ? <Loader2 size={14} className="animate-spin" style={{ marginRight: 4 }} />
+                       : <Sparkles size={14} style={{ marginRight: 4 }} />}
+            {enriching && enrichProgress
+              ? `Enriching ${enrichProgress.done}/${enrichProgress.total}`
+              : t("admin.crm.bulkEnrich.button", { defaultValue: "Enrich via Apollo" })}
+          </button>
           <button
             type="button"
             className="crm-btn-outline"
@@ -240,19 +485,18 @@ export default function AdminProspects() {
           </button>
         </div>
       )}
-      <div className="adm-panel" style={{ padding: 0 }}>
+      <div className="adm-panel adm-only-desktop" style={{ padding: 0 }}>
         <div className="adm-table-wrap">
           <table className="adm-table">
             <colgroup>
               <col style={{ width: "3%" }} />
-              <col style={{ width: "26%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "12%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "6%" }} />
-              <col style={{ width: "10%" }} />
-              <col style={{ width: "8%" }} />
-              <col style={{ width: "15%" }} />
+              <col style={{ width: "28%" }} />
+              <col style={{ width: "11%" }} />
+              <col style={{ width: "13%" }} />
+              <col style={{ width: "7%" }} />
+              <col style={{ width: "11%" }} />
+              <col style={{ width: "9%" }} />
+              <col style={{ width: "18%" }} />
             </colgroup>
             <thead>
               <tr>
@@ -266,7 +510,6 @@ export default function AdminProspects() {
                 <th>{t("admin.crm.table.company")}</th>
                 <th>{t("admin.crm.table.role")}</th>
                 <th>{t("admin.crm.table.stage")}</th>
-                <th>{t("admin.crm.table.source")}</th>
                 <th>{t("admin.crm.table.country")}</th>
                 <th style={{ textAlign: "right" }}>{t("admin.crm.table.estGmv")}</th>
                 <th>{t("admin.crm.table.owner")}</th>
@@ -274,7 +517,7 @@ export default function AdminProspects() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((p) => (
+              {list.map((p) => (
                 <tr
                   key={p.id}
                   className="crm-row"
@@ -301,16 +544,26 @@ export default function AdminProspects() {
                           return (
                             <span className="crm-cell-sub">
                               {p.country}{contactName ? ` · ${contactName}` : ""}
+                              {p.hasCLevel && (
+                                <span title="C-Level decision maker"
+                                  style={{ marginLeft: 6, background: "#F5F3FF", color: "#6D28D9",
+                                    padding: "1px 6px", borderRadius: 8, fontSize: 10, fontWeight: 700,
+                                    border: "1px solid #DDD6FE" }}>👔 C-Level</span>
+                              )}
                             </span>
                           );
                         })()}
                       </div>
                     </div>
                   </td>
-                  <td><span className="pill info">{t(`admin.crm.roles.${p.role}`)}</span></td>
+                  <td><span className={`pill ${p.leadType}`}>{t(`admin.crm.roles.${p.role}`)}</span></td>
                   <td><span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span></td>
-                  <td><span className={`crm-source ${p.source}`}>{t(`admin.crm.sources.${p.source}`)}</span></td>
-                  <td><span className="mono">{p.country}</span></td>
+                  <td>
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                      <span style={{ fontSize: 16 }}>{countryFlag(p.country)}</span>
+                      <span>{p.country || "—"}</span>
+                    </span>
+                  </td>
                   <td style={{ textAlign: "right" }}>{fmtGmv(p.estGmv)}</td>
                   <td><span className="crm-owner-av">{p.owner}</span></td>
                   <td>
@@ -323,9 +576,9 @@ export default function AdminProspects() {
                   </td>
                 </tr>
               ))}
-              {filtered.length === 0 && (
-                <tr><td colSpan={9} style={{ textAlign: "center", padding: 28, color: "var(--adm-text-tertiary)" }}>
-                  {t("admin.crm.empty")}
+              {list.length === 0 && (
+                <tr><td colSpan={8} style={{ textAlign: "center", padding: 28, color: "var(--adm-text-tertiary)" }}>
+                  {loading ? "…" : t("admin.crm.empty")}
                 </td></tr>
               )}
             </tbody>
@@ -333,8 +586,31 @@ export default function AdminProspects() {
         </div>
       </div>
 
+      {/* mobile cards */}
+      <div className="adm-only-mobile adm-cards-stack">
+        {list.map((p) => (
+          <ProspectCardRow
+            key={p.id}
+            prospect={p}
+            onOpen={() => nav(`/admin/crm/prospects/${p.id}`)}
+            t={t}
+          />
+        ))}
+        {list.length === 0 && (
+          <div className="adm-panel" style={{ padding: 16, textAlign: "center", color: "#6B7280", fontSize: 13 }}>
+            {loading ? "…" : t("admin.crm.empty")}
+          </div>
+        )}
+      </div>
+
+      <div style={{ display: "flex", justifyContent: "center", marginTop: 16 }}>
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      </div>
+
       <AddProspectModal open={addOpen} onOpenChange={setAddOpen} />
       <ImportProspectsModal open={importOpen} onOpenChange={setImportOpen} />
+      </>
+      )}
 
       {confirmDelete && (
         <>
@@ -373,6 +649,71 @@ export default function AdminProspects() {
           </div>
         </>
       )}
+    </div>
+  );
+}
+
+function ProspectCardRow({
+  prospect: p,
+  onOpen,
+  t,
+}: {
+  prospect: Prospect;
+  onOpen: () => void;
+  t: (k: string, opts?: Record<string, unknown>) => string;
+}) {
+  const primary = p.contacts?.find((c) => c.isPrimary) ?? p.contacts?.[0];
+  const contactName = primary?.fullName || p.contactName;
+  const loc = [p.city, p.country].filter((x) => x && x !== "—").join(", ");
+  return (
+    <div
+      className="adm-panel"
+      onClick={onOpen}
+      style={{ padding: 12, display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer" }}
+    >
+      <span
+        className="adm-table-av crm-av-blue"
+        style={{ flexShrink: 0 }}
+      >
+        {p.initials}
+      </span>
+      <div style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 4 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", gap: 8, alignItems: "baseline" }}>
+          <strong style={{ fontSize: 14, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+            {p.companyName}
+          </strong>
+          {p.estGmv != null && (
+            <span style={{ fontSize: 12, color: "#6B7280", whiteSpace: "nowrap" }}>{fmtGmv(p.estGmv)}</span>
+          )}
+        </div>
+        <div style={{ fontSize: 12, color: "#6B7280", display: "inline-flex", alignItems: "center", gap: 4 }}>
+          {p.country && <span>{countryFlag(p.country)}</span>}
+          <span>{loc || p.country || "—"}</span>
+        </div>
+        {contactName && contactName !== "—" && (
+          <div style={{ fontSize: 12, color: "#374151", display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+            <span style={{ overflow: "hidden", textOverflow: "ellipsis" }}>{contactName}</span>
+            {p.hasCLevel && (
+              <span
+                title="C-Level decision maker"
+                style={{
+                  background: "#F5F3FF", color: "#6D28D9", padding: "1px 6px",
+                  borderRadius: 8, fontSize: 10, fontWeight: 700, border: "1px solid #DDD6FE",
+                }}
+              >
+                👔 C-Level
+              </span>
+            )}
+          </div>
+        )}
+        <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 2 }}>
+          <span className={`pill ${p.leadType}`}>{t(`admin.crm.roles.${p.role}`)}</span>
+          <span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span>
+        </div>
+        <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 2 }}>
+          {p.lastActivity?.when ?? "—"}
+        </div>
+      </div>
     </div>
   );
 }

@@ -53,6 +53,23 @@ export default function AdminOffers() {
   const [viewsToday, setViewsToday] = useState(0);
   const [totalDistributions, setTotalDistributions] = useState(0);
   const [distribute, setDistribute] = useState<OfferRow | null>(null);
+  const [showSelectCompany, setShowSelectCompany] = useState(false);
+  const [managedSuppliers, setManagedSuppliers] = useState<Array<{ id: string; name: string; country: string | null; logo_url: string | null }>>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("companies")
+        .select("id, name, country, logo_url")
+        .eq("mundus_managed_supplier", true)
+        .eq("is_supplier", true)
+        .is("deleted_at", null)
+        .order("name");
+      if (!cancelled) setManagedSuppliers((data as any) ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (supplierParam) setSupplierFilter(supplierParam);
@@ -168,6 +185,18 @@ export default function AdminOffers() {
         <div>
           <span className="adm-page-title">All Offers</span>
           <span className="adm-page-subtle"> · Every offer across all suppliers</span>
+        </div>
+        <div>
+          <button
+            type="button"
+            onClick={() => setShowSelectCompany(true)}
+            style={{
+              padding: "10px 18px", background: "#8B2252", color: "white",
+              border: "none", borderRadius: 8, fontWeight: 600, fontSize: 13, cursor: "pointer",
+            }}
+          >
+            + Create Offer
+          </button>
         </div>
       </div>
 
@@ -303,6 +332,75 @@ export default function AdminOffers() {
           offerTitle={distribute.product_name ?? "Offer"}
           supplierName={distribute.supplier_name}
         />
+      )}
+      {showSelectCompany && (
+        <div
+          onClick={() => setShowSelectCompany(false)}
+          style={{
+            position: "fixed", inset: 0, background: "rgba(0,0,0,0.4)", zIndex: 9999,
+            display: "flex", alignItems: "center", justifyContent: "center", padding: 16,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: "white", borderRadius: 12, padding: 20, maxWidth: 480, width: "100%",
+              maxHeight: "80vh", overflowY: "auto",
+            }}
+          >
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700 }}>Create Offer for…</h3>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: "6px 0 16px" }}>
+              Select a managed supplier to create an offer on their behalf.
+            </p>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {managedSuppliers.map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => {
+                    setShowSelectCompany(false);
+                    navigate(`/admin/create-offer?as_company=${s.id}`);
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", gap: 12,
+                    padding: "10px 14px", border: "1px solid #E5E7EB", borderRadius: 10,
+                    background: "white", cursor: "pointer", textAlign: "left",
+                  }}
+                >
+                  {s.logo_url ? (
+                    <img src={s.logo_url} alt="" style={{ width: 32, height: 32, borderRadius: 6, objectFit: "cover" }} />
+                  ) : (
+                    <div style={{
+                      width: 32, height: 32, borderRadius: 6, background: "#FDF2F8",
+                      display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14,
+                    }}>🏭</div>
+                  )}
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: 14 }}>{s.name}</div>
+                    <div style={{ fontSize: 12, color: "#6B7280" }}>{s.country ?? "—"}</div>
+                  </div>
+                </button>
+              ))}
+              {managedSuppliers.length === 0 && (
+                <p style={{ fontSize: 13, color: "#9CA3AF", textAlign: "center", padding: 20 }}>
+                  No managed suppliers. Go to Companies → toggle "Managed by Mundus" first.
+                </p>
+              )}
+            </div>
+            <div style={{ marginTop: 14, textAlign: "right" }}>
+              <button
+                type="button"
+                onClick={() => setShowSelectCompany(false)}
+                style={{
+                  padding: "8px 14px", borderRadius: 8, border: "1px solid #E5E7EB",
+                  background: "white", cursor: "pointer", fontSize: 13,
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

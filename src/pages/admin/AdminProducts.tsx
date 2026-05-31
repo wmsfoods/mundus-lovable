@@ -122,7 +122,7 @@ export default function AdminProducts() {
         <select className="crm-select" value={regionF} onChange={(e) => { setRegionF(e.target.value as RegionKey); setPage(1); }}>
           <option value="all">All regions</option>
           <option value="global">🌐 Global</option>
-          <option value="us">🇺🇸 US Beef (IMPS)</option>
+          <option value="us">🇺🇸 US (IMPS)</option>
         </select>
       </div>
 

@@ -32,17 +32,17 @@ export type CreateNotificationInput = {
 
 /** Create a single in-app notification for a specific user. */
 export async function createNotification(params: CreateNotificationInput) {
-  const { error } = await supabase.from("app_notifications").insert({
-    user_id: params.userId,
-    company_id: params.companyId ?? null,
-    title: params.title,
-    body: params.body ?? null,
-    icon: params.icon ?? "bell",
-    category: params.category ?? "system",
-    link_url: params.linkUrl ?? null,
-    link_label: params.linkLabel ?? null,
-    related_type: params.relatedType ?? null,
-    related_id: params.relatedId ?? null,
+  const { error } = await supabase.rpc("enqueue_app_notifications", {
+    p_user_ids: [params.userId],
+    p_company_id: params.companyId ?? null,
+    p_title: params.title,
+    p_body: params.body ?? null,
+    p_icon: params.icon ?? "bell",
+    p_category: params.category ?? "system",
+    p_link_url: params.linkUrl ?? null,
+    p_link_label: params.linkLabel ?? null,
+    p_related_type: params.relatedType ?? null,
+    p_related_id: params.relatedId ?? null,
   });
   if (error) {
     // Non-blocking: log but never throw, notifications must never break flows.
@@ -57,36 +57,33 @@ export type NotifyCompanyUsersInput = Omit<CreateNotificationInput, "userId" | "
 
 /** Fan-out a notification to all active users of a company. */
 export async function notifyCompanyUsers(params: NotifyCompanyUsersInput) {
-  const { data: members, error: membersErr } = await supabase
-    .from("company_users")
-    .select("user_id, status")
-    .eq("company_id", params.companyId);
-
-  if (membersErr) {
-    console.warn("[notifications] notifyCompanyUsers lookup failed:", membersErr.message);
+  // Resolve active recipients via SECURITY DEFINER RPC so cross-company
+  // notifications (e.g. buyer -> supplier) bypass per-company RLS on company_users.
+  const { data: recipients, error: lookupErr } = await supabase.rpc(
+    "get_company_active_user_ids",
+    { p_company_id: params.companyId },
+  );
+  if (lookupErr) {
+    console.warn("[notifications] notifyCompanyUsers lookup failed:", lookupErr.message);
     return;
   }
+  const userIds = (recipients ?? [])
+    .map((r: any) => r.user_id as string)
+    .filter(Boolean);
+  if (userIds.length === 0) return;
 
-  const recipients = (members ?? [])
-    .filter((m) => m.user_id && (!m.status || m.status === "active" || m.status === "accepted"))
-    .map((m) => m.user_id as string);
-
-  if (recipients.length === 0) return;
-
-  const rows = recipients.map((uid) => ({
-    user_id: uid,
-    company_id: params.companyId,
-    title: params.title,
-    body: params.body ?? null,
-    icon: params.icon ?? "bell",
-    category: params.category ?? "system",
-    link_url: params.linkUrl ?? null,
-    link_label: params.linkLabel ?? null,
-    related_type: params.relatedType ?? null,
-    related_id: params.relatedId ?? null,
-  }));
-
-  const { error } = await supabase.from("app_notifications").insert(rows);
+  const { error } = await supabase.rpc("enqueue_app_notifications", {
+    p_user_ids: userIds,
+    p_company_id: params.companyId,
+    p_title: params.title,
+    p_body: params.body ?? null,
+    p_icon: params.icon ?? "bell",
+    p_category: params.category ?? "system",
+    p_link_url: params.linkUrl ?? null,
+    p_link_label: params.linkLabel ?? null,
+    p_related_type: params.relatedType ?? null,
+    p_related_id: params.relatedId ?? null,
+  });
   if (error) {
     console.warn("[notifications] notifyCompanyUsers insert failed:", error.message);
   }

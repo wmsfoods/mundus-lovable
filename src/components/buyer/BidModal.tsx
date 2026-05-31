@@ -27,9 +27,8 @@ import {
   getIncotermAddOn,
 } from "@/lib/incotermPricing";
 import { useRemainingFcl } from "@/hooks/useRemainingFcl";
-import { notifyCompanyUsers } from "@/lib/notifications";
 
-const MIN_BID_PCT = 0.9; // initial bid must be ≥ 90% of asking
+const MIN_BID_PCT = 0.7; // initial bid must be ≥ 70% of asking (max 30% discount)
 
 type FreightOption = {
   id: string;
@@ -267,7 +266,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
         out[it.id] = t("buyer.bid.validation.required", "Enter a bid greater than 0");
       } else if (v < min) {
         out[it.id] = t("buyer.bid.validation.minPct", {
-          defaultValue: "Minimum bid is ${{min}} (90% of asking)",
+          defaultValue: "Minimum bid is ${{min}}/kg (70% of asking — max 30% discount)",
           min: toDisplay(min, "price", unit).toFixed(2),
         });
       }
@@ -300,84 +299,46 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     }
     setSubmitting(true);
     try {
-      // Check if buyer already has an active negotiation for this offer
-      const { data: existing } = await supabase
-        .from("negotiations")
-        .select("id, status")
-        .eq("offer_id", offer.id)
-        .eq("buyer_company_id", buyerCompanyId)
-        .in("status", ["awaiting_supplier", "pending_buyer_review"])
-        .maybeSingle();
-      if (existing?.id) {
-        toast.info(t("buyer.bid.alreadyActive", "You already have an active negotiation for this offer."));
-        clearDraft(offer.id);
-        onOpenChange(false);
-        navigate(`/buyer/negotiations/${existing.id}`);
-        return;
-      }
-
-      const { data: neg, error: negErr } = await supabase
-        .from("negotiations")
-        .insert({
-          offer_id: offer.id,
-          buyer_company_id: buyerCompanyId,
-          created_by_user_id: buyerUserId,
-          port_id: portId || null,
-          freight_cost_per_kg: freightPerKg,
-          insurance_per_kg: insurancePerKg,
-          fcl_count: fclCount,
-          incoterm,
-          status: "awaiting_supplier",
-          expires_at: new Date(Date.now() + 24 * 3600_000).toISOString(),
-          buyer_message: message.trim() ? message.trim() : null,
-        })
-        .select("id")
-        .single();
-      if (negErr || !neg) throw negErr ?? new Error("negotiation insert failed");
-
-      const { data: rp, error: rpErr } = await supabase
-        .from("round_proposals")
-        .insert({
-          negotiation_id: neg.id,
-          round: 1,
-          created_by_user_id: buyerUserId,
-          side: "buyer",
-          type: "bid",
-          message: message.trim() || null,
-          incoterm,
-          freight_per_kg: freightPerKg,
-          insurance_per_kg: insurancePerKg,
-        })
-        .select("id")
-        .single();
-      if (rpErr || !rp) throw rpErr ?? new Error("round_proposals insert failed");
-
       // Persist the FOB-equivalent price so it can be compared against the
       // supplier's asking directly. The buyer's bid was entered against the
       // *effective* (incoterm-adjusted) price, so strip the add-on back off.
       const addOn = getIncotermAddOn(incoterm, freightPerKg, insurancePerKg);
-      const cutRows = offer.items.map((it) => {
+      const bidItems = offer.items.map((it) => {
         const enteredEffective =
           typeof bids[it.id] === "number"
             ? (bids[it.id] as number)
             : effectiveAsking(Number(it.price));
         const fobBid = Math.max(0, enteredEffective - addOn);
         return {
-          round_proposal_id: rp.id,
           offer_item_id: it.id,
           price_per_kg: fobBid,
           quantity_kg: Number(it.amount),
         };
       });
-      const { error: crErr } = await supabase.from("cut_rounds").insert(cutRows);
-      if (crErr) throw crErr;
 
-      // Generate a public response token so the supplier can reply via email link
-      // without logging in. Failure here is non-fatal — log but don't break the bid.
-      const { error: tokErr } = await supabase
-        .from("negotiation_tokens")
-        .insert({ negotiation_id: neg.id });
-      if (tokErr) console.warn("token insert failed", tokErr.message);
+      const { data: submitResult, error: submitErr } = await (supabase as any).rpc("submit_initial_bid", {
+        p_offer_id: offer.id,
+        p_buyer_company_id: buyerCompanyId,
+        p_created_by_user_id: buyerUserId,
+        p_port_id: portId || null,
+        p_freight_cost_per_kg: freightPerKg,
+        p_insurance_per_kg: insurancePerKg,
+        p_fcl_count: fclCount,
+        p_incoterm: incoterm,
+        p_buyer_message: message.trim() || null,
+        p_items: bidItems,
+      });
+      if (submitErr) throw submitErr;
+      const negotiationId = submitResult?.negotiation_id as string | undefined;
+      if (!negotiationId) throw new Error("Bid submission did not return a negotiation id");
+
+      if (submitResult?.existing) {
+        toast.info(t("buyer.bid.alreadyActive", "You already have an active negotiation for this offer."));
+        clearDraft(offer.id);
+        onOpenChange(false);
+        navigate(`/buyer/negotiations/${negotiationId}`);
+        return;
+      }
 
       toast.success(t("buyer.bid.successToast"));
       try {
@@ -386,23 +347,32 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           action: "bid.placed",
           category: "negotiation",
           entityType: "negotiation",
-          entityId: neg.id as string,
+          entityId: negotiationId,
           details: { round: 1 },
         });
       } catch { /* never break flow */ }
       clearDraft(offer.id);
 
-      // Fire in-app notification to supplier company (best-effort)
-      notifyCompanyUsers({
-        companyId: offer.supplier_id,
-        title: "New bid received",
-        body: `${company?.name ?? "A buyer"} placed a bid on offer #${offer.offer_number}`,
-        icon: "dollar",
-        category: "negotiations",
-        linkUrl: `/supplier/negotiations/${neg.id}`,
-        relatedType: "negotiation",
-        relatedId: neg.id,
-      }).catch(() => {});
+      // In-app notifications are now generated by DB trigger
+      // (trg_notify_round_proposal). No client fan-out needed.
+
+      // Best-effort branded email to first supplier contact (lazy import)
+      (async () => {
+        try {
+          const { getCompanyPrimaryContact } = await import("@/lib/companyContact");
+          const contact = await getCompanyPrimaryContact(offer.supplier_id);
+          if (!contact?.email) return;
+          const { sendEmailNotification } = await import("@/lib/emailSender");
+          sendEmailNotification("bidReceived" as any, contact.email, {
+            supplierName: contact.name || "Supplier",
+            buyerCompany: company?.name ?? "A buyer",
+            offerNumber: offer.offer_number,
+            round: 1,
+            maxRounds: 4,
+            supplierCompanyId: offer.supplier_id,
+          } as any);
+        } catch { /* never break flow */ }
+      })();
 
       onOpenChange(false);
       navigate("/buyer/negotiations");
@@ -549,13 +519,13 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
 
             {/* Value input */}
             <Input
-              type="number"
-              step={bulkMode === "percent" ? "0.1" : "0.01"}
-              min="0"
-              max={bulkMode === "percent" ? "30" : undefined}
+              type="text"
               inputMode="decimal"
               value={bulkValue}
-              onChange={(e) => setBulkValue(e.target.value)}
+              onChange={(e) => {
+                const v = e.target.value.replace(/,/g, ".");
+                if (v === "" || /^\d*\.?\d*$/.test(v)) setBulkValue(v);
+              }}
               placeholder={bulkMode === "percent" ? "e.g. 3%" : `e.g. 0.10 $/${wLbl}`}
               className="h-9 w-32 text-right tabular-nums text-xs"
             />
@@ -685,6 +655,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                             {err}
                           </span>
                         )}
+                        {!showErr && (
+                          <span className="text-[10px] text-muted-foreground">
+                            Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                          </span>
+                        )}
                         {Math.abs(d) > 0.001 && (
                           <span
                             className="text-[11px] tabular-nums"
@@ -775,6 +750,11 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                   />
                   {showErr && (
                     <div className="text-[11px] text-destructive mt-1">{err}</div>
+                  )}
+                  {!showErr && (
+                    <div className="text-[10px] text-muted-foreground mt-1">
+                      Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                    </div>
                   )}
                   {Math.abs(d) > 0.001 && (
                     <div

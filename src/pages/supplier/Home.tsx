@@ -12,7 +12,9 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
+import ByOfficeRollup from "@/components/supplier/ByOfficeRollup";
 import { supabase } from "@/integrations/supabase/client";
 
 type SupplierKpi = {
@@ -72,6 +74,9 @@ export default function SupplierHome() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { activeOffice, isAllOffices, isGlobalDirector } = useActiveOffice();
+  const officeFocus = activeOffice && !isAllOffices;
+  const officeName = officeFocus ? (activeOffice.office_name || activeOffice.name) : "";
   const greetingKey = useGreetingKey();
   const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "Antonio";
   const firstName = userName.split(" ")[0].replace(/^./, (c) => c.toUpperCase());
@@ -119,6 +124,7 @@ export default function SupplierHome() {
 
   return (
     <>
+      <h1 className="sr-only">Supplier Dashboard — Sales Overview</h1>
       <section className="hero sh-hero">
         <span className="sh-hero-glow sh-hero-glow--a" aria-hidden />
         <span className="sh-hero-glow sh-hero-glow--b" aria-hidden />
@@ -179,6 +185,8 @@ export default function SupplierHome() {
         {kpis.map((k) => <StatCard key={k.key} k={k} t={t} />)}
       </div>
 
+      {isGlobalDirector && isAllOffices && <ByOfficeRollup />}
+
       <div className="sec-head">
         <h3>{t("supplier.home.recentOffers")}</h3>
         <Link to="/supplier/offers" className="see-all">
@@ -189,7 +197,11 @@ export default function SupplierHome() {
         {loading ? (
           <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>{t("common.loading", { defaultValue: "Loading…" })}</div>
         ) : recentOffers.length === 0 ? (
-          <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>{t("supplier.home.emptyOffers", { defaultValue: "No offers yet." })}</div>
+          <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>
+            {officeFocus
+              ? t("supplier.home.emptyOffersForOffice", { defaultValue: "No offers yet for {{office}}.", office: officeName })
+              : t("supplier.home.emptyOffers", { defaultValue: "No offers yet." })}
+          </div>
         ) : (
           recentOffers.map((o) => (
             <SupplierOfferCard
@@ -210,7 +222,11 @@ export default function SupplierHome() {
         </Link>
       </div>
       <div className="sh-card-row">
-        <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>{t("supplier.home.emptySales", { defaultValue: "No sales yet." })}</div>
+        <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>
+          {officeFocus
+            ? t("supplier.home.emptySalesForOffice", { defaultValue: "No sales yet for {{office}}.", office: officeName })
+            : t("supplier.home.emptySales", { defaultValue: "No sales yet." })}
+        </div>
       </div>
     </>
   );

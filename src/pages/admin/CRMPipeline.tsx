@@ -1,12 +1,17 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus, Search } from "lucide-react";
+import { Plus, Search, LayoutGrid, List as ListIcon } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { DocsTab } from "@/components/admin/docs/DocsTab";
+import { WeeklyLearningLog } from "@/components/admin/learnings/WeeklyLearningLog";
+import { PartnersModule } from "@/components/admin/partners/PartnersModule";
+import { CountryFilterPopover } from "@/components/admin/CountryFilterPopover";
+import { countryFlag } from "@/lib/countryFlags";
 
-type Tab = "pipeline" | "buyers" | "suppliers" | "interviews" | "learnings";
+type Tab = "pipeline" | "buyers" | "suppliers" | "partners" | "interviews" | "learnings" | "documents";
 
 type Contact = {
   id: string;
@@ -27,6 +32,10 @@ type Company = {
   website: string | null;
   stage: string | null;
   notes: string | null;
+  owner_id?: string | null;
+  industry?: string | null;
+  logo_url?: string | null;
+  created_at?: string | null;
   crm_contacts: Contact[];
 };
 
@@ -68,6 +77,34 @@ const ALL_STAGES = [
   "onboarding","onboarded","active","lost",
 ];
 
+function stageBadgeStyle(stage: string | null | undefined): { background: string; color: string } {
+  const m: Record<string, { background: string; color: string }> = {
+    cold:          { background: "#F3F4F6", color: "#374151" },
+    warm:          { background: "#FEF3C7", color: "#92400E" },
+    contacted:     { background: "#DBEAFE", color: "#1D4ED8" },
+    qualified:     { background: "#E0E7FF", color: "#4338CA" },
+    demo_scheduled:{ background: "#FCE7F3", color: "#9D174D" },
+    demo_done:     { background: "#EDE9FE", color: "#5B21B6" },
+    onboarding:    { background: "#CFFAFE", color: "#155E75" },
+    onboarded:     { background: "#D1FAE5", color: "#065F46" },
+    active:        { background: "#D1FAE5", color: "#065F46" },
+    lost:          { background: "#FEE2E2", color: "#991B1B" },
+  };
+  return m[stage ?? "cold"] ?? m.cold;
+}
+
+function formatRelative(iso: string | null | undefined): string {
+  if (!iso) return "—";
+  const d = new Date(iso).getTime();
+  const diff = Date.now() - d;
+  const day = 86400000;
+  if (diff < day) return "today";
+  if (diff < 2 * day) return "1d ago";
+  if (diff < 30 * day) return `${Math.floor(diff / day)}d ago`;
+  if (diff < 365 * day) return `${Math.floor(diff / (30 * day))}mo ago`;
+  return `${Math.floor(diff / (365 * day))}y ago`;
+}
+
 function stageColor(stage: string | null | undefined): string {
   const b = STAGE_BUCKETS.find((b) => stage && b.stages.includes(stage));
   return b?.color ?? "#94a3b8";
@@ -95,8 +132,19 @@ export default function CRMPipeline() {
   const [interviews, setInterviews] = useState<Interview[]>([]);
   const [learnings, setLearnings] = useState<Learning[]>([]);
   const [prepStatusByCompany, setPrepStatusByCompany] = useState<Record<string, string>>({});
-  const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "buyer" | "supplier" | "prospect">("all");
   const [search, setSearch] = useState("");
+  const [view, setView] = useState<"kanban" | "list">("list");
+  const [stageFilter, setStageFilter] = useState<string>("all");
+  const [countryFilter, setCountryFilter] = useState<string[]>([]);
+  const [ownerFilter, setOwnerFilter] = useState<string>("all");
+  const [dateFilter, setDateFilter] = useState<string>("all");
+  const [seniorityFilter, setSeniorityFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("newest");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
+  const [page, setPage] = useState(1);
+  const [owners, setOwners] = useState<Array<{ id: string; name: string }>>([]);
+  const PAGE_SIZE = 50;
 
   const [addCompanyOpen, setAddCompanyOpen] = useState(false);
   const [addCompanyType, setAddCompanyType] = useState<"buyer" | "supplier">("buyer");
@@ -109,9 +157,9 @@ export default function CRMPipeline() {
       const [{ data: c }, { data: i }, { data: l }] = await Promise.all([
         supabase
           .from("crm_companies")
-          .select("id,name,company_type,country,market_region,website,stage,notes,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary)")
+          .select("id,name,company_type,country,market_region,website,stage,notes,owner_id,industry,logo_url,created_at,crm_contacts(id,full_name,role,email,phone,linkedin,is_primary,seniority)")
           .order("created_at", { ascending: false })
-          .limit(500),
+          .limit(5000),
         supabase.from("crm_interviews").select("*").order("interview_date", { ascending: false }).limit(500),
         supabase.from("crm_learnings").select("*").order("week_start", { ascending: false }).limit(500),
       ]);
@@ -119,6 +167,14 @@ export default function CRMPipeline() {
       setCompanies((c as any) ?? []);
       setInterviews((i as any) ?? []);
       setLearnings((l as any) ?? []);
+      // Load owners (users referenced as owner_id)
+      const ownerIds = Array.from(new Set(((c as any[]) ?? []).map((x) => x.owner_id).filter(Boolean)));
+      if (ownerIds.length > 0) {
+        const { data: us } = await supabase.from("users").select("id,name,email").in("id", ownerIds);
+        if (!cancelled) {
+          setOwners((us ?? []).map((u: any) => ({ id: u.id, name: u.name || u.email || "Unknown" })));
+        }
+      }
       const { data: preps } = await supabase
         .from("crm_meeting_preps")
         .select("crm_company_id,status,created_at")
@@ -133,10 +189,40 @@ export default function CRMPipeline() {
     return () => { cancelled = true; };
   }, [refresh]);
 
+  const countries = useMemo(() => {
+    const counts: Record<string, number> = {};
+    companies.forEach((c) => {
+      if (c.country) counts[c.country] = (counts[c.country] ?? 0) + 1;
+    });
+    return Object.entries(counts)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count);
+  }, [companies]);
+
+  useEffect(() => { setPage(1); }, [search, typeFilter, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy, sortDir, view]);
+
   const filteredCompanies = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return companies.filter((c) => {
+    const now = Date.now();
+    const day = 86400000;
+    let since = 0;
+    if (dateFilter === "today") { const d = new Date(); d.setHours(0,0,0,0); since = d.getTime(); }
+    else if (dateFilter === "7d") since = now - 7 * day;
+    else if (dateFilter === "30d") since = now - 30 * day;
+    else if (dateFilter === "90d") since = now - 90 * day;
+    else if (dateFilter === "year") since = new Date(new Date().getFullYear(), 0, 1).getTime();
+
+    const out = companies.filter((c) => {
       if (typeFilter !== "all" && c.company_type !== typeFilter) return false;
+      if (stageFilter !== "all" && c.stage !== stageFilter) return false;
+      if (countryFilter.length > 0 && (!c.country || !countryFilter.includes(c.country))) return false;
+      if (ownerFilter === "unassigned" && c.owner_id) return false;
+      if (ownerFilter !== "all" && ownerFilter !== "unassigned" && c.owner_id !== ownerFilter) return false;
+      if (since > 0 && c.created_at && new Date(c.created_at).getTime() < since) return false;
+      if (seniorityFilter !== "all") {
+        const contacts = (c as any).crm_contacts || [];
+        if (!contacts.some((x: any) => x?.seniority === seniorityFilter)) return false;
+      }
       if (q) {
         const pc = primaryContact(c);
         const hay = `${c.name} ${c.country ?? ""} ${pc?.full_name ?? ""} ${pc?.email ?? ""}`.toLowerCase();
@@ -144,7 +230,35 @@ export default function CRMPipeline() {
       }
       return true;
     });
-  }, [companies, typeFilter, search]);
+
+    const cmp = (a: Company, b: Company) => {
+      switch (sortBy) {
+        case "oldest": return (a.created_at ?? "").localeCompare(b.created_at ?? "");
+        case "name": return (primaryContact(a)?.full_name ?? "").localeCompare(primaryContact(b)?.full_name ?? "");
+        case "company": return a.name.localeCompare(b.name);
+        case "stage": return (a.stage ?? "").localeCompare(b.stage ?? "");
+        case "newest":
+        default: return (b.created_at ?? "").localeCompare(a.created_at ?? "");
+      }
+    };
+    const sorted = out.sort(cmp);
+    return sortDir === "asc" ? sorted.reverse() : sorted;
+  }, [companies, typeFilter, search, stageFilter, countryFilter, ownerFilter, dateFilter, seniorityFilter, sortBy, sortDir]);
+
+  const activeFilterCount = [
+    search.trim() !== "",
+    stageFilter !== "all",
+    countryFilter.length > 0,
+    ownerFilter !== "all",
+    dateFilter !== "all",
+    typeFilter !== "all",
+    seniorityFilter !== "all",
+  ].filter(Boolean).length;
+
+  function clearAllFilters() {
+    setSearch(""); setStageFilter("all"); setCountryFilter([]);
+    setOwnerFilter("all"); setDateFilter("all"); setTypeFilter("all"); setSeniorityFilter("all");
+  }
 
   const grouped = useMemo(() => {
     const map: Record<string, Company[]> = {};
@@ -198,8 +312,10 @@ export default function CRMPipeline() {
     { k: "pipeline", l: t("admin.crm.pipeline.tabs.pipeline") },
     { k: "buyers", l: t("admin.crm.pipeline.tabs.buyers") },
     { k: "suppliers", l: t("admin.crm.pipeline.tabs.suppliers") },
+    { k: "partners", l: "🤝 Partners" },
     { k: "interviews", l: t("admin.crm.pipeline.tabs.interviews") },
     { k: "learnings", l: t("admin.crm.pipeline.tabs.learnings") },
+    { k: "documents", l: "Documents" },
   ];
 
   function openAddCompany(type: "buyer" | "supplier") {
@@ -240,12 +356,36 @@ export default function CRMPipeline() {
       </div>
 
       {tab === "pipeline" && (
-        <PipelineKanban
+        <PipelineView
+          view={view}
+          setView={setView}
           grouped={grouped}
+          rows={filteredCompanies}
+          owners={owners}
+          countries={countries}
+          page={page}
+          setPage={setPage}
+          pageSize={PAGE_SIZE}
           typeFilter={typeFilter}
           setTypeFilter={setTypeFilter}
           search={search}
           setSearch={setSearch}
+          stageFilter={stageFilter}
+          setStageFilter={setStageFilter}
+          countryFilter={countryFilter}
+          setCountryFilter={setCountryFilter}
+          ownerFilter={ownerFilter}
+          setOwnerFilter={setOwnerFilter}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          seniorityFilter={seniorityFilter}
+          setSeniorityFilter={setSeniorityFilter}
+          sortBy={sortBy}
+          setSortBy={setSortBy}
+          sortDir={sortDir}
+          setSortDir={setSortDir}
+          activeFilterCount={activeFilterCount}
+          clearAllFilters={clearAllFilters}
           onCard={(id) => nav(`/admin/crm/prospects/${id}`)}
           prepStatus={prepStatusByCompany}
           onPrepClick={(id) => nav(`/admin/crm/meeting-prep/${id}`)}
@@ -273,11 +413,15 @@ export default function CRMPipeline() {
       )}
 
       {tab === "learnings" && (
-        <LearningsView
-          rows={learnings}
-          companies={companies}
-          onAdd={() => setAddLearningOpen(true)}
-        />
+        <WeeklyLearningLog />
+      )}
+
+      {tab === "partners" && (
+        <PartnersModule />
+      )}
+
+      {tab === "documents" && (
+        <DocsTab />
       )}
 
       <AddCompanyModal
@@ -302,48 +446,275 @@ export default function CRMPipeline() {
   );
 }
 
-/* ───────────── Pipeline (Kanban) ───────────── */
+/* ───────────── Pipeline (Kanban + List) ───────────── */
 
-function PipelineKanban({
-  grouped, typeFilter, setTypeFilter, search, setSearch, onCard, onStageChange, prepStatus, onPrepClick,
-}: {
+type PipelineViewProps = {
+  view: "kanban" | "list";
+  setView: (v: "kanban" | "list") => void;
   grouped: Record<string, Company[]>;
-  typeFilter: "all" | "buyer" | "supplier";
-  setTypeFilter: (v: "all" | "buyer" | "supplier") => void;
+  rows: Company[];
+  owners: Array<{ id: string; name: string }>;
+  countries: Array<{ name: string; count: number }>;
+  page: number;
+  setPage: (n: number) => void;
+  pageSize: number;
+  typeFilter: "all" | "buyer" | "supplier" | "prospect";
+  setTypeFilter: (v: "all" | "buyer" | "supplier" | "prospect") => void;
   search: string;
   setSearch: (v: string) => void;
+  stageFilter: string;
+  setStageFilter: (v: string) => void;
+  countryFilter: string[];
+  setCountryFilter: (v: string[]) => void;
+  ownerFilter: string;
+  setOwnerFilter: (v: string) => void;
+  dateFilter: string;
+  setDateFilter: (v: string) => void;
+  seniorityFilter: string;
+  setSeniorityFilter: (v: string) => void;
+  sortBy: string;
+  setSortBy: (v: string) => void;
+  sortDir: "asc" | "desc";
+  setSortDir: (v: "asc" | "desc") => void;
+  activeFilterCount: number;
+  clearAllFilters: () => void;
   onCard: (id: string) => void;
   onStageChange: (id: string, stage: string) => void;
   prepStatus: Record<string, string>;
   onPrepClick: (id: string) => void;
-}) {
+};
+
+function PipelineView(p: PipelineViewProps) {
   const { t } = useTranslation();
+  const ownerMap = useMemo(() => Object.fromEntries(p.owners.map((o) => [o.id, o.name])), [p.owners]);
+  const totalCount = p.rows.length;
+  const pageStart = (p.page - 1) * p.pageSize;
+  const paginated = p.rows.slice(pageStart, pageStart + p.pageSize);
+  const totalPages = Math.max(1, Math.ceil(totalCount / p.pageSize));
+
+  const selectStyle: React.CSSProperties = { padding: "7px 10px", borderRadius: 8, border: "1px solid #D1D5DB", fontSize: 13, background: "#fff" };
+
   return (
     <>
-      <div className="crm-toolbar" style={{ marginBottom: 12 }}>
-        <div className="adm-search" style={{ flex: 1 }}>
-          <Search size={14} />
-          <input
-            placeholder={t("admin.crm.pipeline.filters.search")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
-        </div>
+      {/* Top bar: type segmented + view toggle */}
+      <div className="crm-toolbar" style={{ marginBottom: 12, gap: 10, flexWrap: "wrap" }}>
         <div className="crm-seg">
           {(["all", "buyer", "supplier"] as const).map((r) => (
             <button
               key={r}
               type="button"
-              className={`crm-seg-btn ${typeFilter === r ? "is-active" : ""}`}
-              onClick={() => setTypeFilter(r)}
+              className={`crm-seg-btn ${p.typeFilter === r ? "is-active" : ""}`}
+              onClick={() => p.setTypeFilter(r)}
             >
               {t(`admin.crm.pipeline.filters.${r}`)}
             </button>
           ))}
         </div>
+        <div style={{ marginLeft: "auto", display: "flex", gap: 4, background: "#F3F4F6", borderRadius: 8, padding: 2 }}>
+          <button
+            type="button"
+            onClick={() => p.setView("list")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600,
+              background: p.view === "list" ? "#fff" : "transparent",
+              border: "none", cursor: "pointer",
+              boxShadow: p.view === "list" ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
+              color: p.view === "list" ? "#111827" : "#6b7280",
+            }}
+          ><ListIcon size={13} /> List</button>
+          <button
+            type="button"
+            onClick={() => p.setView("kanban")}
+            style={{
+              display: "flex", alignItems: "center", gap: 6,
+              padding: "6px 12px", borderRadius: 6, fontSize: 12, fontWeight: 600,
+              background: p.view === "kanban" ? "#fff" : "transparent",
+              border: "none", cursor: "pointer",
+              boxShadow: p.view === "kanban" ? "0 1px 2px rgba(0,0,0,0.1)" : "none",
+              color: p.view === "kanban" ? "#111827" : "#6b7280",
+            }}
+          ><LayoutGrid size={13} /> Board</button>
+        </div>
       </div>
 
-      <div
+      {/* Smart filters row */}
+      <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 16, alignItems: "center" }}>
+        <div style={{ position: "relative", flex: "1 1 220px", maxWidth: 320 }}>
+          <Search size={14} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
+          <input
+            value={p.search}
+            onChange={(e) => p.setSearch(e.target.value)}
+            placeholder="Search company, contact, email..."
+            style={{ width: "100%", padding: "7px 10px 7px 32px", borderRadius: 8, border: "1px solid #D1D5DB", fontSize: 13 }}
+          />
+        </div>
+        <select value={p.stageFilter} onChange={(e) => p.setStageFilter(e.target.value)} style={selectStyle}>
+          <option value="all">All stages</option>
+          {ALL_STAGES.map((s) => <option key={s} value={s}>{s}</option>)}
+        </select>
+        <CountryFilterPopover
+          countries={p.countries}
+          selected={p.countryFilter}
+          onChange={p.setCountryFilter}
+        />
+        <select value={p.ownerFilter} onChange={(e) => p.setOwnerFilter(e.target.value)} style={selectStyle}>
+          <option value="all">👤 All owners</option>
+          <option value="unassigned">— Unassigned</option>
+          {p.owners.map((o) => <option key={o.id} value={o.id}>{o.name}</option>)}
+        </select>
+        <select value={p.dateFilter} onChange={(e) => p.setDateFilter(e.target.value)} style={selectStyle}>
+          <option value="all">📅 All time</option>
+          <option value="today">Today</option>
+          <option value="7d">Last 7 days</option>
+          <option value="30d">Last 30 days</option>
+          <option value="90d">Last 90 days</option>
+          <option value="year">This year</option>
+        </select>
+        <select value={p.seniorityFilter} onChange={(e) => p.setSeniorityFilter(e.target.value)} style={selectStyle}>
+          <option value="all">All seniority</option>
+          <option value="c_level">👔 C-Level</option>
+          <option value="vp">VP</option>
+          <option value="director">Director</option>
+          <option value="manager">Manager</option>
+          <option value="senior">Senior</option>
+          <option value="staff">Staff</option>
+        </select>
+        <select value={p.sortBy} onChange={(e) => p.setSortBy(e.target.value)} style={selectStyle}>
+          <option value="newest">Date</option>
+          <option value="name">Contact name</option>
+          <option value="company">Company name</option>
+          <option value="stage">Stage</option>
+        </select>
+        <button
+          type="button"
+          onClick={() => p.setSortDir(p.sortDir === "asc" ? "desc" : "asc")}
+          title={p.sortDir === "asc" ? "Ascending" : "Descending"}
+          style={{ ...selectStyle, padding: "7px 10px", cursor: "pointer", fontWeight: 600 }}
+        >
+          {p.sortDir === "asc" ? "↑ Asc" : "↓ Desc"}
+        </button>
+        {p.activeFilterCount > 0 && (
+          <button
+            type="button"
+            onClick={p.clearAllFilters}
+            style={{
+              padding: "7px 12px", borderRadius: 8, fontSize: 12, fontWeight: 600,
+              border: "1px solid #EF4444", color: "#EF4444", background: "#FEF2F2", cursor: "pointer",
+            }}
+          >
+            ✕ Clear filters ({p.activeFilterCount})
+          </button>
+        )}
+        <span style={{ fontSize: 12, color: "#6B7280", marginLeft: "auto" }}>
+          {totalCount.toLocaleString()} results
+        </span>
+      </div>
+
+      {p.view === "list" ? (
+        <div style={{ background: "#fff", borderRadius: 12, border: "1px solid #E5E7EB", overflow: "hidden" }}>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
+              <thead>
+                <tr style={{ background: "#F9FAFB", borderBottom: "1px solid #E5E7EB" }}>
+                  {["Company", "Contact", "Email", "Country", "Stage", "Owner", "Created", "Actions"].map((h) => (
+                    <th key={h} style={{ padding: "10px 12px", textAlign: "left", fontWeight: 600, fontSize: 11, textTransform: "uppercase", color: "#6B7280", whiteSpace: "nowrap" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {paginated.map((c) => {
+                  const pc = primaryContact(c);
+                  const badge = stageBadgeStyle(c.stage);
+                  return (
+                    <tr
+                      key={c.id}
+                      onClick={() => p.onCard(c.id)}
+                      style={{ borderBottom: "1px solid #F3F4F6", cursor: "pointer" }}
+                      onMouseEnter={(e) => (e.currentTarget.style.background = "#FAFAFA")}
+                      onMouseLeave={(e) => (e.currentTarget.style.background = "")}
+                    >
+                      <td style={{ padding: "10px 12px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                          <div style={{
+                            width: 32, height: 32, borderRadius: 8, background: "#F3F4F6",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 11, fontWeight: 700, color: "#9B2251", flexShrink: 0, overflow: "hidden",
+                          }}>
+                            {c.logo_url
+                              ? <img src={c.logo_url} alt="" style={{ width: "100%", height: "100%", objectFit: "contain" }} />
+                              : (c.name?.slice(0, 2).toUpperCase() ?? "??")}
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: 13, color: "#111827" }}>{c.name}</div>
+                            <div style={{ fontSize: 11, color: "#9CA3AF" }}>{c.industry ?? c.company_type ?? ""}</div>
+                          </div>
+                        </div>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <div style={{ fontWeight: 500 }}>{pc?.full_name ?? "—"}</div>
+                        <div style={{ fontSize: 11, color: "#9CA3AF" }}>{pc?.role ?? ""}</div>
+                      </td>
+                      <td style={{ padding: "10px 12px", fontSize: 12 }}>{pc?.email ?? "—"}</td>
+                      <td style={{ padding: "10px 12px", fontSize: 12 }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          <span style={{ fontSize: 14 }}>{countryFlag(c.country)}</span>
+                          <span>{c.country ?? "—"}</span>
+                        </span>
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <span style={{
+                          padding: "3px 10px", borderRadius: 12, fontSize: 11, fontWeight: 600,
+                          background: badge.background, color: badge.color,
+                        }}>{c.stage ?? "cold"}</span>
+                      </td>
+                      <td style={{ padding: "10px 12px", fontSize: 12 }}>
+                        {c.owner_id ? (ownerMap[c.owner_id] ?? "—") : <span style={{ color: "#9CA3AF" }}>—</span>}
+                      </td>
+                      <td style={{ padding: "10px 12px", fontSize: 12, color: "#6B7280" }}>
+                        {c.created_at ? formatRelative(c.created_at) : "—"}
+                      </td>
+                      <td style={{ padding: "10px 12px" }}>
+                        <button
+                          type="button"
+                          onClick={(e) => { e.stopPropagation(); p.onCard(c.id); }}
+                          style={{ padding: "4px 10px", borderRadius: 6, fontSize: 11, border: "1px solid #D1D5DB", background: "#fff", cursor: "pointer" }}
+                        >View</button>
+                      </td>
+                    </tr>
+                  );
+                })}
+                {paginated.length === 0 && (
+                  <tr><td colSpan={8} style={{ textAlign: "center", padding: 36, color: "#9ca3af", fontSize: 13 }}>No prospects match these filters.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+          {totalCount > p.pageSize && (
+            <div style={{ padding: "12px 16px", borderTop: "1px solid #E5E7EB", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+              <span style={{ fontSize: 12, color: "#6B7280" }}>
+                Showing {pageStart + 1}-{Math.min(p.page * p.pageSize, totalCount)} of {totalCount.toLocaleString()}
+              </span>
+              <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+                <button
+                  type="button"
+                  disabled={p.page <= 1}
+                  onClick={() => p.setPage(p.page - 1)}
+                  style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #D1D5DB", background: "#fff", fontSize: 12, cursor: p.page <= 1 ? "not-allowed" : "pointer", opacity: p.page <= 1 ? 0.5 : 1 }}
+                >← Prev</button>
+                <span style={{ fontSize: 12, color: "#6B7280" }}>{p.page} / {totalPages}</span>
+                <button
+                  type="button"
+                  disabled={p.page >= totalPages}
+                  onClick={() => p.setPage(p.page + 1)}
+                  style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid #D1D5DB", background: "#fff", fontSize: 12, cursor: p.page >= totalPages ? "not-allowed" : "pointer", opacity: p.page >= totalPages ? 0.5 : 1 }}
+                >Next →</button>
+              </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div
         style={{
           display: "grid",
           gridTemplateColumns: "repeat(6, minmax(220px, 1fr))",
@@ -378,11 +749,11 @@ function PipelineKanban({
                 {t(`admin.crm.pipeline.stages.${b.key}`)}
               </span>
               <span style={{ fontSize: 12, color: "#6b7280", fontWeight: 600 }}>
-                {grouped[b.key].length}
+                {p.grouped[b.key].length}
               </span>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-              {grouped[b.key].map((c) => {
+              {p.grouped[b.key].map((c) => {
                 const pc = primaryContact(c);
                 return (
                   <div
@@ -397,7 +768,7 @@ function PipelineKanban({
                       flexDirection: "column",
                       gap: 6,
                     }}
-                    onClick={() => onCard(c.id)}
+                    onClick={() => p.onCard(c.id)}
                   >
                     <div style={{ fontSize: 13, fontWeight: 600, color: "#111827" }}>{c.name}</div>
                     <div style={{ fontSize: 12, color: "#6b7280", display: "flex", gap: 6, alignItems: "center" }}>
@@ -425,7 +796,7 @@ function PipelineKanban({
                     <select
                       onClick={(e) => e.stopPropagation()}
                       value={c.stage ?? "cold"}
-                      onChange={(e) => onStageChange(c.id, e.target.value)}
+                      onChange={(e) => p.onStageChange(c.id, e.target.value)}
                       style={{
                         fontSize: 11,
                         padding: "2px 6px",
@@ -438,10 +809,10 @@ function PipelineKanban({
                         <option key={s} value={s}>{s}</option>
                       ))}
                     </select>
-                    {(c.stage === "demo_scheduled" || c.stage === "demo_done") && prepStatus[c.id] && (
+                    {(c.stage === "demo_scheduled" || c.stage === "demo_done") && p.prepStatus[c.id] && (
                       <button
                         type="button"
-                        onClick={(e) => { e.stopPropagation(); onPrepClick(c.id); }}
+                        onClick={(e) => { e.stopPropagation(); p.onPrepClick(c.id); }}
                         style={{
                           fontSize: 10,
                           padding: "3px 8px",
@@ -454,19 +825,20 @@ function PipelineKanban({
                           cursor: "pointer",
                         }}
                       >
-                        📋 {c.stage === "demo_done" ? "Brief" : "Prep"} · {prepStatus[c.id]}
+                        📋 {c.stage === "demo_done" ? "Brief" : "Prep"} · {p.prepStatus[c.id]}
                       </button>
                     )}
                   </div>
                 );
               })}
-              {grouped[b.key].length === 0 && (
+              {p.grouped[b.key].length === 0 && (
                 <div style={{ fontSize: 11, color: "#9ca3af", textAlign: "center", padding: 12 }}>—</div>
               )}
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
     </>
   );
 }
@@ -532,7 +904,12 @@ function CompanyTable({
                         </a>
                       ) : "—"}
                     </td>
-                    <td>{c.country ?? "—"}</td>
+                    <td>
+                      <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                        <span style={{ fontSize: 14 }}>{countryFlag(c.country)}</span>
+                        <span>{c.country ?? "—"}</span>
+                      </span>
+                    </td>
                     <td>
                       <span
                         style={{
@@ -711,7 +1088,7 @@ function AddCompanyModal({
   const [busy, setBusy] = useState(false);
   const [form, setForm] = useState({
     name: "", type: defaultType, country: "", market_region: "",
-    website: "", stage: "cold", source: "manual",
+    website: "", stage: "cold", source: "wms_import",
     contactName: "", contactRole: "", contactEmail: "", contactPhone: "", contactLinkedin: "",
     notes: "",
   });
@@ -761,7 +1138,7 @@ function AddCompanyModal({
       onOpenChange(false);
       setForm({
         name: "", type: defaultType, country: "", market_region: "",
-        website: "", stage: "cold", source: "manual",
+        website: "", stage: "cold", source: "wms_import",
         contactName: "", contactRole: "", contactEmail: "", contactPhone: "", contactLinkedin: "",
         notes: "",
       });

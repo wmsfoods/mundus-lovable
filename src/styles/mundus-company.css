@@ -9,6 +9,62 @@
 }
 
 /* ============================================================
+   Admin Company Detail — prospect-style overrides
+   Applied inside .adm-profile-scope so we don't affect the
+   supplier-facing My Company page.
+   ============================================================ */
+.adm-profile-scope .psp-scrm-field > input,
+.adm-profile-scope .psp-scrm-field > select,
+.adm-profile-scope .psp-scrm-field > textarea,
+.adm-profile-scope .psp-scrm-field .adm-addr-ac input {
+  width: 100%;
+  height: 34px;
+  padding: 6px 10px;
+  border: 1px solid var(--adm-border, #e5e7eb);
+  border-radius: 6px;
+  background: #fff;
+  font-size: 13px;
+  color: var(--adm-text, #111827);
+  outline: none;
+  transition: border-color .15s, background .15s;
+}
+.adm-profile-scope .psp-scrm-field > textarea { height: auto; min-height: 70px; }
+.adm-profile-scope .psp-scrm-field > input:focus,
+.adm-profile-scope .psp-scrm-field > select:focus,
+.adm-profile-scope .psp-scrm-field > textarea:focus { border-color: #8B2252; }
+
+/* Recast CompanyProfileSections cards to prospect-style panels
+   when rendered inside the admin company detail sub-tabs. */
+.adm-profile-scope .cp-page { gap: 12px; padding: 0; }
+.adm-profile-scope .cp-card {
+  background: #fff;
+  border: 0.5px solid var(--adm-border, #e5e7eb);
+  border-radius: var(--adm-radius-lg, 10px);
+  padding: 12px 14px;
+  box-shadow: none;
+}
+.adm-profile-scope .cp-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 0;
+  border: none;
+}
+.adm-profile-scope .cp-section-head h2 {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--adm-text, #111827);
+  margin: 0;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Note: per-tab section visibility is handled lower in this file
+   (see .adm-profile-scope-* > .cp-page > section rules). */
+
+/* ============================================================
    New Company Profile Page (CompanyProfilePage)
    ============================================================ */
 :root {
@@ -770,3 +826,7 @@ select.cp-inline { cursor: pointer; }
   border: 1px dashed #8B2252 !important;
   background: rgba(139,34,82,0.02);
 }
+
+/* Logo overlay hover (CompanyProfilePage) */
+.cprofile-namecard button:hover .cprofile-logo-overlay { opacity: 1 !important; }
+

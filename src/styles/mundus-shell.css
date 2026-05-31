@@ -889,6 +889,29 @@
 .profile-avatar-edit:hover { filter: brightness(1.05); }
 .profile-name { font-size: 17px; font-weight: var(--weight-semibold); color: var(--fg); }
 .profile-sub { font-size: var(--fs-sm); color: var(--fg-muted); word-break: break-all; }
+.profile-name-display {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: transparent; border: 1px dashed transparent;
+  padding: 4px 8px; border-radius: var(--radius-sm); cursor: pointer;
+  color: var(--fg); font: inherit; font-size: 17px; font-weight: var(--weight-semibold);
+}
+.profile-name-display:hover { border-color: hsl(var(--border)); }
+.profile-name-display:hover .profile-name-pencil { opacity: 1; }
+.profile-name-pencil { opacity: 0.5; transition: opacity 0.15s; }
+.profile-name-edit { display: inline-flex; align-items: center; gap: 6px; }
+.profile-name-input {
+  font-size: 17px; font-weight: var(--weight-semibold);
+  padding: 4px 8px; border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-sm); background: var(--bg);
+  color: var(--fg); min-width: 180px; text-align: center;
+}
+.profile-name-btn {
+  width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid hsl(var(--border)); background: var(--bg); border-radius: var(--radius-sm);
+  cursor: pointer; color: var(--fg);
+}
+.profile-name-btn:hover { background: hsl(var(--muted)); }
+.profile-name-btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .profile-section {
   background: #fff;
   border: 1px solid hsl(var(--border));

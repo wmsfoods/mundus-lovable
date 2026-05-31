@@ -28,7 +28,7 @@
     "complete": "Terminé",
     "signOut": "Se déconnecter",
     "signedOut": "Déconnecté",
-    "loading": "Chargement...",
+    "loading": "Chargement…",
     "search": "Rechercher",
     "save": "Enregistrer",
     "close": "Fermer",
@@ -43,7 +43,8 @@
     "language": "Langue",
     "english": "Anglais",
     "portuguese": "Portugais",
-    "spanish": "Espagnol"
+    "spanish": "Espagnol",
+    "signIn": "Se connecter"
   },
   "auth": {
     "login": "Se connecter",
@@ -211,12 +212,25 @@
       "offerRequests": "Demandes d'Offre",
       "myCompany": "Ma Société",
       "messages": "Messages",
-      "chat": "Chat"
+      "chat": "Chat",
+      "marketIntelligence": "Intelligence Marché",
+      "mundusIntel": "Mundus Intel"
     },
     "bottom": {
       "create": "Créer",
       "negotiations": "Chat",
       "myOffers": "Offres"
+    },
+    "officeSwitcher": {
+      "allOffices": "Tous les bureaux",
+      "allOfficesFamily": "Tous les bureaux · {{family}}",
+      "allOfficesConsolidated": "Tous les bureaux (Consolidé)",
+      "directorBadge": "Directeur"
+    },
+    "officeIndicator": {
+      "viewing": "Affichage : {{office}}",
+      "showAll": "✕ Tout afficher",
+      "assignedOfficeHint": "(votre bureau attribué)"
     }
   },
   "dashboard": {
@@ -1184,13 +1198,13 @@
       }
     },
     "share": {
-      "title": "Partager cette enchère avec le fournisseur",
-      "subtitle": "Le fournisseur peut consulter et répondre via ce lien sécurisé — aucune connexion requise.",
-      "subtitleUsed": "Ce lien a déjà été utilisé par le fournisseur.",
+      "title": "Partager cette négociation avec l'acheteur",
+      "subtitle": "L'acheteur peut consulter et répondre via ce lien sécurisé — aucune connexion requise.",
+      "subtitleUsed": "Ce lien a déjà été utilisé par l'acheteur.",
       "loading": "Préparation du lien de partage…",
       "copy": "Copier le lien",
       "copied": "Copié !",
-      "supplierEmail": "Email du fournisseur (facultatif)",
+      "supplierEmail": "Email de l'acheteur (facultatif)",
       "saveEmail": "Enregistrer",
       "emailSaved": "Email enregistré",
       "sendEmail": "Envoyer l'email",
@@ -1523,7 +1537,8 @@
           "acceptComingSoon": "Accepter la Commande — bientôt disponible",
           "rejectComingSoon": "Rejeter la Commande — bientôt disponible"
         }
-      }
+      },
+      "emptyForOffice": "Aucune vente pour {{office}}."
     },
     "offers": {
       "createOffer": "Créer Offre +",
@@ -1622,7 +1637,8 @@
       "crumbHome": "Accueil",
       "title": "Offres",
       "showing": "Affichage de {{from}} à {{to}} articles sur {{total}} résultats",
-      "sortBy": "Trier par"
+      "sortBy": "Trier par",
+      "emptyForOffice": "Aucune offre pour {{office}}."
     },
     "createOffer": {
       "title": "Nouvelle offre",
@@ -1879,7 +1895,10 @@
         "sendInvoiceDraft": "Envoyer le brouillon de facture",
         "viewSale": "Voir la vente",
         "issueBalanceInvoice": "Émettre la facture de solde"
-      }
+      },
+      "emptyOffersForOffice": "Aucune offre pour {{office}}.",
+      "emptySalesForOffice": "Aucune vente pour {{office}}.",
+      "showingOffice": "Affichage de {{office}}"
     },
     "company": {
       "title": "Mon entreprise",
@@ -2018,6 +2037,60 @@
           },
           "perks": "[\"Bilan de performance mensuel livré dans votre boîte de réception\",\"Exportations CSV illimitées de toute métrique ou graphique\",\"Plages de dates personnalisées et vues enregistrées par membre de l'équipe\",\"Analyse approfondie au niveau de l'acheteur avec historique complet des Négociations\"]"
         }
+      }
+    },
+    "multiOffice": {
+      "requests": {
+        "tabUnassigned": "À router",
+        "tabAssigned": "Attribuées",
+        "assignToOffice": "Affecter à un bureau ▾",
+        "assigning": "Affectation…",
+        "assignedToast": "Demande affectée",
+        "assignedToastDesc": "Le bureau a été notifié.",
+        "assignError": "Affectation impossible",
+        "assignErrorUnknown": "Erreur inconnue",
+        "badgeAssignedTo": "{{office}}",
+        "emptyHqUnassigned": "Aucune demande à router.",
+        "emptyHqAssigned": "Aucune demande affectée pour le moment.",
+        "emptyOffice": "Aucune demande affectée à votre bureau."
+      },
+      "rollup": {
+        "sectionTitle": "Par bureau",
+        "allOffices": "Tous les bureaux",
+        "active": "Actives",
+        "openNeg": "Négo. ouvertes",
+        "closed": "Conclues",
+        "inbound": "Entrantes",
+        "incomingRequests": "Demandes entrantes",
+        "loading": "Chargement…"
+      }
+    },
+    "cutComparison": {
+      "nav": "Comparaison des découpes",
+      "title": "Comparaison des découpes",
+      "subtitle": "Les usines de votre famille vs le marché anonymisé — agrégats uniquement, jamais d'identités de concurrents.",
+      "directorOnly": "Cette vue est réservée aux Directeurs Globaux.",
+      "filter": {
+        "cut": "Découpe",
+        "cutPlaceholder": "Sélectionnez une découpe…",
+        "destination": "Pays de destination (facultatif)",
+        "destinationPlaceholder": "ex. : Chine"
+      },
+      "table": {
+        "origin": "Origine",
+        "avgAsk": "Prix demandé moyen USD/kg",
+        "recentClosed": "Récemment conclus USD/kg",
+        "sample": "Échantillon",
+        "pickCut": "Choisissez une découpe à comparer.",
+        "loading": "Chargement…",
+        "noFamilyOffers": "Aucune offre de votre famille pour cette découpe pour le moment.",
+        "anonMarket": "Marché anonymisé",
+        "insufficient": "Données de marché insuffisantes (≥ 3 échantillons requis)",
+        "bandFormat": "{{low}} – médiane {{med}} – {{high}}"
+      },
+      "chart": {
+        "title": "Fourchette de prix (marché vs vos offres)",
+        "marketRange": "Plage du marché"
       }
     }
   },
@@ -2174,7 +2247,7 @@
         "find_people": "Trouver des personnes",
         "lists": "Listes",
         "marketplace": "Marché",
-        "products": "Produits & découpes",
+        "products": "Articles",
         "markets": "Marchés",
         "ports": "Ports",
         "finance": "Finance",
@@ -2309,7 +2382,8 @@
         "web_scrape": "Extraction web",
         "apollo": "Mundus Intelligence",
         "manual": "Manuel",
-        "inbound": "Entrant"
+        "inbound": "Entrant",
+        "wms_import": "WMS"
       },
       "table": {
         "company": "Entreprise",
@@ -2537,7 +2611,37 @@
           "insight": "Insight",
           "sources": "Entreprises sources",
           "category": "Catégorie",
-          "empty": "Aucun apprentissage enregistré pour le moment"
+          "empty": "Aucun apprentissage enregistré pour le moment",
+          "log": {
+            "title": "Journal Hebdomadaire d'Apprentissages",
+            "subtitle": "À remplir à la fin de chaque semaine — 15 minutes de rétrospective qui évite de répéter les mêmes erreurs.",
+            "thisWeek": "CETTE SEMAINE",
+            "newWeek": "+ Nouvelle semaine",
+            "addPrevious": "Remplir les semaines précédentes",
+            "colWeek": "Semaine",
+            "colFilled": "Rempl.",
+            "colWorked": "Ce qui a marché",
+            "colWorkedHint": "tactique, approche, conversation",
+            "colStuck": "Ce qui a bloqué",
+            "colStuckHint": "objection, étape, personne",
+            "colNext": "Ajustement semaine suivante",
+            "colNextHint": "action concrète",
+            "placeholderWorked": "Qu'est-ce qui a fait bouger les choses cette semaine ?",
+            "placeholderStuck": "Où avons-nous perdu du temps ou de la confiance ?",
+            "placeholderNext": "Un changement concret pour la semaine prochaine",
+            "filterQuarter": "Tous les trimestres",
+            "filterSearch": "Rechercher…",
+            "insightsTitle": "Insights intelligents",
+            "insightsRepeating": "Blocage récurrent",
+            "insightsPending": "En attente d'exécution",
+            "insightsEmpty": "Enregistrez quelques semaines pour voir les tendances",
+            "weeksLogged": "semaines enregistrées",
+            "streak": "semaines consécutives",
+            "savedAt": "Enregistré",
+            "saving": "Enregistrement…",
+            "emptyTitle": "Commencez votre première rétrospective hebdomadaire",
+            "emptyCta": "Enregistrer cette semaine"
+          }
         },
         "modal": {
           "addCompany": "Ajouter une Entreprise",
@@ -2977,7 +3081,7 @@
         }
       },
       "cuts": {
-        "title": "Produits & Découpes",
+        "title": "Articles",
         "subtitle": "Gérer le catalogue des découpes de viande pour la plateforme",
         "searchPlaceholder": "Rechercher un nom de découpe ou un numéro de produit...",
         "allCategories": "Toutes les catégories",
@@ -3063,7 +3167,7 @@
         "supplier_main": "Fournisseur · Menu principal",
         "supplier_insights": "Fournisseur · Statistiques",
         "supplier_future": "Fournisseur · Prochainement",
-        "admin_crm": "Admin · CRM",
+        "admin_crm": "WMS",
         "admin_ops": "Admin · Opérations",
         "admin_marketplace": "Admin · Marketplace",
         "admin_finance": "Admin · Finance"
@@ -3133,5 +3237,149 @@
     "dateFrom": "Date de début",
     "dateTo": "Date de fin",
     "noResults": "Aucun résultat ne correspond à vos filtres"
+  },
+  "whatsapp": {
+    "share_offer": "Bonjour ! Découvrez cette offre sur Mundus Trade : {{url}}",
+    "share_request": "Bonjour ! Découvrez cette demande sur Mundus Trade : {{url}}",
+    "contact_supplier": "Bonjour ! Je suis intéressé par votre offre sur Mundus Trade. Discutons.",
+    "contact_buyer": "Bonjour ! J'ai vu votre demande sur Mundus Trade. J'aimerais faire une offre.",
+    "send_message": "Envoyer via WhatsApp",
+    "share": "Partager via WhatsApp"
+  },
+  "team": {
+    "form": {
+      "title": {
+        "edit": "Modifier l'utilisateur",
+        "invite": "Inviter un utilisateur"
+      },
+      "subtitle": {
+        "edit": "Mettez à jour les informations et autorisations de ce membre.",
+        "invite": "Envoyer un e-mail d'invitation — l'utilisateur définira son mot de passe à la première connexion."
+      },
+      "fields": {
+        "name": "Nom",
+        "email": "E-mail",
+        "profileType": "Type de profil",
+        "jobTitle": "Fonction",
+        "phone": "Téléphone",
+        "notes": "Notes"
+      },
+      "placeholders": {
+        "jobTitle": "ex. Directeur commercial",
+        "notes": "Notes internes sur cet utilisateur…"
+      },
+      "profile": {
+        "master_buyer": "Acheteur principal (accès total)",
+        "procurement": "Approvisionnement",
+        "import_manager": "Responsable des imports",
+        "quality_control": "Contrôle qualité",
+        "logistics": "Logistique",
+        "master_supplier": "Fournisseur principal (accès total)",
+        "operator": "Opérateur",
+        "export_manager": "Responsable export"
+      },
+      "status": {
+        "active": "Actif",
+        "inactive": "Inactif"
+      },
+      "account": {
+        "activeTitle": "Compte actif",
+        "inactiveTitle": "Compte inactif",
+        "activeHint": "L'utilisateur peut se connecter et accéder au workspace.",
+        "inactiveHint": "L'utilisateur ne peut pas se connecter tant qu'il n'est pas réactivé."
+      },
+      "meta": {
+        "created": "CRÉÉ",
+        "lastLogin": "DERNIÈRE CONNEXION",
+        "userId": "ID UTILISATEUR"
+      },
+      "actions": {
+        "save": "Enregistrer",
+        "sendInvite": "Envoyer l'invitation",
+        "delete": "Supprimer l'utilisateur"
+      },
+      "confirmDelete": "Supprimer cet utilisateur ? Cette action est irréversible.",
+      "toast": {
+        "updated": "Utilisateur mis à jour.",
+        "deleted": "Utilisateur supprimé.",
+        "inviteSent": "Invitation envoyée à {{email}}.",
+        "inviteCreated": "Invitation créée pour {{email}} (e-mail en attente)."
+      },
+      "errors": {
+        "nameEmailRequired": "Nom et e-mail sont obligatoires.",
+        "noCompany": "Aucune entreprise sélectionnée.",
+        "saveFailed": "Échec de l'enregistrement."
+      }
+    }
+  },
+  "inviteAccept": {
+    "title": "Accepter l'invitation",
+    "subtitle": "Bonjour {{name}}, définissez un mot de passe pour accéder à votre workspace.",
+    "email": "E-mail",
+    "password": "Mot de passe",
+    "confirm": "Confirmer le mot de passe",
+    "cta": "Accepter et continuer",
+    "success": "Bienvenue ! Redirection vers votre workspace…",
+    "errors": {
+      "title": "Invitation indisponible",
+      "invalid": "Ce lien d'invitation est invalide ou a expiré.",
+      "alreadyAccepted": "Cette invitation a déjà été acceptée. Veuillez vous connecter.",
+      "expired": "Cette invitation a expiré. Veuillez en demander une nouvelle.",
+      "passwordShort": "Le mot de passe doit comporter au moins 8 caractères.",
+      "passwordMismatch": "Les mots de passe ne correspondent pas."
+    }
+  },
+  "billing": {
+    "plans": {
+      "supplier_pro": "Mundus PRO (Fournisseur)",
+      "buyer_pro": "Mundus PRO (Acheteur)"
+    },
+    "upgrade": {
+      "cta": "Passer en PRO — {{price}} $/mois",
+      "billedMonthly": "Facturation mensuelle",
+      "cancelAnytime": "Annulez à tout moment",
+      "redirecting": "Redirection vers le paiement…"
+    },
+    "errors": {
+      "noCompany": "Aucune entreprise sélectionnée.",
+      "checkoutFailed": "Impossible de démarrer le paiement. Réessayez.",
+      "portalFailed": "Impossible d'ouvrir le portail de facturation."
+    },
+    "requirePro": {
+      "eyebrow": "Mundus PRO",
+      "title": "Cette fonctionnalité fait partie de Mundus PRO",
+      "lede": "Débloquez l'intelligence marché, l'analytique et les benchmarks avancés pour toute votre équipe.",
+      "perMonth": "mois",
+      "contactSales": "Contacter les ventes"
+    },
+    "success": {
+      "title": "Bienvenue dans Mundus PRO",
+      "lede": "Votre abonnement est actif. Les fonctionnalités PRO sont débloquées pour toute l'entreprise.",
+      "cta": "Aller à PRO",
+      "autoRedirect": "Vous serez redirigé automatiquement dans quelques secondes.",
+      "unlocks": {
+        "supplier": [
+          "Price benchmark",
+          "Analytique avancée",
+          "Comparaison de découpes entre bureaux"
+        ],
+        "buyer": [
+          "Intelligence d'achat",
+          "Benchmarks marché",
+          "Insights inter-bureaux"
+        ]
+      }
+    },
+    "section": {
+      "title": "Facturation et abonnement",
+      "managePortal": "Gérer la facturation sur Stripe",
+      "renewsOn": "Renouvelé le {{date}}",
+      "cancelsOn": "Annulé le {{date}}",
+      "canceledUntil": "Annulé — accès jusqu'au {{date}}",
+      "pastDue": "Votre dernier paiement a échoué. Mettez à jour votre moyen de paiement pour garder Mundus PRO actif.",
+      "fixPayment": "Mettre à jour le paiement",
+      "noSubscription": "Aucun abonnement actif. Passez à Mundus PRO à partir de {{price}} $/mois."
+    },
+    "salesConfirmation": "Merci ! L'équipe Opérations de Mundus vous contactera sous 24 heures."
   }
 }

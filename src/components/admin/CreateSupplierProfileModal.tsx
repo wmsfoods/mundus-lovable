@@ -3,6 +3,10 @@ import { z } from "zod";
 import { X } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import { auditLog } from "@/lib/auditLog";
+import { LogoUploader } from "./LogoUploader";
+import { CountrySelect } from "./CountrySelect";
+import { ScanCardButton } from "./ScanCardButton";
 
 const schema = z.object({
   companyName: z.string().trim().min(1, "Company name is required").max(120),
@@ -35,6 +39,7 @@ export function CreateSupplierProfileModal({
 }) {
   const [form, setForm] = useState<FormData>(empty);
   const [addMundusAdmin, setAddMundusAdmin] = useState(true);
+  const [mundusManaged, setMundusManaged] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [errors, setErrors] = useState<Partial<Record<keyof FormData, string>>>({});
 
@@ -64,7 +69,7 @@ export function CreateSupplierProfileModal({
           name: f.companyName,
           country: f.country,
           city: f.city || null,
-          tax_id: f.taxId || "-",
+          tax_id: f.taxId || null,
           phone: f.contactPhone || "-",
           address: "-",
           state: "-",
@@ -73,20 +78,22 @@ export function CreateSupplierProfileModal({
           office_type: "headquarters",
           is_supplier: true,
           is_buyer: false,
+          mundus_managed_supplier: mundusManaged,
         })
         .select("id")
         .single();
       if (cErr || !company) throw cErr ?? new Error("Failed to create company");
 
-      const { error: cuErr } = await supabase.from("company_users").insert({
+      const { error: tiErr } = await supabase.from("team_invitations").insert({
         company_id: company.id,
-        email: f.contactEmail,
+        email: f.contactEmail.toLowerCase(),
         full_name: f.contactName,
-        role: f.role || "master_supplier",
-        status: "pending",
-        invited_at: new Date().toISOString(),
+        phone: f.contactPhone || null,
+        profile_type: f.role || "master_supplier",
+        role: (f.role || "").includes("master") ? "master" : "member",
+        account_status: "pending",
       });
-      if (cuErr) throw cuErr;
+      if (tiErr) throw tiErr;
 
       if (addMundusAdmin) {
         const { data: auth } = await supabase.auth.getUser();
@@ -110,6 +117,14 @@ export function CreateSupplierProfileModal({
       }
 
       toast.success("Supplier profile created");
+      auditLog({
+        action: "company.supplier_created",
+        category: "company",
+        entityType: "company",
+        entityId: company.id,
+        entityLabel: f.companyName,
+        details: { mundus_managed: mundusManaged },
+      });
       setForm(empty);
       onCreated?.(company.id);
       onClose();
@@ -130,7 +145,7 @@ export function CreateSupplierProfileModal({
       onClick={onClose}
     >
       <div
-        className="adm-panel"
+        className="adm-panel create-profile-modal"
         style={{ width: "100%", maxWidth: 560, maxHeight: "90vh", overflow: "auto", padding: 0 }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -142,18 +157,37 @@ export function CreateSupplierProfileModal({
         </div>
 
         <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 12 }}>
+          <ScanCardButton
+            hint="Scan a supplier's business card to auto-fill company & contact."
+            onScanned={(d) => {
+              setForm((s) => ({
+                ...s,
+                companyName: d.company || s.companyName,
+                country: d.country || s.country,
+                city: d.city || s.city,
+                website: d.website || s.website,
+                contactName: d.fullName || s.contactName,
+                contactEmail: d.email || s.contactEmail,
+                contactPhone: d.phone || d.mobile || s.contactPhone,
+              }));
+            }}
+          />
           <Field label="Company Name *" error={errors.companyName}>
             <input style={inputStyle} value={form.companyName} onChange={(e) => upd("companyName", e.target.value)} maxLength={120} />
           </Field>
-          <div style={twoCol}>
+          <div className="field-row" style={twoCol}>
             <Field label="Country *" error={errors.country}>
-              <input style={inputStyle} value={form.country} onChange={(e) => upd("country", e.target.value)} maxLength={80} />
+              <CountrySelect
+                style={inputStyle}
+                value={form.country}
+                onChange={(v) => upd("country", v)}
+              />
             </Field>
             <Field label="City" error={errors.city}>
               <input style={inputStyle} value={form.city} onChange={(e) => upd("city", e.target.value)} maxLength={80} />
             </Field>
           </div>
-          <div style={twoCol}>
+          <div className="field-row" style={twoCol}>
             <Field label="Tax ID / Registration" error={errors.taxId}>
               <input style={inputStyle} value={form.taxId} onChange={(e) => upd("taxId", e.target.value)} maxLength={80} />
             </Field>
@@ -161,16 +195,14 @@ export function CreateSupplierProfileModal({
               <input style={inputStyle} value={form.website} onChange={(e) => upd("website", e.target.value)} placeholder="https://..." maxLength={255} />
             </Field>
           </div>
-          <Field label="Logo URL" error={errors.logoUrl}>
-            <input style={inputStyle} value={form.logoUrl} onChange={(e) => upd("logoUrl", e.target.value)} placeholder="https://..." maxLength={500} />
-          </Field>
+          <LogoUploader value={form.logoUrl} onChange={(url) => upd("logoUrl", url)} />
 
           <div style={{ borderTop: "1px solid #e5e7eb", margin: "8px 0 0", paddingTop: 12 }}>
             <div style={{ fontSize: 12, fontWeight: 600, color: "#6b7280", textTransform: "uppercase", marginBottom: 8 }}>Primary Contact</div>
             <Field label="Full Name *" error={errors.contactName}>
               <input style={inputStyle} value={form.contactName} onChange={(e) => upd("contactName", e.target.value)} maxLength={120} />
             </Field>
-            <div style={twoCol}>
+            <div className="field-row" style={twoCol}>
               <Field label="Email *" error={errors.contactEmail}>
                 <input style={inputStyle} type="email" value={form.contactEmail} onChange={(e) => upd("contactEmail", e.target.value)} maxLength={255} />
               </Field>
@@ -191,21 +223,21 @@ export function CreateSupplierProfileModal({
             <label style={{ display: "flex", gap: 8, alignItems: "flex-start", fontSize: 13, cursor: "pointer" }}>
               <input
                 type="checkbox"
-                checked={addMundusAdmin}
-                onChange={(e) => setAddMundusAdmin(e.target.checked)}
+                checked={mundusManaged}
+                onChange={(e) => { setMundusManaged(e.target.checked); setAddMundusAdmin(e.target.checked); }}
                 style={{ marginTop: 3 }}
               />
               <span>
-                <strong>Add Mundus team as office admin</strong>
+                <strong>Mundus manages offers for this supplier</strong>
                 <div style={{ fontSize: 11, color: "#6b7280" }}>
-                  Allows Mundus to manage offers on behalf of this supplier.
+                  Allows the Mundus team to create and manage offers on behalf of this supplier.
                 </div>
               </span>
             </label>
           </div>
         </div>
 
-        <div style={{ padding: "12px 20px", borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "flex-end", gap: 8 }}>
+        <div className="actions" style={{ padding: "12px 20px", borderTop: "1px solid #e5e7eb", display: "flex", justifyContent: "flex-end", gap: 8 }}>
           <button type="button" onClick={onClose} disabled={submitting} style={btnGhost}>Cancel</button>
           <button type="button" onClick={handleSubmit} disabled={submitting} style={btnPrimary}>
             {submitting ? "Creating…" : "Create Profile"}

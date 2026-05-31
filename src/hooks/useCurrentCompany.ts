@@ -36,25 +36,36 @@ export function useCurrentCompany(): State {
     setState((s) => ({ ...s, loading: true, error: null }));
 
     (async () => {
-      const { data: userRow, error: userErr } = await supabase
+      let companyId: string | null = null;
+      let usersRowHadCompany = false;
+
+      // Strategy 1: users table
+      const { data: userRow } = await supabase
         .from("users")
         .select("company_id, active_company_id")
         .eq("id", userId)
         .maybeSingle();
-
       if (cancelled) return;
-      if (userErr) {
-        setState({ company: null, loading: false, error: userErr.message });
-        return;
-      }
-      if (!userRow) {
-        setState({ company: null, loading: false, error: "user row not found" });
-        return;
+      if (userRow) {
+        companyId = userRow.active_company_id ?? userRow.company_id ?? null;
+        usersRowHadCompany = Boolean(userRow.company_id);
       }
 
-      const companyId = userRow.active_company_id ?? userRow.company_id;
+      // Strategy 2: company_users fallback
       if (!companyId) {
-        setState({ company: null, loading: false, error: "no company linked" });
+        const { data: cuRow } = await supabase
+          .from("company_users")
+          .select("company_id")
+          .eq("user_id", userId)
+          .eq("status", "active")
+          .limit(1)
+          .maybeSingle();
+        if (cancelled) return;
+        if (cuRow?.company_id) companyId = cuRow.company_id;
+      }
+
+      if (!companyId) {
+        setState({ company: null, loading: false, error: "no_company_linked" });
         return;
       }
 
@@ -70,8 +81,16 @@ export function useCurrentCompany(): State {
         return;
       }
       if (!companyRow) {
-        setState({ company: null, loading: false, error: "company not found" });
+        setState({ company: null, loading: false, error: "company_not_found" });
         return;
+      }
+
+      // Backfill users.company_id silently if missing
+      if (!usersRowHadCompany) {
+        supabase
+          .from("users")
+          .upsert({ id: userId, company_id: companyId } as any, { onConflict: "id" })
+          .then(() => {});
       }
 
       setState({

@@ -8,11 +8,14 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { WeightUnitProvider } from "@/contexts/WeightUnitContext";
 import { RequireAuth } from "@/components/RequireAuth";
+import { RequireAdmin } from "@/components/RequireAdmin";
 import { RoleRedirect } from "@/components/RoleRedirect";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/signup/Signup.tsx";
 import SignupSuccess from "./pages/signup/SignupSuccess.tsx";
 import PartnerSignup from "./pages/signup/PartnerSignup.tsx";
+import InviteAccept from "./pages/InviteAccept.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import BuyerShell from "./layouts/BuyerShell.tsx";
@@ -31,11 +34,14 @@ import BuyerRequestDetail from "./pages/buyer/BuyerRequestDetail.tsx";
 import BuyerCreateRequest from "./pages/buyer/BuyerCreateRequest.tsx";
 import BuyerChat from "./pages/buyer/BuyerChat.tsx";
 import ProcurementIntelligence from "./pages/buyer/ProcurementIntelligence.tsx";
+import SubscriptionSuccess from "./pages/SubscriptionSuccess.tsx";
+import { RequirePro } from "./components/billing/RequirePro.tsx";
 import AdminShell from "./pages/admin/AdminShell.tsx";
 import AdminDashboard from "./pages/admin/AdminDashboard.tsx";
 import AdminComingSoon from "./pages/admin/AdminComingSoon.tsx";
 import AdminFeatureFlags from "./pages/admin/AdminFeatureFlags.tsx";
 import AdminUserRequests from "./pages/admin/AdminUserRequests.tsx";
+import AdminBuyerRequests from "./pages/admin/AdminBuyerRequests.tsx";
 import AdminProspects from "./pages/admin/AdminProspects.tsx";
 import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
 import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
@@ -46,11 +52,27 @@ import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
+import AdminDocs from "./pages/admin/AdminDocs.tsx";
+import AdminImport from "./pages/admin/AdminImport.tsx";
+import EmailPreview from "./pages/admin/EmailPreview.tsx";
+import EmailQueue from "./pages/admin/EmailQueue.tsx";
+import EmailActivity from "./pages/admin/EmailActivity.tsx";
+import WhatsLayout from "./pages/admin/whats/WhatsLayout.tsx";
+import WhatsConversas from "./pages/admin/whats/WhatsConversas.tsx";
+import WhatsContatos from "./pages/admin/whats/WhatsContatos.tsx";
+import WhatsTarefas from "./pages/admin/whats/WhatsTarefas.tsx";
+import WhatsMacros from "./pages/admin/whats/WhatsMacros.tsx";
+import WhatsAnalises from "./pages/admin/whats/WhatsAnalises.tsx";
+import WhatsConfiguracoes from "./pages/admin/whats/WhatsConfiguracoes.tsx";
 import AdminProspectsPipeline from "./pages/admin/AdminProspectsPipeline.tsx";
 import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
+import AdminBIMarket from "./pages/admin/AdminBIMarket.tsx";
+import AdminBINegotiations from "./pages/admin/AdminBINegotiations.tsx";
+import AdminBIDemand from "./pages/admin/AdminBIDemand.tsx";
+import AdminBIOverview from "./pages/admin/AdminBIOverview.tsx";
 import AdminMarkets from "./pages/admin/AdminMarkets.tsx";
 import AdminPorts from "./pages/admin/AdminPorts.tsx";
 import AdminProducts from "./pages/admin/AdminProducts.tsx";
@@ -81,6 +103,7 @@ import SupplierCompany from "./pages/supplier/SupplierCompany.tsx";
 import SupplierOffices from "./pages/supplier/SupplierOffices.tsx";
 import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
+import CutComparison from "./pages/supplier/CutComparison.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
 import Notifications from "./pages/Notifications.tsx";
@@ -108,6 +131,7 @@ const App = () => (
             <Route path="/signup/success" element={<SignupSuccess />} />
             <Route path="/signup/partner" element={<PartnerSignup />} />
             <Route path="/respond/:token" element={<SupplierRespond />} />
+           <Route path="/invite/:token" element={<InviteAccept />} />
             <Route path="/shipping-instructions/:token" element={<ShippingInstructionsForm />} />
             <Route path="/shipping-instructions/print/:requestId" element={<ShippingInstructionsPrint />} />
             <Route
@@ -138,7 +162,9 @@ const App = () => (
               path="/buyer"
               element={
                 <RequireAuth>
-                  <BuyerShell />
+                  <ErrorBoundary>
+                    <BuyerShell />
+                  </ErrorBoundary>
                 </RequireAuth>
               }
             >
@@ -160,7 +186,15 @@ const App = () => (
               <Route path="requests/:id" element={<BuyerRequestDetail />} />
               <Route path="chat" element={<BuyerChat />} />
               <Route path="chat/:conversationId" element={<BuyerChat />} />
-              <Route path="procurement-intelligence" element={<ProcurementIntelligence />} />
+              <Route
+                path="procurement-intelligence"
+                element={
+                  <RequirePro feature="procurement" side="buyer">
+                    <ProcurementIntelligence />
+                  </RequirePro>
+                }
+              />
+              <Route path="subscription-success" element={<SubscriptionSuccess side="buyer" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
@@ -168,7 +202,9 @@ const App = () => (
               path="/supplier"
               element={
                 <RequireAuth>
-                  <SupplierShell />
+                  <ErrorBoundary>
+                    <SupplierShell />
+                  </ErrorBoundary>
                 </RequireAuth>
               }
             >
@@ -188,15 +224,50 @@ const App = () => (
               <Route path="offices" element={<SupplierOffices />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
-              <Route path="insights/price-benchmark" element={<PriceBenchmark />} />
-              <Route path="insights/analytics" element={<SupplierAnalytics />} />
+              <Route
+                path="insights/price-benchmark"
+                element={
+                  <RequirePro feature="price-benchmark" side="supplier">
+                    <PriceBenchmark />
+                  </RequirePro>
+                }
+              />
+              <Route
+                path="insights/analytics"
+                element={
+                  <RequirePro feature="analytics" side="supplier">
+                    <SupplierAnalytics />
+                  </RequirePro>
+                }
+              />
+              <Route
+                path="insights/cut-comparison"
+                element={
+                  <RequirePro feature="cut-comparison" side="supplier">
+                    <CutComparison />
+                  </RequirePro>
+                }
+              />
+              <Route path="subscription-success" element={<SubscriptionSuccess side="supplier" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
             </Route>
-            <Route path="/admin" element={<AdminShell />}>
+            <Route path="/admin" element={
+              <RequireAuth>
+                <RequireAdmin>
+                  <ErrorBoundary>
+                    <AdminShell />
+                  </ErrorBoundary>
+                </RequireAdmin>
+              </RequireAuth>
+            }>
               <Route index element={<Navigate to="/admin/dashboard" replace />} />
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="analytics" element={<AdminAnalytics />} />
+              <Route path="bi" element={<AdminBIOverview />} />
+              <Route path="bi/market" element={<AdminBIMarket />} />
+              <Route path="bi/negotiations" element={<AdminBINegotiations />} />
+              <Route path="bi/demand" element={<AdminBIDemand />} />
               <Route path="companies" element={<AdminCompanies />} />
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
@@ -206,8 +277,6 @@ const App = () => (
               <Route path="deals/:id" element={<AdminOrderDetail />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
-              <Route path="verifications" element={<AdminComingSoon section="verifications" />} />
-              <Route path="disputes" element={<AdminComingSoon section="disputes" />} />
               <Route path="crm/prospects" element={<AdminProspects />} />
               <Route path="crm/prospects/:id" element={<AdminProspectDetail />} />
               <Route path="crm/pipeline" element={<CRMPipeline />} />
@@ -225,11 +294,29 @@ const App = () => (
               <Route path="settings/team" element={<AdminTeam />} />
               <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
+              <Route path="docs" element={<AdminDocs />} />
+              <Route path="import" element={<AdminImport />} />
+              <Route path="migration" element={<AdminImport />} />
               <Route path="user-requests" element={<AdminUserRequests />} />
+              <Route path="offer-requests" element={<AdminBuyerRequests />} />
               <Route path="outreach" element={<OutreachCenter />} />
               <Route path="outreach/campaigns" element={<OutreachCampaigns />} />
               <Route path="outreach/templates" element={<OutreachTemplates />} />
               <Route path="settings/email" element={<EmailSettings />} />
+              <Route path="email-preview" element={<EmailPreview />} />
+              <Route path="create-offer" element={<SupplierCreateOffer />} />
+              <Route path="create-request" element={<BuyerCreateRequest />} />
+              <Route path="email-queue" element={<EmailQueue />} />
+              <Route path="email-activity" element={<EmailActivity />} />
+              <Route path="whats" element={<WhatsLayout />}>
+                <Route index element={<WhatsConversas />} />
+                <Route path="conversas" element={<WhatsConversas />} />
+                <Route path="contatos" element={<WhatsContatos />} />
+                <Route path="tarefas" element={<WhatsTarefas />} />
+                <Route path="macros" element={<WhatsMacros />} />
+                <Route path="analises" element={<WhatsAnalises />} />
+                <Route path="configuracoes" element={<WhatsConfiguracoes />} />
+              </Route>
             </Route>
             <Route path="*" element={<NotFound />} />
             </Routes>

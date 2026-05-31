@@ -16,6 +16,7 @@ export type SidebarItem = {
   groupLabel?: string;
   proBadge?: boolean;
   newBadge?: boolean;
+  external?: boolean;
 };
 
 export type SidebarSection = {
@@ -51,6 +52,29 @@ function renderItem(
   onProBadgeClick: ((i: SidebarItem) => void) | undefined,
 ) {
   const I = item.icon;
+  if (item.external) {
+    return (
+      <a
+        key={item.to}
+        href={item.to}
+        target="_blank"
+        rel="noopener noreferrer"
+        onClick={onClose}
+        title={item.label}
+        data-tooltip={item.label}
+        className={`sb-item ${item.accent ? "is-accent" : ""}`.trim()}
+      >
+        <I size={18} />
+        <span className="sb-item-label">{item.label}</span>
+        {item.proBadge && (
+          <ProBadge
+            onClick={onProBadgeClick ? () => onProBadgeClick(item) : undefined}
+          />
+        )}
+        {item.newBadge && <span className="nav-new-badge">NEW</span>}
+      </a>
+    );
+  }
   return (
     <NavLink
       key={item.to}
@@ -147,7 +171,7 @@ export function Sidebar({
       <aside className={`sb ${mobileOpen ? "is-open" : ""} ${collapsed ? "is-collapsed" : ""}`.trim()}>
         <div className="sb-logo">
           {collapsed ? (
-            <img src={mundusMonogram} alt="Mundus" className="sb-monogram" draggable={false} />
+            <img src={mundusMonogram} alt="Mundus Trade Logo" className="sb-monogram" draggable={false} />
           ) : (
             <Logo />
           )}
