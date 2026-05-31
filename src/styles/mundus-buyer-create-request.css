@@ -328,3 +328,9 @@
   .bcr-btn-ghost { flex: 0 0 auto; }
   .bcr-btn-primary { flex: 1; }
 }
+
+/* Mobile Way — kill double padding inside .app-main (12px) */
+@media (max-width: 1023px) {
+  .bcr-page { padding: 0; }
+  .bcr-grid { padding: 12px 0 calc(96px + env(safe-area-inset-bottom)); gap: 14px; }
+}
