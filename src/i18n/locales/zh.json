@@ -212,7 +212,8 @@
       "offerRequests": "报价请求",
       "myCompany": "我的公司",
       "messages": "消息",
-      "chat": "聊天"
+      "chat": "聊天",
+      "marketIntelligence": "市场情报"
     },
     "bottom": {
       "create": "创建",
