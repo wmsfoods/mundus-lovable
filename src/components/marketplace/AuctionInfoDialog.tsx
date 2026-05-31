@@ -16,7 +16,7 @@ export function AuctionInfoDialog() {
           <Info size={14} /> {t("buyer.auctions.howItWorks.link")}
         </button>
       </DialogTrigger>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg max-sm:!max-w-full max-sm:!h-[100dvh] max-sm:!rounded-none max-sm:!max-h-[100dvh]">
         <DialogHeader>
           <DialogTitle>{t("buyer.auctions.howItWorks.title")}</DialogTitle>
         </DialogHeader>
