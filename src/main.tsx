@@ -8,6 +8,7 @@ import "./i18n";
 import { initCapacitor } from "./capacitor";
 import { applyPlatformBodyClasses } from "./lib/platform";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import * as Sentry from "@sentry/react";
 
 applyPlatformBodyClasses();
 void initCapacitor();
@@ -38,7 +39,9 @@ window.addEventListener("unhandledrejection", (e) => {
 });
 
 createRoot(document.getElementById("root")!).render(
-  <ErrorBoundary>
-    <App />
-  </ErrorBoundary>,
+  <Sentry.ErrorBoundary fallback={<p>Something went wrong. Please refresh.</p>}>
+    <ErrorBoundary>
+      <App />
+    </ErrorBoundary>
+  </Sentry.ErrorBoundary>,
 );
