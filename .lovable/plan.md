@@ -1,64 +1,60 @@
-## Mundus PRO — Stripe subscriptions
+## Mobile Way — Execução dos P0
 
-Replace the placeholder "Early Access" CTA in `InsightsUpsellPanel` with a real Stripe-backed monthly subscription, scoped per company (HQ covers the whole multi-office family).
+Plano focado nos 6 itens P0 do relatório. Desktop (>1024px) permanece intocado; tudo isolado via `.app-shell.is-mobile`, `.app-shell.is-stack` e `useIsMobileShell()`.
 
-### Pricing & gates
-- Supplier PRO — **USD 1,000/mo** → unlocks `PriceBenchmark`, `SupplierAnalytics`, `CutComparison`, Market Intelligence
-- Buyer PRO — **USD 300/mo** → unlocks `ProcurementIntelligence`, Market Intelligence
-- One subscription per HQ company; office users inherit via `company_family_root`
+### 1. Scroll do SignupShell (navbar fixa, só conteúdo rola)
 
----
+`src/pages/signup/SignupShell.tsx`: trocar wrapper para `h-[100dvh] flex flex-col overflow-hidden`, header `shrink-0` (remover `sticky`), `<main className="flex-1 min-h-0 overflow-y-auto">`. Validar Login se aplicável.
 
-### 1. Stripe setup (you do this in Stripe)
-- Create two recurring Products/Prices (Supplier PRO $1,000/mo, Buyer PRO $300/mo)
-- I'll request these as secrets once code is ready: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_SUPPLIER_PRO`, `STRIPE_PRICE_BUYER_PRO`
-- Webhook endpoint: `{SUPABASE_URL}/functions/v1/stripe-webhook` (events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.payment_failed`)
+### 2. Breakpoint 1024 — fechar gap 769–1023px
 
-### 2. Database migration
-- `company_subscriptions` table (UNIQUE on `company_id`, columns per spec: stripe ids, plan, status, period dates, cancel flags)
-- RLS: SELECT for family members + admin; writes only via service role
-- `public.company_has_pro(uuid)` — checks the company **or its `company_family_root`** for an active sub
-- GRANTs on table + function per project rules
+- `src/styles/mundus-offers.css`: subir oculto de `.crumbs` de @767px para o seletor global `.app-shell.is-mobile .crumbs { display: none }` em `mundus-shell.css`.
+- Auditar páginas que usam `useIsMobile` (768) para decisões de layout (não shell) — listar e migrar para `useIsMobileShell` quando for swap tabela/cards ou popover/sheet. Alvos confirmados pelo relatório: `SupplierCreateOffer` (CutPhotoCell HoverCard) + pickers em `BuyerCreateRequest`.
 
-### 3. Edge Functions
-- `stripe-create-checkout` — verifies JWT + company membership (family-scoped), creates/reuses Stripe Customer, returns Checkout Session URL (mode `subscription`, metadata `{company_id, plan}`)
-- `stripe-create-portal` — opens Stripe Customer Portal for managing/cancelling
-- `stripe-webhook` — verifies signature, idempotent upsert into `company_subscriptions` for the 4 events above; always returns 200
+### 3. Stack routes — completar matriz
 
-### 4. Frontend
-- `src/hooks/useCompanySubscription.ts` — returns `{ isPro, status, plan, periodEnd, loading }` with realtime subscription on the row
-- `src/components/billing/RequirePro.tsx` — wrapper that shows the upsell panel (or a locked state for Market Intelligence) when `!isPro`
-- `InsightsUpsellPanel.tsx`:
-  - Replace `handleEarlyAccess` toast with `handleUpgrade` that calls `stripe-create-checkout` and redirects to `session.url`
-  - Button label shows real price ("Upgrade to PRO — $1,000/month" or "$300/month")
-  - Swap "Launching soon" pill for "Billed monthly · Cancel anytime"
-  - Keep Contact Sales link
-- Gate the PRO pages (`PriceBenchmark`, `SupplierAnalytics`, `CutComparison`, `ProcurementIntelligence`, Market Intelligence shell) with `RequirePro`
-- New routes: `/supplier/subscription-success`, `/buyer/subscription-success` with auto-redirect
+Adicionar a `src/lib/mobile-nav.ts` (`STACK_PATHS`, `STACK_PATTERNS`, `BACK_FALLBACK`, `STACK_TITLES`):
 
-### 5. Billing section in Profile/Settings
-- Supplier & buyer profile: show plan, next billing date, "Manage Billing" → portal; `past_due` red banner; "Upgrade to PRO" when no sub
+- `/buyer/auctions`, `/buyer/auctions/:id`
+- `/buyer/requests/new`, `/buyer/offers/:id/bid`
+- `/supplier/offers/new`, `/supplier/offers/:id/edit`
+- `/supplier/company`, `/buyer/company` (se existir)
+- `/supplier/insights/*`, `/buyer/insights/*` restantes (procurement, demand)
+- `/supplier/sales` (lista secundária quando aplicável — verificar se é tab root)
+- `/buyer/orders/:id/*` sub-rotas
 
-### 6. Admin visibility
-- `AdminCompanies` list: PRO badge on active companies
-- `AdminCompanyDetail`: subscription status, plan, Stripe customer id (read-only), manual status override select (admin-only RPC writing to `company_subscriptions`)
+Critério: qualquer rota não listada como tab root vira stack.
 
-### 7. i18n
-- Add all new strings to **en / pt / es / fr / zh** (upgrade CTA, billing labels, success page, locked states, admin status)
+### 4. Chrome duplicado — backs e h1 in-page
 
-### Security & constraints
-- Stripe keys live **only** in Supabase Edge Function secrets — never in `.env` or frontend
-- Webhook handler is idempotent (`ON CONFLICT DO UPDATE` keyed by `stripe_subscription_id`)
-- Family-aware: office users inherit HQ subscription via `company_family_root`
-- Mobile-first: upgrade button, billing section, success page all responsive
+Expandir seletores em `src/styles/mundus-stack-header.css` para ocultar quando `.app-shell.is-stack`:
 
-### Order of execution
-1. Migration (`company_subscriptions` + `company_has_pro`)
-2. Request Stripe secrets from you
-3. Edge functions (checkout, portal, webhook)
-4. Hook + `RequirePro` + upsell panel rewire
-5. Routes, success page, billing section, admin badge
-6. i18n across 5 locales
+- `.profile-back`, `.ntf-header h1`, `.bcr-header`, `.cov4-header`, `.ddv-back`, `.btn-back`
+- adicionar: headers de `BuyerRequests`, `Auction*`, `SupplierCreateOffer` header, `BuyerCreateRequest` header, `ProcurementIntelligence` h1, `Notifications` h1, `Profile` back inline.
 
-### Not in scope
-- Annual plans, proration, multi-seat pricing, tax handling (Stripe defaults), invoicing other than what Stripe sends automatically
+Páginas afetadas validadas via grep por `class.*-header` / `<h1` nas rotas stack.
+
+### 5. Tabelas críticas → ListCard
+
+`src/pages/buyer/BuyerRequests.tsx` e `src/pages/buyer/ProcurementIntelligence.tsx`:
+
+- Envolver tabela em `<div className="has-mobile-cards">` para herdar `src/styles/mundus-list-card.css`.
+- Criar variação `ListCard` no mobile (`useIsMobileShell()`) replicando colunas-chave (status, qty, ETA, ação).
+- Padrão de referência: `src/pages/buyer/Orders.tsx`.
+
+### 6. Validação
+
+- Smoke manual em viewport 375 e 1024 (limite) das rotas tocadas.
+- Confirmar desktop ≥1024px inalterado (sem mudanças em `md:` / grids `lg:`).
+- Rodar `tests/mundus/09-visual-audit.spec.js` quando o usuário publicar no CI.
+
+### Fora de escopo (P1/P2)
+
+Polish de modais sem fullscreen, padding double, headers duplicados restantes, dashboards BI em feed vertical — abrir como próxima iteração depois deste P0.
+
+### Riscos
+
+- Mudar seletores CSS de ocultação pode esconder elementos legítimos em desktop se mal escopados — todos serão prefixados por `.app-shell.is-stack` ou `.app-shell.is-mobile`.
+- Migrar `useIsMobile`→`useIsMobileShell` em criação de oferta toca formulário ativo — escopo limitado a HoverCard/Popover, não muda submit.
+
+Após sua aprovação, sigo executando em ordem 1→6.

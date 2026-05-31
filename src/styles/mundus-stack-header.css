@@ -91,5 +91,17 @@
   .app-shell.is-stack .crumbs,
   .app-shell.is-stack .nd-back,
   .app-shell.is-stack .btn-back,
-  .app-shell.is-stack .back-link { display: none !important; }
+  .app-shell.is-stack .back-link,
+  .app-shell.is-stack .profile-back,
+  .app-shell.is-stack .ddv-back,
+  .app-shell.is-stack .bcr-header,
+  .app-shell.is-stack .cov4-header,
+  .app-shell.is-stack .ntf-header h1,
+  .app-shell.is-stack [data-stack-hide],
+  .app-shell.is-stack [data-page-back],
+  .app-shell.is-stack [data-page-title] { display: none !important; }
+
+  /* Hide legacy breadcrumbs across the entire mobile shell (not just stack),
+     since the slim Topbar / StackHeader already provides context. */
+  .app-shell.is-mobile .crumbs { display: none !important; }
 }

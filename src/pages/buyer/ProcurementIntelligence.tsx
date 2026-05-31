@@ -114,9 +114,9 @@ export default function ProcurementIntelligence() {
   const [period, setPeriod] = useState<(typeof PERIODS)[number]>("YTD 2024");
 
   return (
-    <div style={{ padding: "20px 24px 64px", maxWidth: 1400, margin: "0 auto" }}>
+    <div className="pi-page" style={{ padding: "20px 24px 64px", maxWidth: 1400, margin: "0 auto" }}>
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
+      <div className="pi-header" style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 16, flexWrap: "wrap", marginBottom: 18 }}>
         <div>
           <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
             <span style={{ fontSize: 11, letterSpacing: 1.2, color: "#6b7280", fontWeight: 600 }}>
@@ -171,6 +171,7 @@ export default function ProcurementIntelligence() {
 
       {/* Hero */}
       <div
+        className="pi-hero"
         style={{
           background: `linear-gradient(135deg, ${WINE_DARK} 0%, #5d2138 100%)`,
           color: "#fff",
@@ -203,7 +204,7 @@ export default function ProcurementIntelligence() {
       </div>
 
       {/* KPIs */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 12, marginBottom: 18 }}>
+      <div className="pi-kpis" style={{ display: "grid", gridTemplateColumns: "repeat(5, minmax(0, 1fr))", gap: 12, marginBottom: 18 }}>
         {KPIS.map((k) => (
           <div key={k.label} style={{ background: "#fff", border: BORDER, borderRadius: 12, padding: "14px 16px" }}>
             <div style={{ fontSize: 10, letterSpacing: 1.1, color: "#6b7280", fontWeight: 600 }}>{k.label}</div>

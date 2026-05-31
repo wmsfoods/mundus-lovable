@@ -8,6 +8,7 @@ import { formatRequestNumber } from "@/lib/requestNumber";
 import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel, priceLabel } from "@/lib/units";
+import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 
 const STATUS_CHIP: Record<BuyerRequestStatus, string> = {
   new: "req-status-chip is-draft",
@@ -122,7 +123,7 @@ export default function BuyerRequests() {
         ))}
       </div>
 
-      <div className="data-table-wrap" style={{ marginTop: 12 }}>
+      <div className="data-table-wrap has-mobile-cards" style={{ marginTop: 12 }}>
         <table className="data-table">
           <thead>
             <tr>
@@ -183,6 +184,34 @@ export default function BuyerRequests() {
           </tbody>
         </table>
       </div>
+
+      <ListCardList>
+        {isLoading ? (
+          <div className="empty-state">Loading…</div>
+        ) : filtered.length === 0 ? (
+          <div className="empty-state">No requests yet.</div>
+        ) : (
+          filtered.map((r: BuyerRequestRow) => {
+            const responses = responsesMap[r.id] ?? 0;
+            return (
+              <ListCard
+                key={r.id}
+                onClick={() => navigate(`/buyer/requests/${r.id}`)}
+                title={formatRequestNumber(r.request_number, r.created_at)}
+                subtitle={r.product_name}
+                chip={{ label: STATUS_LABEL[r.status], className: STATUS_CHIP[r.status] }}
+                meta={[
+                  { label: "Destination", value: `${r.destination_country}${r.destination_port ? ` · ${r.destination_port}` : ""}` },
+                  { label: "Volume", value: `${fmtWeight(Number(r.quantity_kg), unit)} ${weightLabel(unit)}` },
+                  { label: `Target ${priceLabel(unit)}`, value: r.target_price_usd != null ? `$${fmtPrice(Number(r.target_price_usd), unit)}` : "—" },
+                  { label: "Responses", value: responses > 0 ? `${responses} supplier${responses > 1 ? "s" : ""}` : "Waiting…" },
+                  { label: "Created", value: fmtDate(r.created_at) },
+                ]}
+              />
+            );
+          })
+        )}
+      </ListCardList>
     </>
   );
 }

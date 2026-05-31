@@ -21,9 +21,9 @@ export function SignupShell({
   const navTitle = title ?? "Sign Up";
 
   return (
-    <div className="min-h-[100dvh] bg-[#F8F8F8] flex flex-col overflow-y-auto">
-      {/* Mobile navbar */}
-      <header className="md:hidden sticky top-0 z-20 bg-white border-b border-gray-100 auth-screen-safe-top">
+    <div className="h-[100dvh] bg-[#F8F8F8] flex flex-col overflow-hidden">
+      {/* Mobile navbar — fixed, never scrolls */}
+      <header className="md:hidden shrink-0 z-20 bg-white border-b border-gray-100 auth-screen-safe-top">
         <div className="relative h-14 flex items-center justify-center px-12">
           {showBack && (
             <button
@@ -43,20 +43,22 @@ export function SignupShell({
       </header>
 
       {/* Desktop logo header */}
-      <div className="hidden md:flex pt-8 px-8 items-center justify-between">
+      <div className="hidden md:flex shrink-0 pt-8 px-8 items-center justify-between">
         <div className="w-24" />
         <img src={mundusLogo} alt="Mundus Trade" className="h-12 w-auto" />
         <div className="w-24 flex justify-end">
           <LanguageSwitcher variant="pill" />
         </div>
       </div>
-      <div className="flex-1 flex items-start justify-center px-4 py-8">
-        <div className="w-full max-w-[700px]">{children}</div>
-      </div>
-      <footer className="auth-screen-footer pt-4 flex flex-col items-center gap-2">
-        <img src={mundusLogo} alt="Mundus Trade" className="h-6 w-auto opacity-80" />
-        <p className="text-xs text-gray-400">© Copyright 2025 – All rights reserved.</p>
-      </footer>
+      <main className="flex-1 min-h-0 overflow-y-auto flex flex-col">
+        <div className="flex-1 flex items-start justify-center px-4 py-8">
+          <div className="w-full max-w-[700px]">{children}</div>
+        </div>
+        <footer className="auth-screen-footer pt-4 flex flex-col items-center gap-2">
+          <img src={mundusLogo} alt="Mundus Trade" className="h-6 w-auto opacity-80" />
+          <p className="text-xs text-gray-400">© Copyright 2025 – All rights reserved.</p>
+        </footer>
+      </main>
     </div>
   );
 }
