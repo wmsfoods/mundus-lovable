@@ -266,7 +266,7 @@
 }
 
 /* Mobile */
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .chat-layout {
     grid-template-columns: 1fr;
     height: calc(100vh - 180px);
