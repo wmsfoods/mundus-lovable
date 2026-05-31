@@ -1,60 +1,57 @@
-## Mobile Way — Execução dos P0
+## Objetivo
 
-Plano focado nos 6 itens P0 do relatório. Desktop (>1024px) permanece intocado; tudo isolado via `.app-shell.is-mobile`, `.app-shell.is-stack` e `useIsMobileShell()`.
+Reorganizar a página `/buyer/requests` ("My Requests") para que no mobile siga exatamente o mesmo padrão visual e de navegação já usado em `/buyer/negotiations` (Negotiations). Desktop permanece idêntico ao atual.
 
-### 1. Scroll do SignupShell (navbar fixa, só conteúdo rola)
+## Padrão de referência (já existente em Negotiations)
 
-`src/pages/signup/SignupShell.tsx`: trocar wrapper para `h-[100dvh] flex flex-col overflow-hidden`, header `shrink-0` (remover `sticky`), `<main className="flex-1 min-h-0 overflow-y-auto">`. Validar Login se aplicável.
+- Filtros/busca/ordenação em **bottom sheet** via `NegotiationsFilterSheet` (acionado por botão flutuante no mobile).
+- Toolbar + chips horizontais ficam **ocultos no mobile** (renderizados só quando `!isMobileShell`).
+- Tabela desktop continua dentro de `data-table-wrap.has-mobile-cards` (esconde no mobile via CSS já existente).
+- Lista mobile dedicada com:
+  - `MobileNegoTabs` → 3 abas com contadores
+  - `MobileNegoGroup` agrupando por contexto
+  - `MobileNegoBidCard` para cada item, com top‑bar colorido por status, 3 stats, data e onClick
 
-### 2. Breakpoint 1024 — fechar gap 769–1023px
+## Mudanças em `src/pages/buyer/BuyerRequests.tsx`
 
-- `src/styles/mundus-offers.css`: subir oculto de `.crumbs` de @767px para o seletor global `.app-shell.is-mobile .crumbs { display: none }` em `mundus-shell.css`.
-- Auditar páginas que usam `useIsMobile` (768) para decisões de layout (não shell) — listar e migrar para `useIsMobileShell` quando for swap tabela/cards ou popover/sheet. Alvos confirmados pelo relatório: `SupplierCreateOffer` (CutPhotoCell HoverCard) + pickers em `BuyerCreateRequest`.
+1. **Imports novos**: `useIsMobileShell`, `NegotiationsFilterSheet`, `MobileNegoTabs`, `MobileNegoGroup`, `MobileNegoBidCard`, `MobileNegoStatusTone`.
+2. **State adicional**: `mobileTab` (`"needs_attention" | "waiting" | "closed"`).
+3. **Mapas**:
+   - `STATUS_TONE: Record<BuyerRequestStatus, MobileNegoStatusTone>`
+     - `with_responses → action_required`
+     - `offer_sent → accepted`
+     - `new → awaiting`
+     - `closed → rejected`
+     - `not_interested → expired`
+   - `TAB_OF_STATUS: Record<BuyerRequestStatus, MobileTab>`
+     - `with_responses → needs_attention`
+     - `new → waiting`
+     - `offer_sent, closed, not_interested → closed`
+4. **Renderização**:
+   - Adicionar `<NegotiationsFilterSheet>` reusando `search`/`statusF`/chips existentes (passar `sortBy="recent"` fixo já que requests hoje não tem sort).
+   - Envolver `table-toolbar` + `nego-chips` em `{!isMobile && (...)}` para esconder no mobile.
+   - Manter a tabela desktop como está (já tem `has-mobile-cards`).
+   - **Remover** o bloco atual `ListCardList` (mobile antigo).
+   - **Adicionar** componente local `MobileRequestsList` (espelho de `MobileBuyerNegoList`) que:
+     - Calcula `counts` por aba a partir de `filtered`
+     - Renderiza `MobileNegoTabs` com 3 abas traduzidas
+     - Agrupa por status com `MobileNegoGroup` (1 grupo "Active" / "Closed" conforme a aba) ou simplesmente lista chata sem grupo se preferível — ficamos com 1 `MobileNegoGroup` por aba para manter visual consistente.
+     - Cada `MobileNegoBidCard` recebe:
+       - `initials` = 2 primeiras letras do `product_name`
+       - `partyName` = `formatRequestNumber(...)`
+       - `subtitle` = `product_name` + categoria
+       - `status` = `{ tone: STATUS_TONE[r.status], label: STATUS_LABEL[r.status] }`
+       - `stats` = [Volume, Target price, Responses]
+       - `dateLabel` = `fmtDate(r.created_at)`
+       - `onClick` → `navigate('/buyer/requests/' + r.id)`
 
-### 3. Stack routes — completar matriz
+## Comportamento esperado
 
-Adicionar a `src/lib/mobile-nav.ts` (`STACK_PATHS`, `STACK_PATTERNS`, `BACK_FALLBACK`, `STACK_TITLES`):
+- Desktop (≥ 1024px): exatamente como hoje — toolbar com busca + botão "New request", chips de status, tabela completa.
+- Mobile: header limpo, botão de filtros abre bottom sheet com busca + status; 3 abas (Needs attention / Waiting / Closed); cards verticais grandes, tap‑friendly, respeitando safe‑area; sem tabela horizontal.
 
-- `/buyer/auctions`, `/buyer/auctions/:id`
-- `/buyer/requests/new`, `/buyer/offers/:id/bid`
-- `/supplier/offers/new`, `/supplier/offers/:id/edit`
-- `/supplier/company`, `/buyer/company` (se existir)
-- `/supplier/insights/*`, `/buyer/insights/*` restantes (procurement, demand)
-- `/supplier/sales` (lista secundária quando aplicável — verificar se é tab root)
-- `/buyer/orders/:id/*` sub-rotas
+## Escopo
 
-Critério: qualquer rota não listada como tab root vira stack.
-
-### 4. Chrome duplicado — backs e h1 in-page
-
-Expandir seletores em `src/styles/mundus-stack-header.css` para ocultar quando `.app-shell.is-stack`:
-
-- `.profile-back`, `.ntf-header h1`, `.bcr-header`, `.cov4-header`, `.ddv-back`, `.btn-back`
-- adicionar: headers de `BuyerRequests`, `Auction*`, `SupplierCreateOffer` header, `BuyerCreateRequest` header, `ProcurementIntelligence` h1, `Notifications` h1, `Profile` back inline.
-
-Páginas afetadas validadas via grep por `class.*-header` / `<h1` nas rotas stack.
-
-### 5. Tabelas críticas → ListCard
-
-`src/pages/buyer/BuyerRequests.tsx` e `src/pages/buyer/ProcurementIntelligence.tsx`:
-
-- Envolver tabela em `<div className="has-mobile-cards">` para herdar `src/styles/mundus-list-card.css`.
-- Criar variação `ListCard` no mobile (`useIsMobileShell()`) replicando colunas-chave (status, qty, ETA, ação).
-- Padrão de referência: `src/pages/buyer/Orders.tsx`.
-
-### 6. Validação
-
-- Smoke manual em viewport 375 e 1024 (limite) das rotas tocadas.
-- Confirmar desktop ≥1024px inalterado (sem mudanças em `md:` / grids `lg:`).
-- Rodar `tests/mundus/09-visual-audit.spec.js` quando o usuário publicar no CI.
-
-### Fora de escopo (P1/P2)
-
-Polish de modais sem fullscreen, padding double, headers duplicados restantes, dashboards BI em feed vertical — abrir como próxima iteração depois deste P0.
-
-### Riscos
-
-- Mudar seletores CSS de ocultação pode esconder elementos legítimos em desktop se mal escopados — todos serão prefixados por `.app-shell.is-stack` ou `.app-shell.is-mobile`.
-- Migrar `useIsMobile`→`useIsMobileShell` em criação de oferta toca formulário ativo — escopo limitado a HoverCard/Popover, não muda submit.
-
-Após sua aprovação, sigo executando em ordem 1→6.
+- Somente `src/pages/buyer/BuyerRequests.tsx`.
+- Nenhuma mudança em hooks, dados, regras de negócio, ou desktop.
+- Reuso 100% de CSS/components já existentes (`mundus-negotiations-mobile.css`, `MobileNegotiationCard`, `NegotiationsFilterSheet`) — sem novo CSS.
