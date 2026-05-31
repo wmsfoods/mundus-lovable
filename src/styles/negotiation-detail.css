@@ -625,6 +625,21 @@
   .nd-actions {
     flex-wrap: wrap;
     gap: 8px;
+    /* Mobile Way: keep the action sheet anchored inside the order card,
+       not floating with page scroll. Sticky to the bottom of the viewport
+       while the card is in view, with a solid backdrop + safe-area inset. */
+    position: sticky;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin-left: -16px;
+    margin-right: -16px;
+    margin-bottom: -16px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fff;
+    border-top: 1px solid #e5e7eb;
+    box-shadow: 0 -6px 16px -8px rgba(15, 23, 42, 0.12);
+    z-index: 5;
   }
   .nd-actions button {
     min-height: 44px;
