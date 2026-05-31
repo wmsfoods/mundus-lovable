@@ -20,7 +20,7 @@ test.describe('Supplier Audit', () => {
   test('Offers page loads and has Create Offer button', async ({ page }) => {
     await page.goto('/supplier/offers');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Offers')).toBeVisible();
+    await expect(page.locator('text=Offers').first()).toBeVisible();
     await expect(page.locator('button:has-text("Create Offer"), a:has-text("Create Offer")')).toBeVisible();
   });
 
@@ -32,8 +32,8 @@ test.describe('Supplier Audit', () => {
     await expect(
       page.locator('text=Select Weight Unit').or(page.locator('text=Unit'))
     ).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=kg')).toBeVisible();
-    await expect(page.locator('text=lbs')).toBeVisible();
+    await expect(page.locator('text=kg').first()).toBeVisible();
+    await expect(page.locator('text=lbs').first()).toBeVisible();
   });
 
   test('Customers page loads with table columns', async ({ page }) => {
@@ -67,7 +67,7 @@ test.describe('Supplier Audit', () => {
   test('Sales page loads with status badges', async ({ page }) => {
     await page.goto('/supplier/sales');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Sales')).toBeVisible();
+    await expect(page.locator('text=Sales').first()).toBeVisible();
     await expect(
       page.locator('text=DEAL ID').or(page.locator('text=Track your orders'))
     ).toBeVisible();
@@ -76,13 +76,13 @@ test.describe('Supplier Audit', () => {
   test('Negotiations page loads', async ({ page }) => {
     await page.goto('/supplier/negotiations');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Negotiations')).toBeVisible();
+    await expect(page.locator('text=Negotiations').first()).toBeVisible();
   });
 
   test('Users page loads with Invite User button', async ({ page }) => {
     await page.goto('/supplier/users');
     await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Users')).toBeVisible();
+    await expect(page.locator('text=Users').first()).toBeVisible();
     await expect(page.locator('button:has-text("Invite User")')).toBeVisible();
   });
 
