@@ -61,10 +61,10 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col bg-white">
-      <div className="flex justify-end px-4 pt-3 md:px-6 md:pt-4">
+    <div className="flex min-h-[100dvh] flex-col bg-white">
+      <header className="auth-screen-header">
         <LanguageSwitcher variant="pill" />
-      </div>
+      </header>
       <main className="flex flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:justify-center md:gap-20 md:px-6 md:py-10 md:max-w-6xl md:mx-auto w-full">
         {/* Carousel — desktop only; hidden on mobile */}
         <div className="relative hidden md:block w-full md:max-w-[600px] md:aspect-square overflow-hidden rounded-[2.5rem] shadow-sm">
@@ -170,7 +170,7 @@ export default function Login() {
             </Link>
           </p>
 
-          <div className="mt-8 flex justify-center gap-6 text-xs text-gray-600">
+          <div className="auth-screen-footer mt-8 flex justify-center gap-6 text-xs text-gray-600 md:pb-0">
             <a href="#" className="underline">{t("common.termsLink")}</a>
             <a href="#" className="underline">{t("common.privacyLink")}</a>
           </div>

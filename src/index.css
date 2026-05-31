@@ -28,6 +28,7 @@
 @import "./styles/mundus-buyer-create-request.css";
 @import "./styles/mundus-address.css";
 @import "./styles/mundus-shipment.css";
+@import "./styles/mundus-native.css";
 
 @tailwind base;
 @tailwind components;

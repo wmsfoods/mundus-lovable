@@ -11,7 +11,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:mobile": "vite build && cap sync",
+    "build:mobile": "vite build && cap sync && bash scripts/ios-cap-link.sh",
     "cap:sync": "cap sync",
     "cap:ios": "cap open ios",
     "cap:android": "cap open android"

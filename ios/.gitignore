@@ -1,4 +1,6 @@
 App/build
+App/App.xcodeproj
+App/CapApp-SPM/build
 App/Pods
 App/output
 App/App/public

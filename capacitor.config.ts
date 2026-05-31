@@ -1,11 +1,18 @@
 import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
-  appId: "com.mundus.trade",
+  appId: "com.mundustrade.app",
   appName: "Mundus Trade",
   webDir: "dist",
   server: {
     androidScheme: "https",
+  },
+  plugins: {
+    SplashScreen: {
+      backgroundColor: "#ffffff",
+      launchAutoHide: true,
+      androidScaleType: "CENTER_INSIDE",
+    },
   },
 };
 

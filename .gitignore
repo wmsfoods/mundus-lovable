@@ -30,4 +30,7 @@ android/build/
 android/local.properties
 ios/App/DerivedData/
 ios/App/build/
+ios/App/CapApp-SPM/build/
+# Local symlink for Capacitor CLI (real project is MundusTrade.xcodeproj)
+ios/App/App.xcodeproj
 *.xcuserdata
