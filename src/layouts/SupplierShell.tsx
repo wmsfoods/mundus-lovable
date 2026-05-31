@@ -88,33 +88,34 @@ function SupplierShellInner() {
       label: "Operations",
       icon: Settings2 as unknown as SidebarItem["icon"],
       children: [
-        {
-          to: "/supplier/insights/price-benchmark",
-          label: t("supplier.insights.nav.priceBenchmark"),
-          icon: BarChart3 as unknown as SidebarItem["icon"],
-          proBadge: true,
-        },
-        {
-          to: "/supplier/insights/analytics",
-          label: t("supplier.insights.nav.analytics"),
-          icon: LineChart as unknown as SidebarItem["icon"],
-          proBadge: true,
-        },
-        {
-          to: "https://market-us.mundustrade.com",
-          label: t("shell.nav.marketIntelligence"),
-          icon: Globe as unknown as SidebarItem["icon"],
-          external: true,
-          proBadge: true,
-        },
-        ...(showDirectorTools ? [{
-          to: "/supplier/insights/cut-comparison",
-          label: t("supplier.insights.nav.cutComparison", { defaultValue: "Cut Comparison" }),
-          icon: Globe as unknown as SidebarItem["icon"],
-        }] : []),
         { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
       ],
     },
+    {
+      to: "/supplier/insights/price-benchmark",
+      label: t("supplier.insights.nav.priceBenchmark"),
+      icon: BarChart3 as unknown as SidebarItem["icon"],
+      proBadge: true,
+      groupLabel: t("shell.nav.mundusIntel"),
+    },
+    {
+      to: "/supplier/insights/analytics",
+      label: t("supplier.insights.nav.analytics"),
+      icon: LineChart as unknown as SidebarItem["icon"],
+      proBadge: true,
+    },
+    {
+      to: "https://market-us.mundustrade.com",
+      label: t("shell.nav.marketIntelligence"),
+      icon: Globe as unknown as SidebarItem["icon"],
+      external: true,
+      proBadge: true,
+    },
+    ...(showDirectorTools ? [{
+      to: "/supplier/insights/cut-comparison",
+      label: t("supplier.insights.nav.cutComparison", { defaultValue: "Cut Comparison" }),
+      icon: Globe as unknown as SidebarItem["icon"],
+    }] : []),
     {
       type: "section",
       key: "admin",
