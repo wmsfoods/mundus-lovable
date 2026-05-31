@@ -100,6 +100,13 @@ function SupplierShellInner() {
           icon: LineChart as unknown as SidebarItem["icon"],
           proBadge: true,
         },
+        {
+          to: "https://market-us.mundustrade.com",
+          label: t("shell.nav.marketIntelligence"),
+          icon: Globe as unknown as SidebarItem["icon"],
+          external: true,
+          proBadge: true,
+        },
         ...(showDirectorTools ? [{
           to: "/supplier/insights/cut-comparison",
           label: t("supplier.insights.nav.cutComparison", { defaultValue: "Cut Comparison" }),
