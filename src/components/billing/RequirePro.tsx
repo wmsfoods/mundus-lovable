@@ -56,9 +56,9 @@ export function RequirePro({ feature, side = "supplier", children }: Props) {
     }
   };
 
-  const mailto = `mailto:sales@mundus.com?subject=${encodeURIComponent(
-    "Mundus PRO – contact sales",
-  )}`;
+  const handleContactSales = () => {
+    toast.success(t("billing.salesConfirmation"));
+  };
 
   return (
     <div className="require-pro">
@@ -94,10 +94,14 @@ export function RequirePro({ feature, side = "supplier", children }: Props) {
               </>
             )}
           </button>
-          <a className="require-pro__btn require-pro__btn--secondary" href={mailto}>
+          <button
+            type="button"
+            className="require-pro__btn require-pro__btn--secondary"
+            onClick={handleContactSales}
+          >
             <Mail size={14} />
             {t("billing.requirePro.contactSales")}
-          </a>
+          </button>
         </div>
         <p className="require-pro__small">
           {t("billing.upgrade.billedMonthly")} · {t("billing.upgrade.cancelAnytime")}
