@@ -34,34 +34,36 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: '22'
+
+      - name: Install bun
+        uses: oven-sh/setup-bun@v2
 
       - name: Install dependencies
-        run: npm ci
+        run: bun install
 
       - name: Install Playwright browsers
-        run: npx playwright install chromium --with-deps
+        run: bunx playwright install chromium --with-deps
 
       - name: Run selected tests
         run: |
           SUITE="${{ github.event.inputs.test_suite }}"
           if [ "$SUITE" = "visual-audit" ]; then
-            npx playwright test tests/mundus/09-visual-audit.spec.js
+            bunx playwright test tests/mundus/09-visual-audit.spec.js
           elif [ "$SUITE" = "auth" ]; then
-            npx playwright test tests/mundus/01-auth.spec.js
+            bunx playwright test tests/mundus/01-auth.spec.js
           elif [ "$SUITE" = "dashboard" ]; then
-            npx playwright test tests/mundus/02-dashboard.spec.js
+            bunx playwright test tests/mundus/02-dashboard.spec.js
           elif [ "$SUITE" = "offers" ]; then
-            npx playwright test tests/mundus/03-offers.spec.js
+            bunx playwright test tests/mundus/03-offers.spec.js
           elif [ "$SUITE" = "customers" ]; then
-            npx playwright test tests/mundus/04-customers.spec.js
+            bunx playwright test tests/mundus/04-customers.spec.js
           elif [ "$SUITE" = "negotiations" ]; then
-            npx playwright test tests/mundus/05-negotiations.spec.js
+            bunx playwright test tests/mundus/05-negotiations.spec.js
           elif [ "$SUITE" = "sales" ]; then
-            npx playwright test tests/mundus/06-sales.spec.js
+            bunx playwright test tests/mundus/06-sales.spec.js
           else
-            npx playwright test
+            bunx playwright test
           fi
         env:
           BASE_URL: https://app.mundustrade.us
