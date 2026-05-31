@@ -80,6 +80,21 @@ Deno.serve(async (req) => {
       .maybeSingle();
 
     let customerId = existingSub?.stripe_customer_id ?? null;
+    // Validate the stored customer still exists in current Stripe mode (test vs live).
+    // If we switched modes, the old customer ID won't be found — recreate it.
+    if (customerId) {
+      try {
+        const existing = await stripe.customers.retrieve(customerId);
+        if ((existing as any)?.deleted) customerId = null;
+      } catch (err: any) {
+        if (err?.code === "resource_missing") {
+          console.warn("stale stripe_customer_id, recreating", customerId);
+          customerId = null;
+        } else {
+          throw err;
+        }
+      }
+    }
     if (!customerId) {
       const { data: companyRow } = await admin
         .from("companies")
