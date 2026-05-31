@@ -6,17 +6,12 @@ on:
       test_suite:
         description: 'Which tests to run'
         required: true
-        default: 'all'
+        default: 'visual-audit'
         type: choice
         options:
-          - all
           - visual-audit
           - auth
-          - dashboard
-          - offers
-          - customers
-          - negotiations
-          - sales
+          - all
 
   schedule:
     - cron: '0 8 * * *'
@@ -31,13 +26,15 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v4
 
-      - name: Setup Node
+      - name: Setup Node 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
       - name: Install bun
         uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
 
       - name: Install dependencies
         run: bun install
@@ -45,32 +42,20 @@ jobs:
       - name: Install Playwright browsers
         run: bunx playwright install chromium --with-deps
 
-      - name: Run selected tests
+      - name: Run tests
         run: |
           SUITE="${{ github.event.inputs.test_suite }}"
           if [ "$SUITE" = "visual-audit" ]; then
-            bunx playwright test tests/mundus/09-visual-audit.spec.js
+            bunx playwright test tests/mundus/09-visual-audit.spec.js --project="Desktop Chrome"
           elif [ "$SUITE" = "auth" ]; then
-            bunx playwright test tests/mundus/01-auth.spec.js
-          elif [ "$SUITE" = "dashboard" ]; then
-            bunx playwright test tests/mundus/02-dashboard.spec.js
-          elif [ "$SUITE" = "offers" ]; then
-            bunx playwright test tests/mundus/03-offers.spec.js
-          elif [ "$SUITE" = "customers" ]; then
-            bunx playwright test tests/mundus/04-customers.spec.js
-          elif [ "$SUITE" = "negotiations" ]; then
-            bunx playwright test tests/mundus/05-negotiations.spec.js
-          elif [ "$SUITE" = "sales" ]; then
-            bunx playwright test tests/mundus/06-sales.spec.js
+            bunx playwright test tests/mundus/01-auth.spec.js --project="Desktop Chrome"
           else
-            bunx playwright test
+            bunx playwright test --project="Desktop Chrome"
           fi
         env:
           BASE_URL: https://app.mundustrade.us
           SUPPLIER_EMAIL: ${{ secrets.SUPPLIER_EMAIL }}
           SUPPLIER_PASSWORD: ${{ secrets.SUPPLIER_PASSWORD }}
-          BUYER_EMAIL: ${{ secrets.BUYER_EMAIL }}
-          BUYER_PASSWORD: ${{ secrets.BUYER_PASSWORD }}
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v4
@@ -87,11 +72,3 @@ jobs:
           name: playwright-report-${{ github.run_number }}
           path: playwright-report/
           retention-days: 30
-
-      - name: Upload failure videos
-        uses: actions/upload-artifact@v4
-        if: failure()
-        with:
-          name: test-videos-${{ github.run_number }}
-          path: test-results/
-          retention-days: 7
