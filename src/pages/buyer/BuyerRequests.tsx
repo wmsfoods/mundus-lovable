@@ -8,7 +8,14 @@ import { formatRequestNumber } from "@/lib/requestNumber";
 import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel, priceLabel } from "@/lib/units";
-import { ListCard, ListCardList } from "@/components/mundus/ListCard";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { NegotiationsFilterSheet } from "@/components/marketplace/NegotiationsFilterSheet";
+import {
+  MobileNegoBidCard,
+  MobileNegoGroup,
+  MobileNegoTabs,
+  type MobileNegoStatusTone,
+} from "@/components/negotiation/MobileNegotiationCard";
 
 const STATUS_CHIP: Record<BuyerRequestStatus, string> = {
   new: "req-status-chip is-draft",
@@ -26,6 +33,27 @@ const STATUS_LABEL: Record<BuyerRequestStatus, string> = {
   not_interested: "Cancelled",
 };
 
+const STATUS_TONE: Record<BuyerRequestStatus, MobileNegoStatusTone> = {
+  new: "awaiting",
+  with_responses: "action_required",
+  offer_sent: "accepted",
+  closed: "rejected",
+  not_interested: "expired",
+};
+
+type MobileTab = "needs_attention" | "waiting" | "closed";
+const TAB_OF_STATUS: Record<BuyerRequestStatus, MobileTab> = {
+  with_responses: "needs_attention",
+  new: "waiting",
+  offer_sent: "closed",
+  closed: "closed",
+  not_interested: "closed",
+};
+
+function initialsOf(s: string) {
+  return (s || "?").trim().slice(0, 2).toUpperCase();
+}
+
 function fmtKg(v: number) {
   return new Intl.NumberFormat("de-DE").format(v);
 }
@@ -37,8 +65,10 @@ export default function BuyerRequests() {
   const navigate = useNavigate();
   const { data, counts, isLoading } = useBuyerRequests();
   const { unit } = useWeightUnit();
+  const isMobile = useIsMobileShell();
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<"all" | BuyerRequestStatus>("all");
+  const [mobileTab, setMobileTab] = useState<MobileTab>("needs_attention");
   const [responseOffers, setResponseOffers] = useState<Array<{ id: string; request_id: string | null }>>([]);
 
   useEffect(() => {
@@ -89,6 +119,28 @@ export default function BuyerRequests() {
       <Crumbs items={[{ label: "Home", to: "/buyer" }, { label: "My Requests" }]} />
       <PageTitle icon={ClipboardIcon} title="My Requests" />
 
+      <NegotiationsFilterSheet
+        query={search}
+        onQueryChange={setSearch}
+        sortBy="recent"
+        onSortChange={() => {}}
+        filter={statusF}
+        onFilterChange={(v) => setStatusF(v as "all" | BuyerRequestStatus)}
+        chips={chips.map((c) => ({ key: c.key, label: c.label, count: c.count }))}
+        sortLabels={{ recent: "Recent", oldest: "Oldest", priority: "Priority" }}
+        searchPlaceholder="Search by number, product, destination…"
+        i18n={{
+          filters: "Filters",
+          sort: "Sort",
+          status: "Status",
+          clear: "Clear",
+          cancel: "Cancel",
+          apply: "Apply",
+        }}
+      />
+
+      {!isMobile && (
+      <>
       <div className="table-toolbar">
         <div className="left">
           <div className="search-input">
@@ -122,6 +174,8 @@ export default function BuyerRequests() {
           </button>
         ))}
       </div>
+      </>
+      )}
 
       <div className="data-table-wrap has-mobile-cards" style={{ marginTop: 12 }}>
         <table className="data-table">
@@ -185,33 +239,97 @@ export default function BuyerRequests() {
         </table>
       </div>
 
-      <ListCardList>
-        {isLoading ? (
-          <div className="empty-state">Loading…</div>
-        ) : filtered.length === 0 ? (
-          <div className="empty-state">No requests yet.</div>
-        ) : (
-          filtered.map((r: BuyerRequestRow) => {
+      <MobileRequestsList
+        items={filtered}
+        responsesMap={responsesMap}
+        unit={unit}
+        tab={mobileTab}
+        onTabChange={setMobileTab}
+        onOpen={(id) => navigate(`/buyer/requests/${id}`)}
+        onCreate={() => navigate("/buyer/requests/new")}
+        isLoading={isLoading}
+      />
+    </>
+  );
+}
+
+function MobileRequestsList({
+  items,
+  responsesMap,
+  unit,
+  tab,
+  onTabChange,
+  onOpen,
+  onCreate,
+  isLoading,
+}: {
+  items: BuyerRequestRow[];
+  responsesMap: Record<string, number>;
+  unit: ReturnType<typeof useWeightUnit>["unit"];
+  tab: MobileTab;
+  onTabChange: (v: MobileTab) => void;
+  onOpen: (id: string) => void;
+  onCreate: () => void;
+  isLoading: boolean;
+}) {
+  const counts = {
+    needs_attention: items.filter((r) => TAB_OF_STATUS[r.status] === "needs_attention").length,
+    waiting: items.filter((r) => TAB_OF_STATUS[r.status] === "waiting").length,
+    closed: items.filter((r) => TAB_OF_STATUS[r.status] === "closed").length,
+  };
+  const visible = items.filter((r) => TAB_OF_STATUS[r.status] === tab);
+  const groupTitle =
+    tab === "needs_attention" ? "With responses" : tab === "waiting" ? "Waiting for suppliers" : "Closed";
+
+  return (
+    <div className="mnc-active lg:hidden">
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 8 }}>
+        <button type="button" className="btn-tb is-primary" onClick={onCreate}>
+          <PlusIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
+          New request
+        </button>
+      </div>
+      <MobileNegoTabs<MobileTab>
+        value={tab}
+        onChange={onTabChange}
+        options={[
+          { key: "needs_attention", label: "Needs attention", count: counts.needs_attention },
+          { key: "waiting", label: "Waiting", count: counts.waiting },
+          { key: "closed", label: "Closed", count: counts.closed },
+        ]}
+      />
+      {isLoading ? (
+        <div className="detail-empty"><p>Loading…</p></div>
+      ) : visible.length === 0 ? (
+        <div className="detail-empty"><p>No requests in this tab.</p></div>
+      ) : (
+        <MobileNegoGroup title={groupTitle} bidCount={visible.length}>
+          {visible.map((r) => {
             const responses = responsesMap[r.id] ?? 0;
             return (
-              <ListCard
+              <MobileNegoBidCard
                 key={r.id}
-                onClick={() => navigate(`/buyer/requests/${r.id}`)}
-                title={formatRequestNumber(r.request_number, r.created_at)}
-                subtitle={r.product_name}
-                chip={{ label: STATUS_LABEL[r.status], className: STATUS_CHIP[r.status] }}
-                meta={[
-                  { label: "Destination", value: `${r.destination_country}${r.destination_port ? ` · ${r.destination_port}` : ""}` },
+                initials={initialsOf(r.product_name)}
+                partyName={formatRequestNumber(r.request_number, r.created_at)}
+                subtitle={
+                  <>
+                    {r.product_name}
+                    {r.destination_country ? ` · ${r.destination_country}${r.destination_port ? ` (${r.destination_port})` : ""}` : ""}
+                  </>
+                }
+                status={{ tone: STATUS_TONE[r.status], label: STATUS_LABEL[r.status] }}
+                stats={[
                   { label: "Volume", value: `${fmtWeight(Number(r.quantity_kg), unit)} ${weightLabel(unit)}` },
-                  { label: `Target ${priceLabel(unit)}`, value: r.target_price_usd != null ? `$${fmtPrice(Number(r.target_price_usd), unit)}` : "—" },
-                  { label: "Responses", value: responses > 0 ? `${responses} supplier${responses > 1 ? "s" : ""}` : "Waiting…" },
-                  { label: "Created", value: fmtDate(r.created_at) },
+                  { label: `Target ${priceLabel(unit)}`, value: r.target_price_usd != null ? `$${fmtPrice(Number(r.target_price_usd), unit)}` : "—", tone: "bid" },
+                  { label: "Responses", value: responses > 0 ? `${responses} supplier${responses > 1 ? "s" : ""}` : "—", tone: responses > 0 ? "counter" : "default" },
                 ]}
+                dateLabel={fmtDate(r.created_at)}
+                onClick={() => onOpen(r.id)}
               />
             );
-          })
-        )}
-      </ListCardList>
-    </>
+          })}
+        </MobileNegoGroup>
+      )}
+    </div>
   );
 }
