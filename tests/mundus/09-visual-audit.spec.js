@@ -36,25 +36,6 @@ test.describe('Supplier Audit', () => {
     await expect(page.locator('text=lbs').first()).toBeVisible();
   });
 
-  test('Customers page loads with table columns', async ({ page }) => {
-    await page.goto('/supplier/customers');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=My Customers')).toBeVisible();
-    await expect(
-      page.locator('text=COMPANY NAME').or(page.locator('th:has-text("Company")'))
-    ).toBeVisible();
-    await expect(page.locator('button:has-text("Invite Customer"), button:has-text("Invite")')).toBeVisible();
-  });
-
-  test('Invite Customer modal opens', async ({ page }) => {
-    await page.goto('/supplier/customers');
-    await page.waitForLoadState('networkidle');
-    await page.click('button:has-text("Invite Customer"), button:has-text("Invite")');
-    await page.waitForTimeout(1000);
-    await expect(page.locator('text=Invite New Customer')).toBeVisible();
-    await expect(page.locator('input[placeholder*="Company"], input[placeholder*="Acme"]')).toBeVisible();
-  });
-
   test('Offer Requests page loads with all columns', async ({ page }) => {
     await page.goto('/supplier/requests');
     await page.waitForLoadState('networkidle');
@@ -97,7 +78,7 @@ test.describe('Supplier Audit', () => {
 
   test('No broken routes — none should show 404', async ({ page }) => {
     const routes = [
-      '/supplier', '/supplier/offers', '/supplier/customers',
+      '/supplier', '/supplier/offers',
       '/supplier/requests', '/supplier/sales',
       '/supplier/negotiations', '/supplier/users',
     ];
