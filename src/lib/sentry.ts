@@ -2,7 +2,8 @@ import * as Sentry from "@sentry/react";
 
 // 👇 COLE AQUI O DSN DO SENTRY (entre as aspas).
 // Ex: "https://abc123@o456.ingest.sentry.io/789"
-const SENTRY_DSN_INLINE = "";
+const SENTRY_DSN_INLINE =
+  "https://f059fbc13aa7f1c762ea6c9f76152fb6@o4511483045347328.ingest.us.sentry.io/4511483048624128";
 
 export function initSentry() {
   if (!import.meta.env.PROD) return;
