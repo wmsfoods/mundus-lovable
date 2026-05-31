@@ -3391,6 +3391,7 @@
       "pastDue": "Tu último pago falló. Actualiza tu método de pago para mantener Mundus PRO activo.",
       "fixPayment": "Actualizar método de pago",
       "noSubscription": "Sin suscripción activa. Suscríbete a Mundus PRO desde US${{price}}/mes."
-    }
+    },
+    "salesConfirmation": "¡Gracias! El equipo de Operaciones de Mundus se pondrá en contacto en un plazo de 24 horas."
   }
 }
