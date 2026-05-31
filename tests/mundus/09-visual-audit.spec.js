@@ -10,7 +10,7 @@ test.describe('Supplier Audit', () => {
   });
 
   test('Home dashboard loads with KPI cards', async ({ page }) => {
-    await page.goto('/home');
+    await page.goto('/supplier');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=Active Offers')).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=Total Offers')).toBeVisible();
@@ -56,7 +56,7 @@ test.describe('Supplier Audit', () => {
   });
 
   test('Offer Requests page loads with all columns', async ({ page }) => {
-    await page.goto('/supplier/offer-requests');
+    await page.goto('/supplier/requests');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=My offer requests')).toBeVisible();
     await expect(page.locator('text=REQUEST NUMBER')).toBeVisible();
@@ -87,7 +87,7 @@ test.describe('Supplier Audit', () => {
   });
 
   test('Mundus Intel section visible in sidebar', async ({ page }) => {
-    await page.goto('/home');
+    await page.goto('/supplier');
     await page.waitForLoadState('networkidle');
     await expect(page.locator('text=Mundus Intel')).toBeVisible();
     await expect(page.locator('text=Price Benchmark')).toBeVisible();
@@ -97,8 +97,8 @@ test.describe('Supplier Audit', () => {
 
   test('No broken routes — none should show 404', async ({ page }) => {
     const routes = [
-      '/home', '/supplier/offers', '/supplier/customers',
-      '/supplier/offer-requests', '/supplier/sales',
+      '/supplier', '/supplier/offers', '/supplier/customers',
+      '/supplier/requests', '/supplier/sales',
       '/supplier/negotiations', '/supplier/users',
     ];
     const broken = [];
@@ -126,7 +126,7 @@ test.describe('Buyer Audit', () => {
   });
 
   test('Buyer home loads', async ({ page }) => {
-    await page.goto('/buyer/home');
+    await page.goto('/buyer');
     await page.waitForLoadState('networkidle');
     const is404 = await page
       .locator('text=404')
@@ -160,7 +160,7 @@ test.describe('Buyer Audit', () => {
 
   test('No broken buyer routes', async ({ page }) => {
     const routes = [
-      '/buyer/home', '/buyer/offers', '/buyer/offer-requests',
+      '/buyer', '/buyer/offers', '/buyer/requests',
       '/buyer/negotiations', '/buyer/orders', '/buyer/users',
     ];
     const broken = [];
@@ -201,8 +201,8 @@ test.describe('Admin Audit', () => {
 
   test('No broken admin routes', async ({ page }) => {
     const routes = [
-      '/admin/dashboard', '/admin/users', '/admin/companies',
-      '/admin/offers', '/admin/negotiations', '/admin/sales',
+      '/admin/dashboard', '/admin/settings/team', '/admin/companies',
+      '/admin/offers', '/admin/negotiations', '/admin/deals',
     ];
     const broken = [];
     for (const route of routes) {
