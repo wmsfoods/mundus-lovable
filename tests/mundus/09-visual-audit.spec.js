@@ -90,7 +90,7 @@ test.describe('Supplier Audit', () => {
         .locator('text=404')
         .or(page.locator('text=Not Found'))
         .or(page.locator('text=Page not found'))
-        .isVisible();
+        .first().isVisible();
       if (is404) broken.push(route);
     }
     expect(broken, `Broken routes: ${broken.join(', ')}`).toHaveLength(0);
@@ -113,7 +113,7 @@ test.describe('Buyer Audit', () => {
       .locator('text=404')
       .or(page.locator('text=Not Found'))
       .or(page.locator('text=Page not found'))
-      .isVisible();
+      .first().isVisible();
     expect(is404).toBe(false);
   });
 
@@ -124,7 +124,7 @@ test.describe('Buyer Audit', () => {
       .locator('text=404')
       .or(page.locator('text=Not Found'))
       .or(page.locator('text=Page not found'))
-      .isVisible();
+      .first().isVisible();
     expect(is404).toBe(false);
   });
 
@@ -135,7 +135,7 @@ test.describe('Buyer Audit', () => {
       .locator('text=404')
       .or(page.locator('text=Not Found'))
       .or(page.locator('text=Page not found'))
-      .isVisible();
+      .first().isVisible();
     expect(is404).toBe(false);
   });
 
@@ -152,7 +152,7 @@ test.describe('Buyer Audit', () => {
         .locator('text=404')
         .or(page.locator('text=Not Found'))
         .or(page.locator('text=Page not found'))
-        .isVisible();
+        .first().isVisible();
       if (is404) broken.push(route);
       console.log(`${is404 ? '❌' : '✅'} ${route}`);
     }
@@ -176,7 +176,7 @@ test.describe('Admin Audit', () => {
       .locator('text=404')
       .or(page.locator('text=Not Found'))
       .or(page.locator('text=Page not found'))
-      .isVisible();
+      .first().isVisible();
     expect(is404).toBe(false);
   });
 
@@ -193,7 +193,7 @@ test.describe('Admin Audit', () => {
         .locator('text=404')
         .or(page.locator('text=Not Found'))
         .or(page.locator('text=Page not found'))
-        .isVisible();
+        .first().isVisible();
       if (is404) broken.push(route);
       console.log(`${is404 ? '❌' : '✅'} ${route}`);
     }
