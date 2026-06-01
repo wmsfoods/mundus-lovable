@@ -1091,7 +1091,7 @@ function ConvertToMundusModal({ prospect, onClose, onDone }: {
               </div>
 
               {main && (
-                <div style={{ fontSize: 12, color: "var(--g500)", background: "var(--g50)", padding: 8, borderRadius: 6 }}>
+                <div style={{ fontSize: 12, color: "var(--g500)", background: "var(--g050)", padding: 8, borderRadius: 6 }}>
                   Primary contact: <b>{main.fullName}</b> &lt;{main.email}&gt;{main.phone ? ` · ${main.phone}` : ""}
                 </div>
               )}
@@ -1149,7 +1149,7 @@ function ConvertToMundusModal({ prospect, onClose, onDone }: {
               </div>
 
               {main && (
-                <div style={{ fontSize: 12, color: "var(--g500)", background: "var(--g50)", padding: 8, borderRadius: 6 }}>
+                <div style={{ fontSize: 12, color: "var(--g500)", background: "var(--g050)", padding: 8, borderRadius: 6 }}>
                   Primary contact: <b>{main.fullName}</b> &lt;{main.email}&gt;{main.phone ? ` · ${main.phone}` : ""}
                 </div>
               )}
