@@ -61,6 +61,9 @@ export default function BuyerOfferDetail() {
   const [moreOpen, setMoreOpen] = useState(false);
   const [bidOpen, setBidOpen] = useState(false);
   const { company } = useCurrentCompany();
+  const { user } = useAuth();
+  const [closeDealOpen, setCloseDealOpen] = useState(false);
+  const [closingDeal, setClosingDeal] = useState(false);
   const currentCompanyId = company?.id ?? null;
 
   const { data: myNegotiation } = useQuery({
@@ -126,6 +129,37 @@ export default function BuyerOfferDetail() {
     setBidOpen(true);
   };
 
+  const handleCloseDeal = async () => {
+    if (!offer) return;
+    if ((offer.status ?? "active") !== "active") {
+      toast.error("This offer has been deactivated by the supplier.");
+      return;
+    }
+    if (!company?.id || !user?.id) {
+      toast.error("Please sign in to close this deal.");
+      return;
+    }
+    if (closingDeal) return;
+    setClosingDeal(true);
+    try {
+      const { negotiationId } = await closeDealFromOffer(
+        offer,
+        company.id,
+        user.id,
+        company.name,
+      );
+      toast.success(t("common.closeDealDialog.title"));
+      setCloseDealOpen(false);
+      navigate(`/buyer/negotiations/${negotiationId}`);
+    } catch (err: any) {
+      const msg = String(err?.message ?? err ?? "");
+      console.error("[closeDeal] failed", err);
+      toast.error(msg || "Failed to close deal");
+    } finally {
+      setClosingDeal(false);
+    }
+  };
+
   if (loading) {
     return (
       <>
@@ -166,9 +200,16 @@ export default function BuyerOfferDetail() {
         moreOpen={moreOpen}
         setMoreOpen={setMoreOpen}
         onNegotiate={handleNegotiate}
+        onCloseDeal={() => setCloseDealOpen(true)}
         myNegotiation={myNegotiation ?? null}
       />
       <BidModal open={bidOpen} onOpenChange={setBidOpen} offer={offer} />
+      <CloseDealDialog
+        open={closeDealOpen}
+        onOpenChange={(o) => !closingDeal && setCloseDealOpen(o)}
+        onConfirm={handleCloseDeal}
+        submitting={closingDeal}
+      />
     </>
   );
 }
