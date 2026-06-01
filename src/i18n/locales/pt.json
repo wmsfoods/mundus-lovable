@@ -44,7 +44,14 @@
     "english": "English",
     "portuguese": "Português",
     "spanish": "Español",
-    "signIn": "Entrar"
+    "signIn": "Entrar",
+    "closeDeal": "Fechar negócio",
+    "closeDealDialog": {
+      "title": "Confirmar este negócio?",
+      "body": "Você está confirmando este negócio. O fornecedor ainda precisa dar o aceite final — você será notificado assim que ele responder.",
+      "confirm": "Confirmar negócio",
+      "cancel": "Cancelar"
+    }
   },
   "auth": {
     "login": "Entrar",

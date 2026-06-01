@@ -44,7 +44,14 @@
     "english": "English",
     "portuguese": "Português",
     "spanish": "Español",
-    "signIn": "Sign in"
+    "signIn": "Sign in",
+    "closeDeal": "Close Deal",
+    "closeDealDialog": {
+      "title": "Confirm this deal?",
+      "body": "You're confirming this deal. The supplier still needs to give final acceptance — you'll be notified as soon as they respond.",
+      "confirm": "Confirm deal",
+      "cancel": "Cancel"
+    }
   },
   "auth": {
     "login": "Log in",

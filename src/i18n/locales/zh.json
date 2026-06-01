@@ -44,7 +44,14 @@
     "english": "英语",
     "portuguese": "葡萄牙语",
     "spanish": "西班牙语",
-    "signIn": "登录"
+    "signIn": "登录",
+    "closeDeal": "完成交易",
+    "closeDealDialog": {
+      "title": "确认此交易？",
+      "body": "您正在确认此交易。供应商仍需给出最终确认——一旦对方回复，我们会立即通知您。",
+      "confirm": "确认交易",
+      "cancel": "取消"
+    }
   },
   "auth": {
     "login": "登录",
