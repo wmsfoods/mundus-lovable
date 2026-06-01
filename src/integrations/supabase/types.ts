@@ -7095,7 +7095,12 @@ export type Database = {
           full_name: string
         }[]
       }
+      has_company_role: {
+        Args: { _company_id: string; _roles: string[] }
+        Returns: boolean
+      }
       increment_offer_views: { Args: { offer_id: string }; Returns: undefined }
+      is_company_manager: { Args: { _company_id: string }; Returns: boolean }
       is_company_master: { Args: { _company_id: string }; Returns: boolean }
       is_family_global_director: {
         Args: { p_company_id: string }
@@ -7106,6 +7111,7 @@ export type Database = {
         Args: { p_any_company_in_family: string }
         Returns: boolean
       }
+      is_global_director: { Args: never; Returns: boolean }
       is_mundus_admin: { Args: never; Returns: boolean }
       market_cut_benchmark: {
         Args: {
