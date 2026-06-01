@@ -137,18 +137,17 @@ export default function AdminMigration() {
           companyCache.set(cacheKey, companyId!);
         }
         r.resolvedCompanyId = companyId!;
-        // Step 2: upsert team member by (company_id, email) — NO auth, NO password
-        const role = /master/i.test(r.profileType) ? "master" : "member";
-        const { data: upserted, error: upErr } = await supabase
-          .from("team_invitations")
+        // Step 2: upsert team member by (company_id, email) — NO auth, NO password, NO email
+        const { data: upserted, error: upErr } = await (supabase as any)
+          .from("company_users")
           .upsert(
             {
               company_id: companyId!,
               email: r.email.trim().toLowerCase(),
               full_name: r.user.trim(),
-              profile_type: r.profileType || null,
-              role,
-              account_status: "pending",
+              role: r.profileType || null,
+              status: "invited",
+              invited_at: new Date().toISOString(),
             },
             { onConflict: "company_id,email" }
           )
