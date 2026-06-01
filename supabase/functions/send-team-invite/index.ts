@@ -149,13 +149,9 @@ Deno.serve(async (req) => {
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE)
 
-    // Authorize: caller must be master of company OR mundus admin
-    const { data: canManage } = await admin.rpc('is_company_master', { _company_id: company_id })
-    const { data: isAdmin } = await admin.rpc('is_mundus_admin')
-    // Note: is_company_master / is_mundus_admin use auth.uid() — we need to call them as the user.
-    const { data: canManageAsUser } = await userClient.rpc('is_company_master', { _company_id: company_id })
-    const { data: isAdminAsUser } = await userClient.rpc('is_mundus_admin')
-    if (!canManageAsUser && !isAdminAsUser) {
+    // Authorize: caller must be a manager of the company (unified helper, includes mundus admin)
+    const { data: canManage } = await userClient.rpc('is_company_manager', { _company_id: company_id })
+    if (!canManage) {
       return new Response(JSON.stringify({ error: 'forbidden' }), { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
 
