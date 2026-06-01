@@ -486,6 +486,39 @@ export const emailTemplates = {
     ctaUrl: "https://app.mundustrade.us",
     ctaLabel: "View Marketplace →",
   }),
+
+  publicLeadCaptured: (vars: {
+    email: string;
+    name?: string;
+    company?: string;
+    phone?: string;
+    country?: string;
+    protein?: string;
+    leadType?: string;
+    mundusRep?: string;
+    lang?: string;
+  }) => masterLayout({
+    heroTitle: "New public-home lead 🌎",
+    heroColor: "green",
+    preheader: `New lead from public home — ${vars.email}`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">A new lead was captured from the public homepage.</p>
+      ${dataCard([
+        { label: "Email", value: vars.email, bold: true },
+        { label: "Name", value: vars.name || "—" },
+        { label: "Company", value: vars.company || "—" },
+        { label: "Phone", value: vars.phone || "—" },
+        { label: "Country", value: vars.country || "—" },
+        { label: "Interest (protein)", value: vars.protein || "—" },
+        { label: "Lead type", value: vars.leadType || "—" },
+        { label: "Assigned Mundus rep", value: vars.mundusRep || "—", bold: true },
+        { label: "Language", value: vars.lang || "en" },
+      ])}
+      <p style="margin:20px 0 0;font-size:13px;color:#6B7280;">The contact has been created in the CRM. Please follow up within 1 business day.</p>
+    `,
+    ctaUrl: "https://app.mundustrade.us/admin/crm/prospects",
+    ctaLabel: "Open CRM →",
+  }),
 };
 
 export type EmailTemplateName = keyof typeof emailTemplates;
