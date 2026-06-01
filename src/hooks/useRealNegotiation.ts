@@ -27,6 +27,7 @@ export type RealNegotiationRow = {
   current_round: number | null;
   chat_enabled: boolean | null;
   order_id: string | null;
+  origin?: string | null;
   order: { id: string; order_number: number | null } | null;
   buyer: { id: string; name: string | null } | null;
   offer: {
@@ -115,7 +116,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           agreed_items, settled_total_value, buyer_message, supplier_message,
           accepted_by, accepted_by_user_id, accepted_at, accepted_total_value,
           rejection_cooldown_until, current_round, chat_enabled,
-          order_id,
+          order_id, origin,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
           buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
           offer:offers (

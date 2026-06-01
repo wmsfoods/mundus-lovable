@@ -4579,6 +4579,7 @@ export type Database = {
           offer_id: string
           office_id: string | null
           order_id: string | null
+          origin: string
           port_id: string | null
           rejection_cooldown_until: string | null
           rejection_notes: string | null
@@ -4615,6 +4616,7 @@ export type Database = {
           offer_id: string
           office_id?: string | null
           order_id?: string | null
+          origin?: string
           port_id?: string | null
           rejection_cooldown_until?: string | null
           rejection_notes?: string | null
@@ -4651,6 +4653,7 @@ export type Database = {
           offer_id?: string
           office_id?: string | null
           order_id?: string | null
+          origin?: string
           port_id?: string | null
           rejection_cooldown_until?: string | null
           rejection_notes?: string | null
@@ -7153,6 +7156,7 @@ export type Database = {
           p_insurance_per_kg?: number
           p_items?: Json
           p_offer_id: string
+          p_origin?: string
           p_port_id?: string
         }
         Returns: Json

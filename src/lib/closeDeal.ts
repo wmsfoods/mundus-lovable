@@ -135,6 +135,7 @@ export async function closeDealFromOffer(
       p_incoterm: incoterm,
       p_buyer_message: null,
       p_items: items,
+      p_origin: "direct_close",
     },
   );
   if (submitErr) throw submitErr;
