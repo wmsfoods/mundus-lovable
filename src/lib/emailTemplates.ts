@@ -538,4 +538,5 @@ export const emailSubjects: Record<EmailTemplateName, (vars: any) => string> = {
   offerShared: (v) => `${v.senderName} shared an offer with you`,
   customerInvitation: (v) => `${v.inviterCompany} has invited you to Mundus Trade`,
   weeklyDigest: (v) => `Your Mundus Trade Weekly Digest — ${v.dateRange}`,
+  publicLeadCaptured: (v) => `New public-home lead — ${v.email}`,
 };
