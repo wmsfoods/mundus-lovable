@@ -1,18 +1,14 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import PublicLayout from "@/layouts/PublicLayout";
 import PublicOfferCard from "@/components/public/PublicOfferCard";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
 import { usePublicOffers } from "@/hooks/usePublicOffers";
-import { useAuth } from "@/contexts/AuthContext";
 
 export default function PublicHome() {
   const { t } = useTranslation();
-  const { user } = useAuth();
   const { offers, loading } = usePublicOffers();
   const [chatOpen, setChatOpen] = useState(false);
-  const navigate = useNavigate();
 
   return (
     <PublicLayout>
@@ -30,11 +26,9 @@ export default function PublicHome() {
           <h2 className="text-lg font-semibold text-[#1A1A2E]">
             {t("public.home.sectionTitle", "Active offers")}
           </h2>
-          {!user && (
-            <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
-              {t("public.home.anonymousLabel", "Supplier names hidden — reveal to see")}
-            </span>
-          )}
+          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
+            {t("public.home.anonymousLabel", "Supplier names hidden — reveal to see")}
+          </span>
         </div>
 
         {loading ? (
@@ -47,9 +41,7 @@ export default function PublicHome() {
               <PublicOfferCard
                 key={o.id}
                 offer={o}
-                isAuthenticated={Boolean(user)}
                 onReveal={() => setChatOpen(true)}
-                onOpen={() => navigate(`/buyer/offers/${o.id}`)}
               />
             ))}
           </div>

@@ -297,7 +297,8 @@
       "leadType_buyer_supplier": "Ambos",
       "submitting": "Guardando tus datos…",
       "doneTitle": "¡Listo! 🎉",
-      "doneBody": "{{rep}} te contactará en 1 día hábil. Regístrate para ver el proveedor detrás de esta oferta.",
+      "doneBuyer": "¡Gracias por registrarte! Vamos a revisar tu información y avanzar con tu aprobación en breve, para que puedas acceder a las ofertas completas aquí en Mundus. Un rep ({{rep}}) te acompañará.",
+      "doneSupplier": "¡Perfecto! Las ofertas de la vitrina son exclusivas para compradores aprobados. Como proveedor, vamos a revisar tu registro y un rep de Mundus ({{rep}}) se pondrá en contacto pronto.",
       "errorBody": "Algo salió mal. Intenta de nuevo en un momento.",
       "retry": "Reintentar"
     },

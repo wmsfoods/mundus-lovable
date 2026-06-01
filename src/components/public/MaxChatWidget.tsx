@@ -129,7 +129,11 @@ export default function MaxChatWidget({
           {step === "done" && (
             <>
               <Bubble>{tk("doneTitle", "All set! 🎉")}</Bubble>
-              <Bubble>{t("public.chat.doneBody", "{{rep}} will reach out within 1 business day. In the meantime, feel free to browse the marketplace.", { rep })}</Bubble>
+              <Bubble>
+                {leadType === "buyer"
+                  ? t("public.chat.doneBuyer", "Thanks for registering! We'll review your information and move your approval forward shortly — so you can access the full offers here on Mundus. A rep ({{rep}}) will look after you.", { rep })
+                  : t("public.chat.doneSupplier", "Perfect! The showcase offers are exclusive to approved buyers. As a supplier, we'll review your registration and a Mundus rep ({{rep}}) will reach out soon.", { rep })}
+              </Bubble>
               <button onClick={onClose} className="mt-2 rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("close", "Close")}</button>
             </>
           )}

@@ -297,7 +297,8 @@
       "leadType_buyer_supplier": "两者",
       "submitting": "正在保存您的信息…",
       "doneTitle": "全部完成!🎉",
-      "doneBody": "{{rep}} 将在 1 个工作日内与您联系。注册以查看此报价背后的供应商。",
+      "doneBuyer": "感谢您的注册!我们将尽快审核您的信息并推进审批,以便您在 Mundus 访问完整报价。Mundus 代表 ({{rep}}) 将为您提供服务。",
+      "doneSupplier": "太好了!展示中的报价仅对已批准的买家开放。作为供应商,我们将审核您的注册信息,Mundus 代表 ({{rep}}) 将尽快与您联系。",
       "errorBody": "出错了。请稍后再试。",
       "retry": "重试"
     },
