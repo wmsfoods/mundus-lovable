@@ -27,6 +27,7 @@ export type RealNegotiationRow = {
   current_round: number | null;
   chat_enabled: boolean | null;
   order_id: string | null;
+  origin?: string | null;
   order: { id: string; order_number: number | null } | null;
   buyer: { id: string; name: string | null } | null;
   offer: {
