@@ -6,13 +6,9 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 export default function PublicOfferCard({
   offer,
   onReveal,
-  isAuthenticated,
-  onOpen,
 }: {
   offer: PublicOffer;
-  isAuthenticated: boolean;
   onReveal: () => void;
-  onOpen: () => void;
 }) {
   const { t } = useTranslation();
   const firstItem = offer.items[0];
@@ -82,26 +78,17 @@ export default function PublicOfferCard({
       </div>
 
       <div className="mb-3 rounded-md bg-gray-50 px-3 py-2 text-[11px] text-gray-600">
-        {isAuthenticated ? (
-          <span>
-            <span className="text-gray-400">{t("public.home.supplier", "Supplier")}:</span>{" "}
-            <span className="font-medium text-[#1A1A2E]">{t("public.home.visibleToYou", "Visible inside")}</span>
-          </span>
-        ) : (
-          <span>
-            <span className="text-gray-400">{t("public.home.supplier", "Supplier")}:</span>{" "}
-            <span className="italic">{t("public.home.hiddenSupplier", "Hidden — reveal to see")}</span>
-          </span>
-        )}
+        <span>
+          <span className="text-gray-400">{t("public.home.supplier", "Supplier")}:</span>{" "}
+          <span className="italic">{t("public.home.hiddenSupplier", "Hidden — reveal to see")}</span>
+        </span>
       </div>
 
       <button
-        onClick={isAuthenticated ? onOpen : onReveal}
+        onClick={onReveal}
         className="mt-auto w-full rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white hover:opacity-90"
       >
-        {isAuthenticated
-          ? t("public.home.openOffer", "Open offer")
-          : t("public.home.reveal", "Reveal supplier")}
+        {t("public.home.reveal", "Reveal supplier")}
       </button>
     </div>
   );
