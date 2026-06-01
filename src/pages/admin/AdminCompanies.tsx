@@ -68,7 +68,7 @@ export default function AdminCompanies() {
     return { total: rows.length, active: rows.length - inactive };
   }, [rows]);
 
-  // Search team members (team_invitations) when query has 2+ chars; collect company_ids.
+  // Search team members (company_users) when query has 2+ chars; collect company_ids.
   useEffect(() => {
     const q = search.trim();
     if (q.length < 2) {
@@ -80,7 +80,7 @@ export default function AdminCompanies() {
     setTeamSearching(true);
     const run = async () => {
       const { data, error } = await supabase
-        .from("team_invitations")
+        .from("company_users")
         .select("company_id")
         .or(`full_name.ilike.%${q}%,email.ilike.%${q}%`)
         .limit(500);

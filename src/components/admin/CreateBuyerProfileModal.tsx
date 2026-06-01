@@ -91,15 +91,15 @@ export function CreateBuyerProfileModal({
         .single();
       if (cErr || !company) throw cErr ?? new Error("Failed to create company");
 
-      const { error: tiErr } = await supabase.from("team_invitations").insert({
+      const { error: tiErr } = await (supabase as any).from("company_users").upsert({
         company_id: company.id,
         full_name: f.contactName,
         email: f.contactEmail.toLowerCase(),
         phone: f.contactPhone || null,
-        profile_type: f.role || "master_buyer",
-        role: (f.role || "").includes("master") ? "master" : "member",
-        account_status: "pending",
-      });
+        role: f.role || "master_buyer",
+        status: "invited",
+        invited_at: new Date().toISOString(),
+      }, { onConflict: "company_id,email" });
       if (tiErr) throw tiErr;
 
       auditLog({

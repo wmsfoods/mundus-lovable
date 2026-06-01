@@ -207,13 +207,10 @@ export default function SupplierCreateOffer() {
           try {
             const { data: cu } = await (supabase as any)
               .from("company_users")
-              .select("role, roles:role_id(name)")
+              .select("role")
               .eq("user_id", uid)
               .eq("status", "active");
-            admin = (cu || []).some((r: any) =>
-              r?.role === "mundus_admin" ||
-              ["mundus_admin","mundus_ops","mundus_sales","mundus_support"].includes(r?.roles?.name)
-            );
+            admin = (cu || []).some((r: any) => r?.role === "mundus_admin");
           } catch { /* noop */ }
         }
         if (cancelled) return;
