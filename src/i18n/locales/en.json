@@ -297,7 +297,8 @@
       "leadType_buyer_supplier": "Both",
       "submitting": "Saving your details…",
       "doneTitle": "All set! 🎉",
-      "doneBody": "{{rep}} will reach out within 1 business day. Sign up to see the supplier behind this offer.",
+      "doneBuyer": "Thanks for registering! We'll review your information and move your approval forward shortly — so you can access the full offers here on Mundus. A rep ({{rep}}) will look after you.",
+      "doneSupplier": "Perfect! The showcase offers are exclusive to approved buyers. As a supplier, we'll review your registration and a Mundus rep ({{rep}}) will reach out soon.",
       "errorBody": "Something went wrong. Please try again in a moment.",
       "retry": "Retry"
     },
