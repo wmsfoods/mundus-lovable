@@ -12,9 +12,9 @@ import {
 import {
   useProspect, updateProspectStage, addProspectActivity,
   updateProspect, deactivateProspect, reactivateProspect, deleteProspect,
-  upsertContact, deleteContact, convertProspectToMundus,
+  upsertContact, deleteContact,
   STAGES, OWNERS,
-  type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel, type MundusType,
+  type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel,
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
@@ -905,34 +905,155 @@ function ConvertToMundusModal({ prospect, onClose, onDone }: {
 }) {
   const { t } = useTranslation();
   const main = prospect.contacts.find((c) => c.isPrimary) ?? prospect.contacts[0];
-  const [type, setType] = useState<MundusType>(prospect.leadType);
-  const [name, setName] = useState(main?.fullName ?? "");
-  const [email, setEmail] = useState(main?.email ?? "");
-  const [phone, setPhone] = useState(main?.phone ?? "");
+  const isLegacy = prospect.id.startsWith("pr-");
 
-  const valid = name.trim().length > 1 && /.+@.+\..+/.test(email);
-
-  const submit = () => {
-    if (!valid) {
-      toast.error(t("admin.crm.detail.convert.invalidMaster"));
-      return;
-    }
-    const res = convertProspectToMundus(prospect.id, {
-      type,
-      master: { fullName: name.trim(), email: email.trim(), phone: phone.trim() || undefined },
-    });
-    if (!res.ok) {
-      toast.error(t("admin.crm.detail.convert.failed"));
-      return;
-    }
-    onDone();
+  type CompanyType = "buyer" | "supplier" | "buyer_supplier";
+  type Candidate = {
+    company_id: string; name: string;
+    is_buyer?: boolean; is_supplier?: boolean;
+    parent_company_id?: string | null; office_type?: string | null;
+  };
+  type Detect = {
+    scenario: "new" | "existing" | "no_email";
+    domain: string | null; generic?: boolean;
+    candidates: Candidate[];
   };
 
-  const TYPES: Array<{ id: MundusType; label: string; desc: string }> = [
+  const [loading, setLoading] = useState(true);
+  const [detect, setDetect] = useState<Detect | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
+  // NEW-company form
+  const [type, setType] = useState<CompanyType>(prospect.leadType === "buyer_supplier" ? "buyer_supplier" : prospect.leadType === "supplier" ? "supplier" : "buyer");
+  const [structure, setStructure] = useState<"standalone" | "office">("standalone");
+  const [parentId, setParentId] = useState<string>("");
+  const [officeType, setOfficeType] = useState<"branch" | "regional_office">("branch");
+  const [companies, setCompanies] = useState<Array<{ id: string; name: string; office_type: string | null; parent_company_id: string | null }>>([]);
+
+  // ATTACH form
+  const [chosenCandidate, setChosenCandidate] = useState<string>("");
+  const [family, setFamily] = useState<Array<{ id: string; name: string; office_type: string | null; parent_company_id: string | null }>>([]);
+  const [targetCompanyId, setTargetCompanyId] = useState<string>("");
+  const [memberRole, setMemberRole] = useState<string>("");
+
+  const ROLE_OPTIONS = [
+    "master_supplier","export_manager","operator","quality_control","logistics","supplier_global_director",
+    "master_buyer","procurement","import_manager","buyer_global_director","finance","compliance",
+  ];
+
+  useEffect(() => {
+    if (isLegacy) { setLoading(false); return; }
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      const { data, error } = await (supabase as any).rpc("convert_detect_candidates", { p_crm_company_id: prospect.id });
+      if (cancelled) return;
+      if (error) {
+        toast.error(error.message);
+        setDetect({ scenario: "no_email", domain: null, candidates: [] });
+      } else {
+        const d = data as Detect;
+        setDetect(d);
+        if (d.scenario === "existing" && d.candidates?.length === 1) {
+          setChosenCandidate(d.candidates[0].company_id);
+        }
+      }
+      setLoading(false);
+    })();
+    return () => { cancelled = true; };
+  }, [prospect.id, isLegacy]);
+
+  // Load companies list when "office of existing" structure is chosen
+  useEffect(() => {
+    if (structure !== "office" || companies.length > 0) return;
+    (async () => {
+      const { data } = await (supabase as any).from("companies")
+        .select("id,name,office_type,parent_company_id")
+        .eq("is_active", true).order("name");
+      setCompanies((data as any[]) ?? []);
+    })();
+  }, [structure]);
+
+  // Load family of chosen candidate (attach mode)
+  useEffect(() => {
+    if (!chosenCandidate) { setFamily([]); setTargetCompanyId(""); return; }
+    (async () => {
+      const { data } = await (supabase as any).from("companies")
+        .select("id,name,office_type,parent_company_id")
+        .eq("is_active", true)
+        .or(`id.eq.${chosenCandidate},parent_company_id.eq.${chosenCandidate}`)
+        .order("office_type");
+      const fam = (data as any[]) ?? [];
+      setFamily(fam);
+      setTargetCompanyId(fam.length === 1 ? fam[0].id : chosenCandidate);
+    })();
+  }, [chosenCandidate]);
+
+  const friendly = (msg: string) => {
+    if (msg.includes("already_converted")) return "This prospect was already converted to a Mundus company.";
+    if (msg.includes("no_primary_contact_email")) return "This prospect has no contact email.";
+    if (msg.includes("not_authorized")) return "You don't have permission to convert prospects.";
+    return msg;
+  };
+
+  const submit = async () => {
+    if (!detect) return;
+    setSubmitting(true);
+    try {
+      let args: any;
+      if (detect.scenario === "new") {
+        args = {
+          p_crm_company_id: prospect.id,
+          p_mode: "new",
+          p_company_type: type,
+          p_parent_company_id: structure === "office" ? parentId || null : null,
+          p_office_type: structure === "office" ? officeType : null,
+          p_target_company_id: null,
+          p_member_role: null,
+        };
+      } else if (detect.scenario === "existing") {
+        if (!targetCompanyId || !memberRole) {
+          toast.error("Pick a company/office and a role.");
+          setSubmitting(false); return;
+        }
+        args = {
+          p_crm_company_id: prospect.id,
+          p_mode: "attach",
+          p_company_type: null,
+          p_parent_company_id: null,
+          p_office_type: null,
+          p_target_company_id: targetCompanyId,
+          p_member_role: memberRole,
+        };
+      } else {
+        setSubmitting(false); return;
+      }
+      const { data, error } = await (supabase as any).rpc("convert_prospect_to_mundus", args);
+      if (error) { toast.error(friendly(error.message)); setSubmitting(false); return; }
+      const result = (data as any)?.result;
+      if (result === "created") toast.success("Company created in Mundus (invited). Send the invite email when ready.");
+      else if (result === "attached") toast.success("Contact attached to existing Mundus company (invited).");
+      else if (result === "already_member") toast.info("This person is already a member of that company — nothing to do.");
+      onDone();
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const TYPES: Array<{ id: CompanyType; label: string; desc: string }> = [
     { id: "buyer", label: t("admin.crm.detail.convert.type.buyer"), desc: t("admin.crm.detail.convert.type.buyerDesc") },
     { id: "supplier", label: t("admin.crm.detail.convert.type.supplier"), desc: t("admin.crm.detail.convert.type.supplierDesc") },
     { id: "buyer_supplier", label: t("admin.crm.detail.convert.type.both"), desc: t("admin.crm.detail.convert.type.bothDesc") },
   ];
+
+  const parentCandidates = companies.filter((c) => !c.parent_company_id);
+
+  const canConfirm = !submitting && !loading && detect && (
+    isLegacy ? false :
+    detect.scenario === "new" ? (structure === "standalone" || !!parentId) :
+    detect.scenario === "existing" ? (!!targetCompanyId && !!memberRole) :
+    false
+  );
 
   return (
     <>
@@ -946,47 +1067,135 @@ function ConvertToMundusModal({ prospect, onClose, onDone }: {
           <button className="psp-drawer-close" onClick={onClose}><X size={18}/></button>
         </div>
         <div className="psp-scrm-body" style={{ padding: 16, display: "flex", flexDirection: "column", gap: 14 }}>
-          <div>
-            <label className="psp-scrm-label">{t("admin.crm.detail.convert.typeLabel")}</label>
-            <div className="psp-convert-types">
-              {TYPES.map((opt) => (
-                <label key={opt.id} className={`psp-convert-type ${type === opt.id ? "is-selected" : ""}`}>
-                  <input
-                    type="radio"
-                    name="mundus-type"
-                    value={opt.id}
-                    checked={type === opt.id}
-                    onChange={() => setType(opt.id)}
-                  />
-                  <div>
-                    <div className="psp-convert-type-label">{opt.label}</div>
-                    <div className="psp-convert-type-desc">{opt.desc}</div>
+          {isLegacy ? (
+            <div className="psp-convert-warn" style={{ background: "hsl(0 80% 96%)", color: "hsl(0 60% 35%)" }}>
+              This prospect is not saved to the database yet, so it can't be converted.
+            </div>
+          ) : loading || !detect ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 8, color: "var(--g500)" }}>
+              <Loader2 size={16} className="animate-spin" /> Checking for existing companies…
+            </div>
+          ) : detect.scenario === "no_email" ? (
+            <div className="psp-convert-warn" style={{ background: "hsl(0 80% 96%)", color: "hsl(0 60% 35%)" }}>
+              This prospect has no contact email, so it can't be converted. Add a contact email first.
+            </div>
+          ) : detect.scenario === "new" ? (
+            <>
+              <div style={{ fontSize: 13, color: "var(--g600)" }}>
+                No existing Mundus company matches this contact's domain — a new company will be created.
+                {detect.generic && detect.domain && (
+                  <div style={{ marginTop: 4, color: "var(--g500)" }}>
+                    The contact email uses a public domain ({detect.domain}), so a brand-new company will be created.
                   </div>
-                </label>
-              ))}
-            </div>
-          </div>
+                )}
+              </div>
 
-          <div>
-            <label className="psp-scrm-label">{t("admin.crm.detail.convert.master.title")}</label>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 4 }}>
-              <input className="psp-input" placeholder={t("admin.crm.detail.convert.master.name")}
-                value={name} onChange={(e) => setName(e.target.value)} />
-              <input className="psp-input" type="email" placeholder={t("admin.crm.detail.convert.master.email")}
-                value={email} onChange={(e) => setEmail(e.target.value)} />
-              <input className="psp-input" placeholder={t("admin.crm.detail.convert.master.phone")}
-                value={phone} onChange={(e) => setPhone(e.target.value)}
-                style={{ gridColumn: "1 / -1" }} />
-            </div>
-          </div>
+              {main && (
+                <div style={{ fontSize: 12, color: "var(--g500)", background: "var(--g50)", padding: 8, borderRadius: 6 }}>
+                  Primary contact: <b>{main.fullName}</b> &lt;{main.email}&gt;{main.phone ? ` · ${main.phone}` : ""}
+                </div>
+              )}
 
-          <div className="psp-convert-warn">
-            {t("admin.crm.detail.convert.warning")}
-          </div>
+              <div>
+                <label className="psp-scrm-label">{t("admin.crm.detail.convert.typeLabel")}</label>
+                <div className="psp-convert-types">
+                  {TYPES.map((opt) => (
+                    <label key={opt.id} className={`psp-convert-type ${type === opt.id ? "is-selected" : ""}`}>
+                      <input type="radio" name="mundus-type" value={opt.id}
+                        checked={type === opt.id} onChange={() => setType(opt.id)} />
+                      <div>
+                        <div className="psp-convert-type-label">{opt.label}</div>
+                        <div className="psp-convert-type-desc">{opt.desc}</div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="psp-scrm-label">Structure</label>
+                <div style={{ display: "flex", gap: 12, marginTop: 4 }}>
+                  <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13 }}>
+                    <input type="radio" name="structure" checked={structure === "standalone"}
+                      onChange={() => setStructure("standalone")} />
+                    Standalone company
+                  </label>
+                  <label style={{ display: "flex", gap: 6, alignItems: "center", fontSize: 13 }}>
+                    <input type="radio" name="structure" checked={structure === "office"}
+                      onChange={() => setStructure("office")} />
+                    Office of an existing company
+                  </label>
+                </div>
+                {structure === "office" && (
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginTop: 8 }}>
+                    <select className="psp-input" value={parentId} onChange={(e) => setParentId(e.target.value)}>
+                      <option value="">Select parent company…</option>
+                      {parentCandidates.map((c) => (
+                        <option key={c.id} value={c.id}>{c.name}</option>
+                      ))}
+                    </select>
+                    <select className="psp-input" value={officeType} onChange={(e) => setOfficeType(e.target.value as any)}>
+                      <option value="branch">Branch</option>
+                      <option value="regional_office">Regional office</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="psp-convert-warn" style={{ background: "hsl(38 92% 95%)", color: "hsl(28 80% 30%)" }}>
+                A Mundus company with this domain ({detect.domain}) already exists. Choose how to attach this contact.
+              </div>
+
+              {main && (
+                <div style={{ fontSize: 12, color: "var(--g500)", background: "var(--g50)", padding: 8, borderRadius: 6 }}>
+                  Primary contact: <b>{main.fullName}</b> &lt;{main.email}&gt;{main.phone ? ` · ${main.phone}` : ""}
+                </div>
+              )}
+
+              <div>
+                <label className="psp-scrm-label">Existing company</label>
+                <select className="psp-input" value={chosenCandidate}
+                  onChange={(e) => setChosenCandidate(e.target.value)}>
+                  <option value="">Select a company…</option>
+                  {detect.candidates.map((c) => {
+                    const tags = [c.is_buyer ? "Buyer" : null, c.is_supplier ? "Supplier" : null].filter(Boolean).join(" / ");
+                    return <option key={c.company_id} value={c.company_id}>{c.name}{tags ? ` — ${tags}` : ""}</option>;
+                  })}
+                </select>
+              </div>
+
+              {family.length > 1 && (
+                <div>
+                  <label className="psp-scrm-label">Target office</label>
+                  <select className="psp-input" value={targetCompanyId}
+                    onChange={(e) => setTargetCompanyId(e.target.value)}>
+                    {family.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.name}{c.office_type ? ` (${c.office_type})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div>
+                <label className="psp-scrm-label">Member role</label>
+                <select className="psp-input" value={memberRole}
+                  onChange={(e) => setMemberRole(e.target.value)}>
+                  <option value="">Select role…</option>
+                  {ROLE_OPTIONS.map((r) => (
+                    <option key={r} value={r}>{r}</option>
+                  ))}
+                </select>
+              </div>
+            </>
+          )}
         </div>
         <div className="psp-scrm-foot">
           <button className="crm-btn-ghost" onClick={onClose}>{t("admin.crm.detail.actions.cancel")}</button>
-          <button className="crm-btn-primary" onClick={submit} disabled={!valid}>
+          <button className="crm-btn-primary" onClick={submit} disabled={!canConfirm}>
             <Building2 size={14} /> {t("admin.crm.detail.convert.confirm")}
           </button>
         </div>
