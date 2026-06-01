@@ -7047,6 +7047,22 @@ export type Database = {
         Args: { p_negotiation_id: string; p_user_id: string }
         Returns: Json
       }
+      convert_detect_candidates: {
+        Args: { p_crm_company_id: string }
+        Returns: Json
+      }
+      convert_prospect_to_mundus: {
+        Args: {
+          p_company_type: string
+          p_crm_company_id: string
+          p_member_role: string
+          p_mode: string
+          p_office_type: string
+          p_parent_company_id: string
+          p_target_company_id: string
+        }
+        Returns: Json
+      }
       current_user_company_id: { Args: never; Returns: string }
       current_user_company_ids: { Args: never; Returns: string[] }
       enqueue_app_notifications: {
