@@ -140,6 +140,72 @@ export type Database = {
         }
         Relationships: []
       }
+      _bkp_team_invitations_predrop: {
+        Row: {
+          accepted_at: string | null
+          account_status: string | null
+          auth_user_id: string | null
+          avatar_url: string | null
+          company_id: string | null
+          created_at: string | null
+          email: string | null
+          expires_at: string | null
+          full_name: string | null
+          id: string | null
+          invited_at: string | null
+          job_title: string | null
+          language: string | null
+          notes: string | null
+          phone: string | null
+          profile_type: string | null
+          role: string | null
+          token: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          account_status?: string | null
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          job_title?: string | null
+          language?: string | null
+          notes?: string | null
+          phone?: string | null
+          profile_type?: string | null
+          role?: string | null
+          token?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          account_status?: string | null
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          job_title?: string | null
+          language?: string | null
+          notes?: string | null
+          phone?: string | null
+          profile_type?: string | null
+          role?: string | null
+          token?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       apollo_cache: {
         Row: {
           apollo_id: string
@@ -6633,80 +6699,6 @@ export type Database = {
             foreignKeyName: "supplier_negotiation_settings_supplier_company_id_fkey"
             columns: ["supplier_company_id"]
             isOneToOne: true
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      team_invitations: {
-        Row: {
-          accepted_at: string | null
-          account_status: string
-          auth_user_id: string | null
-          avatar_url: string | null
-          company_id: string
-          created_at: string
-          email: string
-          expires_at: string | null
-          full_name: string
-          id: string
-          invited_at: string | null
-          job_title: string | null
-          language: string | null
-          notes: string | null
-          phone: string | null
-          profile_type: string | null
-          role: string
-          token: string | null
-          updated_at: string
-        }
-        Insert: {
-          accepted_at?: string | null
-          account_status?: string
-          auth_user_id?: string | null
-          avatar_url?: string | null
-          company_id: string
-          created_at?: string
-          email: string
-          expires_at?: string | null
-          full_name: string
-          id?: string
-          invited_at?: string | null
-          job_title?: string | null
-          language?: string | null
-          notes?: string | null
-          phone?: string | null
-          profile_type?: string | null
-          role?: string
-          token?: string | null
-          updated_at?: string
-        }
-        Update: {
-          accepted_at?: string | null
-          account_status?: string
-          auth_user_id?: string | null
-          avatar_url?: string | null
-          company_id?: string
-          created_at?: string
-          email?: string
-          expires_at?: string | null
-          full_name?: string
-          id?: string
-          invited_at?: string | null
-          job_title?: string | null
-          language?: string | null
-          notes?: string | null
-          phone?: string | null
-          profile_type?: string | null
-          role?: string
-          token?: string | null
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_invitations_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
             referencedRelation: "companies"
             referencedColumns: ["id"]
           },
