@@ -581,9 +581,11 @@ function OfferDetailContent({
             <button
               type="button"
               className="btn-od btn-od-primary"
-              onClick={() => alert(t("buyer.offerDetail.comingSoonFlow", { action: t("buyer.offerDetail.placeOrder") }))}
+              onClick={onCloseDeal}
+              disabled={!isActive}
+              style={!isActive ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
             >
-              {t("buyer.offerDetail.placeOrder")}
+              {t("common.closeDeal")}
             </button>
           </div>
         </div>
