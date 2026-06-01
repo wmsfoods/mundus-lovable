@@ -1,113 +1,132 @@
-## Close Deal — Implementation Plan (no code changes yet)
+# Plan — Public `/home` showcase + guided lead-capture
 
-### 0. Reality check on assumptions (READ FIRST)
+## A. OFFERS — current state and proposed public path
 
-While surveying the codebase I found two important mismatches between the brief and the real code. These need a decision before we build.
+**No public RPC exists.** Closest existing function is `increment_offer_views`. All offer reads go through authenticated `supabase.from("offers").select(...)` (see `src/hooks/useOffers.ts`, `useOffer.ts`, etc.) gated by RLS using `user_buyer_scope_ids()` / `user_supplier_scope_ids()`. There is nothing analogous to WMS `get_public_deals`.
 
-**a) There is no existing "supplier acceptance" order flow.** Orders are only created today by the DB function `public._finalize_negotiation_close`, always with `status = 'awaiting_payment'`. The current `orders` table actually has only one status in the DB (`awaiting_payment`); the default in the schema is `'pending_supplier'` but no row uses it, and there is **no** `awaiting_supplier_acceptance` order status in code or data — only i18n strings for that label exist (en/pt/es/fr/zh `buyer.orderDetail.status.awaiting_supplier_acceptance`). There is no supplier "Accept Order / Reject Order" Sale Detail UI today; `SaleDetail.tsx` is a read-only deal view.
+**Supplier-identifying columns on `offers`:** `supplier_id`, `supplier_name`, `supplier_rating`, `office_id`, `plant_id`, `plant_numbers`, `exw_pickup_location`. No `brand` column on `offers` or `companies` today (only `plant_numbers`).
 
-  → We have two options to honor "reuse the EXISTING flow":
-  - **Option A (recommended, minimal new schema):** treat "Close Deal from an Offer" as an **auto-bid + auto-accept negotiation** under the hood. We create a negotiation at full asking price using the existing `submit_initial_bid` RPC (already used by `BidModal`), then immediately call `accept_negotiation(..., 'buyer')`, which puts it in `pending_confirmation` (the real "awaiting supplier final acceptance" status today). The supplier's existing `SupplierNegotiationDetail` already shows the confirm/reject/counter actions for that status via `CounterOfferActions.ts` + `CounterOfferModal`. No DB migration, no new edge function, perfectly reuses the existing engine.
-  - **Option B:** introduce a real `awaiting_supplier_acceptance` order status, a new RPC `create_direct_order(...)`, a new supplier Sale Detail "Accept / Reject Order" UI, and wire payments after acceptance. Larger surface, new migration.
+**Card payload that must stay visible** (mirrors `useOffers.ts`): offer_number, origin_country, origin_port (string only, not id), shipment_month/year, payment_terms, container_size, total_fcl, remaining FCL, is_halal/is_kosher, allowed incoterms, markets (destination countries), items array (cut name via `customer_products → standard_products → product_categories`, amount, price, condition).
 
-  **Plan below assumes Option A.** Confirm before we start if you want Option B instead.
+**To strip in anonymous mode:** `supplier_id`, `supplier_name`, `supplier_rating`, `office_id`, `plant_id`, `plant_numbers`, `exw_pickup_location`, supplier-side `request_id`, and (when introduced) `brand`. We should also avoid leaking `id` until reveal — return a public-safe `public_id` (UUID is fine to expose since the only thing it unlocks post-signup is the real detail page; OK to use raw `id`).
 
-**b) Mobile push is not set up at all.** `capacitor.config.ts` has no PushNotifications plugin, no `@capacitor/push-notifications` dependency, and there is no `device_tokens` / `push_subscriptions` table. The "degrade gracefully" requirement is easy, but we need to either (i) install Capacitor PushNotifications + add a `device_push_tokens` table + a `send-push` edge function, or (ii) ship Close Deal now with email + in-app, and a TODO/stub for push that returns success when no tokens exist. Plan below scopes the full push setup as **Phase 2** and flags it explicitly.
+**Proposed approach:** new SECURITY DEFINER RPC `public.get_public_offers()` (and `get_public_offer(p_id uuid)` for detail later if needed) returning a JSON-shaped row set with ONLY the safe columns. Granted to `anon, authenticated`. RLS stays as-is on `offers`; the RPC bypasses RLS by definition. This guarantees masking server-side — nothing supplier-identifying ever crosses the wire.
 
----
+## B. ROUTING / AUTH
 
-### 1. Status model we will use (Option A)
+Router lives in `src/App.tsx`. `RequireAuth` guards `/buyer`, `/supplier`, `/admin`, `/dashboard`. `/` goes to `RoleRedirect` which currently does `Navigate to="/login"` for anonymous users. Public routes (no guard) already exist: `/login`, `/signup`, `/respond/:token`, `/shipping-instructions/...`.
 
-- Buyer Close Deal from Offer → creates a `negotiations` row with status `awaiting_supplier`, single round at asking price, then transitions to `pending_confirmation` via `accept_negotiation(..., p_accepted_by='buyer')`. Supplier confirms via existing `confirm_negotiation` → `_finalize_negotiation_close` → order in `awaiting_payment`.
-- Buyer Close Deal inside negotiation → same `accept_negotiation` RPC (`p_accepted_by='buyer'`) on the current negotiation, also lands in `pending_confirmation`.
-- The buyer-facing label "Awaiting supplier acceptance" is purely a UI rename of `pending_confirmation` when `accepted_by='buyer'`. No DB status added.
+**Slot the new public route at `/home`** alongside `/login` (no `RequireAuth`). Behavior:
+- Anonymous → render new `PublicHome` page with masked offers + Login button top-right.
+- Logged in → either render the same page (with unmasked names) or `<Navigate to="/" replace />` to let `RoleRedirect` send them home. **Decision: render PublicHome unchanged but reveal supplier names + make cards link to real offer pages** (`/buyer/offers/:id` or `/supplier/...` per role).
 
-This reconciles the brief: "awaiting_supplier_acceptance" is the **UI label**, `pending_confirmation` is the **authoritative DB value**.
+Also change `RoleRedirect`: for `!user`, redirect to `/home` (instead of `/login`) so anonymous traffic hitting `/` lands on the showcase. Login link stays in the page header.
 
----
+A separate **`PublicLayout`** (very thin: header with logo + lang switcher + Login button, no buyer/supplier shells) lives at `src/layouts/PublicLayout.tsx`.
 
-### 2. Files to change
+## C. PROSPECTS
 
-**Buyer entry point #1 — offer page**
-- `src/pages/buyer/OfferDetail.tsx` (line ~538): replace the `alert(...comingSoonFlow)` with a new `CloseDealDialog` open. On confirm, call a new shared helper `closeDealFromOffer(offer, buyerCompanyId, userId)` that:
-  1. Builds `items` from `offer.items` at asking price + asking quantity.
-  2. Calls `supabase.rpc('submit_initial_bid', { ... })` (mirrors `BidModal.tsx:319`) with freight=0, current incoterm/port defaults.
-  3. Awaits the returned `negotiation_id`, then calls `acceptNegotiation(rawNeg, 'buyer')` from `src/components/supplier/CounterOfferActions.ts`.
-  4. Fires notification fan-out (see §4).
-  5. Navigates to `/buyer/negotiations/:id` (existing route → shows "awaiting supplier confirmation" state already implemented).
-- Button label: replace `t("buyer.offerDetail.placeOrder")` with `t("common.closeDeal")` (new shared key).
+Mundus already has a full CRM: `crm_companies` and `crm_contacts`. **Reuse, don't invent.** Inbound lead from `/home`:
+- Upsert a `crm_companies` row (by domain or company name) with `source='public_home'`, `company_type='prospect'`, `stage='cold'`, `lead_type` ∈ `buyer|supplier|buyer_supplier` (new value derived from the chat).
+- Upsert `crm_contacts` row keyed on lowercased `email`, `source='public_home'`, populate `full_name`, `phone`, `country`, `preferred_language`, `products_of_interest` (the protein choice), `lead_source='public_home_chat'`.
+- "Already a contact" check = `select id, company_id from crm_contacts where lower(email) = $1`.
 
-**Buyer entry point #2 — negotiation detail**
-- `src/pages/buyer/BuyerNegotiationDetail.tsx`: there is already an Accept button calling `acceptNegotiation(rawNeg, "buyer")` (line 115). We will:
-  - Rename the button text to `t("common.closeDeal")`.
-  - Wrap its click in the new `CloseDealDialog`.
-  - Reuse the same notification fan-out (or rely on existing `dealAwaitingConfirmation` email already wired inside `acceptNegotiation`).
+No new prospects table needed.
 
-**New shared dialog**
-- `src/components/common/CloseDealDialog.tsx` — controlled dialog using existing modal styling (`mundus-modal.css`), reading title/body/confirm/cancel from i18n.
+## D. MAX widget port
 
-**Shared helper**
-- `src/lib/closeDeal.ts` — `closeDealFromOffer(...)` and `closeDealFromNegotiation(neg)` wrappers that centralize the RPC choreography + notifications, so both pages share code.
+WMS RPCs **do NOT exist in Mundus**. Confirmed missing: `chat_lookup_contact`, `chat_create_contact`, `chat_log_session`, `get_public_deals`, edge fn `notify-chat-lead`.
 
-**Supplier accept/reject/counter (verify only — minor fix)**
-- `src/pages/supplier/SupplierNegotiationDetail.tsx` already supports Accept (line 127) and opens `CounterOfferModal` (line 461). Verify that:
-  - Reject is shown when `current_round >= MAX_DISPLAY_ROUNDS` (final phase) AND when status is `pending_confirmation` and buyer accepted. Adjust `getMaxRaw`/`isCounterExhausted` gating in the existing UI so Reject appears in the **final** round only (today it may appear earlier — confirm and tighten).
-  - Counter button is enabled as long as `!isCounterExhausted(neg)` (i.e. rounds < `MAX_RAW_ROUNDS = 8` → 4 display rounds). Already implemented in `src/lib/negotiationEngine.ts`; verify the button is not hidden when status is `pending_confirmation` with `accepted_by='buyer'` — the supplier must still be able to counter if rounds remain. This may require relaxing the gate in `SupplierNegotiationDetail.tsx` to allow countering against a buyer "Close Deal" when `current_round < MAX_DISPLAY_ROUNDS`.
-  - Accept path already works via `acceptNegotiation` + `confirmNegotiation` → order with `awaiting_payment`. No change needed.
+**New things to build in Mundus:**
 
-**i18n — 5 locales**
-- Files: `src/i18n/locales/{en,es,fr,pt,zh}.json`.
-- Add namespace `common.closeDeal` (button label) and `common.closeDealDialog.{title,body,confirm,cancel}` with the exact strings from the brief.
-- Keep `buyer.offerDetail.placeOrder` for backward-compat but stop referencing it; remove `comingSoonFlow` usage in `OfferDetail.tsx`.
-- Add `buyer.orderDetail.status.awaiting_supplier_acceptance` already present — reuse it as the UI label for `pending_confirmation` rows where `accepted_by='buyer'`.
+DB / migration (one migration):
+1. `public.get_public_offers()` — SECURITY DEFINER, returns masked rows (see A).
+2. `public.public_lookup_contact(p_email text)` — SECURITY DEFINER, returns `{ found bool, has_mundus_account bool, contact_id uuid, company_id uuid }`. Granted to `anon`.
+3. `public.public_capture_lead(p_payload jsonb)` — SECURITY DEFINER, validates email, upserts `crm_companies` + `crm_contacts` as in C, writes a row to a new lightweight `public_lead_sessions` table (id, email, payload jsonb, created_at, ip via `request.headers`, user_agent) for audit/anti-spam, returns `{ contact_id, company_id }`. Granted to `anon`. Includes basic rate-limit guard (count of rows for same email in last 10 min).
+4. `public_lead_sessions` table — new, with proper GRANTs (anon INSERT only via the RPC, service_role ALL, no direct anon read). RLS enabled, no anon policies (RPC is SECURITY DEFINER).
+5. Add column `crm_contacts.mundus_rep text` (nullable, freeform enum value for now). Plan migration path: later replace with `mundus_rep_user_id uuid references auth.users` and backfill by name match. Document the eligibility rule **in app code**, not as a CHECK, to keep DB flexible:
+   - Buyer flow eligible: Fernando, Gustavo, Debora, Reginaldo, Tomas (5 names)
+   - Supplier flow eligible: all 6 (Monica included)
 
----
+Edge function: **reuse `send-email`**. We already have `emailTemplates` + `email_queue` + `enqueue_email` RPC + `send-email` dispatcher.
+- Add a new email template `publicLeadCaptured` in `src/lib/emailTemplates.ts` (sent to admins `fn@mundustrade.com`, with full payload + chosen rep).
+- Call it from inside `public_capture_lead` RPC? No — RPC can't easily render HTML. Instead the front-end calls `supabase.functions.invoke("send-email", { body: { email_id } })` after enqueuing via a thin new edge function OR via a new SECURITY DEFINER RPC `enqueue_public_lead_email(p_to, p_vars)`. **Decision: new tiny edge function `public-lead-notify`** (verify_jwt = false, public; takes payload, validates with Zod, enqueues via service role + dispatches). This keeps the public capture API anonymous-friendly and uses the existing email pipeline.
 
-### 3. Order/sale creation path (authoritative)
+Front-end:
+- `src/components/public/MaxChatWidget.tsx` — guided state machine (NOT free chat). Steps: greet → ask email → on submit call `public_lookup_contact` → branch:
+  - if `has_mundus_account` → "Welcome back, login" CTA (deep-link to `/login?email=...&next=/buyer/offers/:id` when triggered from a Reveal action).
+  - if `found && !has_mundus_account` → "We already know you, a Mundus rep is in touch" + offer rep selector pre-filled.
+  - if `!found` → collect name → company → phone → country → protein → mundus_rep (filtered list per buyer/supplier intent) → submit. Always state the next step in every bubble (emotional-journey guardrail).
+- Final bubble = explicit "A Mundus rep (X) will reach out within 1 business day" + close button. No silent dead-ends.
+- Adapted visually from WMS MAX; copy is new. Headless logic in `src/lib/publicLeadFlow.ts`.
 
-- Authoritative DB path: `submit_initial_bid` → `accept_negotiation` → (supplier) `confirm_negotiation` → `_finalize_negotiation_close` → `orders.status='awaiting_payment'`.
-- No new `orders` status. No new RPC. No migration.
+## E. mundus_rep storage
 
----
+Per D-5: `crm_contacts.mundus_rep text` (free-string for now, validated app-side against a TS constant in `src/lib/mundusReps.ts`):
 
-### 4. Notification fan-out
-
-Triggered after `acceptNegotiation(..., 'buyer')` succeeds, in `src/lib/closeDeal.ts`:
-
-1. **Email** — reuse existing `dealAwaitingConfirmation` template (already in `emailTemplates.ts` and already queued by `CounterOfferActions.acceptNegotiation`). Verified: when buyer accepts, current code already fires this to the supplier primary contact via `sendEmailNotification("dealAwaitingConfirmation", ...)`. ✅ No new template.
-2. **In-app** — already created by DB trigger `tg_notify_negotiation_status` when negotiations move to `pending_confirmation` (title "Buyer accepted — confirm the deal"). ✅ No new code.
-3. **Mobile push** — **NOT WIRED TODAY** (see §0.b). Plan:
-   - **Phase 1 (this PR):** add a no-op `sendPushToCompanyUsers(companyId, payload)` helper in `src/lib/push.ts` that queries a future `device_push_tokens` table; if zero rows or table missing, log and return. This satisfies "degrade gracefully" without blocking shipping.
-   - **Phase 2 (follow-up):** install `@capacitor/push-notifications`, create migration for `device_push_tokens (user_id, token, platform)`, capture token on app start in `src/capacitor.ts`, add `supabase/functions/send-push/index.ts` using FCM/APNs (requires secret + your decision on provider — Firebase or OneSignal).
-
----
-
-### 5. i18n keys to add (all 5 locales)
-
-```
-common.closeDeal                      // button label: "Close Deal" / "Fechar negócio" / ...
-common.closeDealDialog.title
-common.closeDealDialog.body
-common.closeDealDialog.confirm
-common.closeDealDialog.cancel
+```ts
+export const MUNDUS_REPS = [
+  { name: "Fernando Nascimento", eligibility: "both" },
+  { name: "Gustavo Agostinho",   eligibility: "both" },
+  { name: "Monica Barro",        eligibility: "supplier" },
+  { name: "Debora Pereira",      eligibility: "both" },
+  { name: "Reginaldo Ferri",     eligibility: "both" },
+  { name: "Tomas Moschen",       eligibility: "both" },
+];
 ```
 
-(EN/PT/ES/FR/ZH exact strings as supplied in the brief.)
+When real user accounts exist, add `mundus_rep_user_id uuid` and migrate by name match in a follow-up migration, then drop the text column.
 
----
+## F. i18n
 
-### 6. DB migrations
+Confirmed 5 locales: `src/i18n/locales/{en,es,fr,pt,zh}.json`. Add namespaces:
+- `public.home.*` — hero, sectionTitle, login, signup, reveal, anonymousLabel.
+- `public.chat.*` — every step's bubble copy + button labels (always include the "next step" phrase).
+- `public.lead.success.*` — final confirmation copy naming the chosen rep.
 
-- **Phase 1: none.** The whole flow reuses `submit_initial_bid`, `accept_negotiation`, `confirm_negotiation`, `_finalize_negotiation_close`, and existing triggers.
-- **Phase 2 (push):** new table `device_push_tokens` + grants/RLS, only if/when we implement real push.
+All 5 files updated in lock-step.
 
----
+## Files / migrations summary
 
-### 7. Risks & ambiguities
+**New migration** (one file):
+1. RPC `get_public_offers()`, grants to anon+authenticated.
+2. RPC `public_lookup_contact(p_email)`, grants to anon.
+3. RPC `public_capture_lead(p_payload jsonb)`, grants to anon.
+4. Table `public_lead_sessions` + grants + RLS (deny-all policies, only RPC writes).
+5. Column `crm_contacts.mundus_rep text`.
 
-1. **"Reuse existing Accept Order / Reject Order Sale Detail flow"** — doesn't exist in the repo. Plan assumes Option A (auto-bid + buyer-accept → supplier-confirm). Confirm or we switch to Option B (bigger).
-2. **`awaiting_supplier_acceptance` status** — exists only as a UI string, not in DB. We will surface it as the buyer-side label for `negotiations.status='pending_confirmation' AND accepted_by='buyer'`. The order itself, once created, goes to `awaiting_payment` as today.
-3. **Supplier countering after buyer "Close Deal"** — currently the `pending_confirmation` status UI shows only Confirm/Reject. Allowing Counter while rounds remain (round < 4) means relaxing that gate in `SupplierNegotiationDetail.tsx` and likely calling `submit_negotiation_round` to reopen the negotiation. The RPC `submit_negotiation_round` today only accepts statuses `awaiting_supplier` or `pending_buyer_review` — countering from `pending_confirmation` will need either (a) a small RPC tweak to accept that status (small migration) or (b) a "decline & counter" RPC. Flagging — needs your call.
-4. **Push notifications** — completely missing infra. Plan ships Phase 1 stub and lists Phase 2 work.
-5. **Close Deal from Offer when offer is already `negotiating` with another buyer** — current OfferDetail shows a warning banner. Decide if Close Deal is allowed there (treat as parallel negotiation) or blocked.
-6. **Locales** — repo has 4 active locales (en/es/pt/zh) and `fr.json`. Brief lists 5 (incl. FR). Confirmed `fr.json` exists, will be updated.
+**New edge function:** `supabase/functions/public-lead-notify/index.ts` (+ `supabase/config.toml` entry `verify_jwt = false`).
+
+**New front-end files:**
+- `src/pages/public/PublicHome.tsx`
+- `src/layouts/PublicLayout.tsx`
+- `src/components/public/PublicOfferCard.tsx` (variant that masks brand/supplier; reveal CTA opens chat)
+- `src/components/public/MaxChatWidget.tsx`
+- `src/lib/publicLeadFlow.ts` (state machine)
+- `src/lib/mundusReps.ts`
+- `src/hooks/usePublicOffers.ts` (calls the new RPC; no auth assumed)
+
+**Edited files:**
+- `src/App.tsx` — add `/home` public route + layout.
+- `src/components/RoleRedirect.tsx` — anonymous fallback to `/home`.
+- `src/lib/emailTemplates.ts` — add `publicLeadCaptured` template + subject.
+- `src/i18n/locales/{en,es,fr,pt,zh}.json` — new namespaces.
+- `public/_redirects` — ensure `/home` SPA fallback (already covered by `/* /index.html 200`, verify).
+
+## Emotional-journey guardrail reflected in the plan
+
+- The guided chat never leaves the user hanging: every state has a visible "next step" line and either a primary action button or a final closing message. No free-text bubble can result in silence.
+- Final post-capture screen names the assigned `mundus_rep` and sets a concrete timeframe ("within 1 business day"), turning the standard handoff dip into a confidence beat.
+- The public showcase itself functions as the "proof before signup" aha early in the funnel — prices, cuts, destinations all visible without an account.
+- Not addressed here (intentional): phase 6 matching silence + phase 9 logistics TBI dips remain in the authenticated app and are out of scope.
+
+## Risks / ambiguities
+
+1. **Brand column doesn't exist yet.** The RPC should not reference it; we'll add masking later when it lands. Today, the only supplier identifier we strip is `supplier_name`/`supplier_id`/`plant_*`/`office_id`.
+2. **Detail page after reveal:** anonymous users tapping "Reveal" go through chat → after capture we recommend showing a "We'll be in touch — meanwhile sign up to see supplier" CTA rather than auto-revealing the supplier name to a brand-new lead. (Confirm before build.)
+3. **Logged-in deep-links:** the public card needs the offer id to route to `/buyer/offers/:id`. Returning the raw UUID from the public RPC is acceptable (it's already used in `/respond/:token` flow). Confirm no objection.
+4. **Anti-abuse:** `get_public_offers` is unauthenticated and could be scraped. Mitigations in the RPC: cap to ~200 most-recent active rows, no contact info, no port_id/office_id. The chat capture is rate-limited per email + per IP (10/min). Stronger captcha is a follow-up.
+5. **`/dashboard` legacy:** RoleRedirect falls back to `/dashboard` for users with no buyer/supplier role; unchanged.
+6. **i18n short string set vs. long marketing copy:** we'll keep the public page copy in i18n files. If marketing wants frequent edits, consider moving to a CMS later.
+7. **MAX widget reuse:** WMS code is in a separate project; we will reimplement the state machine in Mundus rather than try to share code. The WMS visual style can be ported as a Tailwind variant.
+8. **`supplier_name` is NOT NULL on offers** — fine, we just don't return it in the RPC; no schema change required.
