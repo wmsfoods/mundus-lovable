@@ -123,6 +123,7 @@ function SupplierShellInner() {
       icon: UsersIcon as unknown as SidebarItem["icon"],
       children: [
         { to: "/supplier/company", label: t("shell.nav.myCompany"), icon: HomeIcon },
+        { to: "/supplier/users", label: t("shell.nav.users", { defaultValue: "Users" }), icon: UsersIcon },
       ],
     },
   ];
