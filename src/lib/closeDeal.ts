@@ -22,6 +22,7 @@ import type { OfferDetailed } from "@/hooks/useOffer";
 import { sendPushToCompanyUsers } from "@/lib/push";
 import { getCompanyPrimaryContact } from "@/lib/companyContact";
 import { sendEmailNotification } from "@/lib/emailSender";
+import { auditLog } from "@/lib/auditLog";
 
 export type CloseDealResult = {
   negotiationId: string;
@@ -153,6 +154,13 @@ export async function closeDealFromOffer(
       p_accepted_by: "buyer",
     });
     if (acceptErr) throw acceptErr;
+    auditLog({
+      action: "negotiation.accepted_pending_confirmation",
+      category: "negotiation",
+      entityType: "negotiation",
+      entityId: negotiationId,
+      details: { acceptedBy: "buyer", source: "close_deal_from_offer", origin: "direct_close" },
+    });
   }
 
   // Step 3 — fan-out (email + push). In-app notification is produced by
@@ -207,6 +215,13 @@ export async function closeDealFromNegotiation(params: {
     p_accepted_by: "buyer",
   });
   if (error) throw error;
+  auditLog({
+    action: "negotiation.accepted_pending_confirmation",
+    category: "negotiation",
+    entityType: "negotiation",
+    entityId: negotiationId,
+    details: { acceptedBy: "buyer", source: "close_deal_from_negotiation" },
+  });
 
   await notifySupplier({
     supplierCompanyId,
