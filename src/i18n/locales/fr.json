@@ -266,7 +266,9 @@
       "hiddenSupplier": "Masqué — révélez pour voir",
       "openOffer": "Ouvrir l'offre",
       "reveal": "Révéler le fournisseur",
-      "login": "Connexion"
+      "login": "Connexion",
+      "openApp": "Ouvrir l'app",
+      "signup": "S'inscrire"
     },
     "chat": {
       "title": "Max — Assistant Mundus",

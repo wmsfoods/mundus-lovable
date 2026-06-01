@@ -266,7 +266,9 @@
       "hiddenSupplier": "已隐藏——揭示以查看",
       "openOffer": "打开报价",
       "reveal": "揭示供应商",
-      "login": "登录"
+      "login": "登录",
+      "openApp": "打开应用",
+      "signup": "注册"
     },
     "chat": {
       "title": "Max — Mundus 助手",
