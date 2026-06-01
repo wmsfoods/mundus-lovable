@@ -38,3 +38,6 @@ verify_jwt = false
 
 [functions.stripe-webhook]
 verify_jwt = false
+
+[functions.public-lead-notify]
+verify_jwt = false
