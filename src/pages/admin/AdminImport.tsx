@@ -369,17 +369,16 @@ export default function AdminImport() {
           }
           companyCache.set(cacheKey, companyId!);
         }
-        const role = /master/i.test(m.profileType ?? "") ? "master" : "member";
-        const { error: upErr } = await supabase
-          .from("team_invitations")
+        const { error: upErr } = await (supabase as any)
+          .from("company_users")
           .upsert({
             company_id: companyId!,
             email: m.email!.trim().toLowerCase(),
             full_name: (m.fullName ?? "").trim() || extractNameFromEmail(m.email!),
-            profile_type: m.profileType || null,
-            role,
-            account_status: "pending",
-          } as any, { onConflict: "company_id,email" });
+            role: m.profileType || null,
+            status: "invited",
+            invited_at: new Date().toISOString(),
+          }, { onConflict: "company_id,email" });
         if (upErr) throw upErr;
         r.status = "created"; r.note = "Imported";
         auditLog({
