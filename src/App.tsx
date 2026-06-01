@@ -111,6 +111,7 @@ import NotificationPreferences from "./pages/settings/NotificationPreferences.ts
 import SupplierRespond from "./pages/public/SupplierRespond.tsx";
 import ShippingInstructionsForm from "./pages/public/ShippingInstructionsForm.tsx";
 import ShippingInstructionsPrint from "./pages/public/ShippingInstructionsPrint.tsx";
+import PublicHome from "./pages/public/PublicHome.tsx";
 
 const queryClient = new QueryClient();
 
@@ -126,6 +127,7 @@ const App = () => (
             <Routes>
             <Route path="/" element={<RoleRedirect />} />
             <Route path="/dev" element={<DevIndex />} />
+            <Route path="/home" element={<PublicHome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/success" element={<SignupSuccess />} />
