@@ -6,6 +6,20 @@ import type { MockPerson, MockCompany } from "@/data/mockProspect";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import { ScanCardButton } from "@/components/admin/ScanCardButton";
 
+function extractDomain(input: string): string | null {
+  if (!input) return null;
+  let s = input.trim().toLowerCase();
+  if (s.includes("@")) s = s.split("@")[1] || "";
+  s = s.replace(/^https?:\/\//, "").replace(/^www\./, "");
+  s = s.split("/")[0].split("?")[0].split(":")[0];
+  return s || null;
+}
+
+type DupState =
+  | { kind: "none" }
+  | { kind: "crm"; companyId: string; companyName: string }
+  | { kind: "mundus"; companyName: string };
+
 const DEPARTMENTS = ["Operations","Purchasing","Sales","Marketing","Logistics","Finance","Executive","Other"];
 const SENIORITIES = ["C-Level","VP","Director","Manager","Senior","Staff","Entry"];
 const DECISION_LEVELS = ["Decision Maker","Influencer","Gatekeeper","User","Champion"];
@@ -119,7 +133,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
   const [additional, setAdditional] = useState<AddContact[]>([]);
 
   const [saving, setSaving] = useState(false);
-  const [dupWarn, setDupWarn] = useState<string | null>(null);
+  const [dup, setDup] = useState<DupState>({ kind: "none" });
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
 
   // Prefill on open
@@ -159,28 +173,46 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     } else {
       setCoName(""); setCoDomain(""); setCoIndustry("");
     }
-    setDupWarn(null);
+    setDup({ kind: "none" });
     setAdditional([]);
     setNotes(""); setTags([]); setTagInput("");
   }, [open, src, srcCompany]);
 
-  // Dedup check (debounced-ish)
+  // Domain-based 3-way dedup: Mundus client > CRM company > none
   useEffect(() => {
-    if (!open || (!email && !coDomain)) { setDupWarn(null); return; }
+    if (!open) { setDup({ kind: "none" }); return; }
+    const domain = extractDomain(coDomain) || extractDomain(email);
+    if (!domain) { setDup({ kind: "none" }); return; }
     let cancelled = false;
     (async () => {
-      if (email) {
-        const r = await supabase.from("crm_contacts").select("id").eq("email", email.toLowerCase()).limit(1);
-        if (!cancelled && r.data && r.data.length) {
-          setDupWarn(`Contact with email ${email} already exists in your CRM.`);
+      // 1. Mundus clients first (higher priority)
+      const mundus = await supabase
+        .from("companies")
+        .select("id, name, website, is_active")
+        .ilike("website", `%${domain}%`)
+        .limit(20);
+      if (cancelled) return;
+      if (mundus.data && mundus.data.length) {
+        const match = mundus.data.find(
+          (r: any) => r.is_active !== false && extractDomain(r.website || "") === domain,
+        );
+        if (match) {
+          setDup({ kind: "mundus", companyName: (match as any).name });
+          return;
         }
       }
-      if (coDomain) {
-        const r = await supabase.from("crm_companies").select("id").eq("domain", coDomain.toLowerCase()).limit(1);
-        if (!cancelled && r.data && r.data.length) {
-          setDupWarn((p) => p ?? `Company with domain ${coDomain} already exists.`);
-        }
+      // 2. CRM exact domain
+      const crm = await supabase
+        .from("crm_companies")
+        .select("id, name")
+        .eq("domain", domain)
+        .limit(1);
+      if (cancelled) return;
+      if (crm.data && crm.data.length) {
+        setDup({ kind: "crm", companyId: crm.data[0].id, companyName: (crm.data[0] as any).name });
+        return;
       }
+      setDup({ kind: "none" });
     })();
     return () => { cancelled = true; };
   }, [open, email, coDomain]);
@@ -203,6 +235,10 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     setAdditional((a) => a.map((row, idx) => (idx === i ? { ...row, ...patch } : row)));
 
   const handleSave = async () => {
+    if (dup.kind === "mundus") {
+      toast.error("This company is already a Mundus client. Add it as an office under the existing company instead.");
+      return;
+    }
     if (!fullName.trim() && !coName.trim()) {
       toast.error("Please fill at least the contact full name or company name.");
       return;
@@ -210,7 +246,10 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
     setSaving(true);
     try {
       let companyId: string | null = null;
-      if (coName.trim()) {
+      if (dup.kind === "crm") {
+        // Reuse existing CRM company, do NOT overwrite its fields
+        companyId = dup.companyId;
+      } else if (coName.trim()) {
         const { data: coRow, error: coErr } = await supabase.from("crm_companies").insert({
           name: coName.trim(),
           domain: coDomain || null,
@@ -298,7 +337,7 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
         await supabase.from("crm_activities").insert({
           activity_type: "imported",
           company_id: companyId,
-          subject: "Imported from Mundus Prospect",
+          subject: dup.kind === "crm" ? "Contact added to existing company" : "Imported from Mundus Prospect",
           description: src ? `Imported person ${fullName} from prospect search` : `Imported company ${coName}`,
         });
       }
@@ -332,7 +371,22 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
           <button className="psp-drawer-close" onClick={onClose} aria-label="Close"><X size={18} /></button>
         </div>
 
-        {dupWarn && <div className="psp-scrm-warn">{dupWarn}</div>}
+        {dup.kind === "crm" && (
+          <div
+            className="psp-scrm-warn"
+            style={{ background: "hsl(214 95% 93%)", color: "hsl(214 80% 25%)", borderColor: "hsl(214 80% 70%)" }}
+          >
+            {dup.companyName} already exists in your CRM. This person will be added as an additional contact to that company — the existing company data won't be changed.
+          </div>
+        )}
+        {dup.kind === "mundus" && (
+          <div
+            className="psp-scrm-warn"
+            style={{ background: "hsl(38 95% 90%)", color: "hsl(20 80% 25%)", borderColor: "hsl(28 90% 55%)" }}
+          >
+            ⚠️ This company is already a Mundus client ({dup.companyName}). You cannot save it as a prospect. If this is the same company, add it as an office under the existing company in Companies instead.
+          </div>
+        )}
 
         <div className="psp-scrm-body">
           <ScanCardButton
@@ -503,7 +557,13 @@ export function SaveToCrmModal({ open, onClose, person, company, onSaved }: Prop
 
         <div className="psp-scrm-foot">
           <button className="psp-btn ghost" onClick={onClose}>Cancel</button>
-          <button className="psp-btn solid" disabled={saving} onClick={handleSave}>{saving ? "Saving…" : "Save to CRM"}</button>
+          <button
+            className="psp-btn solid"
+            disabled={saving || dup.kind === "mundus"}
+            onClick={handleSave}
+          >
+            {saving ? "Saving…" : dup.kind === "crm" ? "Add contact to existing company" : "Save to CRM"}
+          </button>
         </div>
       </div>
     </>
