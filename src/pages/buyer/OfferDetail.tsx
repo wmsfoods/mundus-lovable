@@ -237,6 +237,7 @@ function OfferDetailContent({
   moreOpen,
   setMoreOpen,
   onNegotiate,
+  onCloseDeal,
   myNegotiation,
 }: {
   offer: OfferDetailed;
@@ -244,6 +245,7 @@ function OfferDetailContent({
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
   onNegotiate: () => void;
+  onCloseDeal: () => void;
   myNegotiation: { id: string; status: string } | null;
 }) {
   const { t } = useTranslation();
