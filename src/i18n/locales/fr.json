@@ -44,7 +44,14 @@
     "english": "Anglais",
     "portuguese": "Portugais",
     "spanish": "Espagnol",
-    "signIn": "Se connecter"
+    "signIn": "Se connecter",
+    "closeDeal": "Conclure la transaction",
+    "closeDealDialog": {
+      "title": "Confirmer cette transaction ?",
+      "body": "Vous confirmez cette transaction. Le fournisseur doit encore donner son acceptation finale — vous serez notifié dès qu'il répond.",
+      "confirm": "Confirmer la transaction",
+      "cancel": "Annuler"
+    }
   },
   "auth": {
     "login": "Se connecter",

@@ -44,7 +44,14 @@
     "english": "English",
     "portuguese": "Português",
     "spanish": "Español",
-    "signIn": "Iniciar sesión"
+    "signIn": "Iniciar sesión",
+    "closeDeal": "Cerrar acuerdo",
+    "closeDealDialog": {
+      "title": "¿Confirmar este acuerdo?",
+      "body": "Estás confirmando este acuerdo. El proveedor aún debe dar la aceptación final: te notificaremos en cuanto responda.",
+      "confirm": "Confirmar acuerdo",
+      "cancel": "Cancelar"
+    }
   },
   "auth": {
     "login": "Iniciar sesión",
