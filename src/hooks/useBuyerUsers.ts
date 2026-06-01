@@ -31,12 +31,12 @@ export type BuyerUser = {
   inviteToken: string | null;
 };
 
-export function useBuyerUsers() {
+export function useBuyerUsers(companyIdOverride?: string | null) {
   const [data, setData] = useState<BuyerUser[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { company } = useCurrentCompany();
-  const companyId = company?.id ?? null;
+  const companyId = companyIdOverride ?? company?.id ?? null;
 
   const load = useCallback(async () => {
     if (!companyId) {
