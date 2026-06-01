@@ -17,7 +17,7 @@ export function RoleRedirect() {
     );
   }
 
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/home" replace />;
 
   if (isAdmin) return <Navigate to="/admin" replace />;
 
