@@ -433,7 +433,7 @@ export default function BuyerNegotiationDetail() {
               <div className="nd-actions">
                 <button type="button" className="btn-accept" onClick={handleAccept} disabled={(isReal && (realExpired || realPending || realAccepted)) || offerInactive}>
                   <CheckIcon size={14} style={{ marginRight: 6, verticalAlign: "-2px" }} />
-                  {t("buyer.negotiations.detail.actions.acceptCounter")}
+                  {t("common.closeDeal")}
                 </button>
                 {counterAllowed && !offerInactive && (
                   <button type="button" className="btn-counter" onClick={handleCounter} disabled={realExpired}>
@@ -527,6 +527,14 @@ export default function BuyerNegotiationDetail() {
           onOpenChange={setRejectOpen}
           negotiation={rawNeg}
           onRejected={() => refetch()}
+        />
+      )}
+      {isReal && rawNeg && (
+        <CloseDealDialog
+          open={closeDealOpen}
+          onOpenChange={(o) => !closingDeal && setCloseDealOpen(o)}
+          onConfirm={handleConfirmCloseDeal}
+          submitting={closingDeal}
         />
       )}
     </>
