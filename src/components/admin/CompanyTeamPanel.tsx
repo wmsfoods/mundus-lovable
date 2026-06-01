@@ -332,19 +332,24 @@ function MemberFormModal({
       if (error) { toast.error(error.message); return; }
       toast.success("Member updated");
     } else {
-      const { error } = await supabase.from("team_invitations").insert({
-        company_id: companyId,
-        full_name: fullName.trim(),
-        email: email.trim().toLowerCase(),
-        role,
-        profile_type: profileType || null,
-        phone: phone || null,
-        avatar_url: avatarUrl,
-        account_status: "pending",
+      const { data, error } = await supabase.functions.invoke("send-team-invite", {
+        body: {
+          company_id: companyId,
+          full_name: fullName.trim(),
+          email: email.trim().toLowerCase(),
+          role,
+          job_title: profileType || null,
+          phone: phone || null,
+          language: "en",
+          origin: window.location.origin,
+        },
       });
       setSaving(false);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Member added");
+      if (error || (data && (data as any).error)) {
+        toast.error(error?.message || (data as any)?.error || "Failed to send invite");
+        return;
+      }
+      toast.success(`Invitation sent to ${email.trim()}`);
     }
     onSaved();
   };

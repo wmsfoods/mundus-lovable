@@ -163,38 +163,25 @@ Deno.serve(async (req) => {
     const { data: companyRow } = await admin.from('companies').select('name').eq('id', company_id).maybeSingle()
     const orgName = companyRow?.name ?? 'your company'
 
-    // Upsert into team_invitations
+    // Single source of truth: company_users
+    const token = crypto.randomUUID()
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-    const { data: existing } = await admin.from('team_invitations')
-      .select('id, token').eq('company_id', company_id).ilike('email', email).maybeSingle()
-
-    let inviteId: string
-    let token: string
-    if (existing) {
-      inviteId = existing.id
-      const { data: upd, error: updErr } = await admin.from('team_invitations').update({
-        full_name, role: 'member', profile_type: role, phone, job_title, notes,
-        language, expires_at: expiresAt, accepted_at: null, account_status: 'invited',
-        invited_at: new Date().toISOString(),
-      }).eq('id', existing.id).select('token').single()
-      if (updErr) throw updErr
-      token = upd.token
-    } else {
-      const { data: ins, error: insErr } = await admin.from('team_invitations').insert({
-        company_id, full_name, email: email.toLowerCase(), role: 'member', profile_type: role,
-        phone, job_title, notes, language, expires_at: expiresAt,
-        account_status: 'invited', invited_at: new Date().toISOString(),
-      }).select('id, token').single()
-      if (insErr) throw insErr
-      inviteId = ins.id; token = ins.token
-    }
-
-    // Ensure company_users row exists (for the team list UX)
-    await admin.from('company_users').upsert({
-      company_id, full_name, email: email.toLowerCase(), role,
-      job_title, phone, notes, status: 'invited',
+    const { data: cu, error: cuErr } = await admin.from('company_users').upsert({
+      company_id,
+      full_name,
+      email: email.toLowerCase(),
+      role,
+      job_title,
+      phone,
+      notes,
+      status: 'invited',
       invited_at: new Date().toISOString(),
-    }, { onConflict: 'company_id,email' })
+      invite_token: token,
+      expires_at: expiresAt,
+      language,
+    }, { onConflict: 'company_id,email' }).select('id').single()
+    if (cuErr) throw cuErr
+    const inviteId = cu.id
 
     // Send email via Resend gateway
     const baseUrl = origin || 'https://app.mundustrade.us'

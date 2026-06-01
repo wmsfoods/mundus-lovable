@@ -9,7 +9,7 @@ type Invite = {
   full_name: string;
   email: string;
   company_id: string;
-  profile_type: string | null;
+  role: string | null;
   language: string | null;
   accepted_at: string | null;
   expires_at: string | null;
@@ -30,12 +30,12 @@ export default function InviteAccept() {
     let cancelled = false;
     (async () => {
       const { data, error } = await (supabase as any)
-        .from("team_invitations")
-        .select("id, full_name, email, company_id, profile_type, language, accepted_at, expires_at")
-        .eq("token", token)
+        .from("company_users")
+        .select("id, full_name, email, company_id, role, language, accepted_at, expires_at, status")
+        .eq("invite_token", token)
         .maybeSingle();
       if (cancelled) return;
-      if (error || !data) {
+      if (error || !data || data.status === "inactive") {
         setError(t("inviteAccept.errors.invalid", { defaultValue: "This invitation link is invalid or has expired." }));
       } else if (data.accepted_at) {
         setError(t("inviteAccept.errors.alreadyAccepted", { defaultValue: "This invitation has already been accepted. Please sign in." }));

@@ -14,6 +14,132 @@ export type Database = {
   }
   public: {
     Tables: {
+      _bkp_company_users_p1: {
+        Row: {
+          accepted_at: string | null
+          company_id: string | null
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          invited_at: string | null
+          job_title: string | null
+          joined_at: string | null
+          last_login_at: string | null
+          notes: string | null
+          phone: string | null
+          role: string | null
+          role_id: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          job_title?: string | null
+          joined_at?: string | null
+          last_login_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          role_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          job_title?: string | null
+          joined_at?: string | null
+          last_login_at?: string | null
+          notes?: string | null
+          phone?: string | null
+          role?: string | null
+          role_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      _bkp_team_invitations_p1: {
+        Row: {
+          accepted_at: string | null
+          account_status: string | null
+          auth_user_id: string | null
+          avatar_url: string | null
+          company_id: string | null
+          created_at: string | null
+          email: string | null
+          expires_at: string | null
+          full_name: string | null
+          id: string | null
+          invited_at: string | null
+          job_title: string | null
+          language: string | null
+          notes: string | null
+          phone: string | null
+          profile_type: string | null
+          role: string | null
+          token: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          accepted_at?: string | null
+          account_status?: string | null
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          job_title?: string | null
+          language?: string | null
+          notes?: string | null
+          phone?: string | null
+          profile_type?: string | null
+          role?: string | null
+          token?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          accepted_at?: string | null
+          account_status?: string | null
+          auth_user_id?: string | null
+          avatar_url?: string | null
+          company_id?: string | null
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          full_name?: string | null
+          id?: string | null
+          invited_at?: string | null
+          job_title?: string | null
+          language?: string | null
+          notes?: string | null
+          phone?: string | null
+          profile_type?: string | null
+          role?: string | null
+          token?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       apollo_cache: {
         Row: {
           apollo_id: string
@@ -1128,14 +1254,18 @@ export type Database = {
       company_users: {
         Row: {
           accepted_at: string | null
+          avatar_url: string | null
           company_id: string
           created_at: string | null
           email: string | null
+          expires_at: string | null
           full_name: string | null
           id: string
+          invite_token: string | null
           invited_at: string | null
           job_title: string | null
           joined_at: string | null
+          language: string | null
           last_login_at: string | null
           notes: string | null
           phone: string | null
@@ -1147,14 +1277,18 @@ export type Database = {
         }
         Insert: {
           accepted_at?: string | null
+          avatar_url?: string | null
           company_id: string
           created_at?: string | null
           email?: string | null
+          expires_at?: string | null
           full_name?: string | null
           id?: string
+          invite_token?: string | null
           invited_at?: string | null
           job_title?: string | null
           joined_at?: string | null
+          language?: string | null
           last_login_at?: string | null
           notes?: string | null
           phone?: string | null
@@ -1166,14 +1300,18 @@ export type Database = {
         }
         Update: {
           accepted_at?: string | null
+          avatar_url?: string | null
           company_id?: string
           created_at?: string | null
           email?: string | null
+          expires_at?: string | null
           full_name?: string | null
           id?: string
+          invite_token?: string | null
           invited_at?: string | null
           job_title?: string | null
           joined_at?: string | null
+          language?: string | null
           last_login_at?: string | null
           notes?: string | null
           phone?: string | null
