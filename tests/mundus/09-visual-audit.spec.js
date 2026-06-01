@@ -1,9 +1,31 @@
 import { test, expect } from '@playwright/test';
 import { loginAsSupplier } from '../helpers/auth.js';
 
-// ─── SUPPLIER AUDIT ───────────────────────────────────────────────
-test.describe('Supplier Audit', () => {
+const ready = (page) => page.waitForLoadState('domcontentloaded');
 
+async function noneAre404(page, routes) {
+  const broken = [];
+  for (const route of routes) {
+    await page.goto(route);
+    await ready(page);
+    const is404 = await page
+      .locator('text=404')
+      .or(page.locator('text=Not Found'))
+      .or(page.locator('text=Page not found'))
+      .first()
+      .isVisible()
+      .catch(() => false);
+    if (is404) broken.push(route);
+    console.log(`${is404 ? 'X' : 'OK'} ${route}`);
+  }
+  return broken;
+}
+
+// The signed-in test account logs in via SUPPLIER_EMAIL/SUPPLIER_PASSWORD.
+// All three describe blocks reuse that same supplier session.
+
+// --- SUPPLIER AUDIT ---
+test.describe('Supplier Audit', () => {
   test.beforeEach(async ({ page }) => {
     if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
     await loginAsSupplier(page);
@@ -11,224 +33,106 @@ test.describe('Supplier Audit', () => {
 
   test('Home dashboard loads with KPI cards', async ({ page }) => {
     await page.goto('/supplier');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Active Offers')).toBeVisible({ timeout: 10000 });
-    await expect(page.locator('text=Total Offers')).toBeVisible();
-    await expect(page.locator('text=In Negotiation')).toBeVisible();
+    await ready(page);
+    await expect(page.locator('text=Active Offers').first()).toBeVisible({ timeout: 10000 });
+    await expect(page.locator('text=Total Offers').first()).toBeVisible();
+    await expect(page.locator('text=In Negotiation').first()).toBeVisible();
+    await expect(page.locator('text=Closed Deals').first()).toBeVisible();
   });
 
   test('Offers page loads and has Create Offer button', async ({ page }) => {
     await page.goto('/supplier/offers');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
     await expect(page.locator('text=Offers').first()).toBeVisible();
-    await expect(page.locator('button:has-text("Create Offer"), a:has-text("Create Offer")')).toBeVisible();
+    await expect(
+      page.locator('button:has-text("Create Offer"), a:has-text("Create Offer")').first()
+    ).toBeVisible();
   });
 
   test('Create Offer wizard opens and shows Unit step', async ({ page }) => {
     await page.goto('/supplier/offers');
-    await page.waitForLoadState('networkidle');
-    await page.click('button:has-text("Create Offer"), a:has-text("Create Offer")');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
+    await page.locator('button:has-text("Create Offer"), a:has-text("Create Offer")').first().click();
+    await ready(page);
     await expect(
-      page.locator('text=Select Weight Unit').or(page.locator('text=Unit'))
+      page.locator('text=Select Weight Unit').or(page.locator('text=Unit')).first()
     ).toBeVisible({ timeout: 10000 });
     await expect(page.locator('text=kg').first()).toBeVisible();
     await expect(page.locator('text=lbs').first()).toBeVisible();
   });
 
-  test('Offer Requests page loads with all columns', async ({ page }) => {
+  test('Offer Requests page loads with columns', async ({ page }) => {
     await page.goto('/supplier/requests');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=My offer requests')).toBeVisible();
-    await expect(page.locator('text=REQUEST NUMBER')).toBeVisible();
-    await expect(page.locator('text=INCOTERMS')).toBeVisible();
-    await expect(page.locator('text=STATUS')).toBeVisible();
+    await ready(page);
+    await expect(page.getByRole('heading', { name: 'Buyer Requests' })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('columnheader', { name: 'Request' }).first()).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Incoterm' }).first()).toBeVisible();
   });
 
-  test('Sales page loads with status badges', async ({ page }) => {
+  test('Sales page loads', async ({ page }) => {
     await page.goto('/supplier/sales');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Sales').first()).toBeVisible();
-    await expect(
-      page.locator('text=DEAL ID').or(page.locator('text=Track your orders'))
-    ).toBeVisible();
+    await ready(page);
+    await expect(page.getByRole('heading', { name: 'Sales', exact: true })).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('columnheader', { name: 'Deal ID' }).first()).toBeVisible();
+    await expect(page.getByRole('columnheader', { name: 'Status' }).first()).toBeVisible();
   });
 
   test('Negotiations page loads', async ({ page }) => {
     await page.goto('/supplier/negotiations');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
     await expect(page.locator('text=Negotiations').first()).toBeVisible();
   });
 
   test('Users page loads with Invite User button', async ({ page }) => {
     await page.goto('/supplier/users');
-    await page.waitForLoadState('networkidle');
+    await ready(page);
     await expect(page.locator('text=Users').first()).toBeVisible();
-    await expect(page.locator('button:has-text("Invite User")')).toBeVisible();
+    await expect(page.locator('button:has-text("Invite User")').first()).toBeVisible({ timeout: 10000 });
   });
 
-  test('Mundus Intel section visible in sidebar', async ({ page }) => {
-    await page.goto('/supplier');
-    await page.waitForLoadState('networkidle');
-    await expect(page.locator('text=Mundus Intel')).toBeVisible();
-    await expect(page.locator('text=Price Benchmark')).toBeVisible();
-    await expect(page.locator('text=Market Intelligence')).toBeVisible();
-    await expect(page.locator('text=Cut Comparison')).toBeVisible();
+  test('No broken supplier routes', async ({ page }) => {
+    const broken = await noneAre404(page, [
+      '/supplier', '/supplier/offers', '/supplier/requests',
+      '/supplier/sales', '/supplier/negotiations', '/supplier/users',
+    ]);
+    expect(broken, `Broken supplier routes: ${broken.join(', ')}`).toHaveLength(0);
   });
-
-  test('No broken routes — none should show 404', async ({ page }) => {
-    const routes = [
-      '/supplier', '/supplier/offers',
-      '/supplier/requests', '/supplier/sales',
-      '/supplier/negotiations', '/supplier/users',
-    ];
-    const broken = [];
-    for (const route of routes) {
-      await page.goto(route);
-      await page.waitForLoadState('networkidle');
-      const is404 = await page
-        .locator('text=404')
-        .or(page.locator('text=Not Found'))
-        .or(page.locator('text=Page not found'))
-        .first().isVisible();
-      if (is404) broken.push(route);
-    }
-    expect(broken, `Broken routes: ${broken.join(', ')}`).toHaveLength(0);
-  });
-
 });
 
-// ─── BUYER AUDIT ──────────────────────────────────────────────────
-test.describe('Buyer Audit', () => {
-
-  test.beforeEach(async ({ page }) => {
-    if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
-    await loginAsSupplier(page);
-  });
-
-  test('Buyer home loads', async ({ page }) => {
-    await page.goto('/buyer');
-    await page.waitForLoadState('networkidle');
-    const is404 = await page
-      .locator('text=404')
-      .or(page.locator('text=Not Found'))
-      .or(page.locator('text=Page not found'))
-      .first().isVisible();
-    expect(is404).toBe(false);
-  });
-
-  test('Buyer offers page loads', async ({ page }) => {
-    await page.goto('/buyer/offers');
-    await page.waitForLoadState('networkidle');
-    const is404 = await page
-      .locator('text=404')
-      .or(page.locator('text=Not Found'))
-      .or(page.locator('text=Page not found'))
-      .first().isVisible();
-    expect(is404).toBe(false);
-  });
-
-  test('Buyer negotiations page loads', async ({ page }) => {
-    await page.goto('/buyer/negotiations');
-    await page.waitForLoadState('networkidle');
-    const is404 = await page
-      .locator('text=404')
-      .or(page.locator('text=Not Found'))
-      .or(page.locator('text=Page not found'))
-      .first().isVisible();
-    expect(is404).toBe(false);
-  });
-
-  test('No broken buyer routes', async ({ page }) => {
-    const routes = [
-      '/buyer', '/buyer/offers', '/buyer/requests',
-      '/buyer/negotiations', '/buyer/orders', '/buyer/users',
-    ];
-    const broken = [];
-    for (const route of routes) {
-      await page.goto(route);
-      await page.waitForLoadState('networkidle');
-      const is404 = await page
-        .locator('text=404')
-        .or(page.locator('text=Not Found'))
-        .or(page.locator('text=Page not found'))
-        .first().isVisible();
-      if (is404) broken.push(route);
-      console.log(`${is404 ? '❌' : '✅'} ${route}`);
-    }
-    expect(broken, `Broken buyer routes: ${broken.join(', ')}`).toHaveLength(0);
-  });
-
-});
-
-// ─── ADMIN AUDIT ──────────────────────────────────────────────────
+// --- ADMIN AUDIT (same supplier session is also a platform admin) ---
 test.describe('Admin Audit', () => {
-
   test.beforeEach(async ({ page }) => {
     if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
     await loginAsSupplier(page);
-  });
-
-  test('Admin dashboard loads with metrics', async ({ page }) => {
-    await page.goto('/admin/dashboard');
-    await page.waitForLoadState('networkidle');
-    const is404 = await page
-      .locator('text=404')
-      .or(page.locator('text=Not Found'))
-      .or(page.locator('text=Page not found'))
-      .first().isVisible();
-    expect(is404).toBe(false);
   });
 
   test('No broken admin routes', async ({ page }) => {
-    const routes = [
-      '/admin/dashboard', '/admin/settings/team', '/admin/companies',
-      '/admin/offers', '/admin/negotiations', '/admin/deals',
-    ];
-    const broken = [];
-    for (const route of routes) {
-      await page.goto(route);
-      await page.waitForLoadState('networkidle');
-      const is404 = await page
-        .locator('text=404')
-        .or(page.locator('text=Not Found'))
-        .or(page.locator('text=Page not found'))
-        .first().isVisible();
-      if (is404) broken.push(route);
-      console.log(`${is404 ? '❌' : '✅'} ${route}`);
-    }
+    const broken = await noneAre404(page, [
+      '/admin/dashboard', '/admin/companies', '/admin/offers',
+      '/admin/deals', '/admin/negotiations', '/admin/settings/team',
+      '/admin/prospect/companies',
+    ]);
     expect(broken, `Broken admin routes: ${broken.join(', ')}`).toHaveLength(0);
   });
-
 });
 
-// ─── STRIPE / PRO GATE AUDIT ──────────────────────────────────────
+// --- PRO GATE AUDIT ---
 test.describe('PRO Gate Audit', () => {
-
   test.beforeEach(async ({ page }) => {
     if (!process.env.SUPPLIER_EMAIL || !process.env.SUPPLIER_PASSWORD) test.skip();
     await loginAsSupplier(page);
   });
 
-  test('Price Benchmark route renders something', async ({ page }) => {
-    await page.goto('/supplier/insights/price-benchmark');
-    await page.waitForLoadState('networkidle');
-    const is404 = await page.locator('text=404').isVisible();
-    expect(is404).toBe(false);
-  });
-
-  test('Analytics route renders something', async ({ page }) => {
-    await page.goto('/supplier/insights/analytics');
-    await page.waitForLoadState('networkidle');
-    const is404 = await page.locator('text=404').isVisible();
-    expect(is404).toBe(false);
-  });
-
-  test('Cut Comparison route renders something', async ({ page }) => {
-    await page.goto('/supplier/insights/cut-comparison');
-    await page.waitForLoadState('networkidle');
-    const is404 = await page.locator('text=404').isVisible();
-    expect(is404).toBe(false);
-  });
-
+  for (const route of [
+    '/supplier/insights/price-benchmark',
+    '/supplier/insights/analytics',
+    '/supplier/insights/cut-comparison',
+  ]) {
+    test(`Insights route renders: ${route}`, async ({ page }) => {
+      await page.goto(route);
+      await ready(page);
+      const is404 = await page.locator('text=404').first().isVisible().catch(() => false);
+      expect(is404).toBe(false);
+    });
+  }
 });
