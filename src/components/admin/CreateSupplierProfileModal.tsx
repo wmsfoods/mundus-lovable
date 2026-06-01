@@ -84,15 +84,15 @@ export function CreateSupplierProfileModal({
         .single();
       if (cErr || !company) throw cErr ?? new Error("Failed to create company");
 
-      const { error: tiErr } = await supabase.from("team_invitations").insert({
+      const { error: tiErr } = await (supabase as any).from("company_users").upsert({
         company_id: company.id,
         email: f.contactEmail.toLowerCase(),
         full_name: f.contactName,
         phone: f.contactPhone || null,
-        profile_type: f.role || "master_supplier",
-        role: (f.role || "").includes("master") ? "master" : "member",
-        account_status: "pending",
-      });
+        role: f.role || "master_supplier",
+        status: "invited",
+        invited_at: new Date().toISOString(),
+      }, { onConflict: "company_id,email" });
       if (tiErr) throw tiErr;
 
       if (addMundusAdmin) {
