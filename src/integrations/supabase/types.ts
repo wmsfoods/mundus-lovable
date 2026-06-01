@@ -1835,6 +1835,7 @@ export type Database = {
           mobile_source: string | null
           mobile_status: string | null
           mundus_company_id: string | null
+          mundus_rep: string | null
           mundus_user_id: string | null
           notes: string | null
           office_id: string | null
@@ -1930,6 +1931,7 @@ export type Database = {
           mobile_source?: string | null
           mobile_status?: string | null
           mundus_company_id?: string | null
+          mundus_rep?: string | null
           mundus_user_id?: string | null
           notes?: string | null
           office_id?: string | null
@@ -2025,6 +2027,7 @@ export type Database = {
           mobile_source?: string | null
           mobile_status?: string | null
           mundus_company_id?: string | null
+          mundus_rep?: string | null
           mundus_user_id?: string | null
           notes?: string | null
           office_id?: string | null
@@ -6129,6 +6132,33 @@ export type Database = {
         }
         Relationships: []
       }
+      public_lead_sessions: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          ip: string | null
+          payload: Json
+          user_agent: string | null
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          ip?: string | null
+          payload?: Json
+          user_agent?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          ip?: string | null
+          payload?: Json
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           granted: boolean | null
@@ -7106,6 +7136,7 @@ export type Database = {
           full_name: string
         }[]
       }
+      get_public_offers: { Args: never; Returns: Json }
       has_company_role: {
         Args: { _company_id: string; _roles: string[] }
         Returns: boolean
@@ -7137,6 +7168,8 @@ export type Database = {
           sample_count: number
         }[]
       }
+      public_capture_lead: { Args: { p_payload: Json }; Returns: Json }
+      public_lookup_contact: { Args: { p_email: string }; Returns: Json }
       reject_negotiation: {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
         Returns: Json
