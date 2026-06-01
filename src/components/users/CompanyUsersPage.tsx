@@ -81,17 +81,17 @@ function StatusBadge({ status }: { status: Row["status"] }) {
   );
 }
 
-export default function CompanyUsersPage({ context }: { context: Ctx }) {
+export default function CompanyUsersPage({ context, companyIdOverride }: { context: Ctx; companyIdOverride?: string }) {
   const { t, i18n } = useTranslation();
   const { company } = useCurrentCompany();
-  const companyId = company?.id ?? null;
+  const companyId = companyIdOverride ?? company?.id ?? null;
   const { role, isMundusAdmin } = useCompanyRole();
   const canManage =
     isMundusAdmin ||
     ["master_supplier", "supplier_global_director", "master_buyer", "buyer_global_director"].includes(role ?? "");
 
-  const supplierHook = useSupplierUsers();
-  const buyerHook = useBuyerUsers();
+  const supplierHook = useSupplierUsers(companyIdOverride ?? null);
+  const buyerHook = useBuyerUsers(companyIdOverride ?? null);
   const { data, isLoading, refetch } = context === "supplier" ? supplierHook : buyerHook;
   const roles = context === "supplier" ? SUPPLIER_ROLES : BUYER_ROLES;
 
