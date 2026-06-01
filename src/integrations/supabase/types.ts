@@ -4579,6 +4579,7 @@ export type Database = {
           offer_id: string
           office_id: string | null
           order_id: string | null
+          origin: string
           port_id: string | null
           rejection_cooldown_until: string | null
           rejection_notes: string | null
@@ -4615,6 +4616,7 @@ export type Database = {
           offer_id: string
           office_id?: string | null
           order_id?: string | null
+          origin?: string
           port_id?: string | null
           rejection_cooldown_until?: string | null
           rejection_notes?: string | null
@@ -4651,6 +4653,7 @@ export type Database = {
           offer_id?: string
           office_id?: string | null
           order_id?: string | null
+          origin?: string
           port_id?: string | null
           rejection_cooldown_until?: string | null
           rejection_notes?: string | null
@@ -7142,21 +7145,38 @@ export type Database = {
         Args: { p_company_id: string; p_cut_id: string }
         Returns: string
       }
-      submit_initial_bid: {
-        Args: {
-          p_buyer_company_id: string
-          p_buyer_message?: string
-          p_created_by_user_id: string
-          p_fcl_count?: number
-          p_freight_cost_per_kg?: number
-          p_incoterm?: string
-          p_insurance_per_kg?: number
-          p_items?: Json
-          p_offer_id: string
-          p_port_id?: string
-        }
-        Returns: Json
-      }
+      submit_initial_bid:
+        | {
+            Args: {
+              p_buyer_company_id: string
+              p_buyer_message?: string
+              p_created_by_user_id: string
+              p_fcl_count?: number
+              p_freight_cost_per_kg?: number
+              p_incoterm?: string
+              p_insurance_per_kg?: number
+              p_items?: Json
+              p_offer_id: string
+              p_port_id?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_buyer_company_id: string
+              p_buyer_message?: string
+              p_created_by_user_id: string
+              p_fcl_count?: number
+              p_freight_cost_per_kg?: number
+              p_incoterm?: string
+              p_insurance_per_kg?: number
+              p_items?: Json
+              p_offer_id: string
+              p_origin?: string
+              p_port_id?: string
+            }
+            Returns: Json
+          }
       submit_negotiation_round: {
         Args: { p_items: Json; p_negotiation_id: string; p_user_id: string }
         Returns: Json
