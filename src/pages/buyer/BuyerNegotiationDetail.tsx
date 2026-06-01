@@ -18,6 +18,10 @@ import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
 import { acceptNegotiation } from "@/components/supplier/CounterOfferActions";
 import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiationModal";
+import { CloseDealDialog } from "@/components/common/CloseDealDialog";
+import { closeDealFromNegotiation } from "@/lib/closeDeal";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { NegotiationChat } from "@/components/negotiation/NegotiationChat";
 import { isChatEnabled } from "@/lib/negotiationEngine";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
@@ -72,6 +76,10 @@ export default function BuyerNegotiationDetail() {
   const { data: rawNeg, refetch } = useRealNegotiation(isReal ? id : undefined);
   const [counterOpen, setCounterOpen] = useState(false);
   const [rejectOpen, setRejectOpen] = useState(false);
+  const [closeDealOpen, setCloseDealOpen] = useState(false);
+  const [closingDeal, setClosingDeal] = useState(false);
+  const { user } = useAuth();
+  const { company } = useCurrentCompany();
   const { unit } = useWeightUnit();
   const locale = i18n.language || "en";
   useStackHeader({ title: data?.parentTitle ?? "Negotiation" });
@@ -112,12 +120,48 @@ export default function BuyerNegotiationDetail() {
       return;
     }
     if (isReal && rawNeg) {
-      const ok = await acceptNegotiation(rawNeg, "buyer");
-      if (ok) refetch();
+      setCloseDealOpen(true);
     } else {
       toast.success(t("buyer.negotiations.detail.toast.accepted"));
     }
   };
+
+  const handleConfirmCloseDeal = async () => {
+    if (!isReal || !rawNeg) return;
+    if (!user?.id) {
+      toast.error("Please sign in.");
+      return;
+    }
+    if (closingDeal) return;
+    setClosingDeal(true);
+    try {
+      const items = rawNeg.offer?.items ?? [];
+      const cutName = items[0]?.customer_product?.name ?? "Offer";
+      const totalValue = items.reduce(
+        (s: number, it: any) => s + Number(it.price) * Number(it.amount || 0),
+        0,
+      );
+      await closeDealFromNegotiation({
+        negotiationId: rawNeg.id,
+        buyerUserId: user.id,
+        supplierCompanyId: rawNeg.offer?.supplier_id,
+        supplierName: rawNeg.offer?.supplier_name ?? d.supplierName ?? "Supplier",
+        buyerCompany: company?.name ?? "Buyer",
+        offerNumber: String(rawNeg.offer?.offer_number ?? ""),
+        cutName,
+        totalValue,
+      });
+      toast.success(t("common.closeDealDialog.title"));
+      setCloseDealOpen(false);
+      refetch();
+    } catch (err: any) {
+      console.error("[closeDeal] failed", err);
+      toast.error(String(err?.message ?? err ?? "Failed to close deal"));
+    } finally {
+      setClosingDeal(false);
+    }
+  };
+
   const handleReject = () => {
     if (isReal && rawNeg) {
       setRejectOpen(true);
