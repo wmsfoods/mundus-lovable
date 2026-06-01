@@ -7,6 +7,7 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useCompanyRole } from "@/components/auth/RequireRole";
 import { useSupplierUsers, type SupplierUser } from "@/hooks/useSupplierUsers";
 import { useBuyerUsers, type BuyerUser } from "@/hooks/useBuyerUsers";
 import {
@@ -84,6 +85,10 @@ export default function CompanyUsersPage({ context }: { context: Ctx }) {
   const { t, i18n } = useTranslation();
   const { company } = useCurrentCompany();
   const companyId = company?.id ?? null;
+  const { role, isMundusAdmin } = useCompanyRole();
+  const canManage =
+    isMundusAdmin ||
+    ["master_supplier", "supplier_global_director", "master_buyer", "buyer_global_director"].includes(role ?? "");
 
   const supplierHook = useSupplierUsers();
   const buyerHook = useBuyerUsers();
@@ -185,11 +190,13 @@ export default function CompanyUsersPage({ context }: { context: Ctx }) {
           <Users2 size={15} /> {t("shell.nav.users", { defaultValue: "Users" })}
           <span style={{ fontSize: 11, color: "#908d85", fontWeight: 500, marginLeft: 6 }}>{company?.name ?? ""}</span>
         </h1>
-        <button onClick={() => setInviteOpen(true)}
-          style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 6,
-            border: "none", background: "#8B2252", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
-          <Plus size={13} /> Invite User
-        </button>
+        {canManage && (
+          <button onClick={() => setInviteOpen(true)}
+            style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 6,
+              border: "none", background: "#8B2252", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
+            <Plus size={13} /> Invite User
+          </button>
+        )}
       </div>
 
       <div className="adm-panel" style={{ overflow: "hidden", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 8, background: "white" }}>
@@ -255,6 +262,7 @@ export default function CompanyUsersPage({ context }: { context: Ctx }) {
                   <td style={{ padding: "10px 12px" }}><StatusBadge status={m.status} /></td>
                   <td style={{ padding: "10px 12px", color: "#5e5e58" }}>{fmtDate(m.lastLoginAt)}</td>
                   <td style={{ padding: "6px 12px", textAlign: "right" }}>
+                    {canManage ? (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <button type="button" disabled={busyId === m.id}
@@ -288,6 +296,9 @@ export default function CompanyUsersPage({ context }: { context: Ctx }) {
                         )}
                       </DropdownMenuContent>
                     </DropdownMenu>
+                    ) : (
+                      <span style={{ color: "#cfcdc7" }}>—</span>
+                    )}
                   </td>
                 </tr>
               );
