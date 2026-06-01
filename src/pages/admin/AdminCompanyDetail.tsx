@@ -9,7 +9,7 @@ import { useAdminCompany, type CompanyPatch } from "@/hooks/useAdminCompany";
 import { auditLog } from "@/lib/auditLog";
 import CompanyProfileSections from "@/components/company/CompanyProfileSections";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
-import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
+import CompanyUsersPage from "@/components/users/CompanyUsersPage";
 import { CountrySelect } from "@/components/admin/CountrySelect";
 import { matchCountry } from "@/lib/countryMatch";
 import { getCachedCountries, useCountriesList } from "@/hooks/useCountriesList";
@@ -583,7 +583,7 @@ function AdminCompanyDetailLegacy({ mode = "edit" }: Props) {
       {!isNew && id && activeTab !== "profile" && (
         <div style={{ marginTop: 16 }}>
           {activeTab === "team"
-            ? <CompanyTeamPanel companyId={id} isSupplier={!!form.is_supplier} isBuyer={!!form.is_buyer} />
+            ? <CompanyUsersPage context={form.is_supplier ? "supplier" : "buyer"} companyIdOverride={id} />
             : <ProfileTabContent tab={activeTab} companyId={id} />}
         </div>
       )}
