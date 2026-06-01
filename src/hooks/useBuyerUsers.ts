@@ -27,6 +27,8 @@ export type BuyerUser = {
   createdAt: string;
   lastLoginAt: string | null;
   status: "active" | "invited" | "inactive";
+  avatarUrl: string | null;
+  inviteToken: string | null;
 };
 
 export function useBuyerUsers() {
@@ -45,7 +47,7 @@ export function useBuyerUsers() {
     setLoading(true);
     const { data: rows, error: err } = await (supabase as any)
       .from("company_users")
-      .select("id, full_name, email, role, status, created_at, accepted_at, job_title, phone, notes, last_login_at")
+      .select("id, full_name, email, role, status, created_at, accepted_at, job_title, phone, notes, last_login_at, avatar_url, invite_token")
       .eq("company_id", companyId)
       .order("created_at", { ascending: true });
     if (err) {
@@ -67,6 +69,8 @@ export function useBuyerUsers() {
             createdAt: r.created_at,
             lastLoginAt: r.last_login_at || r.accepted_at,
             status: (r.status === "pending" ? "invited" : r.status) as BuyerUser["status"],
+            avatarUrl: r.avatar_url || null,
+            inviteToken: r.invite_token || null,
           })),
       );
       setError(null);

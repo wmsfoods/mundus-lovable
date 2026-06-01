@@ -1,4 +1,4 @@
-import { Navigate } from "react-router-dom";
+import CompanyUsersPage from "@/components/users/CompanyUsersPage";
 export default function SupplierUsers() {
-  return <Navigate to="/supplier/company" replace />;
+  return <CompanyUsersPage context="supplier" />;
 }
