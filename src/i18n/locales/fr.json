@@ -2099,6 +2099,30 @@
         "title": "Fourchette de prix (marché vs vos offres)",
         "marketRange": "Plage du marché"
       }
+    },
+    "directCloseOrder": {
+      "title": "Nouvelle commande reçue",
+      "subtitle": "{{buyer}} a accepté votre prix plein. Vérifiez et acceptez pour créer la commande, ou refusez si vous ne pouvez pas l'honorer.",
+      "orderTotal": "Total de la commande",
+      "meta": {
+        "orderRef": "Réf. commande",
+        "buyer": "Acheteur",
+        "incoterm": "Incoterm",
+        "payment": "Paiement",
+        "origin": "Origine",
+        "destination": "Destination",
+        "fcls": "FCL",
+        "totalWeight": "Poids total"
+      },
+      "table": {
+        "cut": "Découpe",
+        "qty": "Qté",
+        "pricePerKg": "Prix/kg",
+        "subtotal": "Sous-total"
+      },
+      "accept": "Accepter la commande",
+      "reject": "Refuser la commande",
+      "accepting": "Acceptation…"
     }
   },
   "dealDetail": {

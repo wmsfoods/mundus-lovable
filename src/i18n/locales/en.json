@@ -2113,6 +2113,30 @@
         "title": "Price band (market vs your offers)",
         "marketRange": "Market range"
       }
+    },
+    "directCloseOrder": {
+      "title": "New order received",
+      "subtitle": "{{buyer}} accepted your full asking price. Review and accept to create the order, or reject if you can't fulfill it.",
+      "orderTotal": "Order total",
+      "meta": {
+        "orderRef": "Order ref",
+        "buyer": "Buyer",
+        "incoterm": "Incoterm",
+        "payment": "Payment",
+        "origin": "Origin",
+        "destination": "Destination",
+        "fcls": "FCLs",
+        "totalWeight": "Total weight"
+      },
+      "table": {
+        "cut": "Cut",
+        "qty": "Qty",
+        "pricePerKg": "Price/kg",
+        "subtotal": "Subtotal"
+      },
+      "accept": "Accept order",
+      "reject": "Reject order",
+      "accepting": "Accepting…"
     }
   },
   "dealDetail": {
