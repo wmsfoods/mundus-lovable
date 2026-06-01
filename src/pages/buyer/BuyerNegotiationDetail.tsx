@@ -178,6 +178,7 @@ export default function BuyerNegotiationDetail() {
   const realPending = !!rawNeg && (rawNeg as any).status === "pending_confirmation";
   const acceptedBy = (rawNeg as any)?.accepted_by as "buyer" | "supplier" | null;
   const canConfirmAsCounterparty = realPending && acceptedBy === "supplier";
+  const isDirectClose = ((rawNeg as any)?.origin ?? "negotiation") === "direct_close";
   const counterAllowed =
     !isReal || (!realExhausted && !realExpired && !realAccepted && !realPending);
   const offerInactive = !!rawNeg && (rawNeg.offer?.status ?? "active") !== "active";
@@ -213,6 +214,22 @@ export default function BuyerNegotiationDetail() {
           {d.status === "action_required" && (
             <span className="pill pill-action-required">
               {t("buyer.negotiations.detail.banner.actionRequired")}
+            </span>
+          )}
+          {isReal && realPending && isDirectClose && (
+            <span
+              className="pill"
+              style={{
+                background: "#FEF3C7",
+                color: "#92400E",
+                border: "1px solid #FCD34D",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 600,
+              }}
+            >
+              {t("buyer.orderDetail.status.awaiting_supplier_acceptance")}
             </span>
           )}
         </div>
