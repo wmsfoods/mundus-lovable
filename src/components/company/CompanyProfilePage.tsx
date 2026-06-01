@@ -26,7 +26,7 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 import { countryFlag } from "@/lib/countryFlags";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
-import CompanyTeamPanel from "@/components/admin/CompanyTeamPanel";
+import CompanyUsersPage from "@/components/users/CompanyUsersPage";
 import { auditLog } from "@/lib/auditLog";
 import { BillingSection } from "@/components/billing/BillingSection";
 import "@/styles/mundus-address.css";
@@ -735,10 +735,9 @@ export default function CompanyProfilePage({
         title="Team members"
         subtitle="People with access to this company. Masters can invite, edit and disable."
       >
-        <CompanyTeamPanel
-          companyId={companyId!}
-          isSupplier={!!company.is_supplier}
-          isBuyer={!!company.is_buyer}
+        <CompanyUsersPage
+          context={company.is_supplier ? "supplier" : "buyer"}
+          companyIdOverride={companyId!}
         />
       </Section>
 
