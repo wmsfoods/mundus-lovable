@@ -2099,6 +2099,30 @@
         "title": "价格区间(市场对比您的报价)",
         "marketRange": "市场区间"
       }
+    },
+    "directCloseOrder": {
+      "title": "收到新订单",
+      "subtitle": "{{buyer}} 已接受您的全额报价。请审核并接受以创建订单，若无法履行则拒绝。",
+      "orderTotal": "订单总额",
+      "meta": {
+        "orderRef": "订单编号",
+        "buyer": "买家",
+        "incoterm": "贸易术语",
+        "payment": "付款方式",
+        "origin": "产地",
+        "destination": "目的地",
+        "fcls": "整柜数",
+        "totalWeight": "总重量"
+      },
+      "table": {
+        "cut": "部位",
+        "qty": "数量",
+        "pricePerKg": "单价/公斤",
+        "subtotal": "小计"
+      },
+      "accept": "接受订单",
+      "reject": "拒绝订单",
+      "accepting": "正在接受…"
     }
   },
   "dealDetail": {

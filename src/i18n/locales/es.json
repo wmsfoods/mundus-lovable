@@ -2113,6 +2113,30 @@
         "title": "Banda de precios (mercado vs tus ofertas)",
         "marketRange": "Rango de mercado"
       }
+    },
+    "directCloseOrder": {
+      "title": "Nuevo pedido recibido",
+      "subtitle": "{{buyer}} aceptó tu precio completo. Revisa y acepta para crear el pedido, o recházalo si no puedes cumplirlo.",
+      "orderTotal": "Total del pedido",
+      "meta": {
+        "orderRef": "Ref. del pedido",
+        "buyer": "Comprador",
+        "incoterm": "Incoterm",
+        "payment": "Pago",
+        "origin": "Origen",
+        "destination": "Destino",
+        "fcls": "FCLs",
+        "totalWeight": "Peso total"
+      },
+      "table": {
+        "cut": "Corte",
+        "qty": "Cant.",
+        "pricePerKg": "Precio/kg",
+        "subtotal": "Subtotal"
+      },
+      "accept": "Aceptar pedido",
+      "reject": "Rechazar pedido",
+      "accepting": "Aceptando…"
     }
   },
   "dealDetail": {

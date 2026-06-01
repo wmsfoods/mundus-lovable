@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { confirmNegotiation } from "@/components/supplier/CounterOfferActions";
 import { countryFlag } from "@/lib/countryFlags";
@@ -22,6 +23,8 @@ export function DirectCloseOrderBanner({
 }) {
   const [busy, setBusy] = useState(false);
   const { unit } = useWeightUnit();
+  const { t } = useTranslation();
+  const tk = (k: string, opts?: any) => t(`supplier.directCloseOrder.${k}`, opts) as string;
   const acceptedTotal =
     Number((negotiation as any).accepted_total_value ?? 0) ||
     Number((negotiation as any).settled_total_value ?? 0) ||
@@ -86,17 +89,15 @@ export function DirectCloseOrderBanner({
               marginBottom: 4,
             }}
           >
-            🎉 New order received
+            🎉 {tk("title")}
           </div>
           <div style={{ fontSize: 13, color: "#166534", lineHeight: 1.5 }}>
-            <strong>{buyerName}</strong> accepted your full asking price.
-            Review and accept to create the order, or reject if you can't
-            fulfill it.
+            {tk("subtitle", { buyer: buyerName })}
           </div>
         </div>
         <div style={{ textAlign: "right", whiteSpace: "nowrap" }}>
           <div style={{ fontSize: 11, color: "#166534", fontWeight: 600, textTransform: "uppercase" }}>
-            Order total
+            {tk("orderTotal")}
           </div>
           <div style={{ fontSize: 22, fontWeight: 700, color: "#14532D" }}>
             {fmtUsd(acceptedTotal)}
@@ -114,24 +115,24 @@ export function DirectCloseOrderBanner({
           fontSize: 13,
         }}
       >
-        <Meta label="Order ref" value={offerNumber} />
-        <Meta label="Buyer" value={buyerName} />
-        <Meta label="Incoterm" value={(negotiation as any).incoterm ?? "FOB"} />
+        <Meta label={tk("meta.orderRef")} value={offerNumber} />
+        <Meta label={tk("meta.buyer")} value={buyerName} />
+        <Meta label={tk("meta.incoterm")} value={(negotiation as any).incoterm ?? "FOB"} />
         <Meta
-          label="Payment"
+          label={tk("meta.payment")}
           value={offer?.payment_terms ?? "—"}
         />
         <Meta
-          label="Origin"
+          label={tk("meta.origin")}
           value={`${countryFlag(originCountry)} ${originCountry}`}
         />
         <Meta
-          label="Destination"
+          label={tk("meta.destination")}
           value={`${countryFlag(destCountry)} ${destCountry}`}
         />
-        <Meta label="FCLs" value={String(negotiation.fcl_count ?? 1)} />
+        <Meta label={tk("meta.fcls")} value={String(negotiation.fcl_count ?? 1)} />
         <Meta
-          label="Total weight"
+          label={tk("meta.totalWeight")}
           value={`${fmtWeight(totalQtyKg, unit)} ${weightLabel(unit)}`}
         />
       </div>
@@ -160,10 +161,10 @@ export function DirectCloseOrderBanner({
               letterSpacing: 0.3,
             }}
           >
-            <div>Cut</div>
-            <div style={{ textAlign: "right" }}>Qty</div>
-            <div style={{ textAlign: "right" }}>Price/kg</div>
-            <div style={{ textAlign: "right" }}>Subtotal</div>
+            <div>{tk("table.cut")}</div>
+            <div style={{ textAlign: "right" }}>{tk("table.qty")}</div>
+            <div style={{ textAlign: "right" }}>{tk("table.pricePerKg")}</div>
+            <div style={{ textAlign: "right" }}>{tk("table.subtotal")}</div>
           </div>
           {items.map((it) => {
             const qty = Number(it.amount || 0);
@@ -220,7 +221,7 @@ export function DirectCloseOrderBanner({
             whiteSpace: "nowrap",
           }}
         >
-          Reject order
+          {tk("reject")}
         </button>
         <button
           type="button"
@@ -239,7 +240,7 @@ export function DirectCloseOrderBanner({
             whiteSpace: "nowrap",
           }}
         >
-          {busy ? "Accepting…" : "Accept order →"}
+          {busy ? tk("accepting") : `${tk("accept")} →`}
         </button>
       </div>
     </div>
