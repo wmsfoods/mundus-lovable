@@ -24,7 +24,7 @@ export function DirectCloseOrderBanner({
   const [busy, setBusy] = useState(false);
   const { unit } = useWeightUnit();
   const { t } = useTranslation();
-  const tk = (k: string, opts?: any) => t(`supplier.directCloseOrder.${k}`, opts);
+  const tk = (k: string, opts?: any) => t(`supplier.directCloseOrder.${k}`, opts) as string;
   const acceptedTotal =
     Number((negotiation as any).accepted_total_value ?? 0) ||
     Number((negotiation as any).settled_total_value ?? 0) ||
