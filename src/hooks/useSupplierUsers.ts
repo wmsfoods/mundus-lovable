@@ -28,12 +28,12 @@ export type SupplierUser = {
   inviteToken: string | null;
 };
 
-export function useSupplierUsers() {
+export function useSupplierUsers(companyIdOverride?: string | null) {
   const [data, setData] = useState<SupplierUser[]>([]);
   const [isLoading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const { company } = useCurrentCompany();
-  const companyId = company?.id ?? null;
+  const companyId = companyIdOverride ?? company?.id ?? null;
 
   const load = useCallback(async () => {
     if (!companyId) {
