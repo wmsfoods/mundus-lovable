@@ -12,9 +12,9 @@ import {
 import {
   useProspect, updateProspectStage, addProspectActivity,
   updateProspect, deactivateProspect, reactivateProspect, deleteProspect,
-  upsertContact, deleteContact, convertProspectToMundus,
+  upsertContact, deleteContact,
   STAGES, OWNERS,
-  type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel, type MundusType,
+  type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel,
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
