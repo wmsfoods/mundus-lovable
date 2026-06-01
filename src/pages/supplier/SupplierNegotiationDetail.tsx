@@ -162,9 +162,15 @@ export default function SupplierNegotiationDetail() {
   const realPending = !!rawNeg && (rawNeg as any).status === "pending_confirmation";
   const acceptedBy = (rawNeg as any)?.accepted_by as "buyer" | "supplier" | null;
   const canConfirmAsCounterparty = realPending && acceptedBy === "buyer";
+  const isDirectClose = ((rawNeg as any)?.origin ?? "negotiation") === "direct_close";
   // Suppress counter button when no more rounds possible or expired
   const counterAllowed =
-    !isReal || (!realExhausted && !realExpired && !realAccepted && !realPending);
+    !isReal ||
+    (!realExhausted &&
+      !realExpired &&
+      !realAccepted &&
+      !isDirectClose &&
+      (!realPending || (realPending && acceptedBy === "buyer")));
 
   // Compute max round index present in products for the price table columns
   const maxRoundShown = Math.min(
