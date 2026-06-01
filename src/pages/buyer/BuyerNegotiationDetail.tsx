@@ -16,7 +16,6 @@ import {
 } from "@/hooks/useBuyerNegotiations";
 import { useRealNegotiation, isUuid } from "@/hooks/useRealNegotiation";
 import { CounterOfferModal } from "@/components/supplier/CounterOfferModal";
-import { acceptNegotiation } from "@/components/supplier/CounterOfferActions";
 import { RejectNegotiationModal } from "@/components/negotiation/RejectNegotiationModal";
 import { CloseDealDialog } from "@/components/common/CloseDealDialog";
 import { closeDealFromNegotiation } from "@/lib/closeDeal";
