@@ -28,6 +28,7 @@ import { NegotiationProgressCard } from "@/components/negotiation/NegotiationPro
 import { ExpirationTimer } from "@/components/negotiation/ExpirationTimer";
 import { DealClosedBanner } from "@/components/negotiation/DealClosedBanner";
 import { PendingConfirmationBanner } from "@/components/negotiation/PendingConfirmationBanner";
+import { DirectCloseOrderBanner } from "@/components/negotiation/DirectCloseOrderBanner";
 import { DealProgressionCard } from "@/components/negotiation/DealProgressionCard";
 import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
@@ -275,7 +276,14 @@ export default function SupplierNegotiationDetail() {
       {isReal && rawNeg && realAccepted && (
         <DealClosedBanner negotiation={rawNeg} perspective="supplier" />
       )}
-      {isReal && rawNeg && realPending && (
+      {isReal && rawNeg && realPending && isDirectClose && acceptedBy === "buyer" && (
+        <DirectCloseOrderBanner
+          negotiation={rawNeg}
+          onConfirmed={() => refetch()}
+          onReject={() => setRejectOpen(true)}
+        />
+      )}
+      {isReal && rawNeg && realPending && !(isDirectClose && acceptedBy === "buyer") && (
         <PendingConfirmationBanner
           negotiation={rawNeg}
           perspective="supplier"
