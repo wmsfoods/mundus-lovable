@@ -1,4 +1,5 @@
 import { useTranslation } from "react-i18next";
+import { Factory } from "lucide-react";
 import { KnifeForkIcon, GridIcon, FlagSVG } from "@/components/icons";
 import { countryToCode } from "@/lib/countryCodes";
 import { formatOfferNumber } from "@/lib/offerNumber";
@@ -177,7 +178,8 @@ export default function PublicOfferCard({
           }}
           title={t("public.home.hiddenSupplier", "Hidden — reveal to see") as string}
         >
-          🏭 <span style={{ letterSpacing: "0.15em" }}>•••••••••</span>
+          <Factory size={14} strokeWidth={1.75} aria-hidden />
+          <span style={{ letterSpacing: "0.15em" }}>•••••••••</span>
           <span
             style={{
               fontStyle: "normal",
