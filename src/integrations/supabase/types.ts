@@ -6926,6 +6926,7 @@ export type Database = {
         Row: {
           address: string | null
           approval_user_id: string | null
+          approved_company_id: string | null
           certificate_url: string | null
           city: string | null
           company_id: string
@@ -6953,6 +6954,7 @@ export type Database = {
         Insert: {
           address?: string | null
           approval_user_id?: string | null
+          approved_company_id?: string | null
           certificate_url?: string | null
           city?: string | null
           company_id: string
@@ -6980,6 +6982,7 @@ export type Database = {
         Update: {
           address?: string | null
           approval_user_id?: string | null
+          approved_company_id?: string | null
           certificate_url?: string | null
           city?: string | null
           company_id?: string
@@ -7010,6 +7013,13 @@ export type Database = {
             columns: ["approval_user_id"]
             isOneToOne: false
             referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_requests_approved_company_id_fkey"
+            columns: ["approved_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
             referencedColumns: ["id"]
           },
           {
@@ -7279,6 +7289,14 @@ export type Database = {
       }
       is_global_director: { Args: never; Returns: boolean }
       is_mundus_admin: { Args: never; Returns: boolean }
+      link_approved_user_request_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          company_id: string
+          request_id: string
+          user_id: string
+        }[]
+      }
       market_cut_benchmark: {
         Args: {
           p_destination_country?: string
