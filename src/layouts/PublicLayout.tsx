@@ -19,18 +19,18 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             {user ? (
               <Link
                 to="/"
-                className="rounded-md bg-[#B64769] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+                className="rounded-md bg-[#B64769] px-6 py-3 text-base font-semibold text-white hover:opacity-90"
               >
                 {t("public.home.openApp", "Open app")}
               </Link>
             ) : (
               <>
-                <Link to="/login" className="text-sm font-medium text-[#1A1A2E] hover:text-[#B64769]">
+                <Link to="/login" className="text-base font-semibold text-[#1A1A2E] hover:text-[#B64769] px-3 py-2">
                   {t("public.home.login", "Login")}
                 </Link>
                 <Link
                   to="/signup"
-                  className="rounded-md bg-[#B64769] px-3 py-1.5 text-sm font-medium text-white hover:opacity-90"
+                  className="rounded-md bg-[#B64769] px-6 py-3 text-base font-semibold text-white hover:opacity-90"
                 >
                   {t("public.home.signup", "Sign up")}
                 </Link>
