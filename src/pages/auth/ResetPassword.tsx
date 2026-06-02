@@ -33,7 +33,7 @@ export default function ResetPassword() {
       }
     });
 
-    const t = setTimeout(async () => {
+    const timer = setTimeout(async () => {
       if (resolved) return;
       const { data } = await supabase.auth.getSession();
       // If there's any active session arriving from a recovery link, allow reset.
@@ -47,7 +47,7 @@ export default function ResetPassword() {
     }, 800);
 
     return () => {
-      clearTimeout(t);
+      clearTimeout(timer);
       subscription.unsubscribe();
     };
   }, []);
@@ -152,7 +152,7 @@ export default function ResetPassword() {
             disabled={!canSubmit}
             className="h-11 w-full text-sm"
           >
-            {submitting ? t("auth.updating") : t("auth.sendResetLink") && t("common.save")}
+            {submitting ? t("auth.updating") : t("common.save")}
           </ShiningButton>
 
           <Link to="/login" className="block text-center text-sm text-gray-600 hover:text-[#B64769]">
