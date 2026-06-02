@@ -10,6 +10,7 @@ import {
 import { FlagSVG } from "@/components/icons";
 import { countryToCode } from "@/lib/countryCodes";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import type { PublicOffer } from "@/hooks/usePublicOffers";
 
 const MONTH_NAMES = [
