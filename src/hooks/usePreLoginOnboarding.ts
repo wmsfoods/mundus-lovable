@@ -4,10 +4,11 @@ import { isNativeApp } from "@/lib/isNativeApp";
 
 const DONE_KEY = "mundus_pre_onboarding_done_v1";
 const ROLE_KEY = "mundus_pre_onboarding_role_v1";
-/** Set when onboarding finishes; Signup must not open until user visits Login once. */
-const LOGIN_GATE_KEY = "mundus_post_onboarding_login_gate_v1";
+/** Set when onboarding finishes; Signup must not open until guest home is shown once. */
+const GUEST_HOME_GATE_KEY = "mundus_post_onboarding_login_gate_v1";
 
-export const POST_ONBOARDING_PATH = "/login" as const;
+/** Default landing for guests after onboarding (native + web). */
+export const POST_ONBOARDING_PATH = "/home" as const;
 
 export type PreLoginRole = "buyer" | "supplier";
 
@@ -38,7 +39,7 @@ export function usePreLoginOnboarding() {
         if (isReplayFlag()) {
           await removePersistedValue(DONE_KEY);
           await removePersistedValue(ROLE_KEY);
-          await removePersistedValue(LOGIN_GATE_KEY);
+          await removePersistedValue(GUEST_HOME_GATE_KEY);
         }
         const val = await getPersistedValue(DONE_KEY);
         if (!cancelled) setDone(val === "1");
@@ -63,7 +64,7 @@ export function usePreLoginOnboarding() {
       try {
         await setPersistedValue(DONE_KEY, "1");
         if (role) await setPersistedValue(ROLE_KEY, role);
-        await setPersistedValue(LOGIN_GATE_KEY, "1");
+        await setPersistedValue(GUEST_HOME_GATE_KEY, "1");
       } catch {
         /* still mark done in memory */
       }
@@ -77,15 +78,15 @@ export function usePreLoginOnboarding() {
   return { isNative, loading, done, shouldShow, complete };
 }
 
-/** True while user must land on /login before opening /signup (post-onboarding). */
-export async function shouldRedirectSignupToLogin(): Promise<boolean> {
-  const v = await getPersistedValue(LOGIN_GATE_KEY);
+/** True while user must land on guest home before opening /signup (post-onboarding). */
+export async function shouldRedirectSignupToGuestHome(): Promise<boolean> {
+  const v = await getPersistedValue(GUEST_HOME_GATE_KEY);
   return v === "1";
 }
 
-/** Call when Login screen mounts — user may proceed to signup from here. */
-export async function clearPostOnboardingLoginGate(): Promise<void> {
-  await removePersistedValue(LOGIN_GATE_KEY);
+/** Call when guest home mounts — user may proceed to login/signup from here. */
+export async function clearPostOnboardingGuestGate(): Promise<void> {
+  await removePersistedValue(GUEST_HOME_GATE_KEY);
 }
 
 /** Read role saved after onboarding (for Signup prefill). */

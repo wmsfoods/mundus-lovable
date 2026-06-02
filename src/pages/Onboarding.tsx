@@ -41,7 +41,6 @@ export default function Onboarding() {
   const goTo = (i: number) => setIndex(Math.max(0, Math.min(3, i)));
   const finish = async () => {
     await complete(role);
-    await prepareNativeAuthScreen();
     navigate(POST_ONBOARDING_PATH, { replace: true });
   };
   const next = () => (index === 3 ? void finish() : goTo(index + 1));

@@ -7,7 +7,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth, setRememberMe } from "@/contexts/AuthContext";
 import { getPersistedValue } from "@/lib/authStorage";
 import { prepareNativeAuthScreen } from "@/lib/nativeAuthScreen";
-import { clearPostOnboardingLoginGate } from "@/hooks/usePreLoginOnboarding";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ShiningButton } from "@/components/ui/shining-button";
@@ -35,7 +34,6 @@ export default function Login() {
 
   useEffect(() => {
     void prepareNativeAuthScreen();
-    void clearPostOnboardingLoginGate();
     getPersistedValue("mundus.rememberMe").then((v) => {
       if (v === "0") setRemember(false);
     });

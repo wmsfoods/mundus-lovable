@@ -12,7 +12,8 @@ import { publicUrl } from "@/lib/publicUrl";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import {
   getPreLoginOnboardingRole,
-  shouldRedirectSignupToLogin,
+  POST_ONBOARDING_PATH,
+  shouldRedirectSignupToGuestHome,
 } from "@/hooks/usePreLoginOnboarding";
 import { isNativeApp } from "@/lib/isNativeApp";
 
@@ -130,8 +131,8 @@ export default function Signup() {
 
   useEffect(() => {
     if (!isNativeApp()) return;
-    shouldRedirectSignupToLogin().then((mustLogin) => {
-      if (mustLogin) navigate("/login", { replace: true });
+    shouldRedirectSignupToGuestHome().then((mustHome) => {
+      if (mustHome) navigate(POST_ONBOARDING_PATH, { replace: true });
     });
   }, [navigate]);
 

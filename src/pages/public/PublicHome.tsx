@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Utensils } from "lucide-react";
@@ -15,6 +15,7 @@ import {
 import heroAsset from "@/assets/hero-banner-bg.png.asset.json";
 import { BlurFade } from "@/components/ui/blur-fade";
 import { isNativeApp } from "@/lib/isNativeApp";
+import { clearPostOnboardingGuestGate } from "@/hooks/usePreLoginOnboarding";
 
 const PROTEIN_CODES = ["beef", "pork", "poultry", "lamb"] as const;
 type ProteinCode = typeof PROTEIN_CODES[number];
@@ -83,6 +84,10 @@ function offerProteinCodes(o: PublicOffer): Set<string> {
 export default function PublicHome() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    void clearPostOnboardingGuestGate();
+  }, []);
   const { offers, loading } = usePublicOffers();
   const [chatOpen, setChatOpen] = useState(false);
   const [detailOffer, setDetailOffer] = useState<PublicOffer | null>(null);

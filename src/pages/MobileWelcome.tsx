@@ -11,7 +11,7 @@ export default function MobileWelcome() {
   useEffect(() => {
     if (loading) return;
     if (!isNative || done) {
-      navigate("/login", { replace: true });
+      navigate("/home", { replace: true });
     }
   }, [loading, isNative, done, navigate]);
 
@@ -29,7 +29,7 @@ export default function MobileWelcome() {
 
   const handleComplete = async (role: PreLoginRole) => {
     await complete(role);
-    navigate("/login", { replace: true });
+    navigate("/home", { replace: true });
   };
 
   return <MobileWelcomeOnboarding onComplete={handleComplete} />;
