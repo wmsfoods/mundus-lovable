@@ -1,75 +1,45 @@
-
 ## Objetivo
-Adotar o layout novo (segundo screenshot) na tela de detalhe da oferta, **mantendo 100% das informações, regras, fluxos, permissões e ações atuais** para buyer, supplier e Mundus admin. Só muda a apresentação visual.
 
-## Escopo das telas
-- `src/pages/buyer/OfferDetail.tsx` — buyer (CTA principal continua **Negotiate**; Close Deal permanece como hoje, ao lado).
-- `src/pages/supplier/OfferDetail.tsx` — supplier e Mundus admin (mesma rota). Mantém colunas extras (Asking/Floor), toggle Active, ações Edit/Clone/Share, banners e status.
+Hoje o componente `FlagSVG` (`src/components/icons.tsx`) renderiza bandeiras desenhadas à mão num viewBox 16×12, com várias delas visivelmente incorretas (ex.: AU sem Union Jack, KR sem trigramas, MA com pentagrama errado, EG sem águia, etc.). Vamos trocar a fonte por bandeiras reais do `flagcdn.com`, mantendo a mesma API do componente — nenhum call site precisa mudar.
 
-## Novo layout (4 cards empilhados, full width)
+## O que muda
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ [thumb+ILLUSTRATIVE]  M-000031-2026                          │
-│  [mini thumbs]        Mixed Container — N cuts               │
-│                       ● Beef   ❄ Frozen   N specs · N cuts   │
-│                                       TOTAL VALUE · PER FCL  │
-│                                       US$ 225,100            │
-│                                       61,700 lb · 1×40ft ·   │
-│                                       Shipment Jul 2026      │
-└──────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────┐
-│ ORIGIN          [Frozen] [1×40ft]            DESTINATION     │
-│ 🇧🇷 Brazil    -------------------▶          Hong Kong 🇭🇰   │
-│ Miami (USMIA)                                Port of HK      │
-└──────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────┐
-│ Items in this offer · N         Total qty · Avg · Total value│
-│ ──────────────────────────────────────────────────────────── │
-│ [img] Cut name        PACKING   QTY     PRICE [ ASK FLOOR ]  │
-│       Spec · pack                                            │
-│ ...                                                          │
-│ N items               total qty                  total value │
-└──────────────────────────────────────────────────────────────┘
-┌──────────────────────────────────────────────────────────────┐
-│ INCOTERMS              PAYMENT TERMS   CONTAINER   CREATED   │
-│ [FOB ...] [CFR ...]    100% TT          1 × 40ft   6/2/2026  │
-└──────────────────────────────────────────────────────────────┘
+1. **Reescrever `FlagSVG`** em `src/components/icons.tsx`:
+   - Mesma assinatura: `<FlagSVG code={code} size={n} />`.
+   - Renderiza `<img src="https://flagcdn.com/w{bucket}/{code-lower}.png" srcSet="...2x" />` com `width=size`, `height=round(size*12/16)`, `loading="lazy"`, `decoding="async"`, `alt=""`, `aria-hidden`.
+   - `bucket` escolhido em degraus (20, 40, 80, 160, 320) conforme `size * dpr`, para nitidez sem baixar SVG inteiro.
+   - Mantém o mesmo estilo visual: `borderRadius: 2`, `boxShadow: 0 0 0 0.5px rgba(0,0,0,0.18)`, `objectFit: cover`, `flexShrink: 0`, `display: inline-block`.
+   - Fallback: se `code` faltar/ inválido, exibe um placeholder cinza (mesma caixa) — sem quebrar layout.
+   - Remover o objeto `flagPalettes` e o tipo `FlagPalette` (não usados em mais lugar nenhum — confirmado no grep).
+   - Manter o `USFlag` standalone como está (é usado fora do `FlagSVG`).
 
-[ Negotiate ] (buyer)        [ Close Deal ]   ← rodapé sticky igual hoje
-```
+2. **Pré-conectar o CDN** em `index.html`:
+   - Adicionar `<link rel="preconnect" href="https://flagcdn.com" crossorigin>` no `<head>` para reduzir latência da 1ª bandeira.
 
-Comportamento por quantidade de cuts:
-- **1 cut**: card de items mostra 1 linha; header mostra "1 spec · 1 cut"; thumbs mostra 1 imagem (sem strip extra).
-- **2 cuts**: como no mockup (strip com 2 mini-thumbs sob a thumb grande).
-- **10 cuts**: card de items rola verticalmente dentro de altura máxima (`max-h` com scroll interno); strip de thumbs vira carrossel horizontal scrollável (a galeria atual já suporta auto-advance + click → lightbox; mantemos).
+3. **Auditoria de call sites** (somente leitura, sem mudança de código):
+   - `OfferDetailCards.tsx` (size 36) — bandeiras grandes no card de rota.
+   - `OfferDetailLayout.tsx` (14), `OfferCard.tsx` supplier (12–13), `Offers.tsx` buyer (12–13), `PublicOfferCard.tsx` (12–13), `PublicOfferModal.tsx` (11–14), `OffersFilterBar.tsx` (14), `CompanyProfileSections.tsx` (14), `SupplierAuctions.tsx` (13).
+   - Confirmar que todos passam `code` em ISO-2 (já passam — vêm de `countryToCode` / `country_code`).
 
-## Permissões / variações por papel (sem mudança lógica)
-- Colunas **ASKING / LB** e **FLOOR / LB** só renderizam quando `role !== 'buyer'` (supplier + admin), exatamente como hoje em `supplier/OfferDetail.tsx`.
-- Toolbar (toggle Active, Edit, Clone, Share, Inactive banner, negotiations banner) só para supplier/admin — fica acima do primeiro card.
-- Buyer mantém botões **Negotiate** (primary) e **Close Deal** no rodapé sticky atual; nenhuma mudança de fluxo.
-- "More information" (notes, view count, proposal count) continua como collapsible — movido para baixo do card de incoterms, idêntico em conteúdo.
+4. **Sem mudar**:
+   - `countryFlag()` (emoji) — continua existindo para e-mails e legendas em texto.
+   - Lógica de negócio, filtros, queries, layouts.
+   - Tokens de design / CSS.
 
-## Implementação técnica
-1. Criar `src/components/offer/OfferDetailCards.tsx` com subcomponentes puramente visuais:
-   - `OfferHeaderCard` (thumb + título + chips + total/FCL/shipment).
-   - `OfferRouteCard` (origem → destino com chips de condição/container no meio, dashed line).
-   - `OfferItemsCard` (tabela responsiva; aceita `showSupplierPricing: boolean` para Asking/Floor).
-   - `OfferMetaCard` (incoterms + payment terms + container + created).
-   Props recebem dados já normalizados (nada de fetch novo).
-2. Criar `src/styles/mundus-offer-cards.css` com tokens HSL do design system (cards `rounded-2xl border bg-card`, separadores, chips). Importar em `src/index.css` ou nas duas páginas.
-3. Atualizar `src/pages/buyer/OfferDetail.tsx`:
-   - Substituir o body atual (que usa `OfferDetailLayout` / `od-grid`) pelos 4 cards.
-   - Manter exatamente: hooks (`useOffer`, `useOfferImages`, `useOfferDestinationPorts`, weight unit), cálculo de preço/total, formatadores, breadcrumbs, status pill, rodapé sticky com Negotiate/Close Deal, modais de negociação e de close deal.
-4. Atualizar `src/pages/supplier/OfferDetail.tsx`:
-   - Substituir `SupplierOfferBuyerStyleBody` pelos mesmos 4 cards passando `showSupplierPricing` quando o usuário é supplier/admin.
-   - Manter toolbar (Active toggle, Edit, Clone, Share), banners (Inactive, negotiations), "More information", e toda a lógica/data atuais.
-5. Reutilizar `OfferImageGallery` para a thumb principal + strip (ou um wrapper compacto), preservando auto-advance, swipe e lightbox no click.
-6. Mobile: cards empilham naturalmente (já são full width); tabela de items vira lista de linhas compactas em `< sm` (como já fazemos em `PublicOfferModal`). Respeita safe-area no rodapé sticky.
-7. Não tocar em: hooks, queries, edge functions, fluxo de negociação, regras de FCL/preço, permissões, i18n keys (reaproveitar as existentes).
+## Detalhes técnicos
+
+- URL do CDN: `https://flagcdn.com/w{20|40|80|160|320}/{cc}.png` + `2x` no `srcSet` (PNG é mais leve que o SVG completo e suficiente para tamanhos pequenos).
+- Para `size ≤ 16` → bucket 40 (2x: 80). Para `size ≤ 24` → 80/160. Para `size ≤ 48` → 160/320. Acima disso → 320/320.
+- `flagcdn.com` aceita códigos ISO-2 em minúsculo; vamos normalizar `code.toLowerCase()`.
+- Aspect ratio 4:3 mantido por `width`/`height` explícitos — bandeiras do CDN são 4:3, igual ao viewBox atual (16/12).
+- Sem dependências novas no `package.json`.
+
+## Arquivos a editar
+
+- `src/components/icons.tsx` — substituir `FlagSVG` e remover `flagPalettes`.
+- `index.html` — adicionar `<link rel="preconnect">` para `flagcdn.com`.
 
 ## Validação
-- Buyer em oferta com 1, 2 e 10 cuts: layout idêntico ao mockup, sem Asking/Floor, CTA Negotiate primário.
-- Supplier/admin na mesma oferta: ganha colunas Asking/Floor + toolbar + banners.
-- Galeria: auto-advance + click abre lightbox, igual hoje.
-- Sem regressão em mobile (cards empilham, tabela vira lista, rodapé sticky).
+
+- Abrir `/supplier/offers/...`, `/buyer/offers`, `/supplier/auctions`, modal pública e perfil de empresa, conferindo visualmente AU, GB, KR, JP, MA, EG, BR, AR, US — todas devem aparecer com o desenho real.
+- Verificar fallback (código inválido) e tamanhos extremos (12 e 36).
