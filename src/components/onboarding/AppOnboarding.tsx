@@ -14,7 +14,6 @@ import {
   ClipboardList,
   type LucideIcon,
 } from "lucide-react";
-import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -106,8 +105,7 @@ function AppOnboardingInner({ role }: Props) {
   const goNext = () => {
     if (isLast) {
       void complete();
-      if (role === "buyer") navigate("/buyer/offers");
-      else navigate("/supplier/offers/new");
+      navigate("/login");
       return;
     }
     setDirection(1);
