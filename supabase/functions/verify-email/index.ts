@@ -52,6 +52,8 @@ serve(async (req) => {
 
       // Send email via Resend
       const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") || "";
+      let emailSendError: string | null = null;
+      let resendId: string | null = null;
       if (RESEND_API_KEY) {
         const emailRes = await fetch("https://api.resend.com/emails", {
           method: "POST",
@@ -89,16 +91,36 @@ serve(async (req) => {
         if (!emailRes.ok) {
           const errBody = await emailRes.text();
           console.error("[VERIFY] Resend error:", emailRes.status, errBody);
+          emailSendError = `Resend ${emailRes.status}: ${errBody.slice(0, 300)}`;
         } else {
-          console.log("[VERIFY] Email sent successfully to", normalizedEmail);
+          try {
+            const j = await emailRes.json();
+            resendId = j?.id ?? j?.data?.id ?? null;
+          } catch { /* ignore */ }
+          console.log("[VERIFY] Email sent to", normalizedEmail, "resend_id:", resendId);
         }
+      } else {
+        emailSendError = "RESEND_API_KEY not configured";
+        console.warn("[VERIFY] RESEND_API_KEY missing — email not sent");
+      }
+
+      if (emailSendError) {
+        return new Response(
+          JSON.stringify({
+            sent: false,
+            error: "Could not send verification email. Please try again.",
+            _detail: emailSendError,
+            ...(RESEND_API_KEY ? {} : { _dev_code: verificationCode }),
+          }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
       }
 
       return new Response(
         JSON.stringify({
           sent: true,
           message: "Verification code sent",
-          ...(RESEND_API_KEY ? {} : { _dev_code: verificationCode }),
+          resend_id: resendId,
         }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
