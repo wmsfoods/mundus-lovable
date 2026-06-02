@@ -145,11 +145,7 @@ export default function PublicOfferModal({
                     )}
                   </td>
                   <td className="px-3 py-2 text-right text-sm font-bold tabular-nums">
-                    {minPrice > 0 && (
-                      <>
-                        {t("public.home.from", "From")} {fmtPrice(minPrice)}
-                      </>
-                    )}
+                    {/* price column intentionally empty in totals row */}
                   </td>
                 </tr>
               </tfoot>
