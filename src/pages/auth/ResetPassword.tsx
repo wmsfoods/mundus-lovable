@@ -22,32 +22,63 @@ export default function ResetPassword() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    // Supabase places a recovery session on the URL hash; the client picks it
-    // up automatically and emits PASSWORD_RECOVERY. We also tolerate the case
-    // where the user already has a recovery session from a previous tab.
+    // Recovery links arrive in 3 possible formats. We handle all of them:
+    //  1) PKCE:        ?code=...
+    //  2) OTP token:   ?token_hash=...&type=recovery
+    //  3) Legacy hash: #access_token=...&type=recovery  (auto-picked by client)
+    let cancelled = false;
     let resolved = false;
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "PASSWORD_RECOVERY") {
+      if (cancelled) return;
+      if (event === "PASSWORD_RECOVERY" || event === "SIGNED_IN") {
         resolved = true;
         setMode("ready");
       }
     });
 
-    const timer = setTimeout(async () => {
-      if (resolved) return;
-      const { data } = await supabase.auth.getSession();
-      // If there's any active session arriving from a recovery link, allow reset.
-      const hash = window.location.hash;
-      const looksLikeRecovery = hash.includes("type=recovery") || hash.includes("access_token");
-      if (data.session && looksLikeRecovery) {
-        setMode("ready");
-      } else {
-        setMode("invalid");
+    (async () => {
+      try {
+        const url = new URL(window.location.href);
+        const code = url.searchParams.get("code");
+        const tokenHash = url.searchParams.get("token_hash");
+        const type = url.searchParams.get("type");
+        const hash = window.location.hash || "";
+
+        if (code) {
+          const { error } = await supabase.auth.exchangeCodeForSession(code);
+          if (cancelled) return;
+          if (error) { setMode("invalid"); return; }
+          // Strip ?code from URL so a refresh doesn't re-consume it
+          window.history.replaceState({}, "", url.pathname);
+          setMode("ready");
+          return;
+        }
+
+        if (tokenHash && type === "recovery") {
+          const { error } = await supabase.auth.verifyOtp({ type: "recovery", token_hash: tokenHash });
+          if (cancelled) return;
+          if (error) { setMode("invalid"); return; }
+          window.history.replaceState({}, "", url.pathname);
+          setMode("ready");
+          return;
+        }
+
+        // Legacy hash flow — give the client a moment to process it.
+        const looksLikeRecovery = hash.includes("type=recovery") || hash.includes("access_token");
+        setTimeout(async () => {
+          if (cancelled || resolved) return;
+          const { data } = await supabase.auth.getSession();
+          if (data.session && (looksLikeRecovery || resolved)) setMode("ready");
+          else setMode("invalid");
+        }, 900);
+      } catch {
+        if (!cancelled) setMode("invalid");
       }
-    }, 800);
+    })();
 
     return () => {
-      clearTimeout(timer);
+      cancelled = true;
       subscription.unsubscribe();
     };
   }, []);
