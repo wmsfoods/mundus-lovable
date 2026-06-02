@@ -141,11 +141,11 @@ export function CompanyUserEditModal({
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 20px", borderTop: "1px solid #e5e7eb", gap: 8 }}>
           {confirmDel ? (
             <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-              <span style={{ fontSize: 12, color: "#b91c1c" }}>Confirm delete?</span>
-              <button className="crm-btn-primary" style={{ background: "#dc2626" }} onClick={remove} disabled={deleting}>
+              <span style={{ fontSize: 12, color: "#b91c1c", fontWeight: 600 }}>Confirm delete?</span>
+              <button onClick={remove} disabled={deleting} style={{ padding: "6px 12px", borderRadius: 6, border: "none", background: "#dc2626", color: "white", cursor: "pointer", fontSize: 12, fontWeight: 600 }}>
                 {deleting ? "..." : "Yes, remove"}
               </button>
-              <button className="crm-btn-ghost" onClick={() => setConfirmDel(false)}>Cancel</button>
+              <button onClick={() => setConfirmDel(false)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid #d1d5db", background: "white", cursor: "pointer", fontSize: 12 }}>Cancel</button>
             </div>
           ) : (
             <button
