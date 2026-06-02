@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import { RotateCcw } from "lucide-react";
 import { lookupContact, captureLead } from "@/lib/publicLeadFlow";
 import type { LeadType } from "@/lib/mundusReps";
+import { MUNDUS_LOGO } from "@/assets/mundusLogo";
 
 type Step =
   | "greet" | "email" | "lookup"
@@ -92,7 +93,7 @@ export default function MaxChatWidget({
       <div className="flex h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:h-[600px]">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div>
-            <div className="text-sm font-semibold text-[#8B2252]">{tk("title", "Max — Mundus Assistant")}</div>
+            <img src={MUNDUS_LOGO} alt="Mundus Trade" className="h-7 w-auto" />
             <div className="text-[11px] text-gray-500">{tk("subtitle", "I'll connect you with a Mundus rep")}</div>
           </div>
           <div className="flex items-center gap-2">
