@@ -96,8 +96,14 @@ export default function MaxChatWidget({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-end bg-black/30 p-2 sm:items-end sm:p-6">
-      <div className="flex h-[85vh] w-full max-w-md flex-col overflow-hidden rounded-2xl bg-white shadow-2xl sm:h-[600px]">
+    <div className="fixed inset-0 z-50 flex items-stretch justify-stretch bg-black/30 sm:items-end sm:justify-end sm:p-6">
+      <div
+        className="flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[600px] sm:max-w-md sm:rounded-2xl"
+        style={{
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+      >
         <div className="flex items-center justify-between border-b px-4 py-3">
           <div>
             <img src={MUNDUS_LOGO} alt="Mundus Trade" className="h-7 w-auto" />
