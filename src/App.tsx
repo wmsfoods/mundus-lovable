@@ -17,6 +17,7 @@ import SignupSuccess from "./pages/signup/SignupSuccess.tsx";
 import PartnerSignup from "./pages/signup/PartnerSignup.tsx";
 import InviteAccept from "./pages/InviteAccept.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
+import Onboarding from "./pages/Onboarding.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import BuyerShell from "./layouts/BuyerShell.tsx";
 import SupplierShell from "./layouts/SupplierShell.tsx";
@@ -129,6 +130,7 @@ const App = () => (
             <Route path="/dev" element={<DevIndex />} />
             <Route path="/home" element={<PublicHome />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/success" element={<SignupSuccess />} />
             <Route path="/signup/partner" element={<PartnerSignup />} />
