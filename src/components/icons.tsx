@@ -490,131 +490,53 @@ export const USFlag = ({ width = 22, height = 16 }: USFlagProps) => (
   </svg>
 );
 
-// Country flag palettes — 16x12 viewBox
-// (Simplified emblems; not pixel-perfect but recognizable at small sizes.)
-type FlagPalette = { bg: string; el: ReactNode };
-export const flagPalettes: Record<string, FlagPalette> = {
-  BR: { bg: "#009b3a", el: (<><polygon points="8,1.5 14.5,6 8,10.5 1.5,6" fill="#fedf00" /><circle cx="8" cy="6" r="2.4" fill="#002776" /></>) },
-  CN: { bg: "#de2910", el: (<><circle cx="3" cy="3" r="1.4" fill="#ffde00" /><circle cx="5.5" cy="1.7" r=".5" fill="#ffde00" /><circle cx="6.4" cy="3" r=".5" fill="#ffde00" /><circle cx="6.4" cy="4.5" r=".5" fill="#ffde00" /><circle cx="5.5" cy="5.5" r=".5" fill="#ffde00" /></>) },
-  AR: { bg: "#75aadb", el: (<><rect y="4" width="16" height="4" fill="#fff" /><circle cx="8" cy="6" r="1" fill="#f6b40e" /></>) },
-  US: { bg: "#bf0a30", el: (<><rect y="1.5" width="16" height="1.5" fill="#fff" /><rect y="4.5" width="16" height="1.5" fill="#fff" /><rect y="7.5" width="16" height="1.5" fill="#fff" /><rect y="10.5" width="16" height="1.5" fill="#fff" /><rect width="7" height="6" fill="#002868" /></>) },
-  HK: { bg: "#de2910", el: <circle cx="8" cy="6" r="2" fill="#fff" /> },
-  SA: { bg: "#006c35", el: <rect x="3" y="4" width="10" height="4" fill="#fff" opacity=".25" /> },
-  AF: { bg: "#000", el: (<><rect x="5.33" width="5.33" height="12" fill="#ce1126" /><rect x="10.66" width="5.34" height="12" fill="#007a36" /></>) },
-  PS: { bg: "#000", el: (<><rect y="4" width="16" height="4" fill="#fff" /><rect y="8" width="16" height="4" fill="#007a3d" /><polygon points="0,0 0,12 6,6" fill="#ce1126" /></>) },
-  UY: { bg: "#fff", el: (<><rect y="2" width="16" height="1.3" fill="#0038a8" /><rect y="4.6" width="16" height="1.3" fill="#0038a8" /><rect y="7.2" width="16" height="1.3" fill="#0038a8" /><rect y="9.8" width="16" height="1.3" fill="#0038a8" /><rect width="6" height="5.9" fill="#fff" stroke="#0038a8" strokeWidth=".4" /><circle cx="3" cy="3" r="1.4" fill="#fcd116" /></>) },
-  PY: { bg: "#d52b1e", el: (<><rect y="4" width="16" height="4" fill="#fff" /><rect y="8" width="16" height="4" fill="#0038a8" /></>) },
-  MX: { bg: "#006847", el: (<><rect x="5.33" width="5.34" height="12" fill="#fff" /><rect x="10.67" width="5.33" height="12" fill="#ce1126" /></>) },
-  AU: { bg: "#012169", el: <rect width="7" height="6" fill="#012169" stroke="#fff" strokeWidth=".4" /> },
-  BM: { bg: "#cf142b", el: (<><rect width="7" height="6" fill="#012169" stroke="#fff" strokeWidth=".3" /><line x1="0" y1="0" x2="7" y2="6" stroke="#fff" strokeWidth=".4" /><line x1="7" y1="0" x2="0" y2="6" stroke="#fff" strokeWidth=".4" /></>) },
-  PH: { bg: "#0038a8", el: (<><rect y="6" width="16" height="6" fill="#ce1126" /><polygon points="0,0 0,12 7,6" fill="#fff" /></>) },
-  CA: { bg: "#fff", el: (<><rect width="5.3" height="12" fill="#d52b1e" /><rect x="10.7" width="5.3" height="12" fill="#d52b1e" /><polygon points="8,4 8.7,5.2 10,5 9,6 10.5,6.6 8.7,7 8,9 7.3,7 5.5,6.6 7,6 6,5 7.3,5.2" fill="#d52b1e" /></>) },
-  CI: { bg: "#fff", el: (<><rect width="5.33" height="12" fill="#f77f00" /><rect x="10.67" width="5.33" height="12" fill="#009e60" /></>) },
-  BJ: { bg: "#fcd116", el: (<><rect width="6" height="12" fill="#008751" /><rect x="6" width="10" height="6" fill="#fcd116" /><rect x="6" y="6" width="10" height="6" fill="#e8112d" /></>) },
-  TG: { bg: "#006a4e", el: (<><rect y="2.4" width="16" height="2.4" fill="#fcd116" /><rect y="7.2" width="16" height="2.4" fill="#fcd116" /><rect width="5" height="5" fill="#d21034" /></>) },
-  MZ: { bg: "#007168", el: (<><rect y="3" width="16" height="2" fill="#000" /><rect y="5" width="16" height="2" fill="#fff" /><rect y="7" width="16" height="2" fill="#fcd116" /><rect y="9" width="16" height="3" fill="#d21034" /><polygon points="0,0 0,12 6,6" fill="#d21034" /></>) },
-  GB: { bg: "#012169", el: (<><line x1="0" y1="0" x2="16" y2="12" stroke="#fff" strokeWidth="1.2" /><line x1="16" y1="0" x2="0" y2="12" stroke="#fff" strokeWidth="1.2" /><rect x="7" width="2" height="12" fill="#fff" /><rect y="5" width="16" height="2" fill="#fff" /><rect x="7.5" width="1" height="12" fill="#c8102e" /><rect y="5.5" width="16" height="1" fill="#c8102e" /></>) },
-  JP: { bg: "#fff", el: <circle cx="8" cy="6" r="3" fill="#bc002d" /> },
-  KR: { bg: "#fff", el: (<><circle cx="8" cy="6" r="2.4" fill="#cd2e3a" /><path d="M5.6 6 A2.4 2.4 0 0 1 10.4 6 A1.2 1.2 0 0 0 8 6 A1.2 1.2 0 0 1 5.6 6 Z" fill="#0047a0" /></>) },
-  SG: { bg: "#fff", el: (<><rect y="0" width="16" height="6" fill="#ed2939" /><circle cx="4" cy="3" r="1.6" fill="#fff" /><circle cx="4.7" cy="3" r="1.4" fill="#ed2939" /></>) },
-  VN: { bg: "#da251d", el: <polygon points="8,3 8.7,5.2 10.2,5.2 9,6.3 9.5,8 8,7 6.5,8 7,6.3 5.8,5.2 7.3,5.2" fill="#ffff00" /> },
-  IL: { bg: "#fff", el: (<><rect y="1.5" width="16" height="1.5" fill="#0038b8" /><rect y="9" width="16" height="1.5" fill="#0038b8" /><polygon points="8,4 10,7 6,7" fill="none" stroke="#0038b8" strokeWidth=".5" /><polygon points="8,8 10,5 6,5" fill="none" stroke="#0038b8" strokeWidth=".5" /></>) },
-  AE: { bg: "#009e60", el: (<><rect y="4" width="16" height="4" fill="#fff" /><rect y="8" width="16" height="4" fill="#000" /><rect width="4" height="12" fill="#ff0000" /></>) },
-  GH: { bg: "#ce1126", el: (<><rect y="4" width="16" height="4" fill="#fcd116" /><rect y="8" width="16" height="4" fill="#006b3f" /><polygon points="8,5 8.6,7 7.4,7" fill="#000" /></>) },
-  AO: { bg: "#cc092f", el: (<><rect y="6" width="16" height="6" fill="#000" /><circle cx="5" cy="6" r="2" fill="none" stroke="#ffcc00" strokeWidth=".5" /></>) },
-  GW: { bg: "#fcd116", el: (<><rect y="6" width="16" height="6" fill="#009e49" /><rect width="6" height="12" fill="#ce1126" /></>) },
-  NG: { bg: "#fff", el: (<><rect width="5.3" height="12" fill="#008751" /><rect x="10.7" width="5.3" height="12" fill="#008751" /></>) },
-  SN: { bg: "#fcd116", el: (<><rect width="5.3" height="12" fill="#00853f" /><rect x="10.7" width="5.3" height="12" fill="#e31b23" /></>) },
-  ML: { bg: "#fcd116", el: (<><rect width="5.3" height="12" fill="#14b53a" /><rect x="10.7" width="5.3" height="12" fill="#ce1126" /></>) },
-  CV: { bg: "#003893", el: (<><rect y="6.5" width="16" height="1.5" fill="#fff" /><rect y="8" width="16" height="0.6" fill="#cf2027" /><rect y="8.6" width="16" height="1.5" fill="#fff" /></>) },
-  GN: { bg: "#ce1126", el: (<><rect x="5.3" width="5.4" height="12" fill="#fcd116" /><rect x="10.7" width="5.3" height="12" fill="#009460" /></>) },
-  ER: { bg: "#0073cf", el: <polygon points="0,0 16,6 0,12" fill="#ce1126" /> },
-  GM: { bg: "#ce1126", el: (<><rect y="4" width="16" height="1.2" fill="#fff" /><rect y="5.2" width="16" height="2.6" fill="#0c1c8c" /><rect y="7.8" width="16" height="1.2" fill="#fff" /><rect y="9" width="16" height="3" fill="#3a7728" /></>) },
-  LR: { bg: "#bf0a30", el: (<><rect width="6" height="6" fill="#002868" /><rect y="1.2" width="16" height="1.2" fill="#fff" /><rect y="3.6" width="16" height="1.2" fill="#fff" /><rect y="6" width="16" height="1.2" fill="#fff" /><rect y="8.4" width="16" height="1.2" fill="#fff" /><rect y="10.8" width="16" height="1.2" fill="#fff" /></>) },
-  ZA: { bg: "#007a4d", el: (<><polygon points="0,0 0,12 6,6" fill="#000" /><polygon points="0,0 0,12 4,6" fill="#ffb612" /></>) },
-  AL: { bg: "#e41e20", el: <circle cx="8" cy="6" r="2" fill="#000" /> },
-  MA: { bg: "#c1272d", el: <polygon points="8,3 8.6,5 10.5,5 9,6.2 9.5,8 8,6.8 6.5,8 7,6.2 5.5,5 7.4,5" fill="none" stroke="#006233" strokeWidth=".4" /> },
-  PE: { bg: "#fff", el: (<><rect width="5.3" height="12" fill="#d91023" /><rect x="10.7" width="5.3" height="12" fill="#d91023" /></>) },
-  TT: { bg: "#d51c29", el: <line x1="0" y1="12" x2="16" y2="0" stroke="#fff" strokeWidth="3" /> },
-  BF: { bg: "#ef2b2d", el: (<><rect y="6" width="16" height="6" fill="#009e49" /><polygon points="8,4 8.6,5.5 10.2,5.5 9,6.5 9.4,8 8,7.2 6.6,8 7,6.5 5.8,5.5 7.4,5.5" fill="#fcd116" /></>) },
-  MR: { bg: "#006233", el: <polygon points="8,3 9,5.5 11.5,5.5 9.5,7 10.2,9.5 8,8 5.8,9.5 6.5,7 4.5,5.5 7,5.5" fill="#fcd116" /> },
-  NE: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#e05206" /><rect y="8" width="16" height="4" fill="#0db02b" /><circle cx="8" cy="6" r="1.4" fill="#e05206" /></>) },
-  NL: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#ae1c28" /><rect y="8" width="16" height="4" fill="#21468b" /></>) },
-  JO: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#000" /><rect y="4" width="16" height="4" fill="#fff" /><rect y="8" width="16" height="4" fill="#007a3d" /><polygon points="0,0 0,12 6,6" fill="#ce1126" /><polygon points="2.2,6 2.55,6.5 2.45,5.9 2.9,5.55 2.35,5.5 2.2,5 2.05,5.5 1.5,5.55 1.95,5.9 1.85,6.5" fill="#fff" /></>) },
-  KW: { bg: "#007a3d", el: (<><rect y="4" width="16" height="4" fill="#fff" /><rect y="8" width="16" height="4" fill="#ce1126" /><polygon points="0,0 0,12 4,8 4,4" fill="#000" /></>) },
-  QA: { bg: "#8d1b3d", el: <rect width="4" height="12" fill="#fff" /> },
-  BH: { bg: "#ce1126", el: <polygon points="0,0 5,0 3,1.5 5,3 3,4.5 5,6 3,7.5 5,9 3,10.5 5,12 0,12" fill="#fff" /> },
-  OM: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#db161b" /><rect y="8" width="16" height="4" fill="#008000" /><rect width="4" height="12" fill="#db161b" /></>) },
-  IQ: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#ce1126" /><rect y="8" width="16" height="4" fill="#000" /></>) },
-  LB: { bg: "#fff", el: (<><rect y="0" width="16" height="3" fill="#ed1c24" /><rect y="9" width="16" height="3" fill="#ed1c24" /><polygon points="8,4.5 9,6 7,6" fill="#00a651" /><polygon points="8,7.5 9,6 7,6" fill="#00a651" /></>) },
-  EG: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#ce1126" /><rect y="4" width="16" height="4" fill="#fff" /><rect y="8" width="16" height="4" fill="#000" /></>) },
-  TR: { bg: "#e30a17", el: (<><circle cx="6" cy="6" r="2.2" fill="#fff" /><circle cx="6.6" cy="6" r="1.8" fill="#e30a17" /><polygon points="9,6 7.5,6.6 8,5 8.5,6.6 7,6" fill="#fff" /></>) },
-  RU: { bg: "#fff", el: (<><rect y="4" width="16" height="4" fill="#0039a6" /><rect y="8" width="16" height="4" fill="#d52b1e" /></>) },
-  DE: { bg: "#000", el: (<><rect y="4" width="16" height="4" fill="#dd0000" /><rect y="8" width="16" height="4" fill="#ffce00" /></>) },
-  FR: { bg: "#fff", el: (<><rect width="5.33" height="12" fill="#0055a4" /><rect x="10.67" width="5.33" height="12" fill="#ef4135" /></>) },
-  IT: { bg: "#fff", el: (<><rect width="5.33" height="12" fill="#009246" /><rect x="10.67" width="5.33" height="12" fill="#ce2b37" /></>) },
-  ES: { bg: "#aa151b", el: <rect y="3" width="16" height="6" fill="#f1bf00" /> },
-  PT: { bg: "#006600", el: (<><rect x="6" width="10" height="12" fill="#ff0000" /><circle cx="6" cy="6" r="1.6" fill="#ffe900" stroke="#fff" strokeWidth=".3" /></>) },
-  BE: { bg: "#000", el: (<><rect x="5.33" width="5.34" height="12" fill="#fae042" /><rect x="10.67" width="5.33" height="12" fill="#ed2939" /></>) },
-  IE: { bg: "#fff", el: (<><rect width="5.33" height="12" fill="#169b62" /><rect x="10.67" width="5.33" height="12" fill="#ff883e" /></>) },
-  NO: { bg: "#ef2b2d", el: (<><rect x="4" width="2" height="12" fill="#fff" /><rect y="5" width="16" height="2" fill="#fff" /><rect x="4.5" width="1" height="12" fill="#002868" /><rect y="5.5" width="16" height="1" fill="#002868" /></>) },
-  SE: { bg: "#006aa7", el: (<><rect x="4" width="2" height="12" fill="#fecc00" /><rect y="5" width="16" height="2" fill="#fecc00" /></>) },
-  DK: { bg: "#c8102e", el: (<><rect x="4" width="2" height="12" fill="#fff" /><rect y="5" width="16" height="2" fill="#fff" /></>) },
-  FI: { bg: "#fff", el: (<><rect x="4" width="2" height="12" fill="#003580" /><rect y="5" width="16" height="2" fill="#003580" /></>) },
-  PL: { bg: "#fff", el: <rect y="6" width="16" height="6" fill="#dc143c" /> },
-  CH: { bg: "#da291c", el: (<><rect x="7" y="4" width="2" height="4" fill="#fff" /><rect x="6" y="5" width="4" height="2" fill="#fff" /></>) },
-  GR: { bg: "#0d5eaf", el: (<><rect y="1.3" width="16" height="1.3" fill="#fff" /><rect y="3.9" width="16" height="1.3" fill="#fff" /><rect y="6.5" width="16" height="1.3" fill="#fff" /><rect y="9.1" width="16" height="1.3" fill="#fff" /><rect width="6" height="6.5" fill="#0d5eaf" /><rect x="2.5" width="1" height="6.5" fill="#fff" /><rect y="2.7" width="6" height="1" fill="#fff" /></>) },
-  ID: { bg: "#fff", el: <rect width="16" height="6" fill="#ce1126" /> },
-  MY: { bg: "#cc0001", el: (<><rect y="1.7" width="16" height="1.7" fill="#fff" /><rect y="5.1" width="16" height="1.7" fill="#fff" /><rect y="8.5" width="16" height="1.7" fill="#fff" /><rect width="7" height="6" fill="#010066" /></>) },
-  TH: { bg: "#a51931", el: (<><rect y="2" width="16" height="2" fill="#fff" /><rect y="4" width="16" height="4" fill="#2d2a4a" /><rect y="8" width="16" height="2" fill="#fff" /></>) },
-  TW: { bg: "#fe0000", el: (<><rect width="8" height="6" fill="#000095" /><circle cx="4" cy="3" r="1.6" fill="#fff" /></>) },
-  IN: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#ff9933" /><rect y="8" width="16" height="4" fill="#138808" /><circle cx="8" cy="6" r="1.4" fill="none" stroke="#000080" strokeWidth=".3" /></>) },
-  BD: { bg: "#006a4e", el: <circle cx="7" cy="6" r="2.4" fill="#f42a41" /> },
-  CL: { bg: "#fff", el: (<><rect y="6" width="16" height="6" fill="#d52b1e" /><rect width="6" height="6" fill="#0039a6" /><polygon points="3,2 3.7,4 5.2,2.8 4.5,4.5 6,4.7 4.4,5.2 5,7 3,5.8 1,7 1.6,5.2 0,4.7 1.5,4.5 0.8,2.8 2.3,4" fill="#fff" /></>) },
-  CO: { bg: "#fcd116", el: (<><rect y="6" width="16" height="3" fill="#003893" /><rect y="9" width="16" height="3" fill="#ce1126" /></>) },
-  EC: { bg: "#ffdd00", el: (<><rect y="6" width="16" height="3" fill="#034ea2" /><rect y="9" width="16" height="3" fill="#ed1c24" /></>) },
-  CU: { bg: "#fff", el: (<><rect y="0" width="16" height="2.4" fill="#002a8f" /><rect y="4.8" width="16" height="2.4" fill="#002a8f" /><rect y="9.6" width="16" height="2.4" fill="#002a8f" /><polygon points="0,0 0,12 6,6" fill="#cf142b" /></>) },
-  DO: { bg: "#002d62", el: (<><rect x="8" width="8" height="6" fill="#ce1126" /><rect y="6" width="8" height="6" fill="#ce1126" /><rect x="7" width="2" height="12" fill="#fff" /><rect y="5" width="16" height="2" fill="#fff" /></>) },
-  NZ: { bg: "#012169", el: <rect width="7" height="6" fill="#012169" stroke="#fff" strokeWidth=".4" /> },
-  PK: { bg: "#01411c", el: (<><rect width="4" height="12" fill="#fff" /><circle cx="11" cy="6" r="2" fill="#01411c" /><circle cx="11.7" cy="5.6" r="1.7" fill="#fff" /></>) },
-  IR: { bg: "#fff", el: (<><rect y="0" width="16" height="4" fill="#239f40" /><rect y="8" width="16" height="4" fill="#da0000" /></>) },
-  KE: { bg: "#000", el: (<><rect y="3" width="16" height="2" fill="#fff" /><rect y="5" width="16" height="2" fill="#bb0000" /><rect y="7" width="16" height="2" fill="#fff" /><rect y="9" width="16" height="3" fill="#006600" /></>) },
-  TZ: { bg: "#1eb53a", el: (<><polygon points="16,0 16,4 0,12 0,8" fill="#000" /><polygon points="16,3 16,5 2,12 0,12 0,11" fill="#fcd116" /><polygon points="14,0 16,0 16,1 2,9 0,9 0,8" fill="#fcd116" /><polygon points="16,0 16,3 0,11 0,9" fill="#00a3dd" /></>) },
-  UG: { bg: "#000", el: (<><rect y="2" width="16" height="2" fill="#fcdc04" /><rect y="4" width="16" height="2" fill="#d90000" /><rect y="6" width="16" height="2" fill="#000" /><rect y="8" width="16" height="2" fill="#fcdc04" /><rect y="10" width="16" height="2" fill="#d90000" /></>) },
-  DZ: { bg: "#fff", el: (<><rect width="8" height="12" fill="#006233" /><circle cx="9" cy="6" r="1.6" fill="#d21034" /></>) },
-  TN: { bg: "#e70013", el: <circle cx="8" cy="6" r="2.4" fill="#fff" /> },
-  LY: { bg: "#000", el: (<><rect y="0" width="16" height="3" fill="#239e46" /><rect y="9" width="16" height="3" fill="#e70013" /></>) },
-  SD: { bg: "#000", el: (<><rect y="0" width="16" height="4" fill="#d21034" /><rect y="4" width="16" height="4" fill="#fff" /><polygon points="0,0 0,12 6,6" fill="#007229" /></>) },
-  CR: { bg: "#fff", el: (<><rect y="0" width="16" height="2.4" fill="#002b7f" /><rect y="9.6" width="16" height="2.4" fill="#002b7f" /><rect y="3.6" width="16" height="4.8" fill="#ce1126" /></>) },
-  PA: { bg: "#fff", el: (<><rect x="8" width="8" height="6" fill="#005293" /><rect y="6" width="8" height="6" fill="#d21034" /></>) },
-  VE: { bg: "#fcd116", el: (<><rect y="4" width="16" height="4" fill="#00247d" /><rect y="8" width="16" height="4" fill="#cf142b" /></>) },
-  GT: { bg: "#4997d0", el: <rect x="5.33" width="5.34" height="12" fill="#fff" /> },
-  KH: { bg: "#032ea1", el: <rect y="3" width="16" height="6" fill="#e00025" /> },
-  ET: { bg: "#078930", el: (<><rect y="4" width="16" height="4" fill="#fcdd09" /><rect y="8" width="16" height="4" fill="#da121a" /></>) },
-};
-
+// Country flag — real flag image served by flagcdn.com.
+// Same API as before: <FlagSVG code="BR" size={14} />
 type FlagSVGProps = { code: string; size?: number };
 export const FlagSVG = ({ code, size = 14 }: FlagSVGProps) => {
-  const p = flagPalettes[code] || { bg: "#999", el: null };
   const w = size;
   const h = Math.round((size * 12) / 16);
+  const cc = (code || "").trim().toLowerCase();
+  const baseStyle: React.CSSProperties = {
+    width: w,
+    height: h,
+    borderRadius: 2,
+    display: "inline-block",
+    flexShrink: 0,
+    boxShadow: "0 0 0 0.5px rgba(0,0,0,0.18)",
+    objectFit: "cover",
+    background: "hsl(var(--muted))",
+  };
+  if (!cc || cc.length !== 2) {
+    return <span aria-hidden="true" style={baseStyle} />;
+  }
+  // Pick the smallest CDN bucket that still looks crisp at 2x DPR.
+  const target = size * 2;
+  const bucket =
+    target <= 20 ? 20 :
+    target <= 40 ? 40 :
+    target <= 80 ? 80 :
+    target <= 160 ? 160 : 320;
+  const bucket2x =
+    bucket === 20 ? 40 :
+    bucket === 40 ? 80 :
+    bucket === 80 ? 160 :
+    bucket === 160 ? 320 : 320;
+  const src1 = `https://flagcdn.com/w${bucket}/${cc}.png`;
+  const src2 = `https://flagcdn.com/w${bucket2x}/${cc}.png`;
   return (
-    <svg
+    <img
+      src={src1}
+      srcSet={`${src1} 1x, ${src2} 2x`}
       width={w}
       height={h}
-      viewBox="0 0 16 12"
-      xmlns="http://www.w3.org/2000/svg"
-      style={{
-        borderRadius: 2,
-        display: "inline-block",
-        flexShrink: 0,
-        boxShadow: "0 0 0 0.5px rgba(0,0,0,0.18)",
-      }}
+      alt=""
       aria-hidden="true"
-    >
-      <rect width="16" height="12" fill={p.bg} />
-      {p.el}
-    </svg>
+      loading="lazy"
+      decoding="async"
+      draggable={false}
+      style={baseStyle}
+    />
   );
 };
 
