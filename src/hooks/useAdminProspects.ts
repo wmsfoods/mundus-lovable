@@ -507,7 +507,13 @@ export function getFunnelMetrics(_list: Prospect[]): Array<{ from: ProspectStage
 
 export function getOwnerLeaderboard(list: Prospect[]) {
   const map = new Map<string, { initials: string; name: string; activeCount: number; qualified: number; onboarded: number }>();
-  for (const o of OWNERS) map.set(o.initials, { initials: o.initials, name: o.name, activeCount: 0, qualified: 0, onboarded: 0 });
+  for (const o of getOwners()) map.set(o.initials, { initials: o.initials, name: o.name, activeCount: 0, qualified: 0, onboarded: 0 });
+  // Include any owners present in the list but missing from the team snapshot
+  for (const p of list) {
+    if (!map.has(p.owner)) {
+      map.set(p.owner, { initials: p.owner, name: p.ownerName || p.owner, activeCount: 0, qualified: 0, onboarded: 0 });
+    }
+  }
   for (const p of list) {
     const row = map.get(p.owner);
     if (!row) continue;
