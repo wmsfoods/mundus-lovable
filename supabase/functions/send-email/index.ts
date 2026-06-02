@@ -16,7 +16,7 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  const RESEND_KEY = Deno.env.get("RESEND_API_KEY") || Deno.env.get("resend_mundus") || "";
+  const RESEND_KEY = Deno.env.get("RESEND_API_KEY") || "";
   const FROM = "Mundus Trade <noreply@mundustrade.com>";
 
   let body: { email_id?: string; mode?: string; limit?: number } = {};
