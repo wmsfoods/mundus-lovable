@@ -242,6 +242,8 @@ export default function AdminCompanies() {
           </div>
         </>
       )}
+      </>
+      )}
 
       <CreateSupplierProfileModal
         open={createSupplierOpen}
