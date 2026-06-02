@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { Factory } from "lucide-react";
+import { Factory, ChevronRight } from "lucide-react";
 import { KnifeForkIcon, GridIcon, FlagSVG } from "@/components/icons";
 import { countryToCode } from "@/lib/countryCodes";
 import { formatOfferNumber } from "@/lib/offerNumber";
@@ -24,9 +24,11 @@ function formatMT(kg: number): string {
 export default function PublicOfferCard({
   offer,
   onReveal,
+  onOpenDetails,
 }: {
   offer: PublicOffer;
   onReveal: () => void;
+  onOpenDetails?: () => void;
 }) {
   const { t } = useTranslation();
   const items = offer.items ?? [];
@@ -72,8 +74,24 @@ export default function PublicOfferCard({
     onReveal();
   };
 
+  const handleOpenDetails = () => {
+    onOpenDetails?.();
+  };
+
   return (
-    <article className="oc" style={{ position: "relative" }}>
+    <article
+      className="oc"
+      style={{ position: "relative", cursor: onOpenDetails ? "pointer" : undefined }}
+      onClick={handleOpenDetails}
+      role={onOpenDetails ? "button" : undefined}
+      tabIndex={onOpenDetails ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (onOpenDetails && (e.key === "Enter" || e.key === " ")) {
+          e.preventDefault();
+          handleOpenDetails();
+        }
+      }}
+    >
       <div className="oc-head">
         <div className="oc-head-l">
           <span className="oc-chip">
@@ -289,6 +307,22 @@ export default function PublicOfferCard({
           🔓 {t("public.home.reveal", "Reveal supplier")}
         </button>
       </div>
+      {onOpenDetails && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 2,
+            marginTop: 6,
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#8B2E4F",
+          }}
+        >
+          {t("public.home.viewDetails", "View cuts & pricing")}
+          <ChevronRight size={12} />
+        </div>
+      )}
     </article>
   );
 }
