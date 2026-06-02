@@ -6,6 +6,7 @@ import { lookupContact, captureLead } from "@/lib/publicLeadFlow";
 import type { LeadType } from "@/lib/mundusReps";
 import MUNDUS_LOGO from "@/assets/mundus-logo.png";
 import { PhoneInput } from "@/components/company/CompanyProfilePage";
+import "@/styles/mundus-company.css";
 
 const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const isValidEmail = (v: string) => EMAIL_RE.test(v.trim());
