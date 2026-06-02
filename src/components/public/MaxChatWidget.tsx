@@ -5,6 +5,10 @@ import { RotateCcw } from "lucide-react";
 import { lookupContact, captureLead } from "@/lib/publicLeadFlow";
 import type { LeadType } from "@/lib/mundusReps";
 import MUNDUS_LOGO from "@/assets/mundus-logo.png";
+import { PhoneInput } from "@/components/company/CompanyProfilePage";
+
+const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+const isValidEmail = (v: string) => EMAIL_RE.test(v.trim());
 
 type Step =
   | "greet" | "email" | "lookup"
@@ -47,7 +51,7 @@ export default function MaxChatWidget({
 
   const submitEmail = async () => {
     const v = email.trim().toLowerCase();
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)) {
+    if (!isValidEmail(v)) {
       setErrorMsg(tk("invalidEmail", "Please enter a valid email."));
       return;
     }
