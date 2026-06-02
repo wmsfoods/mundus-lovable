@@ -1339,6 +1339,7 @@ export type Database = {
           role_id: string | null
           status: string | null
           updated_at: string | null
+          updated_by: string | null
           user_id: string | null
         }
         Insert: {
@@ -1362,6 +1363,7 @@ export type Database = {
           role_id?: string | null
           status?: string | null
           updated_at?: string | null
+          updated_by?: string | null
           user_id?: string | null
         }
         Update: {
@@ -1385,6 +1387,7 @@ export type Database = {
           role_id?: string | null
           status?: string | null
           updated_at?: string | null
+          updated_by?: string | null
           user_id?: string | null
         }
         Relationships: [
@@ -1400,6 +1403,13 @@ export type Database = {
             columns: ["role_id"]
             isOneToOne: false
             referencedRelation: "roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "company_users_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "users"
             referencedColumns: ["id"]
           },
           {
@@ -7288,6 +7298,10 @@ export type Database = {
         Returns: boolean
       }
       is_global_director: { Args: never; Returns: boolean }
+      is_last_master: {
+        Args: { p_company_id: string; p_excluding_user_id: string }
+        Returns: boolean
+      }
       is_mundus_admin: { Args: never; Returns: boolean }
       link_approved_user_request_by_email: {
         Args: { p_email: string }
