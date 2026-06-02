@@ -25,6 +25,7 @@ import {
 import { BarChart3, ShoppingBag, Settings2 } from "lucide-react";
 import { Globe } from "lucide-react";
 import { InsightsUpsellProvider } from "@/contexts/InsightsUpsellContext";
+import AppOnboarding from "@/components/onboarding/AppOnboarding";
 
 export default function BuyerShell() {
   return (
@@ -134,6 +135,7 @@ function BuyerShellInner() {
             userSubtitle={company?.name}
           />
         )}
+        <AppOnboarding role="buyer" />
       </div>
     </StackHeaderProvider>
   );
