@@ -669,10 +669,10 @@ function SupplierOfferBuyerStyleBody({
                     {fmtWeight(it.qtyKg, unit)} {wLbl}
                   </span>
                   <span className="num">
-                    US$ {fmtPrice(it.pricePerKgUsd, unit)}/{unit}
+                    US$ {fmtPrice(it.pricePerKgUsd, unit)}/{wLbl}
                   </span>
-                  <span className="num">US$ {fmtPrice(asking, unit)}/{unit}</span>
-                  <span className="num">US$ {fmtPrice(floor, unit)}/{unit}</span>
+                  <span className="num">US$ {fmtPrice(asking, unit)}/{wLbl}</span>
+                  <span className="num">US$ {fmtPrice(floor, unit)}/{wLbl}</span>
                 </div>
               );
             })}
