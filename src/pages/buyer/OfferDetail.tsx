@@ -30,6 +30,7 @@ const MONTH_NAMES = [
 ];
 
 import { countryToCode } from "@/lib/countryCodes";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 function formatShipment(month: number, year: number): string {
   return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
 }
@@ -450,7 +451,12 @@ function OfferDetailContent({
             {incotermLabels.length > 0 && (
               <span className="od-fcl-incoterms">
                 {incotermLabels.map((i) => (
-                  <span key={i} className="od-incoterm-pill">{i}</span>
+                  <span key={i} className="od-incoterm-pill">
+                    {formatIncotermWithPlace(i, {
+                      originPort: offer.origin_port,
+                      destinationNames: destinations,
+                    })}
+                  </span>
                 ))}
               </span>
             )}

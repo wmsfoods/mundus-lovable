@@ -3,6 +3,7 @@ import { Factory, ChevronRight } from "lucide-react";
 import { KnifeForkIcon, GridIcon, FlagSVG } from "@/components/icons";
 import { countryToCode } from "@/lib/countryCodes";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import type { PublicOffer } from "@/hooks/usePublicOffers";
 
 const MONTH_NAMES = [
@@ -57,24 +58,15 @@ export default function PublicOfferCard({
 
   const firstIncoterm = offer.incoterms?.[0] ?? null;
   const extraIncoterms = Math.max(0, (offer.incoterms?.length ?? 0) - 1);
-  const incotermPlace = (ic: string | null): string => {
-    if (!ic) return "";
-    const up = ic.toUpperCase();
-    if (up === "FOB" || up === "EXW") {
-      return offer.origin_port ? ` ${offer.origin_port}` : "";
-    }
-    if (up === "CFR" || up === "CIF" || up === "CNF" || up === "C&F") {
-      if (!marketsList.length) return "";
-      return marketsList.length === 1
-        ? ` ${marketsList[0]}`
-        : ` ${marketsList[0]} +${marketsList.length - 1}`;
-    }
-    return "";
-  };
+  const fmtIc = (ic: string | null) =>
+    formatIncotermWithPlace(ic, {
+      originPort: offer.origin_port,
+      destinationNames: marketsList,
+    });
   const incotermLabel = firstIncoterm
     ? extraIncoterms > 0
       ? `${firstIncoterm} +${extraIncoterms}`
-      : `${firstIncoterm}${incotermPlace(firstIncoterm)}`
+      : fmtIc(firstIncoterm)
     : offer.origin_port || "—";
   const allIncoterms = offer.incoterms ?? [];
 
@@ -280,7 +272,7 @@ export default function PublicOfferCard({
               <div className="dest-tooltip">
                 <div className="dest-tooltip-title">Available incoterms:</div>
                 {allIncoterms.map((inc, i) => (
-                  <div key={i} className="dest-tooltip-row">{inc}{incotermPlace(inc)}</div>
+                  <div key={i} className="dest-tooltip-row">{fmtIc(inc)}</div>
                 ))}
               </div>
             )}

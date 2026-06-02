@@ -10,6 +10,7 @@ import {
 import { FlagSVG } from "@/components/icons";
 import { countryToCode } from "@/lib/countryCodes";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import type { PublicOffer } from "@/hooks/usePublicOffers";
 
 const MONTH_NAMES = [
@@ -179,20 +180,14 @@ export default function PublicOfferModal({
               {(() => {
                 const list = offer.incoterms ?? [];
                 if (!list.length) return "—";
-                const place = (ic: string): string => {
-                  const up = ic.toUpperCase();
-                  if (up === "FOB" || up === "EXW") {
-                    return offer.origin_port ? ` ${offer.origin_port}` : "";
-                  }
-                  if (up === "CFR" || up === "CIF" || up === "CNF" || up === "C&F") {
-                    if (!markets.length) return "";
-                    return markets.length === 1
-                      ? ` ${markets[0]}`
-                      : ` ${markets[0]} +${markets.length - 1}`;
-                  }
-                  return "";
-                };
-                return list.map((ic) => `${ic}${place(ic)}`).join(", ");
+                return list
+                  .map((ic) =>
+                    formatIncotermWithPlace(ic, {
+                      originPort: offer.origin_port,
+                      destinationNames: markets,
+                    }),
+                  )
+                  .join(", ");
               })()}
             </Info>
             <Info label={t("public.home.containerSize", "Container size")}>

@@ -3,6 +3,7 @@ import { FlagSVG } from "@/components/icons";
 import { Gavel } from "lucide-react";
 import { AuctionCountdown } from "./AuctionCountdown";
 import { auctionClosesAt, auctionOpenedAt, type MockAuction } from "@/data/mockAuctions";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 
 type Props = {
   auction: MockAuction;
@@ -74,7 +75,12 @@ export function AuctionCard({ auction, onPlaceBid }: Props) {
         </div>
         <div className="cm">
           <span className="cm-label">{t("buyer.auctions.card.incoterm")}</span>
-          <span className="cm-value">{auction.incoterm}</span>
+          <span className="cm-value">
+            {formatIncotermWithPlace(auction.incoterm, {
+              originPort: auction.originCountry,
+              destinationNames: [auction.destCountry],
+            })}
+          </span>
         </div>
         <div className="cm">
           <span className="cm-label">{t("buyer.auctions.card.shipment")}</span>
