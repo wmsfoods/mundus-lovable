@@ -73,13 +73,13 @@ export default function Login() {
       <main className="auth-screen-scroll flex min-h-0 flex-1 flex-col md:flex-row md:items-center md:justify-center md:gap-16 md:py-10">
         <div className="auth-screen-scroll__content flex min-h-0 flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:gap-16 md:py-0 w-full">
         {/* Carousel — desktop only; hidden on mobile */}
-        <div className="relative hidden md:block md:max-w-[720px] md:ml-4 lg:ml-8 overflow-hidden rounded-3xl shadow-sm ring-1 ring-black/5 bg-neutral-100 isolate">
+        <div className="relative hidden md:block md:w-[420px] lg:w-[480px] md:max-h-[70vh] md:ml-4 lg:ml-8 overflow-hidden rounded-3xl shadow-sm ring-1 ring-black/5 bg-neutral-100 isolate aspect-[4/5]">
           {slides.map((src, i) => (
             <div
               key={i}
               className={cn(
-                "overflow-hidden rounded-3xl transition-opacity duration-1000",
-                i === slide ? "relative opacity-100" : "absolute inset-0 opacity-0",
+                "absolute inset-0 overflow-hidden rounded-3xl transition-opacity duration-1000",
+                i === slide ? "opacity-100" : "opacity-0",
               )}
             >
               <img
