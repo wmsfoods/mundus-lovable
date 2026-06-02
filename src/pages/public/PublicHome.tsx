@@ -7,23 +7,25 @@ import PublicOfferCard from "@/components/public/PublicOfferCard";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
 import { usePublicOffers, type PublicOffer } from "@/hooks/usePublicOffers";
 import {
-  ProteinFilter,
-  categoryToProtein,
-  type ProteinKey,
-} from "@/components/marketplace/ProteinFilter";
-import {
   OffersFilterBar,
   DEFAULT_OFFERS_FILTER,
   type OffersFilterState,
 } from "@/components/marketplace/OffersFilterBar";
 import heroAsset from "@/assets/hero-banner-bg.png.asset.json";
 
-function offerProtein(o: PublicOffer): Exclude<ProteinKey, "all"> | null {
+const PROTEIN_CODES = ["beef", "pork", "poultry", "lamb"] as const;
+type ProteinCode = typeof PROTEIN_CODES[number];
+const PROTEIN_EMOJI: Record<ProteinCode, string> = {
+  beef: "🥩", pork: "🐖", poultry: "🐓", lamb: "🐑",
+};
+
+function offerProteinCodes(o: PublicOffer): Set<string> {
+  const out = new Set<string>();
   for (const it of o.items) {
-    const p = categoryToProtein(it.category_name) || categoryToProtein(it.category_code);
-    if (p) return p;
+    const c = (it.category_code || "").trim().toLowerCase();
+    if (c) out.add(c);
   }
-  return null;
+  return out;
 }
 
 export default function PublicHome() {
@@ -33,7 +35,7 @@ export default function PublicHome() {
   const [chatOpen, setChatOpen] = useState(false);
   const offersRef = useRef<HTMLDivElement>(null);
 
-  const [protein, setProtein] = useState<ProteinKey>("all");
+  const [selectedProteins, setSelectedProteins] = useState<ProteinCode[]>([]);
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
   const filterOptions = useMemo(() => {
@@ -53,23 +55,21 @@ export default function PublicHome() {
   }, [offers]);
 
   const proteinAgg = useMemo(() => {
-    const counts: Record<Exclude<ProteinKey, "all">, number> = {
-      beef: 0, pork: 0, poultry: 0, ovine: 0,
-    };
+    const counts: Record<ProteinCode, number> = { beef: 0, pork: 0, poultry: 0, lamb: 0 };
     for (const o of offers) {
-      const p = offerProtein(o);
-      if (p) counts[p] += 1;
+      const codes = offerProteinCodes(o);
+      for (const k of PROTEIN_CODES) if (codes.has(k)) counts[k] += 1;
     }
-    const available = (Object.keys(counts) as Array<Exclude<ProteinKey, "all">>).filter(
-      (k) => counts[k] > 0,
-    );
-    return { counts, available };
+    return { counts };
   }, [offers]);
 
   const filtered = useMemo(() => {
     const q = filter.search.trim().toLowerCase();
     return offers.filter((o) => {
-      if (protein !== "all" && offerProtein(o) !== protein) return false;
+      if (selectedProteins.length > 0) {
+        const codes = offerProteinCodes(o);
+        if (!selectedProteins.some((p) => codes.has(p))) return false;
+      }
       if (filter.temp !== "all" && !o.items.some((it) => it.condition === filter.temp)) return false;
       if (filter.origins.length && (!o.origin_country || !filter.origins.includes(o.origin_country))) return false;
       if (filter.markets.length && !o.markets.some((m) => m.country && filter.markets.includes(m.country))) return false;
@@ -93,7 +93,7 @@ export default function PublicHome() {
       }
       return true;
     });
-  }, [offers, protein, filter]);
+  }, [offers, selectedProteins, filter]);
 
   const totalMT =
     filtered.reduce(
@@ -186,12 +186,33 @@ export default function PublicHome() {
             options={filterOptions}
             searchPlaceholder={t("public.home.searchPlaceholder", "Search products, ports...")}
             proteinNode={
-              <ProteinFilter
-                value={protein}
-                onChange={setProtein}
-                available={proteinAgg.available}
-                counts={proteinAgg.counts}
-              />
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Protein filter">
+                {PROTEIN_CODES.map((k) => {
+                  const on = selectedProteins.includes(k);
+                  const c = proteinAgg.counts[k];
+                  return (
+                    <button
+                      key={k}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() =>
+                        setSelectedProteins((prev) =>
+                          prev.includes(k) ? prev.filter((x) => x !== k) : [...prev, k],
+                        )
+                      }
+                      className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium transition ${
+                        on
+                          ? "border-[#8B2E4F] bg-[#8B2E4F] text-white"
+                          : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+                      }`}
+                    >
+                      <span aria-hidden>{PROTEIN_EMOJI[k]}</span>
+                      <span>{t(`public.home.protein_${k}`, k.charAt(0).toUpperCase() + k.slice(1))}</span>
+                      <span className={`rounded-full px-1.5 text-[10px] ${on ? "bg-white/20" : "bg-gray-100 text-gray-600"}`}>{c}</span>
+                    </button>
+                  );
+                })}
+              </div>
             }
           />
         </div>
