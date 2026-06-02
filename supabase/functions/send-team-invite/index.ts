@@ -8,6 +8,20 @@ const corsHeaders = {
 
 type Lang = 'en' | 'pt' | 'es' | 'fr' | 'zh'
 
+const DEFAULT_APP_URL = 'https://app.mundustrade.us'
+const ALLOWED_APP_HOSTS = new Set(['app.mundustrade.us', 'app.mundustrade.com'])
+
+function safeAppOrigin(value?: string) {
+  if (!value) return DEFAULT_APP_URL
+  try {
+    const url = new URL(value)
+    if (url.protocol === 'https:' && ALLOWED_APP_HOSTS.has(url.hostname)) {
+      return url.origin
+    }
+  } catch { /* ignore invalid URL */ }
+  return DEFAULT_APP_URL
+}
+
 const T: Record<Lang, {
   subject: (org: string) => string
   preheader: string
@@ -180,7 +194,7 @@ Deno.serve(async (req) => {
     const inviteId = cu.id
 
     // Send email via Resend gateway
-    const baseUrl = origin || 'https://app.mundustrade.us'
+    const baseUrl = safeAppOrigin(origin)
     const link = `${baseUrl}/invite/${token}`
     const lang = (['en','pt','es','fr','zh'].includes(language) ? language : 'en') as Lang
     const html = renderHtml(lang, { name: full_name, org: orgName, role: profileLabel(role, lang), link })
