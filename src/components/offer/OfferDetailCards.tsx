@@ -325,11 +325,26 @@ function OfferThumb({
         role={current ? "button" : undefined}
         aria-label={current ? `Open ${current.label}` : undefined}
       >
-        {current ? (
-          <img src={current.src} alt={current.label} />
-        ) : (
+        {gallery.length === 0 && (
           <span style={{ color: "#9ca3af", fontSize: 11 }}>No image</span>
         )}
+        {gallery.map((g, i) => (
+          <img
+            key={g.id}
+            src={g.src}
+            alt={g.label}
+            loading={i === 0 ? "eager" : "lazy"}
+            decoding="async"
+            draggable={false}
+            style={{
+              position: "absolute",
+              inset: 0,
+              opacity: i === idx ? 1 : 0,
+              transition: "opacity 350ms ease",
+              pointerEvents: "none",
+            }}
+          />
+        ))}
         {illustrativeLabel && <span className="ofc-illu-tag">{illustrativeLabel}</span>}
       </div>
       {gallery.length > 1 && (
