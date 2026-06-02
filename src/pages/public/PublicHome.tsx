@@ -270,6 +270,25 @@ export default function PublicHome() {
         </div>
       </section>
 
+      {/* How it works — animated feature highlight */}
+      <section className="border-t border-gray-100 bg-gradient-to-b from-white to-[#FAF7F5]">
+        <FeatureHighlight
+          eyebrow={t("public.home.howItWorksEyebrow", "How it works")}
+          title={t("public.home.howItWorksTitle", "Simple. Powerful. Direct.")}
+          features={[
+            <><span aria-hidden>☕</span> Grab a coffee from the corner cafe.</>,
+            <><span aria-hidden>📱</span> Load up your Mundus app.</>,
+            <><span aria-hidden>🚢</span> Order new containers online.</>,
+            <><span aria-hidden>🏭</span> Have it produced and delivered.</>,
+            <><span aria-hidden>📢</span> Suppliers post new offers.</>,
+            <><span aria-hidden>🛒</span> Buyers create new demands.</>,
+            <><span aria-hidden>🔗</span> All from a single source of truth.</>,
+            <><span aria-hidden>🤝</span> Directly with each other.</>,
+          ]}
+          footer={<><span aria-hidden>🥩⚡</span>&nbsp;Just look at Mundus for instant meat B2B deals.</>}
+        />
+      </section>
+
       <PublicOfferModal
         offer={detailOffer}
         onClose={() => setDetailOffer(null)}
