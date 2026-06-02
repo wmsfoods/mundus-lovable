@@ -185,14 +185,14 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
   };
 
   return (
-    <div className="adm-page" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+    <div className="adm-page cu-page" style={{ padding: 12, display: "flex", flexDirection: "column", gap: 8 }}>
+      <div className="cu-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
         <h1 style={{ fontSize: 14, fontWeight: 700, color: "#1a1a18", display: "flex", alignItems: "center", gap: 6, margin: 0 }}>
           <Users2 size={15} /> {t("shell.nav.users", { defaultValue: "Users" })}
           <span style={{ fontSize: 11, color: "#908d85", fontWeight: 500, marginLeft: 6 }}>{company?.name ?? ""}</span>
         </h1>
         {canManage && (
-          <button onClick={() => setInviteOpen(true)}
+          <button className="cu-invite" onClick={() => setInviteOpen(true)}
             style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "6px 10px", borderRadius: 6,
               border: "none", background: "#8B2252", color: "white", fontSize: 12, fontWeight: 600, cursor: "pointer" }}>
             <Plus size={13} /> Invite User
@@ -201,11 +201,11 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
       </div>
 
       <div className="adm-panel" style={{ overflow: "hidden", border: "1px solid rgba(0,0,0,0.06)", borderRadius: 8, background: "white" }}>
-        <div style={{
+        <div className="cu-filters" style={{
           display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center",
           padding: "6px 8px", borderBottom: "1px solid rgba(0,0,0,0.06)", background: "#fafaf9",
         }}>
-          <div style={{ position: "relative", flex: "1 1 220px", minWidth: 180 }}>
+          <div className="cu-search" style={{ position: "relative", flex: "1 1 220px", minWidth: 180 }}>
             <SearchIcon size={12} style={{ position: "absolute", left: 8, top: 7, color: "#908d85" }} />
             <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search name or email…"
               style={{ width: "100%", padding: "5px 8px 5px 24px", fontSize: 11, border: "1px solid rgba(0,0,0,0.10)", borderRadius: 5, background: "white" }} />
@@ -222,11 +222,12 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
             <option value="invited">Invited</option>
             <option value="inactive">Inactive</option>
           </select>
-          <span style={{ marginLeft: "auto", fontSize: 10, color: "#908d85" }}>
+          <span className="cu-count" style={{ marginLeft: "auto", fontSize: 10, color: "#908d85" }}>
             {filtered.length} of {data.length}
           </span>
         </div>
 
+        <div className="cu-table-wrap">
         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
           <thead>
             <tr style={{ background: "#fafaf9", textAlign: "left" }}>
@@ -306,8 +307,76 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
             })}
           </tbody>
         </table>
+        </div>
 
-        <div style={{
+        {/* Mobile card list (hidden on desktop via CSS) */}
+        <div className="cu-cards">
+          {isLoading && <div style={{ padding: 20, textAlign: "center", color: "#908d85", fontSize: 12 }}>Loading…</div>}
+          {!isLoading && data.length === 0 && (
+            <div style={{ padding: 24, textAlign: "center", color: "#908d85", fontSize: 12 }}>
+              No users yet. Tap <strong>Invite User</strong> to add your first teammate.
+            </div>
+          )}
+          {!isLoading && data.length > 0 && paged.length === 0 && (
+            <div style={{ padding: 20, textAlign: "center", color: "#908d85", fontSize: 12 }}>No users match these filters</div>
+          )}
+          {paged.map((m) => {
+            const active = m.status === "active";
+            return (
+              <div key={m.id} className="cu-card" style={{ opacity: m.status === "inactive" ? 0.65 : 1 }}>
+                <div className="cu-card-top">
+                  <Avatar name={m.name} email={m.email} url={m.avatarUrl} />
+                  <div style={{ minWidth: 0, flex: 1 }}>
+                    <div className="cu-name">{m.name}</div>
+                    {m.jobTitle && <div className="cu-job">{m.jobTitle}</div>}
+                  </div>
+                  {canManage && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button type="button" disabled={busyId === m.id} className="cu-actions-btn" aria-label="Actions">
+                          <MoreVertical size={18} />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" style={{ minWidth: 220 }}>
+                        {m.status === "invited" && (
+                          <DropdownMenuItem onClick={() => resendInvite(m)}>
+                            <Mail size={14} /> Resend invite
+                          </DropdownMenuItem>
+                        )}
+                        {m.status === "active" && (
+                          <DropdownMenuItem onClick={() => sendReset(m)}>
+                            <KeyRound size={14} /> Send password reset
+                          </DropdownMenuItem>
+                        )}
+                        <DropdownMenuItem onClick={() => setEditing(m)}>
+                          <Pencil size={14} /> Edit
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        {active ? (
+                          <DropdownMenuItem onClick={() => setStatus(m, "inactive")} style={{ color: "#b91c1c" }}>
+                            <Ban size={14} /> Deactivate
+                          </DropdownMenuItem>
+                        ) : (
+                          <DropdownMenuItem onClick={() => setStatus(m, "active")}>
+                            <CheckCircle2 size={14} /> Reactivate
+                          </DropdownMenuItem>
+                        )}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
+                <div className="cu-card-email">{m.email}</div>
+                <div className="cu-card-meta">
+                  <RoleBadge role={m.profileType} roles={roles} />
+                  <StatusBadge status={m.status} />
+                  <span className="cu-last">Last login: {fmtDate(m.lastLoginAt)}</span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="cu-pager" style={{
           display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8,
           padding: "8px 10px", borderTop: "1px solid rgba(0,0,0,0.06)", background: "#fafaf9", fontSize: 11, color: "#5e5e58",
         }}>
