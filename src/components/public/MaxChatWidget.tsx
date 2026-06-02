@@ -204,11 +204,28 @@ export default function MaxChatWidget({
             <button onClick={goEmail} className="w-full rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("start", "Start")}</button>
           )}
           {step === "email" && (
-            <div className="flex gap-2">
-              <input type="email" autoFocus value={email} onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@company.com"
-                className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              <button onClick={submitEmail} className="rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">→</button>
+            <div className="space-y-1">
+              <div className="flex gap-2">
+                <input
+                  type="email"
+                  inputMode="email"
+                  autoComplete="email"
+                  autoFocus
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (errorMsg) setErrorMsg(""); }}
+                  onKeyDown={(e) => { if (e.key === "Enter" && isValidEmail(email)) submitEmail(); }}
+                  placeholder="you@company.com"
+                  className={`flex-1 rounded-md border px-3 py-2 text-sm ${errorMsg ? "border-red-400" : "border-gray-300"}`}
+                />
+                <button
+                  onClick={submitEmail}
+                  disabled={!isValidEmail(email)}
+                  className="rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  →
+                </button>
+              </div>
+              {errorMsg && <div className="px-1 text-[11px] text-red-500">{errorMsg}</div>}
             </div>
           )}
           {step === "lookup" && <div className="text-xs text-gray-500">{tk("checking", "Checking…")}</div>}
@@ -225,9 +242,14 @@ export default function MaxChatWidget({
             </div>
           )}
           {step === "phone" && (
-            <div className="flex gap-2">
-              <input autoFocus value={phone} onChange={(e) => setPhone(e.target.value)} className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm" />
-              <button onClick={() => setStep("country")} className="rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">→</button>
+            <div className="space-y-2">
+              <PhoneInput value={phone} onChange={setPhone} />
+              <button
+                onClick={() => setStep("country")}
+                className="w-full rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white"
+              >
+                {phone.trim() ? tk("continue", "Continue") : tk("skip", "Skip")}
+              </button>
             </div>
           )}
           {step === "country" && (
