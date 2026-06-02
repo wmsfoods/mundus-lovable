@@ -12,6 +12,7 @@ import {
   type OffersFilterState,
 } from "@/components/marketplace/OffersFilterBar";
 import heroAsset from "@/assets/hero-banner-bg.png.asset.json";
+import { BlurFade } from "@/components/ui/blur-fade";
 
 const PROTEIN_CODES = ["beef", "pork", "poultry", "lamb"] as const;
 type ProteinCode = typeof PROTEIN_CODES[number];
@@ -126,17 +127,21 @@ export default function PublicHome() {
             <Utensils size={12} />
             {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
           </span>
-          <h1 className="mt-3 max-w-3xl text-2xl font-bold leading-tight sm:text-3xl">
-            {t("public.home.heroTitleLine1", "Excellence in every cut,")}
-            <br />
-            {t("public.home.heroTitleLine2", "value in every purchase.")}
-          </h1>
-          <p className="mt-2 max-w-2xl text-xs text-white/85 sm:text-sm">
-            {t(
-              "public.home.heroSubtitle",
-              "Browse live container offers from vetted suppliers across the globe. Negotiate faster, in fewer rounds, with full price and incoterm control.",
-            )}
-          </p>
+          <BlurFade delay={0.25} inView>
+            <h1 className="mt-3 max-w-3xl text-2xl font-bold leading-tight sm:text-3xl">
+              {t("public.home.heroTitleLine1", "Excellence in every cut,")}
+              <br />
+              {t("public.home.heroTitleLine2", "value in every purchase.")}
+            </h1>
+          </BlurFade>
+          <BlurFade delay={0.5} inView>
+            <p className="mt-2 max-w-2xl text-xs text-white/85 sm:text-sm">
+              {t(
+                "public.home.heroSubtitle",
+                "Browse live container offers from vetted suppliers across the globe. Negotiate faster, in fewer rounds, with full price and incoterm control.",
+              )}
+            </p>
+          </BlurFade>
           <div className="mt-4 flex flex-wrap gap-3">
             <button
               onClick={() => navigate("/signup")}
