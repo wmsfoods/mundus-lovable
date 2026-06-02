@@ -450,7 +450,12 @@ function OfferDetailContent({
             {incotermLabels.length > 0 && (
               <span className="od-fcl-incoterms">
                 {incotermLabels.map((i) => (
-                  <span key={i} className="od-incoterm-pill">{i}</span>
+                  <span key={i} className="od-incoterm-pill">
+                    {formatIncotermWithPlace(i, {
+                      originPort: offer.origin_port,
+                      destinationNames: destinations,
+                    })}
+                  </span>
                 ))}
               </span>
             )}
