@@ -27,8 +27,12 @@ export default function ForgotPassword() {
     e.preventDefault();
     if (!email || submitting || cooldown > 0) return;
     setSubmitting(true);
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`,
+    const { error } = await supabase.functions.invoke("send-password-reset", {
+      body: {
+        email,
+        redirectTo: `${window.location.origin}/reset-password`,
+        language: (typeof navigator !== "undefined" ? navigator.language?.slice(0, 2) : "en") || "en",
+      },
     });
     setSubmitting(false);
     // Always show the same neutral response to avoid account enumeration.
