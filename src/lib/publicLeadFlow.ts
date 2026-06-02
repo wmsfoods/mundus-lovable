@@ -21,6 +21,7 @@ export interface CapturePayload {
   phone?: string;
   country?: string;
   protein?: string;
+  proteins?: string[];
   lead_type?: LeadType;
   mundus_rep?: string;
   lang?: string;
