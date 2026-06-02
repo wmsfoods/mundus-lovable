@@ -415,49 +415,72 @@ export default function AdminProspectDetail() {
             )}
           </div>
         </div>
-        <div className="crm-chips">
+        <div className="crm-chips crm-chips-labeled">
           {/* Active/Inactive */}
-          <span className={`pill ${p.isActive ? "stage-qualified" : "stage-lost"}`}>
-            {p.isActive ? t("admin.crm.detail.status.active") : t("admin.crm.detail.status.inactive")}
-          </span>
+          <div className="crm-chip-group">
+            <span className="crm-chip-label">{t("admin.crm.detail.fields.status", { defaultValue: "Status" })}</span>
+            <span className={`pill ${p.isActive ? "stage-qualified" : "stage-lost"}`}>
+              {p.isActive ? t("admin.crm.detail.status.active") : t("admin.crm.detail.status.inactive")}
+            </span>
+          </div>
           {/* Stage */}
-          {editing ? (
-            <select className="psp-chip-select" value={d.stage}
-              onChange={(e) => setDraftField("stage", e.target.value as ProspectStage)}>
-              {STAGES.map(s => <option key={s} value={s}>{t(`admin.crm.stages.${s}`)}</option>)}
-            </select>
-          ) : (
-            <span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span>
-          )}
+          <div className="crm-chip-group">
+            <span className="crm-chip-label">{t("admin.crm.detail.fields.stage", { defaultValue: "Stage" })}</span>
+            {editing ? (
+              <select className="psp-chip-select" value={d.stage}
+                onChange={(e) => setDraftField("stage", e.target.value as ProspectStage)}>
+                {STAGES.map(s => <option key={s} value={s}>{t(`admin.crm.stages.${s}`)}</option>)}
+              </select>
+            ) : (
+              <span className={`pill stage-${p.stage}`}>{t(`admin.crm.stages.${p.stage}`)}</span>
+            )}
+          </div>
           {/* Lead type */}
-          {editing ? (
-            <select className="psp-chip-select" value={d.leadType}
-              onChange={(e) => setDraftField("leadType", e.target.value as LeadType)}>
-              {LEAD_TYPES.map(lt => <option key={lt} value={lt}>{t(`admin.crm.detail.leadType.${lt}`)}</option>)}
-            </select>
-          ) : (
-            <span className="pill info">{t(`admin.crm.detail.leadType.${p.leadType}`)}</span>
+          <div className="crm-chip-group">
+            <span className="crm-chip-label">{t("admin.crm.detail.fields.leadType", { defaultValue: "Lead type" })}</span>
+            {editing ? (
+              <select className="psp-chip-select" value={d.leadType}
+                onChange={(e) => setDraftField("leadType", e.target.value as LeadType)}>
+                {LEAD_TYPES.map(lt => <option key={lt} value={lt}>{t(`admin.crm.detail.leadType.${lt}`)}</option>)}
+              </select>
+            ) : (
+              <span className="pill info">{t(`admin.crm.detail.leadType.${p.leadType}`)}</span>
+            )}
+          </div>
+          {p.isOnboarded && (
+            <div className="crm-chip-group">
+              <span className="crm-chip-label">{t("admin.crm.detail.fields.onboarded", { defaultValue: "Onboarded" })}</span>
+              <span className="pill stage-onboarded">{t("admin.crm.detail.status.onboarded")}</span>
+            </div>
           )}
-          {p.isOnboarded && <span className="pill stage-onboarded">{t("admin.crm.detail.status.onboarded")}</span>}
           {/* Source */}
-          {editing ? (
-            <select className="psp-chip-select" value={d.source}
-              onChange={(e) => setDraftField("source", e.target.value as ProspectSource)}>
-              {SOURCES.map(s => <option key={s} value={s}>{t(`admin.crm.sources.${s}`)}</option>)}
-            </select>
-          ) : (
-            <span className={`crm-source ${p.source}`}>{t(`admin.crm.sources.${p.source}`)}</span>
-          )}
+          <div className="crm-chip-group">
+            <span className="crm-chip-label">{t("admin.crm.detail.fields.source", { defaultValue: "Source" })}</span>
+            {editing ? (
+              <select className="psp-chip-select" value={d.source}
+                onChange={(e) => setDraftField("source", e.target.value as ProspectSource)}>
+                {SOURCES.map(s => <option key={s} value={s}>{t(`admin.crm.sources.${s}`)}</option>)}
+              </select>
+            ) : (
+              <span className={`crm-source ${p.source}`}>{t(`admin.crm.sources.${p.source}`)}</span>
+            )}
+          </div>
           {/* Owner */}
-          {editing ? (
-            <select className="psp-chip-select" value={d.owner}
-              onChange={(e) => setDraftField("owner", e.target.value)}>
-              {mundusTeam.map(o => <option key={o.id} value={o.initials}>{o.initials} — {o.name}</option>)}
-            </select>
-          ) : (
-            <span className="crm-chip"><span className="crm-owner-av">{p.owner}</span> {p.ownerName}</span>
-          )}
-          <span className="crm-chip">{t("admin.crm.detail.created")}: {p.createdAt}</span>
+          <div className="crm-chip-group">
+            <span className="crm-chip-label">{t("admin.crm.detail.fields.owner", { defaultValue: "Owner" })}</span>
+            {editing ? (
+              <select className="psp-chip-select" value={d.owner}
+                onChange={(e) => setDraftField("owner", e.target.value)}>
+                {mundusTeam.map(o => <option key={o.id} value={o.initials}>{o.initials} — {o.name}</option>)}
+              </select>
+            ) : (
+              <span className="crm-chip"><span className="crm-owner-av">{p.owner}</span> {p.ownerName}</span>
+            )}
+          </div>
+          <div className="crm-chip-group">
+            <span className="crm-chip-label">{t("admin.crm.detail.created")}</span>
+            <span className="crm-chip">{p.createdAt}</span>
+          </div>
         </div>
       </div>
 
