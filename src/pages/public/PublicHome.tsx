@@ -127,14 +127,14 @@ export default function PublicHome() {
             <Utensils size={10} />
             {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
           </span>
-          <BlurFade delay={0.25} inView>
+          <BlurFade delay={0.15} duration={0.6} yOffset={12} blur="10px">
             <h1 className="mt-2 max-w-3xl text-xl font-bold leading-tight sm:text-2xl">
               {t("public.home.heroTitleLine1", "Excellence in every cut,")}
               <br />
               {t("public.home.heroTitleLine2", "value in every purchase.")}
             </h1>
           </BlurFade>
-          <BlurFade delay={0.5} inView>
+          <BlurFade delay={0.45} duration={0.6} yOffset={10} blur="8px">
             <p className="mt-1.5 max-w-2xl text-[11px] text-white/85 sm:text-xs">
               {t(
                 "public.home.heroSubtitle",
