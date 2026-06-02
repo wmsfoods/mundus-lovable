@@ -6,6 +6,10 @@ import {
   ArrowLeftIcon,
   CopyIcon,
   ShareIcon,
+  TagIcon,
+  ChevronDownIcon,
+  MapPinIcon,
+  FlagSVG,
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
@@ -24,9 +28,28 @@ import { Button } from "@/components/ui/button";
 import { publicUrl } from "@/lib/publicUrl";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { auditLog } from "@/lib/auditLog";
-import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
-import { OfferDetailLayout, type OfferItemRow } from "@/components/offer/OfferDetailLayout";
+import {
+  useOfferDestinationPorts,
+  OfferDestinationPorts,
+} from "@/components/offer/OfferDestinationPorts";
+import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
 import { countryFlag } from "@/lib/countryFlags";
+import { countryToCode } from "@/lib/countryCodes";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel } from "@/lib/units";
+
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function formatPriceUsd(n: number): string {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n);
+}
 
 export default function SupplierOfferDetail() {
   const { id = "" } = useParams<{ id: string }>();
