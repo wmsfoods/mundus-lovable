@@ -16,6 +16,37 @@
 
 export type Incoterm = "FOB" | "EXW" | "CFR" | "CIF" | string;
 
+/**
+ * Format an incoterm with the correct accompanying place per Incoterms rules:
+ *  - FOB / EXW → named place is the ORIGIN port
+ *  - CFR / CIF / CNF → named place is the DESTINATION port (or destination country if no port)
+ * Returns just the incoterm code if no place is available.
+ */
+export function formatIncotermWithPlace(
+  incoterm: string | null | undefined,
+  opts: {
+    originPort?: string | null;
+    destinationPorts?: string[];
+    destinationNames?: string[];
+  },
+): string {
+  const ic = (incoterm ?? "").toString();
+  if (!ic) return "—";
+  const up = ic.toUpperCase();
+  const { originPort, destinationPorts = [], destinationNames = [] } = opts;
+  if (up === "FOB" || up === "EXW") {
+    return originPort ? `${ic} ${originPort}` : ic;
+  }
+  if (up === "CFR" || up === "CIF" || up === "CNF" || up === "C&F") {
+    const places = destinationPorts.length ? destinationPorts : destinationNames;
+    if (!places.length) return ic;
+    return places.length === 1
+      ? `${ic} ${places[0]}`
+      : `${ic} ${places[0]} +${places.length - 1}`;
+  }
+  return ic;
+}
+
 export function getIncotermAddOn(
   incoterm: string | null | undefined,
   freightPerKg: number,
