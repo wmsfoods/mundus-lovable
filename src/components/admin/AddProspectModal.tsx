@@ -4,9 +4,10 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
-  addProspect, OWNERS,
+  addProspect,
   type ProspectRole, type ProspectSource,
 } from "@/hooks/useAdminProspects";
+import { useMundusTeam } from "@/hooks/useMundusTeam";
 import { ScanCardButton } from "./ScanCardButton";
 
 const COUNTRIES = [
@@ -33,10 +34,11 @@ type Props = { open: boolean; onOpenChange: (v: boolean) => void };
 export function AddProspectModal({ open, onOpenChange }: Props) {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const { team: mundusTeam } = useMundusTeam();
   const [form, setForm] = useState({
     companyName: "", country: "BR", role: "potential_supplier" as ProspectRole,
     source: "wms_import" as ProspectSource, contactName: "", contactEmail: "",
-    contactPhone: "", estGmv: "", owner: "FN", notes: "",
+    contactPhone: "", estGmv: "", owner: "", notes: "",
   });
   const [err, setErr] = useState<string | null>(null);
 
@@ -115,7 +117,8 @@ export function AddProspectModal({ open, onOpenChange }: Props) {
             <label className="crm-field">
               <span>{t("admin.crm.add.owner")} *</span>
               <select value={form.owner} onChange={(e) => update("owner", e.target.value)}>
-                {OWNERS.map((o) => <option key={o.initials} value={o.initials}>{o.initials} — {o.name}</option>)}
+                <option value="" disabled>{t("admin.crm.add.owner")}</option>
+                {mundusTeam.map((o) => <option key={o.id} value={o.initials}>{o.initials} — {o.name}</option>)}
               </select>
             </label>
           </div>

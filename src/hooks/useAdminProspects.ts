@@ -78,15 +78,20 @@ export const PIPELINE_STAGES: ProspectStage[] = [
   "new", "researching", "contacted", "qualified", "onboarding", "onboarded",
 ];
 
-export const OWNERS: Array<{ initials: string; name: string }> = [
-  { initials: "FN", name: "Fernando Nascimento" },
-  { initials: "MS", name: "Maria Silva" },
-  { initials: "JC", name: "João Costa" },
-  { initials: "AT", name: "Ana Torres" },
-];
+import { getMundusTeamSync } from "./useMundusTeam";
 
-const ownerName = (initials: string) =>
-  OWNERS.find((o) => o.initials === initials)?.name ?? initials;
+/**
+ * Real owners come from the Mundus team table (DB). This helper returns
+ * the current snapshot; callers that need reactivity should use
+ * `useMundusTeam()` directly.
+ */
+export const getOwners = (): Array<{ initials: string; name: string }> =>
+  getMundusTeamSync().map((m) => ({ initials: m.initials, name: m.name }));
+
+const ownerName = (initials: string) => {
+  const team = getMundusTeamSync();
+  return team.find((o) => o.initials === initials)?.name ?? initials;
+};
 
 const initialsOf = (name: string) => {
   const parts = name.replace(/[^A-Za-z\s]/g, "").split(/\s+/).filter(Boolean);
@@ -502,7 +507,13 @@ export function getFunnelMetrics(_list: Prospect[]): Array<{ from: ProspectStage
 
 export function getOwnerLeaderboard(list: Prospect[]) {
   const map = new Map<string, { initials: string; name: string; activeCount: number; qualified: number; onboarded: number }>();
-  for (const o of OWNERS) map.set(o.initials, { initials: o.initials, name: o.name, activeCount: 0, qualified: 0, onboarded: 0 });
+  for (const o of getOwners()) map.set(o.initials, { initials: o.initials, name: o.name, activeCount: 0, qualified: 0, onboarded: 0 });
+  // Include any owners present in the list but missing from the team snapshot
+  for (const p of list) {
+    if (!map.has(p.owner)) {
+      map.set(p.owner, { initials: p.owner, name: p.ownerName || p.owner, activeCount: 0, qualified: 0, onboarded: 0 });
+    }
+  }
   for (const p of list) {
     const row = map.get(p.owner);
     if (!row) continue;

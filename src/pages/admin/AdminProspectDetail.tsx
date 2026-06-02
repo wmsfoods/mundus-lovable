@@ -13,11 +13,12 @@ import {
   useProspect, updateProspectStage, addProspectActivity,
   updateProspect, deactivateProspect, reactivateProspect, deleteProspect,
   upsertContact, deleteContact,
-  STAGES, OWNERS,
+  STAGES,
   type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel,
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import { useMundusTeam } from "@/hooks/useMundusTeam";
 import { enrichContact } from "@/lib/prospectEnrich";
 
 const STAGE_TO_DB: Record<ProspectStage, string> = {
@@ -121,6 +122,7 @@ export default function AdminProspectDetail() {
   const { t } = useTranslation();
   const nav = useNavigate();
   const mock = useProspect(id);
+  const { team: mundusTeam } = useMundusTeam();
   const isDbProspect = !!id && !id.startsWith("pr-");
   const [dbP, setDbP] = useState<Prospect | null>(null);
   const [dbLoading, setDbLoading] = useState(false);
@@ -224,7 +226,7 @@ export default function AdminProspectDetail() {
       street: draft.street, city: draft.city, state: draft.state, zipCode: draft.zipCode,
       country: draft.country, industry: draft.industry, website: draft.website,
       companyLinkedin: draft.companyLinkedin, notes: draft.notes,
-      source: draft.source, owner: draft.owner, ownerName: OWNERS.find(o => o.initials === draft.owner)?.name ?? draft.owner,
+      source: draft.source, owner: draft.owner, ownerName: mundusTeam.find(o => o.initials === draft.owner)?.name ?? draft.owner,
     });
     if (draft.stage !== p.stage) {
       updateProspectStage(p.id, draft.stage);
@@ -446,7 +448,7 @@ export default function AdminProspectDetail() {
           {editing ? (
             <select className="psp-chip-select" value={d.owner}
               onChange={(e) => setDraftField("owner", e.target.value)}>
-              {OWNERS.map(o => <option key={o.initials} value={o.initials}>{o.initials} — {o.name}</option>)}
+              {mundusTeam.map(o => <option key={o.id} value={o.initials}>{o.initials} — {o.name}</option>)}
             </select>
           ) : (
             <span className="crm-chip"><span className="crm-owner-av">{p.owner}</span> {p.ownerName}</span>
