@@ -42,6 +42,7 @@ const fmtGmv = (v?: number) =>
 export default function AdminProspects() {
   const { t } = useTranslation();
   const nav = useNavigate();
+  const { team: mundusTeam } = useMundusTeam();
   const [section, setSection] = useState<"prospects" | "c_level">("prospects");
   const [list, setList] = useState<Prospect[]>([]);
   const [totalCount, setTotalCount] = useState(0);
