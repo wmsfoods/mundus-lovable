@@ -281,7 +281,11 @@
       "filterMarket": "Destino",
       "filterAll": "Todos",
       "searchPlaceholder": "Buscar productos, puertos…",
-      "noMatch": "Ninguna oferta coincide con tus filtros."
+      "noMatch": "Ninguna oferta coincide con tus filtros.",
+      "protein_beef": "Vacuno",
+      "protein_pork": "Cerdo",
+      "protein_poultry": "Aves",
+      "protein_lamb": "Cordero"
     },
     "chat": {
       "title": "Max — Asistente de Mundus",
@@ -313,7 +317,12 @@
       "doneSupplier": "¡Perfecto! Las ofertas de la vitrina son exclusivas para compradores aprobados. Como proveedor, revisaremos tu registro y un representante de Mundus se pondrá en contacto pronto.",
       "errorBody": "Algo salió mal. Intenta de nuevo en un momento.",
       "retry": "Reintentar",
-      "startOver": "Empezar de nuevo"
+      "startOver": "Empezar de nuevo",
+      "protein_beef": "Vacuno",
+      "protein_pork": "Cerdo",
+      "protein_poultry": "Aves",
+      "protein_lamb": "Cordero",
+      "continue": "Continuar"
     },
     "lead": {
       "success": {

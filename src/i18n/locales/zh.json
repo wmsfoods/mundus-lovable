@@ -281,7 +281,11 @@
       "filterMarket": "目标市场",
       "filterAll": "全部",
       "searchPlaceholder": "搜索产品、港口…",
-      "noMatch": "没有报价符合您的筛选条件。"
+      "noMatch": "没有报价符合您的筛选条件。",
+      "protein_beef": "牛肉",
+      "protein_pork": "猪肉",
+      "protein_poultry": "禽肉",
+      "protein_lamb": "羊肉"
     },
     "chat": {
       "title": "Max — Mundus 助手",
@@ -313,7 +317,12 @@
       "doneSupplier": "太好了!展示报价仅向已审核的买家开放。作为供应商,我们将审核您的注册信息,Mundus 代表会尽快与您联系。",
       "errorBody": "出错了。请稍后再试。",
       "retry": "重试",
-      "startOver": "重新开始"
+      "startOver": "重新开始",
+      "protein_beef": "牛肉",
+      "protein_pork": "猪肉",
+      "protein_poultry": "禽肉",
+      "protein_lamb": "羊肉",
+      "continue": "继续"
     },
     "lead": {
       "success": {

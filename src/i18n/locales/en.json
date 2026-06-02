@@ -281,7 +281,11 @@
       "filterMarket": "Market",
       "filterAll": "All",
       "searchPlaceholder": "Search products, ports…",
-      "noMatch": "No offers match your filters."
+      "noMatch": "No offers match your filters.",
+      "protein_beef": "Beef",
+      "protein_pork": "Pork",
+      "protein_poultry": "Poultry",
+      "protein_lamb": "Lamb"
     },
     "chat": {
       "title": "Max — Mundus Assistant",
@@ -313,7 +317,12 @@
       "doneSupplier": "Perfect! The showcase offers are exclusive to approved buyers. As a supplier, we'll review your registration and a Mundus rep will reach out soon.",
       "errorBody": "Something went wrong. Please try again in a moment.",
       "retry": "Retry",
-      "startOver": "Start over"
+      "startOver": "Start over",
+      "protein_beef": "Beef",
+      "protein_pork": "Pork",
+      "protein_poultry": "Poultry",
+      "protein_lamb": "Lamb",
+      "continue": "Continue"
     },
     "lead": {
       "success": {
