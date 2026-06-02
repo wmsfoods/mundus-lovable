@@ -30,6 +30,7 @@ const MONTH_NAMES = [
 ];
 
 import { countryToCode } from "@/lib/countryCodes";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 function formatShipment(month: number, year: number): string {
   return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
 }
