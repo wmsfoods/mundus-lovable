@@ -7279,6 +7279,14 @@ export type Database = {
       }
       is_global_director: { Args: never; Returns: boolean }
       is_mundus_admin: { Args: never; Returns: boolean }
+      link_approved_user_request_by_email: {
+        Args: { p_email: string }
+        Returns: {
+          company_id: string
+          request_id: string
+          user_id: string
+        }[]
+      }
       market_cut_benchmark: {
         Args: {
           p_destination_country?: string
