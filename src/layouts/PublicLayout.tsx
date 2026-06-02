@@ -9,7 +9,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
   const { user } = useAuth();
 
   return (
-    <div className="min-h-screen bg-[#F4F4F7] text-[#1A1A2E]">
+    <div className="min-h-screen bg-white text-[#1A1A2E]">
       <header className="border-b border-gray-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/home" className="flex items-center" aria-label="Mundus Trade">
