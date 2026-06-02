@@ -80,30 +80,13 @@ export const PIPELINE_STAGES: ProspectStage[] = [
 
 import { getMundusTeamSync } from "./useMundusTeam";
 
-// Backwards-compat shim: real owners come from the Mundus team (DB).
-// We keep `OWNERS` as a getter-backed array proxy so existing callers
-// that read it synchronously still work once the team has loaded.
-export const OWNERS: Array<{ initials: string; name: string }> = new Proxy(
-  [] as Array<{ initials: string; name: string }>,
-  {
-    get(_t, prop) {
-      const team = getMundusTeamSync().map((m) => ({ initials: m.initials, name: m.name }));
-      // @ts-ignore
-      return team[prop as any];
-    },
-    has(_t, prop) {
-      const team = getMundusTeamSync();
-      return prop in team;
-    },
-    ownKeys() {
-      return Reflect.ownKeys(getMundusTeamSync());
-    },
-    getOwnPropertyDescriptor(_t, prop) {
-      const team = getMundusTeamSync().map((m) => ({ initials: m.initials, name: m.name }));
-      return Object.getOwnPropertyDescriptor(team, prop);
-    },
-  },
-);
+/**
+ * Real owners come from the Mundus team table (DB). This helper returns
+ * the current snapshot; callers that need reactivity should use
+ * `useMundusTeam()` directly.
+ */
+export const getOwners = (): Array<{ initials: string; name: string }> =>
+  getMundusTeamSync().map((m) => ({ initials: m.initials, name: m.name }));
 
 const ownerName = (initials: string) => {
   const team = getMundusTeamSync();
