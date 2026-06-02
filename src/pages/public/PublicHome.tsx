@@ -7,6 +7,7 @@ import PublicOfferCard from "@/components/public/PublicOfferCard";
 import PublicOfferModal from "@/components/public/PublicOfferModal";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
 import { usePublicOffers, type PublicOffer } from "@/hooks/usePublicOffers";
+import { FeatureHighlight } from "@/components/ui/feature-highlight";
 import {
   OffersFilterBar,
   DEFAULT_OFFERS_FILTER,
