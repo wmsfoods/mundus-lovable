@@ -1,8 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Utensils } from "lucide-react";
-import { AnimatePresence, motion } from "framer-motion";
 import PublicLayout from "@/layouts/PublicLayout";
 import PublicOfferCard from "@/components/public/PublicOfferCard";
 import PublicOfferModal from "@/components/public/PublicOfferModal";
@@ -33,37 +32,40 @@ const HERO_PHRASES: { emoji: string; text: string }[] = [
   { emoji: "🤝", text: "Directly with each other." },
 ];
 
-function HeroPhraseTicker() {
-  const [i, setI] = useState(0);
-  useEffect(() => {
-    const id = window.setInterval(
-      () => setI((v) => (v + 1) % HERO_PHRASES.length),
-      2600,
-    );
-    return () => window.clearInterval(id);
-  }, []);
-  const p = HERO_PHRASES[i];
+function HeroPhraseList() {
+  const loop = [...HERO_PHRASES, ...HERO_PHRASES];
   return (
-    <div className="mt-2 flex items-center gap-2 text-white/90">
-      <span className="text-[11px] font-semibold uppercase tracking-wider text-white/70">
-        How it works
-      </span>
-      <span aria-hidden className="text-white/40">·</span>
-      <div className="relative h-6 flex-1 overflow-hidden">
-        <AnimatePresence mode="wait">
-          <motion.span
-            key={i}
-            initial={{ y: 18, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            exit={{ y: -18, opacity: 0 }}
-            transition={{ duration: 0.45, ease: "easeOut" }}
-            className="absolute inset-0 flex items-center gap-2 text-sm font-medium text-white sm:text-base"
+    <div
+      aria-hidden
+      className="relative h-full w-full overflow-hidden"
+      style={{
+        maskImage:
+          "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
+        WebkitMaskImage:
+          "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
+      }}
+    >
+      <div className="absolute right-0 top-0 flex flex-col gap-2 pr-1 text-right hero-marquee">
+        {loop.map((p, idx) => (
+          <div
+            key={idx}
+            className="flex items-center justify-end gap-2 whitespace-nowrap text-sm font-medium text-white/90 sm:text-base"
           >
-            <span aria-hidden className="text-base">{p.emoji}</span>
             <span>{p.text}</span>
-          </motion.span>
-        </AnimatePresence>
+            <span aria-hidden className="text-base">{p.emoji}</span>
+          </div>
+        ))}
       </div>
+      <style>{`
+        .hero-marquee { animation: heroMarquee 22s linear infinite; }
+        @keyframes heroMarquee {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-marquee { animation: none; }
+        }
+      `}</style>
     </div>
   );
 }
@@ -171,7 +173,8 @@ export default function PublicHome() {
             backgroundRepeat: "no-repeat",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-4 py-[1.4rem] sm:py-8">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-[1.4rem] sm:py-8 md:grid-cols-[1fr_minmax(220px,300px)] md:items-stretch">
+          <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider backdrop-blur">
             <Utensils size={10} />
             {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
@@ -191,9 +194,6 @@ export default function PublicHome() {
               )}
             </p>
           </BlurFade>
-          <div className="max-w-2xl">
-            <HeroPhraseTicker />
-          </div>
           <div className="mt-3 flex flex-wrap gap-2.5">
             <button
               onClick={() => navigate("/signup")}
@@ -219,6 +219,11 @@ export default function PublicHome() {
               label={t("public.home.statOrigins", "Origin countries")}
             />
             <Stat n="3" label={t("public.home.statRounds", "Negotiation rounds, max")} />
+          </div>
+          </div>
+          {/* Right column: scrolling phrases over the ship photo */}
+          <div className="hidden md:block">
+            <HeroPhraseList />
           </div>
         </div>
       </section>
