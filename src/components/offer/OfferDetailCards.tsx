@@ -6,12 +6,6 @@ import { fmtWeight, fmtPrice, weightLabel, type WeightUnit } from "@/lib/units";
 function formatUsdInt(n: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(n));
 }
-function formatUsd2(n: number) {
-  return new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n);
-}
-function formatQtyInt(n: number) {
-  return new Intl.NumberFormat("en-US").format(Math.round(n));
-}
 
 export type OfferCardItem = {
   id: string;
