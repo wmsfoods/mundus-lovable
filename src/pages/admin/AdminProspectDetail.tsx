@@ -19,6 +19,7 @@ import {
 } from "@/hooks/useAdminProspects";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import { useMundusTeam } from "@/hooks/useMundusTeam";
+import { countryFlag } from "@/lib/countryFlags";
 import { enrichContact } from "@/lib/prospectEnrich";
 
 const STAGE_TO_DB: Record<ProspectStage, string> = {
