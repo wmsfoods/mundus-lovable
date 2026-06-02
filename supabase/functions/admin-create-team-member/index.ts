@@ -83,11 +83,36 @@ Deno.serve(async (req) => {
         user_metadata: { full_name: cleanName },
       })
       if (createErr) {
-        return new Response(JSON.stringify({ error: 'create_user_failed', message: createErr.message }), {
-          status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        })
+        // If auth user already exists, look it up and reuse the id.
+        const msg = (createErr.message || '').toLowerCase()
+        const alreadyExists =
+          msg.includes('already been registered') ||
+          msg.includes('already exists') ||
+          (createErr as any).code === 'email_exists'
+        if (alreadyExists) {
+          const { data: list, error: listErr } = await admin.auth.admin.listUsers({
+            page: 1, perPage: 200,
+          })
+          if (listErr) {
+            return new Response(JSON.stringify({ error: 'lookup_failed', message: listErr.message }), {
+              status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+          const match = list.users.find((u) => (u.email || '').toLowerCase() === cleanEmail)
+          if (!match) {
+            return new Response(JSON.stringify({ error: 'create_user_failed', message: createErr.message }), {
+              status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            })
+          }
+          userId = match.id
+        } else {
+          return new Response(JSON.stringify({ error: 'create_user_failed', message: createErr.message }), {
+            status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          })
+        }
+      } else {
+        userId = created.user?.id ?? null
       }
-      userId = created.user?.id ?? null
     }
 
     if (!userId) {
