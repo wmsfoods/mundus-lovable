@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
+import { RotateCcw } from "lucide-react";
 import { lookupContact, captureLead } from "@/lib/publicLeadFlow";
-import { repsFor, type LeadType } from "@/lib/mundusReps";
+import type { LeadType } from "@/lib/mundusReps";
 
 type Step =
   | "greet" | "email" | "lookup"
   | "existingAccount" | "existingContact"
-  | "name" | "company" | "phone" | "country" | "protein" | "leadType" | "rep"
+  | "name" | "company" | "phone" | "country" | "protein" | "leadType"
   | "submitting" | "done" | "error";
 
 const PROTEINS = ["beef", "pork", "poultry", "lamb", "fish"];
@@ -26,12 +27,17 @@ export default function MaxChatWidget({
   const [country, setCountry] = useState("");
   const [protein, setProtein] = useState("");
   const [leadType, setLeadType] = useState<LeadType>(initialLeadType);
-  const [rep, setRep] = useState("");
   const [errorMsg, setErrorMsg] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [step]);
   useEffect(() => { if (open) setStep("greet"); }, [open]);
+
+  const resetAll = () => {
+    setEmail(""); setName(""); setCompany(""); setPhone("");
+    setCountry(""); setProtein(""); setLeadType(initialLeadType);
+    setErrorMsg(""); setStep("email");
+  };
 
   if (!open) return null;
 
@@ -55,12 +61,12 @@ export default function MaxChatWidget({
     }
   };
 
-  const finalize = async () => {
+  const finalize = async (lt: LeadType = leadType) => {
     setStep("submitting");
     try {
       await captureLead({
         email, name, company, phone, country, protein,
-        lead_type: leadType, mundus_rep: rep, lang: i18n.language,
+        lead_type: lt, mundus_rep: "", lang: i18n.language,
       });
       setStep("done");
     } catch (e: any) {
@@ -68,8 +74,6 @@ export default function MaxChatWidget({
       setStep("error");
     }
   };
-
-  const eligibleReps = repsFor(leadType);
 
   const Bubble = ({ children }: { children: React.ReactNode }) => (
     <div className="mb-2 max-w-[85%] rounded-2xl rounded-tl-sm bg-gray-100 px-3 py-2 text-sm text-[#1A1A2E]">{children}</div>
@@ -86,7 +90,18 @@ export default function MaxChatWidget({
             <div className="text-sm font-semibold text-[#8B2252]">{tk("title", "Max — Mundus Assistant")}</div>
             <div className="text-[11px] text-gray-500">{tk("subtitle", "I'll connect you with a Mundus rep")}</div>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700" aria-label="Close">✕</button>
+          <div className="flex items-center gap-2">
+            {step !== "greet" && step !== "done" && (
+              <button
+                onClick={resetAll}
+                className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2 py-1 text-[11px] text-gray-600 hover:bg-gray-50"
+                aria-label="Start over"
+              >
+                <RotateCcw size={11} /> {tk("startOver", "Start over")}
+              </button>
+            )}
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-700" aria-label="Close">✕</button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-3">
@@ -110,20 +125,18 @@ export default function MaxChatWidget({
             </>
           )}
 
-          {step === "name" && <><Bubble>{tk("askName", "Great — what's your full name?")}</Bubble><Bubble>{tk("nextCompany", "Next: your company name.")}</Bubble></>}
-          {name && ["company","phone","country","protein","leadType","rep","submitting","done"].includes(step) && <UserEcho>{name}</UserEcho>}
+          {step === "name" && <Bubble>{tk("askName", "Great — what's your full name?")}</Bubble>}
+          {name && ["company","phone","country","protein","leadType","submitting","done"].includes(step) && <UserEcho>{name}</UserEcho>}
           {step === "company" && <Bubble>{tk("askCompany", "What's your company name?")}</Bubble>}
-          {company && ["phone","country","protein","leadType","rep","submitting","done"].includes(step) && <UserEcho>{company}</UserEcho>}
+          {company && ["phone","country","protein","leadType","submitting","done"].includes(step) && <UserEcho>{company}</UserEcho>}
           {step === "phone" && <Bubble>{tk("askPhone", "Best phone number? (optional but helps us reach you faster)")}</Bubble>}
-          {phone && ["country","protein","leadType","rep","submitting","done"].includes(step) && <UserEcho>{phone}</UserEcho>}
+          {phone && ["country","protein","leadType","submitting","done"].includes(step) && <UserEcho>{phone}</UserEcho>}
           {step === "country" && <Bubble>{tk("askCountry", "Which country are you in?")}</Bubble>}
-          {country && ["protein","leadType","rep","submitting","done"].includes(step) && <UserEcho>{country}</UserEcho>}
+          {country && ["protein","leadType","submitting","done"].includes(step) && <UserEcho>{country}</UserEcho>}
           {step === "protein" && <Bubble>{tk("askProtein", "Which protein are you most interested in?")}</Bubble>}
-          {protein && ["leadType","rep","submitting","done"].includes(step) && <UserEcho>{protein}</UserEcho>}
+          {protein && ["leadType","submitting","done"].includes(step) && <UserEcho>{protein}</UserEcho>}
           {step === "leadType" && <Bubble>{tk("askLeadType", "Are you buying, selling, or both?")}</Bubble>}
-          {leadType && ["rep","submitting","done"].includes(step) && <UserEcho>{leadType}</UserEcho>}
-          {step === "rep" && <Bubble>{tk("askRep", "Pick the Mundus rep you'd like to connect with.")}</Bubble>}
-          {rep && ["submitting","done"].includes(step) && <UserEcho>{rep}</UserEcho>}
+          {leadType && ["submitting","done"].includes(step) && <UserEcho>{leadType}</UserEcho>}
 
           {step === "submitting" && <Bubble>{tk("submitting", "Saving your details…")}</Bubble>}
           {step === "done" && (
@@ -131,8 +144,8 @@ export default function MaxChatWidget({
               <Bubble>{tk("doneTitle", "All set! 🎉")}</Bubble>
               <Bubble>
                 {leadType === "buyer"
-                  ? t("public.chat.doneBuyer", "Thanks for registering! We'll review your information and move your approval forward shortly — so you can access the full offers here on Mundus. A rep ({{rep}}) will look after you.", { rep })
-                  : t("public.chat.doneSupplier", "Perfect! The showcase offers are exclusive to approved buyers. As a supplier, we'll review your registration and a Mundus rep ({{rep}}) will reach out soon.", { rep })}
+                  ? t("public.chat.doneBuyer", "Thanks for registering! We'll review your information and move your approval forward shortly — so you can access the full offers here on Mundus. A Mundus rep will be in touch soon.")
+                  : t("public.chat.doneSupplier", "Perfect! The showcase offers are exclusive to approved buyers. As a supplier, we'll review your registration and a Mundus rep will reach out soon.")}
               </Bubble>
               <button onClick={onClose} className="mt-2 rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("close", "Close")}</button>
             </>
@@ -140,7 +153,7 @@ export default function MaxChatWidget({
           {step === "error" && (
             <>
               <Bubble>{tk("errorBody", "Something went wrong. Please try again in a moment.")} ({errorMsg})</Bubble>
-              <button onClick={finalize} className="mt-2 rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("retry", "Retry")}</button>
+              <button onClick={() => finalize()} className="mt-2 rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("retry", "Retry")}</button>
             </>
           )}
 
@@ -196,18 +209,10 @@ export default function MaxChatWidget({
           {step === "leadType" && (
             <div className="flex flex-wrap gap-2">
               {(["buyer","supplier","buyer_supplier"] as LeadType[]).map((l) => (
-                <button key={l} onClick={() => { setLeadType(l); setStep("rep"); }}
+                <button key={l} onClick={() => { setLeadType(l); setTimeout(() => finalize(l), 50); }}
                   className="rounded-full border border-gray-300 px-3 py-1 text-xs hover:bg-gray-100">
                   {tk(`leadType_${l}`, l === "buyer" ? "Buying" : l === "supplier" ? "Selling" : "Both")}
                 </button>
-              ))}
-            </div>
-          )}
-          {step === "rep" && (
-            <div className="flex flex-wrap gap-2">
-              {eligibleReps.map((r) => (
-                <button key={r.name} onClick={() => { setRep(r.name); setTimeout(finalize, 50); }}
-                  className="rounded-md border border-gray-300 px-3 py-2 text-xs hover:bg-gray-100">{r.name}</button>
               ))}
             </div>
           )}
