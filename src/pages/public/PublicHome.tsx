@@ -1,13 +1,13 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Utensils } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import PublicLayout from "@/layouts/PublicLayout";
 import PublicOfferCard from "@/components/public/PublicOfferCard";
 import PublicOfferModal from "@/components/public/PublicOfferModal";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
 import { usePublicOffers, type PublicOffer } from "@/hooks/usePublicOffers";
-import { FeatureHighlight } from "@/components/ui/feature-highlight";
 import {
   OffersFilterBar,
   DEFAULT_OFFERS_FILTER,
@@ -21,6 +21,52 @@ type ProteinCode = typeof PROTEIN_CODES[number];
 const PROTEIN_EMOJI: Record<ProteinCode, string> = {
   beef: "🥩", pork: "🐖", poultry: "🐓", lamb: "🐑",
 };
+
+const HERO_PHRASES: { emoji: string; text: string }[] = [
+  { emoji: "☕", text: "Grab a coffee from the corner cafe." },
+  { emoji: "📱", text: "Load up your Mundus app." },
+  { emoji: "🚢", text: "Order new containers online." },
+  { emoji: "🏭", text: "Have it produced and delivered." },
+  { emoji: "📢", text: "Suppliers post new offers." },
+  { emoji: "🛒", text: "Buyers create new demands." },
+  { emoji: "🔗", text: "All from a single source of truth." },
+  { emoji: "🤝", text: "Directly with each other." },
+];
+
+function HeroPhraseTicker() {
+  const [i, setI] = useState(0);
+  useEffect(() => {
+    const id = window.setInterval(
+      () => setI((v) => (v + 1) % HERO_PHRASES.length),
+      2600,
+    );
+    return () => window.clearInterval(id);
+  }, []);
+  const p = HERO_PHRASES[i];
+  return (
+    <div className="mt-2 flex items-center gap-2 text-white/90">
+      <span className="text-[11px] font-semibold uppercase tracking-wider text-white/70">
+        How it works
+      </span>
+      <span aria-hidden className="text-white/40">·</span>
+      <div className="relative h-6 flex-1 overflow-hidden">
+        <AnimatePresence mode="wait">
+          <motion.span
+            key={i}
+            initial={{ y: 18, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -18, opacity: 0 }}
+            transition={{ duration: 0.45, ease: "easeOut" }}
+            className="absolute inset-0 flex items-center gap-2 text-sm font-medium text-white sm:text-base"
+          >
+            <span aria-hidden className="text-base">{p.emoji}</span>
+            <span>{p.text}</span>
+          </motion.span>
+        </AnimatePresence>
+      </div>
+    </div>
+  );
+}
 
 function offerProteinCodes(o: PublicOffer): Set<string> {
   const out = new Set<string>();
@@ -145,6 +191,9 @@ export default function PublicHome() {
               )}
             </p>
           </BlurFade>
+          <div className="max-w-2xl">
+            <HeroPhraseTicker />
+          </div>
           <div className="mt-3 flex flex-wrap gap-2.5">
             <button
               onClick={() => navigate("/signup")}
@@ -186,9 +235,8 @@ export default function PublicHome() {
           )}
         </p>
 
-        {/* Filters + How it works side-by-side */}
-        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_280px] lg:items-start">
-          <div className="bo-filterbar">
+        {/* Filters */}
+        <div className="bo-filterbar mt-6">
           <OffersFilterBar
             value={filter}
             onChange={setFilter}
@@ -224,24 +272,6 @@ export default function PublicHome() {
               </div>
             }
           />
-          </div>
-          <aside className="hidden lg:block bg-white lg:justify-self-end lg:pl-4">
-            <FeatureHighlight
-              compact
-              eyebrow={t("public.home.howItWorksEyebrow", "How it works")}
-              title={t("public.home.howItWorksTitle", "Simple. Powerful. Direct.")}
-              features={[
-                <><span aria-hidden>☕</span> Grab a coffee from the corner cafe.</>,
-                <><span aria-hidden>📱</span> Load up your Mundus app.</>,
-                <><span aria-hidden>🚢</span> Order new containers online.</>,
-                <><span aria-hidden>🏭</span> Have it produced and delivered.</>,
-                <><span aria-hidden>📢</span> Suppliers post new offers.</>,
-                <><span aria-hidden>🛒</span> Buyers create new demands.</>,
-                <><span aria-hidden>🔗</span> All from a single source of truth.</>,
-                <><span aria-hidden>🤝</span> Directly with each other.</>,
-              ]}
-            />
-          </aside>
         </div>
 
         <div className="result-bar mt-4 flex items-center justify-between">
