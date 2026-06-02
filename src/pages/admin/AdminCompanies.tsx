@@ -374,6 +374,28 @@ const menuItemStyle: React.CSSProperties = {
   fontSize: 13, background: "transparent", border: "none", cursor: "pointer",
 };
 
+function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: "transparent",
+        border: "none",
+        borderBottom: active ? "2px solid #8B2252" : "2px solid transparent",
+        color: active ? "#8B2252" : "#6b7280",
+        padding: "8px 14px",
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: "pointer",
+        marginBottom: -1,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
+
 function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string; onOpen: () => void }) {
   const k = companyType(row);
   const isActive = (row.status ?? "active") === "active";
