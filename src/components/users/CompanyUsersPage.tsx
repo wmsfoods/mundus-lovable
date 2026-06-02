@@ -160,8 +160,12 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
   };
   const sendReset = async (m: Row) => {
     setBusyId(m.id);
-    const { error } = await supabase.auth.resetPasswordForEmail(m.email, {
-      redirectTo: window.location.origin + "/login",
+    const { error } = await supabase.functions.invoke("send-password-reset", {
+      body: {
+        email: m.email,
+        redirectTo: window.location.origin + "/reset-password",
+        language: (typeof navigator !== "undefined" ? navigator.language?.slice(0, 2) : "en") || "en",
+      },
     });
     setBusyId(null);
     if (error) toast.error(error.message);
