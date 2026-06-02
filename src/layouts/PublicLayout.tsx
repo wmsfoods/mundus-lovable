@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
+import { ShiningButton } from "@/components/ui/shining-button";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
@@ -28,12 +29,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 <Link to="/login" className="text-base font-semibold text-[#1A1A2E] hover:text-[#B64769] px-3 py-2">
                   {t("public.home.login", "Login")}
                 </Link>
-                <Link
-                  to="/signup"
-                  className="rounded-md bg-[#B64769] px-6 py-3 text-base font-semibold text-white hover:opacity-90"
+                <ShiningButton
+                  onClick={() => (window.location.href = "/signup")}
+                  className="!rounded-md px-6 py-3 text-base font-semibold"
                 >
                   {t("public.home.signup", "Sign up")}
-                </Link>
+                </ShiningButton>
               </>
             )}
           </div>
