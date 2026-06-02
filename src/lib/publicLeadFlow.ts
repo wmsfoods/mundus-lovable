@@ -6,6 +6,7 @@ export type LookupResult = {
   has_mundus_account: boolean;
   contact_id?: string | null;
   company_id?: string | null;
+  contact_name?: string | null;
 };
 
 export async function lookupContact(email: string): Promise<LookupResult> {

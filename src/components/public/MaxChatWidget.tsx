@@ -29,6 +29,7 @@ export default function MaxChatWidget({
   const [proteins, setProteins] = useState<string[]>([]);
   const [leadType, setLeadType] = useState<LeadType>(initialLeadType);
   const [errorMsg, setErrorMsg] = useState("");
+  const [contactName, setContactName] = useState<string>("");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: "smooth" }); }, [step]);
@@ -37,7 +38,7 @@ export default function MaxChatWidget({
   const resetAll = () => {
     setEmail(""); setName(""); setCompany(""); setPhone("");
     setCountry(""); setProteins([]); setLeadType(initialLeadType);
-    setErrorMsg(""); setStep("email");
+    setErrorMsg(""); setContactName(""); setStep("email");
   };
 
   if (!open) return null;
@@ -54,6 +55,7 @@ export default function MaxChatWidget({
     setStep("lookup");
     try {
       const res = await lookupContact(v);
+      setContactName((res?.contact_name ?? "").trim());
       if (res.has_mundus_account) setStep("existingAccount");
       else if (res.found) setStep("existingContact");
       else setStep("name");
@@ -111,27 +113,52 @@ export default function MaxChatWidget({
         </div>
 
         <div className="flex-1 overflow-y-auto px-3 py-3">
-          <Bubble>{tk("greet", "Hi! I'm Max. I'll help you connect with a Mundus rep in under a minute.")}</Bubble>
-          <Bubble>{tk("nextEmail", "Next step: share your work email so I can check if we already know you.")}</Bubble>
+          <Bubble>{tk("greetHello", "Hello!")}</Bubble>
+          <Bubble>{tk("greetHelp", "I will help you connect with the Mundus platform.")}</Bubble>
+          <Bubble>{tk("greetCheck", "Let's see if you're already registered — it takes less than a minute.")}</Bubble>
+          <Bubble>{tk("greetEmailAsk", "Share your work email so I can check if we already know you.")}</Bubble>
 
           {step !== "greet" && email && <UserEcho>{email}</UserEcho>}
 
           {step === "existingAccount" && (
             <>
-              <Bubble>{tk("welcomeBack", "Welcome back! You already have a Mundus account.")}</Bubble>
-              <Bubble>{tk("nextLogin", "Next step: log in to see the supplier behind this offer.")}</Bubble>
-              <Link to={`/login?email=${encodeURIComponent(email)}`} className="mt-2 inline-block rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("loginNow", "Log in")}</Link>
+              <Bubble>
+                {contactName
+                  ? tk("welcomeBackNamed", "Hello {{name}}!").replace("{{name}}", contactName.split(" ")[0])
+                  : tk("greetHello", "Hello!")}
+              </Bubble>
+              <Bubble>{tk("welcomeBackBody", "Welcome back — you already have a Mundus account.")}</Bubble>
+              <Bubble>{tk("welcomeBackLogin", "Please log in to our platform.")}</Bubble>
+              <Bubble>{tk("welcomeBackSupplierNote", "If you're a supplier, you won't be able to see other suppliers' offers.")}</Bubble>
+              <Link to={`/login?email=${encodeURIComponent(email)}`} className="mt-2 inline-block rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("loginNow", "Log in →")}</Link>
             </>
           )}
 
           {step === "existingContact" && (
             <>
+              {contactName && (
+                <Bubble>
+                  {tk("welcomeBackNamed", "Hello {{name}}!").replace("{{name}}", contactName.split(" ")[0])}
+                </Bubble>
+              )}
               <Bubble>{tk("knownContact", "We already know you. A Mundus rep is in touch — they'll reach out within 1 business day.")}</Bubble>
               <button onClick={onClose} className="mt-2 rounded-md border border-gray-300 px-3 py-2 text-sm font-semibold text-gray-700">{tk("close", "Close")}</button>
             </>
           )}
 
-          {step === "name" && <Bubble>{tk("askName", "Great — what's your full name?")}</Bubble>}
+          {step === "name" && (
+            <>
+              <Bubble>{tk("notFoundTitle", "Looks like we haven't found you in our records.")}</Bubble>
+              <Bubble>{tk("notFoundFill", "Please fill in the next fields and someone will contact you ASAP.")}</Bubble>
+              <Link
+                to={`/signup?email=${encodeURIComponent(email)}`}
+                className="mb-2 inline-block rounded-md border border-[#B64769] px-3 py-2 text-xs font-semibold text-[#B64769] hover:bg-[#B64769]/5"
+              >
+                {tk("notFoundSignupLink", "Or sign up directly →")}
+              </Link>
+              <Bubble>{tk("askName", "Great — what's your full name?")}</Bubble>
+            </>
+          )}
           {name && ["company","phone","country","protein","leadType","submitting","done"].includes(step) && <UserEcho>{name}</UserEcho>}
           {step === "company" && <Bubble>{tk("askCompany", "What's your company name?")}</Bubble>}
           {company && ["phone","country","protein","leadType","submitting","done"].includes(step) && <UserEcho>{company}</UserEcho>}
