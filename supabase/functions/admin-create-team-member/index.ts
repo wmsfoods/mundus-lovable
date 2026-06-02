@@ -128,7 +128,7 @@ Deno.serve(async (req) => {
       name: cleanName,
       company_id: MUNDUS_COMPANY_ID,
       active_company_id: MUNDUS_COMPANY_ID,
-      user_type: 'admin',
+      user_type: 'Sales',
     } as any, { onConflict: 'id' })
     if (upsertErr) {
       return new Response(JSON.stringify({ error: 'users_upsert_failed', message: upsertErr.message }), {
@@ -136,8 +136,10 @@ Deno.serve(async (req) => {
       })
     }
 
-    // 3) Insert company_users
-    const { error: cuErr } = await admin.from('company_users').upsert({
+    // 3) Insert company_users using caller's JWT so the
+    // tg_company_users_block_admin_escalation trigger sees a Mundus admin
+    // (is_mundus_admin() relies on auth.uid(), which is null under service role).
+    const { error: cuErr } = await userClient.from('company_users').upsert({
       company_id: MUNDUS_COMPANY_ID,
       user_id: userId,
       email: cleanEmail,
