@@ -1,49 +1,82 @@
-## Objetivo
+## Diagnóstico
 
-Todo email enviado pelo app sai de **`contact@mundustrade.com`** via **Resend** (sua conta, seu domínio já verificado lá). Nenhuma menção a Lovable ou Supabase para o usuário final.
+O problema do Gustavo não foi o mesmo cenário do Denys apenas parcialmente:
 
-## O que você já tem
-- Domínio `mundustrade.com` verificado no Resend (DNS já ok do seu lado).
-- API key do Resend pronta.
+- O usuário de login do Gustavo existe em `auth.users` com e-mail `gustavo.agostinho.candido@gmail.com`.
+- A solicitação dele está `approved`, com `company_id` da empresa Frigorinthians (`a93d960e-31fa-4c08-b15a-550a40adf587`), mas `created_user_id` ainda está vazio.
+- Não existe linha correspondente em `public.users` nem em `company_users` para esse e-mail.
+- O trigger atual existe, mas só roda `AFTER INSERT ON auth.users`. Como o Gustavo criou o auth user antes da aprovação, o trigger nunca rodou depois que a request virou `approved`.
 
-Ou seja: **não precisa mexer em DNS, não precisa Lovable Emails, não precisa setup de domínio aqui.**
+Ou seja: o fluxo estrutural atual cobre “aprovação antes do primeiro signup”, mas falha em “signup primeiro, aprovação depois”. Esse é exatamente o caso que precisa ser corrigido para não depender de ação manual da Mundus.
 
-## O que falta fazer
+## Plano de correção
 
-### 1. Guardar a API key do Resend como secret
-Vou pedir via formulário seguro o `RESEND_API_KEY`. Você cola o valor uma vez, fica disponível para as edge functions.
+### 1. Hotfix imediato para Gustavo
 
-### 2. Substituir o envio dos emails de autenticação do Supabase
-Hoje quem manda os emails de auth (confirmação, recuperação de senha, magic link, convite, troca de email) é o Supabase com template default `no-reply@auth.lovable.cloud` — é por isso que o Gustavo viu remetente Lovable.
+Vincular o usuário já existente `gustavo.agostinho.candido@gmail.com` à empresa Frigorinthians:
 
-Vou criar uma edge function **`auth-email-hook`** que:
-- Recebe o evento de auth do Supabase (Send Email Hook).
-- Renderiza um template Mundus (HTML brandado: logo, cor `#B64769`, copy em PT-BR, sem qualquer referência a Lovable/Supabase).
-- Envia via API do Resend a partir de `Mundus <contact@mundustrade.com>`.
+- Criar/atualizar `public.users` com:
+  - `id` do auth user do Gustavo
+  - `email`, `name`
+  - `company_id` e `active_company_id` apontando para Frigorinthians
+  - `user_type = 'Master'`, `is_owner = true`, `status = 'active'`
+- Criar/atualizar `user_offices` para a empresa dele como principal.
+- Atualizar `user_requests.created_user_id` com o id do auth user.
+- Criar/atualizar também `company_users` para esse usuário, para manter consistência com permissões, diretórios e lógica de acesso por empresa.
 
-Templates cobertos (6):
-- Confirmação de cadastro
-- Recuperação de senha (o que o Gustavo precisa)
-- Magic link
-- Convite de usuário
-- Mudança de email
-- Reautenticação / OTP
+### 2. Fix estrutural no banco
 
-### 3. Ativar o hook no Supabase Auth
-Configurar o Auth para usar o webhook acima como `send_email_hook`, com secret de assinatura — assim o Supabase para de mandar o template default e passa a chamar nossa função. A partir desse momento **todos** os emails de auth saem do Resend com remetente `contact@mundustrade.com`.
+Adicionar uma função central, por exemplo `public.link_approved_user_request_by_email(email)`, que faça o vínculo completo de forma idempotente:
 
-### 4. Infra pra emails transacionais do app (opcional, recomendado)
-Mesma edge function ou uma segunda (`send-app-email`) usando Resend, para futuras notificações do app (negociação fechada, contraproposta, aprovação de cadastro etc.). Deixo a base pronta; os disparos específicos a gente conecta conforme você for pedindo.
+- Localiza `auth.users` pelo e-mail.
+- Localiza `user_requests` aprovada, ainda sem `created_user_id`.
+- Cria/atualiza `public.users`.
+- Cria/atualiza `company_users`.
+- Cria/atualiza `user_offices`.
+- Marca `user_requests.created_user_id`.
 
-### 5. Limpeza
-- Garantir que `Site URL` e `Redirect URLs` do Auth contenham só `https://app.mundustrade.us/...` (quando migrar para `.com`, só atualizar essa lista).
-- Nenhuma copy do app/email menciona Lovable ou Supabase.
+Essa função deve funcionar tanto para:
 
-## O que eu preciso de você agora
+- usuário que já existe e é aprovado depois;
+- usuário aprovado primeiro e que cria login depois;
+- login via Google;
+- login via e-mail/senha.
 
-Só uma confirmação para eu prosseguir:
+### 3. Corrigir o trigger existente
 
-1. Pode pedir o **`RESEND_API_KEY`** via formulário? (você cola e segue)
-2. Confirma o remetente exato: **`Mundus <contact@mundustrade.com>`** — ou prefere outro display name?
+Atualizar o trigger `AFTER INSERT ON auth.users` para chamar a função central acima.
 
-Com essas duas respostas eu: salvo a secret, crio a edge function `auth-email-hook` com os 6 templates Mundus, ativo o hook no Supabase Auth, faço deploy e te aviso quando o próximo "Redefinir senha" chegar saindo de `contact@mundustrade.com` com a cara da Mundus.
+Assim, se o usuário criar conta depois de já ter uma request aprovada, o vínculo acontece automaticamente.
+
+### 4. Criar trigger também em `user_requests`
+
+Adicionar trigger `AFTER UPDATE OF status, company_id ON public.user_requests`.
+
+Quando uma request virar `approved`, ele chama a mesma função central.
+
+Assim, se o usuário já tinha criado conta antes da aprovação, como Gustavo, o vínculo acontece no momento da aprovação.
+
+### 5. Reforçar o RPC de login
+
+Atualizar `claim_pending_invites()` para também tentar vincular `user_requests` aprovadas por e-mail, além de `company_users` pendentes.
+
+Isso cria uma terceira camada de segurança: mesmo que algo passe despercebido no momento da aprovação, no próximo login o sistema corrige sozinho.
+
+### 6. Ajustar AdminUserRequests
+
+Trocar a lógica “best-effort” client-side atual por uma chamada ao RPC central após aprovar.
+
+Hoje a página tenta fazer parte do provisionamento no frontend e engole erro como não fatal. Isso é frágil. O correto é o banco ser a fonte da verdade e a tela apenas aprovar a request.
+
+### 7. Validação final
+
+Depois de aplicar:
+
+- Confirmar Gustavo vinculado à Frigorinthians.
+- Confirmar `user_requests.created_user_id` preenchido.
+- Confirmar `public.users`, `company_users` e `user_offices` consistentes.
+- Conferir que o trigger em `auth.users` e o trigger em `user_requests` existem e estão ativos.
+
+## Resultado esperado
+
+Nenhum usuário aprovado deve cair numa tela sem empresa ou depender da Mundus fazer vínculo manual. O sistema passa a corrigir automaticamente nos três pontos críticos: criação da conta, aprovação da request e login.
