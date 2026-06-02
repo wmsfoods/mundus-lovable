@@ -3470,5 +3470,56 @@
       "noSubscription": "Sem assinatura ativa. Assine o Mundus PRO a partir de US${{price}}/mês."
     },
     "salesConfirmation": "Obrigado! A equipe de Operações da Mundus entrará em contato em até 24 horas."
+  },
+  "onboarding": {
+    "skip": "Pular",
+    "next": "Próximo",
+    "back": "Voltar",
+    "buyer": {
+      "cta": "Explorar ofertas",
+      "s1": {
+        "title": "Bem-vindo à Mundus",
+        "body": "Seu app para comprar proteína no mundo todo — ofertas de contêiner com fornecedores verificados."
+      },
+      "s2": {
+        "title": "Ofertas ao vivo",
+        "body": "Veja origem, destino, incoterm e cortes. Filtre por proteína e mercado direto no celular."
+      },
+      "s3": {
+        "title": "Negocie com clareza",
+        "body": "Propostas e contra-propostas em até 3 rounds — preço e incoterm sob seu controle."
+      },
+      "s4": {
+        "title": "Do acordo ao embarque",
+        "body": "Acompanhe pedidos e status de envio no app."
+      },
+      "s5": {
+        "title": "Pronto",
+        "body": "Vamos explorar ofertas ao vivo de fornecedores no mundo todo."
+      }
+    },
+    "supplier": {
+      "cta": "Nova oferta",
+      "s1": {
+        "title": "Bem-vindo à Mundus",
+        "body": "Publique ofertas e receba propostas de compradores globais pelo app."
+      },
+      "s2": {
+        "title": "Suas ofertas",
+        "body": "Crie ou importe ofertas (PDF/Excel/foto) e controle mercados e preços."
+      },
+      "s3": {
+        "title": "Negociação",
+        "body": "Revise lances e responda em rounds estruturados."
+      },
+      "s4": {
+        "title": "Vendas",
+        "body": "Gerencie vendas e documentos até o embarque."
+      },
+      "s5": {
+        "title": "Pronto",
+        "body": "Comece publicando sua primeira oferta."
+      }
+    }
   }
 }
