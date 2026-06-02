@@ -3470,5 +3470,56 @@
       "noSubscription": "No active subscription. Upgrade to Mundus PRO from ${{price}}/mo."
     },
     "salesConfirmation": "Thanks! The Mundus Operations team will reach out within 24 hours."
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "buyer": {
+      "cta": "Explore offers",
+      "s1": {
+        "title": "Welcome to Mundus",
+        "body": "Your app to buy protein worldwide — container offers from verified suppliers."
+      },
+      "s2": {
+        "title": "Live offers",
+        "body": "See origin, destination, incoterm and cuts. Filter by protein and market from your phone."
+      },
+      "s3": {
+        "title": "Negotiate with clarity",
+        "body": "Offers and counter-offers in up to 3 rounds — price and incoterm in your hands."
+      },
+      "s4": {
+        "title": "From deal to shipment",
+        "body": "Track orders and shipment status right in the app."
+      },
+      "s5": {
+        "title": "You're ready",
+        "body": "Let's explore live offers from suppliers around the world."
+      }
+    },
+    "supplier": {
+      "cta": "New offer",
+      "s1": {
+        "title": "Welcome to Mundus",
+        "body": "Post offers and receive proposals from global buyers, right from the app."
+      },
+      "s2": {
+        "title": "Your offers",
+        "body": "Create or import offers (PDF/Excel/photo) and control markets and prices."
+      },
+      "s3": {
+        "title": "Negotiation",
+        "body": "Review bids and respond in structured rounds."
+      },
+      "s4": {
+        "title": "Sales",
+        "body": "Manage sales and documents through to shipment."
+      },
+      "s5": {
+        "title": "You're ready",
+        "body": "Start by publishing your first offer."
+      }
+    }
   }
 }
