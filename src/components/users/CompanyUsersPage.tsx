@@ -13,6 +13,7 @@ import { useBuyerUsers, type BuyerUser } from "@/hooks/useBuyerUsers";
 import {
   DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
+import "./users-mobile.css";
 
 type Ctx = "supplier" | "buyer";
 type Row = (SupplierUser | BuyerUser);
