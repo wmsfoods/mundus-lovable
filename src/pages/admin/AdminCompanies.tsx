@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from "lucide-react";
 import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
 import { CreateBuyerProfileModal } from "@/components/admin/CreateBuyerProfileModal";
+import CompanyUsersView from "@/components/admin/companies/CompanyUsersView";
 import { supabase } from "@/integrations/supabase/client";
 import { CountryMultiFilter } from "@/components/admin/CountryMultiFilter";
 import { countryFlag } from "@/lib/countryFlags";
@@ -45,6 +46,13 @@ export default function AdminCompanies() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || "en";
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = (searchParams.get("tab") === "users" ? "users" : "companies") as "companies" | "users";
+  const setTab = (next: "companies" | "users") => {
+    const sp = new URLSearchParams(searchParams);
+    if (next === "companies") sp.delete("tab"); else sp.set("tab", next);
+    setSearchParams(sp, { replace: true });
+  };
   const { rows, loading, error } = useAdminCompanies();
   const [createSupplierOpen, setCreateSupplierOpen] = useState(false);
   const [createBuyerOpen, setCreateBuyerOpen] = useState(false);
@@ -145,6 +153,16 @@ export default function AdminCompanies() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #e5e7eb", marginBottom: 12 }}>
+        <TabBtn active={tab === "companies"} onClick={() => setTab("companies")}>Companies</TabBtn>
+        <TabBtn active={tab === "users"} onClick={() => setTab("users")}>Users</TabBtn>
+      </div>
+
+      {tab === "users" ? (
+        <CompanyUsersView />
+      ) : (
+      <>
       {/* toolbar */}
       <div className="crm-toolbar">
         <div className="adm-search" style={{ flex: 1 }}>
@@ -223,6 +241,8 @@ export default function AdminCompanies() {
             {filtered.map((r) => <CardRow key={r.id} row={r} locale={locale} t={t} onOpen={() => navigate(`/admin/companies/${r.id}`)} />)}
           </div>
         </>
+      )}
+      </>
       )}
 
       <CreateSupplierProfileModal
@@ -353,6 +373,28 @@ const menuItemStyle: React.CSSProperties = {
   display: "block", width: "100%", textAlign: "left", padding: "8px 12px",
   fontSize: 13, background: "transparent", border: "none", cursor: "pointer",
 };
+
+function TabBtn({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      style={{
+        background: "transparent",
+        border: "none",
+        borderBottom: active ? "2px solid #8B2252" : "2px solid transparent",
+        color: active ? "#8B2252" : "#6b7280",
+        padding: "8px 14px",
+        fontSize: 13,
+        fontWeight: 600,
+        cursor: "pointer",
+        marginBottom: -1,
+      }}
+    >
+      {children}
+    </button>
+  );
+}
 
 function CardRow({ row, locale, t, onOpen }: { row: AdminCompanyRow; locale: string; t: (k: string, opts?: Record<string, unknown>) => string; onOpen: () => void }) {
   const k = companyType(row);
