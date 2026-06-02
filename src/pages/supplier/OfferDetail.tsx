@@ -6,6 +6,10 @@ import {
   ArrowLeftIcon,
   CopyIcon,
   ShareIcon,
+  TagIcon,
+  ChevronDownIcon,
+  MapPinIcon,
+  FlagSVG,
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
@@ -24,9 +28,28 @@ import { Button } from "@/components/ui/button";
 import { publicUrl } from "@/lib/publicUrl";
 import { notifyCompanyUsers } from "@/lib/notifications";
 import { auditLog } from "@/lib/auditLog";
-import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
-import { OfferDetailLayout, type OfferItemRow } from "@/components/offer/OfferDetailLayout";
+import {
+  useOfferDestinationPorts,
+  OfferDestinationPorts,
+} from "@/components/offer/OfferDestinationPorts";
+import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
 import { countryFlag } from "@/lib/countryFlags";
+import { countryToCode } from "@/lib/countryCodes";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, type WeightUnit } from "@/lib/units";
+
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function formatPriceUsd(n: number): string {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n);
+}
 
 export default function SupplierOfferDetail() {
   const { id = "" } = useParams<{ id: string }>();
@@ -34,6 +57,7 @@ export default function SupplierOfferDetail() {
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [active, setActive] = useState<boolean | null>(null);
+  const { unit } = useWeightUnit();
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
@@ -204,18 +228,10 @@ export default function SupplierOfferDetail() {
 
 
   const totalKg = offer.items.reduce((s, it) => s + it.qtyKg, 0);
-
-  const items: OfferItemRow[] = offer.items.map((it, i) => ({
-    id: String(i),
-    image: (it as any).image_url ?? null,
-    name: it.name,
-    subline: (it as any).plant ? `Plant ${(it as any).plant}` : null,
-    packaging: (it as any).packaging ?? null,
-    qtyKg: it.qtyKg,
-    priceKg: it.pricePerKgUsd,
-    askingKg: it.pricePerKgUsd * 1.05,
-    floorKg: it.pricePerKgUsd * 0.9,
-  }));
+  const totalValuePerFcl = offer.items.reduce(
+    (s, it) => s + it.qtyKg * it.pricePerKgUsd,
+    0,
+  );
 
   const supplierToggle = (
     <button
@@ -502,35 +518,302 @@ export default function SupplierOfferDetail() {
         </DialogContent>
       </Dialog>
 
-      <OfferDetailLayout
-        offerNumberLabel={formatOfferNumber(offer.offerNumber, offer.createdAt)}
-        title={offer.title}
-        category={offer.category}
-        cutCount={offer.items.length}
-        specCount={offer.items.length}
-        packagingLabel={firstItemPkg}
-        shipmentLabel={offer.shipmentLabel}
-        originCountry={offer.originCountry}
-        originCountryCode={offer.originCountryCode}
-        originPort={offer.originPort}
-        condition={offer.condition}
-        destinations={offer.destinations}
-        destinationPorts={destinationPorts}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>{supplierToggle}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{supplierActions}</div>
+      </div>
+
+      <SupplierOfferBuyerStyleBody
+        offer={offer}
+        isActive={isActive}
         totalKg={totalKg}
-        totalValueUsd={offer.pricePerFclUsd}
-        fclCount={offer.fclCount}
-        containerSize={offer.containerSize}
-        items={items}
-        showSupplierColumns
-        paymentTerms={offer.paymentTerms}
-        incoterms={offer.incoterms}
-        createdAt={offer.createdAt}
+        totalValuePerFcl={totalValuePerFcl}
+        destinationPorts={destinationPorts}
         galleryImages={galleryImages}
-        illustrativeLabel={t("supplier.offers.detail.illustrative")}
-        toggle={supplierToggle}
-        topActions={supplierActions}
+        moreOpen={moreOpen}
+        setMoreOpen={setMoreOpen}
         banners={banners}
+        unit={unit}
+        illustrativeLabel={t("supplier.offers.detail.illustrative")}
       />
+    </>
+  );
+}
+
+/* ────────────────────────────────────────────────────────────
+   Buyer-style body for the supplier offer detail.
+   Mirrors the layout used by BuyerOfferDetail (od-grid / od-right
+   classes from mundus-offers.css) so suppliers see their own
+   offers with the same clean layout — keeping supplier-only
+   info (asking / floor prices, banners with negotiations).
+   ──────────────────────────────────────────────────────────── */
+function SupplierOfferBuyerStyleBody({
+  offer,
+  isActive,
+  totalKg,
+  totalValuePerFcl,
+  destinationPorts,
+  galleryImages,
+  moreOpen,
+  setMoreOpen,
+  banners,
+  unit,
+  illustrativeLabel,
+}: {
+  offer: SupplierOffer;
+  isActive: boolean;
+  totalKg: number;
+  totalValuePerFcl: number;
+  destinationPorts: { id: string; name: string; code: string }[];
+  galleryImages: ReturnType<typeof useOfferImages>;
+  moreOpen: boolean;
+  setMoreOpen: (v: boolean) => void;
+  banners: React.ReactNode;
+  unit: WeightUnit;
+  illustrativeLabel: string;
+}) {
+  const { t } = useTranslation();
+  const items = offer.items;
+  const firstItem = items[0];
+  const originCode = offer.originCountryCode || countryToCode(offer.originCountry);
+  const destinations = offer.destinations.map((d) => d.name);
+  const firstDest = offer.destinations[0] ?? null;
+  const destCode = firstDest?.code || countryToCode(firstDest?.name ?? null);
+  const condition = offer.condition;
+  const incotermLabels = offer.incoterms;
+  const wLbl = weightLabel(unit);
+
+  return (
+    <>
+      {banners}
+      <div className="od-grid">
+        <OfferImageGallery
+          images={galleryImages}
+          illustrativeLabel={illustrativeLabel}
+        />
+
+        <div className="od-right">
+          {!isActive && (
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: 8,
+                background: "#fee2e2",
+                border: "1px solid #fca5a5",
+                marginBottom: 16,
+                fontSize: 13,
+                color: "#dc2626",
+                fontWeight: 600,
+              }}
+            >
+              🚫 {t("supplier.offers.detail.inactiveBanner", "This offer is currently inactive and is not visible to buyers.")}
+            </div>
+          )}
+
+          <div className="od-title-row">
+            <span className="oc-chip">
+              <TagIcon size={18} />
+            </span>
+            <div className="od-title-block">
+              <h1 className="od-title">{offer.title}</h1>
+              <div className="od-subtitle">
+                <span
+                  style={{
+                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                    fontSize: 12,
+                    color: "#9ca3af",
+                    marginRight: 8,
+                  }}
+                >
+                  {formatOfferNumber(offer.offerNumber, offer.createdAt)}
+                </span>
+                {offer.category} · {offer.condition}
+              </div>
+            </div>
+          </div>
+
+          <div className="od-price-block">
+            <div className="od-price-amount">US$ {formatPriceUsd(totalValuePerFcl)}</div>
+            <div className="od-price-caption">
+              {t("buyer.offerDetail.perFcl", "Total value (starting price) · per FCL")}
+            </div>
+          </div>
+
+          <div className="od-cuts">
+            <div className="od-cuts-head">
+              <span>{t("buyer.offerDetail.cutsHead.cut", "Product / Cut")}</span>
+              <span>{t("buyer.offerDetail.cutsHead.packing", "Packing")}</span>
+              <span className="num">{t("buyer.offerDetail.cutsHead.qty", "Qty per item")}</span>
+              <span className="num">{t("buyer.offerDetail.cutsHead.price", "Price / kg")}</span>
+              <span className="num">Asking / kg</span>
+              <span className="num">Floor / kg</span>
+            </div>
+            {items.map((it, idx) => {
+              const pkg = (it as any).packaging;
+              const asking = it.pricePerKgUsd * 1.05;
+              const floor = it.pricePerKgUsd * 0.9;
+              return (
+                <div key={idx} className="od-cuts-row">
+                  <span>{it.name}</span>
+                  <span>{pkg && pkg !== "\n" ? pkg : "—"}</span>
+                  <span className="num">
+                    {fmtWeight(it.qtyKg, unit)} {wLbl}
+                  </span>
+                  <span className="num">
+                    US$ {fmtPrice(it.pricePerKgUsd, unit)}/{wLbl}
+                  </span>
+                  <span className="num">US$ {fmtPrice(asking, unit)}/{wLbl}</span>
+                  <span className="num">US$ {fmtPrice(floor, unit)}/{wLbl}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="od-total-weight">
+            <span className="amt">
+              {fmtWeight(totalKg, unit)} {wLbl}
+            </span>
+            <span className="lbl">{t("buyer.offerDetail.totalWeight", "Total weight")}</span>
+          </div>
+
+          <div className="od-meta-row">
+            <div className="od-meta-item">
+              <span className="od-meta-label">{t("buyer.offerDetail.fields.packing", "Packing")}</span>
+              <span className="od-meta-value">
+                {(firstItem as any)?.packaging && (firstItem as any).packaging !== "\n"
+                  ? (firstItem as any).packaging
+                  : "—"}
+              </span>
+            </div>
+            <div className="od-meta-item">
+              <span className="od-meta-label">
+                {t("buyer.offerDetail.fields.originPortCountry", "Origin (port / country)")}
+              </span>
+              <span className="od-meta-value">
+                <MapPinIcon size={13} />
+                {offer.originPort} / {offer.originCountry}
+                {originCode && <FlagSVG code={originCode} size={13} />}
+              </span>
+            </div>
+            <div className="od-meta-item">
+              <span className="od-meta-label">{t("buyer.offerDetail.fields.condition", "Condition")}</span>
+              <span className="od-meta-value">{condition}</span>
+            </div>
+            {firstDest && (
+              <div className="od-meta-item">
+                <span className="od-meta-label">
+                  {t("buyer.offerDetail.fields.destination", "Destination")}
+                  {offer.destinations.length > 1 ? ` (+${offer.destinations.length - 1})` : ""}
+                </span>
+                <span className="od-meta-value">
+                  {destCode && <FlagSVG code={destCode} size={13} />}
+                  {firstDest.name}
+                </span>
+                <OfferDestinationPorts ports={destinationPorts} />
+              </div>
+            )}
+          </div>
+
+          <div className="od-terms">
+            <div className="od-terms-label">{t("buyer.offerDetail.fields.terms", "Terms")}</div>
+            <div className="od-terms-value">{offer.paymentTerms || "—"}</div>
+          </div>
+
+          <div className="od-fcl-row">
+            <span className="od-fcl-count">
+              {offer.fclCount} Available FCL
+            </span>
+            <span className="od-fcl-size">Size: {offer.containerSize}</span>
+            {incotermLabels.length > 0 && (
+              <span className="od-fcl-incoterms">
+                {incotermLabels.map((i) => (
+                  <span key={i} className="od-incoterm-pill">
+                    {formatIncotermWithPlace(i, {
+                      originPort: offer.originPort,
+                      destinationNames: destinations,
+                    })}
+                  </span>
+                ))}
+              </span>
+            )}
+          </div>
+
+          {offer.exwPickupLocation && incotermLabels.includes("EXW") && (
+            <div
+              style={{
+                marginTop: 8,
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: "1px solid #fde68a",
+                background: "#fffbeb",
+                color: "#92400e",
+                fontSize: 13,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span>📍 EXW Pickup</span>
+              <strong>{offer.exwPickupLocation}</strong>
+            </div>
+          )}
+
+          <div className="od-shipment-row">
+            <span className="od-meta-label">
+              {t("buyer.offerDetail.fields.shipment", "Shipment")}
+            </span>
+            <span className="od-meta-value">{offer.shipmentLabel}</span>
+          </div>
+
+          <button
+            className="od-more-toggle"
+            onClick={() => setMoreOpen(!moreOpen)}
+            type="button"
+          >
+            <span>{t("buyer.offerDetail.moreInfo", "More information")}</span>
+            <ChevronDownIcon
+              size={14}
+              style={{ transform: moreOpen ? "rotate(180deg)" : "none", transition: "transform 0.18s" }}
+            />
+          </button>
+          {moreOpen && (
+            <div className="od-more-content">
+              <div style={{ display: "grid", gap: 10, fontSize: 13, color: "#374151" }}>
+                {offer.paymentTerms && (
+                  <div><strong>Payment terms:</strong> {offer.paymentTerms}</div>
+                )}
+                {offer.observation && (
+                  <div><strong>Notes:</strong> {offer.observation}</div>
+                )}
+                {offer.viewCount != null && (
+                  <div style={{ color: "#6b7280", fontSize: 12 }}>
+                    Views: {offer.viewCount}
+                  </div>
+                )}
+                {offer.proposalCount != null && (
+                  <div style={{ color: "#6b7280", fontSize: 12 }}>
+                    Proposals: {offer.proposalCount}
+                  </div>
+                )}
+                {offer.createdAt && (
+                  <div style={{ color: "#6b7280", fontSize: 12 }}>
+                    Created: {new Date(offer.createdAt).toLocaleDateString()}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </>
   );
 }
