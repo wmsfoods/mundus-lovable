@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
@@ -8,6 +8,7 @@ import { ShiningButton } from "@/components/ui/shining-button";
 export default function PublicLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A2E]">
@@ -30,7 +31,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                   {t("public.home.login", "Login")}
                 </Link>
                 <ShiningButton
-                  onClick={() => (window.location.href = "/signup")}
+                  onClick={() => navigate("/signup")}
                   className="!rounded-md px-6 py-3 text-base font-semibold"
                 >
                   {t("public.home.signup", "Sign up")}
