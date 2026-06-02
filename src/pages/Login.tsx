@@ -8,6 +8,7 @@ import { useAuth, setRememberMe } from "@/contexts/AuthContext";
 import { getPersistedValue } from "@/lib/authStorage";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ShiningButton } from "@/components/ui/shining-button";
 import mundusLogo from "@/assets/mundus-logo.png";
 import slide1 from "@/assets/login-carousel-1.png";
 import slide2 from "@/assets/login-carousel-2.png";
@@ -153,13 +154,13 @@ export default function Login() {
                 />
                 {t("auth.rememberMe")}
               </label>
-              <button
+              <ShiningButton
                 type="submit"
                 disabled={submitting}
-                className="h-11 w-32 rounded-full bg-[#B64769] text-white text-sm font-medium hover:bg-[#8E3653] transition disabled:opacity-60"
+                className="h-11 w-32 text-sm"
               >
                 {submitting ? t("auth.signingIn") : t("auth.signIn")}
-              </button>
+              </ShiningButton>
             </div>
           </form>
 
