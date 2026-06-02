@@ -3,6 +3,7 @@ import { Users2, Plus, Pencil, Trash2, X, Search as SearchIcon, ChevronLeft, Che
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { auditLog } from "@/lib/auditLog";
+import { publicUrl } from "@/lib/publicUrl";
 
 const MUNDUS_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
@@ -443,7 +444,7 @@ export default function AdminTeam() {
                             const { error } = await supabase.functions.invoke("send-password-reset", {
                               body: {
                                 email: m.email,
-                                redirectTo: `${window.location.origin}/reset-password`,
+                                redirectTo: publicUrl("/reset-password"),
                                 language: (typeof navigator !== "undefined" ? navigator.language?.slice(0, 2) : "en") || "en",
                               },
                             });
