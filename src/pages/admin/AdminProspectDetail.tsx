@@ -328,7 +328,10 @@ export default function AdminProspectDetail() {
             ) : (
               <h1 className="crm-detail-name">{p.companyName}</h1>
             )}
-            <span className="mono">{p.country} · #{p.id}</span>
+            <span className="crm-detail-country">
+              <span aria-hidden>{countryFlag(p.country)}</span>
+              <span>{p.country}</span>
+            </span>
           </div>
           <div className="crm-header-actions psp-actions-wrap">
             {!editing && (
