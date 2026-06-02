@@ -281,7 +281,11 @@
       "filterMarket": "Destino",
       "filterAll": "Todos",
       "searchPlaceholder": "Buscar produtos, portos…",
-      "noMatch": "Nenhuma oferta corresponde aos seus filtros."
+      "noMatch": "Nenhuma oferta corresponde aos seus filtros.",
+      "protein_beef": "Bovinos",
+      "protein_pork": "Suínos",
+      "protein_poultry": "Aves",
+      "protein_lamb": "Ovinos"
     },
     "chat": {
       "title": "Max — Assistente Mundus",
@@ -313,7 +317,12 @@
       "doneSupplier": "Perfeito! As ofertas da vitrine são exclusivas para compradores aprovados. Como fornecedor, vamos verificar seu cadastro e um rep da Mundus entra em contato em breve.",
       "errorBody": "Algo deu errado. Tente novamente em instantes.",
       "retry": "Tentar novamente",
-      "startOver": "Começar de novo"
+      "startOver": "Começar de novo",
+      "protein_beef": "Bovinos",
+      "protein_pork": "Suínos",
+      "protein_poultry": "Aves",
+      "protein_lamb": "Ovinos",
+      "continue": "Continuar"
     },
     "lead": {
       "success": {

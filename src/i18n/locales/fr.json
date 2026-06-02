@@ -281,7 +281,11 @@
       "filterMarket": "Destination",
       "filterAll": "Tous",
       "searchPlaceholder": "Rechercher produits, ports…",
-      "noMatch": "Aucune offre ne correspond à vos filtres."
+      "noMatch": "Aucune offre ne correspond à vos filtres.",
+      "protein_beef": "Bœuf",
+      "protein_pork": "Porc",
+      "protein_poultry": "Volaille",
+      "protein_lamb": "Agneau"
     },
     "chat": {
       "title": "Max — Assistant Mundus",
@@ -313,7 +317,12 @@
       "doneSupplier": "Parfait ! Les offres de la vitrine sont réservées aux acheteurs approuvés. En tant que fournisseur, nous examinerons votre inscription et un représentant Mundus vous contactera bientôt.",
       "errorBody": "Une erreur est survenue. Réessayez dans un instant.",
       "retry": "Réessayer",
-      "startOver": "Recommencer"
+      "startOver": "Recommencer",
+      "protein_beef": "Bœuf",
+      "protein_pork": "Porc",
+      "protein_poultry": "Volaille",
+      "protein_lamb": "Agneau",
+      "continue": "Continuer"
     },
     "lead": {
       "success": {
