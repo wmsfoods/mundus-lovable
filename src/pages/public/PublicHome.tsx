@@ -272,8 +272,6 @@ export default function PublicHome() {
 
       <PublicOfferModal
         offer={detailOffer}
-
-        // placeholder
         onClose={() => setDetailOffer(null)}
         onReveal={() => {
           setDetailOffer(null);
