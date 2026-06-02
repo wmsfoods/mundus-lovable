@@ -5,20 +5,23 @@ import { Utensils } from "lucide-react";
 import PublicLayout from "@/layouts/PublicLayout";
 import PublicOfferCard from "@/components/public/PublicOfferCard";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
-import { usePublicOffers } from "@/hooks/usePublicOffers";
+import { usePublicOffers, type PublicOffer } from "@/hooks/usePublicOffers";
+import {
+  ProteinFilter,
+  categoryToProtein,
+  type ProteinKey,
+} from "@/components/marketplace/ProteinFilter";
+import {
+  OffersFilterBar,
+  DEFAULT_OFFERS_FILTER,
+  type OffersFilterState,
+} from "@/components/marketplace/OffersFilterBar";
+import heroAsset from "@/assets/hero-banner-bg.png.asset.json";
 
-const PROTEIN_KEYWORDS: Record<string, string[]> = {
-  beef: ["beef", "bovin", "carne", "vacuno"],
-  pork: ["pork", "porc", "suino", "suíno", "cerdo"],
-  poultry: ["chicken", "poultry", "frango", "aves", "pollo"],
-  lamb: ["lamb", "mutton", "cordero", "ovino"],
-  fish: ["fish", "seafood", "pescado", "peixe"],
-};
-
-function detectProtein(text: string): string | null {
-  const t = text.toLowerCase();
-  for (const [k, words] of Object.entries(PROTEIN_KEYWORDS)) {
-    if (words.some((w) => t.includes(w))) return k;
+function offerProtein(o: PublicOffer): Exclude<ProteinKey, "all"> | null {
+  for (const it of o.items) {
+    const p = categoryToProtein(it.category_name) || categoryToProtein(it.category_code);
+    if (p) return p;
   }
   return null;
 }
@@ -30,49 +33,54 @@ export default function PublicHome() {
   const [chatOpen, setChatOpen] = useState(false);
   const offersRef = useRef<HTMLDivElement>(null);
 
-  // filters
-  const [protein, setProtein] = useState<string>("all");
-  const [temp, setTemp] = useState<string>("all");
-  const [origin, setOrigin] = useState<string>("all");
-  const [market, setMarket] = useState<string>("all");
-  const [search, setSearch] = useState("");
+  const [protein, setProtein] = useState<ProteinKey>("all");
+  const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
-  const origins = useMemo(
-    () => Array.from(new Set(offers.map((o) => o.origin_country).filter(Boolean) as string[])).sort(),
-    [offers],
-  );
-  const markets = useMemo(
-    () =>
-      Array.from(
-        new Set(
-          offers.flatMap((o) => o.markets.map((m) => m.country).filter(Boolean) as string[]),
-        ),
-      ).sort(),
-    [offers],
-  );
-  const proteinsAvailable = useMemo(() => {
-    const set = new Set<string>();
-    offers.forEach((o) =>
-      o.items.forEach((it) => {
-        const p = detectProtein(`${it.category_name || ""} ${it.category_code || ""} ${it.product_name || ""}`);
-        if (p) set.add(p);
-      }),
+  const filterOptions = useMemo(() => {
+    const origins = new Set<string>();
+    const markets = new Set<string>();
+    const incoterms = new Set<string>();
+    offers.forEach((o) => {
+      if (o.origin_country) origins.add(o.origin_country);
+      o.markets.forEach((m) => m.country && markets.add(m.country));
+      (o.incoterms || []).forEach((i) => i && incoterms.add(i));
+    });
+    return {
+      origins: Array.from(origins).sort(),
+      markets: Array.from(markets).sort(),
+      incoterms: Array.from(incoterms).sort(),
+    };
+  }, [offers]);
+
+  const proteinAgg = useMemo(() => {
+    const counts: Record<Exclude<ProteinKey, "all">, number> = {
+      beef: 0, pork: 0, poultry: 0, ovine: 0,
+    };
+    for (const o of offers) {
+      const p = offerProtein(o);
+      if (p) counts[p] += 1;
+    }
+    const available = (Object.keys(counts) as Array<Exclude<ProteinKey, "all">>).filter(
+      (k) => counts[k] > 0,
     );
-    return Array.from(set);
+    return { counts, available };
   }, [offers]);
 
   const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
+    const q = filter.search.trim().toLowerCase();
     return offers.filter((o) => {
-      if (origin !== "all" && o.origin_country !== origin) return false;
-      if (market !== "all" && !o.markets.some((m) => m.country === market)) return false;
-      if (temp !== "all" && !o.items.some((it) => it.condition === temp)) return false;
-      if (protein !== "all") {
-        const ok = o.items.some((it) => {
-          const p = detectProtein(`${it.category_name || ""} ${it.category_code || ""} ${it.product_name || ""}`);
-          return p === protein;
-        });
-        if (!ok) return false;
+      if (protein !== "all" && offerProtein(o) !== protein) return false;
+      if (filter.temp !== "all" && !o.items.some((it) => it.condition === filter.temp)) return false;
+      if (filter.origins.length && (!o.origin_country || !filter.origins.includes(o.origin_country))) return false;
+      if (filter.markets.length && !o.markets.some((m) => m.country && filter.markets.includes(m.country))) return false;
+      if (filter.incoterms.length && !(o.incoterms || []).some((i) => filter.incoterms.includes(i))) return false;
+      if (filter.halal !== "any") {
+        const want = filter.halal === "yes";
+        if (Boolean(o.is_halal) !== want) return false;
+      }
+      if (filter.kosher !== "any") {
+        const want = filter.kosher === "yes";
+        if (Boolean(o.is_kosher) !== want) return false;
       }
       if (q) {
         const hay = [
@@ -80,17 +88,21 @@ export default function PublicHome() {
           o.origin_port || "",
           ...o.markets.map((m) => m.country || ""),
           ...o.items.map((it) => `${it.product_name || ""} ${it.category_name || ""} ${it.category_code || ""}`),
-        ]
-          .join(" ")
-          .toLowerCase();
+        ].join(" ").toLowerCase();
         if (!hay.includes(q)) return false;
       }
       return true;
     });
-  }, [offers, protein, temp, origin, market, search]);
+  }, [offers, protein, filter]);
+
+  const totalMT =
+    filtered.reduce(
+      (s, o) => s + o.items.reduce((ss, it) => ss + Number(it.amount ?? 0), 0),
+      0,
+    ) / 1000;
 
   const heroStatOffers = offers.length;
-  const heroStatOrigins = origins.length;
+  const heroStatOrigins = filterOptions.origins.length;
 
   const scrollToOffers = () =>
     offersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -98,13 +110,15 @@ export default function PublicHome() {
   return (
     <PublicLayout>
       {/* Hero band */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-[#5C1B30] via-[#7A2440] to-[#A33B5A] text-white">
+      <section className="relative overflow-hidden bg-[#5C1B30] text-white">
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-y-0 right-0 hidden w-1/2 opacity-10 md:block"
+          className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage:
-              "radial-gradient(circle at 20% 20%, rgba(255,255,255,0.4) 0, transparent 40%), radial-gradient(circle at 70% 60%, rgba(255,255,255,0.3) 0, transparent 35%)",
+            backgroundImage: `linear-gradient(90deg, #5C1B30 0%, #5C1B30 35%, rgba(92,27,48,0.85) 55%, rgba(92,27,48,0.4) 100%), url(${heroAsset.url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "right center",
+            backgroundRepeat: "no-repeat",
           }}
         />
         <div className="relative mx-auto max-w-6xl px-4 py-14 sm:py-20">
@@ -164,61 +178,38 @@ export default function PublicHome() {
           )}
         </p>
 
-        {/* Filters */}
-        <div className="mt-6 rounded-xl border border-gray-200 bg-white p-3 shadow-sm">
-          <div className="flex flex-wrap items-center gap-2">
-            <FilterSelect
-              label={t("public.home.filterProtein", "Protein")}
-              value={protein}
-              onChange={setProtein}
-              options={[
-                { v: "all", label: t("public.home.filterAll", "All") },
-                ...proteinsAvailable.map((p) => ({
-                  v: p,
-                  label: t(`public.chat.leadType_${p}`, p[0].toUpperCase() + p.slice(1)),
-                })),
-              ]}
-            />
-            <FilterSelect
-              label={t("public.home.filterTemp", "Temperature")}
-              value={temp}
-              onChange={setTemp}
-              options={[
-                { v: "all", label: t("public.home.filterAll", "All") },
-                { v: "Frozen", label: "Frozen" },
-                { v: "Chilled", label: "Chilled" },
-                { v: "Fresh", label: "Fresh" },
-              ]}
-            />
-            <FilterSelect
-              label={t("public.home.filterOrigin", "Origin")}
-              value={origin}
-              onChange={setOrigin}
-              options={[
-                { v: "all", label: t("public.home.filterAll", "All") },
-                ...origins.map((c) => ({ v: c, label: c })),
-              ]}
-            />
-            <FilterSelect
-              label={t("public.home.filterMarket", "Market")}
-              value={market}
-              onChange={setMarket}
-              options={[
-                { v: "all", label: t("public.home.filterAll", "All") },
-                ...markets.map((c) => ({ v: c, label: c })),
-              ]}
-            />
-            <input
-              type="search"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder={t("public.home.searchPlaceholder", "Search products, ports…")}
-              className="ml-auto min-w-[200px] flex-1 rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:border-[#B64769] focus:outline-none"
-            />
-          </div>
+        {/* Filters — matches buyer Offers */}
+        <div className="bo-filterbar mt-6">
+          <OffersFilterBar
+            value={filter}
+            onChange={setFilter}
+            options={filterOptions}
+            searchPlaceholder={t("public.home.searchPlaceholder", "Search products, ports...")}
+            proteinNode={
+              <ProteinFilter
+                value={protein}
+                onChange={setProtein}
+                available={proteinAgg.available}
+                counts={proteinAgg.counts}
+              />
+            }
+          />
         </div>
 
-        <div className="mt-5 flex items-center justify-end">
+        <div className="result-bar mt-4 flex items-center justify-between">
+          <span className="result-count text-sm text-gray-700">
+            {loading ? (
+              t("public.home.loading", "Loading offers…")
+            ) : (
+              <>
+                {t("public.home.showing", "Showing")} <b>{filtered.length}</b>{" "}
+                {filtered.length === 1
+                  ? t("public.home.offerOne", "offer")
+                  : t("public.home.offerOther", "offers")}{" "}
+                · <b>{totalMT >= 100 ? Math.round(totalMT) : totalMT.toFixed(1)}</b> MT
+              </>
+            )}
+          </span>
           <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700">
             {t("public.home.anonymousLabel", "Supplier names hidden — reveal to see")}
           </span>
@@ -256,34 +247,5 @@ function Stat({ n, label }: { n: string; label: string }) {
       <div className="text-2xl font-bold">{n}</div>
       <div className="mt-0.5 text-xs text-white/80">{label}</div>
     </div>
-  );
-}
-
-function FilterSelect({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  options: { v: string; label: string }[];
-}) {
-  return (
-    <label className="inline-flex items-center gap-1.5 text-xs text-gray-600">
-      <span className="font-medium text-gray-500">{label}:</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="rounded-md border border-gray-300 bg-white px-2 py-1.5 text-sm text-[#1A1A2E] focus:border-[#B64769] focus:outline-none"
-      >
-        {options.map((o) => (
-          <option key={o.v} value={o.v}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-    </label>
   );
 }
