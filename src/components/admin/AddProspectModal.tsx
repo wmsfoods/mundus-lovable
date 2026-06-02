@@ -4,9 +4,10 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
-  addProspect, OWNERS,
+  addProspect,
   type ProspectRole, type ProspectSource,
 } from "@/hooks/useAdminProspects";
+import { useMundusTeam } from "@/hooks/useMundusTeam";
 import { ScanCardButton } from "./ScanCardButton";
 
 const COUNTRIES = [
