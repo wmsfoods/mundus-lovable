@@ -24,6 +24,11 @@
   padding-top: max(0px, var(--safe-top, env(safe-area-inset-top, 0px)));
 }
 
+/* Guest chat fullscreen on native — hide PublicLayout navbar */
+body.is-native-ios[data-guest-chat-open="1"] .public-layout-header {
+  display: none !important;
+}
+
 /* Signup / multi-step auth — full safe-area shell (mobile) */
 .auth-screen {
   height: 100dvh;

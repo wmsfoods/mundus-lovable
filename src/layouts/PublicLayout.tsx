@@ -7,7 +7,17 @@ import { ShiningButton } from "@/components/ui/shining-button";
 import { isNativeApp } from "@/lib/isNativeApp";
 import { cn } from "@/lib/utils";
 
-export default function PublicLayout({ children }: { children: ReactNode }) {
+export default function PublicLayout({
+  children,
+  lockMainScroll = false,
+  hideHeader = false,
+}: {
+  children: ReactNode;
+  /** Native guest chat: main is a flex column; only inner panel scrolls. */
+  lockMainScroll?: boolean;
+  /** Full-screen guest chat — no login/signup bar. */
+  hideHeader?: boolean;
+}) {
   const { t } = useTranslation();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -20,9 +30,10 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         native ? "flex h-full min-h-0 flex-col overflow-hidden" : "min-h-screen",
       )}
     >
+      {!hideHeader && (
       <header
         className={cn(
-          "border-b border-gray-200 bg-white",
+          "public-layout-header border-b border-gray-200 bg-white",
           native && "auth-screen-safe-top flex-shrink-0",
         )}
       >
@@ -58,13 +69,17 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </header>
+      )}
       <main
         className={cn(
+          native && "flex min-h-0 flex-1 flex-col",
           native &&
-            "flex-1 min-h-0 overflow-y-auto [-webkit-overflow-scrolling:touch]",
+            (lockMainScroll
+              ? "overflow-hidden"
+              : "overflow-y-auto [-webkit-overflow-scrolling:touch]"),
         )}
         style={
-          native
+          native && !lockMainScroll
             ? { paddingBottom: "max(16px, env(safe-area-inset-bottom, 0px))" }
             : undefined
         }

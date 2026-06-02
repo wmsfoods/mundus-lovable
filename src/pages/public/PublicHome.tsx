@@ -89,7 +89,18 @@ export default function PublicHome() {
     void clearPostOnboardingGuestGate();
   }, []);
   const { offers, loading } = usePublicOffers();
+  const nativeApp = isNativeApp();
   const [chatOpen, setChatOpen] = useState(false);
+
+  useEffect(() => {
+    if (!nativeApp) return;
+    if (chatOpen) {
+      document.body.setAttribute("data-guest-chat-open", "1");
+    } else {
+      document.body.removeAttribute("data-guest-chat-open");
+    }
+    return () => document.body.removeAttribute("data-guest-chat-open");
+  }, [nativeApp, chatOpen]);
   const [detailOffer, setDetailOffer] = useState<PublicOffer | null>(null);
   const offersRef = useRef<HTMLDivElement>(null);
 
@@ -165,78 +176,7 @@ export default function PublicHome() {
   const scrollToOffers = () =>
     offersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  const nativeApp = isNativeApp();
-
-  return (
-    <PublicLayout>
-      {!nativeApp && (
-      <section className="relative overflow-hidden bg-[#8B2E4F] text-white">
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0"
-          style={{
-            backgroundImage: `linear-gradient(90deg, #8B2E4F 0%, #8B2E4F 35%, rgba(139,46,79,0.78) 55%, rgba(139,46,79,0.35) 100%), url(${heroAsset.url})`,
-            backgroundSize: "cover",
-            backgroundPosition: "right center",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-[1.4rem] sm:py-8 md:grid-cols-[1fr_minmax(220px,300px)] md:items-stretch">
-          <div>
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider backdrop-blur">
-            <Utensils size={10} />
-            {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
-          </span>
-          <BlurFade delay={0.15} duration={0.6} yOffset={12} blur="10px">
-            <h1 className="mt-2 max-w-3xl text-xl font-bold leading-tight sm:text-2xl">
-              {t("public.home.heroTitleLine1", "Excellence in every cut,")}
-              <br />
-              {t("public.home.heroTitleLine2", "value in every purchase.")}
-            </h1>
-          </BlurFade>
-          <BlurFade delay={0.45} duration={0.6} yOffset={10} blur="8px">
-            <p className="mt-1.5 max-w-2xl text-[11px] text-white/85 sm:text-xs">
-              {t(
-                "public.home.heroSubtitle",
-                "Browse live container offers from vetted suppliers across the globe. Negotiate faster, in fewer rounds, with full price and incoterm control.",
-              )}
-            </p>
-          </BlurFade>
-          <div className="mt-3 flex flex-wrap gap-2.5">
-            <button
-              onClick={() => navigate("/signup")}
-              className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-[#8B2E4F] shadow-sm transition hover:bg-white/95"
-            >
-              {t("public.home.createAccount", "Create free account")} →
-            </button>
-            <button
-              onClick={scrollToOffers}
-              className="rounded-md border border-white/40 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20"
-            >
-              {t("public.home.browseOffers", "Browse offers")}
-            </button>
-          </div>
-
-          <div className="mt-4 grid max-w-2xl grid-cols-3 gap-2.5">
-            <Stat
-              n={`${heroStatOffers}+`}
-              label={t("public.home.statOffers", "Live container offers")}
-            />
-            <Stat
-              n={String(heroStatOrigins)}
-              label={t("public.home.statOrigins", "Origin countries")}
-            />
-            <Stat n="3" label={t("public.home.statRounds", "Negotiation rounds, max")} />
-          </div>
-          </div>
-          {/* Scrolling phrases — right column on desktop, full width on mobile */}
-          <div className="h-28 md:h-auto md:min-h-[220px]">
-            <HeroPhraseList />
-          </div>
-        </div>
-      </section>
-      )}
-
+  const offersSection = (
       <section ref={offersRef} className="mx-auto max-w-6xl px-4 py-10">
         <h2 className="text-2xl font-bold text-[#1A1A2E]">
           {t("public.home.liveOffersTitle", "Live offers")}
@@ -248,7 +188,6 @@ export default function PublicHome() {
           )}
         </p>
 
-        {/* Filters */}
         <div className="bo-filterbar mt-6">
           <OffersFilterBar
             value={filter}
@@ -331,6 +270,97 @@ export default function PublicHome() {
           )}
         </div>
       </section>
+  );
+
+  return (
+    <PublicLayout
+      lockMainScroll={nativeApp && chatOpen}
+      hideHeader={nativeApp && chatOpen}
+    >
+      {nativeApp ? (
+        <>
+          {offersSection}
+          <PublicOfferModal
+            offer={detailOffer}
+            onClose={() => setDetailOffer(null)}
+            onReveal={() => {
+              setDetailOffer(null);
+              setChatOpen(true);
+            }}
+          />
+          {chatOpen && (
+            <MaxChatWidget open={chatOpen} onClose={() => setChatOpen(false)} />
+          )}
+        </>
+      ) : (
+      <>
+      <section className="relative overflow-hidden bg-[#8B2E4F] text-white">
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0"
+          style={{
+            backgroundImage: `linear-gradient(90deg, #8B2E4F 0%, #8B2E4F 35%, rgba(139,46,79,0.78) 55%, rgba(139,46,79,0.35) 100%), url(${heroAsset.url})`,
+            backgroundSize: "cover",
+            backgroundPosition: "right center",
+            backgroundRepeat: "no-repeat",
+          }}
+        />
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-[1.4rem] sm:py-8 md:grid-cols-[1fr_minmax(220px,300px)] md:items-stretch">
+          <div>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider backdrop-blur">
+            <Utensils size={10} />
+            {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
+          </span>
+          <BlurFade delay={0.15} duration={0.6} yOffset={12} blur="10px">
+            <h1 className="mt-2 max-w-3xl text-xl font-bold leading-tight sm:text-2xl">
+              {t("public.home.heroTitleLine1", "Excellence in every cut,")}
+              <br />
+              {t("public.home.heroTitleLine2", "value in every purchase.")}
+            </h1>
+          </BlurFade>
+          <BlurFade delay={0.45} duration={0.6} yOffset={10} blur="8px">
+            <p className="mt-1.5 max-w-2xl text-[11px] text-white/85 sm:text-xs">
+              {t(
+                "public.home.heroSubtitle",
+                "Browse live container offers from vetted suppliers across the globe. Negotiate faster, in fewer rounds, with full price and incoterm control.",
+              )}
+            </p>
+          </BlurFade>
+          <div className="mt-3 flex flex-wrap gap-2.5">
+            <button
+              onClick={() => navigate("/signup")}
+              className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-[#8B2E4F] shadow-sm transition hover:bg-white/95"
+            >
+              {t("public.home.createAccount", "Create free account")} →
+            </button>
+            <button
+              onClick={scrollToOffers}
+              className="rounded-md border border-white/40 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20"
+            >
+              {t("public.home.browseOffers", "Browse offers")}
+            </button>
+          </div>
+
+          <div className="mt-4 grid max-w-2xl grid-cols-3 gap-2.5">
+            <Stat
+              n={`${heroStatOffers}+`}
+              label={t("public.home.statOffers", "Live container offers")}
+            />
+            <Stat
+              n={String(heroStatOrigins)}
+              label={t("public.home.statOrigins", "Origin countries")}
+            />
+            <Stat n="3" label={t("public.home.statRounds", "Negotiation rounds, max")} />
+          </div>
+          </div>
+          {/* Scrolling phrases — right column on desktop, full width on mobile */}
+          <div className="h-28 md:h-auto md:min-h-[220px]">
+            <HeroPhraseList />
+          </div>
+        </div>
+      </section>
+
+      {offersSection}
 
       <PublicOfferModal
         offer={detailOffer}
@@ -340,7 +370,11 @@ export default function PublicHome() {
           setChatOpen(true);
         }}
       />
-      <MaxChatWidget open={chatOpen} onClose={() => setChatOpen(false)} />
+      {chatOpen && (
+        <MaxChatWidget open={chatOpen} onClose={() => setChatOpen(false)} />
+      )}
+      </>
+      )}
     </PublicLayout>
   );
 }

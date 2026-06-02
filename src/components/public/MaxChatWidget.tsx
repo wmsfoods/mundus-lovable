@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router-dom";
 import { RotateCcw } from "lucide-react";
@@ -6,6 +7,7 @@ import { lookupContact, captureLead } from "@/lib/publicLeadFlow";
 import type { LeadType } from "@/lib/mundusReps";
 import MUNDUS_LOGO from "@/assets/mundus-logo.png";
 import { PhoneInput } from "@/components/company/CompanyProfilePage";
+import { cn } from "@/lib/utils";
 import "@/styles/mundus-company.css";
 
 const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
@@ -21,8 +23,17 @@ const PROTEINS = ["beef", "pork", "poultry", "lamb"] as const;
 const COUNTRIES = ["United States","China","Brazil","United Arab Emirates","Saudi Arabia","Hong Kong","Egypt","Chile","South Korea","Japan","Mexico","Other"];
 
 export default function MaxChatWidget({
-  open, onClose, initialLeadType = "buyer",
-}: { open: boolean; onClose: () => void; initialLeadType?: LeadType }) {
+  open,
+  onClose,
+  initialLeadType = "buyer",
+  embedded = false,
+}: {
+  open: boolean;
+  onClose: () => void;
+  initialLeadType?: LeadType;
+  /** In-app guest home: fills layout below PublicLayout navbar (no fixed overlay). */
+  embedded?: boolean;
+}) {
   const { t, i18n } = useTranslation();
   const tk = (k: string, fb: string) => t(`public.chat.${k}`, fb) as string;
   const [step, setStep] = useState<Step>("greet");
@@ -95,19 +106,19 @@ export default function MaxChatWidget({
     <div className="mb-2 ml-auto max-w-[85%] rounded-2xl rounded-tr-sm bg-[#B64769] px-3 py-2 text-sm text-white">{children}</div>
   );
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-stretch justify-stretch bg-black/30 sm:items-end sm:justify-end sm:p-6">
-      <div
-        className="flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[600px] sm:max-w-md sm:rounded-2xl"
-        style={{
-          paddingTop: "env(safe-area-inset-top, 0px)",
-          paddingBottom: "env(safe-area-inset-bottom, 0px)",
-        }}
-      >
-        <div className="flex items-center justify-between border-b px-4 py-3">
+  const footerStyle = embedded
+    ? { paddingBottom: "max(12px, env(safe-area-inset-bottom, 0px))" }
+    : undefined;
+
+  const panel = (
+    <>
+      {!embedded && (
+        <div className="flex shrink-0 items-center justify-between border-b px-4 py-3">
           <div>
             <img src={MUNDUS_LOGO} alt="Mundus Trade" className="h-7 w-auto" />
-            <div className="text-[11px] text-gray-500">{tk("subtitle", "I'll connect you with a Mundus rep")}</div>
+            <div className="text-[11px] text-gray-500">
+              {tk("subtitle", "I'll connect you with a Mundus rep")}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             {step !== "greet" && step !== "done" && (
@@ -119,11 +130,19 @@ export default function MaxChatWidget({
                 <RotateCcw size={11} /> {tk("startOver", "Start over")}
               </button>
             )}
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-700" aria-label="Close">✕</button>
+            <button onClick={onClose} className="text-gray-400 hover:text-gray-700" aria-label="Close">
+              ✕
+            </button>
           </div>
         </div>
+      )}
 
-        <div className="flex-1 overflow-y-auto px-3 py-3">
+      <div
+        className={cn(
+          "min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 py-3 [-webkit-overflow-scrolling:touch]",
+          embedded && "pr-10",
+        )}
+      >
           <Bubble>{tk("greetHello", "Hello!")}</Bubble>
           <Bubble>{tk("greetHelp", "I will help you connect with the Mundus platform.")}</Bubble>
           <Bubble>{tk("greetCheck", "Let's see if you're already registered — it takes less than a minute.")}</Bubble>
@@ -206,7 +225,7 @@ export default function MaxChatWidget({
           <div ref={bottomRef} />
         </div>
 
-        <div className="border-t bg-white p-3">
+      <div className="shrink-0 border-t bg-white p-3" style={footerStyle}>
           {step === "greet" && (
             <button onClick={goEmail} className="w-full rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white">{tk("start", "Start")}</button>
           )}
@@ -298,8 +317,39 @@ export default function MaxChatWidget({
               ))}
             </div>
           )}
-        </div>
+      </div>
+    </>
+  );
+
+  if (embedded) {
+    return (
+      <div className="auth-screen-safe-top relative flex h-full min-h-0 w-full flex-1 flex-col overflow-hidden bg-white">
+        <button
+          type="button"
+          onClick={onClose}
+          className="absolute right-4 top-3 z-10 text-xl leading-none text-gray-400 hover:text-gray-700"
+          aria-label={tk("close", "Close")}
+        >
+          ✕
+        </button>
+        {panel}
+      </div>
+    );
+  }
+
+  const modal = (
+    <div className="fixed inset-0 z-[200] flex items-stretch justify-stretch bg-black/30 sm:items-end sm:justify-end sm:p-6">
+      <div
+        className="flex h-full w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-[600px] sm:max-w-md sm:rounded-2xl"
+        style={{
+          paddingTop: "env(safe-area-inset-top, 0px)",
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        }}
+      >
+        {panel}
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
