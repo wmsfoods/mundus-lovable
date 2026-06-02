@@ -57,6 +57,7 @@ export default function SupplierOfferDetail() {
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [active, setActive] = useState<boolean | null>(null);
+  const { unit } = useWeightUnit();
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
