@@ -379,3 +379,253 @@ function BuyerMoreInfoBlock({ offer }: { offer: OfferDetailed }) {
     </div>
   );
 }
+
+/* ───────── New card-based body (buyer view) ───────── */
+function BuyerOfferBody({
+  offer,
+  title,
+  galleryImages,
+  isActive,
+  totalValuePerFcl,
+  totalKg,
+  destinations,
+  incotermLabels,
+  originCode,
+  destCode,
+  firstDest,
+  condition,
+  status,
+  statusLabel,
+  unit,
+  moreOpen,
+  setMoreOpen,
+  onNegotiate,
+  onCloseDeal,
+  myNegotiation,
+  negIsBiddable,
+  negIsDealClosed,
+  negStatusLabel,
+  navigate,
+  t,
+}: any) {
+  const items: OfferDetailItem[] = offer.items ?? [];
+  const firstItem = items[0];
+  const category =
+    firstItem?.customer_product?.standard_product?.product_category?.name_en ?? null;
+
+  const cardItems: OfferCardItem[] = items.map((it: OfferDetailItem) => {
+    const img = galleryImages.find(
+      (g: any) =>
+        (g.label ?? "").trim().toLowerCase() ===
+        (it.customer_product?.name ?? "").trim().toLowerCase(),
+    );
+    return {
+      id: it.id,
+      name: it.customer_product?.name ?? "—",
+      specLabel: it.aging_method || it.meat_specification ? `Spec · ${it.aging_method ?? it.meat_specification}` : null,
+      packing: it.packaging,
+      qtyKg: Number(it.amount ?? 0),
+      pricePerKgUsd: Number(it.price ?? 0),
+    };
+  });
+  // attach images by name
+  for (const ci of cardItems) {
+    const g = galleryImages.find(
+      (g: any) => (g.label ?? "").trim().toLowerCase() === ci.name.trim().toLowerCase(),
+    );
+    if (g) ci.imageSrc = g.src;
+  }
+
+  const incotermsFormatted = incotermLabels.map((i: string) =>
+    formatIncotermWithPlace(i, {
+      originPort: offer.origin_port,
+      destinationNames: destinations,
+    }),
+  );
+
+  const containerLabel = `${offer.total_fcl ?? 1} × ${offer.container_size ?? ""} FCL`.trim();
+  const shipmentLabel = formatShipment(offer.shipment_month, offer.shipment_year);
+
+  const statusPill = (
+    <span
+      className="status-pill"
+      style={{
+        background: status.bg,
+        color: status.fg,
+        marginLeft: 4,
+        fontSize: 11,
+        padding: "3px 9px",
+        borderRadius: 999,
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 4,
+      }}
+    >
+      <span className="status-dot" style={{ background: status.dot, width: 6, height: 6, borderRadius: "50%" }} />
+      {statusLabel}
+    </span>
+  );
+
+  return (
+    <>
+      {!isActive && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: 12,
+            background: "#fee2e2",
+            border: "1px solid #fca5a5",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            marginBottom: 14,
+          }}
+        >
+          <span style={{ fontSize: 16 }}>🚫</span>
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 600, color: "#dc2626" }}>Offer deactivated</div>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>
+              This offer has been deactivated by the supplier and is no longer available for negotiation.
+            </div>
+          </div>
+        </div>
+      )}
+
+      <OfferDetailCards
+        offerNumber={formatOfferNumber(offer.offer_number, offer.created_at)}
+        title={title}
+        category={category}
+        condition={condition}
+        totalValueUsd={totalValuePerFcl}
+        totalQtyKg={totalKg}
+        containerLabel={containerLabel}
+        shipmentLabel={shipmentLabel}
+        origin={{ country: offer.origin_country, port: offer.origin_port, code: originCode }}
+        destination={{
+          country: firstDest,
+          port: null,
+          code: destCode,
+          extraCount: Math.max(0, destinations.length - 1),
+        }}
+        incoterms={incotermsFormatted}
+        paymentTerms={offer.payment_terms}
+        containerSize={offer.container_size}
+        containerCount={offer.total_fcl ?? 1}
+        createdAt={offer.created_at}
+        items={cardItems}
+        gallery={galleryImages}
+        illustrativeLabel={t("buyer.offerDetail.illustrative", "Illustrative")}
+        unit={unit}
+        statusPill={statusPill}
+      />
+
+      <div style={{ marginTop: 14 }}>
+        <button
+          className="od-more-toggle"
+          onClick={() => setMoreOpen(!moreOpen)}
+          type="button"
+        >
+          <span>{t("buyer.offerDetail.moreInfo")}</span>
+          <ChevronDownIcon
+            size={14}
+            style={{ transform: moreOpen ? "rotate(180deg)" : "none", transition: "transform 0.18s" }}
+          />
+        </button>
+        {moreOpen && (
+          <div className="od-more-content">
+            <BuyerMoreInfoBlock offer={offer} />
+          </div>
+        )}
+      </div>
+
+      {myNegotiation && (
+        <div
+          style={{
+            width: "100%",
+            padding: "12px 16px",
+            borderRadius: 10,
+            border: `1px solid ${negIsDealClosed ? "#bae6fd" : "#86efac"}`,
+            background: negIsDealClosed ? "#f0f9ff" : "#f0fdf4",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            marginTop: 12,
+            flexWrap: "wrap",
+            gap: 10,
+          }}
+        >
+          <div>
+            <span style={{ fontSize: 13, fontWeight: 600, color: negIsDealClosed ? "#075985" : "#166534" }}>
+              {negIsDealClosed ? "✅ Deal closed on this offer" : "🤝 You have an active negotiation on this offer"}
+            </span>
+            {!negIsDealClosed && (
+              <span style={{ fontSize: 12, color: "#6b7280", marginLeft: 8 }}>
+                Status: {negStatusLabel}
+              </span>
+            )}
+          </div>
+          <a
+            href={`/buyer/negotiations/${myNegotiation.id}`}
+            onClick={(e) => { e.preventDefault(); navigate(`/buyer/negotiations/${myNegotiation.id}`); }}
+            style={{
+              padding: "6px 14px",
+              borderRadius: 6,
+              background: "#8B2252",
+              color: "white",
+              fontSize: 12,
+              fontWeight: 600,
+              textDecoration: "none",
+            }}
+          >
+            Open Negotiation →
+          </a>
+        </div>
+      )}
+      {!myNegotiation && offer.status === "negotiating" && (
+        <div
+          style={{
+            width: "100%",
+            padding: "10px 14px",
+            borderRadius: 10,
+            border: "1px solid #fde68a",
+            background: "#fffbeb",
+            fontSize: 13,
+            color: "#92400e",
+            marginTop: 12,
+          }}
+        >
+          ⚠️ This offer is currently under negotiation with another buyer. You can still place your own bid.
+        </div>
+      )}
+
+      <div className="od-actions" style={{ marginTop: 16 }}>
+        <button
+          type="button"
+          className="btn-od btn-od-outline"
+          onClick={onNegotiate}
+          disabled={!isActive || (!!myNegotiation && !negIsBiddable)}
+          style={
+            !isActive || (!!myNegotiation && !negIsBiddable)
+              ? { opacity: 0.5, cursor: "not-allowed" }
+              : undefined
+          }
+        >
+          {!isActive
+            ? "Offer Inactive"
+            : myNegotiation
+            ? (negIsBiddable ? "Update Bid" : negIsDealClosed ? "Deal closed" : "Negotiation in progress")
+            : t("buyer.offerDetail.negotiate")}
+        </button>
+        <button
+          type="button"
+          className="btn-od btn-od-primary"
+          onClick={onCloseDeal}
+          disabled={!isActive}
+          style={!isActive ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+        >
+          {t("common.closeDeal")}
+        </button>
+      </div>
+    </>
+  );
+}
