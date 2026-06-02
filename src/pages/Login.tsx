@@ -68,19 +68,19 @@ export default function Login() {
       </header>
       <main className="flex flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:justify-center md:gap-16 md:py-10 w-full">
         {/* Carousel — desktop only; hidden on mobile */}
-        <div className="relative hidden md:block w-full md:max-w-[720px] md:aspect-square overflow-hidden rounded-[2.5rem] shadow-sm md:ml-4 lg:ml-8">
+        <div className="relative hidden md:block w-full md:max-w-[720px] md:aspect-square md:ml-4 lg:ml-8">
           {slides.map((src, i) => (
             <div
               key={i}
               className={cn(
-                "absolute inset-0 overflow-hidden rounded-none md:rounded-[2.5rem] transition-opacity duration-1000",
+                "absolute inset-0 transition-opacity duration-1000",
                 i === slide ? "opacity-100" : "opacity-0",
               )}
             >
               <img
                 src={src}
                 alt=""
-                className="absolute inset-0 h-full w-full object-cover md:object-contain rounded-[2.5rem]"
+                className="absolute inset-0 h-full w-full object-contain"
               />
             </div>
           ))}
