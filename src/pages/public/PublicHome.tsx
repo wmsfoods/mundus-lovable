@@ -7,7 +7,6 @@ import PublicOfferCard from "@/components/public/PublicOfferCard";
 import PublicOfferModal from "@/components/public/PublicOfferModal";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
 import { usePublicOffers, type PublicOffer } from "@/hooks/usePublicOffers";
-import { FeatureHighlight } from "@/components/ui/feature-highlight";
 import {
   OffersFilterBar,
   DEFAULT_OFFERS_FILTER,
@@ -22,6 +21,55 @@ type ProteinCode = typeof PROTEIN_CODES[number];
 const PROTEIN_EMOJI: Record<ProteinCode, string> = {
   beef: "🥩", pork: "🐖", poultry: "🐓", lamb: "🐑",
 };
+
+const HERO_PHRASES: { emoji: string; text: string }[] = [
+  { emoji: "☕", text: "Grab a coffee from the corner cafe." },
+  { emoji: "📱", text: "Load up your Mundus app." },
+  { emoji: "🚢", text: "Order new containers online." },
+  { emoji: "🏭", text: "Have it produced and delivered." },
+  { emoji: "📢", text: "Suppliers post new offers." },
+  { emoji: "🛒", text: "Buyers create new demands." },
+  { emoji: "🔗", text: "All from a single source of truth." },
+  { emoji: "🤝", text: "Directly with each other." },
+];
+
+function HeroPhraseList() {
+  const loop = [...HERO_PHRASES, ...HERO_PHRASES];
+  return (
+    <div
+      aria-hidden
+      className="relative h-full w-full overflow-hidden"
+      style={{
+        maskImage:
+          "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
+        WebkitMaskImage:
+          "linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)",
+      }}
+    >
+      <div className="absolute right-0 top-0 flex flex-col gap-2 pr-1 text-right hero-marquee">
+        {loop.map((p, idx) => (
+          <div
+            key={idx}
+            className="flex items-center justify-end gap-2 whitespace-nowrap text-sm font-medium text-white/90 sm:text-base"
+          >
+            <span>{p.text}</span>
+            <span aria-hidden className="text-base">{p.emoji}</span>
+          </div>
+        ))}
+      </div>
+      <style>{`
+        .hero-marquee { animation: heroMarquee 22s linear infinite; }
+        @keyframes heroMarquee {
+          0%   { transform: translateY(0); }
+          100% { transform: translateY(-50%); }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-marquee { animation: none; }
+        }
+      `}</style>
+    </div>
+  );
+}
 
 function offerProteinCodes(o: PublicOffer): Set<string> {
   const out = new Set<string>();
@@ -128,7 +176,8 @@ export default function PublicHome() {
             backgroundRepeat: "no-repeat",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-4 py-[1.4rem] sm:py-8">
+        <div className="relative mx-auto grid max-w-6xl grid-cols-1 gap-6 px-4 py-[1.4rem] sm:py-8 md:grid-cols-[1fr_minmax(220px,300px)] md:items-stretch">
+          <div>
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider backdrop-blur">
             <Utensils size={10} />
             {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
@@ -174,6 +223,11 @@ export default function PublicHome() {
             />
             <Stat n="3" label={t("public.home.statRounds", "Negotiation rounds, max")} />
           </div>
+          </div>
+          {/* Scrolling phrases — right column on desktop, full width on mobile */}
+          <div className="h-28 md:h-auto md:min-h-[220px]">
+            <HeroPhraseList />
+          </div>
         </div>
       </section>
       )}
@@ -189,9 +243,8 @@ export default function PublicHome() {
           )}
         </p>
 
-        {/* Filters + How it works side-by-side */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
-          <div className="bo-filterbar">
+        {/* Filters */}
+        <div className="bo-filterbar mt-6">
           <OffersFilterBar
             value={filter}
             onChange={setFilter}
@@ -227,25 +280,6 @@ export default function PublicHome() {
               </div>
             }
           />
-          </div>
-          <aside className="hidden lg:block rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
-            <FeatureHighlight
-              compact
-              eyebrow={t("public.home.howItWorksEyebrow", "How it works")}
-              title={t("public.home.howItWorksTitle", "Simple. Powerful. Direct.")}
-              features={[
-                <><span aria-hidden>☕</span> Grab a coffee from the corner cafe.</>,
-                <><span aria-hidden>📱</span> Load up your Mundus app.</>,
-                <><span aria-hidden>🚢</span> Order new containers online.</>,
-                <><span aria-hidden>🏭</span> Have it produced and delivered.</>,
-                <><span aria-hidden>📢</span> Suppliers post new offers.</>,
-                <><span aria-hidden>🛒</span> Buyers create new demands.</>,
-                <><span aria-hidden>🔗</span> All from a single source of truth.</>,
-                <><span aria-hidden>🤝</span> Directly with each other.</>,
-              ]}
-              footer={<><span aria-hidden>🥩⚡</span>&nbsp;Just look at Mundus for instant meat B2B deals.</>}
-            />
-          </aside>
         </div>
 
         <div className="result-bar mt-4 flex items-center justify-between">
