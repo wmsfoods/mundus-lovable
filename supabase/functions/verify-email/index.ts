@@ -68,9 +68,7 @@ serve(async (req) => {
             html: `
               <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 40px 20px;">
                 <div style="text-align: center; margin-bottom: 32px;">
-                  <div style="background: #8B2252; color: white; display: inline-block; padding: 8px 20px; border-radius: 8px; font-size: 18px; font-weight: 700; letter-spacing: 1px;">
-                    M <span style="font-weight: 400;">Mundus</span> <span style="font-size: 10px; letter-spacing: 2px; opacity: 0.7;">TRADE</span>
-                  </div>
+                  <img src="https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png" alt="Mundus Trade" width="180" style="display:inline-block;max-width:180px;height:auto;border:0;outline:none;text-decoration:none;" />
                 </div>
                 <h1 style="font-size: 24px; font-weight: 700; color: #111; text-align: center; margin: 0 0 8px;">Verify your email</h1>
                 <p style="font-size: 14px; color: #6b7280; text-align: center; margin: 0 0 32px;">Use the code below to complete your registration on Mundus Trade.</p>
