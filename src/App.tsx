@@ -130,6 +130,7 @@ const App = () => (
             <Route path="/dev" element={<DevIndex />} />
             <Route path="/home" element={<PublicHome />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/success" element={<SignupSuccess />} />
             <Route path="/signup/partner" element={<PartnerSignup />} />
