@@ -198,7 +198,7 @@ Deno.serve(async (req) => {
           'X-Connection-Api-Key': RESEND_API_KEY,
         },
         body: JSON.stringify({
-          from: 'Mundus Trade <noreply@mundustrade.us>',
+          from: 'Mundus Trade <contact@mundustrade.com>',
           to: [email],
           subject,
           html,
