@@ -11,7 +11,7 @@ type Step =
   | "name" | "company" | "phone" | "country" | "protein" | "leadType"
   | "submitting" | "done" | "error";
 
-const PROTEINS = ["beef", "pork", "poultry", "lamb", "fish"];
+const PROTEINS = ["beef", "pork", "poultry", "lamb"] as const;
 const COUNTRIES = ["United States","China","Brazil","United Arab Emirates","Saudi Arabia","Hong Kong","Egypt","Chile","South Korea","Japan","Mexico","Other"];
 
 export default function MaxChatWidget({
@@ -25,7 +25,7 @@ export default function MaxChatWidget({
   const [company, setCompany] = useState("");
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
-  const [protein, setProtein] = useState("");
+  const [proteins, setProteins] = useState<string[]>([]);
   const [leadType, setLeadType] = useState<LeadType>(initialLeadType);
   const [errorMsg, setErrorMsg] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -35,7 +35,7 @@ export default function MaxChatWidget({
 
   const resetAll = () => {
     setEmail(""); setName(""); setCompany(""); setPhone("");
-    setCountry(""); setProtein(""); setLeadType(initialLeadType);
+    setCountry(""); setProteins([]); setLeadType(initialLeadType);
     setErrorMsg(""); setStep("email");
   };
 
@@ -65,7 +65,7 @@ export default function MaxChatWidget({
     setStep("submitting");
     try {
       await captureLead({
-        email, name, company, phone, country, protein,
+        email, name, company, phone, country, proteins,
         lead_type: lt, mundus_rep: "", lang: i18n.language,
       });
       setStep("done");
@@ -74,6 +74,11 @@ export default function MaxChatWidget({
       setStep("error");
     }
   };
+
+  const toggleProtein = (p: string) =>
+    setProteins((prev) => prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]);
+
+  const proteinLabel = (p: string) => tk(`protein_${p}`, p.charAt(0).toUpperCase() + p.slice(1));
 
   const Bubble = ({ children }: { children: React.ReactNode }) => (
     <div className="mb-2 max-w-[85%] rounded-2xl rounded-tl-sm bg-gray-100 px-3 py-2 text-sm text-[#1A1A2E]">{children}</div>
@@ -134,7 +139,9 @@ export default function MaxChatWidget({
           {step === "country" && <Bubble>{tk("askCountry", "Which country are you in?")}</Bubble>}
           {country && ["protein","leadType","submitting","done"].includes(step) && <UserEcho>{country}</UserEcho>}
           {step === "protein" && <Bubble>{tk("askProtein", "Which protein are you most interested in?")}</Bubble>}
-          {protein && ["leadType","submitting","done"].includes(step) && <UserEcho>{protein}</UserEcho>}
+          {proteins.length > 0 && ["leadType","submitting","done"].includes(step) && (
+            <UserEcho>{proteins.map(proteinLabel).join(", ")}</UserEcho>
+          )}
           {step === "leadType" && <Bubble>{tk("askLeadType", "Are you buying, selling, or both?")}</Bubble>}
           {leadType && ["submitting","done"].includes(step) && <UserEcho>{leadType}</UserEcho>}
 
@@ -199,11 +206,25 @@ export default function MaxChatWidget({
             </select>
           )}
           {step === "protein" && (
-            <div className="flex flex-wrap gap-2">
-              {PROTEINS.map((p) => (
-                <button key={p} onClick={() => { setProtein(p); setStep("leadType"); }}
-                  className="rounded-full border border-gray-300 px-3 py-1 text-xs capitalize hover:bg-gray-100">{p}</button>
-              ))}
+            <div className="space-y-2">
+              <div className="flex flex-wrap gap-2">
+                {PROTEINS.map((p) => {
+                  const on = proteins.includes(p);
+                  return (
+                    <button key={p} type="button" onClick={() => toggleProtein(p)}
+                      className={`rounded-full border px-3 py-1 text-xs transition ${on ? "border-[#B64769] bg-[#B64769] text-white" : "border-gray-300 hover:bg-gray-100"}`}>
+                      {proteinLabel(p)}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                disabled={proteins.length === 0}
+                onClick={() => setStep("leadType")}
+                className="w-full rounded-md bg-[#B64769] px-3 py-2 text-sm font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {tk("continue", "Continue")}
+              </button>
             </div>
           )}
           {step === "leadType" && (
