@@ -46,6 +46,13 @@ export default function AdminCompanies() {
   const { t, i18n } = useTranslation();
   const locale = i18n.language || "en";
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = (searchParams.get("tab") === "users" ? "users" : "companies") as "companies" | "users";
+  const setTab = (next: "companies" | "users") => {
+    const sp = new URLSearchParams(searchParams);
+    if (next === "companies") sp.delete("tab"); else sp.set("tab", next);
+    setSearchParams(sp, { replace: true });
+  };
   const { rows, loading, error } = useAdminCompanies();
   const [createSupplierOpen, setCreateSupplierOpen] = useState(false);
   const [createBuyerOpen, setCreateBuyerOpen] = useState(false);
