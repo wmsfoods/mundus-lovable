@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Eye, EyeOff, Upload, X, Search, Check } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
@@ -10,6 +10,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { publicUrl } from "@/lib/publicUrl";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import {
+  getPreLoginOnboardingRole,
+  shouldRedirectSignupToLogin,
+} from "@/hooks/usePreLoginOnboarding";
+import { isNativeApp } from "@/lib/isNativeApp";
 
 const MUNDUS_TRADE_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 const WINE = "#B64769";
@@ -117,10 +122,29 @@ export default function Signup() {
   const [submitting, setSubmitting] = useState(false);
   const [scanResult, setScanResult] = useState<any>(null);
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
 
   const set = <K extends keyof FormData>(k: K, v: FormData[K]) =>
     setData((d) => ({ ...d, [k]: v }));
+
+  useEffect(() => {
+    if (!isNativeApp()) return;
+    shouldRedirectSignupToLogin().then((mustLogin) => {
+      if (mustLogin) navigate("/login", { replace: true });
+    });
+  }, [navigate]);
+
+  useEffect(() => {
+    const fromUrl = searchParams.get("role");
+    if (fromUrl === "buyer" || fromUrl === "supplier") {
+      set("role", fromUrl);
+      return;
+    }
+    getPreLoginOnboardingRole().then((r) => {
+      if (r) set("role", r);
+    });
+  }, [searchParams]);
 
   const stepNames = [
     t("signup.steps.basic"),

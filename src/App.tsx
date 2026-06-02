@@ -9,7 +9,7 @@ import { ThemeProvider } from "@/contexts/ThemeContext";
 import { WeightUnitProvider } from "@/contexts/WeightUnitContext";
 import { RequireAuth } from "@/components/RequireAuth";
 import { RequireAdmin } from "@/components/RequireAdmin";
-import { RoleRedirect } from "@/components/RoleRedirect";
+import { PreLoginOnboardingRedirect } from "@/components/PreLoginOnboardingRedirect";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login.tsx";
 import Signup from "./pages/signup/Signup.tsx";
@@ -126,7 +126,8 @@ const App = () => (
           <AuthProvider>
             <WeightUnitProvider>
             <Routes>
-            <Route path="/" element={<RoleRedirect />} />
+            <Route path="/" element={<PreLoginOnboardingRedirect />} />
+            <Route path="/welcome" element={<Navigate to="/onboarding" replace />} />
             <Route path="/dev" element={<DevIndex />} />
             <Route path="/home" element={<PublicHome />} />
             <Route path="/login" element={<Login />} />

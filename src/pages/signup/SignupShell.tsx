@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { prepareNativeAuthScreen } from "@/lib/nativeAuthScreen";
 import mundusLogo from "@/assets/mundus-logo.png";
 
 export function SignupShell({
@@ -20,23 +21,29 @@ export function SignupShell({
   const handleBack = onBack ?? (() => navigate(-1));
   const navTitle = title ?? "Sign Up";
 
+  useEffect(() => {
+    void prepareNativeAuthScreen();
+  }, []);
+
   return (
-    <div className="h-[100dvh] bg-[#F8F8F8] flex flex-col overflow-hidden">
-      {/* Mobile navbar — fixed, never scrolls */}
-      <header className="md:hidden shrink-0 z-20 bg-white border-b border-gray-100 auth-screen-safe-top">
-        <div className="relative h-14 flex items-center justify-center px-12">
+    <div className="auth-screen">
+      {/* Mobile navbar — fixed height includes safe-top */}
+      <header className="auth-screen-navbar md:hidden">
+        <div className="auth-screen-navbar__inner">
           {showBack && (
             <button
               type="button"
               onClick={handleBack}
               aria-label="Back"
-              className="absolute left-2 inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] hover:bg-black/5 active:bg-black/10"
+              className="absolute left-0 inline-flex h-10 w-10 items-center justify-center rounded-full text-[#111] hover:bg-black/5 active:bg-black/10"
             >
               <ChevronLeft className="h-6 w-6" />
             </button>
           )}
-          <h1 className="text-base font-semibold text-[#111] truncate">{navTitle}</h1>
-          <div className="absolute right-2">
+          <h1 className="text-base font-semibold text-[#111] truncate max-w-[min(100%,14rem)]">
+            {navTitle}
+          </h1>
+          <div className="absolute right-0">
             <LanguageSwitcher />
           </div>
         </div>
@@ -50,11 +57,12 @@ export function SignupShell({
           <LanguageSwitcher variant="pill" />
         </div>
       </div>
-      <main className="flex-1 min-h-0 overflow-y-auto flex flex-col">
-        <div className="flex-1 flex items-start justify-center px-4 py-8">
-          <div className="w-full max-w-[700px]">{children}</div>
+
+      <main className="auth-screen-scroll flex min-h-0 flex-1 flex-col">
+        <div className="auth-screen-scroll__content min-h-0 flex-1">
+          <div className="w-full max-w-[700px] md:mx-auto">{children}</div>
         </div>
-        <footer className="auth-screen-footer pt-4 flex flex-col items-center gap-2">
+        <footer className="auth-screen-footer shrink-0 flex flex-col items-center gap-2">
           <img src={mundusLogo} alt="Mundus Trade" className="h-6 w-auto opacity-80" />
           <p className="text-xs text-gray-400">© Copyright 2025 – All rights reserved.</p>
         </footer>

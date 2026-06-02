@@ -3475,6 +3475,69 @@
     "skip": "Skip",
     "next": "Next",
     "back": "Back",
+    "pre": {
+      "getStarted": "Get started",
+      "next": "Next",
+      "continueAs": "Continue as {{role}}",
+      "roleBuyer": "buyer",
+      "roleSupplier": "supplier",
+      "active": "Active",
+      "s1": {
+        "eyebrow": "MUNDUS TRADE",
+        "title": "Excellence<br />in every cut.",
+        "subtitle": "The global B2B meat marketplace — vetted suppliers, real container loads, fairer deals."
+      },
+      "s2": {
+        "kicker": "Live marketplace",
+        "title": "Browse real offers,<br />updated live.",
+        "lede": "Filter by species, origin, incoterm and certification — volumes and ports up front.",
+        "card1": {
+          "chip": "Beef · Chilled",
+          "title": "Grass-fed Cube Roll",
+          "country": "Brazil",
+          "volume": "26 MT",
+          "incoterm": "CIF Jebel Ali"
+        },
+        "card2": {
+          "chip": "Poultry · Frozen",
+          "title": "Skin-on Chicken Breast",
+          "country": "USA",
+          "volume": "27 MT",
+          "incoterm": "FOB Houston"
+        }
+      },
+      "s3": {
+        "kicker": "Smart negotiation",
+        "title": "Close in three rounds,<br />not three weeks.",
+        "nodes": {
+          "buyer": {
+            "who": "You bid",
+            "text": "Place a price on any cut — or <b>bulk-bid</b> a whole offer."
+          },
+          "mundus": {
+            "who": "Mundus matches",
+            "text": "We relay offer and counter in real time, <b>item by item</b>."
+          },
+          "supplier": {
+            "who": "Supplier closes",
+            "text": "Accept, counter or hold — <b>up to 3 rounds</b>, then it's a deal."
+          }
+        },
+        "badge": "3 rounds · 24h expiry · item-level lock"
+      },
+      "s4": {
+        "kicker": "Get started",
+        "title": "How will you<br />use Mundus?",
+        "buyer": {
+          "title": "I'm a buyer",
+          "sub": "Source container loads from vetted suppliers worldwide."
+        },
+        "supplier": {
+          "title": "I'm a supplier",
+          "sub": "List offers and reach qualified buyers in new markets."
+        }
+      }
+    },
     "buyer": {
       "cta": "Explore offers",
       "s1": {

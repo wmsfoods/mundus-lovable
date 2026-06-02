@@ -3475,6 +3475,69 @@
     "skip": "Pular",
     "next": "Próximo",
     "back": "Voltar",
+    "pre": {
+      "getStarted": "Começar",
+      "next": "Próximo",
+      "continueAs": "Continuar como {{role}}",
+      "roleBuyer": "comprador",
+      "roleSupplier": "fornecedor",
+      "active": "Ativo",
+      "s1": {
+        "eyebrow": "MUNDUS TRADE",
+        "title": "Excelência<br />em cada corte.",
+        "subtitle": "O marketplace global B2B de carnes — fornecedores verificados, cargas reais de contêiner, negócios mais justos."
+      },
+      "s2": {
+        "kicker": "Marketplace ao vivo",
+        "title": "Navegue ofertas reais,<br />atualizadas em tempo real.",
+        "lede": "Filtre por espécie, origem, incoterm e certificação — volumes e portos em destaque.",
+        "card1": {
+          "chip": "Bovino · Resfriado",
+          "title": "Cube Roll Grass-fed",
+          "country": "Brasil",
+          "volume": "26 MT",
+          "incoterm": "CIF Jebel Ali"
+        },
+        "card2": {
+          "chip": "Aves · Congelado",
+          "title": "Peito de Frango com Pele",
+          "country": "EUA",
+          "volume": "27 MT",
+          "incoterm": "FOB Houston"
+        }
+      },
+      "s3": {
+        "kicker": "Negociação inteligente",
+        "title": "Feche em três rounds,<br />não em três semanas.",
+        "nodes": {
+          "buyer": {
+            "who": "Você oferta",
+            "text": "Defina um preço em qualquer corte — ou faça <b>lance em massa</b> na oferta inteira."
+          },
+          "mundus": {
+            "who": "Mundus conecta",
+            "text": "Repasse oferta e contraproposta em tempo real, <b>item a item</b>."
+          },
+          "supplier": {
+            "who": "Fornecedor fecha",
+            "text": "Aceite, contra-oferte ou aguarde — <b>até 3 rounds</b>, depois é negócio."
+          }
+        },
+        "badge": "3 rounds · expira em 24h · trava por item"
+      },
+      "s4": {
+        "kicker": "Começar",
+        "title": "Como você vai<br />usar a Mundus?",
+        "buyer": {
+          "title": "Sou comprador",
+          "sub": "Compre cargas de contêiner de fornecedores verificados no mundo todo."
+        },
+        "supplier": {
+          "title": "Sou fornecedor",
+          "sub": "Publique ofertas e alcance compradores qualificados em novos mercados."
+        }
+      }
+    },
     "buyer": {
       "cta": "Explorar ofertas",
       "s1": {

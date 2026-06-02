@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth, setRememberMe } from "@/contexts/AuthContext";
 import { getPersistedValue } from "@/lib/authStorage";
+import { prepareNativeAuthScreen } from "@/lib/nativeAuthScreen";
+import { clearPostOnboardingLoginGate } from "@/hooks/usePreLoginOnboarding";
 import { cn } from "@/lib/utils";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ShiningButton } from "@/components/ui/shining-button";
@@ -32,6 +34,8 @@ export default function Login() {
   const [slide, setSlide] = useState(0);
 
   useEffect(() => {
+    void prepareNativeAuthScreen();
+    void clearPostOnboardingLoginGate();
     getPersistedValue("mundus.rememberMe").then((v) => {
       if (v === "0") setRemember(false);
     });
@@ -62,11 +66,12 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-[100dvh] flex-col bg-white">
-      <header className="auth-screen-header">
+    <div className="auth-screen bg-white">
+      <header className="auth-screen-header shrink-0">
         <LanguageSwitcher variant="pill" />
       </header>
-      <main className="flex flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:justify-center md:gap-16 md:py-10 w-full">
+      <main className="auth-screen-scroll flex min-h-0 flex-1 flex-col md:flex-row md:items-center md:justify-center md:gap-16 md:py-10">
+        <div className="auth-screen-scroll__content flex min-h-0 flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:gap-16 md:py-0 w-full">
         {/* Carousel — desktop only; hidden on mobile */}
         <div className="relative hidden md:block md:max-w-[720px] md:ml-4 lg:ml-8">
           {slides.map((src, i) => (
@@ -168,15 +173,20 @@ export default function Login() {
             </Link>
           </p>
 
-          <div className="auth-screen-footer mt-8 flex justify-center gap-6 text-xs text-gray-600 md:pb-0">
+          <div className="mt-8 flex justify-center gap-6 text-xs text-gray-600">
             <a href="#" className="underline">{t("common.termsLink")}</a>
             <a href="#" className="underline">{t("common.privacyLink")}</a>
           </div>
           </div>
+        </div>
+        <footer className="auth-screen-footer shrink-0 flex flex-col items-center gap-2 md:hidden">
+          <img src={mundusLogo} alt="Mundus Trade" className="h-6 w-auto opacity-80" />
+          <p className="text-xs text-gray-400">{t("common.copyright")}</p>
+        </footer>
       </main>
 
       {/* Footer — desktop only */}
-      <footer className="hidden md:block border-t border-gray-100 py-5">
+      <footer className="hidden md:block shrink-0 border-t border-gray-100 py-5">
         <div className="flex items-center justify-center gap-3 text-xs text-gray-600">
           <img src={mundusLogo} alt="Mundus Trade" className="h-5 w-auto opacity-80" />
           <span>{t("common.copyright")}</span>

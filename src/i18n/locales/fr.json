@@ -3461,6 +3461,69 @@
     "skip": "Passer",
     "next": "Suivant",
     "back": "Retour",
+    "pre": {
+      "getStarted": "Commencer",
+      "next": "Suivant",
+      "continueAs": "Continuer en tant que {{role}}",
+      "roleBuyer": "acheteur",
+      "roleSupplier": "fournisseur",
+      "active": "Actif",
+      "s1": {
+        "eyebrow": "MUNDUS TRADE",
+        "title": "L'excellence<br />à chaque coupe.",
+        "subtitle": "La marketplace mondiale B2B de viande — fournisseurs vérifiés, chargements réels, accords plus équitables."
+      },
+      "s2": {
+        "kicker": "Marketplace en direct",
+        "title": "Parcourez des offres réelles,<br />mises à jour en direct.",
+        "lede": "Filtrez par espèce, origine, incoterm et certification — volumes et ports en évidence.",
+        "card1": {
+          "chip": "Bœuf · Frais",
+          "title": "Cube Roll Grass-fed",
+          "country": "Brésil",
+          "volume": "26 MT",
+          "incoterm": "CIF Jebel Ali"
+        },
+        "card2": {
+          "chip": "Volaille · Surgelé",
+          "title": "Blanc de poulet avec peau",
+          "country": "États-Unis",
+          "volume": "27 MT",
+          "incoterm": "FOB Houston"
+        }
+      },
+      "s3": {
+        "kicker": "Négociation intelligente",
+        "title": "Concluez en trois tours,<br />pas en trois semaines.",
+        "nodes": {
+          "buyer": {
+            "who": "Vous enchérissez",
+            "text": "Proposez un prix sur toute coupe — ou une <b>offre groupée</b> sur l'offre entière."
+          },
+          "mundus": {
+            "who": "Mundus fait le lien",
+            "text": "Nous relaisons offre et contre-offre en temps réel, <b>article par article</b>."
+          },
+          "supplier": {
+            "who": "Le fournisseur conclut",
+            "text": "Acceptez, contre-offrez ou attendez — <b>jusqu'à 3 tours</b>, puis c'est conclu."
+          }
+        },
+        "badge": "3 tours · expiration 24 h · verrou par article"
+      },
+      "s4": {
+        "kicker": "Commencer",
+        "title": "Comment utiliserez-vous<br />Mundus ?",
+        "buyer": {
+          "title": "Je suis acheteur",
+          "sub": "Sourcez des chargements conteneur auprès de fournisseurs vérifiés dans le monde."
+        },
+        "supplier": {
+          "title": "Je suis fournisseur",
+          "sub": "Publiez des offres et touchez des acheteurs qualifiés sur de nouveaux marchés."
+        }
+      }
+    },
     "buyer": {
       "cta": "Explorer les offres",
       "s1": {

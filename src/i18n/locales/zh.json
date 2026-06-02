@@ -3461,6 +3461,69 @@
     "skip": "跳过",
     "next": "下一步",
     "back": "返回",
+    "pre": {
+      "getStarted": "开始",
+      "next": "下一步",
+      "continueAs": "以{{role}}身份继续",
+      "roleBuyer": "买家",
+      "roleSupplier": "供应商",
+      "active": "进行中",
+      "s1": {
+        "eyebrow": "MUNDUS TRADE",
+        "title": "每一块都追求卓越。",
+        "subtitle": "全球 B2B 肉类市场 — 认证供应商、真实集装箱货量、更公平的交易。"
+      },
+      "s2": {
+        "kicker": "实时市场",
+        "title": "浏览实时更新的<br />真实报价。",
+        "lede": "按品类、产地、贸易术语和认证筛选 — 货量与港口一目了然。",
+        "card1": {
+          "chip": "牛肉 · 冷鲜",
+          "title": "草饲 Cube Roll",
+          "country": "巴西",
+          "volume": "26 MT",
+          "incoterm": "CIF Jebel Ali"
+        },
+        "card2": {
+          "chip": "禽肉 · 冷冻",
+          "title": "带皮鸡胸肉",
+          "country": "美国",
+          "volume": "27 MT",
+          "incoterm": "FOB Houston"
+        }
+      },
+      "s3": {
+        "kicker": "智能议价",
+        "title": "三轮成交，<br />不必等三周。",
+        "nodes": {
+          "buyer": {
+            "who": "您出价",
+            "text": "为任意部位定价 — 或对整个报价进行<b>批量出价</b>。"
+          },
+          "mundus": {
+            "who": "Mundus 撮合",
+            "text": "实时传递报价与还价，<b>逐项</b>进行。"
+          },
+          "supplier": {
+            "who": "供应商确认",
+            "text": "接受、还价或等待 — <b>最多 3 轮</b>，即可成交。"
+          }
+        },
+        "badge": "3 轮 · 24 小时到期 · 逐项锁定"
+      },
+      "s4": {
+        "kicker": "开始使用",
+        "title": "您将如何<br />使用 Mundus？",
+        "buyer": {
+          "title": "我是买家",
+          "sub": "向全球认证供应商采购集装箱货量。"
+        },
+        "supplier": {
+          "title": "我是供应商",
+          "sub": "发布报价，触达新市场的优质买家。"
+        }
+      }
+    },
     "buyer": {
       "cta": "浏览报价",
       "s1": {

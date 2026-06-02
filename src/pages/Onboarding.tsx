@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties, type PointerEvent as RPointerEvent } from "react";
-import { useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
+import { Trans, useTranslation } from "react-i18next";
+import {
+  POST_ONBOARDING_PATH,
+  usePreLoginOnboarding,
+  type PreLoginRole,
+} from "@/hooks/usePreLoginOnboarding";
+import { isNativeApp } from "@/lib/isNativeApp";
+import { prepareNativeAuthScreen } from "@/lib/nativeAuthScreen";
 import { motion, useReducedMotion } from "framer-motion";
 import {
   ShoppingCart,
@@ -9,10 +17,10 @@ import {
   Check,
   ArrowRight,
 } from "lucide-react";
-import cubeRoll from "@/assets/onboarding/cube-roll.png.asset.json";
-import chickenBreast from "@/assets/onboarding/chicken-breast.png.asset.json";
+import cubeRollImg from "@/assets/onboarding/cube-roll.png";
+import chickenBreastImg from "@/assets/onboarding/chicken-breast.png";
 
-type Role = "buyer" | "supplier";
+type Role = PreLoginRole;
 
 /* =========================================================================
    Mundus — Mobile Onboarding (4 screens). Mobile-only, safe-area aware.
@@ -21,7 +29,9 @@ type Role = "buyer" | "supplier";
 const SWIPE_THRESHOLD = 60;
 
 export default function Onboarding() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
+  const { loading, done, complete } = usePreLoginOnboarding();
   const prefersReducedMotion = useReducedMotion();
   const [index, setIndex] = useState(0);
   const [role, setRole] = useState<Role>("buyer");
@@ -29,13 +39,19 @@ export default function Onboarding() {
   const dragStart = useRef<{ x: number; t: number } | null>(null);
 
   const goTo = (i: number) => setIndex(Math.max(0, Math.min(3, i)));
-  const next = () => (index === 3 ? finish() : goTo(index + 1));
+  const finish = async () => {
+    await complete(role);
+    await prepareNativeAuthScreen();
+    navigate(POST_ONBOARDING_PATH, { replace: true });
+  };
+  const next = () => (index === 3 ? void finish() : goTo(index + 1));
   const prev = () => goTo(index - 1);
   const skip = () => goTo(3);
-
-  const finish = () => navigate(`/signup?role=${role}`);
+  const isNative = isNativeApp();
+  const canShow = isNative && !loading && !done;
 
   useEffect(() => {
+    if (!canShow) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "ArrowRight") next();
       else if (e.key === "ArrowLeft") prev();
@@ -43,7 +59,29 @@ export default function Onboarding() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [index, role]);
+  }, [canShow, index, role]);
+
+  useEffect(() => {
+    return () => {
+      void prepareNativeAuthScreen();
+    };
+  }, []);
+
+  if (!isNative) {
+    return <Navigate to="/home" replace />;
+  }
+
+  if (loading) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-[#0d0709]">
+        <div className="h-8 w-8 rounded-full border-2 border-[#B64769] border-t-transparent animate-spin" />
+      </div>
+    );
+  }
+
+  if (done) {
+    return <Navigate to={POST_ONBOARDING_PATH} replace />;
+  }
 
   const onPointerDown = (e: RPointerEvent<HTMLDivElement>) => {
     dragStart.current = { x: e.clientX, t: Date.now() };
@@ -62,16 +100,20 @@ export default function Onboarding() {
 
   const ctaLabel =
     index === 0
-      ? "Get started"
+      ? t("onboarding.pre.getStarted")
       : index === 3
-        ? `Continue as ${role}`
-        : "Next";
+        ? t("onboarding.pre.continueAs", {
+            role: t(
+              role === "buyer" ? "onboarding.pre.roleBuyer" : "onboarding.pre.roleSupplier",
+            ),
+          })
+        : t("onboarding.pre.next");
 
   const ctaOnDark = index === 0 || index === 3;
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden bg-[#0d0709] font-[Inter,system-ui,sans-serif] text-[#0A0A0A]"
+      className="h-[100dvh] w-full overflow-hidden bg-[#0d0709] font-[Inter,system-ui,sans-serif] text-[#0A0A0A]"
       style={{ touchAction: "pan-y" }}
     >
       {/* Sliding track */}
@@ -102,7 +144,7 @@ export default function Onboarding() {
           className="absolute right-5 z-30 rounded-full px-3 py-1.5 text-[13px] font-medium text-white/85 active:scale-[0.98]"
           style={{ top: "calc(env(safe-area-inset-top, 0px) + 14px)" }}
         >
-          Skip
+          {t("onboarding.skip")}
         </button>
       )}
 
@@ -197,6 +239,7 @@ function ScreenShell({
 
 /* ============================ Screen 1 — Welcome ========================== */
 function Screen1() {
+  const { t } = useTranslation();
   return (
     <ScreenShell
       style={{
@@ -204,7 +247,6 @@ function Screen1() {
           "linear-gradient(165deg, #6C0B28 0%, #8a2342 52%, #A74764 100%)",
       }}
     >
-      {/* Hero */}
       <div className="flex flex-1 items-center justify-center">
         <motion.div
           initial={{ scale: 0.92, opacity: 0 }}
@@ -217,31 +259,27 @@ function Screen1() {
           }}
         >
           <img
-            src={cubeRoll.url}
-            alt="Cube roll"
+            src={cubeRollImg}
+            alt=""
             className="w-[230px] -rotate-6"
             style={{ filter: "drop-shadow(0 18px 22px rgba(0,0,0,0.45))" }}
           />
         </motion.div>
       </div>
 
-      {/* Copy */}
       <div className="mb-4">
         <div className="mb-4 flex items-center gap-3 text-[11px] font-semibold tracking-[0.22em] text-white/85">
           <span className="h-[1px] w-7 bg-white/55" />
-          MUNDUS TRADE
+          {t("onboarding.pre.s1.eyebrow")}
         </div>
         <h1
           className="text-[34px] font-semibold leading-[1.04] text-white"
           style={{ letterSpacing: "-0.5px" }}
         >
-          Excellence
-          <br />
-          in every cut.
+          <Trans i18nKey="onboarding.pre.s1.title" components={{ br: <br /> }} />
         </h1>
         <p className="mt-4 max-w-[300px] text-[14px] leading-[1.5] text-white/82">
-          The global B2B meat marketplace — vetted suppliers, real container loads,
-          fairer deals.
+          {t("onboarding.pre.s1.subtitle")}
         </p>
       </div>
     </ScreenShell>
@@ -250,23 +288,21 @@ function Screen1() {
 
 /* ====================== Screen 2 — Browse offers ========================== */
 function Screen2() {
+  const { t } = useTranslation();
   return (
     <ScreenShell style={{ background: "#eeeef0" }}>
       <header className="mb-5">
         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#B64769]">
-          Live Marketplace
+          {t("onboarding.pre.s2.kicker")}
         </div>
         <h1
           className="mt-2 text-[28px] font-semibold leading-[1.08] text-[#0A0A0A]"
           style={{ letterSpacing: "-0.4px" }}
         >
-          Browse real offers,
-          <br />
-          updated live.
+          <Trans i18nKey="onboarding.pre.s2.title" components={{ br: <br /> }} />
         </h1>
         <p className="mt-3 max-w-[300px] text-[13.5px] leading-[1.5] text-[#5e5f6b]">
-          Filter by species, origin, incoterm and certification — volumes and ports up
-          front.
+          {t("onboarding.pre.s2.lede")}
         </p>
       </header>
 
@@ -274,24 +310,26 @@ function Screen2() {
         <OfferCard
           feature
           dotColor="#c0392b"
-          species="Beef · Chilled"
-          title="Grass-fed Cube Roll"
+          species={t("onboarding.pre.s2.card1.chip")}
+          title={t("onboarding.pre.s2.card1.title")}
           flag="🇧🇷"
-          origin="Brazil"
-          mt="26 MT"
-          incoterm="CIF Jebel Ali"
-          thumb={cubeRoll.url}
+          origin={t("onboarding.pre.s2.card1.country")}
+          mt={t("onboarding.pre.s2.card1.volume")}
+          incoterm={t("onboarding.pre.s2.card1.incoterm")}
+          activeLabel={t("onboarding.pre.active")}
+          thumb={cubeRollImg}
           thumbBg="#fdf3f4"
         />
         <OfferCard
           dotColor="#e08e3c"
-          species="Poultry · Frozen"
-          title="Skin-on Chicken Breast"
+          species={t("onboarding.pre.s2.card2.chip")}
+          title={t("onboarding.pre.s2.card2.title")}
           flag="🇺🇸"
-          origin="USA"
-          mt="27 MT"
-          incoterm="FOB Houston"
-          thumb={chickenBreast.url}
+          origin={t("onboarding.pre.s2.card2.country")}
+          mt={t("onboarding.pre.s2.card2.volume")}
+          incoterm={t("onboarding.pre.s2.card2.incoterm")}
+          activeLabel={t("onboarding.pre.active")}
+          thumb={chickenBreastImg}
           thumbBg="#fff5e8"
         />
       </div>
@@ -308,6 +346,7 @@ function OfferCard({
   origin,
   mt,
   incoterm,
+  activeLabel,
   thumb,
   thumbBg,
 }: {
@@ -319,6 +358,7 @@ function OfferCard({
   origin: string;
   mt: string;
   incoterm: string;
+  activeLabel: string;
   thumb: string;
   thumbBg: string;
 }) {
@@ -349,7 +389,7 @@ function OfferCard({
           </div>
           <span className="flex items-center gap-1 rounded-full bg-[#e6f7ed] px-2 py-[2px] text-[10px] font-semibold text-[#16a34a]">
             <span className="h-[5px] w-[5px] rounded-full bg-[#16a34a]" />
-            Active
+            {activeLabel}
           </span>
         </div>
         <h3 className="mt-1 text-[15px] font-semibold leading-tight text-[#0A0A0A]">
@@ -370,34 +410,23 @@ function OfferCard({
 
 /* ========================= Screen 3 — Negotiate =========================== */
 function Screen3() {
+  const { t } = useTranslation();
   const nodes = [
     {
-      who: "You bid",
-      body: (
-        <>
-          Place a price on any cut — or <b>bulk-bid</b> a whole offer.
-        </>
-      ),
+      who: t("onboarding.pre.s3.nodes.buyer.who"),
+      bodyKey: "onboarding.pre.s3.nodes.buyer.text",
       bg: "#3478d4",
       Icon: ShoppingCart,
     },
     {
-      who: "Mundus matches",
-      body: (
-        <>
-          We relay offer and counter in real time, <b>item by item</b>.
-        </>
-      ),
+      who: t("onboarding.pre.s3.nodes.mundus.who"),
+      bodyKey: "onboarding.pre.s3.nodes.mundus.text",
       bg: "#B64769",
       Icon: ArrowLeftRight,
     },
     {
-      who: "Supplier closes",
-      body: (
-        <>
-          Accept, counter or hold — <b>up to 3 rounds</b>, then it's a deal.
-        </>
-      ),
+      who: t("onboarding.pre.s3.nodes.supplier.who"),
+      bodyKey: "onboarding.pre.s3.nodes.supplier.text",
       bg: "#42424A",
       Icon: UtensilsCrossed,
     },
@@ -411,15 +440,13 @@ function Screen3() {
     >
       <header className="mb-6">
         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#B64769]">
-          Smart Negotiation
+          {t("onboarding.pre.s3.kicker")}
         </div>
         <h1
           className="mt-2 text-[28px] font-semibold leading-[1.08] text-[#0A0A0A]"
           style={{ letterSpacing: "-0.4px" }}
         >
-          Close in three rounds,
-          <br />
-          not three weeks.
+          <Trans i18nKey="onboarding.pre.s3.title" components={{ br: <br /> }} />
         </h1>
       </header>
 
@@ -430,7 +457,7 @@ function Screen3() {
           style={{ bottom: 22 }}
         />
         <div className="flex flex-col gap-4">
-          {nodes.map(({ who, body, bg, Icon }, i) => (
+          {nodes.map(({ who, bodyKey, bg, Icon }, i) => (
             <div key={i} className="flex items-stretch gap-3">
               <div
                 className="relative z-10 flex h-[44px] w-[44px] flex-shrink-0 items-center justify-center rounded-full text-white"
@@ -452,7 +479,7 @@ function Screen3() {
                   {who}
                 </div>
                 <p className="mt-1 text-[13px] leading-[1.45] text-[#42424A]">
-                  {body}
+                  <Trans i18nKey={bodyKey} components={{ b: <b /> }} />
                 </p>
               </div>
             </div>
@@ -463,7 +490,7 @@ function Screen3() {
       <div className="mt-6 self-start">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-[#fdf3f4] px-3 py-1.5 text-[11px] font-medium text-[#B64769]">
           <Sparkles size={12} strokeWidth={2.2} />
-          3 rounds · 24h expiry · item-level lock
+          {t("onboarding.pre.s3.badge")}
         </span>
       </div>
     </ScreenShell>
@@ -478,13 +505,13 @@ function Screen4({
   role: Role;
   setRole: (r: Role) => void;
 }) {
+  const { t } = useTranslation();
   return (
     <ScreenShell
       style={{
         background: "linear-gradient(180deg, #1c0d13 0%, #2a131c 100%)",
       }}
     >
-      {/* Top radial wine glow */}
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-[280px]"
         style={{
@@ -495,15 +522,13 @@ function Screen4({
 
       <header className="relative mb-7">
         <div className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#efb2bd]">
-          Get Started
+          {t("onboarding.pre.s4.kicker")}
         </div>
         <h1
           className="mt-2 text-[28px] font-semibold leading-[1.08] text-white"
           style={{ letterSpacing: "-0.4px" }}
         >
-          How will you
-          <br />
-          use Mundus?
+          <Trans i18nKey="onboarding.pre.s4.title" components={{ br: <br /> }} />
         </h1>
       </header>
 
@@ -511,16 +536,16 @@ function Screen4({
         <RoleCard
           active={role === "buyer"}
           onClick={() => setRole("buyer")}
-          title="I'm a buyer"
-          body="Source container loads from vetted suppliers worldwide."
+          title={t("onboarding.pre.s4.buyer.title")}
+          body={t("onboarding.pre.s4.buyer.sub")}
           tileBg="linear-gradient(135deg,#B64769,#752642)"
           Icon={ShoppingCart}
         />
         <RoleCard
           active={role === "supplier"}
           onClick={() => setRole("supplier")}
-          title="I'm a supplier"
-          body="List offers and reach qualified buyers in new markets."
+          title={t("onboarding.pre.s4.supplier.title")}
+          body={t("onboarding.pre.s4.supplier.sub")}
           tileBg="rgba(255,255,255,0.10)"
           Icon={UtensilsCrossed}
         />
