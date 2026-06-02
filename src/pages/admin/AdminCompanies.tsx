@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Search, CheckCircle2, AlertCircle, Plus, Pencil, MoreHorizontal } from "lucide-react";
 import { CreateSupplierProfileModal } from "@/components/admin/CreateSupplierProfileModal";
 import { CreateBuyerProfileModal } from "@/components/admin/CreateBuyerProfileModal";
+import CompanyUsersView from "@/components/admin/companies/CompanyUsersView";
 import { supabase } from "@/integrations/supabase/client";
 import { CountryMultiFilter } from "@/components/admin/CountryMultiFilter";
 import { countryFlag } from "@/lib/countryFlags";
