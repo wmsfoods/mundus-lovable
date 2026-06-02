@@ -96,7 +96,7 @@ export function OfferDetailCards(props: OfferCardsProps) {
             {formatUsdInt(totalValueUsd)}
           </span>
           <span className="ofc-aside-sub">
-            {formatQtyInt(totalQtyKg ? fmtWeightNumber(totalQtyKg, unit) : 0)} {wLbl} total · {containerLabel} · Shipment {shipmentLabel}
+            {fmtWeight(totalQtyKg, unit)} {wLbl} total · {containerLabel} · Shipment {shipmentLabel}
           </span>
         </div>
       </div>
@@ -281,12 +281,6 @@ export function OfferDetailCards(props: OfferCardsProps) {
       </div>
     </div>
   );
-}
-
-/* Local helper that returns the converted number (for chip text). */
-function fmtWeightNumber(kg: number, unit: WeightUnit): number {
-  if (unit === "lb") return kg * 2.20462;
-  return kg;
 }
 
 /* ── Thumb with strip + lightbox ── */
