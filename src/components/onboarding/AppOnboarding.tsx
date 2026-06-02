@@ -14,7 +14,6 @@ import {
   ClipboardList,
   type LucideIcon,
 } from "lucide-react";
-import { Logo } from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { useOnboarding } from "@/hooks/useOnboarding";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -106,8 +105,7 @@ function AppOnboardingInner({ role }: Props) {
   const goNext = () => {
     if (isLast) {
       void complete();
-      if (role === "buyer") navigate("/buyer/offers");
-      else navigate("/supplier/offers/new");
+      navigate("/login");
       return;
     }
     setDirection(1);
@@ -132,99 +130,143 @@ function AppOnboardingInner({ role }: Props) {
   const step = steps[index];
   const Icon = step.icon;
 
+  const finish = () => {
+    void complete();
+    navigate("/login");
+  };
+
   return (
     <div
       role="dialog"
       aria-modal="true"
-      className="fixed inset-0 z-[100] bg-white flex flex-col"
-      style={{
-        paddingTop: "env(safe-area-inset-top)",
-        paddingBottom: "env(safe-area-inset-bottom)",
-        paddingLeft: "env(safe-area-inset-left)",
-        paddingRight: "env(safe-area-inset-right)",
-      }}
+      className="fixed inset-0 z-[100] bg-white overflow-hidden"
     >
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3">
-        <Logo size="sm" />
-        <button
-          onClick={handleSkip}
-          className="text-sm text-muted-foreground min-h-[44px] px-3 rounded-md"
-        >
-          {t("onboarding.skip")}
-        </button>
-      </div>
+      {/* Full-bleed pastel background blob behind safe area */}
+      <div
+        aria-hidden
+        className="absolute inset-x-0 top-0 h-[58%] pointer-events-none"
+        style={{
+          background:
+            "radial-gradient(120% 80% at 50% 10%, rgba(139,46,79,0.18) 0%, rgba(139,46,79,0.08) 45%, rgba(255,255,255,0) 75%)",
+        }}
+      />
 
-      {/* Swipe area */}
-      <div className="flex-1 overflow-hidden relative">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={step.key}
-            custom={direction}
-            initial={{ opacity: 0, x: direction * 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: direction * -40 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            drag="x"
-            dragConstraints={{ left: 0, right: 0 }}
-            dragElastic={0.2}
-            onDragEnd={onDragEnd}
-            className="absolute inset-0 flex flex-col items-center justify-center px-8 text-center"
-          >
-            <div
-              className="w-24 h-24 rounded-3xl flex items-center justify-center mb-8"
-              style={{
-                background: "var(--brand-gradient, linear-gradient(135deg,#8B2E4F,#6C0B28))",
-                color: "white",
-              }}
+      {/* Content stays within safe area */}
+      <div
+        className="relative z-10 h-full w-full flex flex-col"
+        style={{
+          paddingTop: "env(safe-area-inset-top)",
+          paddingBottom: "env(safe-area-inset-bottom)",
+          paddingLeft: "env(safe-area-inset-left)",
+          paddingRight: "env(safe-area-inset-right)",
+        }}
+      >
+        {/* Swipe area: illustration + text + dots + CTA */}
+        <div className="flex-1 overflow-hidden relative">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={step.key}
+              custom={direction}
+              initial={{ opacity: 0, x: direction * 40 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: direction * -40 }}
+              transition={{ duration: 0.25, ease: "easeOut" }}
+              drag="x"
+              dragConstraints={{ left: 0, right: 0 }}
+              dragElastic={0.2}
+              onDragEnd={onDragEnd}
+              className="absolute inset-0 flex flex-col px-6"
             >
-              <Icon className="w-12 h-12" strokeWidth={1.75} />
-            </div>
-            <h2
-              className="text-2xl font-semibold mb-4 leading-tight"
-              style={{ color: "var(--p800, #6C0B28)" }}
+              {/* Illustration block (top ~55%) */}
+              <div className="flex-1 flex items-center justify-center pt-6">
+                <div className="relative w-full max-w-[320px] aspect-square flex items-center justify-center">
+                  <div
+                    aria-hidden
+                    className="absolute inset-0 rounded-[42%_58%_55%_45%/50%_40%_60%_50%]"
+                    style={{
+                      background:
+                        "linear-gradient(135deg, rgba(139,46,79,0.12), rgba(139,46,79,0.04))",
+                    }}
+                  />
+                  <div
+                    className="relative w-40 h-40 rounded-[36px] flex items-center justify-center shadow-lg"
+                    style={{
+                      background:
+                        "var(--brand-gradient, linear-gradient(135deg,#8B2E4F,#6C0B28))",
+                      color: "white",
+                    }}
+                  >
+                    <Icon className="w-20 h-20" strokeWidth={1.5} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Text block */}
+              <div className="text-center pb-6">
+                <h2
+                  className="text-2xl font-semibold mb-3 leading-tight tracking-tight uppercase"
+                  style={{ color: "var(--p800, #6C0B28)" }}
+                >
+                  {step.title}
+                </h2>
+                <p className="text-[15px] leading-relaxed text-muted-foreground max-w-sm mx-auto">
+                  {step.body}
+                </p>
+              </div>
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        {/* Page controls (tappable dots) */}
+        <div className="flex justify-center gap-2 py-5" role="tablist" aria-label="Onboarding steps">
+          {steps.map((s, i) => {
+            const active = i === index;
+            return (
+              <button
+                key={s.key}
+                type="button"
+                role="tab"
+                aria-selected={active}
+                aria-label={`Step ${i + 1}`}
+                onClick={() => {
+                  setDirection(i > index ? 1 : -1);
+                  setIndex(i);
+                }}
+                className="p-2 -m-2"
+              >
+                <span
+                  className={cn(
+                    "block h-1.5 rounded-full transition-all",
+                    active ? "w-6" : "w-1.5 opacity-40",
+                  )}
+                  style={{ background: "var(--p800, #6C0B28)" }}
+                />
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Final CTA only on last step */}
+        <div className="px-6 pb-6 pt-1 min-h-[72px] flex items-center">
+          {isLast ? (
+            <Button
+              type="button"
+              onClick={finish}
+              className="min-h-[52px] w-full rounded-full text-base font-semibold"
+              style={{ background: "var(--p800, #6C0B28)", color: "white" }}
             >
-              {step.title}
-            </h2>
-            <p className="text-base text-muted-foreground max-w-sm">{step.body}</p>
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      {/* Dots */}
-      <div className="flex justify-center gap-2 py-4">
-        {steps.map((s, i) => (
-          <span
-            key={s.key}
-            className={cn(
-              "h-1.5 rounded-full transition-all",
-              i === index ? "w-6" : "w-1.5 opacity-40",
-            )}
-            style={{ background: "var(--p800, #6C0B28)" }}
-          />
-        ))}
-      </div>
-
-      {/* Footer */}
-      <div className="px-4 pb-4 pt-2 flex gap-3">
-        {index > 0 && (
-          <Button
-            type="button"
-            variant="outline"
-            onClick={goPrev}
-            className="min-h-[48px] flex-1"
-          >
-            {t("onboarding.back")}
-          </Button>
-        )}
-        <Button
-          type="button"
-          onClick={goNext}
-          className="min-h-[48px] flex-1"
-          style={{ background: "var(--p800, #6C0B28)", color: "white" }}
-        >
-          {isLast ? t(`onboarding.${role}.cta`) : t("onboarding.next")}
-        </Button>
+              {t("onboarding.getStarted", { defaultValue: "Get started" })}
+            </Button>
+          ) : (
+            <button
+              type="button"
+              onClick={handleSkip}
+              className="mx-auto text-sm text-muted-foreground min-h-[44px] px-4 rounded-full"
+            >
+              {t("onboarding.skip")}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
