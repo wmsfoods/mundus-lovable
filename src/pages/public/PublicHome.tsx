@@ -187,7 +187,7 @@ export default function PublicHome() {
         </p>
 
         {/* Filters + How it works side-by-side */}
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1fr_320px] lg:items-start">
+        <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_280px] lg:items-start">
           <div className="bo-filterbar">
           <OffersFilterBar
             value={filter}
@@ -225,7 +225,7 @@ export default function PublicHome() {
             }
           />
           </div>
-          <aside className="hidden lg:block rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+          <aside className="hidden lg:block bg-white lg:justify-self-end lg:pl-4">
             <FeatureHighlight
               compact
               eyebrow={t("public.home.howItWorksEyebrow", "How it works")}
