@@ -3,6 +3,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { getActiveRole } from "@/lib/activeRole";
+import { isNativeApp } from "@/lib/isNativeApp";
 
 export function RoleRedirect() {
   const { user, loading: authLoading } = useAuth();
@@ -17,7 +18,7 @@ export function RoleRedirect() {
     );
   }
 
-  if (!user) return <Navigate to="/home" replace />;
+  if (!user) return <Navigate to={isNativeApp() ? "/login" : "/home"} replace />;
 
   if (isAdmin) return <Navigate to="/admin" replace />;
 

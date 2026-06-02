@@ -27,8 +27,6 @@ import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUp
 import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
-import AppOnboarding from "@/components/onboarding/AppOnboarding";
-
 export default function SupplierShell() {
   return (
     <InsightsUpsellProvider>
@@ -173,7 +171,6 @@ function SupplierShellInner() {
             onProBadgeClick={onProBadgeClick}
           />
         )}
-        <AppOnboarding role="supplier" />
       </div>
     </StackHeaderProvider>
   );

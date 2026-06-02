@@ -13,6 +13,11 @@ const config: CapacitorConfig = {
       launchAutoHide: true,
       androidScaleType: "CENTER_INSIDE",
     },
+    StatusBar: {
+      overlaysWebView: true,
+      style: "LIGHT",
+      backgroundColor: "#ffffff",
+    },
   },
 };
 

@@ -40,6 +40,7 @@ body.is-native {
   height: 100%;
   width: 100%;
   margin: 0;
+  background: #ffffff;
 }
 
 body.is-native {

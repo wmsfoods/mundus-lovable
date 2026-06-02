@@ -4,6 +4,8 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { Logo } from "@/components/Logo";
 import { ShiningButton } from "@/components/ui/shining-button";
+import { isNativeApp } from "@/lib/isNativeApp";
+import { cn } from "@/lib/utils";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   const { t } = useTranslation();
@@ -12,7 +14,12 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-white text-[#1A1A2E]">
-      <header className="border-b border-gray-200 bg-white">
+      <header
+        className={cn(
+          "border-b border-gray-200 bg-white",
+          isNativeApp() && "auth-screen-safe-top",
+        )}
+      >
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
           <Link to="/home" className="flex items-center" aria-label="Mundus Trade">
             <Logo size={36} />

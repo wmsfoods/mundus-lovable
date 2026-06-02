@@ -10,8 +10,10 @@ export async function initCapacitor(): Promise<void> {
   try {
     await StatusBar.setStyle({ style: Style.Light });
     if (Capacitor.getPlatform() === "ios") {
-      // Keep web content below the status bar; env(safe-area-inset-top) is often 0 in WKWebView.
-      await StatusBar.setOverlaysWebView({ overlay: false });
+      // Edge-to-edge: use env(safe-area-inset-*) / --safe-top in CSS (no extra black band).
+      await StatusBar.setOverlaysWebView({ overlay: true });
+      await StatusBar.setBackgroundColor({ color: "#ffffff" });
+      document.body.classList.add("status-bar-overlay");
     }
   } catch {
     // Status bar plugin not available on all platforms

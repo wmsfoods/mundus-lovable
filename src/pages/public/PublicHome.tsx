@@ -15,6 +15,7 @@ import {
 } from "@/components/marketplace/OffersFilterBar";
 import heroAsset from "@/assets/hero-banner-bg.png.asset.json";
 import { BlurFade } from "@/components/ui/blur-fade";
+import { isNativeApp } from "@/lib/isNativeApp";
 
 const PROTEIN_CODES = ["beef", "pork", "poultry", "lamb"] as const;
 type ProteinCode = typeof PROTEIN_CODES[number];
@@ -111,9 +112,11 @@ export default function PublicHome() {
   const scrollToOffers = () =>
     offersRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 
+  const nativeApp = isNativeApp();
+
   return (
     <PublicLayout>
-      {/* Hero band */}
+      {!nativeApp && (
       <section className="relative overflow-hidden bg-[#8B2E4F] text-white">
         <div
           aria-hidden
@@ -173,8 +176,8 @@ export default function PublicHome() {
           </div>
         </div>
       </section>
+      )}
 
-      {/* Live offers */}
       <section ref={offersRef} className="mx-auto max-w-6xl px-4 py-10">
         <h2 className="text-2xl font-bold text-[#1A1A2E]">
           {t("public.home.liveOffersTitle", "Live offers")}
