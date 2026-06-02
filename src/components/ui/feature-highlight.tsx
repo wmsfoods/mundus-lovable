@@ -34,7 +34,7 @@ const FeatureHighlight = React.forwardRef<HTMLDivElement, FeatureHighlightProps>
       <motion.div
         ref={ref}
         className={cn(
-          "mx-auto w-full max-w-3xl px-4 py-12 sm:py-16 text-center",
+          "mx-auto w-full max-w-6xl px-4 py-12 sm:py-16",
           className,
         )}
         variants={containerVariants}
@@ -43,27 +43,39 @@ const FeatureHighlight = React.forwardRef<HTMLDivElement, FeatureHighlightProps>
         viewport={{ once: true, amount: 0.2 }}
         {...(props as any)}
       >
-        {eyebrow && (
-          <motion.div
-            variants={itemVariants}
-            className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#8B2E4F]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#8B2E4F]"
+        <div className="grid gap-10 md:grid-cols-2 md:gap-12 md:items-start">
+          <div className="text-left md:sticky md:top-24">
+            {eyebrow && (
+              <motion.div
+                variants={itemVariants}
+                className="mb-3 inline-flex items-center gap-1.5 rounded-full bg-[#8B2E4F]/10 px-3 py-1 text-[11px] font-semibold uppercase tracking-wider text-[#8B2E4F]"
+              >
+                {eyebrow}
+              </motion.div>
+            )}
+
+            <motion.h2
+              variants={itemVariants}
+              className="text-2xl font-bold tracking-tight text-[#1A1A2E] sm:text-3xl md:text-4xl"
+            >
+              {title}
+            </motion.h2>
+
+            {footer && (
+              <motion.div
+                variants={itemVariants}
+                className="mt-6 hidden md:inline-flex items-center justify-center rounded-full bg-[#8B2E4F] px-5 py-2.5 text-sm font-semibold text-white shadow-sm sm:text-base"
+              >
+                {footer}
+              </motion.div>
+            )}
+          </div>
+
+          <motion.ul
+            variants={containerVariants}
+            onMouseLeave={() => setHovered(null)}
+            className="flex flex-col items-start gap-2 sm:gap-3"
           >
-            {eyebrow}
-          </motion.div>
-        )}
-
-        <motion.h2
-          variants={itemVariants}
-          className="mb-8 text-2xl font-bold tracking-tight text-[#1A1A2E] sm:text-3xl md:text-4xl"
-        >
-          {title}
-        </motion.h2>
-
-        <motion.ul
-          variants={containerVariants}
-          onMouseLeave={() => setHovered(null)}
-          className="flex flex-col items-center gap-2 sm:gap-3"
-        >
           {features.map((feature, index) => {
             const isHovered = hovered === index;
             const isDimmed = hovered !== null && !isHovered;
@@ -86,16 +98,17 @@ const FeatureHighlight = React.forwardRef<HTMLDivElement, FeatureHighlightProps>
               </motion.li>
             );
           })}
-        </motion.ul>
+          </motion.ul>
 
-        {footer && (
-          <motion.div
-            variants={itemVariants}
-            className="mt-10 inline-flex items-center justify-center rounded-full bg-[#8B2E4F] px-5 py-2.5 text-sm font-semibold text-white shadow-sm sm:text-base"
-          >
-            {footer}
-          </motion.div>
-        )}
+          {footer && (
+            <motion.div
+              variants={itemVariants}
+              className="mt-2 inline-flex items-center justify-center self-start rounded-full bg-[#8B2E4F] px-5 py-2.5 text-sm font-semibold text-white shadow-sm sm:text-base md:hidden"
+            >
+              {footer}
+            </motion.div>
+          )}
+        </div>
       </motion.div>
     );
   },
