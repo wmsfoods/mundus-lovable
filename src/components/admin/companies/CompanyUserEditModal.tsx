@@ -1,8 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, CSSProperties } from "react";
 import { X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { AdminCompanyUserRow } from "@/hooks/useAdminCompanyUsers";
+
+const inputStyle: CSSProperties = {
+  width: "100%", padding: "8px 10px", border: "1px solid #d1d5db",
+  borderRadius: 6, fontSize: 13, background: "white", color: "#111",
+};
 
 const BUYER_ROLES = [
   "master_buyer", "buyer_global_director", "procurement", "import_manager",
@@ -106,30 +111,30 @@ export function CompanyUserEditModal({
 
         <div style={{ padding: 20, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
           <Field label="Full Name" full>
-            <input className="adm-input" value={full_name} onChange={(e) => setName(e.target.value)} />
+            <input style={inputStyle} value={full_name} onChange={(e) => setName(e.target.value)} />
           </Field>
           <Field label="Email" full>
-            <input className="adm-input" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <input style={inputStyle} type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
           </Field>
           <Field label="Role">
-            <select className="adm-input" value={role} onChange={(e) => setRole(e.target.value)}>
+            <select style={inputStyle} value={role} onChange={(e) => setRole(e.target.value)}>
               <option value="">—</option>
               {availableRoles.map((r) => (<option key={r} value={r}>{r}</option>))}
             </select>
           </Field>
           <Field label="Status">
-            <select className="adm-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+            <select style={inputStyle} value={status} onChange={(e) => setStatus(e.target.value)}>
               {STATUSES.map((s) => (<option key={s} value={s}>{s}</option>))}
             </select>
           </Field>
           <Field label="Job Title">
-            <input className="adm-input" value={job_title} onChange={(e) => setJob(e.target.value)} />
+            <input style={inputStyle} value={job_title} onChange={(e) => setJob(e.target.value)} />
           </Field>
           <Field label="Phone">
-            <input className="adm-input" value={phone} onChange={(e) => setPhone(e.target.value)} />
+            <input style={inputStyle} value={phone} onChange={(e) => setPhone(e.target.value)} />
           </Field>
           <Field label="Notes" full>
-            <textarea className="adm-input" value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
+            <textarea style={inputStyle} value={notes} onChange={(e) => setNotes(e.target.value)} rows={3} />
           </Field>
         </div>
 
@@ -151,8 +156,8 @@ export function CompanyUserEditModal({
             </button>
           )}
           <div style={{ display: "flex", gap: 8 }}>
-            <button className="crm-btn-ghost" onClick={onClose}>Cancel</button>
-            <button className="crm-btn-primary" onClick={save} disabled={saving}>
+            <button onClick={onClose} style={{ padding: "8px 14px", borderRadius: 6, border: "1px solid #d1d5db", background: "white", cursor: "pointer", fontSize: 13 }}>Cancel</button>
+            <button onClick={save} disabled={saving} style={{ padding: "8px 14px", borderRadius: 6, border: "none", background: "#8B2252", color: "white", cursor: "pointer", fontSize: 13, fontWeight: 600, opacity: saving ? 0.6 : 1 }}>
               {saving ? "Saving…" : "Save"}
             </button>
           </div>
