@@ -1,14 +1,567 @@
+import { useMemo, useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import {
+  ArrowLeftIcon,
+  CopyIcon,
+  ShareIcon,
+  TagIcon,
+  ChevronDownIcon,
+  MapPinIcon,
+  FlagSVG,
+} from "@/components/icons";
+import type { SupplierOffer } from "@/data/mockSupplierOffers";
+import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+import { supabase } from "@/integrations/supabase/client";
+import { formatOfferNumber } from "@/lib/offerNumber";
+import { useOfferImages } from "@/hooks/useOfferImages";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { publicUrl } from "@/lib/publicUrl";
+import { notifyCompanyUsers } from "@/lib/notifications";
+import { auditLog } from "@/lib/auditLog";
+import {
+  useOfferDestinationPorts,
+  OfferDestinationPorts,
+} from "@/components/offer/OfferDestinationPorts";
+import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
+import { countryFlag } from "@/lib/countryFlags";
+import { countryToCode } from "@/lib/countryCodes";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, type WeightUnit } from "@/lib/units";
+
+const MONTH_NAMES = [
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
+];
+
+function formatPriceUsd(n: number): string {
+  return new Intl.NumberFormat("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(n);
+}
+
+export default function SupplierOfferDetail() {
+  const { id = "" } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const { t } = useTranslation();
+  const [moreOpen, setMoreOpen] = useState(false);
+  const [active, setActive] = useState<boolean | null>(null);
+  const { unit } = useWeightUnit();
+  const [deactivateOpen, setDeactivateOpen] = useState(false);
+  const [activeNegCount, setActiveNegCount] = useState<number>(0);
+  const [deactivating, setDeactivating] = useState(false);
+  const [negotiations, setNegotiations] = useState<Array<{
+    id: string;
+    status: string;
+    buyer_company_id: string;
+    incoterm: string | null;
+    created_at: string;
+    updated_at: string;
+    buyer?: { id: string; name: string | null; country: string | null } | null;
+  }>>([]);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("negotiations")
+        .select(`id, status, buyer_company_id, incoterm, created_at, updated_at,
+          buyer:companies!negotiations_buyer_company_id_fkey ( id, name, country )`)
+        .eq("offer_id", id)
+        .not("status", "in", "(expired,offer_withdrawn)")
+        .is("deleted_at", null)
+        .order("created_at", { ascending: false });
+      if (!cancelled) setNegotiations((data as any) ?? []);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  const { offers: realOffers, loading: offersLoading } = useRealSupplierOffers();
+  const offer: SupplierOffer | undefined = useMemo(
+    () => realOffers.find((o) => o.id === id),
+    [id, realOffers]
+  );
+
+  const galleryImages = useOfferImages(offer?.items ?? []);
+  const destinationPorts = useOfferDestinationPorts(id);
+
+  if (offersLoading && !offer) {
+    return <div className="empty-state"><p>{t("supplier.offers.loading", "Loading…")}</p></div>;
+  }
+
+  if (!offer) {
+    return (
+      <>
+        <div className="crumbs">
+          <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
+            {t("supplier.offers.crumbHome")}
+          </a>
+          <span className="sep">›</span>
+          <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
+            {t("supplier.offers.title")}
+          </a>
+          <span className="sep">›</span>
+          <b>{t("supplier.offers.detail.notFoundTitle")}</b>
+        </div>
+        <div className="empty-state">
+          <p>{t("supplier.offers.detail.notFoundBody")}</p>
+          <button className="btn-back" onClick={() => navigate("/supplier/offers")}>
+            <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
+          </button>
+        </div>
+      </>
+    );
+  }
+
+  const isActive = active ?? offer.active;
+  const offerTitle = offer.title;
+
+  const ACTIVE_STATUSES_EXCLUSION = '("offer_rejected","expired","bid_accepted","offer_withdrawn")';
+
+  async function openToggle() {
+    // Activating again is unrestricted
+    if (!isActive) {
+      setActive(true);
+      return;
+    }
+    // Check for active negotiations before deactivating
+    const { data: negs } = await supabase
+      .from("negotiations")
+      .select("id")
+      .eq("offer_id", id)
+      .not("status", "in", ACTIVE_STATUSES_EXCLUSION)
+      .is("deleted_at", null);
+    setActiveNegCount(negs?.length ?? 0);
+    setDeactivateOpen(true);
+  }
+
+  async function confirmDeactivate() {
+    if (deactivating) return;
+    setDeactivating(true);
+    try {
+      // 1. Mark offer inactive (best-effort against real DB; mock data also flips UI)
+      await supabase.from("offers").update({ status: "inactive" }).eq("id", id);
+
+      // 2. Fetch active negotiations
+      const { data: negs } = await supabase
+        .from("negotiations")
+        .select("id, buyer_company_id")
+        .eq("offer_id", id)
+        .not("status", "in", ACTIVE_STATUSES_EXCLUSION)
+        .is("deleted_at", null);
+
+      if (negs && negs.length > 0) {
+        const negIds = negs.map((n) => n.id);
+        await supabase
+          .from("negotiations")
+          .update({ status: "offer_withdrawn", updated_at: new Date().toISOString() })
+          .in("id", negIds);
+
+        for (const _neg of negs) {
+          supabase.functions
+            .invoke("negotiation-notifications", {
+              body: {
+                action: "offer_withdrawn",
+                data: {
+                  buyer_email: "buyer@example.com",
+                  offer_title: offerTitle,
+                  marketplace_link: publicUrl("/buyer/marketplace"),
+                },
+              },
+            })
+            .catch(() => {});
+        }
+
+        // In-app notifications to each negotiating buyer company (best-effort)
+        const uniqueBuyerCompanyIds = Array.from(
+          new Set(negs.map((n) => n.buyer_company_id).filter(Boolean) as string[]),
+        );
+        for (const buyerCompanyId of uniqueBuyerCompanyIds) {
+          const neg = negs.find((n) => n.buyer_company_id === buyerCompanyId);
+          notifyCompanyUsers({
+            companyId: buyerCompanyId,
+            title: "Offer deactivated",
+            body: `The offer "${offerTitle}" you were negotiating was deactivated by the supplier`,
+            icon: "alert",
+            category: "offers",
+            linkUrl: neg ? `/buyer/negotiations/${neg.id}` : "/buyer/marketplace",
+            relatedType: neg ? "negotiation" : "offer",
+            relatedId: neg?.id ?? id,
+          }).catch(() => {});
+        }
+      }
+
+      setActive(false);
+      setDeactivateOpen(false);
+      auditLog({
+        action: "offer.deactivated",
+        category: "offer",
+        entityType: "offer",
+        entityId: id,
+        entityLabel: formatOfferNumber(offer.offerNumber, offer.createdAt),
+        details: { activeNegotiationsWithdrawn: negs?.length ?? 0, offerTitle },
+        severity: "warn",
+      });
+      toast.success(
+        negs && negs.length > 0
+          ? "Offer deactivated. Negotiating buyers have been notified."
+          : "Offer deactivated.",
+      );
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to deactivate");
+    } finally {
+      setDeactivating(false);
+    }
+  }
+
+
+  const totalKg = offer.items.reduce((s, it) => s + it.qtyKg, 0);
+  const totalValuePerFcl = offer.items.reduce(
+    (s, it) => s + it.qtyKg * it.pricePerKgUsd,
+    0,
+  );
+
+  const supplierToggle = (
+    <button
+      type="button"
+      className="so-detail-toggle"
+      onClick={openToggle}
+      aria-pressed={isActive}
+    >
+      <span className={`so-toggle-switch ${isActive ? "is-on" : ""}`} />
+      {isActive ? t("supplier.offers.detail.deactivate") : t("supplier.offers.detail.activate")}
+    </button>
+  );
+
+  const handleEdit = async () => {
+    if (!offer) return;
+    try {
+      const { data: row, error } = await supabase
+        .from("offers")
+        .select(`
+          id, container_size, total_fcl, payment_terms, origin_port_id,
+          is_halal, is_kosher, cut_region, exw_pickup_location,
+          items:offer_items (
+            amount, price, minimum_price, condition, aging_method,
+            customer_product:customer_products (
+              name,
+              standard_product:standard_products ( product_number )
+            )
+          ),
+          markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
+          incoterms:offer_allowed_incoterms ( incoterm_type )
+        `)
+        .eq("id", offer.id)
+        .maybeSingle();
+      if (error || !row) throw error ?? new Error("Offer not found");
+      const editOffer = {
+        offerId: offer.id,
+        offerNumber: offer.offerNumber,
+        category: offer.category,
+        condition: offer.condition,
+        containerSize: (row as any).container_size ?? offer.containerSize ?? "40ft",
+        containerCount: Number((row as any).total_fcl ?? offer.fclCount ?? 1) || 1,
+        paymentTerms: (row as any).payment_terms ?? offer.paymentTerms ?? "",
+        isHalal: !!(row as any).is_halal,
+        isKosher: !!(row as any).is_kosher,
+        cutRegion: ((row as any).cut_region as "global" | "us") ?? "global",
+        exwCity: (row as any).exw_pickup_location ?? "",
+        originPortId: (row as any).origin_port_id ?? null,
+        destinationCountries: ((row as any).markets ?? [])
+          .map((m: any) => m?.market?.country?.english_name)
+          .filter(Boolean) as string[],
+        incoterms: ((row as any).incoterms ?? []).map((i: any) => i.incoterm_type) as string[],
+        items: ((row as any).items ?? []).map((it: any) => ({
+          name: it.customer_product?.name ?? "",
+          productNumber: it.customer_product?.standard_product?.product_number ?? null,
+          amount: Number(it.amount ?? 0),
+          price: Number(it.price ?? 0),
+          minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
+          condition: it.condition ?? offer.condition,
+          agingMethod: it.aging_method ?? null,
+        })),
+      };
+      navigate("/supplier/offers/new", { state: { editOffer } });
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to load offer for editing";
+      toast.error(msg);
+    }
+  };
+
+  const handleClone = async () => {
+    if (!offer) return;
+    try {
+      const { data: row, error } = await supabase
+        .from("offers")
+        .select(`
+          id, container_size, total_fcl, payment_terms, origin_port_id,
+          is_halal, is_kosher, cut_region, exw_pickup_location,
+          items:offer_items (
+            amount, price, minimum_price, condition, aging_method,
+            customer_product:customer_products (
+              name,
+              standard_product:standard_products ( product_number )
+            )
+          ),
+          markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
+          incoterms:offer_allowed_incoterms ( incoterm_type )
+        `)
+        .eq("id", offer.id)
+        .maybeSingle();
+      if (error || !row) throw error ?? new Error("Offer not found");
+      const cloneFrom = {
+        category: offer.category,
+        condition: offer.condition,
+        containerSize: (row as any).container_size ?? offer.containerSize ?? "40ft",
+        containerCount: Number((row as any).total_fcl ?? offer.fclCount ?? 1) || 1,
+        paymentTerms: (row as any).payment_terms ?? offer.paymentTerms ?? "",
+        isHalal: !!(row as any).is_halal,
+        isKosher: !!(row as any).is_kosher,
+        cutRegion: ((row as any).cut_region as "global" | "us") ?? "global",
+        exwCity: (row as any).exw_pickup_location ?? "",
+        originPortId: (row as any).origin_port_id ?? null,
+        destinationCountries: ((row as any).markets ?? [])
+          .map((m: any) => m?.market?.country?.english_name)
+          .filter(Boolean) as string[],
+        incoterms: ((row as any).incoterms ?? []).map((i: any) => i.incoterm_type) as string[],
+        items: ((row as any).items ?? []).map((it: any) => ({
+          name: it.customer_product?.name ?? "",
+          productNumber: it.customer_product?.standard_product?.product_number ?? null,
+          amount: Number(it.amount ?? 0),
+          price: Number(it.price ?? 0),
+          minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
+          condition: it.condition ?? offer.condition,
+          agingMethod: it.aging_method ?? null,
+        })),
+      };
+      navigate("/supplier/offers/new", { state: { cloneFrom } });
+      toast.success("Offer data loaded — review and publish as a new offer");
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Failed to clone offer";
+      toast.error(msg);
+    }
+  };
+
+  const supplierActions = (
+    <>
+      <button
+        type="button"
+        className="btn-tb"
+        onClick={negotiations.length === 0 ? handleEdit : undefined}
+        disabled={negotiations.length > 0}
+        title={negotiations.length > 0 ? "Cannot edit — active negotiations in progress" : undefined}
+        style={negotiations.length > 0 ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+      >
+        ✏️ Edit Offer
+      </button>
+      <button type="button" className="btn-tb" onClick={handleClone}>
+        <CopyIcon size={14} /> {t("supplier.offers.detail.clone")}
+      </button>
+      <button
+        type="button"
+        className="btn-tb"
+        onClick={() => alert(t("supplier.offers.detail.shareComingSoon"))}
+      >
+        <ShareIcon size={14} /> {t("supplier.offers.detail.share")}
+      </button>
+    </>
+  );
+
+  const banners = (
+    <>
+      {!isActive && (
+        <div className="so-inactive-banner">
+          {t("supplier.offers.detail.inactiveBanner")}
+        </div>
+      )}
+      {negotiations.length > 0 && (
+        <div
+          style={{
+            padding: "14px 16px",
+            borderRadius: 12,
+            border: "1px solid #e5e7eb",
+            background: "#fafafa",
+          }}
+        >
+          <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+            🤝 Active Negotiations ({negotiations.length})
+          </div>
+          {negotiations.map((n) => {
+            const statusMap: Record<string, { label: string; bg: string; fg: string }> = {
+              awaiting_supplier: { label: "Waiting your reply", bg: "#fee2e2", fg: "#b91c1c" },
+              pending_buyer_review: { label: "Waiting buyer reply", bg: "#fef3c7", fg: "#92400e" },
+              bid_accepted: { label: "Accepted", bg: "#dcfce7", fg: "#15803d" },
+              offer_rejected: { label: "Rejected", bg: "#f3f4f6", fg: "#4b5563" },
+            };
+            const s = statusMap[n.status] ?? { label: n.status.replace(/_/g, " "), bg: "#fef3c7", fg: "#92400e" };
+            const buyerName = n.buyer?.name?.trim() || `Buyer #${n.buyer_company_id.slice(0, 8)}`;
+            const flag = countryFlag(n.buyer?.country);
+            return (
+              <a
+                key={n.id}
+                href={`/supplier/negotiations/${n.id}`}
+                onClick={(e) => { e.preventDefault(); navigate(`/supplier/negotiations/${n.id}`); }}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  padding: "8px 10px",
+                  borderRadius: 6,
+                  border: "1px solid #e5e7eb",
+                  background: "#fff",
+                  marginBottom: 4,
+                  textDecoration: "none",
+                  color: "inherit",
+                  fontSize: 12,
+                }}
+              >
+                <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                  <span aria-hidden style={{ fontSize: 14 }}>{flag}</span>
+                  <span style={{ fontWeight: 600 }}>{buyerName}</span>
+                  {n.buyer?.country && (
+                    <span style={{ color: "#6b7280" }}>· {n.buyer.country}</span>
+                  )}
+                </span>
+                <span
+                  style={{
+                    padding: "2px 8px",
+                    borderRadius: 10,
+                    fontSize: 10,
+                    fontWeight: 600,
+                    background: s.bg,
+                    color: s.fg,
+                  }}
+                >
+                  {s.label}
+                </span>
+              </a>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+
+  const firstItemPkg = (offer.items[0] as any)?.packaging ?? null;
+
+  return (
+    <>
+      <button
+        type="button"
+        className="btn-back"
+        onClick={() => navigate("/supplier/offers")}
+        style={{ marginBottom: 12 }}
+      >
+        <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
+      </button>
+      <div className="crumbs">
+        <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
+          {t("supplier.offers.crumbHome")}
+        </a>
+        <span className="sep">›</span>
+        <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
+          {t("supplier.offers.title")}
+        </a>
+        <span className="sep">›</span>
+        <b>{offer.title}</b>
+      </div>
+
+      <Dialog open={deactivateOpen} onOpenChange={setDeactivateOpen}>
+        <DialogContent className="max-w-[480px]">
+          <DialogHeader>
+            <DialogTitle>⚠️ Deactivate Offer?</DialogTitle>
+            <DialogDescription>
+              {activeNegCount > 0 ? (
+                <>
+                  This offer has <strong>{activeNegCount}</strong> active negotiation{activeNegCount > 1 ? "s" : ""}.
+                </>
+              ) : (
+                "It will no longer be visible in the marketplace."
+              )}
+            </DialogDescription>
+          </DialogHeader>
+          {activeNegCount > 0 && (
+            <div className="text-sm text-foreground">
+              <p className="mb-2">Deactivating will:</p>
+              <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
+                <li>Mark the offer as inactive</li>
+                <li>Notify all negotiating buyers</li>
+                <li>Cancel all active negotiations</li>
+              </ul>
+              <p className="mt-3 text-xs text-muted-foreground">This action cannot be undone.</p>
+            </div>
+          )}
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setDeactivateOpen(false)} disabled={deactivating}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={confirmDeactivate}
+              disabled={deactivating}
+            >
+              {deactivating ? "Deactivating…" : "Deactivate"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          marginBottom: 12,
+          flexWrap: "wrap",
+        }}
+      >
+        <div>{supplierToggle}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{supplierActions}</div>
+      </div>
+
+      <SupplierOfferBuyerStyleBody
+        offer={offer}
+        isActive={isActive}
+        totalKg={totalKg}
+        totalValuePerFcl={totalValuePerFcl}
+        destinationPorts={destinationPorts}
+        galleryImages={galleryImages}
+        moreOpen={moreOpen}
+        setMoreOpen={setMoreOpen}
+        banners={banners}
+        unit={unit}
+        illustrativeLabel={t("supplier.offers.detail.illustrative")}
+      />
+    </>
+  );
+}
 
 /* ────────────────────────────────────────────────────────────
-   Supplier offer detail body using the shared card layout.
-   Same content as buyer view + supplier-only Asking / Floor
-   columns and inactive banner.
+   Buyer-style body for the supplier offer detail.
+   Mirrors the layout used by BuyerOfferDetail (od-grid / od-right
+   classes from mundus-offers.css) so suppliers see their own
+   offers with the same clean layout — keeping supplier-only
+   info (asking / floor prices, banners with negotiations).
    ──────────────────────────────────────────────────────────── */
 function SupplierOfferBuyerStyleBody({
   offer,
   isActive,
   totalKg,
   totalValuePerFcl,
+  destinationPorts,
   galleryImages,
   moreOpen,
   setMoreOpen,
@@ -30,119 +583,236 @@ function SupplierOfferBuyerStyleBody({
 }) {
   const { t } = useTranslation();
   const items = offer.items;
+  const firstItem = items[0];
   const originCode = offer.originCountryCode || countryToCode(offer.originCountry);
+  const destinations = offer.destinations.map((d) => d.name);
   const firstDest = offer.destinations[0] ?? null;
   const destCode = firstDest?.code || countryToCode(firstDest?.name ?? null);
-  const destinations = offer.destinations.map((d) => d.name);
   const condition = offer.condition;
-  const incotermsFormatted = offer.incoterms.map((i) =>
-    formatIncotermWithPlace(i, {
-      originPort: offer.originPort,
-      destinationNames: destinations,
-    }),
-  );
-  const containerLabel = `${offer.fclCount ?? 1} × ${offer.containerSize ?? ""} FCL`.trim();
-  const cardItems = items.map((it, idx) => {
-    const pkg = (it as any).packaging;
-    const g = galleryImages.find(
-      (gi) => (gi.label ?? "").trim().toLowerCase() === (it.name ?? "").trim().toLowerCase(),
-    );
-    return {
-      id: String(idx),
-      name: it.name,
-      specLabel: (it as any).agingMethod ? `Spec · ${(it as any).agingMethod}` : null,
-      packing: pkg,
-      qtyKg: it.qtyKg,
-      pricePerKgUsd: it.pricePerKgUsd,
-      askingPerKgUsd: it.pricePerKgUsd * 1.05,
-      floorPerKgUsd: it.pricePerKgUsd * 0.9,
-      imageSrc: g?.src ?? null,
-    };
-  });
+  const incotermLabels = offer.incoterms;
+  const wLbl = weightLabel(unit);
 
   return (
     <>
       {banners}
-      {!isActive && (
-        <div
-          style={{
-            padding: "12px 16px",
-            borderRadius: 12,
-            background: "#fee2e2",
-            border: "1px solid #fca5a5",
-            marginBottom: 14,
-            fontSize: 13,
-            color: "#dc2626",
-            fontWeight: 600,
-          }}
-        >
-          🚫 {t("supplier.offers.detail.inactiveBanner", "This offer is currently inactive and is not visible to buyers.")}
-        </div>
-      )}
+      <div className="od-grid">
+        <OfferImageGallery
+          images={galleryImages}
+          illustrativeLabel={illustrativeLabel}
+        />
 
-      <OfferDetailCards
-        offerNumber={formatOfferNumber(offer.offerNumber, offer.createdAt)}
-        title={offer.title}
-        category={offer.category}
-        condition={condition}
-        totalValueUsd={totalValuePerFcl}
-        totalQtyKg={totalKg}
-        containerLabel={containerLabel}
-        shipmentLabel={offer.shipmentLabel}
-        origin={{ country: offer.originCountry, port: offer.originPort, code: originCode }}
-        destination={{
-          country: firstDest?.name ?? null,
-          port: null,
-          code: destCode,
-          extraCount: Math.max(0, offer.destinations.length - 1),
-        }}
-        incoterms={incotermsFormatted}
-        paymentTerms={offer.paymentTerms}
-        containerSize={offer.containerSize}
-        containerCount={offer.fclCount ?? 1}
-        createdAt={offer.createdAt}
-        items={cardItems}
-        showSupplierPricing
-        gallery={galleryImages}
-        illustrativeLabel={illustrativeLabel}
-        unit={unit}
-      />
+        <div className="od-right">
+          {!isActive && (
+            <div
+              style={{
+                padding: "12px 16px",
+                borderRadius: 8,
+                background: "#fee2e2",
+                border: "1px solid #fca5a5",
+                marginBottom: 16,
+                fontSize: 13,
+                color: "#dc2626",
+                fontWeight: 600,
+              }}
+            >
+              🚫 {t("supplier.offers.detail.inactiveBanner", "This offer is currently inactive and is not visible to buyers.")}
+            </div>
+          )}
 
-      <div style={{ marginTop: 14 }}>
-        <button
-          className="od-more-toggle"
-          onClick={() => setMoreOpen(!moreOpen)}
-          type="button"
-        >
-          <span>{t("buyer.offerDetail.moreInfo", "More information")}</span>
-          <ChevronDownIcon
-            size={14}
-            style={{ transform: moreOpen ? "rotate(180deg)" : "none", transition: "transform 0.18s" }}
-          />
-        </button>
-        {moreOpen && (
-          <div className="od-more-content">
-            <div style={{ display: "grid", gap: 10, fontSize: 13, color: "#374151" }}>
-              {offer.paymentTerms && (
-                <div><strong>Payment terms:</strong> {offer.paymentTerms}</div>
-              )}
-              {offer.observation && (
-                <div><strong>Notes:</strong> {offer.observation}</div>
-              )}
-              {offer.viewCount != null && (
-                <div style={{ color: "#6b7280", fontSize: 12 }}>Views: {offer.viewCount}</div>
-              )}
-              {offer.proposalCount != null && (
-                <div style={{ color: "#6b7280", fontSize: 12 }}>Proposals: {offer.proposalCount}</div>
-              )}
-              {offer.exwPickupLocation && offer.incoterms.includes("EXW") && (
-                <div style={{ color: "#92400e" }}>
-                  📍 EXW Pickup: <strong>{offer.exwPickupLocation}</strong>
-                </div>
-              )}
+          <div className="od-title-row">
+            <span className="oc-chip">
+              <TagIcon size={18} />
+            </span>
+            <div className="od-title-block">
+              <h1 className="od-title">{offer.title}</h1>
+              <div className="od-subtitle">
+                <span
+                  style={{
+                    fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+                    fontSize: 12,
+                    color: "#9ca3af",
+                    marginRight: 8,
+                  }}
+                >
+                  {formatOfferNumber(offer.offerNumber, offer.createdAt)}
+                </span>
+                {offer.category} · {offer.condition}
+              </div>
             </div>
           </div>
-        )}
+
+          <div className="od-price-block">
+            <div className="od-price-amount">US$ {formatPriceUsd(totalValuePerFcl)}</div>
+            <div className="od-price-caption">
+              {t("buyer.offerDetail.perFcl", "Total value (starting price) · per FCL")}
+            </div>
+          </div>
+
+          <div className="od-cuts">
+            <div className="od-cuts-head">
+              <span>{t("buyer.offerDetail.cutsHead.cut", "Product / Cut")}</span>
+              <span>{t("buyer.offerDetail.cutsHead.packing", "Packing")}</span>
+              <span className="num">{t("buyer.offerDetail.cutsHead.qty", "Qty per item")}</span>
+              <span className="num">{t("buyer.offerDetail.cutsHead.price", "Price / kg")}</span>
+              <span className="num">Asking / kg</span>
+              <span className="num">Floor / kg</span>
+            </div>
+            {items.map((it, idx) => {
+              const pkg = (it as any).packaging;
+              const asking = it.pricePerKgUsd * 1.05;
+              const floor = it.pricePerKgUsd * 0.9;
+              return (
+                <div key={idx} className="od-cuts-row">
+                  <span>{it.name}</span>
+                  <span>{pkg && pkg !== "\n" ? pkg : "—"}</span>
+                  <span className="num">
+                    {fmtWeight(it.qtyKg, unit)} {wLbl}
+                  </span>
+                  <span className="num">
+                    US$ {fmtPrice(it.pricePerKgUsd, unit)}/{wLbl}
+                  </span>
+                  <span className="num">US$ {fmtPrice(asking, unit)}/{wLbl}</span>
+                  <span className="num">US$ {fmtPrice(floor, unit)}/{wLbl}</span>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="od-total-weight">
+            <span className="amt">
+              {fmtWeight(totalKg, unit)} {wLbl}
+            </span>
+            <span className="lbl">{t("buyer.offerDetail.totalWeight", "Total weight")}</span>
+          </div>
+
+          <div className="od-meta-row">
+            <div className="od-meta-item">
+              <span className="od-meta-label">{t("buyer.offerDetail.fields.packing", "Packing")}</span>
+              <span className="od-meta-value">
+                {(firstItem as any)?.packaging && (firstItem as any).packaging !== "\n"
+                  ? (firstItem as any).packaging
+                  : "—"}
+              </span>
+            </div>
+            <div className="od-meta-item">
+              <span className="od-meta-label">
+                {t("buyer.offerDetail.fields.originPortCountry", "Origin (port / country)")}
+              </span>
+              <span className="od-meta-value">
+                <MapPinIcon size={13} />
+                {offer.originPort} / {offer.originCountry}
+                {originCode && <FlagSVG code={originCode} size={13} />}
+              </span>
+            </div>
+            <div className="od-meta-item">
+              <span className="od-meta-label">{t("buyer.offerDetail.fields.condition", "Condition")}</span>
+              <span className="od-meta-value">{condition}</span>
+            </div>
+            {firstDest && (
+              <div className="od-meta-item">
+                <span className="od-meta-label">
+                  {t("buyer.offerDetail.fields.destination", "Destination")}
+                  {offer.destinations.length > 1 ? ` (+${offer.destinations.length - 1})` : ""}
+                </span>
+                <span className="od-meta-value">
+                  {destCode && <FlagSVG code={destCode} size={13} />}
+                  {firstDest.name}
+                </span>
+                <OfferDestinationPorts ports={destinationPorts} />
+              </div>
+            )}
+          </div>
+
+          <div className="od-terms">
+            <div className="od-terms-label">{t("buyer.offerDetail.fields.terms", "Terms")}</div>
+            <div className="od-terms-value">{offer.paymentTerms || "—"}</div>
+          </div>
+
+          <div className="od-fcl-row">
+            <span className="od-fcl-count">
+              {offer.fclCount} Available FCL
+            </span>
+            <span className="od-fcl-size">Size: {offer.containerSize}</span>
+            {incotermLabels.length > 0 && (
+              <span className="od-fcl-incoterms">
+                {incotermLabels.map((i) => (
+                  <span key={i} className="od-incoterm-pill">
+                    {formatIncotermWithPlace(i, {
+                      originPort: offer.originPort,
+                      destinationNames: destinations,
+                    })}
+                  </span>
+                ))}
+              </span>
+            )}
+          </div>
+
+          {offer.exwPickupLocation && incotermLabels.includes("EXW") && (
+            <div
+              style={{
+                marginTop: 8,
+                padding: "8px 12px",
+                borderRadius: 8,
+                border: "1px solid #fde68a",
+                background: "#fffbeb",
+                color: "#92400e",
+                fontSize: 13,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <span>📍 EXW Pickup</span>
+              <strong>{offer.exwPickupLocation}</strong>
+            </div>
+          )}
+
+          <div className="od-shipment-row">
+            <span className="od-meta-label">
+              {t("buyer.offerDetail.fields.shipment", "Shipment")}
+            </span>
+            <span className="od-meta-value">{offer.shipmentLabel}</span>
+          </div>
+
+          <button
+            className="od-more-toggle"
+            onClick={() => setMoreOpen(!moreOpen)}
+            type="button"
+          >
+            <span>{t("buyer.offerDetail.moreInfo", "More information")}</span>
+            <ChevronDownIcon
+              size={14}
+              style={{ transform: moreOpen ? "rotate(180deg)" : "none", transition: "transform 0.18s" }}
+            />
+          </button>
+          {moreOpen && (
+            <div className="od-more-content">
+              <div style={{ display: "grid", gap: 10, fontSize: 13, color: "#374151" }}>
+                {offer.paymentTerms && (
+                  <div><strong>Payment terms:</strong> {offer.paymentTerms}</div>
+                )}
+                {offer.observation && (
+                  <div><strong>Notes:</strong> {offer.observation}</div>
+                )}
+                {offer.viewCount != null && (
+                  <div style={{ color: "#6b7280", fontSize: 12 }}>
+                    Views: {offer.viewCount}
+                  </div>
+                )}
+                {offer.proposalCount != null && (
+                  <div style={{ color: "#6b7280", fontSize: 12 }}>
+                    Proposals: {offer.proposalCount}
+                  </div>
+                )}
+                {offer.createdAt && (
+                  <div style={{ color: "#6b7280", fontSize: 12 }}>
+                    Created: {new Date(offer.createdAt).toLocaleDateString()}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </>
   );
