@@ -8,6 +8,7 @@ import {
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 import "@/styles/mundus-offer-card-tooltip.css";
 
@@ -47,7 +48,15 @@ export function SupplierOfferCard({
     : "—";
   const firstIncoterm = o.incoterms[0] ?? "—";
   const extraIncoterms = Math.max(0, o.incoterms.length - 1);
-  const incotermLabel = extraIncoterms > 0 ? `${firstIncoterm} +${extraIncoterms}` : firstIncoterm;
+  const destNames = o.destinations.map((d) => d.name);
+  const fmtIc = (ic: string) =>
+    formatIncotermWithPlace(ic, {
+      originPort: o.originPort,
+      destinationNames: destNames,
+    });
+  const incotermLabel = extraIncoterms > 0
+    ? `${firstIncoterm} +${extraIncoterms}`
+    : fmtIc(firstIncoterm);
   const visibleCuts = o.items.slice(0, 3);
   const moreCuts = Math.max(0, o.items.length - visibleCuts.length);
   const d = derive(o);
@@ -178,7 +187,7 @@ export function SupplierOfferCard({
               <div className="dest-tooltip">
                 <div className="dest-tooltip-title">Available incoterms:</div>
                 {o.incoterms.map((inc, i) => (
-                  <div key={i} className="dest-tooltip-row">{inc}</div>
+                  <div key={i} className="dest-tooltip-row">{fmtIc(inc)}</div>
                 ))}
               </div>
             )}
