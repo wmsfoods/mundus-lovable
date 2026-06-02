@@ -22,7 +22,7 @@ import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { FlagSVG } from "@/components/icons";
 import { countryToCode } from "@/lib/countryCodes";
 
-export type TempValue = "all" | "Frozen" | "Chilled" | "Fresh";
+export type TempValue = "all" | "Frozen" | "Chilled";
 export type TriValue = "any" | "yes" | "no";
 
 export type OffersFilterState = {
@@ -75,7 +75,7 @@ type Props = {
   extraSheetSections?: ReactNode;
 };
 
-const ALL_TEMPS: TempValue[] = ["Frozen", "Chilled", "Fresh"];
+const ALL_TEMPS: TempValue[] = ["Frozen", "Chilled"];
 const TRI: TriValue[] = ["any", "yes", "no"];
 
 export function OffersFilterBar({
