@@ -122,42 +122,42 @@ export default function PublicHome() {
             backgroundRepeat: "no-repeat",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-4 py-7 sm:py-10">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold tracking-wider backdrop-blur">
-            <Utensils size={12} />
+        <div className="relative mx-auto max-w-6xl px-4 py-[1.4rem] sm:py-8">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-2.5 py-0.5 text-[10px] font-semibold tracking-wider backdrop-blur">
+            <Utensils size={10} />
             {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
           </span>
           <BlurFade delay={0.25} inView>
-            <h1 className="mt-3 max-w-3xl text-2xl font-bold leading-tight sm:text-3xl">
+            <h1 className="mt-2 max-w-3xl text-xl font-bold leading-tight sm:text-2xl">
               {t("public.home.heroTitleLine1", "Excellence in every cut,")}
               <br />
               {t("public.home.heroTitleLine2", "value in every purchase.")}
             </h1>
           </BlurFade>
           <BlurFade delay={0.5} inView>
-            <p className="mt-2 max-w-2xl text-xs text-white/85 sm:text-sm">
+            <p className="mt-1.5 max-w-2xl text-[11px] text-white/85 sm:text-xs">
               {t(
                 "public.home.heroSubtitle",
                 "Browse live container offers from vetted suppliers across the globe. Negotiate faster, in fewer rounds, with full price and incoterm control.",
               )}
             </p>
           </BlurFade>
-          <div className="mt-4 flex flex-wrap gap-3">
+          <div className="mt-3 flex flex-wrap gap-2.5">
             <button
               onClick={() => navigate("/signup")}
-              className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-[#8B2E4F] shadow-sm transition hover:bg-white/95"
+              className="rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-[#8B2E4F] shadow-sm transition hover:bg-white/95"
             >
               {t("public.home.createAccount", "Create free account")} →
             </button>
             <button
               onClick={scrollToOffers}
-              className="rounded-md border border-white/40 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+              className="rounded-md border border-white/40 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white backdrop-blur transition hover:bg-white/20"
             >
               {t("public.home.browseOffers", "Browse offers")}
             </button>
           </div>
 
-          <div className="mt-5 grid max-w-2xl grid-cols-3 gap-3">
+          <div className="mt-4 grid max-w-2xl grid-cols-3 gap-2.5">
             <Stat
               n={`${heroStatOffers}+`}
               label={t("public.home.statOffers", "Live container offers")}
@@ -269,9 +269,9 @@ export default function PublicHome() {
 
 function Stat({ n, label }: { n: string; label: string }) {
   return (
-    <div className="rounded-lg bg-white/10 px-4 py-3 backdrop-blur">
-      <div className="text-2xl font-bold">{n}</div>
-      <div className="mt-0.5 text-xs text-white/80">{label}</div>
+    <div className="rounded-lg bg-white/10 px-3 py-2 backdrop-blur">
+      <div className="text-xl font-bold">{n}</div>
+      <div className="mt-0.5 text-[10px] text-white/80">{label}</div>
     </div>
   );
 }
