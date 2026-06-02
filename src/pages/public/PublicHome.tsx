@@ -221,8 +221,8 @@ export default function PublicHome() {
             <Stat n="3" label={t("public.home.statRounds", "Negotiation rounds, max")} />
           </div>
           </div>
-          {/* Right column: scrolling phrases over the ship photo */}
-          <div className="hidden md:block">
+          {/* Scrolling phrases — right column on desktop, full width on mobile */}
+          <div className="h-28 md:h-auto md:min-h-[220px]">
             <HeroPhraseList />
           </div>
         </div>
