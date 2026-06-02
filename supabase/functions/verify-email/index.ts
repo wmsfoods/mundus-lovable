@@ -35,6 +35,17 @@ serve(async (req) => {
       });
     }
 
+    if (action === "lookup") {
+      const { data: users } = await supabase.auth.admin.listUsers();
+      const found = users?.users?.find(
+        (u) => u.email?.toLowerCase() === normalizedEmail,
+      );
+      return new Response(
+        JSON.stringify({ user_id: found?.id ?? null }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     if (action === "send") {
       const verificationCode = String(Math.floor(100000 + Math.random() * 900000));
 
