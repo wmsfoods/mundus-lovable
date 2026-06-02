@@ -280,7 +280,7 @@ export default function PublicOfferCard({
               <div className="dest-tooltip">
                 <div className="dest-tooltip-title">Available incoterms:</div>
                 {allIncoterms.map((inc, i) => (
-                  <div key={i} className="dest-tooltip-row">{inc}</div>
+                  <div key={i} className="dest-tooltip-row">{inc}{incotermPlace(inc)}</div>
                 ))}
               </div>
             )}
