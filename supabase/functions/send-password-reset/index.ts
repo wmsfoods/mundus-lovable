@@ -8,6 +8,20 @@ const corsHeaders = {
 
 type Lang = 'en' | 'pt' | 'es' | 'fr' | 'zh'
 
+const DEFAULT_RESET_URL = 'https://app.mundustrade.us/reset-password'
+const ALLOWED_APP_HOSTS = new Set(['app.mundustrade.us', 'app.mundustrade.com'])
+
+function safeResetRedirect(value?: string) {
+  if (!value) return DEFAULT_RESET_URL
+  try {
+    const url = new URL(value)
+    if (url.protocol === 'https:' && ALLOWED_APP_HOSTS.has(url.hostname) && url.pathname === '/reset-password') {
+      return url.toString()
+    }
+  } catch { /* ignore invalid URL */ }
+  return DEFAULT_RESET_URL
+}
+
 const T: Record<Lang, {
   subject: string
   preheader: string
@@ -111,7 +125,7 @@ Deno.serve(async (req) => {
   try { body = await req.json() } catch { /* allow empty */ }
 
   const emailRaw = (body.email ?? '').trim().toLowerCase()
-  const redirectTo = body.redirectTo || 'https://app.mundustrade.us/reset-password'
+  const redirectTo = safeResetRedirect(body.redirectTo)
   const lang = (['en','pt','es','fr','zh'].includes(body.language ?? '') ? body.language : 'en') as Lang
 
   // Never reveal whether the email exists — always 200.
