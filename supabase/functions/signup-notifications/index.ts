@@ -13,10 +13,11 @@ const ADMIN_EMAIL = "fn@mundustrade.com";
 const WINE = "#8B2252";
 const PLATFORM_URL = "https://mundustrade.com";
 
+const LOGO_URL = "https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png";
 const logoHeader = `
-  <div style="background:${WINE};padding:24px;text-align:center;border-radius:8px 8px 0 0;">
-    <h1 style="color:#fff;font-family:Georgia,serif;font-size:28px;margin:0;letter-spacing:1px;">MUNDUS TRADE</h1>
-    <p style="color:#f3d9e0;font-size:12px;margin:4px 0 0;letter-spacing:2px;">INTERNATIONAL MEAT TRADING</p>
+  <div style="background:#ffffff;padding:28px 24px 20px;text-align:center;border-bottom:1px solid #f0e6ea;border-radius:8px 8px 0 0;">
+    <img src="${LOGO_URL}" alt="Mundus Trade" width="220" style="display:inline-block;max-width:220px;height:auto;border:0;outline:none;text-decoration:none;" />
+    <p style="color:#999;font-size:11px;margin:10px 0 0;letter-spacing:2px;">INTERNATIONAL MEAT TRADING</p>
   </div>`;
 
 const footer = `

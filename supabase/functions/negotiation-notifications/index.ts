@@ -10,6 +10,11 @@ const RESEND_KEY =
   Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
 
+const LOGO_BAR = `
+  <div style="background:#ffffff;padding:24px 20px 16px;text-align:center;border:1px solid #e5e7eb;border-bottom:none;border-radius:12px 12px 0 0;">
+    <img src="https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png" alt="Mundus Trade" width="180" style="display:inline-block;max-width:180px;height:auto;border:0;outline:none;text-decoration:none;" />
+  </div>`;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type D = Record<string, any>;
 
@@ -19,7 +24,8 @@ const templates: Record<string, (d: D) => { to: string; subject: string; html: s
     subject: `New bid on ${d.offer_title} from ${d.buyer_name}`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:#8B2252;padding:20px;border-radius:12px 12px 0 0">
+        ${LOGO_BAR}
+        <div style="background:#8B2252;padding:20px;border-radius:0">
           <h1 style="color:white;margin:0;font-size:20px">New Bid Received</h1>
         </div>
         <div style="padding:24px;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
@@ -39,7 +45,8 @@ const templates: Record<string, (d: D) => { to: string; subject: string; html: s
     subject: `Counter-offer on ${d.offer_title} from ${d.supplier_name}`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:#8B2252;padding:20px;border-radius:12px 12px 0 0">
+        ${LOGO_BAR}
+        <div style="background:#8B2252;padding:20px;border-radius:0">
           <h1 style="color:white;margin:0;font-size:20px">Counter-Offer Received</h1>
         </div>
         <div style="padding:24px;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
@@ -57,7 +64,8 @@ const templates: Record<string, (d: D) => { to: string; subject: string; html: s
     subject: `Deal closed: ${d.offer_title} — US$ ${d.total_value}`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:#15803d;padding:20px;border-radius:12px 12px 0 0">
+        ${LOGO_BAR}
+        <div style="background:#15803d;padding:20px;border-radius:0">
           <h1 style="color:white;margin:0;font-size:20px">🎉 Deal Closed!</h1>
         </div>
         <div style="padding:24px;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
@@ -75,7 +83,8 @@ const templates: Record<string, (d: D) => { to: string; subject: string; html: s
     subject: `Bid rejected: ${d.offer_title}`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:#b91c1c;padding:20px;border-radius:12px 12px 0 0">
+        ${LOGO_BAR}
+        <div style="background:#b91c1c;padding:20px;border-radius:0">
           <h1 style="color:white;margin:0;font-size:20px">Bid Rejected</h1>
         </div>
         <div style="padding:24px;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">
@@ -91,7 +100,8 @@ const templates: Record<string, (d: D) => { to: string; subject: string; html: s
     subject: `Offer no longer available: ${d.offer_title}`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-        <div style="background:#92400e;padding:20px;border-radius:12px 12px 0 0">
+        ${LOGO_BAR}
+        <div style="background:#92400e;padding:20px;border-radius:0">
           <h1 style="color:white;margin:0;font-size:20px">Offer Withdrawn</h1>
         </div>
         <div style="padding:24px;border:1px solid #e5e7eb;border-top:0;border-radius:0 0 12px 12px">

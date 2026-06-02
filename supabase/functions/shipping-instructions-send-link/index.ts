@@ -91,8 +91,8 @@ Deno.serve(async (req) => {
           : '';
         const html = `
 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-  <div style="background: #8B2252; padding: 24px; text-align: center; border-radius: 8px 8px 0 0;">
-    <h1 style="color: white; margin: 0; font-size: 22px; letter-spacing: .02em;">Mundus Trade</h1>
+  <div style="background:#ffffff;padding:28px 24px 20px;text-align:center;border:1px solid #e5e7eb;border-bottom:none;border-radius:8px 8px 0 0;">
+    <img src="https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png" alt="Mundus Trade" width="200" style="display:inline-block;max-width:200px;height:auto;border:0;outline:none;text-decoration:none;" />
   </div>
   <div style="padding: 32px; background: #ffffff; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
     <p style="font-size: 15px; color: #2a1a20;">Hi ${escapeHtml(greetingName)},</p>
