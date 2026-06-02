@@ -38,13 +38,6 @@ const MONTH_NAMES = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-function formatPriceUsd(n: number): string {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(n);
-}
-
 export default function SupplierOfferDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
