@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import { RotateCcw } from "lucide-react";
 import { lookupContact, captureLead } from "@/lib/publicLeadFlow";
 import type { LeadType } from "@/lib/mundusReps";
-import { MUNDUS_LOGO } from "@/assets/mundusLogo";
+import MUNDUS_LOGO from "@/assets/mundus-logo.png";
 
 type Step =
   | "greet" | "email" | "lookup"
