@@ -12,6 +12,8 @@ import { RequireAdmin } from "@/components/RequireAdmin";
 import { PreLoginOnboardingRedirect } from "@/components/PreLoginOnboardingRedirect";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import Login from "./pages/Login.tsx";
+import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
+import ResetPassword from "./pages/auth/ResetPassword.tsx";
 import Signup from "./pages/signup/Signup.tsx";
 import SignupSuccess from "./pages/signup/SignupSuccess.tsx";
 import PartnerSignup from "./pages/signup/PartnerSignup.tsx";
@@ -131,6 +133,8 @@ const App = () => (
             <Route path="/dev" element={<DevIndex />} />
             <Route path="/home" element={<PublicHome />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/success" element={<SignupSuccess />} />
