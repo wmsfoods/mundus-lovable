@@ -36,7 +36,7 @@ import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
 import { countryFlag } from "@/lib/countryFlags";
 import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
-import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { useWeightUnit, type WeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel } from "@/lib/units";
 
 const MONTH_NAMES = [
@@ -578,7 +578,7 @@ function SupplierOfferBuyerStyleBody({
   moreOpen: boolean;
   setMoreOpen: (v: boolean) => void;
   banners: React.ReactNode;
-  unit: "kg" | "lb";
+  unit: WeightUnit;
   illustrativeLabel: string;
 }) {
   const { t } = useTranslation();
