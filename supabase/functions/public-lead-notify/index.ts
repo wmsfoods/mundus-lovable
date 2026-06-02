@@ -64,14 +64,22 @@ Deno.serve(async (req) => {
     const subject = `New public-home lead — ${email}`;
     const html = renderHtml(vars);
 
-    const { data: newId, error } = await supabase.rpc("enqueue_email", {
-      p_to_email: ADMIN_EMAIL,
-      p_subject: subject,
-      p_html_body: html,
-      p_template_name: "publicLeadCaptured",
-      p_template_vars: vars,
-    });
+    // Insert directly with service role (bypasses enqueue_email's auth.uid() check
+    // since this function is invoked anonymously from the public homepage).
+    const { data: inserted, error } = await supabase
+      .from("email_queue")
+      .insert({
+        to_email: ADMIN_EMAIL,
+        subject,
+        html_body: html,
+        template_name: "publicLeadCaptured",
+        template_vars: vars,
+        status: "queued",
+      })
+      .select("id")
+      .single();
     if (error) throw error;
+    const newId = inserted?.id;
 
     // Fire-and-forget dispatch
     if (newId) {
