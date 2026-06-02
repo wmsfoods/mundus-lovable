@@ -4,7 +4,7 @@
 // All icons use a 24x24 viewBox with currentColor stroke by default,
 // so you can color them via CSS (e.g. text-p800, text-g500).
 
-import { SVGProps, ReactNode } from "react";
+import { SVGProps, ReactNode, CSSProperties } from "react";
 
 // ============================================================================
 // Base Icon wrapper
@@ -497,7 +497,7 @@ export const FlagSVG = ({ code, size = 14 }: FlagSVGProps) => {
   const w = size;
   const h = Math.round((size * 12) / 16);
   const cc = (code || "").trim().toLowerCase();
-  const baseStyle: React.CSSProperties = {
+  const baseStyle: CSSProperties = {
     width: w,
     height: h,
     borderRadius: 2,
