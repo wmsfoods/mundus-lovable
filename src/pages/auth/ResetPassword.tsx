@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
+import { PUBLIC_APP_URL } from "@/lib/publicUrl";
 import { ShiningButton } from "@/components/ui/shining-button";
 import { AuthLayout } from "./AuthLayout";
 import { PasswordRequirements } from "@/pages/signup/PasswordRequirements";
@@ -22,6 +23,11 @@ export default function ResetPassword() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    if (window.location.hostname.endsWith("lovableproject.com")) {
+      window.location.replace(`${PUBLIC_APP_URL}${window.location.pathname}${window.location.search}${window.location.hash}`);
+      return;
+    }
+
     // Recovery links arrive in 3 possible formats. We handle all of them:
     //  1) PKCE:        ?code=...
     //  2) OTP token:   ?token_hash=...&type=recovery
@@ -44,6 +50,13 @@ export default function ResetPassword() {
         const tokenHash = url.searchParams.get("token_hash");
         const type = url.searchParams.get("type");
         const hash = window.location.hash || "";
+        const authError = url.searchParams.get("error") || new URLSearchParams(hash.replace(/^#/, "")).get("error");
+
+        if (authError) {
+          window.history.replaceState({}, "", url.pathname);
+          setMode("invalid");
+          return;
+        }
 
         if (code) {
           const { error } = await supabase.auth.exchangeCodeForSession(code);

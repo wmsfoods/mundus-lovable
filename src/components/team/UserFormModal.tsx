@@ -4,6 +4,7 @@ import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Modal } from "@/components/mundus/Modal";
 import { supabase } from "@/integrations/supabase/client";
+import { PUBLIC_APP_URL } from "@/lib/publicUrl";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { PhoneInput } from "@/components/company/CompanyProfilePage";
 
@@ -131,7 +132,7 @@ export function UserFormModal({
             phone: phone.trim() || null,
             notes: notes.trim() || null,
             language: i18n.language,
-            origin: window.location.origin,
+            origin: PUBLIC_APP_URL,
           },
         });
         if (error) throw error;
