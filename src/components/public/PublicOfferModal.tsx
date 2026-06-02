@@ -61,9 +61,12 @@ export default function PublicOfferModal({
 
   return (
     <Dialog open={!!offer} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0">
+      <DialogContent
+        className="p-0 gap-0 max-sm:rounded-t-2xl max-sm:rounded-b-none max-sm:border-0 max-sm:top-auto max-sm:bottom-0 max-sm:left-0 max-sm:right-0 max-sm:translate-x-0 max-sm:translate-y-0 max-sm:max-w-full max-sm:w-full max-sm:h-[92vh] max-sm:max-h-[92vh] max-sm:flex max-sm:flex-col sm:max-w-2xl sm:max-h-[90vh] sm:flex sm:flex-col"
+      >
         {/* Header */}
-        <DialogHeader className="border-b px-5 py-4">
+        <DialogHeader className="border-b px-5 py-4 shrink-0 max-sm:pt-5">
+          <div className="sm:hidden mx-auto mb-3 h-1 w-10 rounded-full bg-gray-300" />
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <DialogTitle className="text-lg font-bold text-[#1A1A2E] truncate">
@@ -94,9 +97,9 @@ export default function PublicOfferModal({
           </div>
         </DialogHeader>
 
-        <div className="px-5 py-4 space-y-5">
+        <div className="px-5 py-4 space-y-5 overflow-y-auto flex-1 overscroll-contain">
           {/* Cuts table */}
-          <div className="overflow-hidden rounded-lg border border-gray-200">
+          <div className="overflow-hidden rounded-lg border border-gray-200 max-sm:hidden">
             <table className="w-full text-sm">
               <thead className="bg-gray-50 text-xs uppercase tracking-wide text-gray-500">
                 <tr>
@@ -151,6 +154,37 @@ export default function PublicOfferModal({
                 </tr>
               </tfoot>
             </table>
+          </div>
+
+          {/* Mobile cuts list */}
+          <div className="sm:hidden space-y-2">
+            {items.map((it) => (
+              <div key={it.id} className="rounded-lg border border-gray-200 p-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="font-semibold text-[#1A1A2E] text-sm">{it.product_name || it.category_name || "—"}</div>
+                    <div className="text-xs text-gray-500 mt-0.5">{it.category_name || it.category_code || "—"}</div>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <div className="text-sm font-bold tabular-nums text-[#1A1A2E]">{fmtPrice(Number(it.price ?? 0))}</div>
+                    <div className="text-xs text-gray-500 tabular-nums mt-0.5">{fmtKg(Number(it.amount ?? 0))} kg</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+            <div className="flex items-center justify-between rounded-lg bg-gray-50 px-3 py-2">
+              <span className="text-[10px] font-semibold uppercase tracking-wider text-gray-500">
+                {t("public.home.totalWeight", "Total weight")}
+              </span>
+              <span className="text-sm font-bold tabular-nums text-[#1A1A2E]">
+                {fmtKg(totalKg)} kg
+                {totalMT >= 1 && (
+                  <span className="ml-1 text-xs font-normal text-gray-500">
+                    ({totalMT >= 100 ? Math.round(totalMT) : totalMT.toFixed(1)} MT)
+                  </span>
+                )}
+              </span>
+            </div>
           </div>
 
           {/* Logistics */}
@@ -211,7 +245,10 @@ export default function PublicOfferModal({
           </div>
         </div>
 
-        <DialogFooter className="border-t bg-white px-5 py-3">
+        <DialogFooter
+          className="border-t bg-white px-5 py-3 shrink-0"
+          style={{ paddingBottom: "max(0.75rem, env(safe-area-inset-bottom))" }}
+        >
           <button
             type="button"
             onClick={onReveal}
