@@ -440,8 +440,12 @@ export default function AdminTeam() {
                         <button
                           onClick={async () => {
                             if (!confirm(`Send password reset email to ${m.email}?`)) return;
-                            const { error } = await supabase.auth.resetPasswordForEmail(m.email!, {
-                              redirectTo: `${window.location.origin}/login`,
+                            const { error } = await supabase.functions.invoke("send-password-reset", {
+                              body: {
+                                email: m.email,
+                                redirectTo: `${window.location.origin}/reset-password`,
+                                language: (typeof navigator !== "undefined" ? navigator.language?.slice(0, 2) : "en") || "en",
+                              },
                             });
                             if (error) toast.error("Failed: " + error.message);
                             else {
