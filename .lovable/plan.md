@@ -1,35 +1,49 @@
-## Objetivo
+## Adicionar seção "How it works" na Home pública
 
-Aplicar o efeito "shining" (brilho passando) no botão **Sign in** da tela de Login (`src/pages/Login.tsx`), reaproveitando as cores da marca Mundus já usadas no botão de Signup (gradiente `#B64769 → #8E3653`).
+Vou criar um novo componente animado e adicioná-lo no `PublicHome.tsx`, logo abaixo da seção de "Live offers".
 
-## Implementação
+### O que será feito
 
-### 1. Criar componente reutilizável
-Criar `src/components/ui/shining-button.tsx` adaptado do snippet, mas com paleta Mundus:
+1. **Instalar dependência**
+   - `framer-motion` (se ainda não estiver instalado — usado em outros pontos do projeto, vou confirmar)
 
-- Gradiente base: `from-[#B64769] via-[#A03D5C] to-[#8E3653]` (em vez de azul).
-- Hover: leve aumento de brilho (`hover:brightness-110`).
-- Faixa branca animada (efeito "shine"): mantida com `before:bg-white before:blur-[8px]`, deslizando no hover.
-- Forma: `rounded-full`, com props `className`, `children`, e demais props nativas de `<button>` (`type`, `disabled`, `onClick`, etc.) para permitir reuso.
-- Acessível: mantém `disabled:opacity-60 disabled:cursor-not-allowed`.
+2. **Criar `src/components/ui/feature-highlight.tsx`**
+   - Componente baseado no exemplo enviado, em TypeScript + Tailwind
+   - Animação de entrada com stagger (icon → title → cada linha → footer) usando `framer-motion`
+   - Efeito ao passar o mouse em cada linha:
+     - Leve translateX + mudança suave de cor para o vinho da Mundus (`#8B2E4F`)
+     - Emoji com `scale` sutil
+     - Linha inteira destacada quando hover, demais ficam com opacidade reduzida (efeito "spotlight"), padrão usado em sites tipo Linear / Vercel
 
-### 2. Substituir o botão Sign in
-Em `src/pages/Login.tsx`, trocar o `<button type="submit">` atual pelo novo `<ShiningButton>`, preservando:
+3. **Usar o componente em `src/pages/public/PublicHome.tsx`**
+   - Nova seção entre "Live offers" e o final do layout
+   - Título: "How it works"
+   - Conteúdo (linhas exatamente como pediu):
+     ```
+     ☕ Grab a coffee from the corner cafe.
+     📱 Load up your Mundus app.
+     🚢 Order new containers online.
+     🏭 Have it produced and delivered.
+     📢 Suppliers post new offers.
+     🛒 Buyers create new demands.
+     🔗 All from a single source of truth.
+     🤝 Directly with each other.
+     ```
+   - Footer: `🥩⚡ Just look at Mundus for instant meat B2B deals.`
+   - Paleta Mundus: fundo claro (`bg-white` ou `bg-[#FAF7F5]`), título em `#1A1A2E`, accent em `#8B2E4F`, footer em chip com fundo `#8B2E4F`/branco
 
-- `type="submit"`, `disabled={submitting}`
-- Texto: `submitting ? t("auth.signingIn") : t("auth.signIn")`
-- Tamanho atual: `h-11 w-32` e fonte `text-sm font-medium`
+4. **Responsivo (mobile-first, conforme regra do projeto)**
+   - Texto centralizado, tipografia escalando (`text-xl sm:text-2xl md:text-3xl`)
+   - Padding lateral confortável, respeitando safe-area
+   - Hover desativado em touch (`@media (hover: hover)`), animação de entrada continua funcionando ao entrar no viewport (`whileInView`)
 
-Nenhuma outra mudança visual/lógica na tela de Login.
+### Detalhes técnicos
 
-### 3. Escopo
-- Apenas o botão Sign in nesta etapa.
-- Componente fica pronto para reuso (ex.: botão Signup do header/home, CTA público) em pedidos futuros — não vou aplicar em outros lugares agora.
+- Animações puramente CSS/framer-motion, sem libs adicionais
+- Sem mudanças em backend, rotas, ou lógica de negócio
+- Apenas 1 arquivo novo (`feature-highlight.tsx`) e 1 edição (`PublicHome.tsx`)
+- Sem alterar o componente em outras telas — fica disponível em `@/components/ui/feature-highlight` caso queira reutilizar depois
 
-## Detalhes técnicos
+### Pergunta rápida antes de implementar
 
-Arquivos:
-- **Criar**: `src/components/ui/shining-button.tsx`
-- **Editar**: `src/pages/Login.tsx` (apenas o `<button type="submit">` do formulário)
-
-Sem novas dependências. Sem mudanças em design tokens / `index.css` (cores hardcoded já são o padrão atual do botão de login).
+A seção deve aparecer **logo abaixo do hero** (antes da grid de ofertas, para servir de "pitch") ou **abaixo da grid de ofertas** (no final da página, como fechamento)?
