@@ -227,18 +227,10 @@ export default function SupplierOfferDetail() {
 
 
   const totalKg = offer.items.reduce((s, it) => s + it.qtyKg, 0);
-
-  const items: OfferItemRow[] = offer.items.map((it, i) => ({
-    id: String(i),
-    image: (it as any).image_url ?? null,
-    name: it.name,
-    subline: (it as any).plant ? `Plant ${(it as any).plant}` : null,
-    packaging: (it as any).packaging ?? null,
-    qtyKg: it.qtyKg,
-    priceKg: it.pricePerKgUsd,
-    askingKg: it.pricePerKgUsd * 1.05,
-    floorKg: it.pricePerKgUsd * 0.9,
-  }));
+  const totalValuePerFcl = offer.items.reduce(
+    (s, it) => s + it.qtyKg * it.pricePerKgUsd,
+    0,
+  );
 
   const supplierToggle = (
     <button
