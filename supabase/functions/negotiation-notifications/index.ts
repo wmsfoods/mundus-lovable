@@ -11,7 +11,7 @@ const RESEND_KEY =
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
 
 const LOGO_BAR = `
-  <div style="background:#ffffff;padding:24px 20px 16px;text-align:center;border:1px solid #e5e7eb;border-bottom:none;border-radius:0;">
+  <div style="background:#ffffff;padding:24px 20px 16px;text-align:center;border:1px solid #e5e7eb;border-bottom:none;border-radius:12px 12px 0 0;">
     <img src="https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png" alt="Mundus Trade" width="180" style="display:inline-block;max-width:180px;height:auto;border:0;outline:none;text-decoration:none;" />
   </div>`;
 
