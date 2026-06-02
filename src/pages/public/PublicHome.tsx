@@ -240,7 +240,6 @@ export default function PublicHome() {
                 <><span aria-hidden>🔗</span> All from a single source of truth.</>,
                 <><span aria-hidden>🤝</span> Directly with each other.</>,
               ]}
-              footer={<><span aria-hidden>🥩⚡</span>&nbsp;Just look at Mundus for instant meat B2B deals.</>}
             />
           </aside>
         </div>
