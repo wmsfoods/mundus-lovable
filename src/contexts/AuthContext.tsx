@@ -59,6 +59,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             auditLog({ action: "auth.login", category: "auth" });
           }).catch(() => {});
         }, 0);
+        // Auto-claim any pending company invites that were sent to this email
+        // before the user signed in (e.g. via Google). Prevents the
+        // "no_company_linked" dead-end when an admin invited them but they
+        // logged in before clicking the invite link.
+        setTimeout(() => {
+          supabase.rpc("claim_pending_invites").then(({ error }) => {
+            if (error) console.warn("[claim_pending_invites]", error.message);
+          });
+        }, 0);
       }
     });
 

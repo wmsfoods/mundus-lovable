@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Logo } from "@/components/Logo";
@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
   const { user, signOut } = useAuth();
@@ -14,11 +15,30 @@ export default function Dashboard() {
   const { isAdmin, loading: adminLoading } = useIsMundusAdmin();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [retrying, setRetrying] = useState(false);
 
   const handleLogout = async () => {
     await signOut();
     toast.success(t("common.signedOut"));
     navigate("/login", { replace: true });
+  };
+
+  const handleRetry = async () => {
+    setRetrying(true);
+    try {
+      // Try to claim any pending invites for this email; if anything links,
+      // a reload will pick up the new company association.
+      const { data } = await supabase.rpc("claim_pending_invites");
+      const row = Array.isArray(data) ? data[0] : data;
+      if (row?.first_company_id) {
+        window.location.reload();
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    setRetrying(false);
+    window.location.reload();
   };
 
   useEffect(() => {
@@ -36,6 +56,12 @@ export default function Dashboard() {
     );
   }
 
+  const supportMailto = `mailto:contact@mundustrade.com?subject=${encodeURIComponent(
+    "Acesso à plataforma Mundus Trade",
+  )}&body=${encodeURIComponent(
+    `Olá,\n\nFiz login na Mundus Trade mas minha conta ainda não está vinculada a nenhuma empresa.\n\nE-mail: ${user?.email ?? ""}\nUser ID: ${user?.id ?? ""}\n\nPodem me ajudar a liberar o acesso?\n\nObrigado.`,
+  )}`;
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <header className="flex items-center justify-between px-8 py-4 border-b bg-white">
@@ -50,35 +76,45 @@ export default function Dashboard() {
           </button>
         </div>
       </header>
-      <main className="flex-1 flex flex-col items-center justify-center text-center px-6">
-        <div style={{ maxWidth: 480 }}>
-          <div style={{ fontSize: 48, marginBottom: 16 }}>🔄</div>
-          <h1 className="text-2xl font-bold text-foreground" style={{ marginBottom: 8 }}>
-            Setting up your account...
+      <main className="flex-1 flex flex-col items-center justify-center text-center px-6 py-12">
+        <div style={{ maxWidth: 520 }}>
+          <div style={{ fontSize: 44, marginBottom: 12 }}>🔒</div>
+          <h1 className="text-2xl font-bold text-foreground" style={{ marginBottom: 10 }}>
+            Sua conta ainda não tem acesso
           </h1>
-          <p className="text-muted-foreground" style={{ fontSize: 15, marginBottom: 24, lineHeight: 1.6 }}>
-            Your account is being configured. If this persists, your company profile may still be under review by the Mundus team.
+          <p className="text-muted-foreground" style={{ fontSize: 15, marginBottom: 8, lineHeight: 1.6 }}>
+            Você fez login com sucesso, mas este e-mail ainda não está vinculado a nenhuma empresa na Mundus Trade.
+          </p>
+          <p className="text-muted-foreground" style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
+            Se você recebeu um convite, verifique se está usando o mesmo e-mail do convite. Caso ainda não tenha um convite, fale com nossa equipe e liberamos seu acesso.
           </p>
           {user?.email && (
-            <p className="text-muted-foreground" style={{ fontSize: 13, marginBottom: 24, opacity: 0.7 }}>
-              Signed in as {user.email}
+            <p className="text-muted-foreground" style={{ fontSize: 13, marginBottom: 24, opacity: 0.75 }}>
+              Logado como <strong>{user.email}</strong>
             </p>
           )}
-          <div style={{ display: "flex", gap: 12, justifyContent: "center" }}>
-            <button
-              onClick={() => window.location.reload()}
-              style={{ padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "#B64769", color: "white", border: "none", cursor: "pointer" }}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
+            <a
+              href={supportMailto}
+              style={{ padding: "10px 22px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "#B64769", color: "white", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
             >
-              Refresh
+              Falar com a Mundus
+            </a>
+            <button
+              onClick={handleRetry}
+              disabled={retrying}
+              style={{ padding: "10px 22px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "white", color: "#374151", border: "1px solid #D1D5DB", cursor: retrying ? "wait" : "pointer" }}
+            >
+              {retrying ? "Verificando..." : "Verificar novamente"}
             </button>
             <button
               onClick={handleLogout}
-              style={{ padding: "10px 24px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "white", color: "#6B7280", border: "1px solid #D1D5DB", cursor: "pointer" }}
+              style={{ padding: "10px 22px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "white", color: "#6B7280", border: "1px solid #D1D5DB", cursor: "pointer" }}
             >
               {t("common.signOut")}
             </button>
           </div>
-          {companyError && (
+          {companyError && companyError !== "no_company_linked" && (
             <p style={{ fontSize: 11, color: "#DC2626", marginTop: 16, opacity: 0.8 }}>
               {companyError}
             </p>

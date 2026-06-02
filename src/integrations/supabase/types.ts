@@ -7183,6 +7183,13 @@ export type Database = {
       }
       auto_route_request: { Args: { p_request_id: string }; Returns: Json }
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
+      claim_pending_invites: {
+        Args: never
+        Returns: {
+          claimed_count: number
+          first_company_id: string
+        }[]
+      }
       company_family_ids: { Args: { p_company_id: string }; Returns: string[] }
       company_family_root: { Args: { p_company_id: string }; Returns: string }
       company_has_pro: { Args: { p_company_id: string }; Returns: boolean }
