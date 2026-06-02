@@ -78,15 +78,37 @@ export const PIPELINE_STAGES: ProspectStage[] = [
   "new", "researching", "contacted", "qualified", "onboarding", "onboarded",
 ];
 
-export const OWNERS: Array<{ initials: string; name: string }> = [
-  { initials: "FN", name: "Fernando Nascimento" },
-  { initials: "MS", name: "Maria Silva" },
-  { initials: "JC", name: "João Costa" },
-  { initials: "AT", name: "Ana Torres" },
-];
+import { getMundusTeamSync } from "./useMundusTeam";
 
-const ownerName = (initials: string) =>
-  OWNERS.find((o) => o.initials === initials)?.name ?? initials;
+// Backwards-compat shim: real owners come from the Mundus team (DB).
+// We keep `OWNERS` as a getter-backed array proxy so existing callers
+// that read it synchronously still work once the team has loaded.
+export const OWNERS: Array<{ initials: string; name: string }> = new Proxy(
+  [] as Array<{ initials: string; name: string }>,
+  {
+    get(_t, prop) {
+      const team = getMundusTeamSync().map((m) => ({ initials: m.initials, name: m.name }));
+      // @ts-ignore
+      return team[prop as any];
+    },
+    has(_t, prop) {
+      const team = getMundusTeamSync();
+      return prop in team;
+    },
+    ownKeys() {
+      return Reflect.ownKeys(getMundusTeamSync());
+    },
+    getOwnPropertyDescriptor(_t, prop) {
+      const team = getMundusTeamSync().map((m) => ({ initials: m.initials, name: m.name }));
+      return Object.getOwnPropertyDescriptor(team, prop);
+    },
+  },
+);
+
+const ownerName = (initials: string) => {
+  const team = getMundusTeamSync();
+  return team.find((o) => o.initials === initials)?.name ?? initials;
+};
 
 const initialsOf = (name: string) => {
   const parts = name.replace(/[^A-Za-z\s]/g, "").split(/\s+/).filter(Boolean);
