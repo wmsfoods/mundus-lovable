@@ -1,82 +1,47 @@
-## Diagnóstico
+## Status atual da Silva Foods (Debora)
 
-O problema do Gustavo não foi o mesmo cenário do Denys apenas parcialmente:
+- `auth.users`: existe (`4242a611-66e9-4eaf-aa5f-ff795df1233f`, debora.adm71@gmail.com)
+- `user_requests`: **approved**, `approved_company_id = e77a9204…` (Silva Foods), mas `created_user_id` está NULL
+- `public.users`: **vazio** (sem linha pra ela)
+- `company_users`: **vazio** → por isso ela não aparece no Team da Silva Foods
+- `user_offices`: vazio
 
-- O usuário de login do Gustavo existe em `auth.users` com e-mail `gustavo.agostinho.candido@gmail.com`.
-- A solicitação dele está `approved`, com `company_id` da empresa Frigorinthians (`a93d960e-31fa-4c08-b15a-550a40adf587`), mas `created_user_id` ainda está vazio.
-- Não existe linha correspondente em `public.users` nem em `company_users` para esse e-mail.
-- O trigger atual existe, mas só roda `AFTER INSERT ON auth.users`. Como o Gustavo criou o auth user antes da aprovação, o trigger nunca rodou depois que a request virou `approved`.
+Aprovação foi feita **antes** do fix do `ON CONFLICT` e do trigger novo em `user_requests`, então a função central nunca rodou pra ela.
 
-Ou seja: o fluxo estrutural atual cobre “aprovação antes do primeiro signup”, mas falha em “signup primeiro, aprovação depois”. Esse é exatamente o caso que precisa ser corrigido para não depender de ação manual da Mundus.
+Encontrei mais um caso parecido no backlog: **Fatima Nascimento (finance@wmsfoods.us — Meat USA Company)**. Ela tem `public.users` e `company_users` (provavelmente criados manualmente), mas `created_user_id` no `user_requests` continua NULL. Vale incluir no hotfix.
 
-## Plano de correção
+---
 
-### 1. Hotfix imediato para Gustavo
+## Plano
 
-Vincular o usuário já existente `gustavo.agostinho.candido@gmail.com` à empresa Frigorinthians:
+### 1. Hotfix imediato (backfill)
+Rodar `link_approved_user_request_by_email` para os dois emails órfãos:
+- `debora.adm71@gmail.com` → cria `public.users`, `company_users` (role `master_buyer`, status `active`), `user_offices` no HQ Silva Foods e preenche `created_user_id`.
+- `finance@wmsfoods.us` → idempotente; só vai preencher `created_user_id` (o resto já existe).
 
-- Criar/atualizar `public.users` com:
-  - `id` do auth user do Gustavo
-  - `email`, `name`
-  - `company_id` e `active_company_id` apontando para Frigorinthians
-  - `user_type = 'Master'`, `is_owner = true`, `status = 'active'`
-- Criar/atualizar `user_offices` para a empresa dele como principal.
-- Atualizar `user_requests.created_user_id` com o id do auth user.
-- Criar/atualizar também `company_users` para esse usuário, para manter consistência com permissões, diretórios e lógica de acesso por empresa.
+Validar depois: contagem em `public.users` / `company_users` / `user_offices` para os dois user_ids, e `created_user_id` preenchido em `user_requests`.
 
-### 2. Fix estrutural no banco
+### 2. Resposta à pergunta — “tudo ali em cima funciona para novos usuários?”
 
-Adicionar uma função central, por exemplo `public.link_approved_user_request_by_email(email)`, que faça o vínculo completo de forma idempotente:
+**Sim.** Verifiquei no banco que toda a cadeia está montada:
 
-- Localiza `auth.users` pelo e-mail.
-- Localiza `user_requests` aprovada, ainda sem `created_user_id`.
-- Cria/atualiza `public.users`.
-- Cria/atualiza `company_users`.
-- Cria/atualiza `user_offices`.
-- Marca `user_requests.created_user_id`.
+| Componente | Estado |
+|---|---|
+| `link_approved_user_request_by_email(email)` | ✅ corrigida (`ON CONFLICT (company_id, user_id)`) |
+| Trigger `link_on_user_request_approve` em `user_requests` (AFTER INSERT/UPDATE de `status, company_id`) | ✅ ativo, chama a função central |
+| Trigger `link_approved_user_request` em `auth.users` (AFTER INSERT) | ✅ ativo, cobre signup-após-aprovação |
+| `claim_pending_invites()` chamado no login | ✅ chama a função central como 3ª camada |
+| `AdminUserRequests.tsx` | ✅ resolve/cria a `companies`, grava `approved_company_id` no UPDATE pra status=approved, e ainda chama o RPC como safety net |
 
-Essa função deve funcionar tanto para:
+Casos cobertos para novos usuários:
+1. **Signup → aprovação depois** (caminho mais comum): trigger em `user_requests` dispara no UPDATE pra approved → função central cria tudo.
+2. **Aprovação → signup depois** (admin aprova baseado em request antes da conta existir): trigger em `auth.users` dispara no INSERT da conta → função central cria tudo.
+3. **Login Google** (cria `auth.users` só no 1º login): mesmo trigger (#2) cobre. E `claim_pending_invites` no login é o cinto-e-suspensório final.
+4. **Race / falha do trigger**: RPC chamado direto pelo Admin logo depois do UPDATE garante.
 
-- usuário que já existe e é aprovado depois;
-- usuário aprovado primeiro e que cria login depois;
-- login via Google;
-- login via e-mail/senha.
+Após esse hotfix, **nenhum buyer/supplier aprovado deve ficar fora do Team da sua própria empresa** — nem agora nem no futuro.
 
-### 3. Corrigir o trigger existente
-
-Atualizar o trigger `AFTER INSERT ON auth.users` para chamar a função central acima.
-
-Assim, se o usuário criar conta depois de já ter uma request aprovada, o vínculo acontece automaticamente.
-
-### 4. Criar trigger também em `user_requests`
-
-Adicionar trigger `AFTER UPDATE OF status, company_id ON public.user_requests`.
-
-Quando uma request virar `approved`, ele chama a mesma função central.
-
-Assim, se o usuário já tinha criado conta antes da aprovação, como Gustavo, o vínculo acontece no momento da aprovação.
-
-### 5. Reforçar o RPC de login
-
-Atualizar `claim_pending_invites()` para também tentar vincular `user_requests` aprovadas por e-mail, além de `company_users` pendentes.
-
-Isso cria uma terceira camada de segurança: mesmo que algo passe despercebido no momento da aprovação, no próximo login o sistema corrige sozinho.
-
-### 6. Ajustar AdminUserRequests
-
-Trocar a lógica “best-effort” client-side atual por uma chamada ao RPC central após aprovar.
-
-Hoje a página tenta fazer parte do provisionamento no frontend e engole erro como não fatal. Isso é frágil. O correto é o banco ser a fonte da verdade e a tela apenas aprovar a request.
-
-### 7. Validação final
-
-Depois de aplicar:
-
-- Confirmar Gustavo vinculado à Frigorinthians.
-- Confirmar `user_requests.created_user_id` preenchido.
-- Confirmar `public.users`, `company_users` e `user_offices` consistentes.
-- Conferir que o trigger em `auth.users` e o trigger em `user_requests` existem e estão ativos.
-
-## Resultado esperado
-
-Nenhum usuário aprovado deve cair numa tela sem empresa ou depender da Mundus fazer vínculo manual. O sistema passa a corrigir automaticamente nos três pontos críticos: criação da conta, aprovação da request e login.
+### Resumo do que vou executar em build mode
+- Backfill via `link_approved_user_request_by_email('debora.adm71@gmail.com')`
+- Backfill via `link_approved_user_request_by_email('finance@wmsfoods.us')`
+- Query de verificação confirmando Silva Foods e Meat USA com membro ativo no Team
