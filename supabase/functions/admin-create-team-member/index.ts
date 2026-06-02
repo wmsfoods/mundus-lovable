@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
     }
 
     // 3) Insert company_users
-    const { error: cuErr } = await admin.from('company_users').insert({
+    const { error: cuErr } = await admin.from('company_users').upsert({
       company_id: MUNDUS_COMPANY_ID,
       user_id: userId,
       email: cleanEmail,
@@ -145,7 +145,7 @@ Deno.serve(async (req) => {
       role_id,
       status: 'active',
       joined_at: new Date().toISOString(),
-    } as any)
+    } as any, { onConflict: 'company_id,user_id' })
     if (cuErr) {
       return new Response(JSON.stringify({ error: 'company_users_insert_failed', message: cuErr.message }), {
         status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
