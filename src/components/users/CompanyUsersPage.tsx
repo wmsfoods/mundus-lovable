@@ -6,7 +6,7 @@ import {
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
-import { publicUrl } from "@/lib/publicUrl";
+import { PUBLIC_APP_URL, publicUrl } from "@/lib/publicUrl";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCompanyRole } from "@/components/auth/RequireRole";
 import { useSupplierUsers, type SupplierUser } from "@/hooks/useSupplierUsers";
@@ -134,7 +134,7 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
         job_title: payload.job_title ?? null,
         phone: payload.phone ?? null,
         language: i18n.language || "en",
-        origin: publicUrl("/"),
+        origin: PUBLIC_APP_URL,
       },
     });
     if (error || (resp && (resp as any).error)) {
