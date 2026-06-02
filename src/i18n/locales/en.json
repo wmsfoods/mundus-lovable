@@ -285,7 +285,16 @@
       "protein_beef": "Beef",
       "protein_pork": "Pork",
       "protein_poultry": "Poultry",
-      "protein_lamb": "Lamb"
+      "protein_lamb": "Lamb",
+      "viewDetails": "View cuts & pricing",
+      "cut": "Cut",
+      "category": "Category",
+      "quantity": "Quantity",
+      "price": "Price",
+      "totalWeight": "Total weight",
+      "fclAvailable": "FCL available",
+      "containerSize": "Container size",
+      "mixedFcl": "Mixed FCL"
     },
     "chat": {
       "title": "Max — Mundus Assistant",

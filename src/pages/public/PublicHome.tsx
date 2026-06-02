@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Utensils } from "lucide-react";
 import PublicLayout from "@/layouts/PublicLayout";
 import PublicOfferCard from "@/components/public/PublicOfferCard";
+import PublicOfferModal from "@/components/public/PublicOfferModal";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
 import { usePublicOffers, type PublicOffer } from "@/hooks/usePublicOffers";
 import {
@@ -34,6 +35,7 @@ export default function PublicHome() {
   const navigate = useNavigate();
   const { offers, loading } = usePublicOffers();
   const [chatOpen, setChatOpen] = useState(false);
+  const [detailOffer, setDetailOffer] = useState<PublicOffer | null>(null);
   const offersRef = useRef<HTMLDivElement>(null);
 
   const [selectedProteins, setSelectedProteins] = useState<ProteinCode[]>([]);
@@ -255,13 +257,26 @@ export default function PublicHome() {
           ) : (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {filtered.map((o) => (
-                <PublicOfferCard key={o.id} offer={o} onReveal={() => setChatOpen(true)} />
+                <PublicOfferCard
+                  key={o.id}
+                  offer={o}
+                  onReveal={() => setChatOpen(true)}
+                  onOpenDetails={() => setDetailOffer(o)}
+                />
               ))}
             </div>
           )}
         </div>
       </section>
 
+      <PublicOfferModal
+        offer={detailOffer}
+        onClose={() => setDetailOffer(null)}
+        onReveal={() => {
+          setDetailOffer(null);
+          setChatOpen(true);
+        }}
+      />
       <MaxChatWidget open={chatOpen} onClose={() => setChatOpen(false)} />
     </PublicLayout>
   );

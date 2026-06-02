@@ -285,7 +285,16 @@
       "protein_beef": "Bovinos",
       "protein_pork": "Suínos",
       "protein_poultry": "Aves",
-      "protein_lamb": "Ovinos"
+      "protein_lamb": "Ovinos",
+      "viewDetails": "Ver cortes e preços",
+      "cut": "Corte",
+      "category": "Categoria",
+      "quantity": "Quantidade",
+      "price": "Preço",
+      "totalWeight": "Peso total",
+      "fclAvailable": "FCL disponíveis",
+      "containerSize": "Tamanho do contêiner",
+      "mixedFcl": "FCL misto"
     },
     "chat": {
       "title": "Max — Assistente Mundus",

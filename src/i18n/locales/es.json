@@ -285,7 +285,16 @@
       "protein_beef": "Vacuno",
       "protein_pork": "Cerdo",
       "protein_poultry": "Aves",
-      "protein_lamb": "Cordero"
+      "protein_lamb": "Cordero",
+      "viewDetails": "Ver cortes y precios",
+      "cut": "Corte",
+      "category": "Categoría",
+      "quantity": "Cantidad",
+      "price": "Precio",
+      "totalWeight": "Peso total",
+      "fclAvailable": "FCL disponibles",
+      "containerSize": "Tamaño de contenedor",
+      "mixedFcl": "FCL mixto"
     },
     "chat": {
       "title": "Max — Asistente de Mundus",

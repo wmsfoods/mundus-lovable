@@ -285,7 +285,16 @@
       "protein_beef": "Bœuf",
       "protein_pork": "Porc",
       "protein_poultry": "Volaille",
-      "protein_lamb": "Agneau"
+      "protein_lamb": "Agneau",
+      "viewDetails": "Voir coupes et prix",
+      "cut": "Coupe",
+      "category": "Catégorie",
+      "quantity": "Quantité",
+      "price": "Prix",
+      "totalWeight": "Poids total",
+      "fclAvailable": "FCL disponibles",
+      "containerSize": "Taille de conteneur",
+      "mixedFcl": "FCL mixte"
     },
     "chat": {
       "title": "Max — Assistant Mundus",

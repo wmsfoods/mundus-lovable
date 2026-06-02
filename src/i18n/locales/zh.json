@@ -285,7 +285,16 @@
       "protein_beef": "牛肉",
       "protein_pork": "猪肉",
       "protein_poultry": "禽肉",
-      "protein_lamb": "羊肉"
+      "protein_lamb": "羊肉",
+      "viewDetails": "查看分割和价格",
+      "cut": "分割",
+      "category": "类别",
+      "quantity": "数量",
+      "price": "价格",
+      "totalWeight": "总重量",
+      "fclAvailable": "可用 FCL",
+      "containerSize": "集装箱规格",
+      "mixedFcl": "混装 FCL"
     },
     "chat": {
       "title": "Max — Mundus 助手",
