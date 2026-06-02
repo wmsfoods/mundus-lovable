@@ -6,9 +6,10 @@ import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   STAGES,
-  OWNERS, type ProspectStage,
+  type ProspectStage,
   type Prospect,
 } from "@/hooks/useAdminProspects";
+import { useMundusTeam } from "@/hooks/useMundusTeam";
 import { AddProspectModal } from "@/components/admin/AddProspectModal";
 import { ImportProspectsModal } from "@/components/admin/ImportProspectsModal";
 import { supabase } from "@/integrations/supabase/client";
@@ -389,7 +390,7 @@ export default function AdminProspects() {
         </div>
         <select className="crm-select" value={owner} onChange={(e) => setOwner(e.target.value)}>
           <option value="all">{t("admin.crm.filters.allOwners")}</option>
-          {OWNERS.map((o) => <option key={o.initials} value={o.initials}>{o.initials} — {o.name}</option>)}
+          {mundusTeam.map((o) => <option key={o.id} value={o.initials}>{o.initials} — {o.name}</option>)}
         </select>
         <CountryFilterPopover
           countries={countryCounts}
