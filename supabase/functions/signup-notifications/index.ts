@@ -11,7 +11,7 @@ const RESEND_API_KEY =
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
 const ADMIN_EMAIL = "fn@mundustrade.com";
 const WINE = "#8B2252";
-const PLATFORM_URL = "https://app.mundustrade.com";
+const PLATFORM_URL = "https://app.mundustrade.us";
 
 const LOGO_URL = "https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png";
 const logoHeader = `

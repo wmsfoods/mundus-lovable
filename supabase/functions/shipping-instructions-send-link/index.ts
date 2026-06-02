@@ -74,7 +74,7 @@ Deno.serve(async (req) => {
         .eq('id', request.id);
     }
 
-    const base = origin || 'https://app.mundustrade.com';
+    const base = origin || 'https://app.mundustrade.us';
     const url = `${base.replace(/\/$/, '')}/shipping-instructions/${request.token}`;
 
     // Send email via Resend (best effort)
