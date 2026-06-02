@@ -4,6 +4,7 @@ import { OfferImageGallery, type GalleryImage } from "@/components/offer/OfferIm
 import { OfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel, priceLabel } from "@/lib/units";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 
 /* ──────────────────────────────────────────────────────────
    Shared Offer Detail Layout (supplier & buyer)
@@ -123,6 +124,8 @@ export function OfferDetailLayout(props: OfferDetailLayoutProps) {
   const extraDests = destinations.length - 1;
   const visiblePorts = destinationPorts.slice(0, 3);
   const extraPorts = destinationPorts.length - visiblePorts.length;
+  const destPortNames = destinationPorts.map((p) => p.name);
+  const destCountryNames = destinations.map((d) => d.name);
 
   return (
     <div className="od2">
@@ -385,7 +388,13 @@ export function OfferDetailLayout(props: OfferDetailLayoutProps) {
               {incoterms.length > 0 ? (
                 <span className="od2-inco-row">
                   {incoterms.map((i) => (
-                    <span key={i} className="od2-inco-pill">{i}</span>
+                    <span key={i} className="od2-inco-pill">
+                      {formatIncotermWithPlace(i, {
+                        originPort,
+                        destinationPorts: destPortNames,
+                        destinationNames: destCountryNames,
+                      })}
+                    </span>
                   ))}
                 </span>
               ) : "—"}
