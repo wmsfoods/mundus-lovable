@@ -1,15 +1,9 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  TagIcon,
-  ArrowLeftIcon,
-  ChevronDownIcon,
-  MapPinIcon,
-  FlagSVG,
-} from "@/components/icons";
+import { ArrowLeftIcon, ChevronDownIcon } from "@/components/icons";
 import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
 import { formatOfferNumber } from "@/lib/offerNumber";
-import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
+import { OfferDetailCards, type OfferCardItem } from "@/components/offer/OfferDetailCards";
 import { useOfferImages } from "@/hooks/useOfferImages";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -20,9 +14,9 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { CloseDealDialog } from "@/components/common/CloseDealDialog";
 import { closeDealFromOffer } from "@/lib/closeDeal";
-import { useOfferDestinationPorts, OfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
+import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, weightLabel, priceLabel } from "@/lib/units";
+import { useOfferImages as _useImagesAlias } from "@/hooks/useOfferImages"; // noop placeholder removed below
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -33,15 +27,6 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 function formatShipment(month: number, year: number): string {
   return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
-}
-function formatNumber(n: number): string {
-  return new Intl.NumberFormat("en-US").format(Math.round(n));
-}
-function formatPrice(n: number): string {
-  return new Intl.NumberFormat("en-US", {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  }).format(n);
 }
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string; key: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a", key: "active" },
