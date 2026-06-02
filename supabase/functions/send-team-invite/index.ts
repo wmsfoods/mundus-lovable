@@ -79,8 +79,8 @@ function renderHtml(lang: Lang, opts: { name: string; org: string; role: string;
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f5f3ee;padding:40px 16px;">
     <tr><td align="center">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-        <tr><td style="padding:32px 40px 0;">
-          <div style="font-size:14px;letter-spacing:0.12em;color:#8a1538;font-weight:700;">MUNDUS TRADE</div>
+        <tr><td style="padding:32px 40px 0;text-align:center;">
+          <img src="https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png" alt="Mundus Trade" width="200" style="display:inline-block;max-width:200px;height:auto;border:0;outline:none;text-decoration:none;" />
         </td></tr>
         <tr><td style="padding:24px 40px 8px;">
           <h1 style="margin:0 0 16px;font-size:22px;line-height:1.3;color:#0d0d0d;">${t.greeting(opts.name)}</h1>
