@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
+import { publicUrl } from "@/lib/publicUrl";
 import { ShiningButton } from "@/components/ui/shining-button";
 import { AuthLayout } from "./AuthLayout";
 
@@ -30,7 +31,7 @@ export default function ForgotPassword() {
     const { error } = await supabase.functions.invoke("send-password-reset", {
       body: {
         email,
-        redirectTo: `${window.location.origin}/reset-password`,
+        redirectTo: publicUrl("/reset-password"),
         language: (typeof navigator !== "undefined" ? navigator.language?.slice(0, 2) : "en") || "en",
       },
     });
