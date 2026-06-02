@@ -16,7 +16,6 @@ import { CloseDealDialog } from "@/components/common/CloseDealDialog";
 import { closeDealFromOffer } from "@/lib/closeDeal";
 import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { useOfferImages as _useImagesAlias } from "@/hooks/useOfferImages"; // noop placeholder removed below
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
