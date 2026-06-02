@@ -110,49 +110,49 @@ export default function PublicHome() {
   return (
     <PublicLayout>
       {/* Hero band */}
-      <section className="relative overflow-hidden bg-[#5C1B30] text-white">
+      <section className="relative overflow-hidden bg-[#8B2E4F] text-white">
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
-            backgroundImage: `linear-gradient(90deg, #5C1B30 0%, #5C1B30 35%, rgba(92,27,48,0.85) 55%, rgba(92,27,48,0.4) 100%), url(${heroAsset.url})`,
+            backgroundImage: `linear-gradient(90deg, #8B2E4F 0%, #8B2E4F 35%, rgba(139,46,79,0.78) 55%, rgba(139,46,79,0.35) 100%), url(${heroAsset.url})`,
             backgroundSize: "cover",
             backgroundPosition: "right center",
             backgroundRepeat: "no-repeat",
           }}
         />
-        <div className="relative mx-auto max-w-6xl px-4 py-14 sm:py-20">
+        <div className="relative mx-auto max-w-6xl px-4 py-7 sm:py-10">
           <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-[11px] font-semibold tracking-wider backdrop-blur">
             <Utensils size={12} />
             {t("public.home.heroBadge", "B2B MEAT MARKETPLACE")}
           </span>
-          <h1 className="mt-5 max-w-3xl text-3xl font-bold leading-tight sm:text-5xl">
+          <h1 className="mt-3 max-w-3xl text-2xl font-bold leading-tight sm:text-3xl">
             {t("public.home.heroTitleLine1", "Excellence in every cut,")}
             <br />
             {t("public.home.heroTitleLine2", "value in every purchase.")}
           </h1>
-          <p className="mt-4 max-w-2xl text-sm text-white/85 sm:text-base">
+          <p className="mt-2 max-w-2xl text-xs text-white/85 sm:text-sm">
             {t(
               "public.home.heroSubtitle",
               "Browse live container offers from vetted suppliers across the globe. Negotiate faster, in fewer rounds, with full price and incoterm control.",
             )}
           </p>
-          <div className="mt-7 flex flex-wrap gap-3">
+          <div className="mt-4 flex flex-wrap gap-3">
             <button
               onClick={() => navigate("/signup")}
-              className="rounded-md bg-white px-4 py-2.5 text-sm font-semibold text-[#7A2440] shadow-sm transition hover:bg-white/95"
+              className="rounded-md bg-white px-4 py-2 text-sm font-semibold text-[#8B2E4F] shadow-sm transition hover:bg-white/95"
             >
               {t("public.home.createAccount", "Create free account")} →
             </button>
             <button
               onClick={scrollToOffers}
-              className="rounded-md border border-white/40 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
+              className="rounded-md border border-white/40 bg-white/10 px-4 py-2 text-sm font-semibold text-white backdrop-blur transition hover:bg-white/20"
             >
               {t("public.home.browseOffers", "Browse offers")}
             </button>
           </div>
 
-          <div className="mt-10 grid max-w-2xl grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="mt-5 grid max-w-2xl grid-cols-3 gap-3">
             <Stat
               n={`${heroStatOffers}+`}
               label={t("public.home.statOffers", "Live container offers")}
