@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ArrowLeftIcon, ChevronDownIcon } from "@/components/icons";
-import { useOffer, type OfferDetailed } from "@/hooks/useOffer";
+import { useOffer, type OfferDetailed, type OfferDetailItem } from "@/hooks/useOffer";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { OfferDetailCards, type OfferCardItem } from "@/components/offer/OfferDetailCards";
 import { useOfferImages } from "@/hooks/useOfferImages";
