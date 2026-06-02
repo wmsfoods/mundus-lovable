@@ -357,7 +357,7 @@ export default function BuyerOffers() {
     for (const o of offers) {
       for (const it of o.items ?? []) {
         const c = (it.condition ?? "").trim();
-        if (c === "Frozen" || c === "Chilled" || c === "Fresh") temps.add(c);
+        if (c === "Frozen" || c === "Chilled") temps.add(c);
       }
       if (o.origin_country) origins.add(o.origin_country);
       for (const i of o.incoterms ?? []) {
