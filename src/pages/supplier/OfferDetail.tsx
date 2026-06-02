@@ -36,8 +36,8 @@ import { OfferImageGallery } from "@/components/offer/OfferImageGallery";
 import { countryFlag } from "@/lib/countryFlags";
 import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
-import { useWeightUnit, type WeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, weightLabel } from "@/lib/units";
+import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { fmtWeight, fmtPrice, weightLabel, type WeightUnit } from "@/lib/units";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
