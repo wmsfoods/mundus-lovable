@@ -122,6 +122,7 @@ export default function AdminProspectDetail() {
   const { t } = useTranslation();
   const nav = useNavigate();
   const mock = useProspect(id);
+  const { team: mundusTeam } = useMundusTeam();
   const isDbProspect = !!id && !id.startsWith("pr-");
   const [dbP, setDbP] = useState<Prospect | null>(null);
   const [dbLoading, setDbLoading] = useState(false);
