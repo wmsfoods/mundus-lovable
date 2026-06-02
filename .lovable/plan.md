@@ -1,49 +1,43 @@
-## Adicionar seção "How it works" na Home pública
+## Update Max chat widget copy and flows
 
-Vou criar um novo componente animado e adicioná-lo no `PublicHome.tsx`, logo abaixo da seção de "Live offers".
+Refine the conversational copy and routing of `MaxChatWidget.tsx` (opened when clicking "Reveal supplier") to match the new script, and personalize when the contact is already known.
 
-### O que será feito
+### New copy (EN + PT/ZH translations)
 
-1. **Instalar dependência**
-   - `framer-motion` (se ainda não estiver instalado — usado em outros pontos do projeto, vou confirmar)
+**Greeting (always shown)**
+- "Hello!"
+- "I will help you connect with the Mundus platform."
+- "Let's see if you're already registered — it takes less than a minute."
+- "Share your work email so I can check if we already know you."
 
-2. **Criar `src/components/ui/feature-highlight.tsx`**
-   - Componente baseado no exemplo enviado, em TypeScript + Tailwind
-   - Animação de entrada com stagger (icon → title → cada linha → footer) usando `framer-motion`
-   - Efeito ao passar o mouse em cada linha:
-     - Leve translateX + mudança suave de cor para o vinho da Mundus (`#8B2E4F`)
-     - Emoji com `scale` sutil
-     - Linha inteira destacada quando hover, demais ficam com opacidade reduzida (efeito "spotlight"), padrão usado em sites tipo Linear / Vercel
+**After email lookup:**
 
-3. **Usar o componente em `src/pages/public/PublicHome.tsx`**
-   - Nova seção entre "Live offers" e o final do layout
-   - Título: "How it works"
-   - Conteúdo (linhas exatamente como pediu):
-     ```
-     ☕ Grab a coffee from the corner cafe.
-     📱 Load up your Mundus app.
-     🚢 Order new containers online.
-     🏭 Have it produced and delivered.
-     📢 Suppliers post new offers.
-     🛒 Buyers create new demands.
-     🔗 All from a single source of truth.
-     🤝 Directly with each other.
-     ```
-   - Footer: `🥩⚡ Just look at Mundus for instant meat B2B deals.`
-   - Paleta Mundus: fundo claro (`bg-white` ou `bg-[#FAF7F5]`), título em `#1A1A2E`, accent em `#8B2E4F`, footer em chip com fundo `#8B2E4F`/branco
+1. **Not found in records** → show:
+   - "Looks like we haven't found you in our records."
+   - "Please fill in the next fields and someone will contact you ASAP."
+   - Plus an alternative CTA button: **"Or sign up directly →"** linking to `/signup?email=...`
+   - Then continue the existing name → company → phone → country → protein → leadType flow.
 
-4. **Responsivo (mobile-first, conforme regra do projeto)**
-   - Texto centralizado, tipografia escalando (`text-xl sm:text-2xl md:text-3xl`)
-   - Padding lateral confortável, respeitando safe-area
-   - Hover desativado em touch (`@media (hover: hover)`), animação de entrada continua funcionando ao entrar no viewport (`whileInView`)
+2. **Already a Mundus account** (has_mundus_account) → personalized:
+   - "Hello {firstName}!" (use name returned by `lookupContact`; fallback to "Hello!" if missing)
+   - "Welcome back — you already have a Mundus account."
+   - "Please log in to our platform."
+   - "If you're a supplier, you won't be able to see other suppliers' offers."
+   - CTA button: **"Log in →"** linking to `/login?email=...`
 
-### Detalhes técnicos
+3. **Known contact, no account yet** (existingContact) → keep current "we already know you, a rep will reach out" message but reword slightly to match new tone, and personalize with first name when available.
 
-- Animações puramente CSS/framer-motion, sem libs adicionais
-- Sem mudanças em backend, rotas, ou lógica de negócio
-- Apenas 1 arquivo novo (`feature-highlight.tsx`) e 1 edição (`PublicHome.tsx`)
-- Sem alterar o componente em outras telas — fica disponível em `@/components/ui/feature-highlight` caso queira reutilizar depois
+### Technical details
 
-### Pergunta rápida antes de implementar
+- File: `src/components/public/MaxChatWidget.tsx`.
+- `lookupContact` already returns contact info; confirm it returns a `name`/`first_name` field. If not, extend the response usage to read whatever name field exists (check `src/lib/publicLeadFlow.ts`) and store it in a `contactName` state to personalize bubbles. If no name field exists, plan a small addition to `publicLeadFlow.ts` to surface it from the lookup response.
+- Replace existing initial Bubbles (`greet`, `nextEmail`) with the 4 new lines.
+- Update `existingAccount` branch: personalized greeting + 3 bubbles + login link (already present, just adjust label/copy).
+- Update `name` step entry to first show the two "haven't found you" bubbles, plus an inline secondary action linking to `/signup?email=...` before the name input.
+- Update i18n keys in `src/i18n/locales/en.json` (and `zh.json`, `pt` if present) under `public.chat.*`. Add: `greetHello`, `greetHelp`, `greetCheck`, `greetEmailAsk`, `notFoundTitle`, `notFoundFill`, `notFoundSignupLink`, `welcomeBackNamed`, `welcomeBackBody`, `welcomeBackLogin`, `welcomeBackSupplierNote`.
+- Keep existing styles, safe-area handling, and the Start-over / Close controls.
+- No backend/schema changes.
 
-A seção deve aparecer **logo abaixo do hero** (antes da grid de ofertas, para servir de "pitch") ou **abaixo da grid de ofertas** (no final da página, como fechamento)?
+### Out of scope
+- No changes to the offer card, hero, or onboarding.
+- No changes to authentication or lookup logic beyond optionally surfacing the contact name.
