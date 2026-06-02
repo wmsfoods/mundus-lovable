@@ -34,7 +34,9 @@ export default function ForgotPassword() {
     // Always show the same neutral response to avoid account enumeration.
     setSent(true);
     setCooldown(COOLDOWN_SECONDS);
-    auditLog({ action: "auth.password_reset_requested", category: "auth", meta: { email } }).catch(() => {});
+    try {
+      auditLog({ action: "auth.password_reset_requested", category: "auth", details: { email } });
+    } catch { /* ignore */ }
     if (error) {
       // Log but never surface to the user.
       console.warn("[forgot-password]", error.message);
