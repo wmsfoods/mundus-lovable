@@ -591,36 +591,16 @@ function AddMemberModal({ roleIdByKey, onClose, onCreated }:{
     if (!role_id) return toast.error("Role not found in database");
     setBusy(true);
     try {
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: email.trim(),
-        password,
-        options: { data: { full_name: name.trim() } },
+      // Server-side creation (service role): creates auth user + public.users
+      // + company_users in one shot. We can't use client-side signUp here
+      // because it would swap the admin's session for the new user's session
+      // and break the subsequent RLS-protected inserts.
+      const { data, error } = await supabase.functions.invoke("admin-create-team-member", {
+        body: { full_name: name.trim(), email: email.trim(), password, role_id },
       });
-      if (authError) throw authError;
-
-      const userId = authData.user?.id ?? null;
-      // Ensure a user row exists (link to Mundus company so the join resolves nicely)
-      if (userId) {
-        await supabase.from("users").upsert({
-          id: userId,
-          email: email.trim(),
-          name: name.trim(),
-          company_id: MUNDUS_COMPANY_ID,
-          active_company_id: MUNDUS_COMPANY_ID,
-          user_type: "admin",
-        } as any, { onConflict: "id" });
-      }
-
-      const { error: cuErr } = await supabase.from("company_users").insert({
-        company_id: MUNDUS_COMPANY_ID,
-        user_id: userId,
-        email: email.trim(),
-        full_name: name.trim(),
-        role_id,
-        status: "active",
-        joined_at: new Date().toISOString(),
-      } as any);
-      if (cuErr) throw cuErr;
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).message ?? (data as any).error);
+      const userId = (data as any)?.user_id ?? null;
 
       auditLog({
         action: "team.member_added", category: "user",
