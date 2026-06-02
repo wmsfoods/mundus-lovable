@@ -13,11 +13,12 @@ import {
   useProspect, updateProspectStage, addProspectActivity,
   updateProspect, deactivateProspect, reactivateProspect, deleteProspect,
   upsertContact, deleteContact,
-  STAGES, OWNERS,
+  STAGES,
   type ProspectActivity, type Prospect, type ProspectContact, type LeadType, type DecisionLevel,
   type ProspectSource, type ProspectStage,
 } from "@/hooks/useAdminProspects";
 import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
+import { useMundusTeam } from "@/hooks/useMundusTeam";
 import { enrichContact } from "@/lib/prospectEnrich";
 
 const STAGE_TO_DB: Record<ProspectStage, string> = {
