@@ -66,9 +66,9 @@ export default function Login() {
       <header className="auth-screen-header">
         <LanguageSwitcher variant="pill" />
       </header>
-      <main className="flex flex-1 flex-col-reverse items-center justify-center md:flex-row md:items-center md:justify-center md:gap-16 md:py-10 w-full">
+      <main className="flex flex-1 flex-col-reverse items-center justify-center md:max-w-6xl md:mx-auto md:flex-row md:items-center md:justify-center md:gap-16 md:px-6 md:py-10">
         {/* Carousel — desktop only; hidden on mobile */}
-        <div className="relative hidden md:block w-full md:max-w-[720px] md:aspect-square overflow-hidden rounded-[2.5rem] shadow-sm md:ml-4 lg:ml-8">
+        <div className="relative hidden md:block w-full md:max-w-[600px] md:aspect-square overflow-hidden rounded-[2.5rem] shadow-sm">
           {slides.map((src, i) => (
             <div
               key={i}
