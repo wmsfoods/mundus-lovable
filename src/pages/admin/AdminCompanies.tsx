@@ -153,6 +153,16 @@ export default function AdminCompanies() {
         </div>
       </div>
 
+      {/* Tabs */}
+      <div style={{ display: "flex", gap: 4, borderBottom: "1px solid #e5e7eb", marginBottom: 12 }}>
+        <TabBtn active={tab === "companies"} onClick={() => setTab("companies")}>Companies</TabBtn>
+        <TabBtn active={tab === "users"} onClick={() => setTab("users")}>Users</TabBtn>
+      </div>
+
+      {tab === "users" ? (
+        <CompanyUsersView />
+      ) : (
+      <>
       {/* toolbar */}
       <div className="crm-toolbar">
         <div className="adm-search" style={{ flex: 1 }}>
