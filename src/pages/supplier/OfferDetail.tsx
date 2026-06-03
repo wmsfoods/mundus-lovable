@@ -54,6 +54,49 @@ export default function SupplierOfferDetail() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
+  const [negMode, setNegMode] = useState<NegotiationMode>("manual");
+  const [negDial, setNegDial] = useState<NegotiationDial>("balanced");
+  const [negSaving, setNegSaving] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("offers")
+        .select("negotiation_mode, negotiation_dial")
+        .eq("id", id)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      const m = (data as any).negotiation_mode;
+      const d = (data as any).negotiation_dial;
+      if (m === "manual" || m === "auto") setNegMode(m);
+      if (d === "protect_margin" || d === "balanced" || d === "win_deal") setNegDial(d);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  async function persistNegHandling(mode: NegotiationMode, dial: NegotiationDial) {
+    if (!id || negSaving) return;
+    const prevMode = negMode;
+    const prevDial = negDial;
+    setNegMode(mode); setNegDial(dial); setNegSaving(true);
+    const { error } = await supabase
+      .from("offers")
+      .update({ negotiation_mode: mode, negotiation_dial: dial })
+      .eq("id", id);
+    setNegSaving(false);
+    if (error) {
+      setNegMode(prevMode); setNegDial(prevDial);
+      toast.error(error.message);
+      return;
+    }
+    toast.success(
+      mode === "auto"
+        ? `Automatic negotiation enabled (${dial.replace("_", " ")}).`
+        : "Switched to manual negotiation."
+    );
+  }
   const [negotiations, setNegotiations] = useState<Array<{
     id: string;
     status: string;
