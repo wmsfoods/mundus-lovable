@@ -1,85 +1,55 @@
-## Visão geral
-Sub-tab **Users** dentro de `/admin/companies` (sem novo item de menu), com lista global de membros de todas as empresas, CRUD completo, links cruzados e filtros enterprise-level.
+## Goal
+Aprimorar os filtros da aba **Users** em `/admin/companies?tab=users` para nível enterprise: multi-seleção em todos os filtros, busca tipada no select de empresas, e bandeiras + multi-seleção nos países.
 
-## Estrutura
-```text
-/admin/companies?tab=companies   ← view atual, sem mudanças
-/admin/companies?tab=users       ← nova view
-```
-Seletor de tabs no topo (pill style), abaixo do header existente. Estado persiste na URL.
+## Mudanças
 
-## Tab "Users" — colunas
-| Coluna | Fonte |
-|---|---|
-| User | Avatar + `full_name` |
-| Email | `company_users.email` |
-| Company | Logo + nome — link para `/admin/companies/:id` |
-| Role | role chip (master_buyer, procurement, etc) |
-| Onboarded | `joined_at` ‖ `accepted_at` ‖ `created_at` |
-| Status | chip active / invited / inactive |
-| Last Modified | `updated_at` |
-| Modified By | nome do `updated_by` (nova coluna) |
-| ✏️ | abre modal de edição |
+### 1. Filtro **Company** — combobox com busca
+- Substituir o `<select>` por um popover com:
+  - Input de busca (debounce 150ms) filtrando por nome da empresa
+  - Lista virtualizada simples com checkbox por empresa
+  - Mostra logo/bandeira do país + nome
+  - Chips das empresas selecionadas no topo do popover (removíveis)
+  - Label do botão: "All companies" / "Acme Foods" / "3 companies"
+- Estado passa de `companyF: string` para `companyF: string[]`
 
-Linha inteira clicável → modal de edição. Nome da empresa escapa para `/admin/companies/:id`.
+### 2. Filtro **Country** — multi-select com bandeiras
+- Reutilizar o componente existente `CountryMultiFilter` (`src/components/admin/CountryMultiFilter.tsx`) que já tem busca, bandeiras e multi-seleção
+- Passar `available` = Set dos países que aparecem nas linhas atuais
+- Estado passa de `countryF: string` para `countryF: string[]`
 
-## Filtros (enterprise-level)
-- **Global search** (debounced 250ms) — busca em paralelo por: nome do user, email, nome da empresa, role, job_title. Resultados ranqueados por relevância (match exato > prefixo > contém).
-- **Company Type**: All / Buyer / Supplier / Both
-- **Role**: multi-select agrupado por tipo (Buyer roles / Supplier roles / Mundus roles)
-- **Status**: All / Active / Invited / Inactive
-- **Country** (da empresa): multi-select com bandeiras
-- **Company**: multi-select com search interno (combobox)
-- Botão "Clear all filters" + contador "X of Y users"
+### 3. Demais filtros — multi-seleção
+Converter para multi-select (mesmo padrão de popover com checkboxes, mais leve sem busca):
+- **Type**: Buyer / Supplier / Both (array)
+- **Status**: Active / Invited / Inactive (array)
+- **Role**: lista dinâmica de roles existentes (array)
 
-Filtros aplicados ficam visíveis como chips removíveis abaixo da toolbar.
+Quando vazio = "All …". Quando 1 = mostra o valor. Quando 2+ = "N selected".
 
-## CRUD (modal compartilhado)
-Modal único para Edit/Create:
-- Campos: `full_name`, `email`, `role` (select filtrado pelo tipo da empresa: buyer roles se `is_buyer`, supplier roles se `is_supplier`), `status`, `job_title`, `phone`, `notes`, `language`.
-- **Save** → `update` em `company_users` (trigger preenche `updated_by` automaticamente).
-- **Delete** (canto inferior esquerdo, vermelho):
-  - Só visível se o user logado for **master_buyer / master_supplier / mundus_admin** da empresa em questão.
-  - **Guard**: se o membro a deletar é o último com role `master_buyer` ou `master_supplier` ativo na empresa, bloqueia com toast "Cannot delete the last master of the company. Promote another member first."
-  - Remove só o vínculo em `company_users`. Preserva `auth.users`, `public.users` e `user_offices` (se o user pertencer a outras empresas, mantém acesso).
-  - Confirmação dupla obrigatória.
-- **Create new user** no topo da tab → mesmo modal vazio + combobox de empresa obrigatório.
+### 4. Lógica de filtro
+Atualizar `filtered` em `CompanyUsersView.tsx`:
+- Cada filtro array vazio = sem restrição
+- Caso contrário: `arr.includes(row.value)`
+- Country: comparar com `row.company_country`
+- Company: `arr.includes(row.company_id)`
+- Type: derivar de `companyType(r)` e checar inclusão
 
-## "Modified By" — nova coluna + trigger
-Migration:
-1. `ALTER TABLE company_users ADD COLUMN updated_by uuid` (FK → `public.users.id`, ON DELETE SET NULL).
-2. Trigger `BEFORE INSERT OR UPDATE` que seta `updated_by = auth.uid()` (e mantém `updated_at = now()` já existente).
-3. Linhas pré-migration ficam com `updated_by` NULL → UI mostra "—". Vai popular naturalmente conforme edições rodarem.
+### 5. Chips de filtros ativos
+- Atualizar a barra de chips para refletir multi-seleção:
+  - "Type: Buyer, Supplier"
+  - "Companies: 3"
+  - "Countries: 🇧🇷 🇺🇸 +2"
+- Botão "Clear all" mantém comportamento
 
-## Guard: "sempre tem que ficar um master na empresa"
-Função SQL helper `public.is_last_master(p_company_user_id uuid) returns boolean` consultada antes do delete, e também rodada como `BEFORE DELETE` trigger pra garantir no banco (defesa em profundidade). Se for o último master ativo, levanta exceção `last_master_protected`.
+### 6. Mobile
+- Popovers permanecem usáveis em mobile (já testados no `CountryMultiFilter`)
+- Garantir `width: 100%` nos triggers dentro do `crm-toolbar` quando empilhado
 
-UI captura a exception e mostra mensagem clara.
+## Arquivos a editar
+- `src/components/admin/companies/CompanyUsersView.tsx` — trocar selects por popovers multi-select, ajustar estado e lógica
+- `src/components/admin/MultiSelectPopover.tsx` *(novo)* — componente genérico reutilizável (trigger + popover + checkbox list + opcional search) para Type/Status/Role/Company
+- Reuso direto de `CountryMultiFilter` para países
 
-## Arquivos a criar/editar
-**Frontend**
-- `src/pages/admin/AdminCompanies.tsx` — adiciona seletor de tabs + roteamento entre `<CompaniesListView />` e `<CompanyUsersView />`.
-- `src/components/admin/companies/CompaniesListView.tsx` (novo) — refator: extrai a tabela/cards/toolbar atuais sem mudar comportamento.
-- `src/components/admin/companies/CompanyUsersView.tsx` (novo) — nova lista, toolbar de filtros, paginação.
-- `src/components/admin/companies/CompanyUserEditModal.tsx` (novo) — modal CRUD compartilhado, com guard do último master.
-- `src/hooks/useAdminCompanyUsers.ts` (novo) — fetch com join `companies` + `users` (modified_by), suporte a filtros e search.
-
-**Backend**
-- Migration:
-  - `ADD COLUMN updated_by` em `company_users`.
-  - Trigger `tg_company_users_set_updated_by` (BEFORE INSERT/UPDATE).
-  - Função `is_last_master(p_company_id uuid, p_excluding_user_id uuid)` + trigger `BEFORE DELETE` que bloqueia se for o último master ativo.
-
-## Mobile (pocket)
-- Sem tabela. Lista de cards verticais com avatar grande, nome, email, chip da empresa (link), chip de status + role, "Onboarded · Modified by".
-- Filtros em bottom-sheet (botão "Filters" no topo, com badge contador).
-- Search bar sticky no topo.
-- ✏️ abre full-screen modal com mesmo CRUD, respeitando safe-area.
-- Sem overflow horizontal; toques generosos (44px+).
-
-## Pronto para implementar?
-Posso prosseguir com a migration + UI nesta ordem:
-1. Migration (`updated_by` + triggers + `is_last_master`).
-2. Refator do `AdminCompanies` em duas views.
-3. Nova tab Users com filtros + modal CRUD.
-4. Mobile.
+## Fora de escopo
+- Sem mudanças no hook `useAdminCompanyUsers` (já retorna `companies` e `company_country`)
+- Sem mudanças de banco
+- Sem alteração nos demais filtros do tab Companies
