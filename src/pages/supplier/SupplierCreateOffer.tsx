@@ -1232,6 +1232,8 @@ export default function SupplierCreateOffer() {
               ...(originCountryVal ? { origin_country: originCountryVal } : {}),
               ...(originPortLabel ? { origin_port: originPortLabel } : {}),
               allow_quantity_negotiation: allowQtyNegotiation,
+              negotiation_mode: negotiationMode,
+              negotiation_dial: negotiationDial,
               updated_at: new Date().toISOString(),
             })
             .eq("id", editOffer.offerId);
@@ -1273,6 +1275,8 @@ export default function SupplierCreateOffer() {
             request_id: fromRequest?.requestId ?? null,
             cut_region: cutRegion,
             allow_quantity_negotiation: allowQtyNegotiation,
+            negotiation_mode: negotiationMode,
+            negotiation_dial: negotiationDial,
           })
           .select("id, offer_number")
           .single();
