@@ -352,11 +352,20 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           .eq("id", offer.id)
           .maybeSingle();
         if (offerRow?.negotiation_mode === "auto") {
-          await supabase.functions.invoke("propose-counter", {
-            body: { negotiation_id: negotiationId, items: bidItems },
-          });
+          const { data: counterData, error: counterError } = await supabase.functions.invoke(
+            "propose-counter",
+            { body: { negotiation_id: negotiationId, items: bidItems } }
+          );
+          if (counterError) {
+            console.warn("[auto-negotiation] propose-counter returned error:", counterError);
+          } else if ((counterData as any)?.error) {
+            console.warn("[auto-negotiation] propose-counter responded with error:", counterData);
+          }
         }
-      } catch { /* never break the bid flow */ }
+      } catch (err) {
+        console.warn("[auto-negotiation] propose-counter threw:", err);
+        // never break the bid flow
+      }
 
       try {
         const { auditLog } = await import("@/lib/auditLog");
