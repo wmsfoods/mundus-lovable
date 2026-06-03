@@ -1232,6 +1232,8 @@ export default function SupplierCreateOffer() {
               ...(originCountryVal ? { origin_country: originCountryVal } : {}),
               ...(originPortLabel ? { origin_port: originPortLabel } : {}),
               allow_quantity_negotiation: allowQtyNegotiation,
+              negotiation_mode: negotiationMode,
+              negotiation_dial: negotiationDial,
               updated_at: new Date().toISOString(),
             })
             .eq("id", editOffer.offerId);
