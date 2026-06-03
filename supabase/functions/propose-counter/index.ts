@@ -1,6 +1,5 @@
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2';
-import { generateCounterProposal, type GenerateCounterProposalInput } from '../_shared/negotiation/engine.ts';
-import type { RoundNumber } from '../_shared/negotiation/types.ts';
+import { autoCounter, type Dial } from '../_shared/negotiation/autoEngineV2.ts';
 
 interface ProposalItem { offer_item_id: string; price_per_kg: number; quantity_kg: number; }
 interface RequestBody { negotiation_id: string; items: ProposalItem[]; }
@@ -9,6 +8,7 @@ interface NegotiationRow {
   id: string; offer_id: string; buyer_company_id: string;
   freight_cost_per_kg: number; status: string;
   locked_until: string | null; expires_at: string | null;
+  negotiation_mode: string; negotiation_dial: string;
 }
 interface OfferItemRow { id: string; price: number; minimum_price: number; }
 
@@ -71,7 +71,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const { data: neg, error: negErr } = await admin
     .from('negotiations')
-    .select('id, offer_id, buyer_company_id, freight_cost_per_kg, status, locked_until, expires_at')
+    .select('id, offer_id, buyer_company_id, freight_cost_per_kg, status, locked_until, expires_at, negotiation_mode, negotiation_dial')
     .eq('id', body.negotiation_id)
     .maybeSingle<NegotiationRow>();
   if (negErr) return errorResponse('db_error', negErr.message, 500);
@@ -135,36 +135,20 @@ Deno.serve(async (req: Request): Promise<Response> => {
     return errorResponse('max_rounds_reached', 'Maximum of 3 rounds reached', 409);
   }
 
-  let buyerHasNegotiatedBefore = false;
-  if (nextRound === 1) {
-    const { data: offerInfo, error: oErr } = await admin
-      .from('offers').select('supplier_id').eq('id', neg.offer_id)
-      .maybeSingle<{ supplier_id: string }>();
-    if (oErr) return errorResponse('db_error', oErr.message, 500);
-    if (offerInfo) {
-      const { data: priorDeals, error: priorErr } = await admin
-        .from('negotiations').select('id, offers!inner(supplier_id)')
-        .eq('buyer_company_id', neg.buyer_company_id).eq('status', 'bid_accepted')
-        .eq('offers.supplier_id', offerInfo.supplier_id).neq('id', neg.id).limit(1);
-      if (priorErr) return errorResponse('db_error', priorErr.message, 500);
-      buyerHasNegotiatedBefore = (priorDeals?.length ?? 0) > 0;
-    }
-  }
+  const dial: Dial = ((neg.negotiation_dial as Dial) ?? 'balanced');
 
   const itemsWithCounters = body.items.map((it) => {
     const offerItem = itemById.get(it.offer_item_id)!;
     const history = historyByItem.get(it.offer_item_id) ?? { proposals: [], counters: [] };
-    const input: GenerateCounterProposalInput = {
-      round: nextRound as RoundNumber,
+    const counter = autoCounter({
       offerPrice: Number(offerItem.price),
       minimumPrice: Number(offerItem.minimum_price),
-      freightPerKg: Number(neg.freight_cost_per_kg),
-      proposal: it.price_per_kg,
-      previousProposals: history.proposals,
-      previousCounterProposals: history.counters,
-      buyerHasNegotiatedBefore,
-    };
-    const counter = generateCounterProposal(input);
+      bid: it.price_per_kg,
+      prevBid: history.proposals.length > 0 ? history.proposals[history.proposals.length - 1] : null,
+      prevCounter: history.counters.length > 0 ? history.counters[history.counters.length - 1] : null,
+      round: nextRound as 1 | 2 | 3,
+      dial,
+    });
     return {
       offer_item_id: it.offer_item_id,
       price_per_kg: it.price_per_kg,
