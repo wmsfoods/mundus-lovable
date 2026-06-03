@@ -2416,6 +2416,15 @@ export default function SupplierCreateOffer() {
             <p className="cov4-hint">From your supplier preferences — editable per offer</p>
           </div>
 
+          {/* Negotiation handling (Manual vs Automatic) */}
+          <div className="cov4-sec">
+            <NegotiationHandlingControl
+              mode={negotiationMode}
+              dial={negotiationDial}
+              onChange={(m, d) => { setNegotiationMode(m); setNegotiationDial(d); }}
+            />
+          </div>
+
           {/* Distribution */}
           <div id="sec-dist" className="cov4-sec">
             <div className="cov4-sec-t">Offer distribution</div>
