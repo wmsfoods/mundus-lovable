@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useBuyerScope } from "@/hooks/useBuyerScope";
@@ -48,13 +48,14 @@ export function useBuyerRequests() {
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
+  const hasLoadedRef = useRef(false);
   useRealtimeRefresh({ table: "buyer_requests", onRefresh: bump, enabled: !!company?.id });
 
   useEffect(() => {
     if (scopeLoading) return;
     if (!scopeIds.length) { setData([]); setLoading(false); return; }
     let cancelled = false;
-    setLoading(true);
+    if (!hasLoadedRef.current) setLoading(true);
     (async () => {
       const { data, error } = await supabase
         .from("buyer_requests")
@@ -65,6 +66,7 @@ export function useBuyerRequests() {
       if (cancelled) return;
       if (error) setError(error.message);
       else setData((data ?? []) as unknown as BuyerRequestRow[]);
+      hasLoadedRef.current = true;
       setLoading(false);
     })();
     return () => {

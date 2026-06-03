@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
@@ -39,6 +39,7 @@ export function useRealNegotiationsList(role: Role) {
   const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
   const [refreshKey, setRefreshKey] = useState(0);
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
+  const hasLoadedRef = useRef(false);
   useRealtimeRefresh({ table: "negotiations", onRefresh: bump, enabled: !!company?.id });
   useRealtimeRefresh({ table: "round_proposals", onRefresh: bump, enabled: !!company?.id });
   useRealtimeRefresh({ table: "counter_proposals", onRefresh: bump, enabled: !!company?.id });
@@ -49,10 +50,10 @@ export function useRealNegotiationsList(role: Role) {
     if (companyLoading || !company?.id ||
         (role === "supplier" && scopeLoading) ||
         (role === "buyer" && buyerScopeLoading)) {
-      setLoading(true);
+      if (!hasLoadedRef.current) setLoading(true);
       return;
     }
-    setLoading(true);
+    if (!hasLoadedRef.current) setLoading(true);
     setError(null);
     (async () => {
       let q = supabase
@@ -87,6 +88,7 @@ export function useRealNegotiationsList(role: Role) {
       if (role === "buyer") {
         if (buyerScopeIds.length === 0) {
           setBuyerGroups([]);
+          hasLoadedRef.current = true;
           setLoading(false);
           return;
         }
@@ -96,6 +98,7 @@ export function useRealNegotiationsList(role: Role) {
         // cross-family isolation at the DB layer.
         if (scopeIds.length === 0) {
           setSupplierGroups([]);
+          hasLoadedRef.current = true;
           setLoading(false);
           return;
         }
@@ -114,6 +117,7 @@ export function useRealNegotiationsList(role: Role) {
       console.log("[NegList]", role, "rows:", data?.length, "err:", err?.message);
       if (err) {
         setError(new Error(err.message));
+        hasLoadedRef.current = true;
         setLoading(false);
         return;
       }
@@ -129,6 +133,7 @@ export function useRealNegotiationsList(role: Role) {
         console.log("[NegList] supplier groups:", groups.length);
         setSupplierGroups(groups);
       }
+      hasLoadedRef.current = true;
       setLoading(false);
     })();
     return () => {

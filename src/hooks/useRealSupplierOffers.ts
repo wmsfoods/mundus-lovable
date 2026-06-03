@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -21,6 +21,7 @@ export function useRealSupplierOffers() {
   const supplierId = company?.id ?? null;
   const [refreshKey, setRefreshKey] = useState(0);
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
+  const hasLoadedRef = useRef(false);
   useRealtimeRefresh({ table: "offers", onRefresh: bump, enabled: !!supplierId });
   useRealtimeRefresh({ table: "negotiations", onRefresh: bump, enabled: !!supplierId });
 
@@ -30,16 +31,17 @@ export function useRealSupplierOffers() {
       // Wait for the real company to resolve so we don't briefly query a
       // different (mock) supplier's offers and then replace them with an
       // empty list once the real id arrives.
-      setLoading(true);
+      if (!hasLoadedRef.current) setLoading(true);
       return;
     }
     if (!supplierId || scopeIds.length === 0) {
       setOffers([]);
+      hasLoadedRef.current = true;
       setLoading(false);
       return;
     }
     (async () => {
-      setLoading(true);
+      if (!hasLoadedRef.current) setLoading(true);
       setError(null);
       const query = supabase
         .from("offers")
@@ -64,6 +66,7 @@ export function useRealSupplierOffers() {
       if (err) {
         setError(err.message);
         setOffers([]);
+        hasLoadedRef.current = true;
         setLoading(false);
         return;
       }
@@ -136,6 +139,7 @@ export function useRealSupplierOffers() {
         };
       });
       setOffers(mapped);
+      hasLoadedRef.current = true;
       setLoading(false);
     })();
     return () => { cancelled = true; };
