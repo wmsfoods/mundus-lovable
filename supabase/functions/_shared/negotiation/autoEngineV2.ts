@@ -10,9 +10,9 @@ export type Dial = 'protect_margin' | 'balanced' | 'win_deal';
  */
 const S_FRAC: Record<number, number> = { 1: 0.35, 2: 0.22, 3: 0.15 };
 const TAU: Record<Dial, Record<number, number>> = {
-  protect_margin: { 1: 0.50, 2: 0.50, 3: 0.62 },
-  balanced:       { 1: 0.65, 2: 0.65, 3: 0.75 },
-  win_deal:       { 1: 0.80, 2: 0.80, 3: 0.85 },
+  protect_margin: { 1: 0.40, 2: 0.55, 3: 0.70 },
+  balanced:       { 1: 0.50, 2: 0.60, 3: 0.75 },
+  win_deal:       { 1: 0.60, 2: 0.70, 3: 0.85 },
 };
 const NON_NEG_FACTOR = 2.0;
 
