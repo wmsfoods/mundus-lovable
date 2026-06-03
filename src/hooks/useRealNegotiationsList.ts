@@ -156,13 +156,27 @@ function offerTitle(r: RealNegotiationRow): string {
   return formatOfferNumber(o.offer_number, o.created_at);
 }
 
+/**
+ * For supplier counter rounds (even raw round), the row inserted in
+ * `cut_rounds` records the buyer's previous bid as `price_per_kg`. The actual
+ * counter price lives in `counter_proposals.price_per_kg`. Use that when
+ * present; otherwise fall back to the cut_round value.
+ */
+function priceForCut(rawRound: number, c: RealNegotiationRow["rounds"][number]["cut_rounds"][number]): number {
+  if (roundTypeFor(rawRound) === "counter") {
+    const cp = (c.counter_proposals ?? [])[0];
+    if (cp && cp.price_per_kg != null) return Number(cp.price_per_kg);
+  }
+  return Number(c.price_per_kg);
+}
+
 function lastTotals(r: RealNegotiationRow) {
   // Round 1 (and any odd round) = buyer bid; Round 2 (and any even) = supplier counter.
   let yourBid = 0;
   let counter = 0;
   let maxRoundDisplay = 1;
   for (const rp of r.rounds ?? []) {
-    const total = (rp.cut_rounds ?? []).reduce((s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg), 0);
+    const total = (rp.cut_rounds ?? []).reduce((s, c) => s + priceForCut(rp.round, c) * Number(c.quantity_kg), 0);
     if (roundTypeFor(rp.round) === "bid") yourBid = total;
     else counter = total;
     maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
