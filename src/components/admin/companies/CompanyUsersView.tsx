@@ -4,9 +4,8 @@ import { Search, Pencil, X as XIcon } from "lucide-react";
 import { countryFlag } from "@/lib/countryFlags";
 import { useAdminCompanyUsers, type AdminCompanyUserRow } from "@/hooks/useAdminCompanyUsers";
 import { CompanyUserEditModal } from "./CompanyUserEditModal";
-
-type StatusF = "all" | "active" | "invited" | "inactive";
-type TypeF = "all" | "buyer" | "supplier" | "both";
+import { MultiSelectPopover } from "@/components/admin/MultiSelectPopover";
+import { CountryMultiFilter } from "@/components/admin/CountryMultiFilter";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string }> = {
   active: { bg: "#d3e7b5", fg: "#3b6d11" },
@@ -37,24 +36,27 @@ function companyType(r: AdminCompanyUserRow): "buyer" | "supplier" | "both" | "n
 export default function CompanyUsersView() {
   const { rows, loading, error, refetch, companies } = useAdminCompanyUsers();
   const [search, setSearch] = useState("");
-  const [typeF, setTypeF] = useState<TypeF>("all");
-  const [statusF, setStatusF] = useState<StatusF>("all");
-  const [roleF, setRoleF] = useState<string>("all");
-  const [companyF, setCompanyF] = useState<string>("all");
-  const [countryF, setCountryF] = useState<string>("all");
+  const [typeF, setTypeF] = useState<string[]>([]);
+  const [statusF, setStatusF] = useState<string[]>([]);
+  const [roleF, setRoleF] = useState<string[]>([]);
+  const [companyF, setCompanyF] = useState<string[]>([]);
+  const [countryF, setCountryF] = useState<string[]>([]);
   const [editing, setEditing] = useState<AdminCompanyUserRow | null>(null);
 
   const allRoles = useMemo(() => Array.from(new Set(rows.map((r) => r.role).filter(Boolean))).sort() as string[], [rows]);
-  const allCountries = useMemo(() => Array.from(new Set(rows.map((r) => r.company_country).filter(Boolean))).sort() as string[], [rows]);
+  const availableCountries = useMemo(
+    () => new Set(rows.map((r) => r.company_country).filter(Boolean) as string[]),
+    [rows],
+  );
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return rows.filter((r) => {
-      if (typeF !== "all" && companyType(r) !== typeF) return false;
-      if (statusF !== "all" && r.status !== statusF) return false;
-      if (roleF !== "all" && r.role !== roleF) return false;
-      if (companyF !== "all" && r.company_id !== companyF) return false;
-      if (countryF !== "all" && r.company_country !== countryF) return false;
+      if (typeF.length && !typeF.includes(companyType(r))) return false;
+      if (statusF.length && !statusF.includes(r.status)) return false;
+      if (roleF.length && (!r.role || !roleF.includes(r.role))) return false;
+      if (companyF.length && !companyF.includes(r.company_id)) return false;
+      if (countryF.length && (!r.company_country || !countryF.includes(r.company_country))) return false;
       if (q) {
         const hay = `${r.full_name} ${r.email} ${r.company_name} ${r.role ?? ""} ${r.job_title ?? ""}`.toLowerCase();
         if (!hay.includes(q)) return false;
@@ -64,16 +66,23 @@ export default function CompanyUsersView() {
   }, [rows, search, typeF, statusF, roleF, companyF, countryF]);
 
   const activeFilters: { key: string; label: string; clear: () => void }[] = [];
-  if (typeF !== "all") activeFilters.push({ key: "type", label: `Type: ${typeF}`, clear: () => setTypeF("all") });
-  if (statusF !== "all") activeFilters.push({ key: "status", label: `Status: ${statusF}`, clear: () => setStatusF("all") });
-  if (roleF !== "all") activeFilters.push({ key: "role", label: `Role: ${roleF}`, clear: () => setRoleF("all") });
-  if (companyF !== "all") {
-    const c = companies.find((x) => x.id === companyF);
-    activeFilters.push({ key: "company", label: `Company: ${c?.name ?? "—"}`, clear: () => setCompanyF("all") });
+  if (typeF.length) activeFilters.push({ key: "type", label: `Type: ${typeF.join(", ")}`, clear: () => setTypeF([]) });
+  if (statusF.length) activeFilters.push({ key: "status", label: `Status: ${statusF.join(", ")}`, clear: () => setStatusF([]) });
+  if (roleF.length) activeFilters.push({ key: "role", label: `Role: ${roleF.join(", ")}`, clear: () => setRoleF([]) });
+  if (companyF.length) {
+    const lbl = companyF.length === 1
+      ? (companies.find((x) => x.id === companyF[0])?.name ?? "—")
+      : `${companyF.length} companies`;
+    activeFilters.push({ key: "company", label: `Company: ${lbl}`, clear: () => setCompanyF([]) });
   }
-  if (countryF !== "all") activeFilters.push({ key: "country", label: `Country: ${countryF}`, clear: () => setCountryF("all") });
+  if (countryF.length) {
+    const lbl = countryF.length <= 2
+      ? countryF.map((c) => `${countryFlag(c)} ${c}`).join(", ")
+      : `${countryF.slice(0, 2).map((c) => countryFlag(c)).join(" ")} +${countryF.length - 2}`;
+    activeFilters.push({ key: "country", label: `Country: ${lbl}`, clear: () => setCountryF([]) });
+  }
 
-  const clearAll = () => { setSearch(""); setTypeF("all"); setStatusF("all"); setRoleF("all"); setCompanyF("all"); setCountryF("all"); };
+  const clearAll = () => { setSearch(""); setTypeF([]); setStatusF([]); setRoleF([]); setCompanyF([]); setCountryF([]); };
 
   return (
     <>
@@ -88,30 +97,50 @@ export default function CompanyUsersView() {
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
-        <select className="crm-select" value={typeF} onChange={(e) => setTypeF(e.target.value as TypeF)}>
-          <option value="all">All types</option>
-          <option value="buyer">Buyer</option>
-          <option value="supplier">Supplier</option>
-          <option value="both">Both</option>
-        </select>
-        <select className="crm-select" value={statusF} onChange={(e) => setStatusF(e.target.value as StatusF)}>
-          <option value="all">All statuses</option>
-          <option value="active">Active</option>
-          <option value="invited">Invited</option>
-          <option value="inactive">Inactive</option>
-        </select>
-        <select className="crm-select" value={roleF} onChange={(e) => setRoleF(e.target.value)}>
-          <option value="all">All roles</option>
-          {allRoles.map((r) => (<option key={r} value={r}>{r}</option>))}
-        </select>
-        <select className="crm-select" value={companyF} onChange={(e) => setCompanyF(e.target.value)}>
-          <option value="all">All companies</option>
-          {companies.map((c) => (<option key={c.id} value={c.id}>{c.name}</option>))}
-        </select>
-        <select className="crm-select" value={countryF} onChange={(e) => setCountryF(e.target.value)}>
-          <option value="all">All countries</option>
-          {allCountries.map((c) => (<option key={c} value={c}>{c}</option>))}
-        </select>
+        <MultiSelectPopover
+          value={typeF}
+          onChange={setTypeF}
+          placeholder="All types"
+          options={[
+            { value: "buyer", label: "Buyer" },
+            { value: "supplier", label: "Supplier" },
+            { value: "both", label: "Both" },
+          ]}
+        />
+        <MultiSelectPopover
+          value={statusF}
+          onChange={setStatusF}
+          placeholder="All statuses"
+          options={[
+            { value: "active", label: "Active" },
+            { value: "invited", label: "Invited" },
+            { value: "inactive", label: "Inactive" },
+          ]}
+        />
+        <MultiSelectPopover
+          value={roleF}
+          onChange={setRoleF}
+          placeholder="All roles"
+          searchable
+          options={allRoles.map((r) => ({ value: r, label: r }))}
+        />
+        <MultiSelectPopover
+          value={companyF}
+          onChange={setCompanyF}
+          placeholder="All companies"
+          searchable
+          triggerMinWidth={180}
+          width={300}
+          options={companies.map((c) => {
+            const country = rows.find((r) => r.company_id === c.id)?.company_country ?? null;
+            return {
+              value: c.id,
+              label: c.name,
+              leading: country ? <span style={{ fontSize: 14 }}>{countryFlag(country)}</span> : null,
+            };
+          })}
+        />
+        <CountryMultiFilter value={countryF} onChange={setCountryF} available={availableCountries} />
       </div>
 
       {/* Active filter chips */}
