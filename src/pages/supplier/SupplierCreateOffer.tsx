@@ -403,19 +403,25 @@ export default function SupplierCreateOffer() {
   const [certifications, setCertifications] = useState<string[]>([]);
   // Whether buyers can edit per-item quantities in chat proposals (total must still match).
   const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
+  const [negotiationMode, setNegotiationMode] = useState<NegotiationMode>("manual");
+  const [negotiationDial, setNegotiationDial] = useState<NegotiationDial>("balanced");
 
   // Hydrate allow_quantity_negotiation when editing an existing offer.
   useEffect(() => {
     if (!editOffer?.offerId) return;
     supabase
       .from("offers")
-      .select("allow_quantity_negotiation")
+      .select("allow_quantity_negotiation, negotiation_mode, negotiation_dial")
       .eq("id", editOffer.offerId)
       .maybeSingle()
       .then(({ data }) => {
         if (data && typeof (data as any).allow_quantity_negotiation === "boolean") {
           setAllowQtyNegotiation(Boolean((data as any).allow_quantity_negotiation));
         }
+        const m = (data as any)?.negotiation_mode;
+        if (m === "manual" || m === "auto") setNegotiationMode(m);
+        const d = (data as any)?.negotiation_dial;
+        if (d === "protect_margin" || d === "balanced" || d === "win_deal") setNegotiationDial(d);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editOffer?.offerId]);
