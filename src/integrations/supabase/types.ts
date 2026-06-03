@@ -720,7 +720,9 @@ export type Database = {
           is_supplier: boolean | null
           is_verified: boolean | null
           logo_url: string | null
+          managed_by_mundus: boolean
           mundus_managed_buyer: boolean
+          mundus_managed_since: string | null
           mundus_managed_supplier: boolean
           name: string
           office_country: string | null
@@ -764,7 +766,9 @@ export type Database = {
           is_supplier?: boolean | null
           is_verified?: boolean | null
           logo_url?: string | null
+          managed_by_mundus?: boolean
           mundus_managed_buyer?: boolean
+          mundus_managed_since?: string | null
           mundus_managed_supplier?: boolean
           name: string
           office_country?: string | null
@@ -808,7 +812,9 @@ export type Database = {
           is_supplier?: boolean | null
           is_verified?: boolean | null
           logo_url?: string | null
+          managed_by_mundus?: boolean
           mundus_managed_buyer?: boolean
+          mundus_managed_since?: string | null
           mundus_managed_supplier?: boolean
           name?: string
           office_country?: string | null
@@ -1426,33 +1432,39 @@ export type Database = {
           created_at: string
           created_by_user_id: string | null
           cut_round_id: string
+          delivery_status: string
           explanation: string
           id: string
           is_final: boolean
           price_per_kg: number
           rule: string | null
+          scheduled_send_at: string | null
           source: string
         }
         Insert: {
           created_at?: string
           created_by_user_id?: string | null
           cut_round_id: string
+          delivery_status?: string
           explanation: string
           id?: string
           is_final: boolean
           price_per_kg: number
           rule?: string | null
+          scheduled_send_at?: string | null
           source: string
         }
         Update: {
           created_at?: string
           created_by_user_id?: string | null
           cut_round_id?: string
+          delivery_status?: string
           explanation?: string
           id?: string
           is_final?: boolean
           price_per_kg?: number
           rule?: string | null
+          scheduled_send_at?: string | null
           source?: string
         }
         Relationships: [
@@ -2894,6 +2906,7 @@ export type Database = {
           agreed_by: string | null
           created_at: string
           id: string
+          item_status: string
           offer_item_id: string
           price_per_kg: number
           quantity_kg: number
@@ -2906,6 +2919,7 @@ export type Database = {
           agreed_by?: string | null
           created_at?: string
           id?: string
+          item_status?: string
           offer_item_id: string
           price_per_kg: number
           quantity_kg: number
@@ -2918,6 +2932,7 @@ export type Database = {
           agreed_by?: string | null
           created_at?: string
           id?: string
+          item_status?: string
           offer_item_id?: string
           price_per_kg?: number
           quantity_kg?: number
@@ -3803,6 +3818,57 @@ export type Database = {
           },
         ]
       }
+      motor_jobs: {
+        Row: {
+          attempts: number
+          created_at: string
+          fire_at: string
+          id: string
+          last_error: string | null
+          negotiation_id: string
+          processed_at: string | null
+          round_proposal_id: string | null
+          status: string
+        }
+        Insert: {
+          attempts?: number
+          created_at?: string
+          fire_at: string
+          id?: string
+          last_error?: string | null
+          negotiation_id: string
+          processed_at?: string | null
+          round_proposal_id?: string | null
+          status?: string
+        }
+        Update: {
+          attempts?: number
+          created_at?: string
+          fire_at?: string
+          id?: string
+          last_error?: string | null
+          negotiation_id?: string
+          processed_at?: string | null
+          round_proposal_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "motor_jobs_negotiation_id_fkey"
+            columns: ["negotiation_id"]
+            isOneToOne: false
+            referencedRelation: "negotiations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "motor_jobs_round_proposal_id_fkey"
+            columns: ["round_proposal_id"]
+            isOneToOne: false
+            referencedRelation: "round_proposals"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       mundus_partner_contacts: {
         Row: {
           created_at: string | null
@@ -4529,6 +4595,54 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      negotiation_audit: {
+        Row: {
+          action: string
+          actor_role: string | null
+          actor_user_id: string | null
+          created_at: string
+          details: Json
+          id: string
+          negotiation_id: string
+          on_behalf_of_company_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_role?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          negotiation_id: string
+          on_behalf_of_company_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_role?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          details?: Json
+          id?: string
+          negotiation_id?: string
+          on_behalf_of_company_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "negotiation_audit_negotiation_id_fkey"
+            columns: ["negotiation_id"]
+            isOneToOne: false
+            referencedRelation: "negotiations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "negotiation_audit_on_behalf_of_company_id_fkey"
+            columns: ["on_behalf_of_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       negotiation_messages: {
         Row: {
@@ -7214,6 +7328,10 @@ export type Database = {
         Returns: Json
       }
       auto_route_request: { Args: { p_request_id: string }; Returns: Json }
+      can_act_on_company: {
+        Args: { target_company_id: string }
+        Returns: boolean
+      }
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       claim_pending_invites: {
         Args: never
