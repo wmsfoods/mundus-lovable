@@ -111,10 +111,11 @@ export default function SupplierNegotiationDetail() {
   }
 
   const d: NegotiationDetail = data;
-  const gapAbs = d.yourCounterUsd - d.latestBidUsd;
-  const gapPct = (gapAbs / d.latestBidUsd) * 100;
+  const hasCounter = d.yourCounterUsd != null;
+  const gapAbs: number | null = hasCounter ? (d.yourCounterUsd as number) - d.latestBidUsd : null;
+  const gapPct: number | null = hasCounter && d.latestBidUsd ? ((gapAbs as number) / d.latestBidUsd) * 100 : null;
   // Knob position: map gap as % of asking range. Clamp 0-100.
-  const knobPct = Math.max(0, Math.min(100, 50 + gapPct * 10));
+  const knobPct = gapPct != null ? Math.max(0, Math.min(100, 50 + gapPct * 10)) : 50;
 
   const handleCounter = () => {
     if (isReal && rawNeg) {
@@ -340,7 +341,7 @@ export default function SupplierNegotiationDetail() {
             )}
             {d.status === "accepted" && (
               <div className="nd-banner success">
-                {t("supplier.negotiations.detail.banner.accepted", { price: fmtUsd(d.yourCounterUsd) })}
+                {t("supplier.negotiations.detail.banner.accepted", { price: d.yourCounterUsd != null ? fmtUsd(d.yourCounterUsd) : "—" })}
               </div>
             )}
             {d.status === "rejected" && (
@@ -369,7 +370,7 @@ export default function SupplierNegotiationDetail() {
               </div>
               <div className="nd-stat highlight nd-stat--full">
                 <span className="nd-stat-label">{t("supplier.negotiations.detail.stats.yourCounter")}</span>
-                <span className="nd-stat-value">{fmtUsd(d.yourCounterUsd)}</span>
+                <span className="nd-stat-value">{d.yourCounterUsd != null ? fmtUsd(d.yourCounterUsd) : "—"}</span>
               </div>
             </div>
 
@@ -377,8 +378,10 @@ export default function SupplierNegotiationDetail() {
               <>
                 <div className="nd-gap-row">
                   <span>{t("supplier.negotiations.detail.gap")}</span>
-                  <span className={`nd-gap-value ${gapAbs < 0 ? "negative" : ""}`}>
-                    {fmtSignedUsd(gapAbs)} ({gapPct >= 0 ? "+" : ""}{gapPct.toFixed(1)}%)
+                  <span className={`nd-gap-value ${gapAbs != null && gapAbs < 0 ? "negative" : ""}`}>
+                    {gapAbs != null && gapPct != null
+                      ? `${fmtSignedUsd(gapAbs)} (${gapPct >= 0 ? "+" : ""}${gapPct.toFixed(1)}%)`
+                      : "—"}
                   </span>
                 </div>
                 <div className="nd-gap-bar" style={{ ["--knob" as never]: `${knobPct}%` } as CSSProperties} />
