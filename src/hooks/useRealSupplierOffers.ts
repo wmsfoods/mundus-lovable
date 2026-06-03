@@ -11,141 +11,6 @@ const code = (n: string | null | undefined) => countryToCode(n);
 
 const MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
 
-const OFFER_SELECT = `
-          id, offer_number, status, origin_country, origin_port, view_count,
-          shipment_month, shipment_year, payment_terms, container_size,
-          total_fcl, created_at, office_id, exw_pickup_location,
-          items:offer_items ( id, amount, price, condition, packaging,
-            customer_product:customer_products ( id, name ) ),
-          markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
-          incoterms:offer_allowed_incoterms ( incoterm_type ),
-          negotiations ( id )
-        `;
-
-export function mapOfferRowToSupplierOffer(
-  o: any,
-  floorMap: Map<string, number> = new Map(),
-): SupplierOffer {
-  const items = (o.items ?? []) as Array<any>;
-  const dests = ((o.markets ?? []) as any[])
-    .map((m) => m?.market?.country?.english_name)
-    .filter(Boolean)
-    .map((n: string) => ({ name: n, code: code(n) }));
-  const incoterms = ((o.incoterms ?? []) as any[]).map((i) => i.incoterm_type);
-  const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
-  const askingPrice = items.reduce((s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0), 0);
-  const floorPrice = items.reduce((s, it) => s + Number(floorMap.get(it.id) ?? it.price ?? 0) * Number(it.amount ?? 0), 0);
-  const fclCount = Number(o.total_fcl ?? 1) || 1;
-  const pricePerFclUsd = askingPrice;
-  const firstName = items[0]?.customer_product?.name ?? null;
-  const formattedNumber = formatOfferNumber(o.offer_number, o.created_at);
-  const title =
-    items.length === 0 ? formattedNumber :
-    items.length === 1 ? (firstName ?? formattedNumber) :
-    `Mixed Container — ${items.length} cuts`;
-  const cutsLabel = items.map((it) => it.customer_product?.name).filter(Boolean).join(", ") || "—";
-  const condition = (items[0]?.condition === "Chilled" ? "Chilled" : "Frozen") as SupplierOffer["condition"];
-  const m = Math.min(12, Math.max(1, Number(o.shipment_month ?? 1)));
-  const shipmentLabel = `${MONTH[m - 1]} ${o.shipment_year ?? new Date().getFullYear()}`;
-  const status: SupplierOffer["status"] =
-    o.status === "active" ? "active" :
-    o.status === "draft" ? "new" :
-    o.status === "sold_out" ? "sold_out" :
-    o.status === "negotiating" ? "negotiating" :
-    o.status === "archived" ? "closed" : "inactive";
-  return {
-    id: o.id,
-    status,
-    createdAt: o.created_at,
-    offerNumber: o.offer_number,
-    category: "Beef",
-    condition,
-    title,
-    mixed: items.length > 1,
-    cutsLabel,
-    originCountry: o.origin_country ?? "",
-    originCountryCode: code(o.origin_country),
-    originPort: o.origin_port ?? "",
-    destinations: dests,
-    incoterms,
-    shipmentLabel,
-    totalKg,
-    containerSize: o.container_size ?? "40ft",
-    fclCount,
-    pricePerFclUsd,
-    askingPrice,
-    floorPrice,
-    paymentTerms: o.payment_terms ?? "",
-    observation: null,
-    exwPickupLocation: o.exw_pickup_location ?? null,
-    items: items.map((it) => ({
-      name: it.customer_product?.name ?? "Item",
-      marbling: "\n",
-      packaging: it.packaging ?? null,
-      qtyKg: Number(it.amount ?? 0),
-      pricePerKgUsd: Number(it.price ?? 0),
-    })),
-    active: o.status === "active",
-    viewCount: Number(o.view_count ?? 0),
-    proposalCount: Array.isArray(o.negotiations) ? o.negotiations.length : 0,
-  };
-}
-
-/**
- * Fetch a single offer by id, bypassing supplier scope. Used by admin
- * context (e.g. /admin/offers/:id) so admins can open offers belonging
- * to any supplier. RLS still controls access (admin role bypasses).
- */
-export function useSupplierOfferById(id: string | undefined | null) {
-  const [offer, setOffer] = useState<SupplierOffer | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [tick, setTick] = useState(0);
-  useRealtimeRefresh({ table: "offers", onRefresh: () => setTick((n) => n + 1), enabled: !!id });
-
-  useEffect(() => {
-    if (!id) {
-      setOffer(null);
-      setLoading(false);
-      return;
-    }
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    (async () => {
-      const { data, error: err } = await supabase
-        .from("offers")
-        .select(OFFER_SELECT)
-        .eq("id", id)
-        .is("deleted_at", null)
-        .maybeSingle();
-      if (cancelled) return;
-      if (err) {
-        setError(err.message);
-        setOffer(null);
-        setLoading(false);
-        return;
-      }
-      if (!data) {
-        setOffer(null);
-        setLoading(false);
-        return;
-      }
-      const { data: floors } = await supabase.rpc("get_offer_floors", { _offer_ids: [id] });
-      const floorMap = new Map<string, number>();
-      for (const f of (floors ?? []) as Array<{ offer_item_id: string; minimum_price: number | null }>) {
-        if (f.minimum_price != null) floorMap.set(f.offer_item_id, Number(f.minimum_price));
-      }
-      if (cancelled) return;
-      setOffer(mapOfferRowToSupplierOffer(data as any, floorMap));
-      setLoading(false);
-    })();
-    return () => { cancelled = true; };
-  }, [id, tick]);
-
-  return { offer, loading, error };
-}
-
 export function useRealSupplierOffers() {
   const [offers, setOffers] = useState<SupplierOffer[]>([]);
   const [loading, setLoading] = useState(true);
@@ -178,7 +43,16 @@ export function useRealSupplierOffers() {
       setError(null);
       const query = supabase
         .from("offers")
-        .select(OFFER_SELECT)
+        .select(`
+          id, offer_number, status, origin_country, origin_port, view_count,
+          shipment_month, shipment_year, payment_terms, container_size,
+          total_fcl, created_at, office_id, exw_pickup_location,
+          items:offer_items ( id, amount, price, minimum_price, condition, packaging,
+            customer_product:customer_products ( id, name ) ),
+          markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
+          incoterms:offer_allowed_incoterms ( incoterm_type ),
+          negotiations ( id )
+        `)
         .in("supplier_id", scopeIds)
         .is("deleted_at", null)
         .order("created_at", { ascending: false });
@@ -193,18 +67,74 @@ export function useRealSupplierOffers() {
         setLoading(false);
         return;
       }
-      // Floors live behind a security-definer RPC (buyers can't read them).
-      const offerIds = (data ?? []).map((o: any) => o.id);
-      const floorMap = new Map<string, number>();
-      if (offerIds.length > 0) {
-        const { data: floors } = await supabase.rpc("get_offer_floors", { _offer_ids: offerIds });
-        for (const f of (floors ?? []) as Array<{ offer_item_id: string; minimum_price: number | null }>) {
-          if (f.minimum_price != null) floorMap.set(f.offer_item_id, Number(f.minimum_price));
-        }
-      }
-      const mapped: SupplierOffer[] = (data ?? []).map((o: any) =>
-        mapOfferRowToSupplierOffer(o, floorMap),
-      );
+      const mapped: SupplierOffer[] = (data ?? []).map((o: any) => {
+        const items = (o.items ?? []) as Array<any>;
+        const dests = ((o.markets ?? []) as any[])
+          .map((m) => m?.market?.country?.english_name)
+          .filter(Boolean)
+          .map((n: string) => ({ name: n, code: code(n) }));
+        const incoterms = ((o.incoterms ?? []) as any[]).map((i) => i.incoterm_type);
+        const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
+        const askingPrice = items.reduce((s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0), 0);
+        const floorPrice = items.reduce((s, it) => s + Number(it.minimum_price ?? it.price ?? 0) * Number(it.amount ?? 0), 0);
+        const fclCount = Number(o.total_fcl ?? 1) || 1;
+        // `askingPrice` is already the value of ONE container (mix qty × price).
+        // total_fcl is the number of identical containers available — it must
+        // NOT divide the per-FCL value.
+        const pricePerFclUsd = askingPrice;
+        const firstName = items[0]?.customer_product?.name ?? null;
+        const formattedNumber = formatOfferNumber(o.offer_number, o.created_at);
+        const title =
+          items.length === 0 ? formattedNumber :
+          items.length === 1 ? (firstName ?? formattedNumber) :
+          `Mixed Container — ${items.length} cuts`;
+        const cutsLabel = items.map((it) => it.customer_product?.name).filter(Boolean).join(", ") || "—";
+        const condition = (items[0]?.condition === "Chilled" ? "Chilled" : "Frozen") as SupplierOffer["condition"];
+        const m = Math.min(12, Math.max(1, Number(o.shipment_month ?? 1)));
+        const shipmentLabel = `${MONTH[m - 1]} ${o.shipment_year ?? new Date().getFullYear()}`;
+        const status: SupplierOffer["status"] =
+          o.status === "active" ? "active" :
+          o.status === "draft" ? "new" :
+          o.status === "sold_out" ? "sold_out" :
+        o.status === "negotiating" ? "negotiating" :
+          o.status === "archived" ? "closed" : "inactive";
+        return {
+          id: o.id,
+          status,
+        createdAt: o.created_at,
+          offerNumber: o.offer_number,
+          category: "Beef",
+          condition,
+          title,
+          mixed: items.length > 1,
+          cutsLabel,
+          originCountry: o.origin_country ?? "",
+          originCountryCode: code(o.origin_country),
+          originPort: o.origin_port ?? "",
+          destinations: dests,
+          incoterms,
+          shipmentLabel,
+          totalKg,
+          containerSize: o.container_size ?? "40ft",
+          fclCount,
+          pricePerFclUsd,
+          askingPrice,
+          floorPrice,
+          paymentTerms: o.payment_terms ?? "",
+          observation: null,
+          exwPickupLocation: o.exw_pickup_location ?? null,
+          items: items.map((it) => ({
+            name: it.customer_product?.name ?? "Item",
+            marbling: "\n",
+            packaging: it.packaging ?? null,
+            qtyKg: Number(it.amount ?? 0),
+            pricePerKgUsd: Number(it.price ?? 0),
+          })),
+          active: o.status === "active",
+          viewCount: Number(o.view_count ?? 0),
+          proposalCount: Array.isArray(o.negotiations) ? o.negotiations.length : 0,
+        };
+      });
       setOffers(mapped);
       setLoading(false);
     })();

@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { Link, useLocation, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { countryFlag } from "@/lib/countryFlags";
@@ -67,9 +67,6 @@ function fmtDateShort(iso: string, locale: string) {
 
 export default function SupplierNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
-  const location = useLocation();
-  const isAdminCtx = location.pathname.startsWith("/admin/");
-  const negotiationsBasePath = isAdminCtx ? "/admin/negotiations" : "/supplier/negotiations";
   const { t, i18n } = useTranslation();
   const { unit } = useWeightUnit();
   const [activeId, setActiveId] = useState<string>(id);
@@ -102,7 +99,7 @@ export default function SupplierNegotiationDetail() {
   if (!data) {
     return (
       <>
-        <Link to={negotiationsBasePath} className="nd-back">
+        <Link to="/supplier/negotiations" className="nd-back">
           <ArrowLeftIcon size={16} />
           {t("supplier.negotiations.detail.back")}
         </Link>
@@ -156,8 +153,7 @@ export default function SupplierNegotiationDetail() {
     return map;
   })();
 
-  const showActions =
-    !isAdminCtx && (d.status === "action_required" || d.status === "final_round");
+  const showActions = d.status === "action_required" || d.status === "final_round";
   // Engine state (real negotiations only)
   const realDisplayRound = rawNeg ? getDisplayRound(getMaxRaw(rawNeg)) : 0;
   const realIsFinal = !!rawNeg && isFinalDisplayRound(realDisplayRound);
@@ -185,7 +181,7 @@ export default function SupplierNegotiationDetail() {
 
   return (
     <>
-      <Link to={negotiationsBasePath} className="nd-back">
+      <Link to="/supplier/negotiations" className="nd-back">
         <ArrowLeftIcon size={16} />
         {t("supplier.negotiations.detail.back")}
       </Link>
@@ -207,26 +203,6 @@ export default function SupplierNegotiationDetail() {
           ) : d.expiresIn ? (
             <span className="nd-timer">⏱ {d.expiresIn}</span>
           ) : null}
-          {isReal && (rawNeg as any)?.negotiation_mode === "auto" && (
-            <span
-              className="pill"
-              title="Counters are generated automatically (supervised — humans still confirm)."
-              style={{
-                background: "rgba(182,71,105,0.10)",
-                color: "#B64769",
-                border: "1px solid rgba(182,71,105,0.35)",
-                padding: "4px 10px",
-                borderRadius: 999,
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              🤖 Automatic · {(() => {
-                const d = (rawNeg as any)?.negotiation_dial ?? "balanced";
-                return d === "protect_margin" ? "Protect margin" : d === "win_deal" ? "Win the deal" : "Balanced";
-              })()}
-            </span>
-          )}
           {d.status === "action_required" && (
             <span className="pill pill-action-required">
               {t("supplier.negotiations.detail.banner.actionRequired")}

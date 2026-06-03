@@ -211,26 +211,6 @@ export default function BuyerNegotiationDetail() {
           ) : d.expiresIn ? (
             <span className="nd-timer">⏱ {d.expiresIn}</span>
           ) : null}
-          {isReal && (rawNeg as any)?.negotiation_mode === "auto" && (
-            <span
-              className="pill"
-              title="Counters are generated automatically (supervised — humans still confirm)."
-              style={{
-                background: "rgba(182,71,105,0.10)",
-                color: "#B64769",
-                border: "1px solid rgba(182,71,105,0.35)",
-                padding: "4px 10px",
-                borderRadius: 999,
-                fontSize: 12,
-                fontWeight: 600,
-              }}
-            >
-              🤖 Automatic · {(() => {
-                const d = (rawNeg as any)?.negotiation_dial ?? "balanced";
-                return d === "protect_margin" ? "Protect margin" : d === "win_deal" ? "Win the deal" : "Balanced";
-              })()}
-            </span>
-          )}
           {d.status === "action_required" && (
             <span className="pill pill-action-required">
               {t("buyer.negotiations.detail.banner.actionRequired")}

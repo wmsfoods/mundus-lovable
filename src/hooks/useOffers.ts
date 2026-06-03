@@ -6,6 +6,7 @@ export type OfferItem = {
   id: string;
   amount: number;
   price: number;
+  minimum_price: number;
   condition: string;
   customer_product: {
     id: string;
@@ -101,6 +102,7 @@ export function useOffers(): UseOffersResult {
             id,
             amount,
             price,
+            minimum_price,
             condition,
             customer_product:customer_products (
               id,

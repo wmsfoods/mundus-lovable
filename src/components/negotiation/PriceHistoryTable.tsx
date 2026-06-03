@@ -2,7 +2,7 @@ import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
 import { FileText } from "lucide-react";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPriceNego, weightLabel, LB_PER_KG } from "@/lib/units";
+import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 
 export type PriceHistoryProduct = {
   name: string;
@@ -169,14 +169,14 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                       >
                         {t("negotiation.agreedBadge", {
                           defaultValue: "Agreed at ${{price}}/{{unit}}",
-                          price: fmtPriceNego(agreed.price, unit),
+                          price: fmtPrice(agreed.price, unit),
                           unit: weightLabel(unit),
                         })}
                       </span>
                     )}
                   </td>
                   <td className="num">{fmtWeight(qtyKg, unit)}</td>
-                  <td className="num">${fmtPriceNego(p.askingUsdKg, unit)}</td>
+                  <td className="num">${fmtPrice(p.askingUsdKg, unit)}</td>
                   {Array.from({ length: maxRoundShown }, (_, i) => {
                     const round = i + 1;
                     const bidV = getKg(p, "bid", round);
@@ -186,7 +186,7 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                     return (
                       <Fragment key={`v-${i}`}>
                         <td className="col-bid num">
-                          {bidV != null ? `$${fmtPriceNego(bidV, unit)}` : "—"}
+                          {bidV != null ? `$${fmtPrice(bidV, unit)}` : "—"}
                         </td>
                         <td
                           className={`col-counter num${
@@ -199,9 +199,9 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                           }
                         >
                           {showAgreedInLast ? (
-                            `$${fmtPriceNego(agreed!.price, unit)} 🔒`
+                            `$${fmtPrice(agreed!.price, unit)} 🔒`
                           ) : cntV != null ? (
-                            <span className="counter-pill">${fmtPriceNego(cntV, unit)}</span>
+                            <span className="counter-pill">${fmtPrice(cntV, unit)}</span>
                           ) : (
                             "—"
                           )}

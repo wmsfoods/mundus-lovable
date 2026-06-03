@@ -72,7 +72,7 @@ export default function SupplierRespond() {
             id, offer_number, supplier_id, supplier_name, origin_country, origin_port,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
             items:offer_items (
-              id, amount, price,
+              id, amount, price, minimum_price,
               customer_product:customer_products ( id, name )
             )
           ),

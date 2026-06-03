@@ -4675,8 +4675,6 @@ export type Database = {
           insurance_per_kg: number | null
           locked_until: string | null
           max_rounds: number | null
-          negotiation_dial: string
-          negotiation_mode: string
           negotiation_type: string | null
           offer_id: string
           office_id: string | null
@@ -4714,8 +4712,6 @@ export type Database = {
           insurance_per_kg?: number | null
           locked_until?: string | null
           max_rounds?: number | null
-          negotiation_dial?: string
-          negotiation_mode?: string
           negotiation_type?: string | null
           offer_id: string
           office_id?: string | null
@@ -4753,8 +4749,6 @@ export type Database = {
           insurance_per_kg?: number | null
           locked_until?: string | null
           max_rounds?: number | null
-          negotiation_dial?: string
-          negotiation_mode?: string
           negotiation_type?: string | null
           offer_id?: string
           office_id?: string | null
@@ -5228,8 +5222,6 @@ export type Database = {
           id: string
           is_halal: boolean | null
           is_kosher: boolean | null
-          negotiation_dial: string
-          negotiation_mode: string
           observation: string | null
           offer_number: number
           office_id: string | null
@@ -5261,8 +5253,6 @@ export type Database = {
           id?: string
           is_halal?: boolean | null
           is_kosher?: boolean | null
-          negotiation_dial?: string
-          negotiation_mode?: string
           observation?: string | null
           offer_number?: number
           office_id?: string | null
@@ -5294,8 +5284,6 @@ export type Database = {
           id?: string
           is_halal?: boolean | null
           is_kosher?: boolean | null
-          negotiation_dial?: string
-          negotiation_mode?: string
           observation?: string | null
           offer_number?: number
           office_id?: string | null
@@ -7290,16 +7278,6 @@ export type Database = {
         Returns: {
           email: string
           full_name: string
-        }[]
-      }
-      get_offer_floors: {
-        Args: { _offer_ids: string[] }
-        Returns: {
-          maximum_amount: number
-          minimum_amount: number
-          minimum_price: number
-          offer_id: string
-          offer_item_id: string
         }[]
       }
       get_public_offers: { Args: never; Returns: Json }

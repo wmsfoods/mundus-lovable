@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -9,7 +9,7 @@ import {
   ChevronDownIcon,
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
-import { useRealSupplierOffers, useSupplierOfferById } from "@/hooks/useRealSupplierOffers";
+import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useOfferImages } from "@/hooks/useOfferImages";
@@ -32,12 +32,6 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { type WeightUnit } from "@/lib/units";
-import {
-  NegotiationHandlingControl,
-  type NegotiationMode,
-  type NegotiationDial,
-} from "@/components/offer/NegotiationHandlingControl";
-import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -47,10 +41,6 @@ const MONTH_NAMES = [
 export default function SupplierOfferDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
-  const isAdminCtx = location.pathname.startsWith("/admin/");
-  const offersBasePath = isAdminCtx ? "/admin/offers" : "/supplier/offers";
-  const homeBasePath = isAdminCtx ? "/admin" : "/supplier";
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [active, setActive] = useState<boolean | null>(null);
@@ -58,49 +48,6 @@ export default function SupplierOfferDetail() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
-  const [negMode, setNegMode] = useState<NegotiationMode>("manual");
-  const [negDial, setNegDial] = useState<NegotiationDial>("balanced");
-  const [negSaving, setNegSaving] = useState(false);
-
-  useEffect(() => {
-    if (!id) return;
-    let cancelled = false;
-    (async () => {
-      const { data } = await supabase
-        .from("offers")
-        .select("negotiation_mode, negotiation_dial")
-        .eq("id", id)
-        .maybeSingle();
-      if (cancelled || !data) return;
-      const m = (data as any).negotiation_mode;
-      const d = (data as any).negotiation_dial;
-      if (m === "manual" || m === "auto") setNegMode(m);
-      if (d === "protect_margin" || d === "balanced" || d === "win_deal") setNegDial(d);
-    })();
-    return () => { cancelled = true; };
-  }, [id]);
-
-  async function persistNegHandling(mode: NegotiationMode, dial: NegotiationDial) {
-    if (!id || negSaving) return;
-    const prevMode = negMode;
-    const prevDial = negDial;
-    setNegMode(mode); setNegDial(dial); setNegSaving(true);
-    const { error } = await supabase
-      .from("offers")
-      .update({ negotiation_mode: mode, negotiation_dial: dial })
-      .eq("id", id);
-    setNegSaving(false);
-    if (error) {
-      setNegMode(prevMode); setNegDial(prevDial);
-      toast.error(error.message);
-      return;
-    }
-    toast.success(
-      mode === "auto"
-        ? `Automatic negotiation enabled (${dial.replace("_", " ")}).`
-        : "Switched to manual negotiation."
-    );
-  }
   const [negotiations, setNegotiations] = useState<Array<{
     id: string;
     status: string;
@@ -128,25 +75,16 @@ export default function SupplierOfferDetail() {
     return () => { cancelled = true; };
   }, [id]);
 
-  // Supplier listing is scoped to the current supplier's company. In admin
-  // context that scope filters everything out, so fall back to a direct
-  // by-id fetch (RLS lets admins read every offer).
   const { offers: realOffers, loading: offersLoading } = useRealSupplierOffers();
-  const scopedOffer = useMemo(
+  const offer: SupplierOffer | undefined = useMemo(
     () => realOffers.find((o) => o.id === id),
-    [id, realOffers],
+    [id, realOffers]
   );
-  const needsAdminFetch = isAdminCtx || (!offersLoading && !scopedOffer);
-  const { offer: adminOffer, loading: adminOfferLoading } = useSupplierOfferById(
-    needsAdminFetch ? id : null,
-  );
-  const offer: SupplierOffer | undefined = scopedOffer ?? adminOffer ?? undefined;
-  const anyLoading = offersLoading || (needsAdminFetch && adminOfferLoading);
 
   const galleryImages = useOfferImages(offer?.items ?? []);
   const destinationPorts = useOfferDestinationPorts(id);
 
-  if (anyLoading && !offer) {
+  if (offersLoading && !offer) {
     return <div className="empty-state"><p>{t("supplier.offers.loading", "Loading…")}</p></div>;
   }
 
@@ -154,11 +92,11 @@ export default function SupplierOfferDetail() {
     return (
       <>
         <div className="crumbs">
-          <a onClick={(e) => { e.preventDefault(); navigate(homeBasePath); }} href={homeBasePath}>
+          <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
             {t("supplier.offers.crumbHome")}
           </a>
           <span className="sep">›</span>
-          <a onClick={(e) => { e.preventDefault(); navigate(offersBasePath); }} href={offersBasePath}>
+          <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
             {t("supplier.offers.title")}
           </a>
           <span className="sep">›</span>
@@ -166,7 +104,7 @@ export default function SupplierOfferDetail() {
         </div>
         <div className="empty-state">
           <p>{t("supplier.offers.detail.notFoundBody")}</p>
-          <button className="btn-back" onClick={() => navigate(offersBasePath)}>
+          <button className="btn-back" onClick={() => navigate("/supplier/offers")}>
             <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
           </button>
         </div>
@@ -303,7 +241,7 @@ export default function SupplierOfferDetail() {
           id, container_size, total_fcl, payment_terms, origin_port_id,
           is_halal, is_kosher, cut_region, exw_pickup_location,
           items:offer_items (
-            id, amount, price, condition, aging_method,
+            amount, price, minimum_price, condition, aging_method,
             customer_product:customer_products (
               name,
               standard_product:standard_products ( product_number )
@@ -315,12 +253,6 @@ export default function SupplierOfferDetail() {
         .eq("id", offer.id)
         .maybeSingle();
       if (error || !row) throw error ?? new Error("Offer not found");
-      // Fetch floors via the security-definer accessor (supplier-only).
-      const { data: floors } = await supabase.rpc("get_offer_floors", { _offer_ids: [offer.id] });
-      const floorMap = new Map<string, number>();
-      for (const f of (floors ?? []) as Array<{ offer_item_id: string; minimum_price: number | null }>) {
-        if (f.minimum_price != null) floorMap.set(f.offer_item_id, Number(f.minimum_price));
-      }
       const editOffer = {
         offerId: offer.id,
         offerNumber: offer.offerNumber,
@@ -343,7 +275,7 @@ export default function SupplierOfferDetail() {
           productNumber: it.customer_product?.standard_product?.product_number ?? null,
           amount: Number(it.amount ?? 0),
           price: Number(it.price ?? 0),
-          minimumPrice: Number(floorMap.get(it.id) ?? it.price ?? 0),
+          minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
           condition: it.condition ?? offer.condition,
           agingMethod: it.aging_method ?? null,
         })),
@@ -364,7 +296,7 @@ export default function SupplierOfferDetail() {
           id, container_size, total_fcl, payment_terms, origin_port_id,
           is_halal, is_kosher, cut_region, exw_pickup_location,
           items:offer_items (
-            id, amount, price, condition, aging_method,
+            amount, price, minimum_price, condition, aging_method,
             customer_product:customer_products (
               name,
               standard_product:standard_products ( product_number )
@@ -376,11 +308,6 @@ export default function SupplierOfferDetail() {
         .eq("id", offer.id)
         .maybeSingle();
       if (error || !row) throw error ?? new Error("Offer not found");
-      const { data: floors } = await supabase.rpc("get_offer_floors", { _offer_ids: [offer.id] });
-      const floorMap = new Map<string, number>();
-      for (const f of (floors ?? []) as Array<{ offer_item_id: string; minimum_price: number | null }>) {
-        if (f.minimum_price != null) floorMap.set(f.offer_item_id, Number(f.minimum_price));
-      }
       const cloneFrom = {
         category: offer.category,
         condition: offer.condition,
@@ -401,7 +328,7 @@ export default function SupplierOfferDetail() {
           productNumber: it.customer_product?.standard_product?.product_number ?? null,
           amount: Number(it.amount ?? 0),
           price: Number(it.price ?? 0),
-          minimumPrice: Number(floorMap.get(it.id) ?? it.price ?? 0),
+          minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
           condition: it.condition ?? offer.condition,
           agingMethod: it.aging_method ?? null,
         })),
@@ -436,26 +363,6 @@ export default function SupplierOfferDetail() {
       >
         <ShareIcon size={14} /> {t("supplier.offers.detail.share")}
       </button>
-      <Popover>
-        <PopoverTrigger asChild>
-          <button type="button" className="btn-tb" title="Negotiation handling">
-            {negMode === "auto" ? "🤖" : "✋"}{" "}
-            {negMode === "auto" ? `Auto · ${negDial === "protect_margin" ? "Protect" : negDial === "win_deal" ? "Win" : "Balanced"}` : "Manual"}
-          </button>
-        </PopoverTrigger>
-        <PopoverContent align="end" className="w-[320px] p-3">
-          <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 8 }}>
-            Switch how this offer answers new buyer bids. Flipping back to Manual stops auto-responses on new bids.
-          </div>
-          <NegotiationHandlingControl
-            mode={negMode}
-            dial={negDial}
-            onChange={(next) => persistNegHandling(next.mode, next.dial)}
-            variant="section"
-            disabled={negSaving}
-          />
-        </PopoverContent>
-      </Popover>
     </>
   );
 
@@ -488,12 +395,11 @@ export default function SupplierOfferDetail() {
             const s = statusMap[n.status] ?? { label: n.status.replace(/_/g, " "), bg: "#fef3c7", fg: "#92400e" };
             const buyerName = n.buyer?.name?.trim() || `Buyer #${n.buyer_company_id.slice(0, 8)}`;
             const flag = countryFlag(n.buyer?.country);
-            const negBasePath = isAdminCtx ? "/admin/negotiations" : "/supplier/negotiations";
             return (
               <a
                 key={n.id}
-                href={`${negBasePath}/${n.id}`}
-                onClick={(e) => { e.preventDefault(); navigate(`${negBasePath}/${n.id}`); }}
+                href={`/supplier/negotiations/${n.id}`}
+                onClick={(e) => { e.preventDefault(); navigate(`/supplier/negotiations/${n.id}`); }}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -542,17 +448,17 @@ export default function SupplierOfferDetail() {
       <button
         type="button"
         className="btn-back"
-        onClick={() => navigate(offersBasePath)}
+        onClick={() => navigate("/supplier/offers")}
         style={{ marginBottom: 12 }}
       >
         <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
       </button>
       <div className="crumbs">
-        <a onClick={(e) => { e.preventDefault(); navigate(homeBasePath); }} href={homeBasePath}>
+        <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
           {t("supplier.offers.crumbHome")}
         </a>
         <span className="sep">›</span>
-        <a onClick={(e) => { e.preventDefault(); navigate(offersBasePath); }} href={offersBasePath}>
+        <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
           {t("supplier.offers.title")}
         </a>
         <span className="sep">›</span>
@@ -609,10 +515,8 @@ export default function SupplierOfferDetail() {
           flexWrap: "wrap",
         }}
       >
-        <div>{isAdminCtx ? null : supplierToggle}</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-          {isAdminCtx ? null : supplierActions}
-        </div>
+        <div>{supplierToggle}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{supplierActions}</div>
       </div>
 
       <SupplierOfferBuyerStyleBody

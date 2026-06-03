@@ -28,8 +28,6 @@ export type RealNegotiationRow = {
   chat_enabled: boolean | null;
   order_id: string | null;
   origin?: string | null;
-  negotiation_mode?: string | null;
-  negotiation_dial?: string | null;
   order: { id: string; order_number: number | null } | null;
   buyer: { id: string; name: string | null } | null;
   offer: {
@@ -51,6 +49,7 @@ export type RealNegotiationRow = {
       id: string;
       amount: number;
       price: number;
+      minimum_price: number | null;
       plant_number: string | null;
       customer_product: { id: string; name: string } | null;
     }[];
@@ -69,12 +68,6 @@ export type RealNegotiationRow = {
       offer_item_id: string;
       price_per_kg: number;
       quantity_kg: number;
-      counter_proposals?: {
-        id: string;
-        price_per_kg: number;
-        rule: string | null;
-        is_final: boolean | null;
-      }[] | null;
     }[];
   }[];
 };
@@ -123,14 +116,14 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           agreed_items, settled_total_value, buyer_message, supplier_message,
           accepted_by, accepted_by_user_id, accepted_at, accepted_total_value,
           rejection_cooldown_until, current_round, chat_enabled,
-          order_id, origin, negotiation_mode, negotiation_dial,
+          order_id, origin,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
           buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
           offer:offers (
             id, offer_number, created_at, supplier_id, supplier_name, status, origin_country, origin_port, allow_quantity_negotiation,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
             items:offer_items (
-              id, amount, price, plant_number,
+              id, amount, price, minimum_price, plant_number,
               customer_product:customer_products ( id, name )
             ),
             offer_markets ( market:markets ( id, country:countries ( english_name, iso_code ) ) )
@@ -138,10 +131,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           port:ports ( id, name, country:countries ( english_name, iso_code ) ),
           rounds:round_proposals!round_proposals_negotiation_id_fkey (
             id, round, created_at, created_by_user_id,
-            cut_rounds (
-              id, offer_item_id, price_per_kg, quantity_kg,
-              counter_proposals ( id, price_per_kg, rule, is_final )
-            )
+            cut_rounds ( id, offer_item_id, price_per_kg, quantity_kg )
           )
           `,
         )

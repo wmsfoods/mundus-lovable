@@ -1,31 +1,55 @@
-## Problema
+## Goal
+Aprimorar os filtros da aba **Users** em `/admin/companies?tab=users` para nível enterprise: multi-seleção em todos os filtros, busca tipada no select de empresas, e bandeiras + multi-seleção nos países.
 
-Em `/admin/offers/:id` e `/admin/negotiations/:id` o admin é levado pra `SupplierOfferDetail` / `SupplierNegotiationDetail`. Essas páginas usam hooks (`useRealSupplierOffers`, `useNegotiation`/`useRealNegotiation` + `useCurrentCompany`/`useSupplierScope`) que filtram por `supplier_id IN (scopeIds)` da empresa logada (Mundus Trade LLC). Quando o registro pertence a outra empresa (ex.: Meat USA Company), a query volta vazia e a tela mostra **"This offer doesn't exist or has been removed"** / **"Offer not found"**. Mesmo padrão acontece ao clicar uma linha em **Admin → Negotiations** (rota `/admin/negotiations/:id`).
+## Mudanças
 
-Causa raiz: as páginas `SupplierOfferDetail` e `SupplierNegotiationDetail` foram reaproveitadas no shell admin (App.tsx linhas 284 e 288), mas seus hooks de dados não têm um caminho "admin" que bypassa o scope por supplier.
+### 1. Filtro **Company** — combobox com busca
+- Substituir o `<select>` por um popover com:
+  - Input de busca (debounce 150ms) filtrando por nome da empresa
+  - Lista virtualizada simples com checkbox por empresa
+  - Mostra logo/bandeira do país + nome
+  - Chips das empresas selecionadas no topo do popover (removíveis)
+  - Label do botão: "All companies" / "Acme Foods" / "3 companies"
+- Estado passa de `companyF: string` para `companyF: string[]`
 
-## O que vai mudar
+### 2. Filtro **Country** — multi-select com bandeiras
+- Reutilizar o componente existente `CountryMultiFilter` (`src/components/admin/CountryMultiFilter.tsx`) que já tem busca, bandeiras e multi-seleção
+- Passar `available` = Set dos países que aparecem nas linhas atuais
+- Estado passa de `countryF: string` para `countryF: string[]`
 
-1. **Detectar contexto admin** nas duas páginas via `useLocation()` (path começa com `/admin/`) + verificação de role admin já existente (`useIsMundusAdmin` ou equivalente — já usado em `RequireAdmin`).
+### 3. Demais filtros — multi-seleção
+Converter para multi-select (mesmo padrão de popover com checkboxes, mais leve sem busca):
+- **Type**: Buyer / Supplier / Both (array)
+- **Status**: Active / Invited / Inactive (array)
+- **Role**: lista dinâmica de roles existentes (array)
 
-2. **`useRealSupplierOffers` (hook do listing)** — não muda; o detail page faz fetch próprio.
+Quando vazio = "All …". Quando 1 = mostra o valor. Quando 2+ = "N selected".
 
-3. **`SupplierOfferDetail` (`src/pages/supplier/OfferDetail.tsx`)**
-   - Substituir o `offers.find(o => o.id === id)` do listing do supplier (que depende do scope) por um fetch direto pelo id quando em modo admin. Em modo supplier mantém comportamento atual.
-   - O `back` link e botões devem voltar pra `/admin/offers` quando admin.
+### 4. Lógica de filtro
+Atualizar `filtered` em `CompanyUsersView.tsx`:
+- Cada filtro array vazio = sem restrição
+- Caso contrário: `arr.includes(row.value)`
+- Country: comparar com `row.company_country`
+- Company: `arr.includes(row.company_id)`
+- Type: derivar de `companyType(r)` e checar inclusão
 
-4. **`SupplierNegotiationDetail` (`src/pages/supplier/SupplierNegotiationDetail.tsx`)**
-   - `useNegotiation(id)` / `useRealNegotiation(id)` — verificar se já são por-id puro (provavelmente são, mas o select interno pode ter join scoped). Se houver filtro implícito por company, adicionar branch admin que busca direto por id (admin tem RLS pra ler todas negotiations — confirmar nas policies de `negotiations`).
-   - Back link → `/admin/negotiations` quando admin.
-   - Botões de ação supplier-only (Counter, Accept, Reject) ficam **read-only / ocultos** em modo admin (admin não atua como supplier).
+### 5. Chips de filtros ativos
+- Atualizar a barra de chips para refletir multi-seleção:
+  - "Type: Buyer, Supplier"
+  - "Companies: 3"
+  - "Countries: 🇧🇷 🇺🇸 +2"
+- Botão "Clear all" mantém comportamento
 
-5. **RLS check**: confirmar que admin role consegue `SELECT` em `offers`, `offer_items` (já garantido), `negotiations`, `round_proposals`, `counter_proposals`, `cut_rounds` independente do supplier. Se faltar, adicionar policy `has_role(auth.uid(), 'admin')` em cada tabela necessária.
+### 6. Mobile
+- Popovers permanecem usáveis em mobile (já testados no `CountryMultiFilter`)
+- Garantir `width: 100%` nos triggers dentro do `crm-toolbar` quando empilhado
 
-## Arquivos tocados
-- `src/pages/supplier/OfferDetail.tsx` — admin fetch branch, back link condicional, esconde ações supplier-only
-- `src/pages/supplier/SupplierNegotiationDetail.tsx` — admin back link, esconde ações; confirmar hooks
-- Possível migration nova adicionando policy admin nas tabelas de negociação se faltar
+## Arquivos a editar
+- `src/components/admin/companies/CompanyUsersView.tsx` — trocar selects por popovers multi-select, ajustar estado e lógica
+- `src/components/admin/MultiSelectPopover.tsx` *(novo)* — componente genérico reutilizável (trigger + popover + checkbox list + opcional search) para Type/Status/Role/Company
+- Reuso direto de `CountryMultiFilter` para países
 
 ## Fora de escopo
-- Refatorar `SupplierOfferDetail`/`SupplierNegotiationDetail` em componentes "neutros" reutilizáveis (manter mudança mínima)
-- Mudar a rota pra usar páginas admin separadas
+- Sem mudanças no hook `useAdminCompanyUsers` (já retorna `companies` e `company_country`)
+- Sem mudanças de banco
+- Sem alteração nos demais filtros do tab Companies

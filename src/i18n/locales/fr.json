@@ -3586,30 +3586,5 @@
         "body": "Commencez en publiant votre première offre."
       }
     }
-  },
-  "negotiationHandling": {
-    "title": "Gestion de la négociation",
-    "default": "par défaut",
-    "dialLabel": "Style de négociation",
-    "mode": {
-      "manual": "Manuel",
-      "auto": "Automatique",
-      "manualDesc": "Vous traitez chaque contre-offre manuellement.",
-      "autoDesc": "Nous négocions pour vous selon le style ci-dessous (supervisé)."
-    },
-    "dial": {
-      "protect_margin": {
-        "title": "Protéger la marge",
-        "desc": "Défend le prix au maximum — peut perdre des affaires."
-      },
-      "balanced": {
-        "title": "Équilibré",
-        "desc": "Un mélange entre tenir le prix et conclure l'affaire."
-      },
-      "win_deal": {
-        "title": "Conclure l'affaire",
-        "desc": "Priorise la conclusion — cède davantage sur le prix."
-      }
-    }
   }
 }

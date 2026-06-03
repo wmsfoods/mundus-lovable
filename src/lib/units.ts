@@ -49,17 +49,7 @@ export function fmtWeight(kg: number, unit: WeightUnit) {
   return v.toLocaleString(undefined, { maximumFractionDigits: 0 });
 }
 
-export function fmtPrice(pricePerKg: number, unit: WeightUnit, digits: number = 2) {
+export function fmtPrice(pricePerKg: number, unit: WeightUnit) {
   const v = toDisplay(pricePerKg, "price", unit);
-  return v.toFixed(digits);
+  return v.toFixed(2);
 }
-
-/**
- * Negotiation-context formatter: in $/lb we display 3 decimals so small
- * per-kg movements (the engine moves in $/kg) stay visible to both sides.
- * In $/kg keep the regular 2 decimals.
- */
-export function fmtPriceNego(pricePerKg: number, unit: WeightUnit) {
-  return fmtPrice(pricePerKg, unit, unit === "lbs" ? 3 : 2);
-}
-export const negoPriceDigits = (unit: WeightUnit) => (unit === "lbs" ? 3 : 2);
