@@ -274,11 +274,13 @@ export default function SupplierNegotiations() {
                 const rounds = new Set(bids.map((b) => b.round));
                 const sameRound = rounds.size === 1;
                 const bidVals = bids.map((b) => b.latestBidUsd);
-                const cntVals = bids.map((b) => b.yourCounterUsd);
+                const cntVals = bids
+                  .map((b) => b.yourCounterUsd)
+                  .filter((v): v is number => v != null);
                 const minBid = Math.min(...bidVals);
                 const maxBid = Math.max(...bidVals);
-                const minCnt = Math.min(...cntVals);
-                const maxCnt = Math.max(...cntVals);
+                const minCnt = cntVals.length ? Math.min(...cntVals) : null;
+                const maxCnt = cntVals.length ? Math.max(...cntVals) : null;
                 const countries = Array.from(new Set(bids.map((b) => b.buyerCountryCode)));
                 const actionCount = bids.filter((b) => b.status === "action_required").length;
                 const finalCount = bids.filter((b) => b.status === "final_round").length;
@@ -325,7 +327,11 @@ export default function SupplierNegotiations() {
                         {minBid === maxBid ? fmtUsd(minBid) : `${fmtUsd(minBid)} – ${fmtUsd(maxBid)}`}
                       </td>
                       <td>
-                        {minCnt === maxCnt ? fmtUsd(minCnt) : `${fmtUsd(minCnt)} – ${fmtUsd(maxCnt)}`}
+                        {minCnt == null || maxCnt == null
+                          ? t("supplier.negotiations.awaiting", { defaultValue: "Aguardando" })
+                          : minCnt === maxCnt
+                            ? fmtUsd(minCnt)
+                            : `${fmtUsd(minCnt)} – ${fmtUsd(maxCnt)}`}
                       </td>
                       <td>
                         <span className="nego-dest">
@@ -370,7 +376,11 @@ export default function SupplierNegotiations() {
                           <span className="nego-bid-amount">{fmtUsd(b.latestBidUsd)}</span>
                         </td>
                         <td data-label={t("supplier.negotiations.col.yourCounter")}>
-                          <span className="nego-counter-amount">{fmtUsd(b.yourCounterUsd)}</span>
+                          <span className="nego-counter-amount">
+                            {b.yourCounterUsd != null
+                              ? fmtUsd(b.yourCounterUsd)
+                              : t("supplier.negotiations.awaiting", { defaultValue: "Aguardando" })}
+                          </span>
                         </td>
                         <td data-label={t("supplier.negotiations.col.destination")}>
                           <span className="nego-dest">
@@ -492,7 +502,8 @@ function MobileNegoList({
               }
             >
               {g._bids.map((b) => {
-                const gap = b.yourCounterUsd - b.latestBidUsd;
+                const hasCnt = b.yourCounterUsd != null;
+                const gap = hasCnt ? (b.yourCounterUsd as number) - b.latestBidUsd : null;
                 return (
                   <MobileNegoBidCard
                     key={b.id}
@@ -512,8 +523,20 @@ function MobileNegoList({
                     }}
                     stats={[
                       { label: t("supplier.negotiations.col.latestBid"), value: fmtUsd(b.latestBidUsd), tone: "bid" },
-                      { label: t("supplier.negotiations.col.yourCounter"), value: fmtUsd(b.yourCounterUsd), tone: "counter" },
-                      { label: t("supplier.negotiations.mobile.gap", { defaultValue: "Gap" }), value: `${gap >= 0 ? "+" : ""}${fmtUsd(Math.abs(gap))}`, tone: gap >= 0 ? "gap-pos" : "gap-neg" },
+                      {
+                        label: t("supplier.negotiations.col.yourCounter"),
+                        value: hasCnt
+                          ? fmtUsd(b.yourCounterUsd as number)
+                          : t("supplier.negotiations.awaiting", { defaultValue: "Aguardando" }),
+                        tone: "counter",
+                      },
+                      {
+                        label: t("supplier.negotiations.mobile.gap", { defaultValue: "Gap" }),
+                        value: gap == null
+                          ? "—"
+                          : `${gap >= 0 ? "+" : ""}${fmtUsd(Math.abs(gap))}`,
+                        tone: gap == null ? "counter" : gap >= 0 ? "gap-pos" : "gap-neg",
+                      },
                     ]}
                     round={{ current: b.round, total: b.maxRounds }}
                     dateLabel={fmtDate(b.updatedAt, locale)}
