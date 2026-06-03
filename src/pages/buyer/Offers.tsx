@@ -26,6 +26,7 @@ import {
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
