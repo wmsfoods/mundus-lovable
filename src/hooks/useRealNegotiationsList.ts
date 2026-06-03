@@ -41,6 +41,8 @@ export function useRealNegotiationsList(role: Role) {
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
   useRealtimeRefresh({ table: "negotiations", onRefresh: bump, enabled: !!company?.id });
   useRealtimeRefresh({ table: "round_proposals", onRefresh: bump, enabled: !!company?.id });
+  useRealtimeRefresh({ table: "counter_proposals", onRefresh: bump, enabled: !!company?.id });
+  useRealtimeRefresh({ table: "cut_rounds", onRefresh: bump, enabled: !!company?.id });
 
   useEffect(() => {
     let cancelled = false;
@@ -73,7 +75,10 @@ export function useRealNegotiationsList(role: Role) {
           port:ports ( id, name, country:countries ( english_name, iso_code ) ),
           rounds:round_proposals!round_proposals_negotiation_id_fkey (
             id, round, created_at, created_by_user_id,
-            cut_rounds ( id, offer_item_id, price_per_kg, quantity_kg )
+            cut_rounds (
+              id, offer_item_id, price_per_kg, quantity_kg,
+              counter_proposals ( id, price_per_kg, rule, is_final )
+            )
           )
           `,
         )
@@ -151,13 +156,27 @@ function offerTitle(r: RealNegotiationRow): string {
   return formatOfferNumber(o.offer_number, o.created_at);
 }
 
+/**
+ * For supplier counter rounds (even raw round), the row inserted in
+ * `cut_rounds` records the buyer's previous bid as `price_per_kg`. The actual
+ * counter price lives in `counter_proposals.price_per_kg`. Use that when
+ * present; otherwise fall back to the cut_round value.
+ */
+function priceForCut(rawRound: number, c: RealNegotiationRow["rounds"][number]["cut_rounds"][number]): number {
+  if (roundTypeFor(rawRound) === "counter") {
+    const cp = (c.counter_proposals ?? [])[0];
+    if (cp && cp.price_per_kg != null) return Number(cp.price_per_kg);
+  }
+  return Number(c.price_per_kg);
+}
+
 function lastTotals(r: RealNegotiationRow) {
   // Round 1 (and any odd round) = buyer bid; Round 2 (and any even) = supplier counter.
   let yourBid = 0;
   let counter = 0;
   let maxRoundDisplay = 1;
   for (const rp of r.rounds ?? []) {
-    const total = (rp.cut_rounds ?? []).reduce((s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg), 0);
+    const total = (rp.cut_rounds ?? []).reduce((s, c) => s + priceForCut(rp.round, c) * Number(c.quantity_kg), 0);
     if (roundTypeFor(rp.round) === "bid") yourBid = total;
     else counter = total;
     maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
@@ -254,11 +273,12 @@ function buildRoundsList(r: RealNegotiationRow): { rounds: BuyerNegotiationRound
     const disp = displayRoundFor(rp.round);
     let total = 0;
     for (const c of rp.cut_rounds ?? []) {
+      const price = priceForCut(rp.round, c);
       const key = `${type}R${disp}UsdKg`;
       const m = perItem.get(c.offer_item_id) ?? {};
-      m[key] = Number(c.price_per_kg);
+      m[key] = price;
       perItem.set(c.offer_item_id, m);
-      total += Number(c.price_per_kg) * Number(c.quantity_kg);
+      total += price * Number(c.quantity_kg);
     }
     rounds.push({
       type,
