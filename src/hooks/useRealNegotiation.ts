@@ -138,7 +138,10 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           port:ports ( id, name, country:countries ( english_name, iso_code ) ),
           rounds:round_proposals!round_proposals_negotiation_id_fkey (
             id, round, created_at, created_by_user_id,
-            cut_rounds ( id, offer_item_id, price_per_kg, quantity_kg )
+            cut_rounds (
+              id, offer_item_id, price_per_kg, quantity_kg,
+              counter_proposals ( id, price_per_kg, rule, is_final )
+            )
           )
           `,
         )
