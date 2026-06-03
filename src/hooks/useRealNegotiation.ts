@@ -69,6 +69,12 @@ export type RealNegotiationRow = {
       offer_item_id: string;
       price_per_kg: number;
       quantity_kg: number;
+      counter_proposals?: {
+        id: string;
+        price_per_kg: number;
+        rule: string | null;
+        is_final: boolean | null;
+      }[] | null;
     }[];
   }[];
 };
