@@ -3588,27 +3588,27 @@
     }
   },
   "negotiationHandling": {
-    "title": "Negotiation handling",
-    "default": "default",
-    "dialLabel": "Negotiation style",
+    "title": "谈判方式",
+    "default": "默认",
+    "dialLabel": "谈判风格",
     "mode": {
-      "manual": "Manual",
-      "auto": "Automatic",
-      "manualDesc": "You handle every counter-offer yourself.",
-      "autoDesc": "We negotiate for you using the dial below (supervised)."
+      "manual": "手动",
+      "auto": "自动",
+      "manualDesc": "您手动处理每一次还价。",
+      "autoDesc": "我们按下方风格代您谈判(人工监督)。"
     },
     "dial": {
       "protect_margin": {
-        "title": "Protect margin",
-        "desc": "Fights hardest on price — may lose some deals."
+        "title": "保护利润",
+        "desc": "最大限度守住价格——可能错失部分订单。"
       },
       "balanced": {
-        "title": "Balanced",
-        "desc": "A mix of holding price and closing the deal."
+        "title": "平衡",
+        "desc": "兼顾守价与成交。"
       },
       "win_deal": {
-        "title": "Win the deal",
-        "desc": "Prioritizes closing — concedes more on price."
+        "title": "拿下订单",
+        "desc": "优先成交——在价格上让步更多。"
       }
     }
   }

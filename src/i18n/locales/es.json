@@ -3602,27 +3602,27 @@
     }
   },
   "negotiationHandling": {
-    "title": "Negotiation handling",
-    "default": "default",
-    "dialLabel": "Negotiation style",
+    "title": "Manejo de negociación",
+    "default": "predeterminado",
+    "dialLabel": "Estilo de negociación",
     "mode": {
       "manual": "Manual",
-      "auto": "Automatic",
-      "manualDesc": "You handle every counter-offer yourself.",
-      "autoDesc": "We negotiate for you using the dial below (supervised)."
+      "auto": "Automático",
+      "manualDesc": "Tú respondes cada contraoferta manualmente.",
+      "autoDesc": "Negociamos por ti usando el estilo de abajo (supervisado)."
     },
     "dial": {
       "protect_margin": {
-        "title": "Protect margin",
-        "desc": "Fights hardest on price — may lose some deals."
+        "title": "Proteger margen",
+        "desc": "Defiende el precio al máximo — puede perder operaciones."
       },
       "balanced": {
-        "title": "Balanced",
-        "desc": "A mix of holding price and closing the deal."
+        "title": "Equilibrado",
+        "desc": "Una mezcla entre defender precio y cerrar la operación."
       },
       "win_deal": {
-        "title": "Win the deal",
-        "desc": "Prioritizes closing — concedes more on price."
+        "title": "Cerrar la operación",
+        "desc": "Prioriza cerrar — cede más en el precio."
       }
     }
   }
