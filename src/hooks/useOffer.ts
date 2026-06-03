@@ -9,9 +9,6 @@ export type OfferDetailItem = {
   id: string;
   amount: number;
   price: number;
-  minimum_price: number;
-  minimum_amount: number;
-  maximum_amount: number;
   condition: string;
   meat_specification: number | null;
   aging_method: string | null;
@@ -110,9 +107,6 @@ export function useOffer(id: string | undefined): UseOfferResult {
             id,
             amount,
             price,
-            minimum_price,
-            minimum_amount,
-            maximum_amount,
             condition,
             meat_specification,
             aging_method,
