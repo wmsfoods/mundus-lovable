@@ -290,7 +290,7 @@ export default function SupplierOfferDetail() {
           id, container_size, total_fcl, payment_terms, origin_port_id,
           is_halal, is_kosher, cut_region, exw_pickup_location,
           items:offer_items (
-            amount, price, minimum_price, condition, aging_method,
+            id, amount, price, condition, aging_method,
             customer_product:customer_products (
               name,
               standard_product:standard_products ( product_number )
@@ -302,6 +302,12 @@ export default function SupplierOfferDetail() {
         .eq("id", offer.id)
         .maybeSingle();
       if (error || !row) throw error ?? new Error("Offer not found");
+      // Fetch floors via the security-definer accessor (supplier-only).
+      const { data: floors } = await supabase.rpc("get_offer_floors", { _offer_ids: [offer.id] });
+      const floorMap = new Map<string, number>();
+      for (const f of (floors ?? []) as Array<{ offer_item_id: string; minimum_price: number | null }>) {
+        if (f.minimum_price != null) floorMap.set(f.offer_item_id, Number(f.minimum_price));
+      }
       const editOffer = {
         offerId: offer.id,
         offerNumber: offer.offerNumber,
@@ -324,7 +330,7 @@ export default function SupplierOfferDetail() {
           productNumber: it.customer_product?.standard_product?.product_number ?? null,
           amount: Number(it.amount ?? 0),
           price: Number(it.price ?? 0),
-          minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
+          minimumPrice: Number(floorMap.get(it.id) ?? it.price ?? 0),
           condition: it.condition ?? offer.condition,
           agingMethod: it.aging_method ?? null,
         })),
@@ -345,7 +351,7 @@ export default function SupplierOfferDetail() {
           id, container_size, total_fcl, payment_terms, origin_port_id,
           is_halal, is_kosher, cut_region, exw_pickup_location,
           items:offer_items (
-            amount, price, minimum_price, condition, aging_method,
+            id, amount, price, condition, aging_method,
             customer_product:customer_products (
               name,
               standard_product:standard_products ( product_number )
@@ -357,6 +363,11 @@ export default function SupplierOfferDetail() {
         .eq("id", offer.id)
         .maybeSingle();
       if (error || !row) throw error ?? new Error("Offer not found");
+      const { data: floors } = await supabase.rpc("get_offer_floors", { _offer_ids: [offer.id] });
+      const floorMap = new Map<string, number>();
+      for (const f of (floors ?? []) as Array<{ offer_item_id: string; minimum_price: number | null }>) {
+        if (f.minimum_price != null) floorMap.set(f.offer_item_id, Number(f.minimum_price));
+      }
       const cloneFrom = {
         category: offer.category,
         condition: offer.condition,
@@ -377,7 +388,7 @@ export default function SupplierOfferDetail() {
           productNumber: it.customer_product?.standard_product?.product_number ?? null,
           amount: Number(it.amount ?? 0),
           price: Number(it.price ?? 0),
-          minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
+          minimumPrice: Number(floorMap.get(it.id) ?? it.price ?? 0),
           condition: it.condition ?? offer.condition,
           agingMethod: it.aging_method ?? null,
         })),
