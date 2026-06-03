@@ -43,7 +43,9 @@ export function autoCounter(inp: AutoInput): AutoOutput {
   let c = mu + s * Math.log((1 - tau) / tau);
   c = Math.min(c, offerPrice);
   if (prevCounter != null) c = Math.min(c, prevCounter);
-  c = Math.max(c, minimumPrice);
+  // Never reveal the minimum_price floor to the buyer. Keep a cushion above it.
+  const FLOOR_BUFFER = Math.max(0.01, 0.10 * margin);
+  c = Math.max(c, minimumPrice + FLOOR_BUFFER);
   if (c <= bid) {
     return { price: bid, pAccept: 1, rule: 'ACCEPT', isFinal: true, decision: 'accept_bid',
       explanation: 'Your proposal works for us — deal accepted.' };
