@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
 
@@ -66,6 +66,7 @@ export function useOffers(): UseOffersResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const hasLoadedRef = useRef(false);
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
   useRealtimeRefresh({ table: "offers", onRefresh: bump });
   useRealtimeRefresh({ table: "negotiations", onRefresh: bump });
@@ -74,7 +75,7 @@ export function useOffers(): UseOffersResult {
     let cancelled = false;
 
     async function load() {
-      setLoading(true);
+      if (!hasLoadedRef.current) setLoading(true);
       setError(null);
 
       const { data, error: qErr } = await supabase
@@ -164,6 +165,7 @@ export function useOffers(): UseOffersResult {
         if (cancelled) return;
         setOffers(enriched);
       }
+      hasLoadedRef.current = true;
       setLoading(false);
     }
 
