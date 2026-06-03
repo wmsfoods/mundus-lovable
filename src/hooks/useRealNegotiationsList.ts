@@ -154,7 +154,7 @@ function offerTitle(r: RealNegotiationRow): string {
 function lastTotals(r: RealNegotiationRow) {
   // Round 1 (and any odd round) = buyer bid; Round 2 (and any even) = supplier counter.
   let yourBid = 0;
-  let counter = 0;
+  let counter: number | null = null;
   let maxRoundDisplay = 1;
   for (const rp of r.rounds ?? []) {
     const total = (rp.cut_rounds ?? []).reduce((s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg), 0);
@@ -162,7 +162,7 @@ function lastTotals(r: RealNegotiationRow) {
     else counter = total;
     maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
   }
-  // No fallback: counter remains 0 when supplier hasn't sent one yet (UI shows "—")
+  // No fallback: counter stays null when the other side hasn't replied yet (UI shows "—" / "Aguardando")
   return { yourBid, counter, displayRound: maxRoundDisplay };
 }
 
@@ -277,7 +277,8 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
   const totalWeightKg = (o.items ?? []).reduce((s, it) => s + Number(it.amount), 0);
   const askingTotal = (o.items ?? []).reduce((s, it) => s + Number(it.amount) * Number(it.price), 0);
   const yourBid = rounds.filter((x) => x.type === "bid").slice(-1)[0]?.totalUsd ?? askingTotal;
-  const counter = rounds.filter((x) => x.type === "counter").slice(-1)[0]?.totalUsd ?? yourBid;
+  const lastCounterRound = rounds.filter((x) => x.type === "counter").slice(-1)[0];
+  const counter: number | null = lastCounterRound ? lastCounterRound.totalUsd : null;
   const displayRound = Math.max(...rounds.map((x) => x.round), 1);
 
   const products: BuyerNegotiationProduct[] = (o.items ?? []).map((it) => {
@@ -289,8 +290,8 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
       // expecting lb here, so convert kg → lb before exposing.
       qtyLb: Number(it.amount) * 2.20462262185,
       askingUsdKg: Number(it.price),
-      bidR1UsdKg: (m["bidR1UsdKg"] as number) ?? Number(it.price),
-      counterR1UsdKg: (m["counterR1UsdKg"] as number) ?? Number(it.price),
+      bidR1UsdKg: m["bidR1UsdKg"] as number | undefined,
+      counterR1UsdKg: m["counterR1UsdKg"] as number | undefined,
       bidR2UsdKg: m["bidR2UsdKg"] as number | undefined,
       counterR2UsdKg: m["counterR2UsdKg"] as number | undefined,
       bidR3UsdKg: m["bidR3UsdKg"] as number | undefined,
@@ -324,7 +325,7 @@ export function toBuyerDetail(r: RealNegotiationRow): BuyerNegotiationDetail {
     supplierInternalId: o.supplier_id.slice(0, 6),
     askingPriceUsd: askingTotal,
     avgReplyDays: 2,
-    valuePerFclUsd: counter,
+    valuePerFclUsd: counter ?? yourBid,
     movementVsAskingUsd: yourBid - askingTotal,
     rounds,
     products,
