@@ -66,6 +66,7 @@ export function useRealSupplierOffers() {
       if (err) {
         setError(err.message);
         setOffers([]);
+        hasLoadedRef.current = true;
         setLoading(false);
         return;
       }
