@@ -609,7 +609,7 @@ export default function SupplierOfferDetail() {
           flexWrap: "wrap",
         }}
       >
-        <div>{supplierToggle}</div>
+        <div>{isAdminCtx ? null : supplierToggle}</div>
         <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
           {isAdminCtx ? null : supplierActions}
         </div>
