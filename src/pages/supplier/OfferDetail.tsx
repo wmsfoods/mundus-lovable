@@ -541,17 +541,17 @@ export default function SupplierOfferDetail() {
       <button
         type="button"
         className="btn-back"
-        onClick={() => navigate("/supplier/offers")}
+        onClick={() => navigate(offersBasePath)}
         style={{ marginBottom: 12 }}
       >
         <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
       </button>
       <div className="crumbs">
-        <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
+        <a onClick={(e) => { e.preventDefault(); navigate(homeBasePath); }} href={homeBasePath}>
           {t("supplier.offers.crumbHome")}
         </a>
         <span className="sep">›</span>
-        <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
+        <a onClick={(e) => { e.preventDefault(); navigate(offersBasePath); }} href={offersBasePath}>
           {t("supplier.offers.title")}
         </a>
         <span className="sep">›</span>
@@ -609,7 +609,9 @@ export default function SupplierOfferDetail() {
         }}
       >
         <div>{supplierToggle}</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{supplierActions}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {isAdminCtx ? null : supplierActions}
+        </div>
       </div>
 
       <SupplierOfferBuyerStyleBody
