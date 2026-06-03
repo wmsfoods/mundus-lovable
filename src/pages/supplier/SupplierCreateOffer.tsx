@@ -6,6 +6,7 @@ import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
 import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
+import NegotiationHandlingControl, { type NegotiationMode, type NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
