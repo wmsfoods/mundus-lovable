@@ -71,7 +71,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
 
   const { data: neg, error: negErr } = await admin
     .from('negotiations')
-    .select('id, offer_id, buyer_company_id, freight_cost_per_kg, status, locked_until, expires_at')
+    .select('id, offer_id, buyer_company_id, freight_cost_per_kg, status, locked_until, expires_at, negotiation_mode, negotiation_dial')
     .eq('id', body.negotiation_id)
     .maybeSingle<NegotiationRow>();
   if (negErr) return errorResponse('db_error', negErr.message, 500);
