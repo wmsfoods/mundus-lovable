@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
@@ -39,6 +39,7 @@ export function useRealNegotiationsList(role: Role) {
   const applyOfficeFilter = role === "supplier" && !isAllOffices && !!activeOfficeId;
   const [refreshKey, setRefreshKey] = useState(0);
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
+  const hasLoadedRef = useRef(false);
   useRealtimeRefresh({ table: "negotiations", onRefresh: bump, enabled: !!company?.id });
   useRealtimeRefresh({ table: "round_proposals", onRefresh: bump, enabled: !!company?.id });
   useRealtimeRefresh({ table: "counter_proposals", onRefresh: bump, enabled: !!company?.id });
@@ -49,10 +50,10 @@ export function useRealNegotiationsList(role: Role) {
     if (companyLoading || !company?.id ||
         (role === "supplier" && scopeLoading) ||
         (role === "buyer" && buyerScopeLoading)) {
-      setLoading(true);
+      if (!hasLoadedRef.current) setLoading(true);
       return;
     }
-    setLoading(true);
+    if (!hasLoadedRef.current) setLoading(true);
     setError(null);
     (async () => {
       let q = supabase
