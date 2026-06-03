@@ -273,11 +273,12 @@ function buildRoundsList(r: RealNegotiationRow): { rounds: BuyerNegotiationRound
     const disp = displayRoundFor(rp.round);
     let total = 0;
     for (const c of rp.cut_rounds ?? []) {
+      const price = priceForCut(rp.round, c);
       const key = `${type}R${disp}UsdKg`;
       const m = perItem.get(c.offer_item_id) ?? {};
-      m[key] = Number(c.price_per_kg);
+      m[key] = price;
       perItem.set(c.offer_item_id, m);
-      total += Number(c.price_per_kg) * Number(c.quantity_kg);
+      total += price * Number(c.quantity_kg);
     }
     rounds.push({
       type,
