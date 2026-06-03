@@ -68,6 +68,12 @@ export type RealNegotiationRow = {
       offer_item_id: string;
       price_per_kg: number;
       quantity_kg: number;
+      counter_proposals?: {
+        id: string;
+        price_per_kg: number;
+        rule: string | null;
+        is_final: boolean | null;
+      }[] | null;
     }[];
   }[];
 };
@@ -131,7 +137,10 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           port:ports ( id, name, country:countries ( english_name, iso_code ) ),
           rounds:round_proposals!round_proposals_negotiation_id_fkey (
             id, round, created_at, created_by_user_id,
-            cut_rounds ( id, offer_item_id, price_per_kg, quantity_kg )
+            cut_rounds (
+              id, offer_item_id, price_per_kg, quantity_kg,
+              counter_proposals ( id, price_per_kg, rule, is_final )
+            )
           )
           `,
         )
