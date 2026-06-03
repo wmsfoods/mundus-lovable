@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { OfferDetailed } from "@/hooks/useOffer";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
+import { fmtWeight, fmtPrice, fmtPriceNego, negoPriceDigits, priceLabel, weightLabel, toDisplay, fromDisplay } from "@/lib/units";
 import { isUuid } from "@/hooks/useRealNegotiation";
 import { getDeductionFeedback } from "@/lib/negotiationEngine";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";

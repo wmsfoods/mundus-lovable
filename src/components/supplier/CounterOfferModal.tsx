@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtWeight, fmtPrice, priceLabel, weightLabel, toDisplay, fromDisplay, LB_PER_KG } from "@/lib/units";
+import { fmtWeight, fmtPrice, fmtPriceNego, negoPriceDigits, priceLabel, weightLabel, toDisplay, fromDisplay, LB_PER_KG } from "@/lib/units";
 import {
   MAX_DISPLAY_ROUNDS,
   getAgreedItems,
