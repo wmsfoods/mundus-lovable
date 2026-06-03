@@ -23,6 +23,7 @@ import {
   type AllowedPlant,
 } from "@/hooks/useOfficeScopedAccess";
 import { usePaymentTerms } from "@/hooks/usePaymentTerms";
+import { NegotiationHandlingControl } from "@/components/offer/NegotiationHandlingControl";
 import {
   toDisplay,
   fromDisplay,
