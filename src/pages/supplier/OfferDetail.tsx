@@ -32,6 +32,12 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { type WeightUnit } from "@/lib/units";
+import {
+  NegotiationHandlingControl,
+  type NegotiationMode,
+  type NegotiationDial,
+} from "@/components/offer/NegotiationHandlingControl";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -48,6 +54,49 @@ export default function SupplierOfferDetail() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
+  const [negMode, setNegMode] = useState<NegotiationMode>("manual");
+  const [negDial, setNegDial] = useState<NegotiationDial>("balanced");
+  const [negSaving, setNegSaving] = useState(false);
+
+  useEffect(() => {
+    if (!id) return;
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("offers")
+        .select("negotiation_mode, negotiation_dial")
+        .eq("id", id)
+        .maybeSingle();
+      if (cancelled || !data) return;
+      const m = (data as any).negotiation_mode;
+      const d = (data as any).negotiation_dial;
+      if (m === "manual" || m === "auto") setNegMode(m);
+      if (d === "protect_margin" || d === "balanced" || d === "win_deal") setNegDial(d);
+    })();
+    return () => { cancelled = true; };
+  }, [id]);
+
+  async function persistNegHandling(mode: NegotiationMode, dial: NegotiationDial) {
+    if (!id || negSaving) return;
+    const prevMode = negMode;
+    const prevDial = negDial;
+    setNegMode(mode); setNegDial(dial); setNegSaving(true);
+    const { error } = await supabase
+      .from("offers")
+      .update({ negotiation_mode: mode, negotiation_dial: dial })
+      .eq("id", id);
+    setNegSaving(false);
+    if (error) {
+      setNegMode(prevMode); setNegDial(prevDial);
+      toast.error(error.message);
+      return;
+    }
+    toast.success(
+      mode === "auto"
+        ? `Automatic negotiation enabled (${dial.replace("_", " ")}).`
+        : "Switched to manual negotiation."
+    );
+  }
   const [negotiations, setNegotiations] = useState<Array<{
     id: string;
     status: string;
@@ -363,6 +412,26 @@ export default function SupplierOfferDetail() {
       >
         <ShareIcon size={14} /> {t("supplier.offers.detail.share")}
       </button>
+      <Popover>
+        <PopoverTrigger asChild>
+          <button type="button" className="btn-tb" title="Negotiation handling">
+            {negMode === "auto" ? "🤖" : "✋"}{" "}
+            {negMode === "auto" ? `Auto · ${negDial === "protect_margin" ? "Protect" : negDial === "win_deal" ? "Win" : "Balanced"}` : "Manual"}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-[320px] p-3">
+          <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 8 }}>
+            Switch how this offer answers new buyer bids. Flipping back to Manual stops auto-responses on new bids.
+          </div>
+          <NegotiationHandlingControl
+            mode={negMode}
+            dial={negDial}
+            onChange={(next) => persistNegHandling(next.mode, next.dial)}
+            variant="section"
+            disabled={negSaving}
+          />
+        </PopoverContent>
+      </Popover>
     </>
   );
 

@@ -23,6 +23,7 @@ import {
   type AllowedPlant,
 } from "@/hooks/useOfficeScopedAccess";
 import { usePaymentTerms } from "@/hooks/usePaymentTerms";
+import { NegotiationHandlingControl } from "@/components/offer/NegotiationHandlingControl";
 import {
   toDisplay,
   fromDisplay,
@@ -402,19 +403,26 @@ export default function SupplierCreateOffer() {
   const [certifications, setCertifications] = useState<string[]>([]);
   // Whether buyers can edit per-item quantities in chat proposals (total must still match).
   const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
+  // Auto-negotiation opt-in (per offer). Default = Manual.
+  const [negotiationMode, setNegotiationMode] = useState<"manual" | "auto">("manual");
+  const [negotiationDial, setNegotiationDial] = useState<"protect_margin" | "balanced" | "win_deal">("balanced");
 
-  // Hydrate allow_quantity_negotiation when editing an existing offer.
+  // Hydrate allow_quantity_negotiation + negotiation_mode/dial when editing.
   useEffect(() => {
     if (!editOffer?.offerId) return;
     supabase
       .from("offers")
-      .select("allow_quantity_negotiation")
+      .select("allow_quantity_negotiation, negotiation_mode, negotiation_dial")
       .eq("id", editOffer.offerId)
       .maybeSingle()
       .then(({ data }) => {
         if (data && typeof (data as any).allow_quantity_negotiation === "boolean") {
           setAllowQtyNegotiation(Boolean((data as any).allow_quantity_negotiation));
         }
+        const m = (data as any)?.negotiation_mode;
+        if (m === "manual" || m === "auto") setNegotiationMode(m);
+        const dl = (data as any)?.negotiation_dial;
+        if (dl === "protect_margin" || dl === "balanced" || dl === "win_deal") setNegotiationDial(dl);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editOffer?.offerId]);
@@ -1225,6 +1233,8 @@ export default function SupplierCreateOffer() {
               ...(originCountryVal ? { origin_country: originCountryVal } : {}),
               ...(originPortLabel ? { origin_port: originPortLabel } : {}),
               allow_quantity_negotiation: allowQtyNegotiation,
+              negotiation_mode: negotiationMode,
+              negotiation_dial: negotiationDial,
               updated_at: new Date().toISOString(),
             })
             .eq("id", editOffer.offerId);
@@ -1266,6 +1276,8 @@ export default function SupplierCreateOffer() {
             request_id: fromRequest?.requestId ?? null,
             cut_region: cutRegion,
             allow_quantity_negotiation: allowQtyNegotiation,
+            negotiation_mode: negotiationMode,
+            negotiation_dial: negotiationDial,
           })
           .select("id, offer_number")
           .single();
@@ -2394,6 +2406,18 @@ export default function SupplierCreateOffer() {
                 </div>
               </div>
             </label>
+
+            {/* Auto-negotiation (opt-in) */}
+            <div style={{ marginTop: 12 }}>
+              <NegotiationHandlingControl
+                mode={negotiationMode}
+                dial={negotiationDial}
+                onChange={(next) => {
+                  setNegotiationMode(next.mode);
+                  setNegotiationDial(next.dial);
+                }}
+              />
+            </div>
           </div>
 
           {/* Payment terms */}

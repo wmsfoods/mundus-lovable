@@ -3600,5 +3600,30 @@
         "body": "Empieza publicando tu primera oferta."
       }
     }
+  },
+  "negotiationHandling": {
+    "title": "Manejo de negociación",
+    "default": "predeterminado",
+    "dialLabel": "Estilo de negociación",
+    "mode": {
+      "manual": "Manual",
+      "auto": "Automático",
+      "manualDesc": "Tú respondes cada contraoferta manualmente.",
+      "autoDesc": "Negociamos por ti usando el estilo de abajo (supervisado)."
+    },
+    "dial": {
+      "protect_margin": {
+        "title": "Proteger margen",
+        "desc": "Defiende el precio al máximo — puede perder operaciones."
+      },
+      "balanced": {
+        "title": "Equilibrado",
+        "desc": "Una mezcla entre defender precio y cerrar la operación."
+      },
+      "win_deal": {
+        "title": "Cerrar la operación",
+        "desc": "Prioriza cerrar — cede más en el precio."
+      }
+    }
   }
 }
