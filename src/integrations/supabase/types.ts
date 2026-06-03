@@ -7292,6 +7292,16 @@ export type Database = {
           full_name: string
         }[]
       }
+      get_offer_floors: {
+        Args: { _offer_ids: string[] }
+        Returns: {
+          maximum_amount: number
+          minimum_amount: number
+          minimum_price: number
+          offer_id: string
+          offer_item_id: string
+        }[]
+      }
       get_public_offers: { Args: never; Returns: Json }
       has_company_role: {
         Args: { _company_id: string; _roles: string[] }
