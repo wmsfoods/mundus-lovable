@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useLocation, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { countryFlag } from "@/lib/countryFlags";
@@ -67,6 +67,9 @@ function fmtDateShort(iso: string, locale: string) {
 
 export default function SupplierNegotiationDetail() {
   const { id = "" } = useParams<{ id: string }>();
+  const location = useLocation();
+  const isAdminCtx = location.pathname.startsWith("/admin/");
+  const negotiationsBasePath = isAdminCtx ? "/admin/negotiations" : "/supplier/negotiations";
   const { t, i18n } = useTranslation();
   const { unit } = useWeightUnit();
   const [activeId, setActiveId] = useState<string>(id);
@@ -99,7 +102,7 @@ export default function SupplierNegotiationDetail() {
   if (!data) {
     return (
       <>
-        <Link to="/supplier/negotiations" className="nd-back">
+        <Link to={negotiationsBasePath} className="nd-back">
           <ArrowLeftIcon size={16} />
           {t("supplier.negotiations.detail.back")}
         </Link>
@@ -153,7 +156,8 @@ export default function SupplierNegotiationDetail() {
     return map;
   })();
 
-  const showActions = d.status === "action_required" || d.status === "final_round";
+  const showActions =
+    !isAdminCtx && (d.status === "action_required" || d.status === "final_round");
   // Engine state (real negotiations only)
   const realDisplayRound = rawNeg ? getDisplayRound(getMaxRaw(rawNeg)) : 0;
   const realIsFinal = !!rawNeg && isFinalDisplayRound(realDisplayRound);
@@ -181,7 +185,7 @@ export default function SupplierNegotiationDetail() {
 
   return (
     <>
-      <Link to="/supplier/negotiations" className="nd-back">
+      <Link to={negotiationsBasePath} className="nd-back">
         <ArrowLeftIcon size={16} />
         {t("supplier.negotiations.detail.back")}
       </Link>
