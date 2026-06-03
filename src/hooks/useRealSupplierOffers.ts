@@ -47,7 +47,7 @@ export function useRealSupplierOffers() {
           id, offer_number, status, origin_country, origin_port, view_count,
           shipment_month, shipment_year, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location,
-          items:offer_items ( id, amount, price, minimum_price, condition, packaging,
+          items:offer_items ( id, amount, price, condition, packaging,
             customer_product:customer_products ( id, name ) ),
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
           incoterms:offer_allowed_incoterms ( incoterm_type ),
@@ -67,6 +67,15 @@ export function useRealSupplierOffers() {
         setLoading(false);
         return;
       }
+      // Floors live behind a security-definer RPC (buyers can't read them).
+      const offerIds = (data ?? []).map((o: any) => o.id);
+      const floorMap = new Map<string, number>();
+      if (offerIds.length > 0) {
+        const { data: floors } = await supabase.rpc("get_offer_floors", { _offer_ids: offerIds });
+        for (const f of (floors ?? []) as Array<{ offer_item_id: string; minimum_price: number | null }>) {
+          if (f.minimum_price != null) floorMap.set(f.offer_item_id, Number(f.minimum_price));
+        }
+      }
       const mapped: SupplierOffer[] = (data ?? []).map((o: any) => {
         const items = (o.items ?? []) as Array<any>;
         const dests = ((o.markets ?? []) as any[])
@@ -76,7 +85,7 @@ export function useRealSupplierOffers() {
         const incoterms = ((o.incoterms ?? []) as any[]).map((i) => i.incoterm_type);
         const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
         const askingPrice = items.reduce((s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0), 0);
-        const floorPrice = items.reduce((s, it) => s + Number(it.minimum_price ?? it.price ?? 0) * Number(it.amount ?? 0), 0);
+        const floorPrice = items.reduce((s, it) => s + Number(floorMap.get(it.id) ?? it.price ?? 0) * Number(it.amount ?? 0), 0);
         const fclCount = Number(o.total_fcl ?? 1) || 1;
         // `askingPrice` is already the value of ONE container (mix qty × price).
         // total_fcl is the number of identical containers available — it must

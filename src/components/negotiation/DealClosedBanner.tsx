@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
-import { fmtPrice, priceLabel } from "@/lib/units";
+import { fmtPriceNego, priceLabel } from "@/lib/units";
 import { getAgreedItems } from "@/lib/negotiationEngine";
 
 /** Show when negotiation.status === 'bid_accepted'. */
@@ -62,7 +62,7 @@ export function DealClosedBanner({
               <div key={it.id} className="flex items-center justify-between rounded-md bg-white/60 px-3 py-1.5">
                 <span className="truncate">{it.customer_product?.name ?? "—"}</span>
                 <span className="tabular-nums font-medium">
-                  {fmtPrice(price, unit)} {pLbl}
+                  {fmtPriceNego(price, unit)} {pLbl}
                 </span>
               </div>
             );

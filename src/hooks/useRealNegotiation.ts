@@ -51,7 +51,6 @@ export type RealNegotiationRow = {
       id: string;
       amount: number;
       price: number;
-      minimum_price: number | null;
       plant_number: string | null;
       customer_product: { id: string; name: string } | null;
     }[];
@@ -125,7 +124,7 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
             id, offer_number, created_at, supplier_id, supplier_name, status, origin_country, origin_port, allow_quantity_negotiation,
             payment_terms, container_size, shipment_month, shipment_year, total_fcl,
             items:offer_items (
-              id, amount, price, minimum_price, plant_number,
+              id, amount, price, plant_number,
               customer_product:customer_products ( id, name )
             ),
             offer_markets ( market:markets ( id, country:countries ( english_name, iso_code ) ) )
