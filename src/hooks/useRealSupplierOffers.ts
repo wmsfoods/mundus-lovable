@@ -138,6 +138,7 @@ export function useRealSupplierOffers() {
         };
       });
       setOffers(mapped);
+      hasLoadedRef.current = true;
       setLoading(false);
     })();
     return () => { cancelled = true; };
