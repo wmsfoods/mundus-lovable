@@ -375,7 +375,7 @@ export function CounterOfferModal({
           const v = counters[it.id];
           const prevBid = lastBuyerRound.cut_rounds?.find((c) => c.offer_item_id === it.id);
           if (prevBid && v != null && v <= Number(prevBid.price_per_kg) + 1e-9) {
-            out[it.id] = `Bid must be GREATER than your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
+            out[it.id] = `Bid must be GREATER than your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(negoPriceDigits(unit))})`;
           }
         }
       }
@@ -1094,7 +1094,7 @@ export function CounterOfferModal({
                       {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
                         <div className="text-[10px] text-muted-foreground mt-1 max-w-[200px] ml-auto text-right">
                           {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
-                          {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                          {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(negoPriceDigits(unit))}/{wLbl}
                           {" "}({hintRefs.get(it.id)!.label})
                         </div>
                       )}
@@ -1203,7 +1203,7 @@ export function CounterOfferModal({
                   {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
                     <div className="text-[10px] text-muted-foreground mt-1">
                       {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
-                      {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                      {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(negoPriceDigits(unit))}/{wLbl}
                       {" "}({hintRefs.get(it.id)!.label})
                     </div>
                   )}
