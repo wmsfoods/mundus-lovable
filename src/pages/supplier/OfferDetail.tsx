@@ -1,5 +1,5 @@
 import { useMemo, useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
@@ -9,7 +9,7 @@ import {
   ChevronDownIcon,
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
-import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+import { useRealSupplierOffers, useSupplierOfferById } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useOfferImages } from "@/hooks/useOfferImages";
@@ -47,6 +47,10 @@ const MONTH_NAMES = [
 export default function SupplierOfferDetail() {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const isAdminCtx = location.pathname.startsWith("/admin/");
+  const offersBasePath = isAdminCtx ? "/admin/offers" : "/supplier/offers";
+  const homeBasePath = isAdminCtx ? "/admin" : "/supplier";
   const { t } = useTranslation();
   const [moreOpen, setMoreOpen] = useState(false);
   const [active, setActive] = useState<boolean | null>(null);
@@ -124,16 +128,25 @@ export default function SupplierOfferDetail() {
     return () => { cancelled = true; };
   }, [id]);
 
+  // Supplier listing is scoped to the current supplier's company. In admin
+  // context that scope filters everything out, so fall back to a direct
+  // by-id fetch (RLS lets admins read every offer).
   const { offers: realOffers, loading: offersLoading } = useRealSupplierOffers();
-  const offer: SupplierOffer | undefined = useMemo(
+  const scopedOffer = useMemo(
     () => realOffers.find((o) => o.id === id),
-    [id, realOffers]
+    [id, realOffers],
   );
+  const needsAdminFetch = isAdminCtx || (!offersLoading && !scopedOffer);
+  const { offer: adminOffer, loading: adminOfferLoading } = useSupplierOfferById(
+    needsAdminFetch ? id : null,
+  );
+  const offer: SupplierOffer | undefined = scopedOffer ?? adminOffer ?? undefined;
+  const anyLoading = offersLoading || (needsAdminFetch && adminOfferLoading);
 
   const galleryImages = useOfferImages(offer?.items ?? []);
   const destinationPorts = useOfferDestinationPorts(id);
 
-  if (offersLoading && !offer) {
+  if (anyLoading && !offer) {
     return <div className="empty-state"><p>{t("supplier.offers.loading", "Loading…")}</p></div>;
   }
 
@@ -141,11 +154,11 @@ export default function SupplierOfferDetail() {
     return (
       <>
         <div className="crumbs">
-          <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
+          <a onClick={(e) => { e.preventDefault(); navigate(homeBasePath); }} href={homeBasePath}>
             {t("supplier.offers.crumbHome")}
           </a>
           <span className="sep">›</span>
-          <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
+          <a onClick={(e) => { e.preventDefault(); navigate(offersBasePath); }} href={offersBasePath}>
             {t("supplier.offers.title")}
           </a>
           <span className="sep">›</span>
@@ -153,7 +166,7 @@ export default function SupplierOfferDetail() {
         </div>
         <div className="empty-state">
           <p>{t("supplier.offers.detail.notFoundBody")}</p>
-          <button className="btn-back" onClick={() => navigate("/supplier/offers")}>
+          <button className="btn-back" onClick={() => navigate(offersBasePath)}>
             <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
           </button>
         </div>
@@ -475,11 +488,12 @@ export default function SupplierOfferDetail() {
             const s = statusMap[n.status] ?? { label: n.status.replace(/_/g, " "), bg: "#fef3c7", fg: "#92400e" };
             const buyerName = n.buyer?.name?.trim() || `Buyer #${n.buyer_company_id.slice(0, 8)}`;
             const flag = countryFlag(n.buyer?.country);
+            const negBasePath = isAdminCtx ? "/admin/negotiations" : "/supplier/negotiations";
             return (
               <a
                 key={n.id}
-                href={`/supplier/negotiations/${n.id}`}
-                onClick={(e) => { e.preventDefault(); navigate(`/supplier/negotiations/${n.id}`); }}
+                href={`${negBasePath}/${n.id}`}
+                onClick={(e) => { e.preventDefault(); navigate(`${negBasePath}/${n.id}`); }}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -528,17 +542,17 @@ export default function SupplierOfferDetail() {
       <button
         type="button"
         className="btn-back"
-        onClick={() => navigate("/supplier/offers")}
+        onClick={() => navigate(offersBasePath)}
         style={{ marginBottom: 12 }}
       >
         <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
       </button>
       <div className="crumbs">
-        <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
+        <a onClick={(e) => { e.preventDefault(); navigate(homeBasePath); }} href={homeBasePath}>
           {t("supplier.offers.crumbHome")}
         </a>
         <span className="sep">›</span>
-        <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
+        <a onClick={(e) => { e.preventDefault(); navigate(offersBasePath); }} href={offersBasePath}>
           {t("supplier.offers.title")}
         </a>
         <span className="sep">›</span>
@@ -595,8 +609,10 @@ export default function SupplierOfferDetail() {
           flexWrap: "wrap",
         }}
       >
-        <div>{supplierToggle}</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{supplierActions}</div>
+        <div>{isAdminCtx ? null : supplierToggle}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {isAdminCtx ? null : supplierActions}
+        </div>
       </div>
 
       <SupplierOfferBuyerStyleBody
