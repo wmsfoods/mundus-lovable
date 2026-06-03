@@ -32,6 +32,12 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { type WeightUnit } from "@/lib/units";
+import {
+  NegotiationHandlingControl,
+  type NegotiationMode,
+  type NegotiationDial,
+} from "@/components/offer/NegotiationHandlingControl";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
