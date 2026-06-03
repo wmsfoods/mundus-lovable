@@ -1,6 +1,5 @@
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2';
-import { generateCounterProposal, type GenerateCounterProposalInput } from '../_shared/negotiation/engine.ts';
-import type { RoundNumber } from '../_shared/negotiation/types.ts';
+import { autoCounter, type Dial } from '../_shared/negotiation/autoEngineV2.ts';
 
 interface ProposalItem { offer_item_id: string; price_per_kg: number; quantity_kg: number; }
 interface RequestBody { negotiation_id: string; items: ProposalItem[]; }
@@ -9,6 +8,7 @@ interface NegotiationRow {
   id: string; offer_id: string; buyer_company_id: string;
   freight_cost_per_kg: number; status: string;
   locked_until: string | null; expires_at: string | null;
+  negotiation_mode: string; negotiation_dial: string;
 }
 interface OfferItemRow { id: string; price: number; minimum_price: number; }
 
