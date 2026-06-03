@@ -26,6 +26,7 @@ import {
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
@@ -100,10 +101,16 @@ export function OfferCard({
 
   const firstIncoterm = offer.incoterms?.[0]?.incoterm_type ?? null;
   const extraIncoterms = Math.max(0, (offer.incoterms?.length ?? 0) - 1);
+  const destinationNamesForIncoterm = (offer.markets ?? [])
+    .map((m) => m?.market?.country?.english_name)
+    .filter((n): n is string => !!n);
   const incotermLabel = firstIncoterm
     ? extraIncoterms > 0
       ? `${firstIncoterm} +${extraIncoterms}`
-      : `${firstIncoterm} ${offer.origin_port}`
+      : formatIncotermWithPlace(firstIncoterm, {
+          originPort: offer.origin_port,
+          destinationNames: destinationNamesForIncoterm,
+        })
     : offer.origin_port;
   const allIncoterms = (offer.incoterms ?? []).map((i) => i.incoterm_type).filter(Boolean);
 
