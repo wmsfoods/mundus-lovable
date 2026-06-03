@@ -363,7 +363,7 @@ export function CounterOfferModal({
         const floor = buyerInitialBid.get(it.id);
         const v = counters[it.id];
         if (floor != null && v != null && v < floor - 1e-9) {
-          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(2)})`;
+          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(negoPriceDigits(unit))})`;
         }
       }
       // Must be STRICTLY GREATER than previous buyer bid (no match, no lower)
@@ -404,7 +404,7 @@ export function CounterOfferModal({
         const prevCounter = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
         const ceiling = prevCounter ? Number(prevCounter.price_per_kg) : asking;
         if (v > ceiling + 1e-9) {
-          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(2)} (your ${prevCounter ? "previous counter" : "asking price"})`;
+          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(negoPriceDigits(unit))} (your ${prevCounter ? "previous counter" : "asking price"})`;
         }
       }
     }
@@ -791,9 +791,9 @@ export function CounterOfferModal({
           >
             ℹ️ Buyer is negotiating on{" "}
             <strong>{(negIncoterm || "").toUpperCase()}</strong> — freight{" "}
-            <strong>{fmtPrice(negFreightPerKg, unit)} {pLbl}</strong>
+            <strong>{fmtPriceNego(negFreightPerKg, unit)} {pLbl}</strong>
             {negInsurancePerKg > 0 && (
-              <> + insurance <strong>{fmtPrice(negInsurancePerKg, unit)} {pLbl}</strong></>
+              <> + insurance <strong>{fmtPriceNego(negInsurancePerKg, unit)} {pLbl}</strong></>
             )}
             . Prices below are FOB-equivalent; the buyer sees them with the add-on applied.
           </div>
@@ -1054,15 +1054,15 @@ export function CounterOfferModal({
                     </td>
                     <td className="px-3 py-2">{it.customer_product?.name ?? "—"}</td>
                     <td className="px-3 py-2 text-right tabular-nums">{fmtWeight(Number(it.amount), unit)}</td>
-                    <td className="px-3 py-2 text-right tabular-nums">{fmtPrice(asking, unit)}</td>
+                    <td className="px-3 py-2 text-right tabular-nums">{fmtPriceNego(asking, unit)}</td>
                     <td
                       className="px-3 py-2 text-right tabular-nums font-medium"
                       style={{ color: "#1e3a8a" }}
                     >
-                      {fmtPrice(their, unit)}
+                      {fmtPriceNego(their, unit)}
                       {buyerAddOn > 0 && (
                         <div className="text-[10px] font-normal text-muted-foreground tabular-nums">
-                          buyer sees {fmtPrice(their + buyerAddOn, unit)} {(negIncoterm || "").toUpperCase()}
+                          buyer sees {fmtPriceNego(their + buyerAddOn, unit)} {(negIncoterm || "").toUpperCase()}
                         </div>
                       )}
                     </td>
@@ -1071,7 +1071,7 @@ export function CounterOfferModal({
                         type="text"
                         inputMode="decimal"
                         readOnly={isAccepted}
-                        value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
+                        value={Number.isFinite(displayCounter) ? displayCounter.toFixed(negoPriceDigits(unit)) : ""}
                         onChange={(e) => {
                           if (isAccepted) return;
                           const raw = e.target.value.replace(/,/g, ".");
@@ -1104,7 +1104,7 @@ export function CounterOfferModal({
                         <span style={{ color: "#15803d" }}>🔒</span>
                       ) : Math.abs(d) > 0.001 ? (
                         <span style={{ color: d > 0 ? "#15803d" : "#b45309" }}>
-                          {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(2)} ({d >= 0 ? "+" : ""}
+                          {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(negoPriceDigits(unit))} ({d >= 0 ? "+" : ""}
                           {dPct.toFixed(1)}%)
                         </span>
                       ) : (
@@ -1162,14 +1162,14 @@ export function CounterOfferModal({
                   </div>
                   <div>
                     <div className="text-muted-foreground">{t("supplier.counter.col.asking")} ({pLbl})</div>
-                    <div className="font-semibold tabular-nums">{fmtPrice(asking, unit)}</div>
+                    <div className="font-semibold tabular-nums">{fmtPriceNego(asking, unit)}</div>
                   </div>
                   <div>
                     <div className="text-muted-foreground">{t(theirLabelKey)} ({pLbl})</div>
-                    <div className="font-semibold tabular-nums" style={{ color: "#1e3a8a" }}>{fmtPrice(their, unit)}</div>
+                    <div className="font-semibold tabular-nums" style={{ color: "#1e3a8a" }}>{fmtPriceNego(their, unit)}</div>
                     {buyerAddOn > 0 && (
                       <div className="text-[10px] text-muted-foreground tabular-nums">
-                        buyer sees {fmtPrice(their + buyerAddOn, unit)} {(negIncoterm || "").toUpperCase()}
+                        buyer sees {fmtPriceNego(their + buyerAddOn, unit)} {(negIncoterm || "").toUpperCase()}
                       </div>
                     )}
                   </div>
@@ -1182,7 +1182,7 @@ export function CounterOfferModal({
                     type="text"
                     inputMode="decimal"
                     readOnly={isAccepted}
-                    value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
+                    value={Number.isFinite(displayCounter) ? displayCounter.toFixed(negoPriceDigits(unit)) : ""}
                     onChange={(e) => {
                       if (isAccepted) return;
                       const raw = e.target.value.replace(/,/g, ".");
@@ -1209,7 +1209,7 @@ export function CounterOfferModal({
                   )}
                   {!isAccepted && Math.abs(d) > 0.001 && (
                     <div className="text-[11px] tabular-nums mt-1" style={{ color: d > 0 ? "#15803d" : "#b45309" }}>
-                      {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(2)} ({d >= 0 ? "+" : ""}{dPct.toFixed(1)}%)
+                      {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(negoPriceDigits(unit))} ({d >= 0 ? "+" : ""}{dPct.toFixed(1)}%)
                     </div>
                   )}
                 </div>
