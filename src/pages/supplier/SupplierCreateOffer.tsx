@@ -1193,17 +1193,10 @@ export default function SupplierCreateOffer() {
 
       // Resolve selected origin port → country / display string
       const selectedOriginPort = originPorts.find((p) => p.id === originPortId) || null;
-      // Phase 3: prefer origin derived from selected plants when uniform.
-      const plantCountries = Array.from(
-        new Set(
-          cuts
-            .map((c) => (c.plantId ? plantById.get(c.plantId)?.country : null))
-            .filter((x): x is string => !!x),
-        ),
-      );
-      const derivedFromPlant = plantCountries.length === 1 ? plantCountries[0] : null;
-      const originCountryVal =
-        derivedFromPlant ?? selectedOriginPort?.country ?? null;
+      // Origin country always follows the selected origin port (the place the
+      // goods physically ship from). Deriving from plant country is unreliable
+      // when goods transit through a different port (e.g. plant in BR, port in US).
+      const originCountryVal = selectedOriginPort?.country ?? null;
       const originPortLabel = selectedOriginPort
         ? `${selectedOriginPort.name}${selectedOriginPort.code ? ` (${selectedOriginPort.code})` : ""}`
         : null;
