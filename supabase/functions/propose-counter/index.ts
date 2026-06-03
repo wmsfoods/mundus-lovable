@@ -128,12 +128,13 @@ Deno.serve(async (req: Request): Promise<Response> => {
     if (row.counter_proposals) h.counters.push(Number(row.counter_proposals.price_per_kg));
   }
 
-  const nextRound = (prevSorted.length === 0
+  const nextRound = prevSorted.length === 0
     ? 1
-    : Math.max(...prevSorted.map((r) => r.round_proposals.round)) + 1) as 1 | 2 | 3 | 4;
-  if (nextRound > 3) {
-    return errorResponse('max_rounds_reached', 'Maximum of 3 rounds reached', 409);
+    : Math.max(...prevSorted.map((r) => r.round_proposals.round)) + 1;
+  if (nextRound > 6) {
+    return errorResponse('max_rounds_reached', 'Maximum of 3 cycles (6 movements) reached', 409);
   }
+  const cycle = Math.ceil(nextRound / 2) as 1 | 2 | 3;
 
   const dial: Dial = ((neg.negotiation_dial as Dial) ?? 'balanced');
 
@@ -146,7 +147,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
       bid: it.price_per_kg,
       prevBid: history.proposals.length > 0 ? history.proposals[history.proposals.length - 1] : null,
       prevCounter: history.counters.length > 0 ? history.counters[history.counters.length - 1] : null,
-      round: nextRound as 1 | 2 | 3,
+      cycle,
       dial,
     });
     return {
@@ -179,6 +180,7 @@ Deno.serve(async (req: Request): Promise<Response> => {
   return json({
     success: true,
     round: nextRound,
+    cycle,
     items: itemsWithCounters.map((i) => ({
       offer_item_id: i.offer_item_id,
       counter_price_per_kg: i.counter_price_per_kg,
