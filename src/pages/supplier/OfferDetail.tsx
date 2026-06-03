@@ -488,11 +488,12 @@ export default function SupplierOfferDetail() {
             const s = statusMap[n.status] ?? { label: n.status.replace(/_/g, " "), bg: "#fef3c7", fg: "#92400e" };
             const buyerName = n.buyer?.name?.trim() || `Buyer #${n.buyer_company_id.slice(0, 8)}`;
             const flag = countryFlag(n.buyer?.country);
+            const negBasePath = isAdminCtx ? "/admin/negotiations" : "/supplier/negotiations";
             return (
               <a
                 key={n.id}
-                href={`/supplier/negotiations/${n.id}`}
-                onClick={(e) => { e.preventDefault(); navigate(`/supplier/negotiations/${n.id}`); }}
+                href={`${negBasePath}/${n.id}`}
+                onClick={(e) => { e.preventDefault(); navigate(`${negBasePath}/${n.id}`); }}
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
