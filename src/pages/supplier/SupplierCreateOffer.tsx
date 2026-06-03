@@ -1275,6 +1275,8 @@ export default function SupplierCreateOffer() {
             request_id: fromRequest?.requestId ?? null,
             cut_region: cutRegion,
             allow_quantity_negotiation: allowQtyNegotiation,
+            negotiation_mode: negotiationMode,
+            negotiation_dial: negotiationDial,
           })
           .select("id, offer_number")
           .single();
