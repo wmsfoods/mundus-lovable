@@ -412,6 +412,26 @@ export default function SupplierOfferDetail() {
       >
         <ShareIcon size={14} /> {t("supplier.offers.detail.share")}
       </button>
+      <Popover>
+        <PopoverTrigger asChild>
+          <button type="button" className="btn-tb" title="Negotiation handling">
+            {negMode === "auto" ? "🤖" : "✋"}{" "}
+            {negMode === "auto" ? `Auto · ${negDial === "protect_margin" ? "Protect" : negDial === "win_deal" ? "Win" : "Balanced"}` : "Manual"}
+          </button>
+        </PopoverTrigger>
+        <PopoverContent align="end" className="w-[320px] p-3">
+          <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginBottom: 8 }}>
+            Switch how this offer answers new buyer bids. Flipping back to Manual stops auto-responses on new bids.
+          </div>
+          <NegotiationHandlingControl
+            mode={negMode}
+            dial={negDial}
+            onChange={(next) => persistNegHandling(next.mode, next.dial)}
+            variant="section"
+            disabled={negSaving}
+          />
+        </PopoverContent>
+      </Popover>
     </>
   );
 
