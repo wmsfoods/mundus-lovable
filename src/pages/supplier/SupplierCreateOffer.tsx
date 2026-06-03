@@ -2406,6 +2406,18 @@ export default function SupplierCreateOffer() {
                 </div>
               </div>
             </label>
+
+            {/* Auto-negotiation (opt-in) */}
+            <div style={{ marginTop: 12 }}>
+              <NegotiationHandlingControl
+                mode={negotiationMode}
+                dial={negotiationDial}
+                onChange={(next) => {
+                  setNegotiationMode(next.mode);
+                  setNegotiationDial(next.dial);
+                }}
+              />
+            </div>
           </div>
 
           {/* Payment terms */}
