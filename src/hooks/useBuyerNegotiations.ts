@@ -17,7 +17,7 @@ export type BuyerNegotiationBid = {
   round: number;
   maxRounds: number;
   yourBidUsd: number;
-  supplierCounterUsd: number;
+  supplierCounterUsd: number | null;
   originPort: string;
   originCountry: string;
   status: BuyerNegotiationStatus;
