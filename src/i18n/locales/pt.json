@@ -3600,5 +3600,30 @@
         "body": "Comece publicando sua primeira oferta."
       }
     }
+  },
+  "negotiationHandling": {
+    "title": "Negotiation handling",
+    "default": "default",
+    "dialLabel": "Negotiation style",
+    "mode": {
+      "manual": "Manual",
+      "auto": "Automatic",
+      "manualDesc": "You handle every counter-offer yourself.",
+      "autoDesc": "We negotiate for you using the dial below (supervised)."
+    },
+    "dial": {
+      "protect_margin": {
+        "title": "Protect margin",
+        "desc": "Fights hardest on price — may lose some deals."
+      },
+      "balanced": {
+        "title": "Balanced",
+        "desc": "A mix of holding price and closing the deal."
+      },
+      "win_deal": {
+        "title": "Win the deal",
+        "desc": "Prioritizes closing — concedes more on price."
+      }
+    }
   }
 }
