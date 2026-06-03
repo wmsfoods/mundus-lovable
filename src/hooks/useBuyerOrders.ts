@@ -103,6 +103,7 @@ export function useBuyerOrders() {
   const [error, setError] = useState<Error | null>(null);
   const { company, loading: companyLoading } = useCurrentCompany();
   const { scopeIds, loading: scopeLoading } = useBuyerScope();
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (companyLoading || scopeLoading) return;
@@ -110,7 +111,7 @@ export function useBuyerOrders() {
     let cancelled = false;
     let reloadTimer: ReturnType<typeof setTimeout> | null = null;
     const load = async () => {
-      setLoading(true);
+      if (!hasLoadedRef.current) setLoading(true);
       const { data: rows, error: qErr } = await supabase
         .from('orders')
         .select(SELECT)
@@ -125,6 +126,7 @@ export function useBuyerOrders() {
       } else {
         setData(((rows ?? []) as unknown as OrderRow[]).map(mapRow));
       }
+      hasLoadedRef.current = true;
       setLoading(false);
     };
     void load();
