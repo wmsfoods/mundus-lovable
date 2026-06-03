@@ -6,6 +6,7 @@ import { notifyCompanyUsers } from "@/lib/notifications";
 import { useTranslation } from "react-i18next";
 import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
+import NegotiationHandlingControl, { type NegotiationMode, type NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
@@ -402,19 +403,25 @@ export default function SupplierCreateOffer() {
   const [certifications, setCertifications] = useState<string[]>([]);
   // Whether buyers can edit per-item quantities in chat proposals (total must still match).
   const [allowQtyNegotiation, setAllowQtyNegotiation] = useState<boolean>(false);
+  const [negotiationMode, setNegotiationMode] = useState<NegotiationMode>("manual");
+  const [negotiationDial, setNegotiationDial] = useState<NegotiationDial>("balanced");
 
   // Hydrate allow_quantity_negotiation when editing an existing offer.
   useEffect(() => {
     if (!editOffer?.offerId) return;
     supabase
       .from("offers")
-      .select("allow_quantity_negotiation")
+      .select("allow_quantity_negotiation, negotiation_mode, negotiation_dial")
       .eq("id", editOffer.offerId)
       .maybeSingle()
       .then(({ data }) => {
         if (data && typeof (data as any).allow_quantity_negotiation === "boolean") {
           setAllowQtyNegotiation(Boolean((data as any).allow_quantity_negotiation));
         }
+        const m = (data as any)?.negotiation_mode;
+        if (m === "manual" || m === "auto") setNegotiationMode(m);
+        const d = (data as any)?.negotiation_dial;
+        if (d === "protect_margin" || d === "balanced" || d === "win_deal") setNegotiationDial(d);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editOffer?.offerId]);
@@ -1225,6 +1232,8 @@ export default function SupplierCreateOffer() {
               ...(originCountryVal ? { origin_country: originCountryVal } : {}),
               ...(originPortLabel ? { origin_port: originPortLabel } : {}),
               allow_quantity_negotiation: allowQtyNegotiation,
+              negotiation_mode: negotiationMode,
+              negotiation_dial: negotiationDial,
               updated_at: new Date().toISOString(),
             })
             .eq("id", editOffer.offerId);
@@ -1266,6 +1275,8 @@ export default function SupplierCreateOffer() {
             request_id: fromRequest?.requestId ?? null,
             cut_region: cutRegion,
             allow_quantity_negotiation: allowQtyNegotiation,
+            negotiation_mode: negotiationMode,
+            negotiation_dial: negotiationDial,
           })
           .select("id, offer_number")
           .single();
@@ -2403,6 +2414,15 @@ export default function SupplierCreateOffer() {
               {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
             </select>
             <p className="cov4-hint">From your supplier preferences — editable per offer</p>
+          </div>
+
+          {/* Negotiation handling (Manual vs Automatic) */}
+          <div className="cov4-sec">
+            <NegotiationHandlingControl
+              mode={negotiationMode}
+              dial={negotiationDial}
+              onChange={(m, d) => { setNegotiationMode(m); setNegotiationDial(d); }}
+            />
           </div>
 
           {/* Distribution */}
