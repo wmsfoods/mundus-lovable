@@ -73,6 +73,11 @@ export type RealNegotiationRow = {
         price_per_kg: number;
         rule: string | null;
         is_final: boolean | null;
+      } | {
+        id: string;
+        price_per_kg: number;
+        rule: string | null;
+        is_final: boolean | null;
       }[] | null;
     }[];
   }[];

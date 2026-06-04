@@ -95,6 +95,31 @@ export function isCounterExhausted(neg: RealNegotiationRow | null | undefined): 
   return getMaxRaw(neg) >= MAX_RAW_ROUNDS;
 }
 
+export function getCutRoundPrice(
+  rawRound: number,
+  cut: RealNegotiationRow["rounds"][number]["cut_rounds"][number],
+): number | null {
+  if (rawRound % 2 === 1) return Number(cut.price_per_kg);
+
+  const rawCounter = cut.counter_proposals as unknown;
+  const counterProposal = Array.isArray(rawCounter)
+    ? (rawCounter[0] as { price_per_kg?: number | string } | undefined)
+    : (rawCounter as { price_per_kg?: number | string } | null);
+
+  if (counterProposal?.price_per_kg != null) return Number(counterProposal.price_per_kg);
+  return rawCounter == null ? Number(cut.price_per_kg) : null;
+}
+
+export function getRoundTotalUsd(round: RealNegotiationRow["rounds"][number]): number | null {
+  let total = 0;
+  for (const cut of round.cut_rounds ?? []) {
+    const price = getCutRoundPrice(round.round, cut);
+    if (price == null) return null;
+    total += price * Number(cut.quantity_kg);
+  }
+  return total;
+}
+
 /** ISO timestamp 24h from now (or custom hours). */
 export function nextExpirationIso(hours = EXPIRATION_HOURS): string {
   return new Date(Date.now() + hours * 3600_000).toISOString();

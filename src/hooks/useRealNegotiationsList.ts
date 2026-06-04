@@ -16,7 +16,7 @@ import {
 } from "./useRealNegotiation";
 import type { ParentOffer, NegotiationBid, NegotiationDetail, NegotiationProduct, NegotiationRound } from "./useNegotiations";
 import type { BuyerParentOffer, BuyerNegotiationBid, BuyerNegotiationDetail, BuyerNegotiationProduct, BuyerNegotiationRound } from "./useBuyerNegotiations";
-import { MAX_DISPLAY_ROUNDS } from "@/lib/negotiationEngine";
+import { MAX_DISPLAY_ROUNDS, getCutRoundPrice } from "@/lib/negotiationEngine";
 import { formatOfferNumber } from "@/lib/offerNumber";
 
 export const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
@@ -171,20 +171,7 @@ function priceForCut(
   rawRound: number,
   c: RealNegotiationRow["rounds"][number]["cut_rounds"][number],
 ): number | null {
-  if (roundTypeFor(rawRound) === "counter") {
-    // counter_proposals has UNIQUE(cut_round_id), so PostgREST embeds it as
-    // a SINGLE OBJECT (or null), not an array. Accept both shapes defensively.
-    const raw = c.counter_proposals as unknown;
-    const cp = Array.isArray(raw)
-      ? (raw[0] as { price_per_kg?: number | string } | undefined)
-      : (raw as { price_per_kg?: number | string } | null);
-    if (cp && cp.price_per_kg != null) return Number(cp.price_per_kg);
-    // No counter_proposals row → manual flow: counter price lives directly in
-    // cut_rounds.price_per_kg.
-    if (cp == null) return Number(c.price_per_kg);
-    return null;
-  }
-  return Number(c.price_per_kg);
+  return getCutRoundPrice(rawRound, c);
 }
 
 function lastTotals(r: RealNegotiationRow) {
