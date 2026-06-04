@@ -8,6 +8,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { useSupplierOfferData, type OfferMarket } from "@/hooks/useSupplierOfferData";
 import { usePaymentTerms } from "@/hooks/usePaymentTerms";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { NumberInput } from "@/components/inputs/NumberInput";
 import {
   containerCapacityKg,
   fmtPrice,
@@ -466,10 +467,12 @@ export default function SupplierCreateAuction() {
               <input type="checkbox" checked={uniformFreight} onChange={() => setUniformFreight((v) => !v)} />
               <span style={{ fontSize: 12, fontWeight: 600 }}>🌐 Same freight for all markets</span>
               {uniformFreight && (
-                <input
-                  type="number" step="0.01" placeholder="US$/kg"
-                  value={uniformFreightValue}
-                  onChange={(e) => setUniformFreightValue(e.target.value)}
+                <NumberInput
+                  kind="price"
+                  unit="kg"
+                  placeholder="US$/kg"
+                  valueKg={uniformFreightValue}
+                  onChangeKg={(v) => setUniformFreightValue(v)}
                   style={{ marginLeft: "auto", padding: "4px 8px", border: "1px solid #D1D5DB", borderRadius: 6, width: 120, fontSize: 12 }}
                 />
               )}
@@ -482,13 +485,15 @@ export default function SupplierCreateAuction() {
               {selMarkets.map((m) => (
                 <div key={m.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", background: "#F9FAFB", borderRadius: 6, border: "1px solid #E5E7EB" }}>
                   <span style={{ fontSize: 12, fontWeight: 600, flex: 1 }}>{m.f} {m.n}</span>
-                  <input
-                    type="number" step="0.01" placeholder="Freight US$/kg"
-                    value={mktCfg[m.id]?.gf || ""}
-                    onChange={(e) =>
+                  <NumberInput
+                    kind="price"
+                    unit="kg"
+                    placeholder="Freight US$/kg"
+                    valueKg={mktCfg[m.id]?.gf || ""}
+                    onChangeKg={(v) =>
                       setMktCfg((prev) => ({
                         ...prev,
-                        [m.id]: { ...(prev[m.id] || { sp: m.p.map((p) => p.id), sm: true, pf: {} }), gf: e.target.value },
+                        [m.id]: { ...(prev[m.id] || { sp: m.p.map((p) => p.id), sm: true, pf: {} }), gf: v },
                       }))
                     }
                     style={{ width: 120, padding: "4px 8px", border: "1px solid #D1D5DB", borderRadius: 6, fontSize: 12 }}
@@ -707,39 +712,27 @@ export default function SupplierCreateAuction() {
                     <td><select value={nf.gr}   onChange={(e) => setNf((p) => ({ ...p, gr: e.target.value }))}>{GRADES.map((s) => <option key={s}>{s}</option>)}</select></td>
                     <td><select value={nf.ag}   onChange={(e) => setNf((p) => ({ ...p, ag: e.target.value }))}>{AGINGS.map((s) => <option key={s}>{s}</option>)}</select></td>
                     <td className="num">
-                      <input
-                        type="number" placeholder={qtyPh}
-                        value={nf.qty === "" ? "" : (unit === "kg" ? nf.qty : toDisplay(parseFloat(nf.qty) || 0, "weight", unit).toFixed(0))}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (v === "") return setNf((p) => ({ ...p, qty: "" }));
-                          const kg = fromDisplay(parseFloat(v) || 0, "weight", unit);
-                          setNf((p) => ({ ...p, qty: String(kg) }));
-                        }}
+                      <NumberInput
+                        kind="weight" unit={unit}
+                        placeholder={qtyPh}
+                        valueKg={nf.qty}
+                        onChangeKg={(v) => setNf((p) => ({ ...p, qty: v }))}
                       />
                     </td>
                     <td className="num">
-                      <input
-                        type="number" step="0.01" placeholder={askPh}
-                        value={nf.ask === "" ? "" : (unit === "kg" ? nf.ask : toDisplay(parseFloat(nf.ask) || 0, "price", unit).toFixed(2))}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (v === "") return setNf((p) => ({ ...p, ask: "" }));
-                          const kg = fromDisplay(parseFloat(v) || 0, "price", unit);
-                          setNf((p) => ({ ...p, ask: String(kg) }));
-                        }}
+                      <NumberInput
+                        kind="price" unit={unit}
+                        placeholder={askPh}
+                        valueKg={nf.ask}
+                        onChangeKg={(v) => setNf((p) => ({ ...p, ask: v }))}
                       />
                     </td>
                     <td className="num">
-                      <input
-                        type="number" step="0.01" placeholder={floorPh}
-                        value={nf.floor === "" ? "" : (unit === "kg" ? nf.floor : toDisplay(parseFloat(nf.floor) || 0, "price", unit).toFixed(2))}
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (v === "") return setNf((p) => ({ ...p, floor: "" }));
-                          const kg = fromDisplay(parseFloat(v) || 0, "price", unit);
-                          setNf((p) => ({ ...p, floor: String(kg) }));
-                        }}
+                      <NumberInput
+                        kind="price" unit={unit}
+                        placeholder={floorPh}
+                        valueKg={nf.floor}
+                        onChangeKg={(v) => setNf((p) => ({ ...p, floor: v }))}
                       />
                     </td>
                     <td><input type="text" placeholder="Notes…" value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
@@ -923,14 +916,7 @@ function PricingRow({
       <div className="cov4-ip">
         <span className="cov4-ip-px">US{pLbl}</span>
         <input
-          type="number" step="0.01" placeholder={placeholder}
-          value={display}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v === "") return onChangeKg("");
-            const kg = fromDisplay(parseFloat(v) || 0, "price", unit);
-            onChangeKg(String(kg));
-          }}
+          ref={undefined as never}
         />
       </div>
     </div>
