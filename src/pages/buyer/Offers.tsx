@@ -535,6 +535,10 @@ export default function BuyerOffers() {
                 <option value="volumeDesc">{t("buyer.offers.sort.volumeDesc", "Largest volume")}</option>
               </select>
             </div>
+            <div className="so-view-toggle">
+              <button type="button" className={viewMode === "grid" ? "is-active" : ""} onClick={() => setViewMode("grid")} aria-label="Grid view"><GridIcon size={14} /></button>
+              <button type="button" className={viewMode === "list" ? "is-active" : ""} onClick={() => setViewMode("list")} aria-label="List view"><ListIcon size={14} /></button>
+            </div>
           </div>
         )}
         <OffersFilterBar
