@@ -1747,8 +1747,8 @@ export default function SupplierCreateOffer() {
       <header className="cov4-header">
         <div className="cov4-hdr-l">
           <div>
-            <h1>{isEditing && editOffer ? `Edit offer ${formatOfferNumber(editOffer.offerNumber)}` : "Create new offer"}</h1>
-            <p>Markets · Products · Pricing · Distribution</p>
+            <h1>{isEditing && editOffer ? ta("editHeader", "Edit offer {{n}}", { n: formatOfferNumber(editOffer.offerNumber) }) : ta("header", "Create new offer")}</h1>
+            <p>{ta("crumb", "Markets · Products · Pricing · Distribution")}</p>
           </div>
         </div>
         <div className="cov4-hdr-r">
@@ -1769,7 +1769,7 @@ export default function SupplierCreateOffer() {
             className={`cov4-preview-btn ${showPreview ? "on" : ""}`}
             onClick={() => setShowPreview((v) => !v)}
           >
-            {showPreview ? "✕ Close preview" : "👁 Live preview"}
+            {showPreview ? ta("closePreview", "✕ Close preview") : ta("livePreview", "👁 Live preview")}
           </button>
         </div>
       </header>
@@ -1777,12 +1777,12 @@ export default function SupplierCreateOffer() {
       <div className={`cov4-grid ${showPreview ? "with-preview" : ""}`}>
         {/* ═══════════ LEFT PANEL ═══════════ */}
         <aside className="cov4-panel cov4-panel-l">
-          <SectionHeader icon="🌍" t="Markets & freight" s="Countries, ports, freight costs" />
+          <SectionHeader icon="🌍" t={ta("secMarketsTitle", "Markets & freight")} s={ta("secMarketsSub", "Countries, ports, freight costs")} />
 
           {/* ── Origin Port ─────────────────────────────────── */}
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>
-              Origin Port
+              {ta("originPort", "Origin Port")}
             </label>
             {supplierCountries.length === 1 && (
               <span style={{ fontSize: 12, color: "#6B7280", marginBottom: 6, display: "block" }}>
@@ -1811,7 +1811,7 @@ export default function SupplierCreateOffer() {
                 >
                   {(() => {
                     const p = originPorts.find((x) => x.id === originPortId);
-                    if (!p) return "Select origin port…";
+                    if (!p) return ta("originPortPh", "Select origin port…");
                     return `${p.name}${p.code ? ` (${p.code})` : ""} — ${p.country}`;
                   })()}
                   <span style={{ color: "#9CA3AF" }}>▾</span>
@@ -1860,7 +1860,7 @@ export default function SupplierCreateOffer() {
             </Popover>
             {supplierCountries.length > 1 && (
               <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
-                Showing ports from: {supplierCountries.join(", ")}
+                {ta("showingPortsFrom", "Showing ports from:")} {supplierCountries.join(", ")}
               </p>
             )}
           </div>
