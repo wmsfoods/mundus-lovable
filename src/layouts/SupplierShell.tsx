@@ -70,6 +70,7 @@ function SupplierShellInner() {
 
   const SUPPLIER_NAV: SidebarEntry[] = [
     { to: "/supplier", label: t("shell.nav.home"), icon: HomeIcon, end: true },
+    { to: "/supplier/my-customers", label: t("shell.nav.myCustomers"), icon: UsersIcon },
     {
       type: "section",
       key: "marketplace",
@@ -90,7 +91,6 @@ function SupplierShellInner() {
       icon: Settings2 as unknown as SidebarItem["icon"],
       children: [
         { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
-        { to: "/supplier/customers", label: t("shell.nav.myCustomers"), icon: UsersIcon },
       ],
     },
     {
