@@ -1535,8 +1535,8 @@ export default function SupplierCreateOffer() {
 
       toast.success(
         isEditing
-          ? `Offer ${formatOfferNumber(offer.offer_number)} updated successfully!`
-          : `Offer ${formatOfferNumber(offer.offer_number)} published successfully!`,
+          ? ta("toastOfferUpdated", "Offer {{n}} updated successfully!", { n: formatOfferNumber(offer.offer_number) })
+          : ta("toastOfferPublished", "Offer {{n}} published successfully!", { n: formatOfferNumber(offer.offer_number) }),
       );
       try {
         const { auditLog } = await import("@/lib/auditLog");
