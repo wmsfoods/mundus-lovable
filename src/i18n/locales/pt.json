@@ -259,7 +259,8 @@
       "expand": "Expandir",
       "collapse": "Recolher",
       "closeMenu": "Fechar menu",
-      "navigation": "Navegação"
+      "navigation": "Navegação",
+      "myCustomers": "Meus Clientes"
     },
     "bottom": {
       "create": "Criar",

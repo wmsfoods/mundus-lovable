@@ -259,7 +259,8 @@
       "expand": "Développer",
       "collapse": "Réduire",
       "closeMenu": "Fermer le menu",
-      "navigation": "Navigation"
+      "navigation": "Navigation",
+      "myCustomers": "Mes Clients"
     },
     "bottom": {
       "create": "Créer",

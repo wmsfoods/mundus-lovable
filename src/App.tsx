@@ -101,6 +101,7 @@ import SupplierRequestDetail from "./pages/supplier/RequestDetail.tsx";
 import SupplierSales from "./pages/supplier/Sales.tsx";
 import SupplierSaleDetail from "./pages/supplier/SaleDetail.tsx";
 import SupplierUsers from "./pages/supplier/SupplierUsers.tsx";
+import SupplierMyCustomers from "./pages/supplier/MyCustomers.tsx";
 import SupplierNegotiations from "./pages/supplier/SupplierNegotiations.tsx";
 import SupplierNegotiationDetail from "./pages/supplier/SupplierNegotiationDetail.tsx";
 import SupplierCompany from "./pages/supplier/SupplierCompany.tsx";
@@ -231,6 +232,7 @@ const App = () => (
               <Route path="sales" element={<SupplierSales />} />
               <Route path="sales/:id" element={<SupplierSaleDetail />} />
               <Route path="users" element={<SupplierUsers />} />
+              <Route path="customers" element={<SupplierMyCustomers />} />
               <Route path="company" element={<SupplierCompany />} />
               <Route path="offices" element={<SupplierOffices />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
