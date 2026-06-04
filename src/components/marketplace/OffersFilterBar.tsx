@@ -33,6 +33,8 @@ export type OffersFilterState = {
   halal: TriValue;
   kosher: TriValue;
   search: string;
+  likedOnly: boolean;
+  favoritedOnly: boolean;
 };
 
 export const DEFAULT_OFFERS_FILTER: OffersFilterState = {
@@ -43,6 +45,8 @@ export const DEFAULT_OFFERS_FILTER: OffersFilterState = {
   halal: "any",
   kosher: "any",
   search: "",
+  likedOnly: false,
+  favoritedOnly: false,
 };
 
 export function countActiveOfferFilters(s: OffersFilterState): number {
@@ -54,6 +58,8 @@ export function countActiveOfferFilters(s: OffersFilterState): number {
   if (s.halal !== "any") n++;
   if (s.kosher !== "any") n++;
   if (s.search.trim()) n++;
+  if (s.likedOnly) n++;
+  if (s.favoritedOnly) n++;
   return n;
 }
 
@@ -234,6 +240,27 @@ export function OffersFilterBar({
                   </Section>
                 </>
               )}
+
+              <Section title="Engagement">
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "4px 0", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={!!draft.likedOnly}
+                    onChange={(e) => updateDraft({ likedOnly: e.target.checked })}
+                    style={{ accentColor: "hsl(335, 55%, 45%)" }}
+                  />
+                  Liked by my company
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "4px 0", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={!!draft.favoritedOnly}
+                    onChange={(e) => updateDraft({ favoritedOnly: e.target.checked })}
+                    style={{ accentColor: "hsl(335, 55%, 45%)" }}
+                  />
+                  Favorited by my company
+                </label>
+              </Section>
             </div>
 
             <div className="ofb-sheet-foot">

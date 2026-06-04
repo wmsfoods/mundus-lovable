@@ -19,6 +19,8 @@ import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
 import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
 import type { MockAuction } from "@/data/mockAuctions";
 import { GlowCard } from "@/components/ui/spotlight-card";
+import { useOfferSocialBatch, type SocialCounts } from "@/hooks/useOfferSocial";
+import { OfferSocialBar } from "@/components/offers/OfferSocialBar";
 import { Gavel } from "lucide-react";
 import {
   OffersFilterBar,
@@ -68,10 +70,18 @@ export function OfferCard({
   offer,
   onOpen,
   myNeg,
+  social,
+  onLike,
+  onFavorite,
+  onShare,
 }: {
   offer: OfferWithDetails;
   onOpen: () => void;
   myNeg?: { id: string; status: string };
+  social?: SocialCounts;
+  onLike?: (id: string) => void;
+  onFavorite?: (id: string) => void;
+  onShare?: (id: string, channel?: string) => void;
 }) {
   const { t } = useTranslation();
   const items = offer.items ?? [];
@@ -304,6 +314,19 @@ export function OfferCard({
           <ArrowRightIcon size={12} />
         </span>
       </div>
+      {social && (
+        <div style={{ borderTop: "1px solid #f1f1f3", padding: "8px 12px", marginTop: 4 }}>
+          <OfferSocialBar
+            offerId={offer.id}
+            counts={social}
+            onToggleLike={onLike}
+            onToggleFavorite={onFavorite}
+            onShare={onShare}
+            shareUrl={`${window.location.origin}/public/offers/${offer.id}`}
+            shareTitle="Mundus Offer"
+          />
+        </div>
+      )}
     </article>
     </GlowCard>
   );
@@ -477,6 +500,18 @@ export default function BuyerOffers() {
     setAuctionsOnly(false);
   };
 
+  // Social engagement (likes / favorites / shares) for the visible cards.
+  const visibleIds = useMemo(() => filtered.map((o) => o.id), [filtered]);
+  const social = useOfferSocialBatch(visibleIds);
+
+  // Apply optional Liked / Favorited filters AFTER social loads.
+  const visible = useMemo(() => {
+    let copy = filtered;
+    if (filter.likedOnly) copy = copy.filter((o) => social.get(o.id).isLiked);
+    if (filter.favoritedOnly) copy = copy.filter((o) => social.get(o.id).isFavorited);
+    return copy;
+  }, [filtered, filter.likedOnly, filter.favoritedOnly, social]);
+
   return (
     <>
       {isMobile && (
@@ -613,7 +648,7 @@ export default function BuyerOffers() {
         <div className="offers-error">{t("buyer.offers.loadError", { error })}</div>
       ) : loading ? (
         <div className="offers-loading">{t("buyer.offers.loadingShort")}</div>
-      ) : filtered.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="empty-state">
           <SearchIcon size={28} stroke="var(--g300)" />
           <p>{hasActiveFilters ? t("buyer.offers.noResults", "No offers match your filters.") : t("buyer.offers.empty")}</p>
@@ -642,7 +677,7 @@ export default function BuyerOffers() {
                 </tr>
               </thead>
               <tbody>
-                {(auctionsOnly ? [] : filtered).map((offer) => {
+                {(auctionsOnly ? [] : visible).map((offer) => {
                   const items = offer.items ?? [];
                   const mixed = items.length > 1;
                   const first = items[0];
@@ -706,12 +741,16 @@ export default function BuyerOffers() {
         </div>
       ) : (
         <div className="card-row">
-          {(auctionsOnly ? [] : filtered).map((offer) => (
+          {(auctionsOnly ? [] : visible).map((offer) => (
             <OfferCard
               key={offer.id}
               offer={offer}
               myNeg={myNegMap[offer.id]}
               onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+              social={social.get(offer.id)}
+              onLike={social.toggleLike}
+              onFavorite={social.toggleFavorite}
+              onShare={social.recordShare}
             />
           ))}
         </div>
