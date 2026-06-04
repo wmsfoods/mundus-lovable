@@ -741,12 +741,16 @@ export default function BuyerOffers() {
         </div>
       ) : (
         <div className="card-row">
-          {(auctionsOnly ? [] : filtered).map((offer) => (
+          {(auctionsOnly ? [] : visible).map((offer) => (
             <OfferCard
               key={offer.id}
               offer={offer}
               myNeg={myNegMap[offer.id]}
               onOpen={() => navigate(`/buyer/offers/${offer.id}`)}
+              social={social.get(offer.id)}
+              onLike={social.toggleLike}
+              onFavorite={social.toggleFavorite}
+              onShare={social.recordShare}
             />
           ))}
         </div>
