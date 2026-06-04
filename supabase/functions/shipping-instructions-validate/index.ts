@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { checkRateLimit, rateLimitResponse, getClientIp } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -9,16 +10,24 @@ const corsHeaders = {
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    const ip = getClientIp(req);
+    const rl = await checkRateLimit(supabase, {
+      key: `si-validate:ip:${ip}`,
+      windowSeconds: 60,
+      max: 20,
+    });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const { token } = await req.json();
     if (!token) {
       return new Response(JSON.stringify({ valid: false, error: 'missing_token' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
 
     const { data: reqRow } = await supabase
       .from('shipping_instructions_requests')
