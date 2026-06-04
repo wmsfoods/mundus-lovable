@@ -241,7 +241,14 @@
       "mundusIntel": "Mundus Intel",
       "marketplace": "Marketplace",
       "operations": "Opérations",
-      "admin": "Admin"
+      "admin": "Admin",
+      "new": "NOUVEAU",
+      "expandSidebar": "Développer le menu latéral",
+      "collapseSidebar": "Réduire le menu latéral",
+      "expand": "Développer",
+      "collapse": "Réduire",
+      "closeMenu": "Fermer le menu",
+      "navigation": "Navigation"
     },
     "bottom": {
       "create": "Créer",

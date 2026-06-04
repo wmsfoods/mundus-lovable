@@ -241,7 +241,14 @@
       "mundusIntel": "Mundus Intel",
       "marketplace": "Marketplace",
       "operations": "运营",
-      "admin": "管理员"
+      "admin": "管理员",
+      "new": "新",
+      "expandSidebar": "展开侧边栏",
+      "collapseSidebar": "收起侧边栏",
+      "expand": "展开",
+      "collapse": "收起",
+      "closeMenu": "关闭菜单",
+      "navigation": "导航"
     },
     "bottom": {
       "create": "创建",
