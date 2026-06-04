@@ -52,6 +52,16 @@
       "body": "您正在确认此交易。供应商仍需给出最终确认——一旦对方回复，我们会立即通知您。",
       "confirm": "确认交易",
       "cancel": "取消"
+    },
+    "statuses": {
+      "scl": {
+        "invited": "已邀请",
+        "pending_signup": "待注册",
+        "accepted": "已接受",
+        "declined": "已拒绝",
+        "revoked": "已撤销",
+        "expired": "已过期"
+      }
     }
   },
   "auth": {
@@ -1052,6 +1062,28 @@
     "marketplace": {
       "nav": "市场",
       "title": "市场"
+    },
+    "connectedSuppliers": {
+      "title": "已连接的供应商",
+      "table": {
+        "supplier": "供应商",
+        "office": "办公室",
+        "country": "国家",
+        "status": "状态",
+        "invitedAt": "邀请时间",
+        "actions": "操作"
+      },
+      "revoke": "撤销",
+      "accept": "接受",
+      "decline": "拒绝",
+      "inviteNotification": "有供应商希望与您建立连接",
+      "confirmRevoke": {
+        "title": "撤销连接?",
+        "body": "这将结束您与该供应商办公室的业务关系。日后可以再次被邀请。",
+        "confirm": "撤销",
+        "cancel": "取消"
+      },
+      "empty": "暂无已连接的供应商。"
     }
   },
   "supplier": {
@@ -2378,6 +2410,54 @@
       "dialBalancedDesc": "默认。合理让步,以公平节奏达成交易。",
       "dialWinLabel": "赢得交易",
       "dialWinDesc": "积极。更快向底价靠近以促成买家成交。"
+    },
+    "myCustomers": {
+      "title": "我的客户",
+      "searchPlaceholder": "按公司或邮箱搜索",
+      "statusFilter": {
+        "all": "所有状态",
+        "invited": "已邀请",
+        "pending_signup": "待注册",
+        "accepted": "已接受",
+        "declined": "已拒绝",
+        "revoked": "已撤销",
+        "expired": "已过期"
+      },
+      "inviteNewCustomer": "邀请新客户",
+      "empty": "暂无客户。邀请您的第一位买家。",
+      "modal": {
+        "title": "邀请客户",
+        "companyName": "公司名称",
+        "contactName": "联系人姓名",
+        "email": "邮箱",
+        "taxId": "税号",
+        "phone": "电话",
+        "country": "国家",
+        "privateLabel": "私有标签 / 别名",
+        "notes": "备注",
+        "sendInvite": "发送邀请",
+        "cancel": "取消",
+        "resend": "重新发送邀请"
+      },
+      "dedup": {
+        "existing_user": "该买家已注册 Mundus 帐户,将直接关联。",
+        "pending_invite": "该邮箱已有待处理邀请,有效期至 {{expires_at}}。",
+        "existing_company_new_contact": "该公司已在 Mundus 中,将添加新联系人。",
+        "new_buyer": "新买家 — 将发送注册邀请。",
+        "invalid_input": "请输入有效的邮箱地址。"
+      },
+      "toast": {
+        "invited_existing_buyer": "买家已关联到您的办公室。",
+        "reinvited_existing_buyer": "邀请已重新发送。",
+        "invited_new_buyer": "注册邀请已发送。",
+        "invited_new_contact_existing_company": "联系人已添加到现有买家。",
+        "new_contact_existing_link": "联系人已添加到现有关联。"
+      },
+      "errors": {
+        "already_in_list": "该买家已在您的客户列表中。",
+        "cooldown_active": "您可在 {{retry_after}} 后重新邀请该买家。",
+        "max_reinvites_reached": "您已达到该买家的最大重邀请次数。"
+      }
     }
   },
   "dealDetail": {
