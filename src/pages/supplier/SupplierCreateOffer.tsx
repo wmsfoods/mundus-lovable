@@ -599,7 +599,7 @@ export default function SupplierCreateOffer() {
 
   useEffect(() => {
     if (fromRequestId) {
-      toast.success(`Prefilled from request #${fromRequestId}`, { duration: 4000 });
+      toast.success(ta("toastPrefilled", "Prefilled from request #{{id}}", { id: fromRequestId }), { duration: 4000 });
     }
   }, [fromRequestId]);
 
