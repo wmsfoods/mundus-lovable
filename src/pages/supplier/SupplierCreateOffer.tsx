@@ -1868,7 +1868,7 @@ export default function SupplierCreateOffer() {
           {/* Container & Temp */}
           <div className="cov4-cfg-row">
             <div className="cov4-cfg-g">
-              <span className="cov4-cfg-l">Container</span>
+              <span className="cov4-cfg-l">{ta("container", "Container")}</span>
               <div className="cov4-tgl">
                 {(["20ft", "40ft"] as const).map((opt) => (
                   <button key={opt} type="button" className={csize === opt ? "on" : ""} onClick={() => pickCsize(opt)}>{opt}</button>
@@ -1876,7 +1876,7 @@ export default function SupplierCreateOffer() {
               </div>
             </div>
             <div className="cov4-cfg-g">
-              <span className="cov4-cfg-l">Temperature</span>
+              <span className="cov4-cfg-l">{ta("temperature", "Temperature")}</span>
               <div className="cov4-tgl">
                 {(["Frozen", "Chilled"] as const).map((opt) => (
                   <button key={opt} type="button" className={temp === opt ? "on" : ""} onClick={() => setTemp(opt)}>{opt}</button>
@@ -1884,7 +1884,7 @@ export default function SupplierCreateOffer() {
               </div>
             </div>
             <div className="cov4-cfg-g">
-              <span className="cov4-cfg-l">FCL(s)</span>
+              <span className="cov4-cfg-l">{ta("fcls", "FCL(s)")}</span>
               <input
                 type="number"
                 min={1}
@@ -1892,7 +1892,7 @@ export default function SupplierCreateOffer() {
                 value={containerCount}
                 onChange={(e) => {
                   const n = parseInt(e.target.value) || 1;
-                  if (n > 20) { toast.error("Maximum is 20 containers per offer."); setContainerCount(20); return; }
+                  if (n > 20) { toast.error(ta("maxContainersToast", "Maximum is 20 containers per offer.")); setContainerCount(20); return; }
                   setContainerCount(Math.max(1, n));
                 }}
                 style={{ width: 60, padding: "6px 8px", border: "1.5px solid #D1D5DB", borderRadius: 8, fontSize: 14, fontWeight: 600, textAlign: "center" }}
