@@ -4,6 +4,7 @@ import { Package, Eye, Send, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { DistributeOfferModal } from "@/components/admin/DistributeOfferModal";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { GlowCard } from "@/components/ui/spotlight-card";
 
 type OfferRow = {
   id: string;
@@ -301,7 +302,8 @@ export default function AdminOffers() {
 
           <div className="adm-only-mobile adm-cards-stack">
             {filtered.map(r => (
-              <div key={r.id} className="adm-panel" onClick={() => navigate(`/admin/offers/${r.id}`)} style={{ padding: 12, cursor: "pointer" }}>
+              <GlowCard key={r.id} glowColor="mundus" radius={12}>
+              <div className="adm-panel" onClick={() => navigate(`/admin/offers/${r.id}`)} style={{ padding: 12, cursor: "pointer" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
                   <strong style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace", fontSize: 12 }}>{formatOfferNumber(r.offer_number, r.created_at)}</strong>
                   <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium ${STATUS_COLORS[r.status ?? ""] ?? "bg-zinc-200 text-zinc-700"}`}>
@@ -317,6 +319,7 @@ export default function AdminOffers() {
                   <button type="button" onClick={(e) => { e.stopPropagation(); setDistribute(r); }} style={btnPrimary}>Send</button>
                 </div>
               </div>
+              </GlowCard>
             ))}
           </div>
         </>

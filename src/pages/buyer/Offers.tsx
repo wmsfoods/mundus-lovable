@@ -18,6 +18,7 @@ import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProt
 import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
 import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
 import type { MockAuction } from "@/data/mockAuctions";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { Gavel } from "lucide-react";
 import {
   OffersFilterBar,
@@ -117,6 +118,7 @@ export function OfferCard({
   const destCode = countryToCode(firstMarket);
 
   return (
+    <GlowCard glowColor="mundus" radius={14}>
     <article
       className="oc"
       role="button"
@@ -303,6 +305,7 @@ export function OfferCard({
         </span>
       </div>
     </article>
+    </GlowCard>
   );
 }
 
