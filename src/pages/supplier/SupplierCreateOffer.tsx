@@ -807,14 +807,11 @@ export default function SupplierCreateOffer() {
       setAddRow(true);
     }
 
-    // Distribution: pre-check Marketplace + Specific Customers and select requester.
+    // Distribution: pre-check Marketplace only. Specific-customer prefill is
+    // dropped (Batch 3/5): the FromRequest shape does not carry the buyer's
+    // company_id, and matching by name would misfire with live customer data.
     setDistMarketplace(true);
     setDistAllCustomers(false);
-    setDistSpecific(true);
-    const customer = MOCK_CUSTOMERS.find(
-      (c) => c.name.toLowerCase() === fromRequest.client.toLowerCase()
-    );
-    if (customer) setSelectedCustomers([customer.id]);
   }, [fromRequest, MARKETS, cutsByCategory, setUnit]);
 
   /* Prefill from an existing offer (Clone Offer). */
