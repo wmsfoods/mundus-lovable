@@ -1650,7 +1650,7 @@ export default function SupplierCreateOffer() {
             fontSize: 13,
           }}
         >
-          <strong style={{ color: "#1E40AF" }}>Create offer for:</strong>
+          <strong style={{ color: "#1E40AF" }}>{ta("bannerCreateFor", "Create offer for:")}</strong>
           <select
             value={directorChosenOfficeId ?? ""}
             onChange={(e) => setDirectorChosenOfficeId(e.target.value || null)}
@@ -1692,10 +1692,10 @@ export default function SupplierCreateOffer() {
           }}
         >
           {plantsFallback && (
-            <div>Showing all group plants — office plant access not yet configured.</div>
+            <div>{ta("officeAllPlants", "Showing all group plants — office plant access not yet configured.")}</div>
           )}
           {marketsFallback && (
-            <div>Showing all destination markets — office market access not yet configured.</div>
+            <div>{ta("officeAllMarkets", "Showing all destination markets — office market access not yet configured.")}</div>
           )}
         </div>
       )}
