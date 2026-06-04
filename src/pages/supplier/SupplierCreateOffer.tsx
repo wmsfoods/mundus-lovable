@@ -2812,15 +2812,27 @@ export default function SupplierCreateOffer() {
                       />
                     </td>
                     <td className="num cov4-floor">
-                      <NumberInput
-                        kind="price"
-                        unit={unit}
-                        valueKg={c.floor || ""}
-                        onChangeKg={(v) => updateCutField(c.id, "floor", v)}
-                        placeholder="—"
-                        className="cov4-inline-edit num"
-                        style={{ width: 80, textAlign: "right" }}
-                      />
+                      {(() => {
+                        const badRowFloor = !validatePricePair(c.ask, c.floor).ok;
+                        return (
+                          <NumberInput
+                            kind="price"
+                            unit={unit}
+                            valueKg={c.floor || ""}
+                            onChangeKg={(v) => updateCutField(c.id, "floor", v)}
+                            placeholder="—"
+                            className="cov4-inline-edit num"
+                            style={{
+                              width: 80,
+                              textAlign: "right",
+                              ...(badRowFloor
+                                ? { borderColor: "#dc2626", outline: "1px solid #dc2626" }
+                                : {}),
+                            }}
+                            title={badRowFloor ? "Floor must be ≤ asking" : undefined}
+                          />
+                        );
+                      })()}
                     </td>
                     {multiInco && secondaryIncos.map((s) => {
                       const ovr = cutIncoOverrides[c.id]?.[s];
