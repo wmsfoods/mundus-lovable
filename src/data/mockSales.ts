@@ -49,6 +49,8 @@ export type Sale = {
   totalValueUsd: number;
   cuts: SaleCut[];
   shipmentInfo: ShipmentInfo[];
+  closedAtIso?: string;
+  buyerUserName?: string;
 };
 
 const TBI: ShipmentInfo = {
