@@ -2485,7 +2485,7 @@ export default function SupplierCreateOffer() {
             </button>
             {cutRegion === "us" && (
               <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 380, marginLeft: 8 }}>
-                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef &amp; Pork Product / Cuts (IMPS)</strong>. To switch, use the <strong>🌐 Global Product / Cuts</strong> button above.
+                <Trans i18nKey="supplier.createOffer.screen.usCutsBanner" components={[<strong/>, <strong/>]} />
               </span>
             )}
           </div>
