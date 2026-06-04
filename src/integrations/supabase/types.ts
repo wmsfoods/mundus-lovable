@@ -5116,6 +5116,45 @@ export type Database = {
           },
         ]
       }
+      offer_favorites: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          offer_id: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          offer_id: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          offer_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_favorites_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_favorites_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_items: {
         Row: {
           aging_method: string | null
@@ -5192,6 +5231,45 @@ export type Database = {
           },
         ]
       }
+      offer_likes: {
+        Row: {
+          company_id: string
+          created_at: string
+          id: string
+          offer_id: string
+          user_id: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          id?: string
+          offer_id: string
+          user_id: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          id?: string
+          offer_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_likes_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_likes_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_markets: {
         Row: {
           market_id: string
@@ -5215,6 +5293,41 @@ export type Database = {
           },
           {
             foreignKeyName: "offer_markets_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      offer_shares: {
+        Row: {
+          channel: string | null
+          company_id: string | null
+          created_at: string
+          id: string
+          offer_id: string
+          user_id: string | null
+        }
+        Insert: {
+          channel?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          offer_id: string
+          user_id?: string | null
+        }
+        Update: {
+          channel?: string | null
+          company_id?: string | null
+          created_at?: string
+          id?: string
+          offer_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_shares_offer_id_fkey"
             columns: ["offer_id"]
             isOneToOne: false
             referencedRelation: "offers"
@@ -7455,6 +7568,15 @@ export type Database = {
           minimum_price: number
           offer_id: string
           offer_item_id: string
+        }[]
+      }
+      get_offer_social_counts: {
+        Args: { p_offer_ids: string[] }
+        Returns: {
+          favorites: number
+          likes: number
+          offer_id: string
+          shares: number
         }[]
       }
       get_public_offers: { Args: never; Returns: Json }
