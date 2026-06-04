@@ -48,7 +48,8 @@ function SupplierShellInner() {
   const [sidebarManual, setSidebarManual] = useState<boolean | null>(null);
   const sidebarCollapsed = !isMobile && (sidebarManual ?? focusRoute);
   useEffect(() => { setSidebarManual(null); }, [location.pathname]);
-  const userName = user?.email?.split("@")[0] ?? "User";
+  const { fullName } = useUserFullName();
+  const userName = fullName || (user?.email?.split("@")[0] ?? "User");
   const { openUpsell } = useInsightsUpsell();
   const { isGlobalDirector } = useActiveOffice();
   const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
