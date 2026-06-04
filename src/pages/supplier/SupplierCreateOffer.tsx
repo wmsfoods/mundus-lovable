@@ -1072,13 +1072,13 @@ export default function SupplierCreateOffer() {
 
   const distOk = distMarketplace || distAllCustomers || (distSpecific && selectedCustomers.length > 0);
   const publishSteps = [
-    { key: "markets",  label: "Select at least one destination market", done: selMarkets.length > 0, anchor: "sec-markets" },
-    { key: "cuts",     label: "Add at least one product / cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
-    { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
-    { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
+    { key: "markets",  label: ta("stepMarkets", "Select at least one destination market"), done: selMarkets.length > 0, anchor: "sec-markets" },
+    { key: "cuts",     label: ta("stepCuts", "Add at least one product / cut"),            done: cuts.length > 0,       anchor: "sec-cuts" },
+    { key: "inco",     label: ta("stepInco", "Choose an incoterm"),                      done: selInco.length > 0,    anchor: "sec-inco" },
+    { key: "dist",     label: ta("stepDist", "Pick how to distribute the offer"),        done: distOk,                anchor: "sec-dist" },
     {
       key: "plants",
-      label: "Pick a plant for every cut",
+      label: ta("stepPlants", "Pick a plant for every cut"),
       done:
         cuts.length > 0 &&
         cuts.every((c) =>
