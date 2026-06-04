@@ -3483,6 +3483,9 @@ function SecondaryPriceCell({
   unit?: WeightUnit;
 }) {
   const [editing, setEditing] = useState(false);
+  const { t } = useTranslation();
+  const ta = (k: string, fb: string, opts?: any) =>
+    t(`supplier.createOffer.screen.${k}`, { defaultValue: fb, ...(opts || {}) }) as unknown as string;
   const errStyle = invalid ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : {};
   const errTitle = invalid ? invalidMsg : undefined;
 
@@ -3516,8 +3519,8 @@ function SecondaryPriceCell({
         <button
           type="button"
           onClick={onReset}
-          title="Reset to calculated value"
-          aria-label="Reset"
+          title={ta("titleResetCalc", "Reset to calculated value")}
+          aria-label={ta("ariaReset", "Reset")}
           style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, color: "var(--fg-muted)", padding: 0 }}
         >
           ↺
@@ -3574,8 +3577,8 @@ function SecondaryPriceCell({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        title="Override price"
-        aria-label="Override"
+        title={ta("titleOverride", "Override price")}
+        aria-label={ta("ariaOverride", "Override")}
         style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 11, color: "var(--fg-muted)", padding: 0 }}
       >
         ✎
