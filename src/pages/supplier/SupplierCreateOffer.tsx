@@ -2071,7 +2071,7 @@ export default function SupplierCreateOffer() {
                   <span style={{ fontSize: 16 }}>{m.f}</span>
                   <h3>{m.n}</h3>
                   <span className="cov4-mc-cnt">{c.sp.length}p</span>
-                  <button type="button" className="cov4-rm-btn" onClick={() => toggleMarket(m.id)} aria-label="Remove market">✕</button>
+                  <button type="button" className="cov4-rm-btn" onClick={() => toggleMarket(m.id)} aria-label={ta("ariaRemoveMarket", "Remove market")}>✕</button>
                 </div>
                 <div className="cov4-ports">
                   {m.p.map((p) => {
@@ -2085,18 +2085,18 @@ export default function SupplierCreateOffer() {
                 </div>
                 {!uniformFreight && c.sp.length > 1 && (
                   <div className="cov4-ftgl">
-                    <span>Same freight all ports?</span>
+                    <span>{ta("sameFreightAllPorts", "Same freight all ports?")}</span>
                     <div className="cov4-tgl cov4-tgl-sm">
                       {(["Yes", "No"] as const).map((opt) => (
                         <button key={opt} type="button" className={(c.sm ? "Yes" : "No") === opt ? "on" : ""}
-                          onClick={() => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], sm: opt === "Yes" } }))}>{opt}</button>
+                          onClick={() => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], sm: opt === "Yes" } }))}>{opt === "Yes" ? ta("yes", "Yes") : ta("no", "No")}</button>
                       ))}
                     </div>
                   </div>
                 )}
                 {uniformFreight ? null : (c.sm || c.sp.length <= 1) ? (
                   <div className="cov4-fr-row">
-                    <label className="cov4-fr-lbl">Freight</label>
+                    <label className="cov4-fr-lbl">{ta("freight", "Freight")}</label>
                     <PriceInput value={c.gf} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], gf: v } }))} />
                   </div>
                 ) : (
