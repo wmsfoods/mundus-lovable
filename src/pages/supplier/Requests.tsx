@@ -99,11 +99,8 @@ export default function SupplierRequests() {
       const companyIds = Array.from(new Set(list.map((r) => r.buyer_company_id)));
       let companyMap = new Map<string, string>();
       if (companyIds.length) {
-        const { data: cos } = await supabase
-          .from("companies")
-          .select("id, name")
-          .in("id", companyIds);
-        companyMap = new Map((cos ?? []).map((c: { id: string; name: string }) => [c.id, c.name]));
+        const { data: cos } = await supabase.rpc("get_company_names", { _ids: companyIds });
+        companyMap = new Map(((cos ?? []) as Array<{ id: string; name: string }>).map((c) => [c.id, c.name]));
       }
       if (cancelled) return;
       setRows(list.map((r) => ({ ...r, buyer_company_name: companyMap.get(r.buyer_company_id) ?? null })));

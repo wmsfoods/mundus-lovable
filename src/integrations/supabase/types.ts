@@ -7403,6 +7403,13 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_company_names: {
+        Args: { _ids: string[] }
+        Returns: {
+          id: string
+          name: string
+        }[]
+      }
       get_company_primary_contact: {
         Args: { p_company_id: string }
         Returns: {

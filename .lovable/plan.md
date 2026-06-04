@@ -1,55 +1,51 @@
-## Goal
-Aprimorar os filtros da aba **Users** em `/admin/companies?tab=users` para nível enterprise: multi-seleção em todos os filtros, busca tipada no select de empresas, e bandeiras + multi-seleção nos países.
+## Problema
 
-## Mudanças
+Na tela **Supplier → Buyer Requests** a coluna "Buyer" mostra sempre "—".
 
-### 1. Filtro **Company** — combobox com busca
-- Substituir o `<select>` por um popover com:
-  - Input de busca (debounce 150ms) filtrando por nome da empresa
-  - Lista virtualizada simples com checkbox por empresa
-  - Mostra logo/bandeira do país + nome
-  - Chips das empresas selecionadas no topo do popover (removíveis)
-  - Label do botão: "All companies" / "Acme Foods" / "3 companies"
-- Estado passa de `companyF: string` para `companyF: string[]`
+A causa não é o frontend (o código já busca `companies.name` e mapeia em `buyer_company_name`). A causa é **RLS**: a policy `companies_member_select` só permite ao usuário ver a própria company (`id = current_user_company_id()`). Como o supplier não pertence à company do buyer, o `select id, name from companies in (...)` retorna vazio e o nome cai para "—".
 
-### 2. Filtro **Country** — multi-select com bandeiras
-- Reutilizar o componente existente `CountryMultiFilter` (`src/components/admin/CountryMultiFilter.tsx`) que já tem busca, bandeiras e multi-seleção
-- Passar `available` = Set dos países que aparecem nas linhas atuais
-- Estado passa de `countryF: string` para `countryF: string[]`
+## Solução
 
-### 3. Demais filtros — multi-seleção
-Converter para multi-select (mesmo padrão de popover com checkboxes, mais leve sem busca):
-- **Type**: Buyer / Supplier / Both (array)
-- **Status**: Active / Invited / Inactive (array)
-- **Role**: lista dinâmica de roles existentes (array)
+Expor apenas `id + name` (dados não sensíveis, já mostrados no UI do buyer também) através de uma função `SECURITY DEFINER`, sem afrouxar a RLS da tabela `companies`.
 
-Quando vazio = "All …". Quando 1 = mostra o valor. Quando 2+ = "N selected".
+### Backend (migration)
 
-### 4. Lógica de filtro
-Atualizar `filtered` em `CompanyUsersView.tsx`:
-- Cada filtro array vazio = sem restrição
-- Caso contrário: `arr.includes(row.value)`
-- Country: comparar com `row.company_country`
-- Company: `arr.includes(row.company_id)`
-- Type: derivar de `companyType(r)` e checar inclusão
+Criar função:
 
-### 5. Chips de filtros ativos
-- Atualizar a barra de chips para refletir multi-seleção:
-  - "Type: Buyer, Supplier"
-  - "Companies: 3"
-  - "Countries: 🇧🇷 🇺🇸 +2"
-- Botão "Clear all" mantém comportamento
+```sql
+create or replace function public.get_company_names(_ids uuid[])
+returns table(id uuid, name text)
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select c.id, c.name
+  from public.companies c
+  where c.id = any(_ids)
+$$;
 
-### 6. Mobile
-- Popovers permanecem usáveis em mobile (já testados no `CountryMultiFilter`)
-- Garantir `width: 100%` nos triggers dentro do `crm-toolbar` quando empilhado
+revoke all on function public.get_company_names(uuid[]) from public;
+grant execute on function public.get_company_names(uuid[]) to authenticated;
+```
 
-## Arquivos a editar
-- `src/components/admin/companies/CompanyUsersView.tsx` — trocar selects por popovers multi-select, ajustar estado e lógica
-- `src/components/admin/MultiSelectPopover.tsx` *(novo)* — componente genérico reutilizável (trigger + popover + checkbox list + opcional search) para Type/Status/Role/Company
-- Reuso direto de `CountryMultiFilter` para países
+Retorna apenas nome — sem campos sensíveis. Acesso restrito a usuários autenticados.
+
+### Frontend
+
+`src/pages/supplier/Requests.tsx` (linhas 100-107): trocar o `select` direto na tabela `companies` por:
+
+```ts
+const { data: cos } = await supabase.rpc("get_company_names", { _ids: companyIds });
+```
+
+Mesmo formato de retorno (`{ id, name }[]`), restante do código (mapeamento, render da coluna, busca textual, navegação) permanece igual.
+
+## Arquivos afetados
+
+- `supabase/migrations/<timestamp>_get_company_names.sql` (novo)
+- `src/pages/supplier/Requests.tsx` (1 trecho)
 
 ## Fora de escopo
-- Sem mudanças no hook `useAdminCompanyUsers` (já retorna `companies` e `company_country`)
-- Sem mudanças de banco
-- Sem alteração nos demais filtros do tab Companies
+
+Outras telas onde o supplier vê nomes de buyer (negociações, ofertas) — verifico se precisam do mesmo ajuste só se você reportar problema; este plano cobre só a tela de Buyer Requests reportada.
