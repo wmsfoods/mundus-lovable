@@ -336,7 +336,29 @@ export default function SupplierCreateOffer() {
       }
     | undefined;
   const editOffer = (location.state as any)?.editOffer as
-    | (NonNullable<typeof cloneFrom> & { offerId: string; offerNumber: number })
+    | (NonNullable<typeof cloneFrom> & {
+        offerId: string;
+        offerNumber: number;
+        shipmentMonth?: number | null;
+        shipmentYear?: number | null;
+        plantIdTop?: string | null;
+        allowQuantityNegotiation?: boolean;
+        negotiationMode?: string | null;
+        negotiationDial?: string | null;
+        items: Array<{
+          name: string;
+          productNumber: number | null;
+          amount: number;
+          price: number;
+          minimumPrice: number;
+          condition: string;
+          agingMethod: string | null;
+          packaging?: string | null;
+          plantId?: string | null;
+          plantNumber?: string | null;
+        }>;
+        freight?: Array<{ portId: string; cost: number; insurance: number }>;
+      })
     | undefined;
   const isEditing = !!editOffer;
   // Reuse the clone hydration flow for editing — both pre-fill the same fields.
