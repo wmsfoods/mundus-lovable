@@ -2347,7 +2347,20 @@
         "settings": "设置",
         "team": "团队",
         "audit": "审计日志",
-        "flags": "功能标志"
+        "flags": "功能标志",
+        "executive_overview": "执行概览",
+        "market_intelligence": "市场情报",
+        "negotiation_funnel": "谈判漏斗",
+        "buyer_demand": "买家需求",
+        "user_requests": "用户请求",
+        "offer_requests": "报价请求",
+        "all_offers": "所有报价",
+        "email_activity": "邮件活动",
+        "mundus_whats": "Mundus Whats",
+        "communication": "通讯",
+        "import": "导入",
+        "documents": "文档",
+        "resources": "资源"
       },
       "theme": {
         "light": "浅色模式",

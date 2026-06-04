@@ -2361,7 +2361,20 @@
         "settings": "Settings",
         "team": "Team",
         "audit": "Audit log",
-        "flags": "Feature flags"
+        "flags": "Feature flags",
+        "executive_overview": "Executive Overview",
+        "market_intelligence": "Market Intelligence",
+        "negotiation_funnel": "Negotiation Funnel",
+        "buyer_demand": "Buyer Demand",
+        "user_requests": "User Requests",
+        "offer_requests": "Offer Requests",
+        "all_offers": "All Offers",
+        "email_activity": "Email Activity",
+        "mundus_whats": "Mundus Whats",
+        "communication": "COMMUNICATION",
+        "import": "Import",
+        "documents": "Documents",
+        "resources": "RESOURCES"
       },
       "theme": {
         "light": "Light mode",
