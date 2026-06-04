@@ -1827,7 +1827,7 @@ export default function SupplierCreateOffer() {
               </PopoverTrigger>
               <PopoverContent className="p-0" style={{ width: 420 }}>
                 <Command>
-                  <CommandInput placeholder="Search ports…" />
+                 <CommandInput placeholder={ta("searchPortsPh", "Search ports…")} />
                   <CommandList>
                     <CommandEmpty>
                       {supplierCountries.length === 0
