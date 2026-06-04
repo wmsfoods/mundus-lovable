@@ -1650,7 +1650,8 @@
         "new": "Nova",
         "negotiating": "Negociando",
         "closed": "Fechada",
-        "inactive": "Inativa"
+        "inactive": "Inativa",
+        "draft": "Rascunho"
       },
       "card": {
         "cuts": "{{count}} PRODUTO / CORTES",
@@ -2025,7 +2026,12 @@
         "toastAddOneCut": "Adicione pelo menos um produto/corte com um nome válido antes de publicar.",
         "toastInvalidCuts": "{{n}} corte(s) com quantidade ou preço ausente. Preencha todos os campos.",
         "toastOfferUpdated": "Oferta {{n}} atualizada com sucesso!",
-        "toastOfferPublished": "Oferta {{n}} publicada com sucesso!"
+        "toastOfferPublished": "Oferta {{n}} publicada com sucesso!",
+        "discardTitle": "Descartar esta oferta?",
+        "discardBody": "Suas alterações serão perdidas. Você pode salvá-las como rascunho e terminar depois, ou descartar agora.",
+        "discardKeepEditing": "Continuar editando",
+        "discardConfirm": "Descartar",
+        "toastDraftSaved": "Rascunho salvo — {{n}}"
       }
     },
     "home": {

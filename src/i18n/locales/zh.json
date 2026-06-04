@@ -1655,7 +1655,8 @@
         "new": "新建",
         "negotiating": "谈判中",
         "closed": "已关闭",
-        "inactive": "已停用"
+        "inactive": "已停用",
+        "draft": "草稿"
       },
       "card": {
         "cuts": "{{count}} 部位",
@@ -2035,7 +2036,12 @@
         "toastAddOneCut": "请在发布前至少添加一个名称有效的产品/分割。",
         "toastInvalidCuts": "{{n}} 个分割缺少数量或价格。请填写所有字段。",
         "toastOfferUpdated": "报价 {{n}} 已成功更新！",
-        "toastOfferPublished": "报价 {{n}} 已成功发布！"
+        "toastOfferPublished": "报价 {{n}} 已成功发布！",
+        "discardTitle": "放弃此报价？",
+        "discardBody": "您的更改将丢失。您可以将其保存为草稿稍后完成，或现在放弃。",
+        "discardKeepEditing": "继续编辑",
+        "discardConfirm": "放弃",
+        "toastDraftSaved": "草稿已保存 — {{n}}"
       }
     },
     "home": {

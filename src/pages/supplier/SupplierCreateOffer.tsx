@@ -12,6 +12,14 @@ import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
 import { useIsMobileShell as useIsMobile } from "@/hooks/useIsMobileShell";
 import { Check, Plus, Search as SearchIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -1115,7 +1123,8 @@ export default function SupplierCreateOffer() {
   const multiInco = selInco.length > 1 && !!primaryInco;
   const cifInsuranceNum = parseFloat(incoExtras.cifInsurance || "0") || 0;
 
-  const handleSaveDraft = () => toast("Draft saved");
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const handleSaveDraft = () => { void handlePublish({ asDraft: true }); };
 
   const applyMarketplaceRate = useCallback((rate: MarketplaceRate) => {
     const market = MARKETS.find((m) => m.id === rate.countryCode);
@@ -1151,18 +1160,20 @@ export default function SupplierCreateOffer() {
   }, [tm, MARKETS]);
 
   const [publishing, setPublishing] = useState(false);
-  const handlePublish = async () => {
-    if (!canPublish || publishing) return;
+  const handlePublish = async (opts: { asDraft?: boolean } = {}) => {
+    const asDraft = !!opts.asDraft;
+    if (publishing) return;
+    if (!asDraft && !canPublish) return;
     if (companyLoading) return;
     if (!company?.id) {
       toast.error(ta("toastNoSupplierCo", "No supplier company linked to your account"));
       return;
     }
-    if (selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
+    if (!asDraft && selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
       toast.error(ta("toastEnterExw", "Please enter the EXW pickup location"));
       return;
     }
-    if (exceedsHardCap) {
+    if (!asDraft && exceedsHardCap) {
       toast.error(
         ta(
           "toastExceedHardCap",
@@ -1174,13 +1185,13 @@ export default function SupplierCreateOffer() {
     }
     // Pre-validate that at least one cut has a resolvable name or cutId
     const hasResolvableCut = cuts.some(c => c.cutId || c.cut.trim().length > 0);
-    if (!hasResolvableCut) {
+    if (!asDraft && !hasResolvableCut) {
       toast.error(ta("toastAddOneCut", "Please add at least one product/cut with a valid name before publishing."));
       return;
     }
     // Ensure cuts have qty and price
     const invalidCuts = cuts.filter(c => !(parseFloat(c.qty) > 0) || !(parseFloat(c.ask) > 0));
-    if (invalidCuts.length > 0) {
+    if (!asDraft && invalidCuts.length > 0) {
       toast.error(ta("toastInvalidCuts", "{{n}} cut(s) have missing quantity or price. Please fill all fields.", { n: invalidCuts.length }));
       return;
     }
@@ -1224,7 +1235,7 @@ export default function SupplierCreateOffer() {
           const { error } = await supabase
             .from("offers")
             .update({
-              status: "active",
+              status: asDraft ? "draft" : "active",
               shipment_month,
               shipment_year,
               payment_terms: payTerm,
@@ -1266,7 +1277,7 @@ export default function SupplierCreateOffer() {
           .insert({
             supplier_id: supplierId,
             supplier_name: supplierName,
-            status: "active",
+            status: asDraft ? "draft" : "active",
             origin_country: originCountryVal ?? (company?.country ?? null),
             origin_port: originPortLabel,
             origin_port_id: originPortId || null,
@@ -1435,6 +1446,9 @@ export default function SupplierCreateOffer() {
       }
 
       if (itemsRows.length === 0) {
+        if (asDraft) {
+          // Drafts may legitimately have no resolvable items yet — keep the offer.
+        } else {
         // ROLLBACK: Delete the offer we just created since no items could be resolved
         if (offerCreated && offerId) {
           console.error("[publish] No items resolved — rolling back offer", offer.id);
@@ -1442,13 +1456,16 @@ export default function SupplierCreateOffer() {
           offerCreated = false;
         }
         throw new Error("No valid cuts could be resolved. Please ensure each cut has a quantity, price, and matches a product in our catalog. Try selecting cuts from the dropdown instead of typing manually.");
+        }
       }
-      try {
-        const { error } = await supabase.from("offer_items").insert(itemsRows);
-        if (error) throw error;
-      } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
-        throw new Error(`Step 3 failed: offer_items — ${m}`);
+      if (itemsRows.length > 0) {
+        try {
+          const { error } = await supabase.from("offer_items").insert(itemsRows);
+          if (error) throw error;
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Step 3 failed: offer_items — ${m}`);
+        }
       }
 
       // 4. offer_allowed_incoterms
@@ -1534,14 +1551,16 @@ export default function SupplierCreateOffer() {
       }
 
       toast.success(
-        isEditing
+        asDraft
+          ? ta("toastDraftSaved", "Draft saved — {{n}}", { n: formatOfferNumber(offer.offer_number) })
+          : isEditing
           ? ta("toastOfferUpdated", "Offer {{n}} updated successfully!", { n: formatOfferNumber(offer.offer_number) })
           : ta("toastOfferPublished", "Offer {{n}} published successfully!", { n: formatOfferNumber(offer.offer_number) }),
       );
       try {
         const { auditLog } = await import("@/lib/auditLog");
         auditLog({
-          action: isEditing ? "offer.edited" : "offer.published",
+          action: asDraft ? "offer.draft_saved" : (isEditing ? "offer.edited" : "offer.published"),
           category: "offer",
           entityType: "offer",
           entityId: offer.id as string,
@@ -1551,7 +1570,7 @@ export default function SupplierCreateOffer() {
           },
         });
       } catch { /* never break flow */ }
-      if (fromRequest?.requestId) {
+      if (!asDraft && fromRequest?.requestId) {
         await supabase
           .from("buyer_requests")
           .update({ status: "with_responses", updated_at: new Date().toISOString() })
@@ -1608,9 +1627,11 @@ export default function SupplierCreateOffer() {
     }
   };
   const handleCancel = () => {
-    if (confirm("Discard this offer?")) {
-      navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
-    }
+    setDiscardOpen(true);
+  };
+  const confirmDiscard = () => {
+    setDiscardOpen(false);
+    navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
   };
 
   return (
@@ -3317,6 +3338,52 @@ export default function SupplierCreateOffer() {
         origin="Santos (BRSSZ)"
         onApplyRate={applyMarketplaceRate}
       />
+
+      <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {ta("discardTitle", "Discard this offer?")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {ta(
+                "discardBody",
+                "Your changes will be lost. You can save them as a draft and finish later, or discard them now.",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <button
+              type="button"
+              className="cov4-btn-s"
+              onClick={() => setDiscardOpen(false)}
+              disabled={publishing}
+            >
+              {ta("discardKeepEditing", "Keep editing")}
+            </button>
+            <button
+              type="button"
+              className="cov4-btn-s"
+              onClick={() => {
+                setDiscardOpen(false);
+                void handlePublish({ asDraft: true });
+              }}
+              disabled={publishing}
+            >
+              {ta("saveDraft", "Save draft")}
+            </button>
+            <button
+              type="button"
+              className="cov4-btn-p"
+              style={{ background: "#b91c1c", borderColor: "#b91c1c" }}
+              onClick={confirmDiscard}
+              disabled={publishing}
+            >
+              {ta("discardConfirm", "Discard")}
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

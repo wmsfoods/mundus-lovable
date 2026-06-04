@@ -1665,7 +1665,8 @@
         "new": "New",
         "negotiating": "Negotiating",
         "closed": "Closed",
-        "inactive": "Inactive"
+        "inactive": "Inactive",
+        "draft": "Draft"
       },
       "card": {
         "cuts": "{{count}} PRODUCT / CUTS",
@@ -2040,7 +2041,12 @@
         "toastAddOneCut": "Please add at least one product/cut with a valid name before publishing.",
         "toastInvalidCuts": "{{n}} cut(s) have missing quantity or price. Please fill all fields.",
         "toastOfferUpdated": "Offer {{n}} updated successfully!",
-        "toastOfferPublished": "Offer {{n}} published successfully!"
+        "toastOfferPublished": "Offer {{n}} published successfully!",
+        "discardTitle": "Discard this offer?",
+        "discardBody": "Your changes will be lost. You can save them as a draft and finish later, or discard them now.",
+        "discardKeepEditing": "Keep editing",
+        "discardConfirm": "Discard",
+        "toastDraftSaved": "Draft saved — {{n}}"
       }
     },
     "home": {
