@@ -2727,14 +2727,7 @@ export default function SupplierCreateOffer() {
                 {cuts.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (window.confirm("Remove all added cuts and start over?")) {
-                        setCuts([]);
-                        setCutImgs({});
-                        setAddRow(false);
-                        setNf({ ...EMPTY_NF });
-                      }
-                    }}
+                    onClick={() => setResetCutsOpen(true)}
                     style={{
                       padding: "6px 14px",
                       borderRadius: 8,
