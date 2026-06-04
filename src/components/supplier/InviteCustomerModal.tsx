@@ -185,10 +185,10 @@ export default function InviteCustomerModal({ open, onClose }: Props) {
         )}
 
         <div className="mt-2 flex items-center justify-end gap-2">
-          <button type="button" className="btn btn-ghost" onClick={onClose} disabled={isInviting}>
+          <button type="button" className="btn-tb" onClick={onClose} disabled={isInviting}>
             {t("supplier.myCustomers.modal.cancel")}
           </button>
-          <button type="submit" className="btn btn-primary" disabled={!canSubmit}>
+          <button type="submit" className="btn-tb is-primary" disabled={!canSubmit}>
             {t("supplier.myCustomers.modal.sendInvite")}
           </button>
         </div>
