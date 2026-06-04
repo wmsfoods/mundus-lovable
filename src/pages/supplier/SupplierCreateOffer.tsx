@@ -3056,11 +3056,8 @@ export default function SupplierCreateOffer() {
                               placeholder={askPh}
                               onChangeKg={(val) => setNf((p) => ({ ...p, ask: val }))}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
-                              title={bad ? v.msg : undefined}
+                              title={bad ? "Floor Price must be Equal or Lower of asking price. Never higher." : undefined}
                             />
-                            {bad && (
-                              <div style={{ fontSize: 10, color: "#dc2626", marginTop: 2 }}>≥ floor</div>
-                            )}
                           </>
                         );
                       })()}
@@ -3078,10 +3075,12 @@ export default function SupplierCreateOffer() {
                               placeholder={floorPh}
                               onChangeKg={(val) => setNf((p) => ({ ...p, floor: val }))}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
-                              title={bad ? "Floor must be ≤ asking" : undefined}
+                              title={bad ? "Floor Price must be Equal or Lower of asking price. Never higher." : undefined}
                             />
                             {bad && (
-                              <div style={{ fontSize: 10, color: "#dc2626", marginTop: 2 }}>≤ asking</div>
+                              <div style={{ fontSize: 10, color: "#dc2626", marginTop: 2, lineHeight: 1.3 }}>
+                                Floor Price must be Equal or Lower of asking price. Never higher.
+                              </div>
                             )}
                           </>
                         );
