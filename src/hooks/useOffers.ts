@@ -81,10 +81,7 @@ export function useOffers(): UseOffersResult {
       if (!hasLoadedRef.current) setLoading(true);
       setError(null);
 
-      let query = supabase
-        .from("offers")
-        .select(
-          `
+      const selectCols = `
           id,
           offer_number,
           supplier_id,
@@ -131,20 +128,30 @@ export function useOffers(): UseOffersResult {
           incoterms:offer_allowed_incoterms (
             incoterm_type
           )
-        `
-        )
-        .is("deleted_at", null)
-        .eq("status", "active")
-        .order("created_at", { ascending: false });
-      // Targeted-offer visibility (Batch 3/5): an offer with a populated
-      // `specific_buyer_company_ids` array is only visible to buyers whose
-      // company is in that array. NULL/empty = visible to all (legacy).
+        `;
+      // Targeted-offer visibility (Batch 3.5/5):
+      // - When a buyer company is known, defer the 3-branch visibility logic
+      //   (marketplace default / specific list / all-my-customers) to the
+      //   SQL RPC `get_offers_visible_to_buyer`. Filters/sort/select chain on
+      //   top of the RPC's SETOF offers result via PostgREST.
+      // - When no buyer company (admin / supplier viewing own / anon flows),
+      //   keep the legacy direct query — preserving original behavior.
+      let query: any;
       if (buyerCompanyId) {
-        query = query.or(
-          `specific_buyer_company_ids.is.null,specific_buyer_company_ids.cs.{${buyerCompanyId}}`,
-        );
+        query = (supabase.rpc as any)("get_offers_visible_to_buyer", {
+          p_buyer_company_id: buyerCompanyId,
+        })
+          .select(selectCols)
+          .is("deleted_at", null)
+          .eq("status", "active")
+          .order("created_at", { ascending: false });
       } else {
-        query = query.is("specific_buyer_company_ids", null);
+        query = supabase
+          .from("offers")
+          .select(selectCols)
+          .is("deleted_at", null)
+          .eq("status", "active")
+          .order("created_at", { ascending: false });
       }
       const { data, error: qErr } = await query;
 

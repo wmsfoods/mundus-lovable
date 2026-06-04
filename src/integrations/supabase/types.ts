@@ -5446,6 +5446,7 @@ export type Database = {
       }
       offers: {
         Row: {
+          all_customers: boolean
           allow_quantity_negotiation: boolean
           container_size: string
           created_at: string | null
@@ -5480,6 +5481,7 @@ export type Database = {
           view_count: number
         }
         Insert: {
+          all_customers?: boolean
           allow_quantity_negotiation?: boolean
           container_size: string
           created_at?: string | null
@@ -5514,6 +5516,7 @@ export type Database = {
           view_count?: number
         }
         Update: {
+          all_customers?: boolean
           allow_quantity_negotiation?: boolean
           container_size?: string
           created_at?: string | null
@@ -7706,6 +7709,50 @@ export type Database = {
           offer_id: string
           shares: number
         }[]
+      }
+      get_offers_visible_to_buyer: {
+        Args: { p_buyer_company_id: string }
+        Returns: {
+          all_customers: boolean
+          allow_quantity_negotiation: boolean
+          container_size: string
+          created_at: string | null
+          cut_region: string
+          deleted_at: string | null
+          exw_pickup_location: string | null
+          id: string
+          is_halal: boolean | null
+          is_kosher: boolean | null
+          negotiation_dial: string
+          negotiation_mode: string
+          observation: string | null
+          offer_number: number
+          office_id: string | null
+          origin_city: string | null
+          origin_country: string | null
+          origin_port: string | null
+          origin_port_id: string | null
+          payment_terms: string
+          plant_id: string | null
+          price: number | null
+          request_id: string | null
+          shipment_month: number
+          shipment_year: number
+          specific_buyer_company_ids: string[] | null
+          status: string | null
+          supplier_id: string
+          supplier_name: string
+          supplier_rating: number | null
+          total_fcl: number | null
+          updated_at: string | null
+          view_count: number
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "offers"
+          isOneToOne: false
+          isSetofReturn: true
+        }
       }
       get_public_offers: { Args: never; Returns: Json }
       get_users_company_info: {
