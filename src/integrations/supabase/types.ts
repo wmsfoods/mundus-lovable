@@ -6382,6 +6382,27 @@ export type Database = {
         }
         Relationships: []
       }
+      rate_limits: {
+        Row: {
+          bucket: string
+          count: number
+          created_at: string
+          key: string
+        }
+        Insert: {
+          bucket: string
+          count?: number
+          created_at?: string
+          key: string
+        }
+        Update: {
+          bucket?: string
+          count?: number
+          created_at?: string
+          key?: string
+        }
+        Relationships: []
+      }
       role_permissions: {
         Row: {
           granted: boolean | null
@@ -7333,6 +7354,14 @@ export type Database = {
         Returns: boolean
       }
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
+      check_rate_limit: {
+        Args: { p_key: string; p_max: number; p_window_seconds: number }
+        Returns: {
+          allowed: boolean
+          remaining: number
+          reset_at: string
+        }[]
+      }
       claim_pending_invites: {
         Args: never
         Returns: {
@@ -7340,6 +7369,7 @@ export type Database = {
           first_company_id: string
         }[]
       }
+      cleanup_rate_limits: { Args: never; Returns: undefined }
       company_family_ids: { Args: { p_company_id: string }; Returns: string[] }
       company_family_root: { Args: { p_company_id: string }; Returns: string }
       company_has_pro: { Args: { p_company_id: string }; Returns: boolean }
