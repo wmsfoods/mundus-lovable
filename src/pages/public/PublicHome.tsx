@@ -178,8 +178,20 @@ export default function PublicHome() {
 
   const offersSection = (
       <section ref={offersRef} className="mx-auto max-w-6xl px-4 py-10">
-        <h2 className="text-2xl font-bold text-[#1A1A2E]">
-          {t("public.home.liveOffersTitle", "Live offers")}
+        <div className="mb-2 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.14em] text-[#752642]">
+          <span className="relative inline-flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-500 opacity-75" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+          </span>
+          <span>
+            Live Deal Board · Updated{" "}
+            {new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+          </span>
+        </div>
+        <h2 className="font-sans text-3xl font-bold tracking-tight md:text-5xl">
+          <span className="animate-gradient-text">
+            {t("public.home.liveOffersTitle", "Available Offers at Mundus")}
+          </span>
         </h2>
         <p className="mt-1 text-sm text-gray-600">
           {t(
