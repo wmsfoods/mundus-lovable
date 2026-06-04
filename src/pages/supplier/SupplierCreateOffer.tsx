@@ -2445,97 +2445,9 @@ export default function SupplierCreateOffer() {
             </div>
           </div>
 
-          {/* Negotiation rules */}
-          <div className="cov4-sec">
-            <div className="cov4-sec-t">{ta("negotiationRules", "Negotiation rules")}</div>
-            <label
-              style={{
-                display: "flex",
-                alignItems: "flex-start",
-                gap: 10,
-                padding: 12,
-                border: "1px solid hsl(var(--border))",
-                borderRadius: 8,
-                background: "hsl(var(--muted))",
-                cursor: "pointer",
-              }}
-            >
-              <input
-                type="checkbox"
-                checked={allowQtyNegotiation}
-                onChange={(e) => setAllowQtyNegotiation(e.target.checked)}
-                style={{ marginTop: 3 }}
-              />
-              <div>
-                <div style={{ fontWeight: 600, fontSize: 13, color: "hsl(var(--foreground))" }}>
-                  {ta("allowQtyNeg", "Allow buyers to negotiate item quantities")}
-                </div>
-                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
-                  {ta("allowQtyNegDesc", "When on, buyers may redistribute kg across items inside a chat proposal. The total offered kg must always match the original offer — partial loads are never allowed.")}
-                </div>
-              </div>
-            </label>
-          </div>
-
-          {/* Payment terms */}
-          <div className="cov4-sec">
-            <div className="cov4-sec-t">{ta("paymentTerms", "Payment terms")}</div>
-            <select className="cov4-pay-select" value={payTerm} onChange={(e) => setPayTerm(e.target.value)}>
-              {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
-            </select>
-            <p className="cov4-hint">{ta("payTermsHint", "From your supplier preferences — editable per offer")}</p>
-          </div>
-
-          {/* Negotiation handling (Manual vs Automatic) */}
-          <div className="cov4-sec">
-            <NegotiationHandlingControl
-              mode={negotiationMode}
-              dial={negotiationDial}
-              onChange={(m, d) => { setNegotiationMode(m); setNegotiationDial(d); }}
-            />
-          </div>
-
-          {/* Distribution */}
-          <div id="sec-dist" className="cov4-sec">
-            <div className="cov4-sec-t">{ta("offerDistribution", "Offer distribution")}</div>
-            <div className="cov4-dist-opts">
-              <label className="cov4-dist-opt">
-                <input type="checkbox" checked={distMarketplace} onChange={() => setDistMarketplace((v) => !v)} />
-                <div>
-                  <div className="cov4-dist-label">{ta("distMarketplace", "🏪 Publish to Marketplace")}</div>
-                  <div className="cov4-dist-desc">{ta("distMarketplaceDesc", "Visible to all buyers on the platform")}</div>
-                </div>
-              </label>
-              <label className="cov4-dist-opt">
-                <input type="checkbox" checked={distAllCustomers} onChange={() => setDistAllCustomers((v) => !v)} />
-                <div>
-                  <div className="cov4-dist-label">{ta("distAllCustomers", "📨 Send to all my customers")}</div>
-                  <div className="cov4-dist-desc">{ta("distAllCustomersDesc", "Notify all registered buyers")}</div>
-                </div>
-              </label>
-              <label className="cov4-dist-opt">
-                <input type="checkbox" checked={distSpecific} onChange={() => setDistSpecific((v) => !v)} />
-                <div>
-                  <div className="cov4-dist-label">{ta("distSpecific", "🎯 Specific customers")}</div>
-                  <div className="cov4-dist-desc">{ta("distSpecificDesc", "Choose which buyers receive this offer")}</div>
-                </div>
-              </label>
-            </div>
-            {distSpecific && (
-              <div className="cov4-cust-list">
-                {MOCK_CUSTOMERS.map((c) => {
-                  const on = selectedCustomers.includes(c.id);
-                  return (
-                    <button key={c.id} type="button" className={`cov4-cust-chip ${on ? "on" : ""}`} onClick={() => toggleCustomer(c.id)}>
-                      {on ? "✓ " : ""}{c.name}
-                      <span className="cov4-cust-country">{c.country}</span>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
         </aside>
+        </>
+        )}
 
         {/* ═══════════ CENTER PANEL ═══════════ */}
         <main className="cov4-panel cov4-panel-c">
