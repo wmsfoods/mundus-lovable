@@ -23,6 +23,8 @@ import {
   isFinalDisplayRound,
   nextExpirationIso,
   getDeductionFeedback,
+  getCutRoundPrice,
+  getRoundTotalUsd,
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -123,8 +125,10 @@ export function CounterOfferModal({
       const disp = Math.ceil(rp.round / 2);
       const key = `${isBid ? "bid" : "counter"}R${disp}UsdKg`;
       for (const c of rp.cut_rounds ?? []) {
+        const price = getCutRoundPrice(rp.round, c);
+        if (price == null) continue;
         const m = perItem.get(c.offer_item_id) ?? {};
-        m[key] = Number(c.price_per_kg);
+        m[key] = price;
         perItem.set(c.offer_item_id, m);
       }
     }
@@ -818,10 +822,8 @@ export function CounterOfferModal({
           <div className="flex flex-wrap items-center gap-1 text-xs">
             {rounds.map((r, idx) => {
               const isBid = r.round % 2 === 1;
-              const total = (r.cut_rounds ?? []).reduce(
-                (s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg),
-                0,
-              );
+              const total = getRoundTotalUsd(r);
+              if (total == null) return null;
               return (
                 <span key={r.id} className="flex items-center gap-1">
                   {idx > 0 && <span className="text-muted-foreground">→</span>}

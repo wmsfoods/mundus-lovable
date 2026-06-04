@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { displayRoundFor, roundTypeFor } from "@/hooks/useRealNegotiation";
+import { getRoundTotalUsd } from "@/lib/negotiationEngine";
 
 type ActivityEvent = {
   id: string;
@@ -79,10 +80,8 @@ export function NegotiationActivityTab({ negotiation, buyerLabel, supplierLabel 
   for (const rp of negotiation.rounds ?? []) {
     const type = roundTypeFor(rp.round);
     const disp = displayRoundFor(rp.round);
-    const total = (rp.cut_rounds ?? []).reduce(
-      (s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg),
-      0,
-    );
+    const total = getRoundTotalUsd(rp);
+    if (total == null) continue;
     events.push({
       id: `rp-${rp.id}`,
       ts: rp.created_at,
