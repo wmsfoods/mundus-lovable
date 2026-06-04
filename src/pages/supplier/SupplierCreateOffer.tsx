@@ -3591,6 +3591,9 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
+  const { t } = useTranslation();
+  const ta = (k: string, fb: string, opts?: any) =>
+    t(`supplier.createOffer.screen.${k}`, { defaultValue: fb, ...(opts || {}) }) as unknown as string;
 
   /* Auto-advance every 3.5s while there are 2+ images and the user hasn't
      interacted. Pauses permanently after any swipe/click on controls.
@@ -3653,14 +3656,14 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
           <button
             type="button"
             className="cov4-prev-img-nav prev"
-            aria-label="Previous"
+            aria-label={ta("ariaPrev", "Previous")}
             onClick={() => { pause(); scrollTo(idx - 1); }}
             disabled={idx === 0}
           >‹</button>
           <button
             type="button"
             className="cov4-prev-img-nav next"
-            aria-label="Next"
+            aria-label={ta("ariaNext", "Next")}
             onClick={() => { pause(); scrollTo(idx + 1); }}
             disabled={idx === images.length - 1}
           >›</button>
