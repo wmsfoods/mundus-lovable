@@ -172,7 +172,10 @@ export function CounterOfferModal({
     const filtered = rounds.filter((r) => (r.round % 2 === 1) === wantOdd);
     const last = filtered[filtered.length - 1];
     const map = new Map<string, number>();
-    for (const c of last?.cut_rounds ?? []) map.set(c.offer_item_id, Number(c.price_per_kg));
+    for (const c of last?.cut_rounds ?? []) {
+      const price = getCutRoundPrice(last.round, c);
+      if (price != null) map.set(c.offer_item_id, price);
+    }
     return map;
   }, [rounds, perspective]);
 
@@ -267,7 +270,8 @@ export function CounterOfferModal({
       const supplierRoundsAll = rounds.filter((r) => r.round % 2 === 0);
       const lastSupplierRound = supplierRoundsAll[supplierRoundsAll.length - 1];
       for (const c of lastSupplierRound?.cut_rounds ?? []) {
-        supplierPrevCounter.set(c.offer_item_id, Number(c.price_per_kg));
+        const price = getCutRoundPrice(lastSupplierRound.round, c);
+        if (price != null) supplierPrevCounter.set(c.offer_item_id, price);
       }
     }
     setAllCounters((it) => {
@@ -314,7 +318,8 @@ export function CounterOfferModal({
       const supplierRoundsAll = rounds.filter((r) => r.round % 2 === 0);
       const lastSupplierRound = supplierRoundsAll[supplierRoundsAll.length - 1];
       for (const c of lastSupplierRound?.cut_rounds ?? []) {
-        prevSupplierCounter.set(c.offer_item_id, Number(c.price_per_kg));
+        const price = getCutRoundPrice(lastSupplierRound.round, c);
+        if (price != null) prevSupplierCounter.set(c.offer_item_id, price);
       }
     }
     const initial: Record<string, number> = {};
