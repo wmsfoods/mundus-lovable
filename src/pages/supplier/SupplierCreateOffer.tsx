@@ -24,6 +24,7 @@ import { useIsMobileShell as useIsMobile } from "@/hooks/useIsMobileShell";
 import { Check, Plus, Search as SearchIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { NumberInput } from "@/components/inputs/NumberInput";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import {
@@ -2774,69 +2775,33 @@ export default function SupplierCreateOffer() {
                       )}
                     </td>
                     <td className="num">
-                      <input
-                        type="number"
-                        step="1"
+                      <NumberInput
+                        kind="weight"
+                        unit={unit}
+                        valueKg={c.qty}
+                        onChangeKg={(v) => updateCutField(c.id, "qty", v)}
                         className="cov4-inline-edit num"
-                        value={
-                          unit === "kg"
-                            ? c.qty
-                            : toDisplay(parseFloat(c.qty) || 0, "weight", unit).toFixed(0)
-                        }
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          const kg =
-                            unit === "kg"
-                              ? v
-                              : String(fromDisplay(parseFloat(v) || 0, "weight", unit));
-                          updateCutField(c.id, "qty", kg);
-                        }}
                         style={{ width: 80, textAlign: "right" }}
                       />
                     </td>
                     <td className="num">
-                      <input
-                        type="number"
-                        step="0.01"
+                      <NumberInput
+                        kind="price"
+                        unit={unit}
+                        valueKg={c.ask}
+                        onChangeKg={(v) => updateCutField(c.id, "ask", v)}
                         className="cov4-inline-edit num"
-                        value={
-                          unit === "kg"
-                            ? c.ask
-                            : toDisplay(parseFloat(c.ask) || 0, "price", unit).toFixed(2)
-                        }
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          const kg =
-                            unit === "kg"
-                              ? v
-                              : String(fromDisplay(parseFloat(v) || 0, "price", unit));
-                          updateCutField(c.id, "ask", kg);
-                        }}
                         style={{ width: 80, textAlign: "right" }}
                       />
                     </td>
                     <td className="num cov4-floor">
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="cov4-inline-edit num"
-                        value={
-                          !c.floor
-                            ? ""
-                            : unit === "kg"
-                              ? c.floor
-                              : toDisplay(parseFloat(c.floor) || 0, "price", unit).toFixed(2)
-                        }
+                      <NumberInput
+                        kind="price"
+                        unit={unit}
+                        valueKg={c.floor || ""}
+                        onChangeKg={(v) => updateCutField(c.id, "floor", v)}
                         placeholder="—"
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (!v) { updateCutField(c.id, "floor", ""); return; }
-                          const kg =
-                            unit === "kg"
-                              ? v
-                              : String(fromDisplay(parseFloat(v) || 0, "price", unit));
-                          updateCutField(c.id, "floor", kg);
-                        }}
+                        className="cov4-inline-edit num"
                         style={{ width: 80, textAlign: "right" }}
                       />
                     </td>
@@ -3041,22 +3006,12 @@ export default function SupplierCreateOffer() {
                       )}
                     </td>
                     <td>
-                      <input
-                        type="number"
+                      <NumberInput
+                        kind="weight"
+                        unit={unit}
+                        valueKg={nf.qty}
                         placeholder={qtyPh}
-                        value={
-                          nf.qty === ""
-                            ? ""
-                            : unit === "kg"
-                              ? nf.qty
-                              : toDisplay(parseFloat(nf.qty) || 0, "weight", unit).toFixed(0)
-                        }
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (v === "") return setNf((p) => ({ ...p, qty: "" }));
-                          const kg = fromDisplay(parseFloat(v) || 0, "weight", unit);
-                          setNf((p) => ({ ...p, qty: String(kg) }));
-                        }}
+                        onChangeKg={(v) => setNf((p) => ({ ...p, qty: v }))}
                       />
                     </td>
                     <td>
@@ -3065,23 +3020,12 @@ export default function SupplierCreateOffer() {
                         const bad = !v.ok && !!nf.ask;
                         return (
                           <>
-                            <input
-                              type="number"
-                              step="0.01"
+                            <NumberInput
+                              kind="price"
+                              unit={unit}
+                              valueKg={nf.ask}
                               placeholder={askPh}
-                              value={
-                                nf.ask === ""
-                                  ? ""
-                                  : unit === "kg"
-                                    ? nf.ask
-                                    : toDisplay(parseFloat(nf.ask) || 0, "price", unit).toFixed(2)
-                              }
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === "") return setNf((p) => ({ ...p, ask: "" }));
-                                const kg = fromDisplay(parseFloat(val) || 0, "price", unit);
-                                setNf((p) => ({ ...p, ask: String(kg) }));
-                              }}
+                              onChangeKg={(val) => setNf((p) => ({ ...p, ask: val }))}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
                               title={bad ? v.msg : undefined}
                             />
@@ -3098,23 +3042,12 @@ export default function SupplierCreateOffer() {
                         const bad = !v.ok && !!nf.floor;
                         return (
                           <>
-                            <input
-                              type="number"
-                              step="0.01"
+                            <NumberInput
+                              kind="price"
+                              unit={unit}
+                              valueKg={nf.floor}
                               placeholder={floorPh}
-                              value={
-                                nf.floor === ""
-                                  ? ""
-                                  : unit === "kg"
-                                    ? nf.floor
-                                    : toDisplay(parseFloat(nf.floor) || 0, "price", unit).toFixed(2)
-                              }
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === "") return setNf((p) => ({ ...p, floor: "" }));
-                                const kg = fromDisplay(parseFloat(val) || 0, "price", unit);
-                                setNf((p) => ({ ...p, floor: String(kg) }));
-                              }}
+                              onChangeKg={(val) => setNf((p) => ({ ...p, floor: val }))}
                               style={bad ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : undefined}
                               title={bad ? "Floor must be ≤ asking" : undefined}
                             />
@@ -3557,21 +3490,13 @@ function SecondaryPriceCell({
   const errTitle = invalid ? invalidMsg : undefined;
 
   if (override !== undefined) {
-    // `override` is stored in kg (raw). Show it in display unit and convert back on edit.
-    const overrideDisplay =
-      override === "" ? "" : toDisplay(parseFloat(override) || 0, "price", unit).toFixed(2);
     return (
       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
-        <input
-          type="number"
-          step="0.01"
-          value={overrideDisplay}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v === "") return onOverride("");
-            const kg = fromDisplay(parseFloat(v) || 0, "price", unit);
-            onOverride(String(kg));
-          }}
+        <NumberInput
+          kind="price"
+          unit={unit}
+          valueKg={override}
+          onChangeKg={(v) => onOverride(v)}
           title={errTitle}
           style={{
             width: 64,
@@ -3601,22 +3526,19 @@ function SecondaryPriceCell({
   }
 
   if (editing) {
-    const initial = toDisplay(calculated, "price", unit).toFixed(2);
     return (
-      <input
-        type="number"
-        step="0.01"
+      <NumberInput
+        kind="price"
+        unit={unit}
+        valueKg={String(calculated)}
         autoFocus
-        defaultValue={initial}
-        onBlur={(e) => {
+        onChangeKg={(v) => {
           setEditing(false);
-          if (e.target.value) {
-            const kg = fromDisplay(parseFloat(e.target.value) || 0, "price", unit);
-            if (kg !== calculated) onOverride(String(kg));
-          }
+          if (!v) return;
+          const kg = parseFloat(v);
+          if (Number.isFinite(kg) && kg !== calculated) onOverride(String(kg));
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           if (e.key === "Escape") setEditing(false);
         }}
         title={errTitle}

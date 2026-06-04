@@ -1,35 +1,74 @@
 ## Problema
 
-No Supplier → Create new offer, ao abrir o seletor de idioma (Globe na topbar), as opções do meio (Español, parte do Português) ficam atrás do bloco branco "kg | lbs | Live preview" da página, e o item 中文 aparece num segundo "andar" abaixo do bloco. É bug visual de empilhamento (z-index).
+Nos campos **Ask** e **Floor** da criação de offer (e em outros campos `$`/qty), ao digitar `7` o input vira `7.00` imediatamente — o cursor pula para as casas decimais e o usuário precisa selecionar `00` para digitar `33`.
 
-## Causa
+**Causa raiz** (confirmada em `SupplierCreateOffer.tsx` ~L2798 e gêmeos em Auction):
 
-Em `src/styles/mundus-shell.css`:
+```text
+value = unit === "kg" ? c.ask : toDisplay(parseFloat(c.ask), "price", "lbs").toFixed(2)
+```
 
-- `.tb` (topbar) é `position: sticky` com `z-index: 10` (linha 262).
+A cada keystroke o valor é convertido kg ↔ lb e re-formatado com `.toFixed(2)`, então `7` vira `7.00` no próximo render. Pior em lbs, mas também afeta qualquer campo formatado a cada tecla.
 
-Em `src/styles/mundus-create-offer-v2.css`:
+## Solução
 
-- `.cov4-header` é `position: sticky` com `z-index: 20` (linha 25).
-- `.cov4-footer` é `position: sticky` com `z-index: 20` (linha 494).
+Criar um componente único **`<MoneyInput>`** (e irmão `<QtyInput>`) que:
 
-Como a topbar é sticky com z-index, ela cria um *stacking context*; portanto o dropdown de idioma (z-index inline 50) fica confinado ao contexto da topbar — globalmente ele ainda paga em z = 10. O `.cov4-header` da página de criar oferta paga em z = 20 e por isso pinta por cima do dropdown.
+- Usa `type="text"` + `inputMode="decimal"` (evita os bugs do `type=number` em Safari/Android e o auto-formatting do browser).
+- Mantém o **texto cru** que o usuário digita em estado local enquanto o campo está focado — **sem reformatar a cada tecla**.
+- Aceita só `0-9` + `.` (US). Bloqueia vírgula como decimal; se digitada, converte para `.` (ajuda quem vem de teclado BR/EU).
+- **No blur**: parse → arredonda a 2 casas → reformata como `1,234.56` (US) → emite `onChange` com o número canônico em string (ex.: `"7.33"`).
+- Em modo lbs: converte lb → kg só no blur (uma vez), nunca durante a digitação. Re-exibe em lb a partir do valor kg salvo.
+- Suporta placeholder, prefixo (`$`), sufixo (`/kg`, `/lb`), `min`, `max`, `disabled`, `aria-*`.
 
-## Correção
+Padrão de exibição em todo o sistema: **US (1,234.56)**. Sem preferência por usuário por ora (decidido).
 
-Subir a topbar acima dos elementos sticky da página de criar oferta.
+## Onde aplicar
 
-**Arquivo:** `src/styles/mundus-shell.css`
+1. `src/pages/supplier/SupplierCreateOffer.tsx`
+   - Linha da tabela de cuts: `qty`, `ask`, `floor`, e os overrides de incoterm secundário (`cutIncoOverrides`).
+   - Linhas do "Add cut" form (qty/ask/floor inline).
+   - Quaisquer outros `<input type="number">` de $/peso no arquivo.
+2. `src/pages/supplier/SupplierCreateAuction.tsx`
+   - `qtyPh`, `askPh`, `floorPh` (~L711, 723, 735), freight (~L486), `US$/kg` start price (~L470, 926).
+3. Admin **on-behalf** de offer/auction — usa os mesmos componentes acima, então herda automaticamente. (Confirmado: admin reaproveita `SupplierCreateOffer`/`SupplierCreateAuction` quando cria em nome de supplier; nada extra precisa mudar lá.)
+4. `src/components/offer/NegotiationHandlingControl.tsx` se tiver campo $ similar (verificar no build).
 
-- Mudar o `z-index: 10` da classe `.tb` (linha 262) para `z-index: 30` — fica acima de `.cov4-header`/`.cov4-footer` (20) e abaixo do sidebar drawer/backdrop (39/40) e modais (≥60), mantendo a hierarquia atual.
+## Arquivos novos
 
-O dropdown interno continua com z-index 50 inline, agora dentro de um contexto de empilhamento topbar = 30 (global), suficiente para sobrepor o conteúdo da página.
+- `src/components/inputs/MoneyInput.tsx` — input $/kg ou $/lb com conversão no blur.
+- `src/components/inputs/QtyInput.tsx` — input de quantidade (inteiro, milhares com vírgula no blur).
+- `src/lib/numberFormat.ts` — helpers `parseUS(str): number | null`, `formatUS(num, decimals): string`, `sanitizeNumericTyping(str): string`.
 
-## Escopo / não escopo
+## Comportamento garantido
 
-- Só ajusta o z-index da topbar; nenhuma alteração de comportamento ou layout.
-- Verifico o mesmo fluxo de abrir o seletor de idioma na tela de criar oferta para confirmar visualmente que todas as opções aparecem.
+- Digitar `7` → mostra `7` (sem `.00`).
+- Digitar `7.` → mostra `7.`.
+- Digitar `7.33` → mostra `7.33`.
+- Sair do campo → vira `7.33` (ou `7.00` se digitou só `7`).
+- Apagar tudo → fica vazio (não vira `0.00`).
+- Em lbs: digita `7.33` → no blur salva `3.32` kg internamente, exibe `7.33` lb.
 
-## Arquivos afetados
+## Sem mudanças de schema / backend
 
-- `src/styles/mundus-shell.css` (1 valor alterado)
+Armazenamento continua em kg; só o input muda. Nenhuma migration.
+
+## Validações já existentes mantidas
+
+`validatePricePair` (ask ≥ floor), `qty > 0`, `ask > 0` — continuam funcionando porque o `onChange` final entrega número parseável.
+
+## Decisão futura (não nesta tarefa)
+
+Preferência por usuário (US vs BR/EU). Fica registrado, mas só implementar depois quando houver demanda de supplier não-US.
+
+## Resumo técnico
+
+```text
+MoneyInput
+ ├─ state: rawText (string)
+ ├─ props: valueKg (number|string), unit ("kg"|"lbs"), onChangeKg(strKg)
+ ├─ onFocus  → seta rawText = display atual sem grouping
+ ├─ onChange → filtra chars, atualiza rawText (NÃO chama onChangeKg)
+ ├─ onBlur   → parse rawText → converte para kg → onChangeKg(kg) → reformata display US
+ └─ render   → focused ? rawText : formatUS(toDisplay(valueKg))
+```
