@@ -92,10 +92,25 @@ const DECISION_LEVELS: DecisionLevel[] = ["c_level","vp","director","manager","s
 const LEAD_TYPES: LeadType[] = ["buyer","supplier","buyer_supplier"];
 const SOURCES: ProspectSource[] = ["linkedin","trade_show","referral","web_scrape","apollo","manual","inbound","wms_import"];
 
+const COMPANY_ROLE_LIST = [
+  "CEO",
+  "President",
+  "Owner",
+  "Trader",
+  "VP Sales",
+  "Sales Manager",
+  "Sales Director",
+  "Logistics",
+  "Quality Control",
+  "General Manager",
+  "Purchase Manager",
+  "Purchase Director",
+  "Procurement Dept",
+];
 const ROLE_OPTIONS: Record<LeadType, string[]> = {
-  buyer: ["CEO", "Owner/Founder", "Sales Director", "International Trader", "Logistics"],
-  supplier: ["CEO", "Owner/Founder", "Purchase Director", "Procurement", "Logistics"],
-  buyer_supplier: ["CEO", "Owner/Founder", "Operations", "Director"],
+  buyer: COMPANY_ROLE_LIST,
+  supplier: COMPANY_ROLE_LIST,
+  buyer_supplier: COMPANY_ROLE_LIST,
 };
 
 // ---- Search more people (Mundus Intelligence) mock --------------------
@@ -547,7 +562,7 @@ export default function AdminProspectDetail() {
           <span className="adm-panel-title">{t("admin.crm.detail.sections.mainContact")}</span>
         </div>
         {main ? (
-          <ContactBlock contact={main} editing={editing} onChange={setContactField} showRole={false} leadType={d.leadType} t={t} />
+          <ContactBlock contact={main} editing={editing} onChange={setContactField} showRole={true} leadType={d.leadType} t={t} />
         ) : <div style={{ color: "var(--adm-text-tertiary)", fontSize: 12 }}>—</div>}
       </div>
 
