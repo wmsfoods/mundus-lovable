@@ -260,7 +260,8 @@
       "collapse": "Recolher",
       "closeMenu": "Fechar menu",
       "navigation": "Navegação",
-      "myCustomers": "Meus Clientes"
+      "myCustomers": "Meus Clientes",
+      "connectedSuppliers": "Fornecedores conectados"
     },
     "bottom": {
       "create": "Criar",
@@ -1089,7 +1090,18 @@
         "confirm": "Revogar",
         "cancel": "Cancelar"
       },
-      "empty": "Nenhum fornecedor conectado ainda."
+      "empty": "Nenhum fornecedor conectado ainda.",
+      "searchPlaceholder": "Buscar por fornecedor ou unidade…",
+      "statusFilter": {
+        "all": "Todos os status"
+      },
+      "pendingCount": "{{n}} pendente(s)",
+      "toast": {
+        "acceptSuccess": "Convite aceito",
+        "declineSuccess": "Convite recusado",
+        "revokeSuccess": "Conexão revogada",
+        "error": "Algo deu errado. Tente novamente."
+      }
     }
   },
   "supplier": {

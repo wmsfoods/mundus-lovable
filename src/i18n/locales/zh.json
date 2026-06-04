@@ -260,7 +260,8 @@
       "collapse": "收起",
       "closeMenu": "关闭菜单",
       "navigation": "导航",
-      "myCustomers": "我的客户"
+      "myCustomers": "我的客户",
+      "connectedSuppliers": "已连接的供应商"
     },
     "bottom": {
       "create": "创建",
@@ -1084,7 +1085,18 @@
         "confirm": "撤销",
         "cancel": "取消"
       },
-      "empty": "暂无已连接的供应商。"
+      "empty": "暂无已连接的供应商。",
+      "searchPlaceholder": "按供应商或办公室搜索…",
+      "statusFilter": {
+        "all": "所有状态"
+      },
+      "pendingCount": "{{n}} 个待处理",
+      "toast": {
+        "acceptSuccess": "邀请已接受",
+        "declineSuccess": "邀请已拒绝",
+        "revokeSuccess": "连接已撤销",
+        "error": "出错了，请重试。"
+      }
     }
   },
   "supplier": {
