@@ -2095,7 +2095,8 @@
       "groupLabel": "数据洞察",
       "nav": {
         "priceBenchmark": "价格基准",
-        "analytics": "分析"
+        "analytics": "分析",
+        "cutComparison": "分割对比"
       },
       "previewBanner": {
         "title": "预览 · 高级附加功能即将推出",

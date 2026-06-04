@@ -2095,7 +2095,8 @@
       "groupLabel": "Analyses",
       "nav": {
         "priceBenchmark": "Comparaison de prix",
-        "analytics": "Analytique"
+        "analytics": "Analytique",
+        "cutComparison": "Comparaison de découpes"
       },
       "previewBanner": {
         "title": "Aperçu · Module premium bientôt disponible",

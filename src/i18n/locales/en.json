@@ -2100,7 +2100,8 @@
       "groupLabel": "Insights",
       "nav": {
         "priceBenchmark": "Price benchmark",
-        "analytics": "Analytics"
+        "analytics": "Analytics",
+        "cutComparison": "Cut Comparison"
       },
       "previewBanner": {
         "title": "Preview · Premium add-on coming soon",
