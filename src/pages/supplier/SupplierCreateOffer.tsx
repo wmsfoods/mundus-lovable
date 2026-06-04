@@ -501,6 +501,12 @@ export default function SupplierCreateOffer() {
   const [distSpecific, setDistSpecific] = useState(false);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
+  // Live "My Customers" picker (accepted links only). Replaces the legacy
+  // MOCK_CUSTOMERS array. Selected ids are buyer_company_id UUIDs.
+  const { customers: myCustomers, loading: myCustomersLoading } = useMyCustomers({
+    status: "accepted",
+  });
+
   const [showAiImport, setShowAiImport] = useState(false);
   const [aiMode, setAiMode] = useState<null | "paste" | "file" | "voice">(null);
   const [aiInput, setAiInput] = useState("");
