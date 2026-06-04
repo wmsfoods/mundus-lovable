@@ -48,6 +48,7 @@ export function useSupplierSales() {
       type Raw = {
         id: string; order_number: number; status: string | null; placed_at: string;
         incoterm: string | null; fcl_count: number | null;
+        buyer_id: string | null;
         buyer_user: { name: string | null; company: { name: string | null } | { name: string | null }[] | null } | { name: string | null; company: { name: string | null } | { name: string | null }[] | null }[] | null;
         offer: { supplier_id: string; origin_port: string | null; origin_country: string | null } | null;
         destination_port: { name: string | null; country: { english_name: string | null } | null } | null;
@@ -55,9 +56,23 @@ export function useSupplierSales() {
       };
       const one = <T,>(x: T | T[] | null | undefined): T | null =>
         Array.isArray(x) ? (x[0] ?? null) : (x ?? null);
-      const list: Sale[] = ((rows ?? []) as unknown as Raw[]).map((r) => {
+      const rawRows = ((rows ?? []) as unknown as Raw[]);
+      const buyerIds = Array.from(
+        new Set(rawRows.map((r) => r.buyer_id).filter((x): x is string => !!x)),
+      );
+      const buyerInfo = new Map<string, { name: string | null; company: string | null }>();
+      if (buyerIds.length) {
+        const { data: infoRows } = await supabase.rpc("get_users_company_info", {
+          _user_ids: buyerIds,
+        });
+        for (const u of (infoRows ?? []) as Array<{ user_id: string; user_name: string | null; company_name: string | null }>) {
+          buyerInfo.set(u.user_id, { name: u.user_name, company: u.company_name });
+        }
+      }
+      const list: Sale[] = rawRows.map((r) => {
         const bu = one(r.buyer_user);
         const bCo = one(bu?.company ?? null);
+        const info = r.buyer_id ? buyerInfo.get(r.buyer_id) : null;
         const items = r.items ?? [];
         const totalKg = items.reduce((s, i) => s + Number(i.settlement_amount || 0), 0);
         const totalValue = items.reduce((s, i) => s + Number(i.settlement_amount || 0) * Number(i.settlement_price || 0), 0);
@@ -67,9 +82,11 @@ export function useSupplierSales() {
           id: r.id,
           dealId,
           status: normalizeStatus(r.status),
-          buyer: bCo?.name ?? bu?.name ?? "—",
-          buyerContact: "—",
+          buyer: info?.company ?? bCo?.name ?? info?.name ?? bu?.name ?? "—",
+          buyerContact: info?.name ?? bu?.name ?? "—",
+          buyerUserName: info?.name ?? bu?.name ?? undefined,
           orderDate: fmtDate(r.placed_at),
+          closedAtIso: r.placed_at,
           destination: destCountry,
           product: items[0]?.customer_product_name ?? "—",
           supplierBrand: company.name ?? "",
