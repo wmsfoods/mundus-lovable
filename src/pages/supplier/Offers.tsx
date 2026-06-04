@@ -26,6 +26,15 @@ import {
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
+import {
+  AlertDialog,
+  AlertDialogContent,
+  AlertDialogHeader,
+  AlertDialogFooter,
+  AlertDialogTitle,
+  AlertDialogDescription,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const PAGE_SIZE = 12;
 
@@ -44,6 +53,26 @@ export default function SupplierOffers() {
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
   const [negCounts, setNegCounts] = useState<Record<string, { total: number; companies: number }>>({});
+  const [deleteTarget, setDeleteTarget] = useState<SupplierOffer | null>(null);
+  const [deleting, setDeleting] = useState(false);
+
+  const confirmDeleteDraft = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      const { error } = await supabase
+        .from("offers")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", deleteTarget.id);
+      if (error) throw error;
+      toast.success(t("supplier.offers.deleteDraftSuccess", "Draft deleted"));
+      setDeleteTarget(null);
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to delete draft");
+    } finally {
+      setDeleting(false);
+    }
+  };
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -260,6 +289,7 @@ export default function SupplierOffers() {
                 t={t}
                 negInfo={negCounts[o.id]}
                 onOpen={() => navigate(`/supplier/offers/${o.id}`)}
+                onDelete={(off) => setDeleteTarget(off)}
               />
             ))}
           </div>
@@ -272,6 +302,43 @@ export default function SupplierOffers() {
           )}
         </>
       )}
+
+      <AlertDialog open={!!deleteTarget} onOpenChange={(v) => !v && setDeleteTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {t("supplier.offers.deleteDraftTitle", "Delete this draft?")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t(
+                "supplier.offers.deleteDraftBody",
+                "This draft will be permanently removed. This action cannot be undone.",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <button
+              type="button"
+              className="cov4-btn-s"
+              onClick={() => setDeleteTarget(null)}
+              disabled={deleting}
+            >
+              {t("supplier.offers.deleteDraftCancel", "Cancel")}
+            </button>
+            <button
+              type="button"
+              className="cov4-btn-p"
+              style={{ background: "#b91c1c", borderColor: "#b91c1c" }}
+              onClick={confirmDeleteDraft}
+              disabled={deleting}
+            >
+              {deleting
+                ? t("supplier.offers.deleting", "Deleting...")
+                : t("supplier.offers.deleteDraftConfirm", "Delete draft")}
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
