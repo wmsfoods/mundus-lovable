@@ -71,11 +71,11 @@ function SupplierShellInner() {
     {
       type: "section",
       key: "marketplace",
-      label: "Marketplace",
+      label: t("shell.nav.marketplace"),
       icon: ShoppingBag as unknown as SidebarItem["icon"],
       children: [
         { to: "/supplier/offers", label: t("shell.nav.myOffers"), icon: TagIcon },
-        { to: "/supplier/auctions/create", label: "Create Auction", icon: Gavel as unknown as SidebarItem["icon"], newBadge: true },
+        { to: "/supplier/auctions/create", label: t("shell.nav.createAuction"), icon: Gavel as unknown as SidebarItem["icon"], newBadge: true },
         { to: "/supplier/offers/new", label: t("shell.nav.createOffer"), icon: PlusIcon, accent: true },
         { to: "/supplier/negotiations", label: t("shell.nav.negotiations"), icon: MessageIcon },
         { to: "/supplier/requests", label: t("shell.nav.offerRequests"), icon: ClipboardIcon },
@@ -84,7 +84,7 @@ function SupplierShellInner() {
     {
       type: "section",
       key: "operations",
-      label: "Operations",
+      label: t("shell.nav.operations"),
       icon: Settings2 as unknown as SidebarItem["icon"],
       children: [
         { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
@@ -118,7 +118,7 @@ function SupplierShellInner() {
     {
       type: "section",
       key: "admin",
-      label: "Admin",
+      label: t("shell.nav.admin"),
       icon: UsersIcon as unknown as SidebarItem["icon"],
       children: [
         { to: "/supplier/company", label: t("shell.nav.myCompany"), icon: HomeIcon },

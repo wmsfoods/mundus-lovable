@@ -48,7 +48,7 @@ function BuyerShellInner() {
     {
       type: "section",
       key: "marketplace",
-      label: "Marketplace",
+      label: t("shell.nav.marketplace"),
       icon: ShoppingBag as unknown as SidebarItem["icon"],
       children: [
         { to: "/buyer/offers", label: t("shell.nav.offers"), icon: TagIcon },
@@ -61,7 +61,7 @@ function BuyerShellInner() {
     {
       type: "section",
       key: "operations",
-      label: "Operations",
+      label: t("shell.nav.operations"),
       icon: Settings2 as unknown as SidebarItem["icon"],
       children: [
         { to: "/buyer/orders", label: t("shell.nav.orders"), icon: FileTextIcon },
@@ -84,7 +84,7 @@ function BuyerShellInner() {
     {
       type: "section",
       key: "admin",
-      label: "Admin",
+      label: t("shell.nav.admin"),
       icon: UsersIcon as unknown as SidebarItem["icon"],
       children: [
         { to: "/buyer/company", label: t("shell.nav.myCompany", { defaultValue: "My Company" }), icon: HomeIcon },
