@@ -2724,7 +2724,7 @@ export default function SupplierCreateOffer() {
                           }}
                           style={{ minWidth: 130 }}
                         >
-                          <option value="">Select plant…</option>
+                          <option value="">{ta("selectPlantPh", "Select plant…")}</option>
                           {allowedPlants.map((p) => (
                             <option key={p.id} value={p.id}>
                               {p.plant_number ? `${p.plant_number} · ` : ""}
@@ -2991,7 +2991,7 @@ export default function SupplierCreateOffer() {
                           title="Office-granted plant"
                           style={{ minWidth: 140 }}
                         >
-                          <option value="">Select plant…</option>
+                          <option value="">{ta("selectPlantPh", "Select plant…")}</option>
                           {allowedPlants.map((p) => (
                             <option key={p.id} value={p.id}>
                               {p.plant_number ? `${p.plant_number} · ` : ""}
