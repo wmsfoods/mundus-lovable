@@ -231,13 +231,17 @@
       "users": "Utilisateurs",
       "myOffers": "Mes Offres",
       "createOffer": "Créer une Offre",
+      "createAuction": "Créer une enchère",
       "sales": "Ventes",
       "offerRequests": "Demandes d'Offre",
       "myCompany": "Ma Société",
       "messages": "Messages",
       "chat": "Chat",
       "marketIntelligence": "Intelligence Marché",
-      "mundusIntel": "Mundus Intel"
+      "mundusIntel": "Mundus Intel",
+      "marketplace": "Marketplace",
+      "operations": "Opérations",
+      "admin": "Admin"
     },
     "bottom": {
       "create": "Créer",
