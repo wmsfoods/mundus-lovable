@@ -240,15 +240,19 @@ export default function SupplierOfferDetail() {
         .select(`
           id, container_size, total_fcl, payment_terms, origin_port_id,
           is_halal, is_kosher, cut_region, exw_pickup_location,
+          shipment_month, shipment_year, plant_id,
+          allow_quantity_negotiation, negotiation_mode, negotiation_dial,
           items:offer_items (
             amount, price, minimum_price, condition, aging_method,
+            packaging, plant_id, plant_number,
             customer_product:customer_products (
               name,
               standard_product:standard_products ( product_number )
             )
           ),
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
-          incoterms:offer_allowed_incoterms ( incoterm_type )
+          incoterms:offer_allowed_incoterms ( incoterm_type ),
+          freight:freight_options ( port_id, cost, insurance )
         `)
         .eq("id", offer.id)
         .maybeSingle();
@@ -266,6 +270,12 @@ export default function SupplierOfferDetail() {
         cutRegion: ((row as any).cut_region as "global" | "us") ?? "global",
         exwCity: (row as any).exw_pickup_location ?? "",
         originPortId: (row as any).origin_port_id ?? null,
+        shipmentMonth: (row as any).shipment_month ?? null,
+        shipmentYear: (row as any).shipment_year ?? null,
+        plantIdTop: (row as any).plant_id ?? null,
+        allowQuantityNegotiation: !!(row as any).allow_quantity_negotiation,
+        negotiationMode: (row as any).negotiation_mode ?? null,
+        negotiationDial: (row as any).negotiation_dial ?? null,
         destinationCountries: ((row as any).markets ?? [])
           .map((m: any) => m?.market?.country?.english_name)
           .filter(Boolean) as string[],
@@ -278,6 +288,14 @@ export default function SupplierOfferDetail() {
           minimumPrice: Number(it.minimum_price ?? it.price ?? 0),
           condition: it.condition ?? offer.condition,
           agingMethod: it.aging_method ?? null,
+          packaging: it.packaging ?? null,
+          plantId: it.plant_id ?? null,
+          plantNumber: it.plant_number ?? null,
+        })),
+        freight: ((row as any).freight ?? []).map((f: any) => ({
+          portId: f.port_id as string,
+          cost: Number(f.cost ?? 0),
+          insurance: Number(f.insurance ?? 0),
         })),
       };
       navigate("/supplier/offers/new", { state: { editOffer } });
