@@ -650,7 +650,8 @@
       "empty": "Aucune offre pour l'instant. Les fournisseurs n'ont publié aucune offre correspondante.",
       "card": {
         "cuts": "{{count}} découpes",
-        "mixedTitle": "Mixte ({{count}} découpes)",
+        "mixedTitle": "Conteneur Mixte — {{count}} découpes",
+        "fullContainerOneCut": "Conteneur Complet — 1 Découpe",
         "moreCuts": "+{{count}} supplémentaires",
         "origin": "Origine",
         "destination": "Destination",
@@ -1667,6 +1668,8 @@
       },
       "card": {
         "cuts": "{{count}} DÉCOUPES",
+        "mixedTitle": "Conteneur Mixte — {{count}} découpes",
+        "fullContainerOneCut": "Conteneur Complet — 1 Découpe",
         "moreCuts": "+{{count}} autres",
         "origin": "Origine",
         "destination": "Destination",
