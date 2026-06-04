@@ -3151,7 +3151,7 @@ export default function SupplierCreateOffer() {
           <aside className="cov4-panel cov4-panel-r">
             <div className="cov4-prev-h">
               <span className="cov4-prev-h-t">{ta("livePreview", "👁 Live preview")}</span>
-              <span className="cov4-prev-h-s">Buyer's view</span>
+              <span className="cov4-prev-h-s">{ta("previewBuyersView", "Buyer's view")}</span>
             </div>
             <div className="cov4-prev-card">
               <PreviewImages
@@ -3160,26 +3160,26 @@ export default function SupplierCreateOffer() {
                   .filter((x) => !!x.src)}
               />
               <h3 className="cov4-prev-title">
-                {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? "Mix FCL" : "Untitled Offer"}
+                {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? ta("previewMixFcl", "Mix FCL") : ta("previewUntitled", "Untitled Offer")}
               </h3>
               <div className="cov4-prev-meta">
-                <PrevRow l="Origin" v="🇧🇷 Brazil, Santos" />
-                <PrevRow l="Destination" v={selMarkets.map((m) => m.f + " " + m.n).join(", ") || "—"} />
-                <PrevRow l="Incoterm" v={selInco.join(", ")} />
-                <PrevRow l="Temperature" v={temp} />
-                <PrevRow l="Container" v={`${csize} · ${fmtWeight(tw, unit)} ${wLbl}`} />
-                {certifications.length > 0 && <PrevRow l="Certifications" v={certifications.join(", ")} />}
+                <PrevRow l={ta("previewOrigin", "Origin")} v="🇧🇷 Brazil, Santos" />
+                <PrevRow l={ta("previewDestination", "Destination")} v={selMarkets.map((m) => m.f + " " + m.n).join(", ") || "—"} />
+                <PrevRow l={ta("previewIncoterm", "Incoterm")} v={selInco.join(", ")} />
+                <PrevRow l={ta("previewTemperature", "Temperature")} v={temp} />
+                <PrevRow l={ta("previewContainer", "Container")} v={`${csize} · ${fmtWeight(tw, unit)} ${wLbl}`} />
+                {certifications.length > 0 && <PrevRow l={ta("previewCertifications", "Certifications")} v={certifications.join(", ")} />}
               </div>
               {cuts.length > 0 && (
                 <div className="cov4-prev-cuts">
-                  <div className="cov4-prev-cuts-t">Product / Cuts included</div>
+                  <div className="cov4-prev-cuts-t">{ta("previewCutsIncluded", "Product / Cuts included")}</div>
                   {cuts.map((c) => (
                     <div key={c.id} className="cov4-prev-cut-row">
                       <span>
                         {c.cat} {c.cut}
                         {c.plant && (
                           <span style={{ marginLeft: 6, fontSize: 11, color: "#6b7280" }}>
-                            · Plant {c.plant}
+                            · {ta("previewPlant", "Plant")} {c.plant}
                           </span>
                         )}
                       </span>
@@ -3189,11 +3189,11 @@ export default function SupplierCreateOffer() {
                 </div>
               )}
               <div className="cov4-prev-price">
-                <span className="cov4-prev-price-l">Starting from</span>
+                <span className="cov4-prev-price-l">{ta("previewStartingFrom", "Starting from")}</span>
                 <span className="cov4-prev-price-v">
                   US$ {totalPriceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span className="cov4-prev-price-sub">per FCL</span>
+                <span className="cov4-prev-price-sub">{ta("previewPerFcl", "per FCL")}</span>
                 {primaryInco && (
                   <span
                     style={{
@@ -3211,15 +3211,15 @@ export default function SupplierCreateOffer() {
                 )}
                 {multiInco && (
                   <span style={{ display: "block", marginTop: 4, fontSize: 11, color: "var(--fg-muted)" }}>
-                    Also available as {secondaryIncos.join(", ")}
+                    {ta("previewAlsoAvailableAs", "Also available as")} {secondaryIncos.join(", ")}
                   </span>
                 )}
               </div>
               <div className="cov4-prev-dist">
-                <div className="cov4-prev-dist-t">Distribution</div>
-                {distMarketplace && <span className="cov4-prev-dist-tag">🏪 Marketplace</span>}
-                {distAllCustomers && <span className="cov4-prev-dist-tag">📨 All customers</span>}
-                {distSpecific && <span className="cov4-prev-dist-tag">🎯 {selectedCustomers.length} selected</span>}
+                <div className="cov4-prev-dist-t">{ta("previewDistribution", "Distribution")}</div>
+                {distMarketplace && <span className="cov4-prev-dist-tag">{ta("previewTagMarketplace", "🏪 Marketplace")}</span>}
+                {distAllCustomers && <span className="cov4-prev-dist-tag">{ta("previewTagAllCustomers", "📨 All customers")}</span>}
+                {distSpecific && <span className="cov4-prev-dist-tag">{ta("previewTagSelected", "🎯 {{n}} selected", { n: selectedCustomers.length })}</span>}
               </div>
             </div>
           </aside>
