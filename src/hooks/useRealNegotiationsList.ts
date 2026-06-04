@@ -127,6 +127,28 @@ export function useRealNegotiationsList(role: Role) {
       );
       for (const r of rows) r.rounds?.sort((a, b) => a.round - b.round);
 
+      // Hydrate buyer company names — suppliers can't SELECT companies rows
+      // belonging to buyer orgs via RLS, so the embedded join returns null.
+      // Use the security-definer RPC to fill names by id.
+      if (role === "supplier") {
+        const missing = Array.from(new Set(
+          rows
+            .filter((r) => r.buyer_company_id && (!r.buyer || !r.buyer.name))
+            .map((r) => r.buyer_company_id as string),
+        ));
+        if (missing.length) {
+          const { data: names } = await supabase.rpc("get_company_names", { _ids: missing });
+          const map = new Map<string, string>(
+            ((names ?? []) as Array<{ id: string; name: string }>).map((n) => [n.id, n.name]),
+          );
+          for (const r of rows) {
+            if (r.buyer_company_id && map.has(r.buyer_company_id)) {
+              r.buyer = { id: r.buyer_company_id, name: map.get(r.buyer_company_id)! } as any;
+            }
+          }
+        }
+      }
+
       if (role === "buyer") {
         const groups = groupForBuyer(rows);
         console.log("[NegList] buyer groups:", groups.length, "bids:", groups.reduce((s, g) => s + g.bids.length, 0));

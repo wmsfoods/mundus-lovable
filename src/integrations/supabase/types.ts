@@ -7428,6 +7428,15 @@ export type Database = {
         }[]
       }
       get_public_offers: { Args: never; Returns: Json }
+      get_users_company_info: {
+        Args: { _user_ids: string[] }
+        Returns: {
+          company_id: string
+          company_name: string
+          user_id: string
+          user_name: string
+        }[]
+      }
       has_company_role: {
         Args: { _company_id: string; _roles: string[] }
         Returns: boolean
