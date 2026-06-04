@@ -162,6 +162,7 @@ export default function SupplierOffers() {
   const total = filtered.length;
   const visible = filtered.slice(0, shown);
   const hasMore = shown < total;
+  const social = useOfferSocialBatch(useMemo(() => visible.map((o) => o.id), [visible]));
 
   const kpis = useMemo(() => {
     const all = realOffers;
@@ -382,6 +383,7 @@ export default function SupplierOffers() {
                 negInfo={negCounts[o.id]}
                 onOpen={() => navigate(`/supplier/offers/${o.id}`)}
                 onDelete={(off) => setDeleteTarget(off)}
+                social={social.get(o.id)}
               />
             ))}
           </div>
