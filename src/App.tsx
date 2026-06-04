@@ -38,6 +38,7 @@ import BuyerRequestDetail from "./pages/buyer/BuyerRequestDetail.tsx";
 import BuyerCreateRequest from "./pages/buyer/BuyerCreateRequest.tsx";
 import BuyerChat from "./pages/buyer/BuyerChat.tsx";
 import ProcurementIntelligence from "./pages/buyer/ProcurementIntelligence.tsx";
+import BuyerConnectedSuppliers from "./pages/buyer/ConnectedSuppliers.tsx";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess.tsx";
 import { RequirePro } from "./components/billing/RequirePro.tsx";
 import AdminShell from "./pages/admin/AdminShell.tsx";
@@ -181,6 +182,7 @@ const App = () => (
               }
             >
               <Route index element={<BuyerHome />} />
+              <Route path="connected-suppliers" element={<BuyerConnectedSuppliers />} />
               <Route path="offers" element={<BuyerOffers />} />
               <Route path="offers/:id" element={<BuyerOfferDetail />} />
               <Route path="marketplace" element={<BuyerOffers />} />

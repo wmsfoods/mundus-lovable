@@ -260,7 +260,8 @@
       "collapse": "Collapse",
       "closeMenu": "Close menu",
       "navigation": "Navigation",
-      "myCustomers": "My Customers"
+      "myCustomers": "My Customers",
+      "connectedSuppliers": "Connected suppliers"
     },
     "bottom": {
       "create": "Create",
@@ -1089,7 +1090,18 @@
         "confirm": "Revoke",
         "cancel": "Cancel"
       },
-      "empty": "No connected suppliers yet."
+      "empty": "No connected suppliers yet.",
+      "searchPlaceholder": "Search by supplier or office…",
+      "statusFilter": {
+        "all": "All statuses"
+      },
+      "pendingCount": "{{n}} pending",
+      "toast": {
+        "acceptSuccess": "Invitation accepted",
+        "declineSuccess": "Invitation declined",
+        "revokeSuccess": "Connection revoked",
+        "error": "Something went wrong. Please try again."
+      }
     }
   },
   "supplier": {
