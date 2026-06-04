@@ -1,30 +1,55 @@
-## Causa raiz
+## O que aconteceu
 
-A edge function `send-team-invite` faz um `upsert` em `company_users` com `onConflict: 'company_id,email'`, mas **não existe esse índice/constraint único** na tabela. O único `UNIQUE` existente é `(company_id, user_id)` — e como o convidado ainda não tem `user_id`, o Postgres devolve erro do tipo "no unique or exclusion constraint matching the ON CONFLICT specification", a função estoura no `throw cuErr` e o cliente vê o famoso "edge function returned a non-2xx status code".
+O card da vitrine do **buyer** mostra corretamente "Poultry" (ele lê a categoria real do produto via `customer_product → standard_product → product_category.name_en`).
 
-Por isso o admin Mundus consegue convidar normalmente (o caminho dele passa antes pelo `is_company_master` → tudo certo na autorização), mas qualquer master_buyer/master_supplier que tenta convidar **um e-mail novo** quebra ao gravar o registro.
+O card da listagem do **supplier** (Supplier > Offers) mostra **sempre "Beef"** porque o hook que carrega as offers tem a categoria **hard-coded**:
 
-A autorização em si está OK: `is_company_manager` chama `is_company_master`, que reconhece `master_buyer` / `master_supplier`. Confirmei que a Débora (master_buyer da Silva Foods) é elegível.
+```ts
+// src/hooks/useRealSupplierOffers.ts:109
+category: "Beef",
+```
+
+Além disso, o `SELECT` desse hook nem busca a categoria do produto — então mesmo que removêssemos o hard-code, não havia dado para mostrar. Por isso uma oferta cadastrada como Poultry aparece como "Beef" na listagem do supplier.
+
+A oferta no banco está correta. O bug é só de exibição/leitura.
 
 ## Correção
 
-1. **Migration** adicionando o índice único que o upsert exige:
+Alterar `src/hooks/useRealSupplierOffers.ts`:
 
-   ```sql
-   CREATE UNIQUE INDEX IF NOT EXISTS company_users_company_id_email_key
-     ON public.company_users (company_id, email)
-     WHERE email IS NOT NULL;
+1. **Expandir o SELECT** dos offer_items para trazer a categoria via standard_product:
+
+   ```ts
+   items:offer_items (
+     id, amount, price, minimum_price, condition, packaging,
+     customer_product:customer_products (
+       id, name,
+       standard_product:standard_products (
+         product_category:product_categories ( code, name_en )
+       )
+     )
+   )
    ```
 
-   - Mantém o `UNIQUE (company_id, user_id)` existente intacto.
-   - `WHERE email IS NOT NULL` evita travar membros antigos sem e-mail preenchido.
-   - Verifiquei que hoje não há duplicatas `(company_id, lower(email))` — a constraint sobe limpa.
+2. **Derivar `category` da primeira linha** (cai num fallback se vier vazio):
 
-2. **Sem mudança de código na edge function**: ela já normaliza `email.toLowerCase()` antes do upsert, então o índice em `(company_id, email)` resolve sozinho.
+   ```ts
+   const firstCategory =
+     items[0]?.customer_product?.standard_product?.product_category?.name_en
+     ?? "—";
+   // ...
+   category: firstCategory,
+   ```
+
+3. **Tipagem `SupplierOffer.category`**: hoje é `"Beef"` literal (mockSupplierOffers). Trocar para `string` (o card já renderiza qualquer texto e `categoryToProtein()` normaliza para o filtro de proteína).
+
+## Por que não vai mais acontecer
+
+- A categoria passa a ser lida da fonte de verdade (`product_categories`), igual ao buyer/admin já fazem. Não há mais ponto único hard-coded que possa divergir.
+- Como o hook do supplier e o do buyer agora seguem o mesmo padrão de join, qualquer mudança futura no schema vai quebrar de forma simétrica e visível, em vez de um lado mostrar valor errado silenciosamente.
 
 ## Validação
 
-Depois da migration:
-- Testar via UI: Silva Foods → Users → Invite user → preencher e salvar (deve retornar `ok: true` e mostrar o convidado como "Invited").
-- Reenviar convite para o mesmo e-mail deve fazer **update** (graças ao upsert) em vez de erro.
-- Conferir log em `email_queue` para confirmar envio.
+- Abrir Supplier > Offers: a oferta `M-800096-2026` (Frozen Chicken Drumette) deve mostrar **Poultry** no card.
+- Conferir que ofertas de Beef continuam mostrando "Beef".
+- Filtro de proteína no topo continua funcionando (usa `categoryToProtein`, que já cobre Beef/Poultry/Pork/Lamb).
