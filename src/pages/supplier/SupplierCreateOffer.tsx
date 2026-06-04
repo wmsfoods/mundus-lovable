@@ -1155,29 +1155,33 @@ export default function SupplierCreateOffer() {
     if (!canPublish || publishing) return;
     if (companyLoading) return;
     if (!company?.id) {
-      toast.error("No supplier company linked to your account");
+      toast.error(ta("toastNoSupplierCo", "No supplier company linked to your account"));
       return;
     }
     if (selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
-      toast.error("Please enter the EXW pickup location");
+      toast.error(ta("toastEnterExw", "Please enter the EXW pickup location"));
       return;
     }
     if (exceedsHardCap) {
       toast.error(
-        `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg). Increase container count or reduce quantities.`,
+        ta(
+          "toastExceedHardCap",
+          "Quantity per container exceeds 28,000 kg (current: {{kg}} kg). Increase container count or reduce quantities.",
+          { kg: Math.round(perContainerKg).toLocaleString() },
+        ),
       );
       return;
     }
     // Pre-validate that at least one cut has a resolvable name or cutId
     const hasResolvableCut = cuts.some(c => c.cutId || c.cut.trim().length > 0);
     if (!hasResolvableCut) {
-      toast.error("Please add at least one product/cut with a valid name before publishing.");
+      toast.error(ta("toastAddOneCut", "Please add at least one product/cut with a valid name before publishing."));
       return;
     }
     // Ensure cuts have qty and price
     const invalidCuts = cuts.filter(c => !(parseFloat(c.qty) > 0) || !(parseFloat(c.ask) > 0));
     if (invalidCuts.length > 0) {
-      toast.error(`${invalidCuts.length} cut(s) have missing quantity or price. Please fill all fields.`);
+      toast.error(ta("toastInvalidCuts", "{{n}} cut(s) have missing quantity or price. Please fill all fields.", { n: invalidCuts.length }));
       return;
     }
     setPublishing(true);
