@@ -225,10 +225,9 @@
 }
 .offers-list-wrap { overflow-x: auto; }
 
-/* On mobile, force grid (cards) regardless of toggle — list is desktop-only */
+/* On mobile, hide the view toggle — list view is desktop-only, JS forces grid */
 @media (max-width: 768px) {
   .so-view-toggle { display: none; }
-  .offers-list { display: none; }
 }
 
 .so-count-row { margin: 6px 0 14px; }
