@@ -101,14 +101,6 @@ const INCOTERMS: Incoterm[] = [
   { id: "DAP", name: "DAP - Delivered at Place", extra: "city" },
 ];
 
-const MOCK_CUSTOMERS = [
-  { id: "c1", name: "Delta Imports", country: "China" },
-  { id: "c2", name: "Gamma Buyers", country: "Argentina" },
-  { id: "c3", name: "Alpha Foods", country: "UAE" },
-  { id: "c4", name: "Atrides Mt", country: "Brazil" },
-  { id: "c5", name: "WMS Foods", country: "United States" },
-];
-
 const CERTIFICATION_OPTIONS = ["Halal", "Kosher", "USDA", "HACCP", "BRC", "Organic"];
 
 type MktCfg = { sp: string[]; sm: boolean; gf: string; pf: Record<string, string> };
