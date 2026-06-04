@@ -1,55 +1,19 @@
-## O que aconteceu
+## Problema
 
-O card da vitrine do **buyer** mostra corretamente "Poultry" (ele lê a categoria real do produto via `customer_product → standard_product → product_category.name_en`).
-
-O card da listagem do **supplier** (Supplier > Offers) mostra **sempre "Beef"** porque o hook que carrega as offers tem a categoria **hard-coded**:
-
-```ts
-// src/hooks/useRealSupplierOffers.ts:109
-category: "Beef",
-```
-
-Além disso, o `SELECT` desse hook nem busca a categoria do produto — então mesmo que removêssemos o hard-code, não havia dado para mostrar. Por isso uma oferta cadastrada como Poultry aparece como "Beef" na listagem do supplier.
-
-A oferta no banco está correta. O bug é só de exibição/leitura.
+Ao reativar uma offer, o toggle liga e depois volta sozinho. Causa: o handler `openToggle` em `src/pages/supplier/OfferDetail.tsx` só altera estado local (`setActive(true)`) e **não persiste no banco**. No próximo refresh do hook, `status` continua `"inactive"` e a UI reverte.
 
 ## Correção
 
-Alterar `src/hooks/useRealSupplierOffers.ts`:
+Em `src/pages/supplier/OfferDetail.tsx`, no branch de ativação do `openToggle`:
 
-1. **Expandir o SELECT** dos offer_items para trazer a categoria via standard_product:
+1. Fazer `UPDATE offers SET status='active' WHERE id = :id` antes de atualizar o estado local.
+2. Em caso de erro do Supabase: `toast.error(...)` e **não** flipar o toggle.
+3. Em caso de sucesso: `setActive(true)`, `toast.success("Offer reactivated.")` e `auditLog({ action: "offer.reactivated", ... })`.
+4. Adicionar um flag `activating` (igual ao `deactivating`) para evitar duplo clique.
 
-   ```ts
-   items:offer_items (
-     id, amount, price, minimum_price, condition, packaging,
-     customer_product:customer_products (
-       id, name,
-       standard_product:standard_products (
-         product_category:product_categories ( code, name_en )
-       )
-     )
-   )
-   ```
+Nenhuma outra mudança — sem migration, sem alteração de RLS (a policy de UPDATE em `offers` já funciona, pois a deactivação usa o mesmo caminho).
 
-2. **Derivar `category` da primeira linha** (cai num fallback se vier vazio):
+## Checagem pós-fix
 
-   ```ts
-   const firstCategory =
-     items[0]?.customer_product?.standard_product?.product_category?.name_en
-     ?? "—";
-   // ...
-   category: firstCategory,
-   ```
-
-3. **Tipagem `SupplierOffer.category`**: hoje é `"Beef"` literal (mockSupplierOffers). Trocar para `string` (o card já renderiza qualquer texto e `categoryToProtein()` normaliza para o filtro de proteína).
-
-## Por que não vai mais acontecer
-
-- A categoria passa a ser lida da fonte de verdade (`product_categories`), igual ao buyer/admin já fazem. Não há mais ponto único hard-coded que possa divergir.
-- Como o hook do supplier e o do buyer agora seguem o mesmo padrão de join, qualquer mudança futura no schema vai quebrar de forma simétrica e visível, em vez de um lado mostrar valor errado silenciosamente.
-
-## Validação
-
-- Abrir Supplier > Offers: a oferta `M-800096-2026` (Frozen Chicken Drumette) deve mostrar **Poultry** no card.
-- Conferir que ofertas de Beef continuam mostrando "Beef".
-- Filtro de proteína no topo continua funcionando (usa `categoryToProtein`, que já cobre Beef/Poultry/Pork/Lamb).
+- Reativar uma offer inactive → status no DB vira `active`, card aparece em "Available", refresh não reverte.
+- Erro de rede/RLS → toast vermelho e toggle permanece off.
