@@ -648,7 +648,7 @@ export default function BuyerOffers() {
         <div className="offers-error">{t("buyer.offers.loadError", { error })}</div>
       ) : loading ? (
         <div className="offers-loading">{t("buyer.offers.loadingShort")}</div>
-      ) : filtered.length === 0 ? (
+      ) : visible.length === 0 ? (
         <div className="empty-state">
           <SearchIcon size={28} stroke="var(--g300)" />
           <p>{hasActiveFilters ? t("buyer.offers.noResults", "No offers match your filters.") : t("buyer.offers.empty")}</p>
@@ -677,7 +677,7 @@ export default function BuyerOffers() {
                 </tr>
               </thead>
               <tbody>
-                {(auctionsOnly ? [] : filtered).map((offer) => {
+                {(auctionsOnly ? [] : visible).map((offer) => {
                   const items = offer.items ?? [];
                   const mixed = items.length > 1;
                   const first = items[0];
