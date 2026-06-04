@@ -48,6 +48,7 @@ export default function SupplierOfferDetail() {
   const [deactivateOpen, setDeactivateOpen] = useState(false);
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
+  const [activating, setActivating] = useState(false);
   const [negotiations, setNegotiations] = useState<Array<{
     id: string;
     status: string;
@@ -118,9 +119,34 @@ export default function SupplierOfferDetail() {
   const ACTIVE_STATUSES_EXCLUSION = '("offer_rejected","expired","bid_accepted","offer_withdrawn")';
 
   async function openToggle() {
-    // Activating again is unrestricted
+    // Activating again is unrestricted — but must persist to DB
     if (!isActive) {
-      setActive(true);
+      if (activating) return;
+      setActivating(true);
+      try {
+        const { error } = await supabase
+          .from("offers")
+          .update({ status: "active" })
+          .eq("id", id);
+        if (error) {
+          toast.error(error.message || "Failed to reactivate");
+          return;
+        }
+        setActive(true);
+        auditLog({
+          action: "offer.reactivated",
+          category: "offer",
+          entityType: "offer",
+          entityId: id,
+          entityLabel: formatOfferNumber(offer.offerNumber, offer.createdAt),
+          details: { offerTitle },
+        });
+        toast.success("Offer reactivated.");
+      } catch (e) {
+        toast.error(e instanceof Error ? e.message : "Failed to reactivate");
+      } finally {
+        setActivating(false);
+      }
       return;
     }
     // Check for active negotiations before deactivating
