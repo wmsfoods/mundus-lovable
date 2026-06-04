@@ -1196,6 +1196,21 @@ export default function SupplierCreateOffer() {
       toast.error(ta("toastInvalidCuts", "{{n}} cut(s) have missing quantity or price. Please fill all fields.", { n: invalidCuts.length }));
       return;
     }
+    // Guard: floor must never exceed ask (applies to draft and publish).
+    const badFloor = cuts.find(c => {
+      const a = parseFloat(c.ask);
+      const f = parseFloat(c.floor);
+      return Number.isFinite(a) && Number.isFinite(f) && f > a;
+    });
+    if (badFloor) {
+      toast.error(
+        ta(
+          "toastFloorGtAsk",
+          "Floor price cannot be greater than asking price. Fix the cut and try again.",
+        ),
+      );
+      return;
+    }
     setPublishing(true);
     const supplierId = company.id;
     const supplierName = company.name || "Mundus Supplier";
