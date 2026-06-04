@@ -1235,7 +1235,7 @@ export default function SupplierCreateOffer() {
           const { error } = await supabase
             .from("offers")
             .update({
-              status: "active",
+              status: asDraft ? "draft" : "active",
               shipment_month,
               shipment_year,
               payment_terms: payTerm,
