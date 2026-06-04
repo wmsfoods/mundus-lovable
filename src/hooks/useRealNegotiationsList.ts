@@ -18,6 +18,7 @@ import type { ParentOffer, NegotiationBid, NegotiationDetail, NegotiationProduct
 import type { BuyerParentOffer, BuyerNegotiationBid, BuyerNegotiationDetail, BuyerNegotiationProduct, BuyerNegotiationRound } from "./useBuyerNegotiations";
 import { MAX_DISPLAY_ROUNDS, getCutRoundPrice } from "@/lib/negotiationEngine";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { hydrateNegotiationCounterProposals } from "@/lib/hydrateCounterProposals";
 
 export const MOCK_BUYER_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 export const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
@@ -121,7 +122,9 @@ export function useRealNegotiationsList(role: Role) {
         setLoading(false);
         return;
       }
-      const rows = ((data ?? []) as unknown as RealNegotiationRow[]).filter((r) => r.offer);
+      const rows = await hydrateNegotiationCounterProposals(
+        ((data ?? []) as unknown as RealNegotiationRow[]).filter((r) => r.offer),
+      );
       for (const r of rows) r.rounds?.sort((a, b) => a.round - b.round);
 
       if (role === "buyer") {

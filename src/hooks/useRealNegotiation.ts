@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { hydrateNegotiationCounterProposals } from "@/lib/hydrateCounterProposals";
 
 /**
  * Fetches a single negotiation from Supabase with offer, items, rounds, cut_rounds.
@@ -171,7 +172,9 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
       } else {
         const r = row as unknown as RealNegotiationRow | null;
         if (r && r.rounds) r.rounds.sort((a, b) => a.round - b.round);
-        setData(r);
+        const hydrated = r ? (await hydrateNegotiationCounterProposals([r]))[0] : null;
+        if (cancelled) return;
+        setData(hydrated ?? null);
       }
       setLoading(false);
     })();
