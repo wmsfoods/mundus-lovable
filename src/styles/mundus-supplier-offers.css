@@ -151,6 +151,86 @@
 .so-view-toggle button + button { border-left: 1px solid var(--border); }
 .so-view-toggle button.is-active { background: #0f1115; color: #fff; }
 
+/* ============ List view ============ */
+.offers-list {
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.offers-list-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.offers-list-table thead th {
+  text-align: left;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #6b7280;
+  font-weight: 600;
+  padding: 10px 12px;
+  background: #fafafa;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.offers-list-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+  color: #1f2937;
+}
+.offers-list-table tbody tr {
+  cursor: pointer;
+  transition: background 0.12s ease;
+}
+.offers-list-table tbody tr:hover { background: #f9fafb; }
+.offers-list-table tbody tr:last-child td { border-bottom: none; }
+.offers-list-num {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  color: #6b7280;
+  white-space: nowrap;
+}
+.offers-list-product {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #111827;
+}
+.offers-list-muted { color: #6b7280; font-size: 12px; }
+.offers-list-right { text-align: right; }
+.offers-list-actions {
+  display: inline-flex;
+  gap: 6px;
+  justify-content: flex-end;
+}
+.offers-list-actions button {
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  color: #1f2937;
+  font-weight: 600;
+}
+.offers-list-actions button.is-primary {
+  background: #0f1115;
+  color: #fff;
+  border-color: #0f1115;
+}
+.offers-list-wrap { overflow-x: auto; }
+
+/* On mobile, force grid (cards) regardless of toggle — list is desktop-only */
+@media (max-width: 768px) {
+  .so-view-toggle { display: none; }
+  .offers-list { display: none; }
+}
+
 .so-count-row { margin: 6px 0 14px; }
 .so-count-row .result-count { font-size: var(--fs-sm); color: var(--fg-muted); }
 
