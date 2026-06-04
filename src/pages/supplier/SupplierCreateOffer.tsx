@@ -1446,6 +1446,9 @@ export default function SupplierCreateOffer() {
       }
 
       if (itemsRows.length === 0) {
+        if (asDraft) {
+          // Drafts may legitimately have no resolvable items yet — keep the offer.
+        } else {
         // ROLLBACK: Delete the offer we just created since no items could be resolved
         if (offerCreated && offerId) {
           console.error("[publish] No items resolved — rolling back offer", offer.id);
@@ -1453,13 +1456,16 @@ export default function SupplierCreateOffer() {
           offerCreated = false;
         }
         throw new Error("No valid cuts could be resolved. Please ensure each cut has a quantity, price, and matches a product in our catalog. Try selecting cuts from the dropdown instead of typing manually.");
+        }
       }
-      try {
-        const { error } = await supabase.from("offer_items").insert(itemsRows);
-        if (error) throw error;
-      } catch (e) {
-        const m = e instanceof Error ? e.message : String(e);
-        throw new Error(`Step 3 failed: offer_items — ${m}`);
+      if (itemsRows.length > 0) {
+        try {
+          const { error } = await supabase.from("offer_items").insert(itemsRows);
+          if (error) throw error;
+        } catch (e) {
+          const m = e instanceof Error ? e.message : String(e);
+          throw new Error(`Step 3 failed: offer_items — ${m}`);
+        }
       }
 
       // 4. offer_allowed_incoterms
