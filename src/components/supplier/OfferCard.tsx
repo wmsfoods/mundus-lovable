@@ -40,12 +40,14 @@ export function SupplierOfferCard({
   t,
   negInfo,
   onDelete,
+  social,
 }: {
   o: SupplierOffer;
   onOpen: () => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
   negInfo?: { total: number; companies: number };
   onDelete?: (o: SupplierOffer) => void;
+  social?: SocialCounts;
 }) {
   const status = STATUS_COLORS[o.status] ?? STATUS_COLORS.active;
   const firstDest = o.destinations[0];
@@ -268,6 +270,17 @@ export function SupplierOfferCard({
           </button>
         )}
       </div>
+      {social && (
+        <div style={{ borderTop: "1px solid #f1f1f3", padding: "8px 12px", marginTop: 4 }}>
+          <OfferSocialBar
+            offerId={o.id}
+            counts={social}
+            readOnly
+            shareUrl={`${window.location.origin}/public/offers/${o.id}`}
+            shareTitle="Mundus Offer"
+          />
+        </div>
+      )}
     </article>
     </GlowCard>
   );
