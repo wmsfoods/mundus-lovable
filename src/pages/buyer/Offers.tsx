@@ -180,21 +180,19 @@ export function OfferCard({
               {myNeg.status === "bid_accepted" ? "✅ Deal closed" : "🤝 Negotiating"}
             </span>
           )}
-          {offer.remaining_fcl != null
-            && offer.total_fcl != null
-            && offer.remaining_fcl < offer.total_fcl && (
+          {offer.total_fcl != null && (
             <span
               style={{
                 padding: "3px 8px",
                 borderRadius: 12,
-                background: "#fef3c7",
-                color: "#92400e",
+                background: offer.remaining_fcl != null && offer.remaining_fcl < offer.total_fcl ? "#fef3c7" : "#e6f7ed",
+                color: offer.remaining_fcl != null && offer.remaining_fcl < offer.total_fcl ? "#92400e" : "#15803d",
                 fontSize: 10,
                 fontWeight: 600,
                 whiteSpace: "nowrap",
               }}
             >
-              {offer.remaining_fcl} of {offer.total_fcl} FCL available
+              {(offer.remaining_fcl ?? offer.total_fcl)} of {offer.total_fcl} FCL available
             </span>
           )}
         </span>
