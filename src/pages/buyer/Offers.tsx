@@ -84,7 +84,7 @@ export function OfferCard({
 
   const title = mixed
     ? t("buyer.offers.card.mixedTitle", { count: items.length })
-    : firstItem?.customer_product?.name ?? "Offer";
+    : t("buyer.offers.card.fullContainerOneCut");
 
   const firstMarket = offer.markets?.[0]?.market?.country?.english_name ?? null;
   const extraMarkets = Math.max(0, (offer.markets?.length ?? 0) - 1);
@@ -204,41 +204,47 @@ export function OfferCard({
         </span>
       </div>
 
+      {offer.origin_country && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 6,
+            fontSize: 12,
+            color: "#374151",
+            fontWeight: 500,
+          }}
+        >
+          <span style={{ color: "#9ca3af", fontWeight: 600, fontSize: 10, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            {t("buyer.offers.card.origin")}:
+          </span>
+          {originCode && <FlagSVG code={originCode} size={13} />}
+          {offer.origin_country}
+        </div>
+      )}
+
       <div className="oc-title-block">
         <div className="oc-title">{title}</div>
         {offer.supplier_name && (
           <div className="oc-supplier">🏭 {offer.supplier_name}</div>
         )}
-        {mixed ? (
-          <div className="cut-chips">
-            {items.slice(0, 3).map((it) => (
-              <span key={it.id} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
-                <CutThumb src={cutImgs[(it.customer_product?.name ?? "").split(",")[0]]} size={20} />
-                {(it.customer_product?.name ?? "Product / Cut").split(",")[0]}
-              </span>
-            ))}
-            {items.length > 3 && (
-              <span className="cut-chip is-more">
-                {t("buyer.offers.card.moreCuts", { count: items.length - 3 })}
-              </span>
-            )}
-          </div>
-        ) : (
-          <div className="oc-cut-text" style={{ display: "inline-flex", alignItems: "center" }}>
-            <CutThumb src={cutImgs[(firstItem?.customer_product?.name ?? "").split(",")[0]]} size={20} />
-            {firstItem?.customer_product?.name ?? offer.supplier_name}
-          </div>
-        )}
+        <div className="cut-chips">
+          {items.slice(0, 2).map((it) => (
+            <span key={it.id} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
+              <CutThumb src={cutImgs[(it.customer_product?.name ?? "").split(",")[0]]} size={20} />
+              {(it.customer_product?.name ?? "Product / Cut").split(",")[0]}
+            </span>
+          ))}
+          {items.length > 2 && (
+            <span className="cut-chip is-more">
+              {t("buyer.offers.card.moreCuts", { count: items.length - 2 })}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="oc-meta-grid">
-        <div className="cm">
-          <span className="cm-label">{t("buyer.offers.card.origin")}</span>
-          <span className="cm-value">
-            {originCode && <FlagSVG code={originCode} size={13} />}
-            {offer.origin_country}
-          </span>
-        </div>
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.destination")}</span>
           <span className="cm-value dest-hover-wrap">
@@ -275,6 +281,10 @@ export function OfferCard({
           <span className="cm-value">
             {formatShipment(offer.shipment_month, offer.shipment_year)}
           </span>
+        </div>
+        <div className="cm">
+          <span className="cm-label">{t("supplier.offers.card.volume", "Volume")}</span>
+          <span className="cm-value">{formatMT(totalKg)} MT</span>
         </div>
       </div>
 

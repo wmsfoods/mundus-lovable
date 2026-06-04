@@ -650,7 +650,8 @@
       "empty": "暂无报价。供应商尚未发布任何匹配的报价。",
       "card": {
         "cuts": "{{count}} 个部位",
-        "mixedTitle": "混合 ({{count}} 个部位)",
+        "mixedTitle": "混合集装箱 — {{count}} 个部位",
+        "fullContainerOneCut": "整柜 — 1 个部位",
         "moreCuts": "+ {{count}} 更多",
         "origin": "产地",
         "destination": "目的地",
@@ -1667,6 +1668,8 @@
       },
       "card": {
         "cuts": "{{count}} 部位",
+        "mixedTitle": "混合集装箱 — {{count}} 个部位",
+        "fullContainerOneCut": "整柜 — 1 个部位",
         "moreCuts": "+{{count}} 更多",
         "origin": "原产地",
         "destination": "目的地",

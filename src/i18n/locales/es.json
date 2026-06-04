@@ -655,7 +655,8 @@
       "empty": "Aún no hay ofertas. Los proveedores no han publicado ofertas compatibles.",
       "card": {
         "cuts": "{{count}} cortes",
-        "mixedTitle": "Mixto ({{count}} cortes)",
+        "mixedTitle": "Contenedor Mixto — {{count}} cortes",
+        "fullContainerOneCut": "Contenedor Completo — 1 Corte",
         "moreCuts": "+{{count}} más",
         "origin": "Origen",
         "destination": "Destino",
@@ -1662,6 +1663,8 @@
       },
       "card": {
         "cuts": "{{count}} CORTES",
+        "mixedTitle": "Contenedor Mixto — {{count}} cortes",
+        "fullContainerOneCut": "Contenedor Completo — 1 Corte",
         "moreCuts": "+{{count}} más",
         "origin": "Origen",
         "destination": "Destino",

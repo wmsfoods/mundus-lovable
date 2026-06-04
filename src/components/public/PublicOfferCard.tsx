@@ -43,8 +43,8 @@ export default function PublicOfferCard({
   const condition = firstItem?.condition ?? "—";
 
   const title = mixed
-    ? t("buyer.offers.card.mixedTitle", { count: items.length, defaultValue: `Mixed (${items.length} Product / Cuts)` })
-    : firstItem?.product_name ?? "Offer";
+    ? t("buyer.offers.card.mixedTitle", { count: items.length, defaultValue: `Mixed Container — ${items.length} cuts` })
+    : t("buyer.offers.card.fullContainerOneCut", { defaultValue: "Full Container — 1 Cut" });
 
   const marketsList = (offer.markets ?? [])
     .map((m) => m.country)
@@ -189,6 +189,26 @@ export default function PublicOfferCard({
         </span>
       </div>
 
+      {offer.origin_country && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 6,
+            fontSize: 12,
+            color: "#374151",
+            fontWeight: 500,
+          }}
+        >
+          <span style={{ color: "#9ca3af", fontWeight: 600, fontSize: 10, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            {t("buyer.offers.card.origin", "Origin")}:
+          </span>
+          {originCode && <FlagSVG code={originCode} size={13} />}
+          {offer.origin_country}
+        </div>
+      )}
+
       <div className="oc-title-block">
         <div className="oc-title">{title}</div>
         <div
@@ -219,34 +239,21 @@ export default function PublicOfferCard({
             {t("public.home.hiddenBadge", "Hidden")}
           </span>
         </div>
-        {mixed ? (
-          <div className="cut-chips">
-            {items.slice(0, 3).map((it) => (
-              <span key={it.id} className="cut-chip">
-                {(it.product_name ?? "Product / Cut").split(",")[0]}
-              </span>
-            ))}
-            {items.length > 3 && (
-              <span className="cut-chip is-more">
-                {t("buyer.offers.card.moreCuts", { count: items.length - 3, defaultValue: `+${items.length - 3} more` })}
-              </span>
-            )}
-          </div>
-        ) : (
-          <div className="oc-cut-text">
-            {firstItem?.product_name ?? "—"}
-          </div>
-        )}
+        <div className="cut-chips">
+          {items.slice(0, 2).map((it) => (
+            <span key={it.id} className="cut-chip">
+              {(it.product_name ?? "Product / Cut").split(",")[0]}
+            </span>
+          ))}
+          {items.length > 2 && (
+            <span className="cut-chip is-more">
+              {t("buyer.offers.card.moreCuts", { count: items.length - 2, defaultValue: `+${items.length - 2} more` })}
+            </span>
+          )}
+        </div>
       </div>
 
       <div className="oc-meta-grid">
-        <div className="cm">
-          <span className="cm-label">{t("buyer.offers.card.origin", "Origin")}</span>
-          <span className="cm-value">
-            {originCode && <FlagSVG code={originCode} size={13} />}
-            {offer.origin_country || "—"}
-          </span>
-        </div>
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.destination", "Destination")}</span>
           <span className="cm-value dest-hover-wrap">
@@ -283,6 +290,10 @@ export default function PublicOfferCard({
           <span className="cm-value">
             {formatShipment(offer.shipment_month, offer.shipment_year)}
           </span>
+        </div>
+        <div className="cm">
+          <span className="cm-label">{t("supplier.offers.card.volume", "Volume")}</span>
+          <span className="cm-value">{formatMT(totalKg)} MT</span>
         </div>
       </div>
 
