@@ -6,6 +6,7 @@ import {
   EyeIcon,
   MessageIcon,
 } from "@/components/icons";
+import { Trash2 } from "lucide-react";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
@@ -35,11 +36,13 @@ export function SupplierOfferCard({
   onOpen,
   t,
   negInfo,
+  onDelete,
 }: {
   o: SupplierOffer;
   onOpen: () => void;
   t: (k: string, opts?: Record<string, unknown>) => string;
   negInfo?: { total: number; companies: number };
+  onDelete?: (o: SupplierOffer) => void;
 }) {
   const status = STATUS_COLORS[o.status] ?? STATUS_COLORS.active;
   const firstDest = o.destinations[0];
@@ -217,6 +220,30 @@ export function SupplierOfferCard({
         <button type="button" className="oc-open-btn" onClick={(e) => { e.stopPropagation(); onOpen(); }}>
           {t("supplier.offers.openOffer")} <ArrowRightIcon size={12} />
         </button>
+        {o.status === "draft" && onDelete && (
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); onDelete(o); }}
+            title={t("supplier.offers.deleteDraft")}
+            aria-label={t("supplier.offers.deleteDraft")}
+            style={{
+              marginLeft: 8,
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 4,
+              padding: "6px 10px",
+              borderRadius: 8,
+              border: "1px solid #fecaca",
+              background: "#fff",
+              color: "#b91c1c",
+              fontSize: 12,
+              fontWeight: 600,
+              cursor: "pointer",
+            }}
+          >
+            <Trash2 size={13} /> {t("supplier.offers.deleteDraft")}
+          </button>
+        )}
       </div>
     </article>
   );

@@ -1627,6 +1627,13 @@
       "showingShort": "显示 {{shown}} 条，共 {{total}} 条报价",
       "newOffer": "新报价",
       "openOffer": "打开报价",
+      "deleteDraft": "删除",
+      "deleteDraftTitle": "删除此草稿？",
+      "deleteDraftBody": "此草稿将被永久删除，操作无法撤销。",
+      "deleteDraftCancel": "取消",
+      "deleteDraftConfirm": "删除草稿",
+      "deleteDraftSuccess": "草稿已删除",
+      "deleting": "正在删除...",
       "statusFilter": "状态",
       "allStatuses": "所有状态",
       "kpi": {

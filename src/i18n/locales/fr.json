@@ -1627,6 +1627,13 @@
       "showingShort": "Affichage de {{shown}} sur {{total}} offres",
       "newOffer": "Nouvelle offre",
       "openOffer": "Offre ouverte",
+      "deleteDraft": "Supprimer",
+      "deleteDraftTitle": "Supprimer ce brouillon ?",
+      "deleteDraftBody": "Ce brouillon sera supprimé définitivement. Cette action est irréversible.",
+      "deleteDraftCancel": "Annuler",
+      "deleteDraftConfirm": "Supprimer le brouillon",
+      "deleteDraftSuccess": "Brouillon supprimé",
+      "deleting": "Suppression...",
       "statusFilter": "Statut",
       "allStatuses": "Tous les statuts",
       "kpi": {

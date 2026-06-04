@@ -1622,6 +1622,13 @@
       "showingShort": "Mostrando {{shown}} de {{total}} ofertas",
       "newOffer": "Nueva oferta",
       "openOffer": "Abrir oferta",
+      "deleteDraft": "Eliminar",
+      "deleteDraftTitle": "¿Eliminar este borrador?",
+      "deleteDraftBody": "Este borrador se eliminará permanentemente. Esta acción no se puede deshacer.",
+      "deleteDraftCancel": "Cancelar",
+      "deleteDraftConfirm": "Eliminar borrador",
+      "deleteDraftSuccess": "Borrador eliminado",
+      "deleting": "Eliminando...",
       "statusFilter": "Estado",
       "allStatuses": "Todos los estados",
       "kpi": {
