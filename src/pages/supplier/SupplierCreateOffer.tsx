@@ -2494,40 +2494,40 @@ export default function SupplierCreateOffer() {
           {showAiImport && (
             <div className="cov4-ai-panel">
               <div className="cov4-ai-h">
-                <span className="cov4-ai-t">✨ AI-powered import</span>
+                <span className="cov4-ai-t">{ta("aiPanelTitle", "✨ AI-powered import")}</span>
                 <button type="button" className="cov4-rm-btn" onClick={() => { setShowAiImport(false); setAiMode(null); }}>✕</button>
               </div>
-              <p className="cov4-ai-d">Import cuts from any source — AI will parse and auto-fill the table</p>
+              <p className="cov4-ai-d">{ta("aiPanelDesc", "Import cuts from any source — AI will parse and auto-fill the table")}</p>
               <div className="cov4-ai-modes">
-                <button type="button" className={`cov4-ai-mode ${aiMode === "paste" ? "on" : ""}`} onClick={() => setAiMode("paste")}>📋 Paste from Excel/Text</button>
-                <button type="button" className={`cov4-ai-mode ${aiMode === "file" ? "on" : ""}`} onClick={() => setAiMode("file")}>📄 Upload PDF / Image</button>
-                <button type="button" className={`cov4-ai-mode ${aiMode === "voice" ? "on" : ""}`} onClick={() => setAiMode("voice")}>🎤 Voice input</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "paste" ? "on" : ""}`} onClick={() => setAiMode("paste")}>{ta("aiModePaste", "📋 Paste from Excel/Text")}</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "file" ? "on" : ""}`} onClick={() => setAiMode("file")}>{ta("aiModeFile", "📄 Upload PDF / Image")}</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "voice" ? "on" : ""}`} onClick={() => setAiMode("voice")}>{ta("aiModeVoice", "🎤 Voice input")}</button>
               </div>
               {aiMode === "paste" && (
                 <div>
                   <textarea
                     className="cov4-ai-textarea"
                     rows={4}
-                    placeholder={"Paste your data here...\ne.g.: Beef Forequarter | Boneless | 14,000 kg | $6.40/kg\n       Beef Brisket | Bone-In | 13,000 kg | $4.35/kg"}
+                    placeholder={ta("aiPastePh", "Paste your data here...\ne.g.: Beef Forequarter | Boneless | 14,000 kg | $6.40/kg\n       Beef Brisket | Bone-In | 13,000 kg | $4.35/kg")}
                     value={aiInput}
                     onChange={(e) => setAiInput(e.target.value)}
                   />
                   <button type="button" className="cov4-ai-process" onClick={simulateAiImport} disabled={!aiInput || aiProcessing}>
-                    {aiProcessing ? "⏳ Processing..." : "✨ Parse & import"}
+                    {aiProcessing ? ta("aiProcessing", "⏳ Processing...") : ta("aiParseImport", "✨ Parse & import")}
                   </button>
                 </div>
               )}
               {aiMode === "file" && (
                 <label className="cov4-ai-upload">
                   <span style={{ fontSize: 24 }}>📎</span>
-                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>Drop PDF, image, or click to upload</span>
+                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>{ta("aiDropFile", "Drop PDF, image, or click to upload")}</span>
                   <input type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.csv" onChange={() => simulateAiImport()} />
                 </label>
               )}
               {aiMode === "voice" && (
                 <button type="button" className="cov4-voice" onClick={simulateAiImport}>
                   <span style={{ fontSize: 28 }}>🎙</span>
-                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>{aiProcessing ? "Listening..." : "Tap to start recording"}</span>
+                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>{aiProcessing ? ta("aiListening", "Listening...") : ta("aiTapRecord", "Tap to start recording")}</span>
                 </button>
               )}
             </div>
