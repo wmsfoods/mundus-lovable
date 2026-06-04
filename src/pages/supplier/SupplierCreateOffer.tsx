@@ -2471,9 +2471,9 @@ export default function SupplierCreateOffer() {
         {/* ═══════════ CENTER PANEL ═══════════ */}
         <main className="cov4-panel cov4-panel-c">
           <div className="cov4-center-head">
-            <SectionHeader icon="🥩" t="PRODUCT / CUT & pricing" s="Products, specs, photos, ask & floor price" />
+            <SectionHeader icon="🥩" t={ta("secProductTitle", "PRODUCT / CUT & pricing")} s={ta("secProductSub", "Products, specs, photos, ask & floor price")} />
             <button type="button" className="cov4-ai-btn" onClick={() => setShowAiImport((v) => !v)}>
-              ✨ AI Import
+              {ta("aiImport", "✨ AI Import")}
             </button>
             {cutRegion === "us" && (
               <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 380, marginLeft: 8 }}>
@@ -2528,7 +2528,7 @@ export default function SupplierCreateOffer() {
           {/* Capacity bar */}
           <div className="cov4-cap">
             <div className="cov4-cap-h">
-              <span className="cov4-cap-l">Container capacity</span>
+              <span className="cov4-cap-l">{ta("containerCapacity", "Container capacity")}</span>
               <span className="cov4-cap-v">
                 {fmtWeight(tw, unit)} / {fmtWeight(cap, unit)} {wLbl}
                 <span className="cov4-cap-p" style={{ color: fc }}>({fp.toFixed(0)}%)</span>
