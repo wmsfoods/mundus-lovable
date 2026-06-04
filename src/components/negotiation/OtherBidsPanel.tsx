@@ -70,6 +70,20 @@ export function OtherBidsPanel({
         }
         return;
       }
+      // Suppliers can't SELECT buyer companies directly via RLS — hydrate
+      // names through the security-definer RPC.
+      const buyerIds = Array.from(new Set(
+        (negs as any[])
+          .map((n) => n.buyer_company_id as string | null)
+          .filter((x): x is string => !!x),
+      ));
+      const nameMap = new Map<string, string>();
+      if (buyerIds.length) {
+        const { data: namesData } = await supabase.rpc("get_company_names", { _ids: buyerIds });
+        for (const n of (namesData ?? []) as Array<{ id: string; name: string }>) {
+          nameMap.set(n.id, n.name);
+        }
+      }
       const out: OtherBidRow[] = [];
       for (const n of negs as any[]) {
         const buyerRounds = (n.rounds ?? []).filter((r: any) => r.round % 2 === 1);
@@ -84,7 +98,7 @@ export function OtherBidsPanel({
           .join("|");
         out.push({
           id: n.id,
-          buyerName: n.buyer?.name ?? "Buyer",
+          buyerName: n.buyer?.name ?? (n.buyer_company_id ? nameMap.get(n.buyer_company_id) : undefined) ?? "Buyer",
           status: String(n.status ?? ""),
           currentRound: Number(n.current_round ?? Math.ceil((last?.round ?? 1) / 2)),
           latestBidTotal: total,
