@@ -1627,9 +1627,11 @@ export default function SupplierCreateOffer() {
     }
   };
   const handleCancel = () => {
-    if (confirm("Discard this offer?")) {
-      navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
-    }
+    setDiscardOpen(true);
+  };
+  const confirmDiscard = () => {
+    setDiscardOpen(false);
+    navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
   };
 
   return (
