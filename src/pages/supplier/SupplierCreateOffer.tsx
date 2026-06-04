@@ -3432,6 +3432,54 @@ export default function SupplierCreateOffer() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Reset Product / Cuts → switch catalog (Global ↔ US) */}
+      <AlertDialog open={resetCutsOpen} onOpenChange={setResetCutsOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {ta("resetCutsTitle", "Switch cut catalog?")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {cutRegion === "us"
+                ? ta(
+                    "resetCutsMsgToGlobal",
+                    "Do you want to switch to 🌐 Global {{p}}Cuts instead of 🇺🇸 US {{p}}Cuts (IMPS)? All added cuts will be removed.",
+                    { p: usToggleProteinLabel },
+                  )
+                : ta(
+                    "resetCutsMsgToUs",
+                    "Do you want to switch to 🇺🇸 US {{p}}Cuts (IMPS) instead of 🌐 Global {{p}}Cuts? All added cuts will be removed.",
+                    { p: usToggleProteinLabel },
+                  )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <button
+              type="button"
+              className="cov4-btn-s"
+              onClick={() => setResetCutsOpen(false)}
+            >
+              {ta("resetCutsNo", "No")}
+            </button>
+            <button
+              type="button"
+              className="cov4-btn-p"
+              style={{ background: "#8B1A3A", borderColor: "#8B1A3A" }}
+              onClick={() => {
+                setCuts([]);
+                setCutImgs({});
+                setAddRow(false);
+                setNf({ ...EMPTY_NF });
+                setCutRegion((r) => (r === "us" ? "global" : "us"));
+                setResetCutsOpen(false);
+              }}
+            >
+              {ta("resetCutsYes", "Yes, switch")}
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
