@@ -26,6 +26,9 @@ import {
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
+import { formatOfferNumber } from "@/lib/offerNumber";
+import { FlagSVG } from "@/components/icons";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -49,6 +52,8 @@ export default function SupplierOffers() {
   const [cat, setCat] = useState<ProteinKey>("all");
   const [statusFilter, setStatusFilter] = useState<"all" | SupplierOffer["status"]>("all");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const isMobile = useIsMobileShell();
+  const effectiveView = isMobile ? "grid" : viewMode;
   const { available: supplierProteins, counts: proteinCounts } = useSupplierProteins();
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
 
@@ -279,6 +284,92 @@ export default function SupplierOffers() {
             <PlusIcon size={14} /> {t("supplier.offers.newOffer")}
           </button>
         </div>
+      ) : effectiveView === "list" ? (
+        <>
+          <div className="offers-list">
+            <div className="offers-list-wrap">
+              <table className="offers-list-table">
+                <thead>
+                  <tr>
+                    <th>{t("supplier.offers.list.offerNum", { defaultValue: "Offer #" })}</th>
+                    <th>{t("supplier.offers.list.product", { defaultValue: "Product" })}</th>
+                    <th>{t("supplier.offers.list.origin", { defaultValue: "Origin" })}</th>
+                    <th>{t("supplier.offers.list.destinations", { defaultValue: "Destinations" })}</th>
+                    <th>{t("supplier.offers.list.incoterm", { defaultValue: "Incoterm" })}</th>
+                    <th>{t("supplier.offers.list.shipment", { defaultValue: "Shipment" })}</th>
+                    <th className="offers-list-right">{t("supplier.offers.list.volume", { defaultValue: "Volume" })}</th>
+                    <th>{t("supplier.offers.list.status", { defaultValue: "Status" })}</th>
+                    <th className="offers-list-right">{t("supplier.offers.list.negotiations", { defaultValue: "Negotiations" })}</th>
+                    <th className="offers-list-right"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {visible.map((o) => {
+                    const firstDest = o.destinations[0];
+                    const extraDest = Math.max(0, o.destinations.length - 1);
+                    const destLabel = firstDest
+                      ? extraDest > 0 ? `${firstDest.name} +${extraDest}` : firstDest.name
+                      : "—";
+                    const firstIncoterm = o.incoterms[0] ?? "—";
+                    const extraInc = Math.max(0, o.incoterms.length - 1);
+                    const incLabel = extraInc > 0 ? `${firstIncoterm} +${extraInc}` : firstIncoterm;
+                    const title = o.items.length > 1
+                      ? t("supplier.offers.card.mixedTitle", { count: o.items.length, defaultValue: `Mixed · ${o.items.length} cuts` })
+                      : (o.items[0]?.name ?? "—");
+                    const volMt = Math.round(o.totalKg / 1000);
+                    const neg = negCounts[o.id];
+                    return (
+                      <tr key={o.id} onClick={() => navigate(`/supplier/offers/${o.id}`)}>
+                        <td><span className="offers-list-num">{formatOfferNumber(o.offerNumber, o.createdAt)}</span></td>
+                        <td>
+                          <div className="offers-list-product">{title}</div>
+                          <div className="offers-list-muted">{o.category} · {o.condition}</div>
+                        </td>
+                        <td>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            {o.originCountryCode && <FlagSVG code={o.originCountryCode} size={13} />}
+                            {o.originCountry ?? "—"}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                            {firstDest && <FlagSVG code={firstDest.code} size={13} />}
+                            {destLabel}
+                          </span>
+                        </td>
+                        <td>{incLabel}</td>
+                        <td>{o.shipmentLabel}</td>
+                        <td className="offers-list-right">{volMt} MT</td>
+                        <td>
+                          <span className="status-pill" style={{ background: "#f1f5f9", color: "#475569" }}>
+                            {t(`supplier.offers.status.${o.status}`, { defaultValue: o.status })}
+                          </span>
+                        </td>
+                        <td className="offers-list-right">
+                          {neg && neg.total > 0 ? `${neg.total} (${neg.companies})` : "—"}
+                        </td>
+                        <td className="offers-list-right">
+                          <div className="offers-list-actions">
+                            <button type="button" className="is-primary" onClick={(e) => { e.stopPropagation(); navigate(`/supplier/offers/${o.id}`); }}>
+                              {t("supplier.offers.openOffer", { defaultValue: "Open" })}
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          {hasMore && (
+            <div className="so-load-more">
+              <button type="button" onClick={() => setShown(shown + PAGE_SIZE)}>
+                {t("supplier.offers.loadMore")}
+              </button>
+            </div>
+          )}
+        </>
       ) : (
         <>
           <div className="so-grid">

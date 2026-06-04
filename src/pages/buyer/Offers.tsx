@@ -9,6 +9,7 @@ import {
   GridIcon,
   FlagSVG,
 } from "@/components/icons";
+import { ListIcon } from "@/components/icons";
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -317,10 +318,12 @@ export default function BuyerOffers() {
   const initialProtein = (searchParams.get("protein") as ProteinKey | null) ?? "all";
   const [protein, setProtein] = useState<ProteinKey>(initialProtein);
   const [sortBy, setSortBy] = useState<"newest" | "priceAsc" | "priceDesc" | "volumeDesc">("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [auctionsOnly, setAuctionsOnly] = useState(false);
   const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
   const isMobile = useIsMobileShell();
+  const effectiveView = isMobile ? "grid" : viewMode;
 
   const { company } = useCurrentCompany();
   const buyerCompanyId = company?.id ?? null;
@@ -532,6 +535,10 @@ export default function BuyerOffers() {
                 <option value="volumeDesc">{t("buyer.offers.sort.volumeDesc", "Largest volume")}</option>
               </select>
             </div>
+            <div className="so-view-toggle">
+              <button type="button" className={viewMode === "grid" ? "is-active" : ""} onClick={() => setViewMode("grid")} aria-label="Grid view"><GridIcon size={14} /></button>
+              <button type="button" className={viewMode === "list" ? "is-active" : ""} onClick={() => setViewMode("list")} aria-label="List view"><ListIcon size={14} /></button>
+            </div>
           </div>
         )}
         <OffersFilterBar
@@ -614,6 +621,87 @@ export default function BuyerOffers() {
               {t("buyer.offers.clearAll", "Clear all")}
             </button>
           )}
+        </div>
+      ) : effectiveView === "list" ? (
+        <div className="offers-list">
+          <div className="offers-list-wrap">
+            <table className="offers-list-table">
+              <thead>
+                <tr>
+                  <th>{t("buyer.offers.list.offerNum", { defaultValue: "Offer #" })}</th>
+                  <th>{t("buyer.offers.list.product", { defaultValue: "Product" })}</th>
+                  <th>{t("buyer.offers.list.supplier", { defaultValue: "Supplier" })}</th>
+                  <th>{t("buyer.offers.list.origin", { defaultValue: "Origin" })}</th>
+                  <th>{t("buyer.offers.list.destination", { defaultValue: "Destination" })}</th>
+                  <th>{t("buyer.offers.list.incoterm", { defaultValue: "Incoterm" })}</th>
+                  <th>{t("buyer.offers.list.shipment", { defaultValue: "Shipment" })}</th>
+                  <th className="offers-list-right">{t("buyer.offers.list.volume", { defaultValue: "Volume" })}</th>
+                  <th>{t("buyer.offers.list.status", { defaultValue: "Status" })}</th>
+                  <th className="offers-list-right"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {(auctionsOnly ? [] : filtered).map((offer) => {
+                  const items = offer.items ?? [];
+                  const mixed = items.length > 1;
+                  const first = items[0];
+                  const product = mixed
+                    ? t("buyer.offers.card.mixedTitle", { count: items.length, defaultValue: `Mixed · ${items.length} cuts` })
+                    : (first?.customer_product?.name?.split(",")[0] ?? "—");
+                  const firstMarket = offer.markets?.[0]?.market?.country?.english_name ?? null;
+                  const extraMarkets = Math.max(0, (offer.markets?.length ?? 0) - 1);
+                  const destLabel = firstMarket ? (extraMarkets > 0 ? `${firstMarket} +${extraMarkets}` : firstMarket) : "—";
+                  const firstInc = offer.incoterms?.[0]?.incoterm_type ?? null;
+                  const extraInc = Math.max(0, (offer.incoterms?.length ?? 0) - 1);
+                  const incLabel = firstInc ? (extraInc > 0 ? `${firstInc} +${extraInc}` : firstInc) : "—";
+                  const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
+                  const status = statusFor(offer.status);
+                  const originCode = countryToCode(offer.origin_country);
+                  const destCode = countryToCode(firstMarket);
+                  return (
+                    <tr key={offer.id} onClick={() => navigate(`/buyer/offers/${offer.id}`)}>
+                      <td><span className="offers-list-num">{formatOfferNumber(offer.offer_number, offer.created_at)}</span></td>
+                      <td>
+                        <div className="offers-list-product">{product}</div>
+                        <div className="offers-list-muted">
+                          {first?.customer_product?.standard_product?.product_category?.name_en ?? "—"} · {first?.condition ?? "—"}
+                        </div>
+                      </td>
+                      <td>{offer.supplier_name ?? "—"}</td>
+                      <td>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          {originCode && <FlagSVG code={originCode} size={13} />}
+                          {offer.origin_country ?? "—"}
+                        </span>
+                      </td>
+                      <td>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                          {destCode && <FlagSVG code={destCode} size={13} />}
+                          {destLabel}
+                        </span>
+                      </td>
+                      <td>{incLabel}</td>
+                      <td>{formatShipment(offer.shipment_month, offer.shipment_year)}</td>
+                      <td className="offers-list-right">{formatMT(totalKg)} MT</td>
+                      <td>
+                        <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
+                          <span className="status-dot" style={{ background: status.dot }} />
+                          {t(`buyer.offers.status.${status.key}`)}
+                        </span>
+                      </td>
+                      <td className="offers-list-right">
+                        <div className="offers-list-actions">
+                          <button type="button" className="is-primary" onClick={(e) => { e.stopPropagation(); navigate(`/buyer/offers/${offer.id}`); }}>
+                            {t("buyer.offers.card.viewDetails", { defaultValue: "View" })}
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       ) : (
         <div className="card-row">
