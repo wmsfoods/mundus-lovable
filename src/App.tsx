@@ -232,7 +232,7 @@ const App = () => (
               <Route path="sales" element={<SupplierSales />} />
               <Route path="sales/:id" element={<SupplierSaleDetail />} />
               <Route path="users" element={<SupplierUsers />} />
-              <Route path="customers" element={<SupplierMyCustomers />} />
+              <Route path="my-customers" element={<SupplierMyCustomers />} />
               <Route path="company" element={<SupplierCompany />} />
               <Route path="offices" element={<SupplierOffices />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
