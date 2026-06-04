@@ -70,6 +70,7 @@ export function SupplierOfferCard({
     : t("supplier.offers.card.fullContainerOneCut", { defaultValue: "Full Container — 1 Cut" });
 
   return (
+    <GlowCard glowColor="mundus" radius={14}>
     <article
       className="oc"
       role="button"
@@ -265,5 +266,6 @@ export function SupplierOfferCard({
         )}
       </div>
     </article>
+    </GlowCard>
   );
 }
