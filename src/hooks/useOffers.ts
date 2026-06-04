@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useRealtimeRefresh } from "./useRealtimeRefresh";
+import { useCurrentCompany } from "./useCurrentCompany";
 
 export type OfferItem = {
   id: string;
@@ -70,6 +71,8 @@ export function useOffers(): UseOffersResult {
   const bump = useCallback(() => setRefreshKey((k) => k + 1), []);
   useRealtimeRefresh({ table: "offers", onRefresh: bump });
   useRealtimeRefresh({ table: "negotiations", onRefresh: bump });
+  const { company } = useCurrentCompany();
+  const buyerCompanyId = company?.id ?? null;
 
   useEffect(() => {
     let cancelled = false;
@@ -78,7 +81,7 @@ export function useOffers(): UseOffersResult {
       if (!hasLoadedRef.current) setLoading(true);
       setError(null);
 
-      const { data, error: qErr } = await supabase
+      let query = supabase
         .from("offers")
         .select(
           `
@@ -133,6 +136,17 @@ export function useOffers(): UseOffersResult {
         .is("deleted_at", null)
         .eq("status", "active")
         .order("created_at", { ascending: false });
+      // Targeted-offer visibility (Batch 3/5): an offer with a populated
+      // `specific_buyer_company_ids` array is only visible to buyers whose
+      // company is in that array. NULL/empty = visible to all (legacy).
+      if (buyerCompanyId) {
+        query = query.or(
+          `specific_buyer_company_ids.is.null,specific_buyer_company_ids.cs.{${buyerCompanyId}}`,
+        );
+      } else {
+        query = query.is("specific_buyer_company_ids", null);
+      }
+      const { data, error: qErr } = await query;
 
       if (cancelled) return;
 
@@ -173,7 +187,7 @@ export function useOffers(): UseOffersResult {
     return () => {
       cancelled = true;
     };
-  }, [refreshKey]);
+  }, [refreshKey, buyerCompanyId]);
 
   return { offers, loading, error };
 }
