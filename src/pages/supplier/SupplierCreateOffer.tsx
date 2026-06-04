@@ -899,6 +899,7 @@ export default function SupplierCreateOffer() {
         catalog.find((c) => c.displayName.toLowerCase() === nameL) ||
         catalog.find((c) => c.displayName.toLowerCase().includes(nameL));
       const id = Date.now().toString() + Math.random().toString(36).slice(2, 6);
+      const editItem = isEditing ? (it as any) : null;
       newCuts.push({
         id,
         cat: cat0,
@@ -906,20 +907,75 @@ export default function SupplierCreateOffer() {
         cutId: matched?.id,
         cutImage: matched?.image_url ?? null,
         spec: normalizeSpec(matched?.bone_spec),
-        pkg: "\n",
+        pkg: editItem?.packaging ?? "\n",
         gr: "\n",
         ag: it.agingMethod || "None",
         qty: it.amount ? String(it.amount) : "",
         ask: it.price ? Number(it.price).toFixed(2) : "",
         floor: it.minimumPrice ? Number(it.minimumPrice).toFixed(2) : "",
         notes: "",
-        plant: "",
+        plant: editItem?.plantNumber ?? "",
+        plantId: editItem?.plantId ?? undefined,
       });
       if (matched?.image_url) imgs[id] = matched.image_url;
     }
     if (newCuts.length) {
       setCuts(newCuts);
       if (Object.keys(imgs).length) setCutImgs(imgs);
+    }
+
+    // Edit-only: hydrate freight per port + CIF insurance + selected ports per market
+    if (isEditing) {
+      const eo = src as any;
+      const freight: Array<{ portId: string; cost: number; insurance: number }> =
+        eo.freight ?? [];
+      if (freight.length > 0) {
+        // CIF insurance: take the first non-zero value (same for all rows by design).
+        const ins = freight.find((f) => f.insurance > 0)?.insurance ?? 0;
+        if (ins > 0) {
+          setIncoExtras((prev) => ({ ...prev, cifInsurance: String(ins) }));
+        }
+        // Group freight by market via MARKETS lookup.
+        const portToMarket = new Map<string, string>();
+        for (const m of MARKETS) {
+          for (const p of m.p) portToMarket.set(p.id, m.id);
+        }
+        const cfgPatch: Record<string, MktCfg> = {};
+        for (const f of freight) {
+          const marketId = portToMarket.get(f.portId);
+          if (!marketId) continue;
+          const mkt = MARKETS.find((m) => m.id === marketId);
+          if (!mkt) continue;
+          if (!cfgPatch[marketId]) {
+            cfgPatch[marketId] = {
+              sp: [],
+              sm: false,
+              gf: "",
+              pf: Object.fromEntries(mkt.p.map((p) => [p.id, ""])),
+            };
+          }
+          if (!cfgPatch[marketId].sp.includes(f.portId)) {
+            cfgPatch[marketId].sp.push(f.portId);
+          }
+          cfgPatch[marketId].pf[f.portId] = f.cost > 0 ? String(f.cost) : "";
+        }
+        // Infer "single freight" (sm) per market when all selected ports share the same cost.
+        for (const mid of Object.keys(cfgPatch)) {
+          const c = cfgPatch[mid];
+          const costs = c.sp.map((pid) => c.pf[pid] || "0");
+          const uniqueCosts = Array.from(new Set(costs));
+          if (uniqueCosts.length === 1) {
+            c.sm = true;
+            c.gf = uniqueCosts[0] === "0" ? "" : uniqueCosts[0];
+          }
+        }
+        if (Object.keys(cfgPatch).length > 0) {
+          setMktCfg((prev) => ({ ...prev, ...cfgPatch }));
+        }
+      }
+      // Mark hydration complete so the save guard can let through.
+      editHydratedRef.current = true;
+      setEditHydrated(true);
     }
 
     toast.success(
