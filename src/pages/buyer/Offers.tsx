@@ -19,6 +19,8 @@ import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
 import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
 import type { MockAuction } from "@/data/mockAuctions";
 import { GlowCard } from "@/components/ui/spotlight-card";
+import { useOfferSocialBatch, type SocialCounts } from "@/hooks/useOfferSocial";
+import { OfferSocialBar } from "@/components/offers/OfferSocialBar";
 import { Gavel } from "lucide-react";
 import {
   OffersFilterBar,
@@ -68,10 +70,18 @@ export function OfferCard({
   offer,
   onOpen,
   myNeg,
+  social,
+  onLike,
+  onFavorite,
+  onShare,
 }: {
   offer: OfferWithDetails;
   onOpen: () => void;
   myNeg?: { id: string; status: string };
+  social?: SocialCounts;
+  onLike?: (id: string) => void;
+  onFavorite?: (id: string) => void;
+  onShare?: (id: string, channel?: string) => void;
 }) {
   const { t } = useTranslation();
   const items = offer.items ?? [];
@@ -304,6 +314,19 @@ export function OfferCard({
           <ArrowRightIcon size={12} />
         </span>
       </div>
+      {social && (
+        <div style={{ borderTop: "1px solid #f1f1f3", padding: "8px 12px", marginTop: 4 }}>
+          <OfferSocialBar
+            offerId={offer.id}
+            counts={social}
+            onToggleLike={onLike}
+            onToggleFavorite={onFavorite}
+            onShare={onShare}
+            shareUrl={`${window.location.origin}/public/offers/${offer.id}`}
+            shareTitle="Mundus Offer"
+          />
+        </div>
+      )}
     </article>
     </GlowCard>
   );
