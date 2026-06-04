@@ -240,15 +240,21 @@ export default function PublicOfferCard({
           </span>
         </div>
         <div className="cut-chips">
-          {items.slice(0, 2).map((it) => (
-            <span key={it.id} className="cut-chip">
-              {(it.product_name ?? "Product / Cut").split(",")[0]}
+          {firstItem && (
+            <span className="cut-chip">
+              {(firstItem.product_name ?? "Product / Cut").split(",")[0]}
             </span>
-          ))}
-          {items.length > 2 && (
-            <span className="cut-chip is-more">
-              {t("buyer.offers.card.moreCuts", { count: items.length - 2, defaultValue: `+${items.length - 2} more` })}
-            </span>
+          )}
+          {items.length > 1 && (
+            <button
+              type="button"
+              className="cut-chip is-more"
+              onClick={(e) => { e.stopPropagation(); onOpenDetails?.(); }}
+              style={{ cursor: "pointer", border: "none" }}
+              title={t("buyer.offers.card.moreCuts", { count: items.length - 1, defaultValue: `+${items.length - 1} more` })}
+            >
+              +{items.length - 1}
+            </button>
           )}
         </div>
       </div>
