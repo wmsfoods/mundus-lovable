@@ -61,8 +61,8 @@ export function SupplierOfferCard({
   const incotermLabel = extraIncoterms > 0
     ? `${firstIncoterm} +${extraIncoterms}`
     : fmtIc(firstIncoterm);
-  const visibleCuts = o.items.slice(0, 2);
-  const moreCuts = Math.max(0, o.items.length - visibleCuts.length);
+  const firstCut = o.items[0];
+  const moreCuts = Math.max(0, o.items.length - 1);
   const d = derive(o);
   const cutImgs = useCutImages(o.items.map((it) => it.name));
   const titleText = o.items.length > 1
@@ -169,14 +169,22 @@ export function SupplierOfferCard({
       <div className="oc-title-block">
         <div className="oc-title">{titleText}</div>
         <div className="cut-chips">
-          {visibleCuts.map((it) => (
-            <span key={it.name} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
-              <CutThumb src={cutImgs[it.name]} size={20} />
-              {it.name}
+          {firstCut && (
+            <span className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
+              <CutThumb src={cutImgs[firstCut.name]} size={20} />
+              {firstCut.name}
             </span>
-          ))}
+          )}
           {moreCuts > 0 && (
-            <span className="cut-chip is-more">{t("supplier.offers.card.moreCuts", { count: moreCuts })}</span>
+            <button
+              type="button"
+              className="cut-chip is-more"
+              onClick={(e) => { e.stopPropagation(); onOpen(); }}
+              style={{ cursor: "pointer", border: "none" }}
+              title={t("supplier.offers.card.moreCuts", { count: moreCuts })}
+            >
+              +{moreCuts}
+            </button>
           )}
         </div>
       </div>
