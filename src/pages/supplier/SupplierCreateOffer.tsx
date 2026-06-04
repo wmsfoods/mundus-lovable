@@ -364,6 +364,11 @@ export default function SupplierCreateOffer() {
   // Reuse the clone hydration flow for editing — both pre-fill the same fields.
   const hydrateSource = editOffer ?? cloneFrom;
   const prefilledRef = useRef(false);
+  // Edit-only: tracks whether we finished hydrating the saved offer into state.
+  // Save is blocked until this flips true to avoid wiping fields the user hasn't
+  // touched yet (we delete + reinsert child rows on save).
+  const editHydratedRef = useRef(false);
+  const [editHydrated, setEditHydrated] = useState(false);
   const { t } = useTranslation();
   const ta = (k: string, fb: string, opts?: any) =>
     t(`supplier.createOffer.screen.${k}`, { defaultValue: fb, ...(opts || {}) }) as unknown as string;
