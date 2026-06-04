@@ -911,21 +911,6 @@
         "successEmail": "Invitación enviada a {{email}}"
       }
     },
-    "share": {
-      "title": "Comparte esta negociación con el comprador",
-      "subtitle": "El comprador puede revisar y responder con este enlace seguro — sin iniciar sesión.",
-      "subtitleUsed": "Este enlace ya fue usado por el comprador.",
-      "loading": "Preparando el enlace…",
-      "copy": "Copiar enlace",
-      "copied": "¡Copiado!",
-      "supplierEmail": "Correo del comprador (opcional)",
-      "saveEmail": "Guardar",
-      "emailSaved": "Correo guardado",
-      "sendEmail": "Enviar correo",
-      "mailSubject": "Mundus Trade — Nueva oferta esperando tu respuesta",
-      "mailBody": "Hola,\n\nHas recibido una nueva oferta de {{buyer}} en Mundus Trade.\n\nRevisa y responde aquí:\n{{link}}\n\nGracias,\nEquipo Mundus Trade",
-      "expiresAt": "El enlace expira el {{date}}"
-    },
     "negotiations": {
       "title": "Negociaciones",
       "searchPlaceholder": "Buscar ID / proveedor / producto / origen...",
@@ -1879,7 +1864,7 @@
         "ctaDesc": "Cotizaciones de flete en tiempo real con navieras asociadas",
         "ctaBtn": "Buscar cotizaciones",
         "importedToast": "Cotización importada de {{carrier}} — US$ {{freight}} por FCL",
-        "moreMarkets": "Search for more markets/destinations",
+        "moreMarkets": "Buscar más mercados/destinos",
         "searchMarketsPh": "Buscar países…",
         "noMarkets": "No hay mercados",
         "incoConflict": "Incompatible con el incoterm seleccionado",
@@ -2197,6 +2182,21 @@
       "accept": "Aceptar pedido",
       "reject": "Rechazar pedido",
       "accepting": "Aceptando…"
+    },
+    "share": {
+      "title": "Comparte esta negociación con el comprador",
+      "subtitle": "El comprador puede revisar y responder con este enlace seguro — sin iniciar sesión.",
+      "subtitleUsed": "Este enlace ya fue usado por el comprador.",
+      "loading": "Preparando el enlace…",
+      "copy": "Copiar enlace",
+      "copied": "¡Copiado!",
+      "supplierEmail": "Correo del comprador (opcional)",
+      "saveEmail": "Guardar",
+      "emailSaved": "Correo guardado",
+      "sendEmail": "Enviar correo",
+      "mailSubject": "Mundus Trade — Nueva oferta esperando tu respuesta",
+      "mailBody": "Hola,\n\nHas recibido una nueva oferta de {{buyer}} en Mundus Trade.\n\nRevisa y responde aquí:\n{{link}}\n\nGracias,\nEquipo Mundus Trade",
+      "expiresAt": "El enlace expira el {{date}}"
     }
   },
   "dealDetail": {
