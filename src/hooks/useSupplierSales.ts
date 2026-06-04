@@ -62,7 +62,7 @@ export function useSupplierSales() {
       );
       const buyerInfo = new Map<string, { name: string | null; company: string | null }>();
       if (buyerIds.length) {
-        const { data: infoRows } = await supabase.rpc("get_users_company_info", {
+        const { data: infoRows } = await (supabase as any).rpc("get_users_company_info", {
           _user_ids: buyerIds,
         });
         for (const u of (infoRows ?? []) as Array<{ user_id: string; user_name: string | null; company_name: string | null }>) {
