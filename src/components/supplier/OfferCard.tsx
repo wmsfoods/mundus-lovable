@@ -98,11 +98,6 @@ export function SupplierOfferCard({
           >
             {formatOfferNumber(o.offerNumber, o.createdAt)}
           </span>
-          {o.mixed && (
-            <span className="mixed-badge cuts-badge-strong">
-              <GridIcon size={9} /> {t("supplier.offers.card.cuts", { count: o.items.length })}
-            </span>
-          )}
         </div>
         <div style={{ display: "inline-flex", alignItems: "center", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
           {o.status === "sold_out" ? (

@@ -119,11 +119,6 @@ export default function PublicOfferCard({
           >
             {formatOfferNumber(offer.offer_number, offer.created_at)}
           </span>
-          {mixed && (
-            <span className="mixed-badge">
-              <GridIcon size={9} /> {t("buyer.offers.card.cuts", { count: items.length, defaultValue: `${items.length} Product / Cuts` })}
-            </span>
-          )}
         </div>
         <span
           style={{

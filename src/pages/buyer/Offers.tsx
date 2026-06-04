@@ -150,11 +150,6 @@ export function OfferCard({
           >
             {formatOfferNumber(offer.offer_number, offer.created_at)}
           </span>
-          {mixed && (
-            <span className="mixed-badge">
-              <GridIcon size={9} /> {t("buyer.offers.card.cuts", { count: items.length })}
-            </span>
-          )}
         </div>
         <span
           style={{
