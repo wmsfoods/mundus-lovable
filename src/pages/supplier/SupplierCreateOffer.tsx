@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
 import NegotiationHandlingControl, { type NegotiationMode, type NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
@@ -599,7 +599,7 @@ export default function SupplierCreateOffer() {
 
   useEffect(() => {
     if (fromRequestId) {
-      toast.success(`Prefilled from request #${fromRequestId}`, { duration: 4000 });
+      toast.success(ta("toastPrefilled", "Prefilled from request #{{id}}", { id: fromRequestId }), { duration: 4000 });
     }
   }, [fromRequestId]);
 
@@ -891,11 +891,15 @@ export default function SupplierCreateOffer() {
       if (Object.keys(imgs).length) setCutImgs(imgs);
     }
 
-    toast.success(isEditing ? "Editing offer — make your changes and save" : "Cloned — review changes and publish");
+    toast.success(
+      isEditing
+        ? ta("toastEditingOffer", "Editing offer — make your changes and save")
+        : ta("toastCloned", "Cloned — review changes and publish"),
+    );
   }, [hydrateSource, isEditing, MARKETS, cutsByCategory, setUnit]);
 
   useEffect(() => {
-    if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
+    if (dataError) toast.error(ta("toastCatalogFail", "Failed to load catalog: {{err}}", { err: dataError }));
   }, [dataError]);
 
   /* Auto-pick the primary pricing incoterm: prefer CFR, then CIF, else first */
@@ -932,7 +936,7 @@ export default function SupplierCreateOffer() {
   useEffect(() => {
     if (csize === "20ft" && tw > 0 && !fitsIn20) {
       setCsize("40ft");
-      toast.message("Switched to 40' FCL", {
+      toast.message(ta("toastSwitchedTo40", "Switched to 40' FCL"), {
         description: "Quantity exceeds a 20' FCL capacity (14,000 kg per container).",
       });
     }
@@ -940,7 +944,7 @@ export default function SupplierCreateOffer() {
 
   const pickCsize = (next: "20ft" | "40ft") => {
     if (next === "20ft" && tw > 0 && !fitsIn20) {
-      toast.error("Due to the quantity, this must be a 40' FCL container.");
+      toast.error(ta("toastMustBe40", "Due to the quantity, this must be a 40' FCL container."));
       return;
     }
     setCsize(next);
@@ -995,7 +999,7 @@ export default function SupplierCreateOffer() {
   const addCut = useCallback(() => {
     if (!nf.cut || !nf.qty || !nf.ask) return;
     if (!validatePricePair(nf.ask, nf.floor).ok) {
-      toast.error("Asking price must be ≥ floor price");
+      toast.error(ta("toastAskGteFloor", "Asking price must be ≥ floor price"));
       return;
     }
     const id = Date.now().toString();
@@ -1054,7 +1058,7 @@ export default function SupplierCreateOffer() {
       setShowAiImport(false);
       setAiMode(null);
       setAiInput("");
-      toast.success("AI parsed 2 cuts");
+      toast.success(ta("toastAiParsed", "AI parsed {{n}} cuts", { n: 2 }));
     }, 1500);
   }, []);
 
@@ -1151,29 +1155,33 @@ export default function SupplierCreateOffer() {
     if (!canPublish || publishing) return;
     if (companyLoading) return;
     if (!company?.id) {
-      toast.error("No supplier company linked to your account");
+      toast.error(ta("toastNoSupplierCo", "No supplier company linked to your account"));
       return;
     }
     if (selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
-      toast.error("Please enter the EXW pickup location");
+      toast.error(ta("toastEnterExw", "Please enter the EXW pickup location"));
       return;
     }
     if (exceedsHardCap) {
       toast.error(
-        `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg). Increase container count or reduce quantities.`,
+        ta(
+          "toastExceedHardCap",
+          "Quantity per container exceeds 28,000 kg (current: {{kg}} kg). Increase container count or reduce quantities.",
+          { kg: Math.round(perContainerKg).toLocaleString() },
+        ),
       );
       return;
     }
     // Pre-validate that at least one cut has a resolvable name or cutId
     const hasResolvableCut = cuts.some(c => c.cutId || c.cut.trim().length > 0);
     if (!hasResolvableCut) {
-      toast.error("Please add at least one product/cut with a valid name before publishing.");
+      toast.error(ta("toastAddOneCut", "Please add at least one product/cut with a valid name before publishing."));
       return;
     }
     // Ensure cuts have qty and price
     const invalidCuts = cuts.filter(c => !(parseFloat(c.qty) > 0) || !(parseFloat(c.ask) > 0));
     if (invalidCuts.length > 0) {
-      toast.error(`${invalidCuts.length} cut(s) have missing quantity or price. Please fill all fields.`);
+      toast.error(ta("toastInvalidCuts", "{{n}} cut(s) have missing quantity or price. Please fill all fields.", { n: invalidCuts.length }));
       return;
     }
     setPublishing(true);
@@ -1527,8 +1535,8 @@ export default function SupplierCreateOffer() {
 
       toast.success(
         isEditing
-          ? `Offer ${formatOfferNumber(offer.offer_number)} updated successfully!`
-          : `Offer ${formatOfferNumber(offer.offer_number)} published successfully!`,
+          ? ta("toastOfferUpdated", "Offer {{n}} updated successfully!", { n: formatOfferNumber(offer.offer_number) })
+          : ta("toastOfferPublished", "Offer {{n}} published successfully!", { n: formatOfferNumber(offer.offer_number) }),
       );
       try {
         const { auditLog } = await import("@/lib/auditLog");
@@ -1642,7 +1650,7 @@ export default function SupplierCreateOffer() {
             fontSize: 13,
           }}
         >
-          <strong style={{ color: "#1E40AF" }}>Create offer for:</strong>
+          <strong style={{ color: "#1E40AF" }}>{ta("bannerCreateFor", "Create offer for:")}</strong>
           <select
             value={directorChosenOfficeId ?? ""}
             onChange={(e) => setDirectorChosenOfficeId(e.target.value || null)}
@@ -1684,10 +1692,10 @@ export default function SupplierCreateOffer() {
           }}
         >
           {plantsFallback && (
-            <div>Showing all group plants — office plant access not yet configured.</div>
+            <div>{ta("officeAllPlants", "Showing all group plants — office plant access not yet configured.")}</div>
           )}
           {marketsFallback && (
-            <div>Showing all destination markets — office market access not yet configured.</div>
+            <div>{ta("officeAllMarkets", "Showing all destination markets — office market access not yet configured.")}</div>
           )}
         </div>
       )}
@@ -1752,7 +1760,7 @@ export default function SupplierCreateOffer() {
           </div>
         </div>
         <div className="cov4-hdr-r">
-          <div className="cov4-tgl" role="group" aria-label="Unit">
+          <div className="cov4-tgl" role="group" aria-label={ta("ariaUnit", "Unit")}>
             {(["kg", "lbs"] as const).map((u) => (
               <button
                 key={u}
@@ -1819,7 +1827,7 @@ export default function SupplierCreateOffer() {
               </PopoverTrigger>
               <PopoverContent className="p-0" style={{ width: 420 }}>
                 <Command>
-                  <CommandInput placeholder="Search ports…" />
+                 <CommandInput placeholder={ta("searchPortsPh", "Search ports…")} />
                   <CommandList>
                     <CommandEmpty>
                       {supplierCountries.length === 0
@@ -2063,7 +2071,7 @@ export default function SupplierCreateOffer() {
                   <span style={{ fontSize: 16 }}>{m.f}</span>
                   <h3>{m.n}</h3>
                   <span className="cov4-mc-cnt">{c.sp.length}p</span>
-                  <button type="button" className="cov4-rm-btn" onClick={() => toggleMarket(m.id)} aria-label="Remove market">✕</button>
+                  <button type="button" className="cov4-rm-btn" onClick={() => toggleMarket(m.id)} aria-label={ta("ariaRemoveMarket", "Remove market")}>✕</button>
                 </div>
                 <div className="cov4-ports">
                   {m.p.map((p) => {
@@ -2077,18 +2085,18 @@ export default function SupplierCreateOffer() {
                 </div>
                 {!uniformFreight && c.sp.length > 1 && (
                   <div className="cov4-ftgl">
-                    <span>Same freight all ports?</span>
+                    <span>{ta("sameFreightAllPorts", "Same freight all ports?")}</span>
                     <div className="cov4-tgl cov4-tgl-sm">
                       {(["Yes", "No"] as const).map((opt) => (
                         <button key={opt} type="button" className={(c.sm ? "Yes" : "No") === opt ? "on" : ""}
-                          onClick={() => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], sm: opt === "Yes" } }))}>{opt}</button>
+                          onClick={() => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], sm: opt === "Yes" } }))}>{opt === "Yes" ? ta("yes", "Yes") : ta("no", "No")}</button>
                       ))}
                     </div>
                   </div>
                 )}
                 {uniformFreight ? null : (c.sm || c.sp.length <= 1) ? (
                   <div className="cov4-fr-row">
-                    <label className="cov4-fr-lbl">Freight</label>
+                    <label className="cov4-fr-lbl">{ta("freight", "Freight")}</label>
                     <PriceInput value={c.gf} onChange={(v) => setMktCfg((pr) => ({ ...pr, [m.id]: { ...pr[m.id], gf: v } }))} />
                   </div>
                 ) : (
@@ -2169,19 +2177,19 @@ export default function SupplierCreateOffer() {
 
             {selInco.includes("CIF") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">🛡 CIF Insurance cost</span>
+                <span className="cov4-inco-ex-lbl">{ta("cifInsLabel", "🛡 CIF Insurance cost")}</span>
                 <PriceInput value={incoExtras.cifInsurance || ""} onChange={(v) => setIncoExtras((p) => ({ ...p, cifInsurance: v }))} />
               </div>
             )}
             {selInco.includes("EXW") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">📍 EXW Pickup location</span>
+                <span className="cov4-inco-ex-lbl">{ta("exwPickupLabel", "📍 EXW Pickup location")}</span>
                 <input
                   className="cov4-text-in"
                   type="text"
                   name="exw-pickup-address"
                   autoComplete="street-address"
-                  placeholder="City, warehouse address..."
+                  placeholder={ta("exwCityPh", "City, warehouse address...")}
                   value={incoExtras.exwCity || ""}
                   onChange={(e) => setIncoExtras((p) => ({ ...p, exwCity: e.target.value }))}
                 />
@@ -2189,14 +2197,14 @@ export default function SupplierCreateOffer() {
             )}
             {selInco.includes("DDP") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">🚚 DDP Delivery city</span>
-                <input className="cov4-text-in" placeholder="Final destination city..." value={incoExtras.ddpCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, ddpCity: e.target.value }))} />
+                <span className="cov4-inco-ex-lbl">{ta("ddpCityLabel", "🚚 DDP Delivery city")}</span>
+                <input className="cov4-text-in" placeholder={ta("ddpCityPh", "Final destination city...")} value={incoExtras.ddpCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, ddpCity: e.target.value }))} />
               </div>
             )}
             {selInco.includes("DAP") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">📦 DAP Delivery place</span>
-                <input className="cov4-text-in" placeholder="Delivery address or terminal..." value={incoExtras.dapCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, dapCity: e.target.value }))} />
+                <span className="cov4-inco-ex-lbl">{ta("dapPlaceLabel", "📦 DAP Delivery place")}</span>
+                <input className="cov4-text-in" placeholder={ta("dapPlacePh", "Delivery address or terminal...")} value={incoExtras.dapCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, dapCity: e.target.value }))} />
               </div>
             )}
 
@@ -2477,7 +2485,7 @@ export default function SupplierCreateOffer() {
             </button>
             {cutRegion === "us" && (
               <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 380, marginLeft: 8 }}>
-                🇺🇸 Item list will be shown as per your cuts nomenclature selected: <strong>US Beef &amp; Pork Product / Cuts (IMPS)</strong>. To switch, use the <strong>🌐 Global Product / Cuts</strong> button above.
+                <Trans i18nKey="supplier.createOffer.screen.usCutsBanner" components={[<strong/>, <strong/>]} />
               </span>
             )}
           </div>
@@ -2486,40 +2494,40 @@ export default function SupplierCreateOffer() {
           {showAiImport && (
             <div className="cov4-ai-panel">
               <div className="cov4-ai-h">
-                <span className="cov4-ai-t">✨ AI-powered import</span>
+                <span className="cov4-ai-t">{ta("aiPanelTitle", "✨ AI-powered import")}</span>
                 <button type="button" className="cov4-rm-btn" onClick={() => { setShowAiImport(false); setAiMode(null); }}>✕</button>
               </div>
-              <p className="cov4-ai-d">Import cuts from any source — AI will parse and auto-fill the table</p>
+              <p className="cov4-ai-d">{ta("aiPanelDesc", "Import cuts from any source — AI will parse and auto-fill the table")}</p>
               <div className="cov4-ai-modes">
-                <button type="button" className={`cov4-ai-mode ${aiMode === "paste" ? "on" : ""}`} onClick={() => setAiMode("paste")}>📋 Paste from Excel/Text</button>
-                <button type="button" className={`cov4-ai-mode ${aiMode === "file" ? "on" : ""}`} onClick={() => setAiMode("file")}>📄 Upload PDF / Image</button>
-                <button type="button" className={`cov4-ai-mode ${aiMode === "voice" ? "on" : ""}`} onClick={() => setAiMode("voice")}>🎤 Voice input</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "paste" ? "on" : ""}`} onClick={() => setAiMode("paste")}>{ta("aiModePaste", "📋 Paste from Excel/Text")}</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "file" ? "on" : ""}`} onClick={() => setAiMode("file")}>{ta("aiModeFile", "📄 Upload PDF / Image")}</button>
+                <button type="button" className={`cov4-ai-mode ${aiMode === "voice" ? "on" : ""}`} onClick={() => setAiMode("voice")}>{ta("aiModeVoice", "🎤 Voice input")}</button>
               </div>
               {aiMode === "paste" && (
                 <div>
                   <textarea
                     className="cov4-ai-textarea"
                     rows={4}
-                    placeholder={"Paste your data here...\ne.g.: Beef Forequarter | Boneless | 14,000 kg | $6.40/kg\n       Beef Brisket | Bone-In | 13,000 kg | $4.35/kg"}
+                    placeholder={ta("aiPastePh", "Paste your data here...\ne.g.: Beef Forequarter | Boneless | 14,000 kg | $6.40/kg\n       Beef Brisket | Bone-In | 13,000 kg | $4.35/kg")}
                     value={aiInput}
                     onChange={(e) => setAiInput(e.target.value)}
                   />
                   <button type="button" className="cov4-ai-process" onClick={simulateAiImport} disabled={!aiInput || aiProcessing}>
-                    {aiProcessing ? "⏳ Processing..." : "✨ Parse & import"}
+                    {aiProcessing ? ta("aiProcessing", "⏳ Processing...") : ta("aiParseImport", "✨ Parse & import")}
                   </button>
                 </div>
               )}
               {aiMode === "file" && (
                 <label className="cov4-ai-upload">
                   <span style={{ fontSize: 24 }}>📎</span>
-                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>Drop PDF, image, or click to upload</span>
+                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>{ta("aiDropFile", "Drop PDF, image, or click to upload")}</span>
                   <input type="file" accept=".pdf,.png,.jpg,.jpeg,.xlsx,.csv" onChange={() => simulateAiImport()} />
                 </label>
               )}
               {aiMode === "voice" && (
                 <button type="button" className="cov4-voice" onClick={simulateAiImport}>
                   <span style={{ fontSize: 28 }}>🎙</span>
-                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>{aiProcessing ? "Listening..." : "Tap to start recording"}</span>
+                  <span style={{ fontSize: 12, color: "var(--fg-muted)" }}>{aiProcessing ? ta("aiListening", "Listening...") : ta("aiTapRecord", "Tap to start recording")}</span>
                 </button>
               )}
             </div>
@@ -2629,7 +2637,7 @@ export default function SupplierCreateOffer() {
                   <th style={{ width: 90 }}>{ta("thSpec", "Spec")}</th>
                   {showGradeColumn && <th style={{ width: 100 }}>{ta("thGrade", "Grade")}</th>}
                   <th style={{ width: 120 }}>{ta("thPacking", "Packing")}</th>
-                  <th style={{ width: 80 }} title="USDA/SIF establishment number">{ta("thPlant", "Plant #")}</th>
+                  <th style={{ width: 80 }} title={ta("titleUsdaSif", "USDA/SIF establishment number")}>{ta("thPlant", "Plant #")}</th>
                   <th className="num" style={{ width: 100 }}>{qLbl}</th>
                   <th className="num">
                     {ta("thAsk", "Ask")} {pLbl}
@@ -2861,7 +2869,7 @@ export default function SupplierCreateOffer() {
                       />
                     </td>
                     <td>
-                      <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label="Remove cut">✕</button>
+                      <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label={ta("ariaRemoveCut", "Remove cut")}>✕</button>
                     </td>
                   </tr>
                 ))}
@@ -2901,7 +2909,7 @@ export default function SupplierCreateOffer() {
                             <button
                               type="button"
                               className="cov4-cut-trigger"
-                              aria-label="Pick cut"
+                              aria-label={ta("ariaPickCut", "Pick cut")}
                             >
                               {nf.cut ? (
                                 <span className="cov4-cut-trigger-v">{nf.cut}</span>
@@ -2988,7 +2996,7 @@ export default function SupplierCreateOffer() {
                               plant: p?.plant_number || "",
                             }));
                           }}
-                          title="Office-granted plant"
+                          title={ta("titleOfficePlant", "Office-granted plant")}
                           style={{ minWidth: 140 }}
                         >
                           <option value="">{ta("selectPlantPh", "Select plant…")}</option>
@@ -3006,7 +3014,7 @@ export default function SupplierCreateOffer() {
                           placeholder="e.g. 4554"
                           value={nf.plant}
                           onChange={(e) => setNf((p) => ({ ...p, plant: e.target.value }))}
-                          title="USDA/SIF establishment number"
+                          title={ta("titleUsdaSif", "USDA/SIF establishment number")}
                           style={{ width: 80 }}
                         />
                       )}
@@ -3143,7 +3151,7 @@ export default function SupplierCreateOffer() {
           <aside className="cov4-panel cov4-panel-r">
             <div className="cov4-prev-h">
               <span className="cov4-prev-h-t">{ta("livePreview", "👁 Live preview")}</span>
-              <span className="cov4-prev-h-s">Buyer's view</span>
+              <span className="cov4-prev-h-s">{ta("previewBuyersView", "Buyer's view")}</span>
             </div>
             <div className="cov4-prev-card">
               <PreviewImages
@@ -3152,26 +3160,26 @@ export default function SupplierCreateOffer() {
                   .filter((x) => !!x.src)}
               />
               <h3 className="cov4-prev-title">
-                {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? "Mix FCL" : "Untitled Offer"}
+                {cuts.length === 1 ? `${cuts[0].cat} ${cuts[0].cut}` : cuts.length > 1 ? ta("previewMixFcl", "Mix FCL") : ta("previewUntitled", "Untitled Offer")}
               </h3>
               <div className="cov4-prev-meta">
-                <PrevRow l="Origin" v="🇧🇷 Brazil, Santos" />
-                <PrevRow l="Destination" v={selMarkets.map((m) => m.f + " " + m.n).join(", ") || "—"} />
-                <PrevRow l="Incoterm" v={selInco.join(", ")} />
-                <PrevRow l="Temperature" v={temp} />
-                <PrevRow l="Container" v={`${csize} · ${fmtWeight(tw, unit)} ${wLbl}`} />
-                {certifications.length > 0 && <PrevRow l="Certifications" v={certifications.join(", ")} />}
+                <PrevRow l={ta("previewOrigin", "Origin")} v="🇧🇷 Brazil, Santos" />
+                <PrevRow l={ta("previewDestination", "Destination")} v={selMarkets.map((m) => m.f + " " + m.n).join(", ") || "—"} />
+                <PrevRow l={ta("previewIncoterm", "Incoterm")} v={selInco.join(", ")} />
+                <PrevRow l={ta("previewTemperature", "Temperature")} v={temp} />
+                <PrevRow l={ta("previewContainer", "Container")} v={`${csize} · ${fmtWeight(tw, unit)} ${wLbl}`} />
+                {certifications.length > 0 && <PrevRow l={ta("previewCertifications", "Certifications")} v={certifications.join(", ")} />}
               </div>
               {cuts.length > 0 && (
                 <div className="cov4-prev-cuts">
-                  <div className="cov4-prev-cuts-t">Product / Cuts included</div>
+                  <div className="cov4-prev-cuts-t">{ta("previewCutsIncluded", "Product / Cuts included")}</div>
                   {cuts.map((c) => (
                     <div key={c.id} className="cov4-prev-cut-row">
                       <span>
                         {c.cat} {c.cut}
                         {c.plant && (
                           <span style={{ marginLeft: 6, fontSize: 11, color: "#6b7280" }}>
-                            · Plant {c.plant}
+                            · {ta("previewPlant", "Plant")} {c.plant}
                           </span>
                         )}
                       </span>
@@ -3181,11 +3189,11 @@ export default function SupplierCreateOffer() {
                 </div>
               )}
               <div className="cov4-prev-price">
-                <span className="cov4-prev-price-l">Starting from</span>
+                <span className="cov4-prev-price-l">{ta("previewStartingFrom", "Starting from")}</span>
                 <span className="cov4-prev-price-v">
                   US$ {totalPriceUsd.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </span>
-                <span className="cov4-prev-price-sub">per FCL</span>
+                <span className="cov4-prev-price-sub">{ta("previewPerFcl", "per FCL")}</span>
                 {primaryInco && (
                   <span
                     style={{
@@ -3203,15 +3211,15 @@ export default function SupplierCreateOffer() {
                 )}
                 {multiInco && (
                   <span style={{ display: "block", marginTop: 4, fontSize: 11, color: "var(--fg-muted)" }}>
-                    Also available as {secondaryIncos.join(", ")}
+                    {ta("previewAlsoAvailableAs", "Also available as")} {secondaryIncos.join(", ")}
                   </span>
                 )}
               </div>
               <div className="cov4-prev-dist">
-                <div className="cov4-prev-dist-t">Distribution</div>
-                {distMarketplace && <span className="cov4-prev-dist-tag">🏪 Marketplace</span>}
-                {distAllCustomers && <span className="cov4-prev-dist-tag">📨 All customers</span>}
-                {distSpecific && <span className="cov4-prev-dist-tag">🎯 {selectedCustomers.length} selected</span>}
+                <div className="cov4-prev-dist-t">{ta("previewDistribution", "Distribution")}</div>
+                {distMarketplace && <span className="cov4-prev-dist-tag">{ta("previewTagMarketplace", "🏪 Marketplace")}</span>}
+                {distAllCustomers && <span className="cov4-prev-dist-tag">{ta("previewTagAllCustomers", "📨 All customers")}</span>}
+                {distSpecific && <span className="cov4-prev-dist-tag">{ta("previewTagSelected", "🎯 {{n}} selected", { n: selectedCustomers.length })}</span>}
               </div>
             </div>
           </aside>
@@ -3226,7 +3234,7 @@ export default function SupplierCreateOffer() {
               <button
                 type="button"
                 className={`cov4-ready-pill ${canPublish ? "ready" : ""}`}
-                aria-label="Publishing checklist"
+                aria-label={ta("ariaPubChecklist", "Publishing checklist")}
               >
                 <span className="cov4-ready-ring" aria-hidden>
                   <svg viewBox="0 0 36 36" width="22" height="22">
@@ -3253,7 +3261,7 @@ export default function SupplierCreateOffer() {
             </PopoverTrigger>
             <PopoverContent side="top" align="start" className="cov4-ready-pop p-0 w-[320px]">
               <div className="cov4-ready-head">
-                {canPublish ? "All set — you can publish 🎉" : "A few things left"}
+                {canPublish ? ta("readyAllSet", "All set — you can publish 🎉") : ta("readyFewLeft", "A few things left")}
               </div>
               <ul className="cov4-ready-list">
                 {publishSteps.map((s) => (
@@ -3274,14 +3282,19 @@ export default function SupplierCreateOffer() {
                 ))}
               </ul>
               <div className="cov4-ready-foot">
-                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} product / cut{cuts.length !== 1 ? "s" : ""} · {fmtWeight(tw, unit)} {wLbl}
+                {ta("footerSummary", "{{m}} market(s) · {{c}} product / cut(s) · {{w}} {{u}}", {
+                  m: selMarkets.length,
+                  c: cuts.length,
+                  w: fmtWeight(tw, unit),
+                  u: wLbl,
+                })}
               </div>
             </PopoverContent>
           </Popover>
         </div>
         <div className="cov4-ft-r">
-          <button type="button" className="cov4-btn-s" onClick={handleCancel}>Cancel</button>
-          <button type="button" className="cov4-btn-s" onClick={handleSaveDraft}>Save draft</button>
+          <button type="button" className="cov4-btn-s" onClick={handleCancel}>{ta("cancel", "Cancel")}</button>
+          <button type="button" className="cov4-btn-s" onClick={handleSaveDraft}>{ta("saveDraft", "Save draft")}</button>
           <button
             type="button"
             className="cov4-btn-p"
@@ -3289,9 +3302,9 @@ export default function SupplierCreateOffer() {
               if (!canPublish && nextStep) { scrollToSection(nextStep.anchor); return; }
               handlePublish();
             }}
-            title={nextStep ? `Next: ${nextStep.label}` : (isEditing ? "Save changes" : "Review & publish your offer")}
+            title={nextStep ? ta("titleNextStep", "Next: {{label}}", { label: nextStep.label }) : (isEditing ? ta("titleSaveChanges", "Save changes") : ta("titleReviewPublish", "Review & publish your offer"))}
           >
-            {isEditing ? "Save changes →" : "Review & publish →"}
+            {isEditing ? ta("btnSaveChanges", "Save changes →") : ta("btnReviewPublish", "Review & publish →")}
           </button>
         </div>
       </footer>
@@ -3470,6 +3483,9 @@ function SecondaryPriceCell({
   unit?: WeightUnit;
 }) {
   const [editing, setEditing] = useState(false);
+  const { t } = useTranslation();
+  const ta = (k: string, fb: string, opts?: any) =>
+    t(`supplier.createOffer.screen.${k}`, { defaultValue: fb, ...(opts || {}) }) as unknown as string;
   const errStyle = invalid ? { borderColor: "#dc2626", outlineColor: "#dc2626" } : {};
   const errTitle = invalid ? invalidMsg : undefined;
 
@@ -3503,8 +3519,8 @@ function SecondaryPriceCell({
         <button
           type="button"
           onClick={onReset}
-          title="Reset to calculated value"
-          aria-label="Reset"
+          title={ta("titleResetCalc", "Reset to calculated value")}
+          aria-label={ta("ariaReset", "Reset")}
           style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 12, color: "var(--fg-muted)", padding: 0 }}
         >
           ↺
@@ -3561,8 +3577,8 @@ function SecondaryPriceCell({
       <button
         type="button"
         onClick={() => setEditing(true)}
-        title="Override price"
-        aria-label="Override"
+        title={ta("titleOverride", "Override price")}
+        aria-label={ta("ariaOverride", "Override")}
         style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: 11, color: "var(--fg-muted)", padding: 0 }}
       >
         ✎
@@ -3575,6 +3591,9 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
   const scrollerRef = useRef<HTMLDivElement>(null);
   const [idx, setIdx] = useState(0);
   const [userPaused, setUserPaused] = useState(false);
+  const { t } = useTranslation();
+  const ta = (k: string, fb: string, opts?: any) =>
+    t(`supplier.createOffer.screen.${k}`, { defaultValue: fb, ...(opts || {}) }) as unknown as string;
 
   /* Auto-advance every 3.5s while there are 2+ images and the user hasn't
      interacted. Pauses permanently after any swipe/click on controls.
@@ -3637,14 +3656,14 @@ function PreviewImages({ images }: { images: { id: string; src: string; label: s
           <button
             type="button"
             className="cov4-prev-img-nav prev"
-            aria-label="Previous"
+            aria-label={ta("ariaPrev", "Previous")}
             onClick={() => { pause(); scrollTo(idx - 1); }}
             disabled={idx === 0}
           >‹</button>
           <button
             type="button"
             className="cov4-prev-img-nav next"
-            aria-label="Next"
+            aria-label={ta("ariaNext", "Next")}
             onClick={() => { pause(); scrollTo(idx + 1); }}
             disabled={idx === images.length - 1}
           >›</button>
