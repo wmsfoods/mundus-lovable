@@ -1,6 +1,7 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { UsersIcon } from "@/components/icons";
+import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { ListCard, ListCardList } from "@/components/mundus/ListCard";
 import { TextField } from "@/components/mundus/TextField";
@@ -43,10 +44,15 @@ export default function MyCustomers() {
   const status = statusFilter === "all" ? undefined : statusFilter;
   const { customers, loading } = useMyCustomers({ status, search });
 
-  const rows = useMemo(() => customers, [customers]);
-
   return (
-    <div className="page">
+    <>
+      <Crumbs
+        items={[
+          { label: t("shell.nav.home"), to: "/supplier" },
+          { label: t("supplier.myCustomers.title") },
+        ]}
+      />
+
       <PageTitle
         icon={UsersIcon}
         title={t("supplier.myCustomers.title")}
@@ -70,14 +76,11 @@ export default function MyCustomers() {
           />
         </div>
         <div className="sm:w-56">
-          <label className="field-label" htmlFor="scl-status-filter">
-            {t("supplier.myCustomers.statusFilter.all")}
-          </label>
           <select
-            id="scl-status-filter"
             className="input"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as "all" | SclStatus)}
+            aria-label={t("supplier.myCustomers.statusFilter.all")}
           >
             <option value="all">{t("supplier.myCustomers.statusFilter.all")}</option>
             {STATUSES.map((s) => (
@@ -89,13 +92,60 @@ export default function MyCustomers() {
         </div>
       </div>
 
-      {loading ? (
-        <p className="text-sm text-muted-foreground">{t("common.loading")}</p>
-      ) : rows.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("supplier.myCustomers.empty")}</p>
-      ) : (
-        <ListCardList>
-          {rows.map((c) => (
+      {/* Desktop table */}
+      <div className="data-table-wrap has-mobile-cards">
+        <table className="data-table">
+          <thead>
+            <tr>
+              <th>{t("supplier.myCustomers.modal.companyName")}</th>
+              <th>{t("supplier.myCustomers.modal.contactName")}</th>
+              <th>{t("supplier.myCustomers.modal.phone")}</th>
+              <th>{t("supplier.myCustomers.modal.country")}</th>
+              <th>{t("supplier.myCustomers.modal.email")}</th>
+              <th>{t("buyer.connectedSuppliers.table.status")}</th>
+              <th>{t("buyer.connectedSuppliers.table.invitedAt")}</th>
+              <th>{t("buyer.connectedSuppliers.table.actions")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr className="empty-row">
+                <td colSpan={8}>{t("common.loading")}</td>
+              </tr>
+            ) : customers.length === 0 ? (
+              <tr className="empty-row">
+                <td colSpan={8}>{t("supplier.myCustomers.empty")}</td>
+              </tr>
+            ) : (
+              customers.map((c) => (
+                <tr key={c.link_id}>
+                  <td>{c.company_name}</td>
+                  <td>{c.contact_name ?? "—"}</td>
+                  <td>{c.phone ?? "—"}</td>
+                  <td>{c.country ?? "—"}</td>
+                  <td>{c.email ?? "—"}</td>
+                  <td>
+                    <span className={`lc-chip ${STATUS_PILL[c.status]}`}>
+                      {t(`common.statuses.scl.${c.status}`)}
+                    </span>
+                  </td>
+                  <td>{formatDate(c.responded_at ?? c.invited_at)}</td>
+                  <td>—</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Mobile cards */}
+      <ListCardList>
+        {loading ? (
+          <div className="empty-state">{t("common.loading")}</div>
+        ) : customers.length === 0 ? (
+          <div className="empty-state">{t("supplier.myCustomers.empty")}</div>
+        ) : (
+          customers.map((c) => (
             <ListCard
               key={c.link_id}
               title={c.company_name}
@@ -106,22 +156,19 @@ export default function MyCustomers() {
               }}
               meta={[
                 { label: t("supplier.myCustomers.modal.email"), value: c.email ?? "—" },
+                { label: t("supplier.myCustomers.modal.phone"), value: c.phone ?? "—" },
                 { label: t("supplier.myCustomers.modal.country"), value: c.country ?? "—" },
-                { label: t("supplier.myCustomers.modal.taxId"), value: c.tax_id ?? "—" },
                 {
-                  label:
-                    c.status === "accepted"
-                      ? t("buyer.connectedSuppliers.table.invitedAt")
-                      : t("buyer.connectedSuppliers.table.invitedAt"),
+                  label: t("buyer.connectedSuppliers.table.invitedAt"),
                   value: formatDate(c.responded_at ?? c.invited_at),
                 },
               ]}
             />
-          ))}
-        </ListCardList>
-      )}
+          ))
+        )}
+      </ListCardList>
 
       <InviteCustomerModal open={modalOpen} onClose={() => setModalOpen(false)} />
-    </div>
+    </>
   );
 }
