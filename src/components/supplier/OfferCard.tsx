@@ -19,6 +19,7 @@ const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   closed:      { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af" },
   inactive:    { bg: "#eeeef0", fg: "#6b7280", dot: "#9ca3af" },
   sold_out:    { bg: "#dcfce7", fg: "#166534", dot: "#16a34a" },
+  draft:       { bg: "#f1f5f9", fg: "#475569", dot: "#94a3b8" },
 };
 
 function derive(o: SupplierOffer) {
