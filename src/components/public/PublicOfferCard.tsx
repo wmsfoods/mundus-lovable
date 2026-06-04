@@ -86,6 +86,7 @@ export default function PublicOfferCard({
   };
 
   return (
+    <GlowCard glowColor="mundus" radius={14}>
     <article
       className="oc"
       style={{ position: "relative", cursor: onOpenDetails ? "pointer" : undefined }}
