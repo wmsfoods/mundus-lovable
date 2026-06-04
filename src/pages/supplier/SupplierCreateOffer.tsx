@@ -2774,69 +2774,33 @@ export default function SupplierCreateOffer() {
                       )}
                     </td>
                     <td className="num">
-                      <input
-                        type="number"
-                        step="1"
+                      <NumberInput
+                        kind="weight"
+                        unit={unit}
+                        valueKg={c.qty}
+                        onChangeKg={(v) => updateCutField(c.id, "qty", v)}
                         className="cov4-inline-edit num"
-                        value={
-                          unit === "kg"
-                            ? c.qty
-                            : toDisplay(parseFloat(c.qty) || 0, "weight", unit).toFixed(0)
-                        }
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          const kg =
-                            unit === "kg"
-                              ? v
-                              : String(fromDisplay(parseFloat(v) || 0, "weight", unit));
-                          updateCutField(c.id, "qty", kg);
-                        }}
                         style={{ width: 80, textAlign: "right" }}
                       />
                     </td>
                     <td className="num">
-                      <input
-                        type="number"
-                        step="0.01"
+                      <NumberInput
+                        kind="price"
+                        unit={unit}
+                        valueKg={c.ask}
+                        onChangeKg={(v) => updateCutField(c.id, "ask", v)}
                         className="cov4-inline-edit num"
-                        value={
-                          unit === "kg"
-                            ? c.ask
-                            : toDisplay(parseFloat(c.ask) || 0, "price", unit).toFixed(2)
-                        }
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          const kg =
-                            unit === "kg"
-                              ? v
-                              : String(fromDisplay(parseFloat(v) || 0, "price", unit));
-                          updateCutField(c.id, "ask", kg);
-                        }}
                         style={{ width: 80, textAlign: "right" }}
                       />
                     </td>
                     <td className="num cov4-floor">
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="cov4-inline-edit num"
-                        value={
-                          !c.floor
-                            ? ""
-                            : unit === "kg"
-                              ? c.floor
-                              : toDisplay(parseFloat(c.floor) || 0, "price", unit).toFixed(2)
-                        }
+                      <NumberInput
+                        kind="price"
+                        unit={unit}
+                        valueKg={c.floor || ""}
+                        onChangeKg={(v) => updateCutField(c.id, "floor", v)}
                         placeholder="—"
-                        onChange={(e) => {
-                          const v = e.target.value;
-                          if (!v) { updateCutField(c.id, "floor", ""); return; }
-                          const kg =
-                            unit === "kg"
-                              ? v
-                              : String(fromDisplay(parseFloat(v) || 0, "price", unit));
-                          updateCutField(c.id, "floor", kg);
-                        }}
+                        className="cov4-inline-edit num"
                         style={{ width: 80, textAlign: "right" }}
                       />
                     </td>
