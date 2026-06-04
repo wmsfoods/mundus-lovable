@@ -1801,14 +1801,14 @@ export default function SupplierCreateOffer() {
               ? "—"
               : selMarkets.map((m) => m.f).join(" ") +
                 " · " +
-                selMarkets.reduce((acc, m) => acc + (mcfg[m.id]?.sp.length || 0), 0) +
+                selMarkets.reduce((acc, m) => acc + (mktCfg[m.id]?.sp.length || 0), 0) +
                 " " +
                 ta("ports", "ports")}
           </span>
         </div>
         <div className="co3-pill">
           <span className="co3-pill-l">{ta("logisticsContainer", "CONTAINER")}</span>
-          <span className="co3-pill-v">{`${fcl}× ${csize} · ${temp}`}</span>
+          <span className="co3-pill-v">{`${ccCount}× ${csize} · ${temp}`}</span>
         </div>
         <div className="co3-pill">
           <span className="co3-pill-l">{ta("logisticsIncoterm", "INCOTERM")}</span>
