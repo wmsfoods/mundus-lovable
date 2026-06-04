@@ -1,6 +1,7 @@
 // Receives Apollo phone-reveal callbacks and caches the result in DB for polling.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { createClient } from "npm:@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse, getClientIp } from "../_shared/rateLimit.ts";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -8,6 +9,15 @@ Deno.serve(async (req) => {
   const url = Deno.env.get("SUPABASE_URL")!;
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
   const supabase = createClient(url, serviceKey);
+
+  // Rate limit: 60/min per IP (Apollo bursts callbacks)
+  const ip = getClientIp(req);
+  const rl = await checkRateLimit(supabase, {
+    key: `prospect-phone-webhook:ip:${ip}`,
+    windowSeconds: 60,
+    max: 60,
+  });
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
   let payload: any = {};
   try { payload = await req.json(); } catch { /* empty */ }

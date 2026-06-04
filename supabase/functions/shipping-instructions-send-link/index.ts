@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { requireUser } from "../_shared/auth.ts";
+import { checkRateLimit, rateLimitResponse, getClientIp } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,17 +13,24 @@ Deno.serve(async (req) => {
   const auth = await requireUser(req);
   if (!auth.ok) return new Response(auth.response.body, { status: auth.response.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
   try {
+    const supabase = createClient(
+      Deno.env.get('SUPABASE_URL')!,
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
+    );
+    const ip = getClientIp(req);
+    const rl = await checkRateLimit(supabase, {
+      key: `si-send-link:ip:${ip}`,
+      windowSeconds: 60,
+      max: 10,
+    });
+    if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
+
     const { order_id, buyer_email, buyer_name, origin, skip_email, personal_note, cc_emails } = await req.json();
     if (!order_id || !buyer_email) {
       return new Response(JSON.stringify({ error: 'missing_fields' }), {
         status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
-
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL')!,
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
-    );
 
     // Get auth user (optional - supplier id)
     const authHeader = req.headers.get('Authorization');

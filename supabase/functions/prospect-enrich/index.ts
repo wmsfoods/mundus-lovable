@@ -1,6 +1,8 @@
 // Apollo people/match enrichment — reveals email and (optionally) phone.
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 import { requireAdmin } from "../_shared/auth.ts";
+import { createClient } from "npm:@supabase/supabase-js@2";
+import { checkRateLimit, rateLimitResponse } from "../_shared/rateLimit.ts";
 
 const APOLLO_BASE = "https://api.apollo.io/api/v1";
 
@@ -21,6 +23,20 @@ Deno.serve(async (req) => {
 
   let body: Record<string, unknown> = {};
   try { body = await req.json(); } catch { /* empty */ }
+
+  // Rate limit Apollo reveals (cost real money). Key on user id from auth.
+  const supabase = createClient(
+    Deno.env.get("SUPABASE_URL")!,
+    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+  );
+  const userId = (auth as any).user?.id ?? (auth as any).userId ?? "unknown";
+  const revealPhone = Boolean(body.reveal_phone);
+  const rl = await checkRateLimit(supabase, {
+    key: `prospect-enrich:user:${userId}:${revealPhone ? "phone" : "email"}`,
+    windowSeconds: 60,
+    max: revealPhone ? 10 : 30,
+  });
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
   // Accepted: { id?, first_name?, last_name?, name?, organization_name?, domain?, email?, linkedin_url?, reveal_phone? }
   const payload: Record<string, unknown> = {

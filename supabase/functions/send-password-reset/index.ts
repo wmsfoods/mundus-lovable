@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+import { checkRateLimit, rateLimitResponse, getClientIp } from "../_shared/rateLimit.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -136,6 +137,15 @@ Deno.serve(async (req) => {
   if (!emailRaw || !emailRaw.includes('@')) return ok()
 
   const admin = createClient(SUPABASE_URL, SERVICE_ROLE)
+
+  // Rate limit: 3 / 5 min per (IP + email) to block brute reset spam
+  const ip = getClientIp(req)
+  const rl = await checkRateLimit(admin, {
+    key: `password-reset:${ip}:${emailRaw}`,
+    windowSeconds: 300,
+    max: 3,
+  })
+  if (!rl.allowed) return rateLimitResponse(rl, corsHeaders)
 
   try {
     const { data, error } = await admin.auth.admin.generateLink({

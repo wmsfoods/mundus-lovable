@@ -21,6 +21,7 @@
   },
   "common": {
     "back": "Voltar",
+    "rateLimited": "Muitas tentativas. Tente novamente em {{seconds}}s.",
     "cancel": "Cancelar",
     "proceed": "Continuar",
     "finish": "Concluir",
