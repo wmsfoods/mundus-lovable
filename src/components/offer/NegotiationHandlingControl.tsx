@@ -1,6 +1,7 @@
 import { Switch } from "@/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export type NegotiationMode = "manual" | "auto";
 export type NegotiationDial = "protect_margin" | "balanced" | "win_deal";
@@ -11,13 +12,15 @@ interface Props {
   onChange: (mode: NegotiationMode, dial: NegotiationDial) => void;
 }
 
-const DIAL_OPTIONS: { value: NegotiationDial; label: string; desc: string }[] = [
-  { value: "protect_margin", label: "Protect margin", desc: "Hold firm. Concede slowly, prioritize price over closing." },
-  { value: "balanced", label: "Balanced", desc: "Default. Reasonable concessions, fair pace toward a deal." },
-  { value: "win_deal", label: "Win the deal", desc: "Aggressive. Move faster to floor to close the buyer." },
-];
-
 export default function NegotiationHandlingControl({ mode, dial, onChange }: Props) {
+  const { t } = useTranslation();
+  const ta = (k: string, fb: string) =>
+    t(`supplier.negotiationHandling.${k}`, { defaultValue: fb }) as unknown as string;
+  const DIAL_OPTIONS: { value: NegotiationDial; label: string; desc: string }[] = [
+    { value: "protect_margin", label: ta("dialProtectLabel", "Protect margin"), desc: ta("dialProtectDesc", "Hold firm. Concede slowly, prioritize price over closing.") },
+    { value: "balanced", label: ta("dialBalancedLabel", "Balanced"), desc: ta("dialBalancedDesc", "Default. Reasonable concessions, fair pace toward a deal.") },
+    { value: "win_deal", label: ta("dialWinLabel", "Win the deal"), desc: ta("dialWinDesc", "Aggressive. Move faster to floor to close the buyer.") },
+  ];
   const isAuto = mode === "auto";
 
   return (
@@ -36,41 +39,41 @@ export default function NegotiationHandlingControl({ mode, dial, onChange }: Pro
         <div style={{ minWidth: 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: "hsl(var(--foreground))" }}>
-              Negotiation handling
+              {ta("label", "Negotiation handling")}
             </span>
             <TooltipProvider delayDuration={150}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
                     type="button"
-                    aria-label="About negotiation handling"
+                    aria-label={ta("aboutAria", "About negotiation handling")}
                     style={{ display: "inline-flex", padding: 0, border: 0, background: "transparent", color: "hsl(var(--muted-foreground))", cursor: "help" }}
                   >
                     <Info size={14} />
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" style={{ maxWidth: 280, lineHeight: 1.4 }}>
-                  In Automatic mode, the system will respond to buyer bids on your behalf according to the selected strategy. You can still override and accept any bid at any time.
+                  {ta("tooltip", "In Automatic mode, the system will respond to buyer bids on your behalf according to the selected strategy. You can still override and accept any bid at any time.")}
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
           </div>
           <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
-            {isAuto ? "Mundus engine replies to buyers automatically." : "You reply to every buyer bid manually."}
+            {isAuto ? ta("autoSub", "Mundus engine replies to buyers automatically.") : ta("manualSub", "You reply to every buyer bid manually.")}
           </div>
         </div>
 
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           <span style={{ fontSize: 12, fontWeight: 500, color: !isAuto ? "#B64769" : "hsl(var(--muted-foreground))" }}>
-            Manual
+            {ta("manual", "Manual")}
           </span>
           <Switch
             checked={isAuto}
             onCheckedChange={(v) => onChange(v ? "auto" : "manual", dial)}
-            aria-label="Toggle automatic negotiation"
+            aria-label={ta("toggleAria", "Toggle automatic negotiation")}
           />
           <span style={{ fontSize: 12, fontWeight: 500, color: isAuto ? "#B64769" : "hsl(var(--muted-foreground))" }}>
-            Automatic
+            {ta("automatic", "Automatic")}
           </span>
         </div>
       </div>
@@ -78,7 +81,7 @@ export default function NegotiationHandlingControl({ mode, dial, onChange }: Pro
       {isAuto && (
         <div
           role="radiogroup"
-          aria-label="Automatic negotiation strategy"
+          aria-label={ta("strategyAria", "Automatic negotiation strategy")}
           style={{ display: "grid", gap: 8 }}
         >
           {DIAL_OPTIONS.map((opt) => {

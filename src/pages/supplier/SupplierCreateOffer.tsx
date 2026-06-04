@@ -334,6 +334,8 @@ export default function SupplierCreateOffer() {
   const hydrateSource = editOffer ?? cloneFrom;
   const prefilledRef = useRef(false);
   const { t } = useTranslation();
+  const ta = (k: string, fb: string, opts?: any) =>
+    t(`supplier.createOffer.screen.${k}`, { defaultValue: fb, ...(opts || {}) }) as unknown as string;
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
   /* Display unit (kg vs lbs). All `cuts`/`nf` state is stored in kg; we only
@@ -1070,13 +1072,13 @@ export default function SupplierCreateOffer() {
 
   const distOk = distMarketplace || distAllCustomers || (distSpecific && selectedCustomers.length > 0);
   const publishSteps = [
-    { key: "markets",  label: "Select at least one destination market", done: selMarkets.length > 0, anchor: "sec-markets" },
-    { key: "cuts",     label: "Add at least one product / cut",            done: cuts.length > 0,       anchor: "sec-cuts" },
-    { key: "inco",     label: "Choose an incoterm",                      done: selInco.length > 0,    anchor: "sec-inco" },
-    { key: "dist",     label: "Pick how to distribute the offer",        done: distOk,                anchor: "sec-dist" },
+    { key: "markets",  label: ta("stepMarkets", "Select at least one destination market"), done: selMarkets.length > 0, anchor: "sec-markets" },
+    { key: "cuts",     label: ta("stepCuts", "Add at least one product / cut"),            done: cuts.length > 0,       anchor: "sec-cuts" },
+    { key: "inco",     label: ta("stepInco", "Choose an incoterm"),                      done: selInco.length > 0,    anchor: "sec-inco" },
+    { key: "dist",     label: ta("stepDist", "Pick how to distribute the offer"),        done: distOk,                anchor: "sec-dist" },
     {
       key: "plants",
-      label: "Pick a plant for every cut",
+      label: ta("stepPlants", "Pick a plant for every cut"),
       done:
         cuts.length > 0 &&
         cuts.every((c) =>
@@ -1745,8 +1747,8 @@ export default function SupplierCreateOffer() {
       <header className="cov4-header">
         <div className="cov4-hdr-l">
           <div>
-            <h1>{isEditing && editOffer ? `Edit offer ${formatOfferNumber(editOffer.offerNumber)}` : "Create new offer"}</h1>
-            <p>Markets · Products · Pricing · Distribution</p>
+            <h1>{isEditing && editOffer ? ta("editHeader", "Edit offer {{n}}", { n: formatOfferNumber(editOffer.offerNumber) }) : ta("header", "Create new offer")}</h1>
+            <p>{ta("crumb", "Markets · Products · Pricing · Distribution")}</p>
           </div>
         </div>
         <div className="cov4-hdr-r">
@@ -1767,7 +1769,7 @@ export default function SupplierCreateOffer() {
             className={`cov4-preview-btn ${showPreview ? "on" : ""}`}
             onClick={() => setShowPreview((v) => !v)}
           >
-            {showPreview ? "✕ Close preview" : "👁 Live preview"}
+            {showPreview ? ta("closePreview", "✕ Close preview") : ta("livePreview", "👁 Live preview")}
           </button>
         </div>
       </header>
@@ -1775,12 +1777,12 @@ export default function SupplierCreateOffer() {
       <div className={`cov4-grid ${showPreview ? "with-preview" : ""}`}>
         {/* ═══════════ LEFT PANEL ═══════════ */}
         <aside className="cov4-panel cov4-panel-l">
-          <SectionHeader icon="🌍" t="Markets & freight" s="Countries, ports, freight costs" />
+          <SectionHeader icon="🌍" t={ta("secMarketsTitle", "Markets & freight")} s={ta("secMarketsSub", "Countries, ports, freight costs")} />
 
           {/* ── Origin Port ─────────────────────────────────── */}
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: "block", fontSize: 13, fontWeight: 600, color: "#374151", marginBottom: 6 }}>
-              Origin Port
+              {ta("originPort", "Origin Port")}
             </label>
             {supplierCountries.length === 1 && (
               <span style={{ fontSize: 12, color: "#6B7280", marginBottom: 6, display: "block" }}>
@@ -1809,7 +1811,7 @@ export default function SupplierCreateOffer() {
                 >
                   {(() => {
                     const p = originPorts.find((x) => x.id === originPortId);
-                    if (!p) return "Select origin port…";
+                    if (!p) return ta("originPortPh", "Select origin port…");
                     return `${p.name}${p.code ? ` (${p.code})` : ""} — ${p.country}`;
                   })()}
                   <span style={{ color: "#9CA3AF" }}>▾</span>
@@ -1858,7 +1860,7 @@ export default function SupplierCreateOffer() {
             </Popover>
             {supplierCountries.length > 1 && (
               <p style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
-                Showing ports from: {supplierCountries.join(", ")}
+                {ta("showingPortsFrom", "Showing ports from:")} {supplierCountries.join(", ")}
               </p>
             )}
           </div>
@@ -1866,7 +1868,7 @@ export default function SupplierCreateOffer() {
           {/* Container & Temp */}
           <div className="cov4-cfg-row">
             <div className="cov4-cfg-g">
-              <span className="cov4-cfg-l">Container</span>
+              <span className="cov4-cfg-l">{ta("container", "Container")}</span>
               <div className="cov4-tgl">
                 {(["20ft", "40ft"] as const).map((opt) => (
                   <button key={opt} type="button" className={csize === opt ? "on" : ""} onClick={() => pickCsize(opt)}>{opt}</button>
@@ -1874,7 +1876,7 @@ export default function SupplierCreateOffer() {
               </div>
             </div>
             <div className="cov4-cfg-g">
-              <span className="cov4-cfg-l">Temperature</span>
+              <span className="cov4-cfg-l">{ta("temperature", "Temperature")}</span>
               <div className="cov4-tgl">
                 {(["Frozen", "Chilled"] as const).map((opt) => (
                   <button key={opt} type="button" className={temp === opt ? "on" : ""} onClick={() => setTemp(opt)}>{opt}</button>
@@ -1882,7 +1884,7 @@ export default function SupplierCreateOffer() {
               </div>
             </div>
             <div className="cov4-cfg-g">
-              <span className="cov4-cfg-l">FCL(s)</span>
+              <span className="cov4-cfg-l">{ta("fcls", "FCL(s)")}</span>
               <input
                 type="number"
                 min={1}
@@ -1890,7 +1892,7 @@ export default function SupplierCreateOffer() {
                 value={containerCount}
                 onChange={(e) => {
                   const n = parseInt(e.target.value) || 1;
-                  if (n > 20) { toast.error("Maximum is 20 containers per offer."); setContainerCount(20); return; }
+                  if (n > 20) { toast.error(ta("maxContainersToast", "Maximum is 20 containers per offer.")); setContainerCount(20); return; }
                   setContainerCount(Math.max(1, n));
                 }}
                 style={{ width: 60, padding: "6px 8px", border: "1.5px solid #D1D5DB", borderRadius: 8, fontSize: 14, fontWeight: 600, textAlign: "center" }}
@@ -2112,7 +2114,7 @@ export default function SupplierCreateOffer() {
           {selMarkets.length === 0 && (
             <div className="cov4-empty">
               <span style={{ fontSize: 22 }}>📍</span>
-              <p>Select destination markets above</p>
+              <p>{ta("selectDestinations", "Select destination markets above")}</p>
             </div>
           )}
 
@@ -2142,7 +2144,7 @@ export default function SupplierCreateOffer() {
 
           {/* Incoterms */}
           <div id="sec-inco" className="cov4-sec">
-            <div className="cov4-sec-t">Incoterms</div>
+            <div className="cov4-sec-t">{ta("incoterms", "Incoterms")}</div>
             <div className="cov4-inco-grid">
               {INCOTERMS.map((ic) => {
                 const on = selInco.includes(ic.id);
@@ -2362,7 +2364,7 @@ export default function SupplierCreateOffer() {
 
           {/* Certifications (preserved) */}
           <div className="cov4-sec">
-            <div className="cov4-sec-t">Certifications</div>
+            <div className="cov4-sec-t">{ta("certifications", "Certifications")}</div>
             <div className="cov4-chips" style={{ marginBottom: 0 }}>
               {CERTIFICATION_OPTIONS.map((cert) => (
                 <button key={cert} type="button"
@@ -2376,7 +2378,7 @@ export default function SupplierCreateOffer() {
 
           {/* Negotiation rules */}
           <div className="cov4-sec">
-            <div className="cov4-sec-t">Negotiation rules</div>
+            <div className="cov4-sec-t">{ta("negotiationRules", "Negotiation rules")}</div>
             <label
               style={{
                 display: "flex",
@@ -2397,11 +2399,10 @@ export default function SupplierCreateOffer() {
               />
               <div>
                 <div style={{ fontWeight: 600, fontSize: 13, color: "hsl(var(--foreground))" }}>
-                  Allow buyers to negotiate item quantities
+                  {ta("allowQtyNeg", "Allow buyers to negotiate item quantities")}
                 </div>
                 <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
-                  When on, buyers may redistribute kg across items inside a chat proposal.
-                  The total offered kg must always match the original offer — partial loads are never allowed.
+                  {ta("allowQtyNegDesc", "When on, buyers may redistribute kg across items inside a chat proposal. The total offered kg must always match the original offer — partial loads are never allowed.")}
                 </div>
               </div>
             </label>
@@ -2409,11 +2410,11 @@ export default function SupplierCreateOffer() {
 
           {/* Payment terms */}
           <div className="cov4-sec">
-            <div className="cov4-sec-t">Payment terms</div>
+            <div className="cov4-sec-t">{ta("paymentTerms", "Payment terms")}</div>
             <select className="cov4-pay-select" value={payTerm} onChange={(e) => setPayTerm(e.target.value)}>
               {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
             </select>
-            <p className="cov4-hint">From your supplier preferences — editable per offer</p>
+            <p className="cov4-hint">{ta("payTermsHint", "From your supplier preferences — editable per offer")}</p>
           </div>
 
           {/* Negotiation handling (Manual vs Automatic) */}
@@ -2427,27 +2428,27 @@ export default function SupplierCreateOffer() {
 
           {/* Distribution */}
           <div id="sec-dist" className="cov4-sec">
-            <div className="cov4-sec-t">Offer distribution</div>
+            <div className="cov4-sec-t">{ta("offerDistribution", "Offer distribution")}</div>
             <div className="cov4-dist-opts">
               <label className="cov4-dist-opt">
                 <input type="checkbox" checked={distMarketplace} onChange={() => setDistMarketplace((v) => !v)} />
                 <div>
-                  <div className="cov4-dist-label">🏪 Publish to Marketplace</div>
-                  <div className="cov4-dist-desc">Visible to all buyers on the platform</div>
+                  <div className="cov4-dist-label">{ta("distMarketplace", "🏪 Publish to Marketplace")}</div>
+                  <div className="cov4-dist-desc">{ta("distMarketplaceDesc", "Visible to all buyers on the platform")}</div>
                 </div>
               </label>
               <label className="cov4-dist-opt">
                 <input type="checkbox" checked={distAllCustomers} onChange={() => setDistAllCustomers((v) => !v)} />
                 <div>
-                  <div className="cov4-dist-label">📨 Send to all my customers</div>
-                  <div className="cov4-dist-desc">Notify all registered buyers</div>
+                  <div className="cov4-dist-label">{ta("distAllCustomers", "📨 Send to all my customers")}</div>
+                  <div className="cov4-dist-desc">{ta("distAllCustomersDesc", "Notify all registered buyers")}</div>
                 </div>
               </label>
               <label className="cov4-dist-opt">
                 <input type="checkbox" checked={distSpecific} onChange={() => setDistSpecific((v) => !v)} />
                 <div>
-                  <div className="cov4-dist-label">🎯 Specific customers</div>
-                  <div className="cov4-dist-desc">Choose which buyers receive this offer</div>
+                  <div className="cov4-dist-label">{ta("distSpecific", "🎯 Specific customers")}</div>
+                  <div className="cov4-dist-desc">{ta("distSpecificDesc", "Choose which buyers receive this offer")}</div>
                 </div>
               </label>
             </div>
@@ -2470,9 +2471,9 @@ export default function SupplierCreateOffer() {
         {/* ═══════════ CENTER PANEL ═══════════ */}
         <main className="cov4-panel cov4-panel-c">
           <div className="cov4-center-head">
-            <SectionHeader icon="🥩" t="PRODUCT / CUT & pricing" s="Products, specs, photos, ask & floor price" />
+            <SectionHeader icon="🥩" t={ta("secProductTitle", "PRODUCT / CUT & pricing")} s={ta("secProductSub", "Products, specs, photos, ask & floor price")} />
             <button type="button" className="cov4-ai-btn" onClick={() => setShowAiImport((v) => !v)}>
-              ✨ AI Import
+              {ta("aiImport", "✨ AI Import")}
             </button>
             {cutRegion === "us" && (
               <span style={{ fontSize: 11, color: "#8B1A3A", background: "#FBEAF0", border: "1px solid rgba(139,26,58,.2)", padding: "4px 8px", borderRadius: 6, lineHeight: 1.35, maxWidth: 380, marginLeft: 8 }}>
@@ -2527,7 +2528,7 @@ export default function SupplierCreateOffer() {
           {/* Capacity bar */}
           <div className="cov4-cap">
             <div className="cov4-cap-h">
-              <span className="cov4-cap-l">Container capacity</span>
+              <span className="cov4-cap-l">{ta("containerCapacity", "Container capacity")}</span>
               <span className="cov4-cap-v">
                 {fmtWeight(tw, unit)} / {fmtWeight(cap, unit)} {wLbl}
                 <span className="cov4-cap-p" style={{ color: fc }}>({fp.toFixed(0)}%)</span>
@@ -2560,7 +2561,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global {usToggleProteinLabel}Cuts
+                  {ta("tabGlobalCuts", "🌐 Global {{p}}Cuts", { p: usToggleProteinLabel })}
                 </button>
                 <button
                   type="button"
@@ -2580,7 +2581,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US {usToggleProteinLabel}Cuts (IMPS)
+                  {ta("tabUsCuts", "🇺🇸 US {{p}}Cuts (IMPS)", { p: usToggleProteinLabel })}
                 </button>
                 {cuts.length > 0 && (
                   <button
@@ -2622,22 +2623,22 @@ export default function SupplierCreateOffer() {
             <table className="cov4-tbl">
               <thead>
                 <tr>
-                  <th style={{ width: 48 }}>Photo</th>
-                  <th style={{ width: 120 }}>Protein</th>
-                  <th style={{ width: 180 }}>Item / Cut</th>
-                  <th style={{ width: 90 }}>Spec</th>
-                  {showGradeColumn && <th style={{ width: 100 }}>Grade</th>}
-                  <th style={{ width: 120 }}>Packing</th>
-                  <th style={{ width: 80 }} title="USDA/SIF establishment number">Plant #</th>
+                  <th style={{ width: 48 }}>{ta("thPhoto", "Photo")}</th>
+                  <th style={{ width: 120 }}>{ta("thProtein", "Protein")}</th>
+                  <th style={{ width: 180 }}>{ta("thItemCut", "Item / Cut")}</th>
+                  <th style={{ width: 90 }}>{ta("thSpec", "Spec")}</th>
+                  {showGradeColumn && <th style={{ width: 100 }}>{ta("thGrade", "Grade")}</th>}
+                  <th style={{ width: 120 }}>{ta("thPacking", "Packing")}</th>
+                  <th style={{ width: 80 }} title="USDA/SIF establishment number">{ta("thPlant", "Plant #")}</th>
                   <th className="num" style={{ width: 100 }}>{qLbl}</th>
                   <th className="num">
-                    Ask {pLbl}
+                    {ta("thAsk", "Ask")} {pLbl}
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
                   </th>
                   <th className="num">
-                    Floor {pLbl} <span style={{ fontWeight: 400, opacity: 0.7, textTransform: "none" }}>(optional)</span>
+                    {ta("thFloor", "Floor")} {pLbl} <span style={{ fontWeight: 400, opacity: 0.7, textTransform: "none" }}>{ta("thOptional", "(optional)")}</span>
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
@@ -2645,16 +2646,16 @@ export default function SupplierCreateOffer() {
                   {multiInco && secondaryIncos.map((s) => (
                     <Fragment key={`h-${s}`}>
                       <th className="num">
-                        Ask {pLbl}
+                        {ta("thAsk", "Ask")} {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                       <th className="num">
-                        Floor {pLbl}
+                        {ta("thFloor", "Floor")} {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                     </Fragment>
                   ))}
-                  <th style={{ width: 120 }}>Notes</th>
+                  <th style={{ width: 120 }}>{ta("thNotes", "Notes")}</th>
                   <th style={{ width: 28 }} aria-label="actions" />
                 </tr>
               </thead>
@@ -2723,7 +2724,7 @@ export default function SupplierCreateOffer() {
                           }}
                           style={{ minWidth: 130 }}
                         >
-                          <option value="">Select plant…</option>
+                          <option value="">{ta("selectPlantPh", "Select plant…")}</option>
                           {allowedPlants.map((p) => (
                             <option key={p.id} value={p.id}>
                               {p.plant_number ? `${p.plant_number} · ` : ""}
@@ -2990,7 +2991,7 @@ export default function SupplierCreateOffer() {
                           title="Office-granted plant"
                           style={{ minWidth: 140 }}
                         >
-                          <option value="">Select plant…</option>
+                          <option value="">{ta("selectPlantPh", "Select plant…")}</option>
                           {allowedPlants.map((p) => (
                             <option key={p.id} value={p.id}>
                               {p.plant_number ? `${p.plant_number} · ` : ""}
@@ -3101,7 +3102,7 @@ export default function SupplierCreateOffer() {
                         <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
                       </Fragment>
                     ))}
-                    <td><input type="text" placeholder="Notes..." value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
+                    <td><input type="text" placeholder={ta("notesPh", "Notes...")} value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         <button
@@ -3129,11 +3130,11 @@ export default function SupplierCreateOffer() {
               onClick={() => navigate("/supplier/profile/plants")}
               style={{ background: "none", border: "none", padding: 0, color: "var(--p800, #8B2252)", cursor: "pointer", textDecoration: "underline", fontSize: 12 }}
             >
-              Manage plant numbers
+              {ta("managePlantNumbers", "Manage plant numbers")}
             </button>
           </div>
           {cuts.length === 0 && !addRow && !showAiImport && (
-            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add product / cuts manually or use AI Import</p></div>
+            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>{ta("emptyCuts", "Add product / cuts manually or use AI Import")}</p></div>
           )}
         </main>
 
@@ -3141,7 +3142,7 @@ export default function SupplierCreateOffer() {
         {showPreview && (
           <aside className="cov4-panel cov4-panel-r">
             <div className="cov4-prev-h">
-              <span className="cov4-prev-h-t">👁 Live preview</span>
+              <span className="cov4-prev-h-t">{ta("livePreview", "👁 Live preview")}</span>
               <span className="cov4-prev-h-s">Buyer's view</span>
             </div>
             <div className="cov4-prev-card">
@@ -3241,8 +3242,12 @@ export default function SupplierCreateOffer() {
                 </span>
                 <span className="cov4-ready-txt">
                   {canPublish
-                    ? "Ready to publish"
-                    : `${stepsDone} of ${publishSteps.length} ready · ${nextStep?.label.split(" ").slice(0, 4).join(" ")}…`}
+                    ? ta("readyToPublish", "Ready to publish")
+                    : ta("readyProgress", "{{done}} of {{total}} ready · {{next}}…", {
+                        done: stepsDone,
+                        total: publishSteps.length,
+                        next: nextStep?.label.split(" ").slice(0, 4).join(" "),
+                      })}
                 </span>
               </button>
             </PopoverTrigger>
