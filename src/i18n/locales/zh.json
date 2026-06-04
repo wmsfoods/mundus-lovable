@@ -259,7 +259,8 @@
       "expand": "展开",
       "collapse": "收起",
       "closeMenu": "关闭菜单",
-      "navigation": "导航"
+      "navigation": "导航",
+      "myCustomers": "我的客户"
     },
     "bottom": {
       "create": "创建",
