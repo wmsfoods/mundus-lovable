@@ -230,16 +230,22 @@ export function OfferCard({
           <div className="oc-supplier">🏭 {offer.supplier_name}</div>
         )}
         <div className="cut-chips">
-          {items.slice(0, 2).map((it) => (
-            <span key={it.id} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
-              <CutThumb src={cutImgs[(it.customer_product?.name ?? "").split(",")[0]]} size={20} />
-              {(it.customer_product?.name ?? "Product / Cut").split(",")[0]}
+          {firstItem && (
+            <span className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
+              <CutThumb src={cutImgs[(firstItem.customer_product?.name ?? "").split(",")[0]]} size={20} />
+              {(firstItem.customer_product?.name ?? "Product / Cut").split(",")[0]}
             </span>
-          ))}
-          {items.length > 2 && (
-            <span className="cut-chip is-more">
-              {t("buyer.offers.card.moreCuts", { count: items.length - 2 })}
-            </span>
+          )}
+          {items.length > 1 && (
+            <button
+              type="button"
+              className="cut-chip is-more"
+              onClick={(e) => { e.stopPropagation(); onOpen(); }}
+              style={{ cursor: "pointer", border: "none" }}
+              title={t("buyer.offers.card.moreCuts", { count: items.length - 1 })}
+            >
+              +{items.length - 1}
+            </button>
           )}
         </div>
       </div>
