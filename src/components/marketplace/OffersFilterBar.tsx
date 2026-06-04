@@ -33,6 +33,8 @@ export type OffersFilterState = {
   halal: TriValue;
   kosher: TriValue;
   search: string;
+  likedOnly: boolean;
+  favoritedOnly: boolean;
 };
 
 export const DEFAULT_OFFERS_FILTER: OffersFilterState = {
@@ -43,6 +45,8 @@ export const DEFAULT_OFFERS_FILTER: OffersFilterState = {
   halal: "any",
   kosher: "any",
   search: "",
+  likedOnly: false,
+  favoritedOnly: false,
 };
 
 export function countActiveOfferFilters(s: OffersFilterState): number {
@@ -54,6 +58,8 @@ export function countActiveOfferFilters(s: OffersFilterState): number {
   if (s.halal !== "any") n++;
   if (s.kosher !== "any") n++;
   if (s.search.trim()) n++;
+  if (s.likedOnly) n++;
+  if (s.favoritedOnly) n++;
   return n;
 }
 
