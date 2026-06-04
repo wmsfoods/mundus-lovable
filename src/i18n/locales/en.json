@@ -655,7 +655,8 @@
       "empty": "No offers yet. Suppliers haven't published any matching offers.",
       "card": {
         "cuts": "{{count}} Product / Cuts",
-        "mixedTitle": "Mixed ({{count}} Product / Cuts)",
+        "mixedTitle": "Mixed Container — {{count}} cuts",
+        "fullContainerOneCut": "Full Container — 1 Cut",
         "moreCuts": "+{{count}} more",
         "origin": "Origin",
         "destination": "Destination",
