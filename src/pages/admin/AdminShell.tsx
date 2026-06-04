@@ -7,6 +7,7 @@ import {
   Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox, BookOpen,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
+import { useUserFullName } from "@/hooks/useUserFullName";
 import { Topbar } from "@/components/mundus/Topbar";
 import { BottomNav, type BottomNavItem } from "@/components/mundus/BottomNav";
 import { MobileDrawer } from "@/components/mundus/MobileDrawer";

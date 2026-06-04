@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar, type SidebarItem, type SidebarEntry } from "@/components/mundus/Sidebar";
+import { useUserFullName } from "@/hooks/useUserFullName";
 import { Topbar } from "@/components/mundus/Topbar";
 import { BottomNav, type BottomNavItem } from "@/components/mundus/BottomNav";
 import { MobileDrawer } from "@/components/mundus/MobileDrawer";
