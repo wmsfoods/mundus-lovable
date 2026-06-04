@@ -24,6 +24,7 @@ import { useIsMobileShell as useIsMobile } from "@/hooks/useIsMobileShell";
 import { Check, Plus, Search as SearchIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import { NumberInput } from "@/components/inputs/NumberInput";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import {
