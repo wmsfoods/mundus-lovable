@@ -13,9 +13,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserFullName } from "@/hooks/useUserFullName";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
+import { useSupplierSales } from "@/hooks/useSupplierSales";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
 import ByOfficeRollup from "@/components/supplier/ByOfficeRollup";
+import { StatusBadge } from "@/lib/orderStatus";
 import { supabase } from "@/integrations/supabase/client";
 
 type SupplierKpi = {
@@ -88,6 +91,9 @@ export default function SupplierHome() {
       .join(" ");
   const { offers, loading } = useRealSupplierOffers();
   const dash = useSupplierDashboard();
+  const { data: sales, isLoading: salesLoading } = useSupplierSales();
+  const isMobile = useIsMobileShell();
+  const maxItems = isMobile ? 5 : 7;
 
   const kpis = useMemo<SupplierKpi[]>(() => {
     const v = (n: number | undefined) => (n === undefined ? "—" : n);
@@ -100,7 +106,8 @@ export default function SupplierHome() {
     ];
   }, [dash.activeOffers, dash.totalOffers, dash.closedDeals, dash.inNegotiation]);
 
-  const recentOffers = useMemo(() => offers.slice(0, 3), [offers]);
+  const recentOffers = useMemo(() => offers.slice(0, maxItems), [offers, maxItems]);
+  const recentSales = useMemo(() => sales.slice(0, maxItems), [sales, maxItems]);
 
   const [negCounts, setNegCounts] = useState<Record<string, { total: number; companies: number }>>({});
   useEffect(() => {
@@ -229,9 +236,6 @@ export default function SupplierHome() {
       </div>
       <div className="sh-card-row">
         <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>
-          {officeFocus
-            ? t("supplier.home.emptySalesForOffice", { defaultValue: "No sales yet for {{office}}.", office: officeName })
-            : t("supplier.home.emptySales", { defaultValue: "No sales yet." })}
         </div>
       </div>
     </>
