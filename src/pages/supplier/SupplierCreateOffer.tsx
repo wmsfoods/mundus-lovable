@@ -1294,6 +1294,18 @@ export default function SupplierCreateOffer() {
       );
       return;
     }
+    // Edit-only guard: never save before the saved offer is fully hydrated into state.
+    // Without this, untouched fields would be wiped because the save path deletes
+    // and reinserts child rows from current state.
+    if (isEditing && !editHydrated) {
+      toast.error(
+        ta(
+          "toastEditNotReady",
+          "Loading offer data — please try again in a moment.",
+        ),
+      );
+      return;
+    }
     setPublishing(true);
     const supplierId = company.id;
     const supplierName = company.name || "Mundus Supplier";
