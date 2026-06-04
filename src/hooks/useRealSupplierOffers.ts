@@ -97,7 +97,7 @@ export function useRealSupplierOffers() {
         const shipmentLabel = `${MONTH[m - 1]} ${o.shipment_year ?? new Date().getFullYear()}`;
         const status: SupplierOffer["status"] =
           o.status === "active" ? "active" :
-          o.status === "draft" ? "new" :
+          o.status === "draft" ? "draft" :
           o.status === "sold_out" ? "sold_out" :
         o.status === "negotiating" ? "negotiating" :
           o.status === "archived" ? "closed" : "inactive";
