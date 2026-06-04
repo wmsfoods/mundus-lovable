@@ -268,7 +268,7 @@ export default function ConnectedSuppliers() {
                   value: formatDate(s.responded_at ?? s.invited_at),
                 },
               ]}
-              footer={
+              cta={
                 s.status === "invited" ? (
                   <div className="flex gap-2">
                     <button
