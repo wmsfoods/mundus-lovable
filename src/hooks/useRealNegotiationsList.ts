@@ -172,9 +172,15 @@ function priceForCut(
   c: RealNegotiationRow["rounds"][number]["cut_rounds"][number],
 ): number | null {
   if (roundTypeFor(rawRound) === "counter") {
-    const cp = (c.counter_proposals ?? [])[0];
+    const cps = c.counter_proposals ?? [];
+    const cp = cps[0];
     if (cp && cp.price_per_kg != null) return Number(cp.price_per_kg);
-    // No counter price yet — don't fall back to the mirrored bid.
+    // Manual flow (legacy/non-auto): the supplier writes the counter
+    // directly into cut_rounds.price_per_kg with no counter_proposals row.
+    // Only treat as "waiting" when the auto engine created a counter_proposals
+    // shell without a price. If there's no counter_proposals row at all,
+    // trust cut_rounds.price_per_kg.
+    if (cps.length === 0) return Number(c.price_per_kg);
     return null;
   }
   return Number(c.price_per_kg);
