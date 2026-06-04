@@ -3142,7 +3142,7 @@ export default function SupplierCreateOffer() {
         {showPreview && (
           <aside className="cov4-panel cov4-panel-r">
             <div className="cov4-prev-h">
-              <span className="cov4-prev-h-t">👁 Live preview</span>
+              <span className="cov4-prev-h-t">{ta("livePreview", "👁 Live preview")}</span>
               <span className="cov4-prev-h-s">Buyer's view</span>
             </div>
             <div className="cov4-prev-card">
@@ -3242,8 +3242,12 @@ export default function SupplierCreateOffer() {
                 </span>
                 <span className="cov4-ready-txt">
                   {canPublish
-                    ? "Ready to publish"
-                    : `${stepsDone} of ${publishSteps.length} ready · ${nextStep?.label.split(" ").slice(0, 4).join(" ")}…`}
+                    ? ta("readyToPublish", "Ready to publish")
+                    : ta("readyProgress", "{{done}} of {{total}} ready · {{next}}…", {
+                        done: stepsDone,
+                        total: publishSteps.length,
+                        next: nextStep?.label.split(" ").slice(0, 4).join(" "),
+                      })}
                 </span>
               </button>
             </PopoverTrigger>
