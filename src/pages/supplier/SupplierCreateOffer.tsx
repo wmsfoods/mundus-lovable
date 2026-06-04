@@ -334,6 +334,8 @@ export default function SupplierCreateOffer() {
   const hydrateSource = editOffer ?? cloneFrom;
   const prefilledRef = useRef(false);
   const { t } = useTranslation();
+  const ta = (k: string, fb: string, opts?: any) =>
+    t(`supplier.createOffer.screen.${k}`, { defaultValue: fb, ...(opts || {}) }) as unknown as string;
   const tm = (k: string, v?: any) => t(`supplier.createOffer.marketplace.${k}`, v as any) as unknown as string;
 
   /* Display unit (kg vs lbs). All `cuts`/`nf` state is stored in kg; we only
