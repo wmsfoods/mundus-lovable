@@ -1196,6 +1196,21 @@ export default function SupplierCreateOffer() {
       toast.error(ta("toastInvalidCuts", "{{n}} cut(s) have missing quantity or price. Please fill all fields.", { n: invalidCuts.length }));
       return;
     }
+    // Guard: floor must never exceed ask (applies to draft and publish).
+    const badFloor = cuts.find(c => {
+      const a = parseFloat(c.ask);
+      const f = parseFloat(c.floor);
+      return Number.isFinite(a) && Number.isFinite(f) && f > a;
+    });
+    if (badFloor) {
+      toast.error(
+        ta(
+          "toastFloorGtAsk",
+          "Floor price cannot be greater than asking price. Fix the cut and try again.",
+        ),
+      );
+      return;
+    }
     setPublishing(true);
     const supplierId = company.id;
     const supplierName = company.name || "Mundus Supplier";
@@ -1329,7 +1344,9 @@ export default function SupplierCreateOffer() {
           const qty = parseFloat(c.qty) || 0;
           const ask = parseFloat(c.ask) || 0;
           const floor = parseFloat(c.floor);
-          const floorVal = Number.isFinite(floor) && floor > 0 ? floor : ask;
+          // Clamp: never store a floor above the ask (defense in depth).
+          const floorVal =
+            Number.isFinite(floor) && floor > 0 && floor <= ask ? floor : ask;
           if (qty <= 0 || ask <= 0) continue;
 
           // Fallback: resolve cutId from cut name if missing
@@ -2795,15 +2812,27 @@ export default function SupplierCreateOffer() {
                       />
                     </td>
                     <td className="num cov4-floor">
-                      <NumberInput
-                        kind="price"
-                        unit={unit}
-                        valueKg={c.floor || ""}
-                        onChangeKg={(v) => updateCutField(c.id, "floor", v)}
-                        placeholder="—"
-                        className="cov4-inline-edit num"
-                        style={{ width: 80, textAlign: "right" }}
-                      />
+                      {(() => {
+                        const badRowFloor = !validatePricePair(c.ask, c.floor).ok;
+                        return (
+                          <NumberInput
+                            kind="price"
+                            unit={unit}
+                            valueKg={c.floor || ""}
+                            onChangeKg={(v) => updateCutField(c.id, "floor", v)}
+                            placeholder="—"
+                            className="cov4-inline-edit num"
+                            style={{
+                              width: 80,
+                              textAlign: "right",
+                              ...(badRowFloor
+                                ? { borderColor: "#dc2626", outline: "1px solid #dc2626" }
+                                : {}),
+                            }}
+                            title={badRowFloor ? "Floor must be ≤ asking" : undefined}
+                          />
+                        );
+                      })()}
                     </td>
                     {multiInco && secondaryIncos.map((s) => {
                       const ovr = cutIncoOverrides[c.id]?.[s];

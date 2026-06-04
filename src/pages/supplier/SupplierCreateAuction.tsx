@@ -255,6 +255,16 @@ export default function SupplierCreateAuction() {
 
   const handlePublish = () => {
     if (!canPublish) return;
+    // Guard: no cut may have floor > ask.
+    const badFloor = cuts.find((c) => {
+      const a = parseFloat(c.ask);
+      const f = parseFloat(c.floor);
+      return Number.isFinite(a) && Number.isFinite(f) && f > a;
+    });
+    if (badFloor) {
+      toast.error("Floor price cannot be greater than asking price. Fix the cut and try again.");
+      return;
+    }
     const seq = String(Math.floor(Math.random() * 90000) + 10000);
     toast.success(ta("publishedToast", `Auction MDS-A#${seq} scheduled!`, { seq }));
     navigate("/supplier/auctions");
