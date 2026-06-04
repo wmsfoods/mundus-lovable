@@ -26,6 +26,7 @@ import {
   type TempValue,
 } from "@/components/marketplace/OffersFilterBar";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
+import { useOfferSocialBatch } from "@/hooks/useOfferSocial";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { FlagSVG } from "@/components/icons";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
