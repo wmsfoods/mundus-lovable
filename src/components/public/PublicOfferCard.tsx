@@ -5,6 +5,7 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import type { PublicOffer } from "@/hooks/usePublicOffers";
+import { GlowCard } from "@/components/ui/spotlight-card";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
