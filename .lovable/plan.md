@@ -1,74 +1,59 @@
-## Problema
+## Bug
 
-Nos campos **Ask** e **Floor** da criação de offer (e em outros campos `$`/qty), ao digitar `7` o input vira `7.00` imediatamente — o cursor pula para as casas decimais e o usuário precisa selecionar `00` para digitar `33`.
+O sistema deixou um supplier publicar uma offer com **floor (preço mínimo) maior que o ask (preço pedido)**. Isso quebra a lógica de negociação inteira — o "piso" virou um teto.
 
-**Causa raiz** (confirmada em `SupplierCreateOffer.tsx` ~L2798 e gêmeos em Auction):
+A função `validatePricePair(ask, floor)` existe e checa `ask >= floor`, mas ela só é usada nos campos do "add new cut" e na exibição da tabela de derivados. **O `handlePublish` não revalida a lista final de cuts antes de inserir no banco**, então qualquer cut com floor > ask passa direto. Pior: na linha 1332 o código faz `floorVal = floor > 0 ? floor : ask` — aceita o floor mesmo sendo maior que o ask. Em `SupplierCreateAuction` a validação só roda no add-cut, não no submit final.
 
-```text
-value = unit === "kg" ? c.ask : toDisplay(parseFloat(c.ask), "price", "lbs").toFixed(2)
+## Correção
+
+### 1) `src/pages/supplier/SupplierCreateOffer.tsx` — `handlePublish`
+Adicionar, logo após o bloco `invalidCuts` (~L1194), uma checagem que percorre `cuts` e bloqueia publish/draft se algum cut tem `floor > ask`:
+
+```
+const badFloor = cuts.find(c => {
+  const a = parseFloat(c.ask), f = parseFloat(c.floor);
+  return Number.isFinite(a) && Number.isFinite(f) && f > a;
+});
+if (badFloor) {
+  toast.error("Floor price cannot be greater than asking price. Fix the cut and try again.");
+  return;
+}
 ```
 
-A cada keystroke o valor é convertido kg ↔ lb e re-formatado com `.toFixed(2)`, então `7` vira `7.00` no próximo render. Pior em lbs, mas também afeta qualquer campo formatado a cada tecla.
+Aplicar também para `asDraft` (draft com floor inválido não deve ser salvo errado).
 
-## Solução
-
-Criar um componente único **`<MoneyInput>`** (e irmão `<QtyInput>`) que:
-
-- Usa `type="text"` + `inputMode="decimal"` (evita os bugs do `type=number` em Safari/Android e o auto-formatting do browser).
-- Mantém o **texto cru** que o usuário digita em estado local enquanto o campo está focado — **sem reformatar a cada tecla**.
-- Aceita só `0-9` + `.` (US). Bloqueia vírgula como decimal; se digitada, converte para `.` (ajuda quem vem de teclado BR/EU).
-- **No blur**: parse → arredonda a 2 casas → reformata como `1,234.56` (US) → emite `onChange` com o número canônico em string (ex.: `"7.33"`).
-- Em modo lbs: converte lb → kg só no blur (uma vez), nunca durante a digitação. Re-exibe em lb a partir do valor kg salvo.
-- Suporta placeholder, prefixo (`$`), sufixo (`/kg`, `/lb`), `min`, `max`, `disabled`, `aria-*`.
-
-Padrão de exibição em todo o sistema: **US (1,234.56)**. Sem preferência por usuário por ora (decidido).
-
-## Onde aplicar
-
-1. `src/pages/supplier/SupplierCreateOffer.tsx`
-   - Linha da tabela de cuts: `qty`, `ask`, `floor`, e os overrides de incoterm secundário (`cutIncoOverrides`).
-   - Linhas do "Add cut" form (qty/ask/floor inline).
-   - Quaisquer outros `<input type="number">` de $/peso no arquivo.
-2. `src/pages/supplier/SupplierCreateAuction.tsx`
-   - `qtyPh`, `askPh`, `floorPh` (~L711, 723, 735), freight (~L486), `US$/kg` start price (~L470, 926).
-3. Admin **on-behalf** de offer/auction — usa os mesmos componentes acima, então herda automaticamente. (Confirmado: admin reaproveita `SupplierCreateOffer`/`SupplierCreateAuction` quando cria em nome de supplier; nada extra precisa mudar lá.)
-4. `src/components/offer/NegotiationHandlingControl.tsx` se tiver campo $ similar (verificar no build).
-
-## Arquivos novos
-
-- `src/components/inputs/MoneyInput.tsx` — input $/kg ou $/lb com conversão no blur.
-- `src/components/inputs/QtyInput.tsx` — input de quantidade (inteiro, milhares com vírgula no blur).
-- `src/lib/numberFormat.ts` — helpers `parseUS(str): number | null`, `formatUS(num, decimals): string`, `sanitizeNumericTyping(str): string`.
-
-## Comportamento garantido
-
-- Digitar `7` → mostra `7` (sem `.00`).
-- Digitar `7.` → mostra `7.`.
-- Digitar `7.33` → mostra `7.33`.
-- Sair do campo → vira `7.33` (ou `7.00` se digitou só `7`).
-- Apagar tudo → fica vazio (não vira `0.00`).
-- Em lbs: digita `7.33` → no blur salva `3.32` kg internamente, exibe `7.33` lb.
-
-## Sem mudanças de schema / backend
-
-Armazenamento continua em kg; só o input muda. Nenhuma migration.
-
-## Validações já existentes mantidas
-
-`validatePricePair` (ask ≥ floor), `qty > 0`, `ask > 0` — continuam funcionando porque o `onChange` final entrega número parseável.
-
-## Decisão futura (não nesta tarefa)
-
-Preferência por usuário (US vs BR/EU). Fica registrado, mas só implementar depois quando houver demanda de supplier não-US.
-
-## Resumo técnico
-
-```text
-MoneyInput
- ├─ state: rawText (string)
- ├─ props: valueKg (number|string), unit ("kg"|"lbs"), onChangeKg(strKg)
- ├─ onFocus  → seta rawText = display atual sem grouping
- ├─ onChange → filtra chars, atualiza rawText (NÃO chama onChangeKg)
- ├─ onBlur   → parse rawText → converte para kg → onChangeKg(kg) → reformata display US
- └─ render   → focused ? rawText : formatUS(toDisplay(valueKg))
+Na linha 1331-1332, trocar a regra silenciosa por clamp seguro:
 ```
+const floorVal = Number.isFinite(floor) && floor > 0 && floor <= ask ? floor : ask;
+```
+(defesa em profundidade caso a validação acima seja burlada).
+
+### 2) `src/pages/supplier/SupplierCreateOffer.tsx` — edição inline da tabela de cuts
+A coluna `floor` da tabela principal (L2797-2802) usa `updateCutField` direto, sem validação. Adicionar feedback visual (borda vermelha + tooltip "Floor ≤ asking") quando `c.floor > c.ask`, reusando `validatePricePair`. Não bloquear digitação — bloquear no submit.
+
+### 3) `src/pages/supplier/SupplierCreateAuction.tsx` — submit
+A validação atual (L225-226) só roda no botão "add cut". Adicionar no handler de publish da auction a mesma checagem sobre todos os cuts já adicionados, com o mesmo toast. Aplicar clamp na hora de gravar `minimum_price` se houver.
+
+### 4) Admin on-behalf
+O fluxo admin on-behalf reusa `SupplierCreateOffer`/`SupplierCreateAuction` (mesma tela), então herda a correção automaticamente. Sem mudança extra.
+
+### 5) Backend (defesa em profundidade) — opcional, recomendado
+Adicionar um trigger `BEFORE INSERT OR UPDATE` em `offer_items` que rejeita `minimum_price > price`:
+```sql
+CREATE OR REPLACE FUNCTION public.enforce_floor_le_ask() RETURNS trigger ...
+  IF NEW.minimum_price IS NOT NULL AND NEW.price IS NOT NULL
+     AND NEW.minimum_price > NEW.price THEN
+    RAISE EXCEPTION 'minimum_price (%) cannot exceed price (%)', NEW.minimum_price, NEW.price;
+  END IF;
+```
+Garante que nenhum caminho (UI, API, edge function, import) consiga gravar floor > ask no futuro.
+
+## Escopo
+
+- Frontend: 2 arquivos (`SupplierCreateOffer.tsx`, `SupplierCreateAuction.tsx`).
+- Backend: 1 migration (trigger em `offer_items`) — confirmar se quer incluir.
+- Sem mudança de schema, sem mudança de UX além do toast e da borda vermelha.
+
+## Pergunta
+
+Incluo o **trigger de banco** (item 5) na mesma entrega? Recomendo fortemente — sem ele, qualquer bug futuro de frontend volta a permitir o problema.
