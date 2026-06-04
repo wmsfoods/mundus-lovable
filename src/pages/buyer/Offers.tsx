@@ -500,6 +500,18 @@ export default function BuyerOffers() {
     setAuctionsOnly(false);
   };
 
+  // Social engagement (likes / favorites / shares) for the visible cards.
+  const visibleIds = useMemo(() => filtered.map((o) => o.id), [filtered]);
+  const social = useOfferSocialBatch(visibleIds);
+
+  // Apply optional Liked / Favorited filters AFTER social loads.
+  const visible = useMemo(() => {
+    let copy = filtered;
+    if (filter.likedOnly) copy = copy.filter((o) => social.get(o.id).isLiked);
+    if (filter.favoritedOnly) copy = copy.filter((o) => social.get(o.id).isFavorited);
+    return copy;
+  }, [filtered, filter.likedOnly, filter.favoritedOnly, social]);
+
   return (
     <>
       {isMobile && (
