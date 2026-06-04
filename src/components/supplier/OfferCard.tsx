@@ -12,6 +12,7 @@ import { formatOfferNumber } from "@/lib/offerNumber";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useCutImages, CutThumb } from "@/hooks/useCutImages";
 import "@/styles/mundus-offer-card-tooltip.css";
+import { GlowCard } from "@/components/ui/spotlight-card";
 
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
