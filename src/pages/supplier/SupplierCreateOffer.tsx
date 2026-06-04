@@ -2637,7 +2637,7 @@ export default function SupplierCreateOffer() {
                   <th style={{ width: 90 }}>{ta("thSpec", "Spec")}</th>
                   {showGradeColumn && <th style={{ width: 100 }}>{ta("thGrade", "Grade")}</th>}
                   <th style={{ width: 120 }}>{ta("thPacking", "Packing")}</th>
-                  <th style={{ width: 80 }} title="USDA/SIF establishment number">{ta("thPlant", "Plant #")}</th>
+                  <th style={{ width: 80 }} title={ta("titleUsdaSif", "USDA/SIF establishment number")}>{ta("thPlant", "Plant #")}</th>
                   <th className="num" style={{ width: 100 }}>{qLbl}</th>
                   <th className="num">
                     {ta("thAsk", "Ask")} {pLbl}
@@ -2869,7 +2869,7 @@ export default function SupplierCreateOffer() {
                       />
                     </td>
                     <td>
-                      <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label="Remove cut">✕</button>
+                      <button type="button" className="cov4-rm-x" onClick={() => removeCut(i)} aria-label={ta("ariaRemoveCut", "Remove cut")}>✕</button>
                     </td>
                   </tr>
                 ))}
@@ -2909,7 +2909,7 @@ export default function SupplierCreateOffer() {
                             <button
                               type="button"
                               className="cov4-cut-trigger"
-                              aria-label="Pick cut"
+                              aria-label={ta("ariaPickCut", "Pick cut")}
                             >
                               {nf.cut ? (
                                 <span className="cov4-cut-trigger-v">{nf.cut}</span>
@@ -2996,7 +2996,7 @@ export default function SupplierCreateOffer() {
                               plant: p?.plant_number || "",
                             }));
                           }}
-                          title="Office-granted plant"
+                          title={ta("titleOfficePlant", "Office-granted plant")}
                           style={{ minWidth: 140 }}
                         >
                           <option value="">{ta("selectPlantPh", "Select plant…")}</option>
@@ -3014,7 +3014,7 @@ export default function SupplierCreateOffer() {
                           placeholder="e.g. 4554"
                           value={nf.plant}
                           onChange={(e) => setNf((p) => ({ ...p, plant: e.target.value }))}
-                          title="USDA/SIF establishment number"
+                          title={ta("titleUsdaSif", "USDA/SIF establishment number")}
                           style={{ width: 80 }}
                         />
                       )}
