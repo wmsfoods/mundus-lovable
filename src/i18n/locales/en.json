@@ -22,6 +22,7 @@
   "common": {
     "back": "Back",
     "cancel": "Cancel",
+    "rateLimited": "Too many requests. Try again in {{seconds}}s.",
     "proceed": "Proceed",
     "finish": "Finish",
     "submitting": "Submitting...",

@@ -21,6 +21,7 @@
   },
   "common": {
     "back": "返回",
+    "rateLimited": "请求过多。请在 {{seconds}} 秒后重试。",
     "cancel": "取消",
     "proceed": "继续",
     "finish": "完成",

@@ -21,6 +21,7 @@
   },
   "common": {
     "back": "Retour",
+    "rateLimited": "Trop de requêtes. Réessayez dans {{seconds}}s.",
     "cancel": "Annuler",
     "proceed": "Continuer",
     "finish": "Terminer",
