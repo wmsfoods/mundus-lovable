@@ -3199,6 +3199,77 @@ export default function SupplierCreateOffer() {
         )}
       </div>
 
+      {/* ═══════════ FOOTER ROW: Payment terms + Offer distribution (layout v3) ═══════════ */}
+      <div className="co3-footer-row">
+        <section className="co3-card">
+          <header className="co3-card-h">
+            <span className="co3-card-ic">💳</span>
+            <h2>{ta("paymentTerms", "Payment terms")}</h2>
+          </header>
+          <select className="cov4-pay-select" value={payTerm} onChange={(e) => setPayTerm(e.target.value)}>
+            {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
+          </select>
+          <p className="cov4-hint">{ta("payTermsHint", "From your supplier preferences — editable per offer")}</p>
+        </section>
+
+        <section id="sec-dist" className="co3-card">
+          <header className="co3-card-h">
+            <span className="co3-card-ic">📣</span>
+            <h2>{ta("offerDistribution", "Offer distribution")}</h2>
+          </header>
+          <div className="cov4-dist-opts">
+            <label className="cov4-dist-opt">
+              <input type="checkbox" checked={distMarketplace} onChange={() => setDistMarketplace((v) => !v)} />
+              <div>
+                <div className="cov4-dist-label">{ta("distMarketplace", "🏪 Publish to Marketplace")}</div>
+                <div className="cov4-dist-desc">{ta("distMarketplaceDesc", "Visible to all buyers on the platform")}</div>
+              </div>
+            </label>
+            <label className="cov4-dist-opt co3-dist-disabled" aria-disabled="true">
+              <input type="checkbox" checked={false} disabled />
+              <div>
+                <div className="cov4-dist-label">
+                  {ta("distAllCustomers", "📨 Send to all my customers")}
+                  <span className="co3-inconstruction">🚧 {ta("inConstruction", "In construction")}</span>
+                </div>
+                <div className="cov4-dist-desc">{ta("distAllCustomersDesc", "Notify all registered buyers")}</div>
+              </div>
+            </label>
+            <label className="cov4-dist-opt co3-dist-disabled" aria-disabled="true">
+              <input type="checkbox" checked={false} disabled />
+              <div>
+                <div className="cov4-dist-label">
+                  {ta("distMarketplaceSpecific", "🏪 Marketplace + 🎯 Specific customers")}
+                  <span className="co3-inconstruction">🚧 {ta("inConstruction", "In construction")}</span>
+                </div>
+                <div className="cov4-dist-desc">
+                  {ta("distMarketplaceSpecificDesc", "Public on the marketplace AND notify selected buyers")}
+                </div>
+              </div>
+            </label>
+            <label className="cov4-dist-opt co3-dist-disabled" aria-disabled="true">
+              <input type="checkbox" checked={false} disabled />
+              <div>
+                <div className="cov4-dist-label">
+                  {ta("distSpecific", "🎯 Specific customers")}
+                  <span className="co3-inconstruction">🚧 {ta("inConstruction", "In construction")}</span>
+                </div>
+                <div className="cov4-dist-desc">{ta("distSpecificDesc", "Choose which buyers receive this offer")}</div>
+              </div>
+            </label>
+          </div>
+        </section>
+      </div>
+
+      {/* ═══════════ Negotiation handling row (Manual vs Automatic) ═══════════ */}
+      <div className="co3-nego-row">
+        <NegotiationHandlingControl
+          mode={negotiationMode}
+          dial={negotiationDial}
+          onChange={(m, d) => { setNegotiationMode(m); setNegotiationDial(d); }}
+        />
+      </div>
+
       {/* FOOTER */}
       <footer className="cov4-footer">
         <div className="cov4-ft-l">
