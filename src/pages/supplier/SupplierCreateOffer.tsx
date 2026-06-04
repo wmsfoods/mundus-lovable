@@ -479,13 +479,6 @@ export default function SupplierCreateOffer() {
 
   const [showPreview, setShowPreview] = useState(false);
 
-  // Layout v3 — logistics shown as summary pills; full editor lives in a modal.
-  const [logisticsOpen, setLogisticsOpen] = useState(false);
-  // Apply-to-all controls (only enabled when more than 1 cut exists)
-  const [bulkPacking, setBulkPacking] = useState<string>("");
-  const [bulkPlantId, setBulkPlantId] = useState<string>("");
-  const [bulkSpec, setBulkSpec] = useState<string>("");
-
   /* Phase 3: per-cut plant selector is now sourced from `allowedPlants`
      (office-scoped, with family fallback). Legacy plant_numbers strings
      are still surfaced for display under `c.plant`. */
@@ -1781,71 +1774,9 @@ export default function SupplierCreateOffer() {
         </div>
       </header>
 
-      {/* ═══════════ LOGISTICS SUMMARY BAR (layout v3) ═══════════ */}
-      <div className="co3-logistics-bar">
-        <div className="co3-pill">
-          <span className="co3-pill-l">{ta("logisticsFrom", "FROM")}</span>
-          <span className="co3-pill-v">
-            {(() => {
-              const p = originPorts.find((x) => x.id === originPortId);
-              return p ? `${p.name}${p.code ? ` (${p.code})` : ""}` : "—";
-            })()}
-          </span>
-        </div>
-        <div className="co3-pill">
-          <span className="co3-pill-l">
-            {ta("logisticsTo", "TO · {{n}} COUNTRIES", { n: selMarkets.length })}
-          </span>
-          <span className="co3-pill-v">
-            {selMarkets.length === 0
-              ? "—"
-              : selMarkets.map((m) => m.f).join(" ") +
-                " · " +
-                selMarkets.reduce((acc, m) => acc + (mktCfg[m.id]?.sp.length || 0), 0) +
-                " " +
-                ta("ports", "ports")}
-          </span>
-        </div>
-        <div className="co3-pill">
-          <span className="co3-pill-l">{ta("logisticsContainer", "CONTAINER")}</span>
-          <span className="co3-pill-v">{`${ccCount}× ${csize} · ${temp}`}</span>
-        </div>
-        <div className="co3-pill">
-          <span className="co3-pill-l">{ta("logisticsIncoterm", "INCOTERM")}</span>
-          <span className="co3-pill-v">{selInco.length ? selInco.join(", ") : "—"}</span>
-        </div>
-        <div className="co3-pill">
-          <span className="co3-pill-l">{ta("logisticsCertifications", "CERTIFICATIONS")}</span>
-          <span className="co3-pill-v">
-            {certifications.length ? certifications.join(" · ") : "—"}
-          </span>
-        </div>
-        <button
-          type="button"
-          className="co3-edit-logistics"
-          onClick={() => setLogisticsOpen(true)}
-        >
-          ✎ {ta("editLogistics", "Edit logistics")}
-        </button>
-      </div>
-
-      <div className={`cov4-grid co3-single ${showPreview ? "with-preview" : ""}`}>
-        {/* ═══════════ LEFT PANEL — rendered as MODAL only (layout v3) ═══════════ */}
-        {logisticsOpen && (
-        <>
-        <div className="co3-modal-backdrop" onClick={() => setLogisticsOpen(false)} />
-        <aside className="cov4-panel cov4-panel-l co3-modal-panel" role="dialog" aria-modal="true">
-          <div className="co3-modal-h">
-            <h2>{ta("editLogistics", "Edit logistics")}</h2>
-            <button
-              type="button"
-              className="co3-modal-close"
-              onClick={() => setLogisticsOpen(false)}
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </div>
+      <div className={`cov4-grid ${showPreview ? "with-preview" : ""}`}>
+        {/* ═══════════ LEFT PANEL ═══════════ */}
+        <aside className="cov4-panel cov4-panel-l">
           <SectionHeader icon="🌍" t={ta("secMarketsTitle", "Markets & freight")} s={ta("secMarketsSub", "Countries, ports, freight costs")} />
 
           {/* ── Origin Port ─────────────────────────────────── */}
@@ -2445,9 +2376,97 @@ export default function SupplierCreateOffer() {
             </div>
           </div>
 
+          {/* Negotiation rules */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">{ta("negotiationRules", "Negotiation rules")}</div>
+            <label
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                gap: 10,
+                padding: 12,
+                border: "1px solid hsl(var(--border))",
+                borderRadius: 8,
+                background: "hsl(var(--muted))",
+                cursor: "pointer",
+              }}
+            >
+              <input
+                type="checkbox"
+                checked={allowQtyNegotiation}
+                onChange={(e) => setAllowQtyNegotiation(e.target.checked)}
+                style={{ marginTop: 3 }}
+              />
+              <div>
+                <div style={{ fontWeight: 600, fontSize: 13, color: "hsl(var(--foreground))" }}>
+                  {ta("allowQtyNeg", "Allow buyers to negotiate item quantities")}
+                </div>
+                <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
+                  {ta("allowQtyNegDesc", "When on, buyers may redistribute kg across items inside a chat proposal. The total offered kg must always match the original offer — partial loads are never allowed.")}
+                </div>
+              </div>
+            </label>
+          </div>
+
+          {/* Payment terms */}
+          <div className="cov4-sec">
+            <div className="cov4-sec-t">{ta("paymentTerms", "Payment terms")}</div>
+            <select className="cov4-pay-select" value={payTerm} onChange={(e) => setPayTerm(e.target.value)}>
+              {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
+            </select>
+            <p className="cov4-hint">{ta("payTermsHint", "From your supplier preferences — editable per offer")}</p>
+          </div>
+
+          {/* Negotiation handling (Manual vs Automatic) */}
+          <div className="cov4-sec">
+            <NegotiationHandlingControl
+              mode={negotiationMode}
+              dial={negotiationDial}
+              onChange={(m, d) => { setNegotiationMode(m); setNegotiationDial(d); }}
+            />
+          </div>
+
+          {/* Distribution */}
+          <div id="sec-dist" className="cov4-sec">
+            <div className="cov4-sec-t">{ta("offerDistribution", "Offer distribution")}</div>
+            <div className="cov4-dist-opts">
+              <label className="cov4-dist-opt">
+                <input type="checkbox" checked={distMarketplace} onChange={() => setDistMarketplace((v) => !v)} />
+                <div>
+                  <div className="cov4-dist-label">{ta("distMarketplace", "🏪 Publish to Marketplace")}</div>
+                  <div className="cov4-dist-desc">{ta("distMarketplaceDesc", "Visible to all buyers on the platform")}</div>
+                </div>
+              </label>
+              <label className="cov4-dist-opt">
+                <input type="checkbox" checked={distAllCustomers} onChange={() => setDistAllCustomers((v) => !v)} />
+                <div>
+                  <div className="cov4-dist-label">{ta("distAllCustomers", "📨 Send to all my customers")}</div>
+                  <div className="cov4-dist-desc">{ta("distAllCustomersDesc", "Notify all registered buyers")}</div>
+                </div>
+              </label>
+              <label className="cov4-dist-opt">
+                <input type="checkbox" checked={distSpecific} onChange={() => setDistSpecific((v) => !v)} />
+                <div>
+                  <div className="cov4-dist-label">{ta("distSpecific", "🎯 Specific customers")}</div>
+                  <div className="cov4-dist-desc">{ta("distSpecificDesc", "Choose which buyers receive this offer")}</div>
+                </div>
+              </label>
+            </div>
+            {distSpecific && (
+              <div className="cov4-cust-list">
+                {MOCK_CUSTOMERS.map((c) => {
+                  const on = selectedCustomers.includes(c.id);
+                  return (
+                    <button key={c.id} type="button" className={`cov4-cust-chip ${on ? "on" : ""}`} onClick={() => toggleCustomer(c.id)}>
+                      {on ? "✓ " : ""}{c.name}
+                      <span className="cov4-cust-country">{c.country}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </aside>
-        </>
-        )}
 
         {/* ═══════════ CENTER PANEL ═══════════ */}
         <main className="cov4-panel cov4-panel-c">
@@ -2519,76 +2538,6 @@ export default function SupplierCreateOffer() {
               <div className="cov4-pfill" style={{ width: `${fp}%`, background: fc }} />
             </div>
           </div>
-
-          {/* ═══════════ ✨ APPLY TO ALL — bulk setters (layout v3) ═══════════ */}
-          {cuts.length > 1 && (
-            <div className="co3-apply-bar">
-              <span className="co3-apply-l">✨ {ta("applyToAll", "APPLY TO ALL")}</span>
-              <div className="co3-apply-grp">
-                <label className="co3-apply-fld">
-                  <span>{ta("thPacking", "Packing")}</span>
-                  <select
-                    value={bulkPacking}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setBulkPacking(v);
-                      if (!v) return;
-                      setCuts((prev) => prev.map((x) => ({ ...x, pkg: v })));
-                    }}
-                  >
-                    <option value="">—</option>
-                    {Array.from(new Set(Object.values(PACKING_OPTIONS).flat())).map((p) => (
-                      <option key={p} value={p} title={PACKING_TOOLTIPS[p] || ""}>{p}</option>
-                    ))}
-                  </select>
-                </label>
-                <label className="co3-apply-fld">
-                  <span>{ta("thPlant", "Plant #")}</span>
-                  <select
-                    value={bulkPlantId}
-                    onChange={(e) => {
-                      const id = e.target.value;
-                      setBulkPlantId(id);
-                      if (!id) return;
-                      const p = plantById.get(id);
-                      setCuts((prev) =>
-                        prev.map((x) => ({
-                          ...x,
-                          plantId: id,
-                          plant: p?.plant_number || "",
-                        })),
-                      );
-                    }}
-                    disabled={allowedPlants.length === 0}
-                  >
-                    <option value="">—</option>
-                    {allowedPlants.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.plant_number ? `${p.plant_number} · ` : ""}
-                        {p.name}
-                        {p.country_code ? ` (${p.country_code})` : ""}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label className="co3-apply-fld">
-                  <span>{ta("thSpec", "Spec")}</span>
-                  <select
-                    value={bulkSpec}
-                    onChange={(e) => {
-                      const v = e.target.value;
-                      setBulkSpec(v);
-                      if (!v) return;
-                      setCuts((prev) => prev.map((x) => ({ ...x, spec: v })));
-                    }}
-                  >
-                    <option value="">—</option>
-                    {SPECS.map((s) => <option key={s} value={s}>{s}</option>)}
-                  </select>
-                </label>
-              </div>
-            </div>
-          )}
 
           {/* Cuts table */}
           <div id="sec-cuts" className="cov4-tblw">
@@ -3267,77 +3216,6 @@ export default function SupplierCreateOffer() {
             </div>
           </aside>
         )}
-      </div>
-
-      {/* ═══════════ FOOTER ROW: Payment terms + Offer distribution (layout v3) ═══════════ */}
-      <div className="co3-footer-row">
-        <section className="co3-card">
-          <header className="co3-card-h">
-            <span className="co3-card-ic">💳</span>
-            <h2>{ta("paymentTerms", "Payment terms")}</h2>
-          </header>
-          <select className="cov4-pay-select" value={payTerm} onChange={(e) => setPayTerm(e.target.value)}>
-            {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
-          </select>
-          <p className="cov4-hint">{ta("payTermsHint", "From your supplier preferences — editable per offer")}</p>
-        </section>
-
-        <section id="sec-dist" className="co3-card">
-          <header className="co3-card-h">
-            <span className="co3-card-ic">📣</span>
-            <h2>{ta("offerDistribution", "Offer distribution")}</h2>
-          </header>
-          <div className="cov4-dist-opts">
-            <label className="cov4-dist-opt">
-              <input type="checkbox" checked={distMarketplace} onChange={() => setDistMarketplace((v) => !v)} />
-              <div>
-                <div className="cov4-dist-label">{ta("distMarketplace", "🏪 Publish to Marketplace")}</div>
-                <div className="cov4-dist-desc">{ta("distMarketplaceDesc", "Visible to all buyers on the platform")}</div>
-              </div>
-            </label>
-            <label className="cov4-dist-opt co3-dist-disabled" aria-disabled="true">
-              <input type="checkbox" checked={false} disabled />
-              <div>
-                <div className="cov4-dist-label">
-                  {ta("distAllCustomers", "📨 Send to all my customers")}
-                  <span className="co3-inconstruction">🚧 {ta("inConstruction", "In construction")}</span>
-                </div>
-                <div className="cov4-dist-desc">{ta("distAllCustomersDesc", "Notify all registered buyers")}</div>
-              </div>
-            </label>
-            <label className="cov4-dist-opt co3-dist-disabled" aria-disabled="true">
-              <input type="checkbox" checked={false} disabled />
-              <div>
-                <div className="cov4-dist-label">
-                  {ta("distMarketplaceSpecific", "🏪 Marketplace + 🎯 Specific customers")}
-                  <span className="co3-inconstruction">🚧 {ta("inConstruction", "In construction")}</span>
-                </div>
-                <div className="cov4-dist-desc">
-                  {ta("distMarketplaceSpecificDesc", "Public on the marketplace AND notify selected buyers")}
-                </div>
-              </div>
-            </label>
-            <label className="cov4-dist-opt co3-dist-disabled" aria-disabled="true">
-              <input type="checkbox" checked={false} disabled />
-              <div>
-                <div className="cov4-dist-label">
-                  {ta("distSpecific", "🎯 Specific customers")}
-                  <span className="co3-inconstruction">🚧 {ta("inConstruction", "In construction")}</span>
-                </div>
-                <div className="cov4-dist-desc">{ta("distSpecificDesc", "Choose which buyers receive this offer")}</div>
-              </div>
-            </label>
-          </div>
-        </section>
-      </div>
-
-      {/* ═══════════ Negotiation handling row (Manual vs Automatic) ═══════════ */}
-      <div className="co3-nego-row">
-        <NegotiationHandlingControl
-          mode={negotiationMode}
-          dial={negotiationDial}
-          onChange={(m, d) => { setNegotiationMode(m); setNegotiationDial(d); }}
-        />
       </div>
 
       {/* FOOTER */}

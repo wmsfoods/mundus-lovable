@@ -1957,18 +1957,7 @@
         "stepCuts": "Add at least one product / cut",
         "stepInco": "Choose an incoterm",
         "stepDist": "Pick how to distribute the offer",
-        "stepPlants": "Pick a plant for every cut",
-        "logisticsFrom": "FROM",
-        "logisticsTo": "TO · {{n}} COUNTRIES",
-        "logisticsContainer": "CONTAINER",
-        "logisticsIncoterm": "INCOTERM",
-        "logisticsCertifications": "CERTIFICATIONS",
-        "ports": "ports",
-        "editLogistics": "Edit logistics",
-        "applyToAll": "APPLY TO ALL",
-        "inConstruction": "In construction",
-        "distMarketplaceSpecific": "🏪 Marketplace + 🎯 Specific customers",
-        "distMarketplaceSpecificDesc": "Public on the marketplace AND notify selected buyers"
+        "stepPlants": "Pick a plant for every cut"
       }
     },
     "home": {

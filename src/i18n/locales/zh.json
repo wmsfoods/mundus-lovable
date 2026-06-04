@@ -1952,18 +1952,7 @@
         "stepCuts": "至少添加一个产品 / 分割",
         "stepInco": "选择一个贸易术语",
         "stepDist": "选择如何分发报价",
-        "stepPlants": "为每个分割选择一个工厂",
-        "logisticsFrom": "从",
-        "logisticsTo": "至 · {{n}} 个国家",
-        "logisticsContainer": "集装箱",
-        "logisticsIncoterm": "贸易术语",
-        "logisticsCertifications": "认证",
-        "ports": "港口",
-        "editLogistics": "编辑物流",
-        "applyToAll": "应用到全部",
-        "inConstruction": "建设中",
-        "distMarketplaceSpecific": "🏪 市场 + 🎯 指定客户",
-        "distMarketplaceSpecificDesc": "在市场公开 并 通知指定买家"
+        "stepPlants": "为每个分割选择一个工厂"
       }
     },
     "home": {
