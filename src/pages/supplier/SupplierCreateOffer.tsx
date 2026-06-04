@@ -1760,7 +1760,7 @@ export default function SupplierCreateOffer() {
           </div>
         </div>
         <div className="cov4-hdr-r">
-          <div className="cov4-tgl" role="group" aria-label="Unit">
+          <div className="cov4-tgl" role="group" aria-label={ta("ariaUnit", "Unit")}>
             {(["kg", "lbs"] as const).map((u) => (
               <button
                 key={u}
