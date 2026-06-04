@@ -136,23 +136,21 @@ export default function PublicOfferCard({
             <span className="status-dot" style={{ background: "#16a34a" }} />
             {t("buyer.offers.status.active", "Available")}
           </span>
-          {offer.remaining_fcl != null &&
-            offer.total_fcl != null &&
-            offer.remaining_fcl < offer.total_fcl && (
-              <span
-                style={{
-                  padding: "3px 8px",
-                  borderRadius: 12,
-                  background: "#fef3c7",
-                  color: "#92400e",
-                  fontSize: 10,
-                  fontWeight: 600,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {offer.remaining_fcl} of {offer.total_fcl} FCL available
-              </span>
-            )}
+          {offer.total_fcl != null && (
+            <span
+              style={{
+                padding: "3px 8px",
+                borderRadius: 12,
+                background: offer.remaining_fcl != null && offer.remaining_fcl < offer.total_fcl ? "#fef3c7" : "#e6f7ed",
+                color: offer.remaining_fcl != null && offer.remaining_fcl < offer.total_fcl ? "#92400e" : "#15803d",
+                fontSize: 10,
+                fontWeight: 600,
+                whiteSpace: "nowrap",
+              }}
+            >
+              {(offer.remaining_fcl ?? offer.total_fcl)} of {offer.total_fcl} FCL available
+            </span>
+          )}
           {offer.is_halal && (
             <span
               style={{
