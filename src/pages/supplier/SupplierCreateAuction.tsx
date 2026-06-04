@@ -285,7 +285,7 @@ export default function SupplierCreateAuction() {
             className={`cov4-preview-btn ${showPreview ? "on" : ""}`}
             onClick={() => setShowPreview((v) => !v)}
           >
-            {showPreview ? "✕ Close preview" : "👁 Live preview"}
+            {showPreview ? ta("closePreview", "✕ Close preview") : ta("livePreview", "👁 Live preview")}
           </button>
         </div>
       </header>
@@ -767,7 +767,7 @@ export default function SupplierCreateAuction() {
         {showPreview && (
           <aside className="cov4-panel cov4-panel-r">
             <div className="cov4-prev-h">
-              <span className="cov4-prev-h-t">👁 Live preview</span>
+              <span className="cov4-prev-h-t">{ta("livePreview", "👁 Live preview")}</span>
               <span className="cov4-prev-h-s">Buyer's view</span>
             </div>
             <div className="cov4-prev-card oc--auction">
