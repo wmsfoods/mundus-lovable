@@ -13,9 +13,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useUserFullName } from "@/hooks/useUserFullName";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
+import { useSupplierSales } from "@/hooks/useSupplierSales";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
+import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { SupplierOfferCard } from "@/components/supplier/OfferCard";
 import ByOfficeRollup from "@/components/supplier/ByOfficeRollup";
+import { StatusBadge } from "@/lib/orderStatus";
 import { supabase } from "@/integrations/supabase/client";
 
 type SupplierKpi = {
@@ -88,6 +91,9 @@ export default function SupplierHome() {
       .join(" ");
   const { offers, loading } = useRealSupplierOffers();
   const dash = useSupplierDashboard();
+  const { data: sales, isLoading: salesLoading } = useSupplierSales();
+  const isMobile = useIsMobileShell();
+  const maxItems = isMobile ? 5 : 7;
 
   const kpis = useMemo<SupplierKpi[]>(() => {
     const v = (n: number | undefined) => (n === undefined ? "—" : n);
@@ -100,7 +106,8 @@ export default function SupplierHome() {
     ];
   }, [dash.activeOffers, dash.totalOffers, dash.closedDeals, dash.inNegotiation]);
 
-  const recentOffers = useMemo(() => offers.slice(0, 3), [offers]);
+  const recentOffers = useMemo(() => offers.slice(0, maxItems), [offers, maxItems]);
+  const recentSales = useMemo(() => sales.slice(0, maxItems), [sales, maxItems]);
 
   const [negCounts, setNegCounts] = useState<Record<string, { total: number; companies: number }>>({});
   useEffect(() => {
@@ -228,11 +235,70 @@ export default function SupplierHome() {
         </Link>
       </div>
       <div className="sh-card-row">
-        <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>
-          {officeFocus
-            ? t("supplier.home.emptySalesForOffice", { defaultValue: "No sales yet for {{office}}.", office: officeName })
-            : t("supplier.home.emptySales", { defaultValue: "No sales yet." })}
-        </div>
+        {salesLoading ? (
+          <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>
+            {t("common.loading", { defaultValue: "Loading…" })}
+          </div>
+        ) : recentSales.length === 0 ? (
+          <div className="empty-state" style={{ padding: 24, color: "#6b7280" }}>
+            {officeFocus
+              ? t("supplier.home.emptySalesForOffice", { defaultValue: "No sales yet for {{office}}.", office: officeName })
+              : t("supplier.home.emptySales", { defaultValue: "No sales yet." })}
+          </div>
+        ) : (
+          recentSales.map((s) => (
+            <button
+              key={s.id}
+              type="button"
+              onClick={() => navigate(`/supplier/sales/${s.dealId}`)}
+              className="sh-sale-card"
+              style={{
+                textAlign: "left",
+                background: "#fff",
+                border: "1px solid hsl(var(--border))",
+                borderRadius: 12,
+                padding: 14,
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                cursor: "pointer",
+                boxShadow: "0 1px 2px rgba(0,0,0,0.04)",
+              }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 8 }}>
+                <span style={{ fontWeight: 600, fontSize: 13, color: "var(--p800)" }}>{s.dealId}</span>
+                <StatusBadge status={s.status} />
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 600, color: "var(--fg)" }}>{s.product}</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 12px", fontSize: 12, color: "var(--fg-muted)" }}>
+                <div>
+                  <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--g500)" }}>
+                    {t("supplier.sales.col.buyer")}
+                  </div>
+                  <div style={{ color: "var(--fg)" }}>{s.buyer}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--g500)" }}>
+                    {t("supplier.sales.col.orderDate")}
+                  </div>
+                  <div style={{ color: "var(--fg)" }}>{s.orderDate}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--g500)" }}>
+                    {t("filters.originPort", { defaultValue: "Origin" })}
+                  </div>
+                  <div style={{ color: "var(--fg)" }}>{s.originPort || "—"}</div>
+                </div>
+                <div>
+                  <div style={{ fontSize: 10.5, textTransform: "uppercase", letterSpacing: "0.05em", color: "var(--g500)" }}>
+                    {t("supplier.sales.col.destination")}
+                  </div>
+                  <div style={{ color: "var(--fg)" }}>{s.destinationPort || "—"}</div>
+                </div>
+              </div>
+            </button>
+          ))
+        )}
       </div>
     </>
   );
