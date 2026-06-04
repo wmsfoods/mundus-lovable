@@ -1952,7 +1952,18 @@
         "stepCuts": "Ajoutez au moins un produit / découpe",
         "stepInco": "Choisissez un incoterm",
         "stepDist": "Choisissez comment distribuer l'offre",
-        "stepPlants": "Choisissez une usine pour chaque découpe"
+        "stepPlants": "Choisissez une usine pour chaque découpe",
+        "logisticsFrom": "DE",
+        "logisticsTo": "VERS · {{n}} PAYS",
+        "logisticsContainer": "CONTENEUR",
+        "logisticsIncoterm": "INCOTERM",
+        "logisticsCertifications": "CERTIFICATIONS",
+        "ports": "ports",
+        "editLogistics": "Modifier la logistique",
+        "applyToAll": "APPLIQUER À TOUS",
+        "inConstruction": "En construction",
+        "distMarketplaceSpecific": "🏪 Marketplace + 🎯 Clients spécifiques",
+        "distMarketplaceSpecificDesc": "Public sur le marketplace ET notifier les acheteurs sélectionnés"
       }
     },
     "home": {
