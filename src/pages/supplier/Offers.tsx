@@ -178,6 +178,7 @@ export default function SupplierOffers() {
             >
               <option value="all">{t("supplier.offers.statusFilter")}: {t("supplier.offers.allStatuses")}</option>
               <option value="active">{t("supplier.offers.status.active")}</option>
+              <option value="draft">{t("supplier.offers.status.draft")}</option>
               <option value="new">{t("supplier.offers.status.new")}</option>
               <option value="negotiating">{t("supplier.offers.status.negotiating")}</option>
               <option value="closed">{t("supplier.offers.status.closed")}</option>
