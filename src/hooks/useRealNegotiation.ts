@@ -111,6 +111,19 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
         { event: "*", schema: "public", table: "negotiation_messages", filter: `negotiation_id=eq.${negotiationId}` },
         () => setTick((n) => n + 1),
       )
+      // cut_rounds / counter_proposals don't carry negotiation_id, so subscribe
+      // unfiltered and let the refetch pull the fresh row. Cheap and avoids
+      // missing the engine's counter when it lands a beat after round_proposals.
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "cut_rounds" },
+        () => setTick((n) => n + 1),
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "counter_proposals" },
+        () => setTick((n) => n + 1),
+      )
       .subscribe();
     (async () => {
       const { data: row, error: err } = await supabase

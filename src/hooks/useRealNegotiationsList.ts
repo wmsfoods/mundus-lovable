@@ -167,10 +167,15 @@ function offerTitle(r: RealNegotiationRow): string {
  * `counter_proposals.price_per_kg`. Use that for counter rounds; fall back to
  * cut_rounds.price_per_kg for bid rounds.
  */
-function priceForCut(rawRound: number, c: RealNegotiationRow["rounds"][number]["cut_rounds"][number]): number {
+function priceForCut(
+  rawRound: number,
+  c: RealNegotiationRow["rounds"][number]["cut_rounds"][number],
+): number | null {
   if (roundTypeFor(rawRound) === "counter") {
     const cp = (c.counter_proposals ?? [])[0];
     if (cp && cp.price_per_kg != null) return Number(cp.price_per_kg);
+    // No counter price yet — don't fall back to the mirrored bid.
+    return null;
   }
   return Number(c.price_per_kg);
 }
@@ -181,10 +186,22 @@ function lastTotals(r: RealNegotiationRow) {
   let counter: number | null = null;
   let maxRoundDisplay = 1;
   for (const rp of r.rounds ?? []) {
-    const total = (rp.cut_rounds ?? []).reduce((s, c) => s + priceForCut(rp.round, c) * Number(c.quantity_kg), 0);
-    if (roundTypeFor(rp.round) === "bid") yourBid = total;
-    else counter = total;
-    maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
+    const cuts = rp.cut_rounds ?? [];
+    const prices = cuts.map((c) => priceForCut(rp.round, c));
+    const hasMissing = prices.some((p) => p == null);
+    if (roundTypeFor(rp.round) === "bid") {
+      if (!hasMissing) {
+        yourBid = cuts.reduce((s, c, i) => s + (prices[i] as number) * Number(c.quantity_kg), 0);
+      }
+      maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
+    } else {
+      // Counter round — only count it (and bump display round) if the engine/supplier
+      // has actually written counter_proposals for every cut. Otherwise treat as "not yet".
+      if (!hasMissing) {
+        counter = cuts.reduce((s, c, i) => s + (prices[i] as number) * Number(c.quantity_kg), 0);
+        maxRoundDisplay = Math.max(maxRoundDisplay, displayRoundFor(rp.round));
+      }
+    }
   }
   // No fallback: counter stays null when the other side hasn't replied yet (UI shows "—" / "Aguardando")
   return { yourBid, counter, displayRound: maxRoundDisplay };
@@ -276,15 +293,22 @@ function buildRoundsList(r: RealNegotiationRow): { rounds: BuyerNegotiationRound
   rps.forEach((rp, idx) => {
     const type = roundTypeFor(rp.round);
     const disp = displayRoundFor(rp.round);
+    const cuts = rp.cut_rounds ?? [];
+    const prices = cuts.map((c) => priceForCut(rp.round, c));
+    const hasMissing = prices.some((p) => p == null);
+    // Skip empty counter rounds (engine/supplier hasn't replied yet) so the UI
+    // doesn't render a fake counter equal to the mirrored bid.
+    if (type === "counter" && hasMissing) return;
     let total = 0;
-    for (const c of rp.cut_rounds ?? []) {
-      const price = priceForCut(rp.round, c);
+    cuts.forEach((c, i) => {
+      const price = prices[i];
+      if (price == null) return;
       const key = `${type}R${disp}UsdKg`;
       const m = perItem.get(c.offer_item_id) ?? {};
       m[key] = price;
       perItem.set(c.offer_item_id, m);
       total += price * Number(c.quantity_kg);
-    }
+    });
     rounds.push({
       type,
       round: disp,
