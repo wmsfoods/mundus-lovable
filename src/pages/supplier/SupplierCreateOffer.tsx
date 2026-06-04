@@ -367,7 +367,6 @@ export default function SupplierCreateOffer() {
   // Edit-only: tracks whether we finished hydrating the saved offer into state.
   // Save is blocked until this flips true to avoid wiping fields the user hasn't
   // touched yet (we delete + reinsert child rows on save).
-  const editHydratedRef = useRef(false);
   const [editHydrated, setEditHydrated] = useState(false);
   const { t } = useTranslation();
   const ta = (k: string, fb: string, opts?: any) =>
@@ -979,7 +978,6 @@ export default function SupplierCreateOffer() {
         }
       }
       // Mark hydration complete so the save guard can let through.
-      editHydratedRef.current = true;
       setEditHydrated(true);
     }
 
