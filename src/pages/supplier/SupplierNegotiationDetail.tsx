@@ -194,6 +194,26 @@ export default function SupplierNegotiationDetail() {
         </span>
         <div className="nd-h-text">
           <h1>{d.parentTitle}</h1>
+          <div
+            className="nd-buyer-prom"
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 8,
+              marginTop: 4,
+              padding: "4px 10px",
+              borderRadius: 999,
+              background: "rgba(139,34,82,0.10)",
+              color: "#8B2252",
+              fontWeight: 700,
+              fontSize: 13,
+            }}
+          >
+            <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", opacity: 0.8 }}>
+              {t("supplier.negotiations.detail.buyer", "Buyer")}
+            </span>
+            <span>{countryFlag(d.destinationCountry)} {d.buyerName}</span>
+          </div>
           <div className="nd-sub">
             ID <span className="mono">{d.buyerInternalId}</span> · {d.oppWmsRef} · {d.buyerName}
           </div>
