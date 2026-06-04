@@ -2114,7 +2114,7 @@ export default function SupplierCreateOffer() {
           {selMarkets.length === 0 && (
             <div className="cov4-empty">
               <span style={{ fontSize: 22 }}>📍</span>
-              <p>Select destination markets above</p>
+              <p>{ta("selectDestinations", "Select destination markets above")}</p>
             </div>
           )}
 
@@ -2144,7 +2144,7 @@ export default function SupplierCreateOffer() {
 
           {/* Incoterms */}
           <div id="sec-inco" className="cov4-sec">
-            <div className="cov4-sec-t">Incoterms</div>
+            <div className="cov4-sec-t">{ta("incoterms", "Incoterms")}</div>
             <div className="cov4-inco-grid">
               {INCOTERMS.map((ic) => {
                 const on = selInco.includes(ic.id);
@@ -2364,7 +2364,7 @@ export default function SupplierCreateOffer() {
 
           {/* Certifications (preserved) */}
           <div className="cov4-sec">
-            <div className="cov4-sec-t">Certifications</div>
+            <div className="cov4-sec-t">{ta("certifications", "Certifications")}</div>
             <div className="cov4-chips" style={{ marginBottom: 0 }}>
               {CERTIFICATION_OPTIONS.map((cert) => (
                 <button key={cert} type="button"
@@ -2378,7 +2378,7 @@ export default function SupplierCreateOffer() {
 
           {/* Negotiation rules */}
           <div className="cov4-sec">
-            <div className="cov4-sec-t">Negotiation rules</div>
+            <div className="cov4-sec-t">{ta("negotiationRules", "Negotiation rules")}</div>
             <label
               style={{
                 display: "flex",
@@ -2399,11 +2399,10 @@ export default function SupplierCreateOffer() {
               />
               <div>
                 <div style={{ fontWeight: 600, fontSize: 13, color: "hsl(var(--foreground))" }}>
-                  Allow buyers to negotiate item quantities
+                  {ta("allowQtyNeg", "Allow buyers to negotiate item quantities")}
                 </div>
                 <div style={{ fontSize: 12, color: "hsl(var(--muted-foreground))", marginTop: 2 }}>
-                  When on, buyers may redistribute kg across items inside a chat proposal.
-                  The total offered kg must always match the original offer — partial loads are never allowed.
+                  {ta("allowQtyNegDesc", "When on, buyers may redistribute kg across items inside a chat proposal. The total offered kg must always match the original offer — partial loads are never allowed.")}
                 </div>
               </div>
             </label>
@@ -2411,11 +2410,11 @@ export default function SupplierCreateOffer() {
 
           {/* Payment terms */}
           <div className="cov4-sec">
-            <div className="cov4-sec-t">Payment terms</div>
+            <div className="cov4-sec-t">{ta("paymentTerms", "Payment terms")}</div>
             <select className="cov4-pay-select" value={payTerm} onChange={(e) => setPayTerm(e.target.value)}>
               {PAY_TERMS.map((p) => <option key={p}>{p}</option>)}
             </select>
-            <p className="cov4-hint">From your supplier preferences — editable per offer</p>
+            <p className="cov4-hint">{ta("payTermsHint", "From your supplier preferences — editable per offer")}</p>
           </div>
 
           {/* Negotiation handling (Manual vs Automatic) */}
@@ -2429,27 +2428,27 @@ export default function SupplierCreateOffer() {
 
           {/* Distribution */}
           <div id="sec-dist" className="cov4-sec">
-            <div className="cov4-sec-t">Offer distribution</div>
+            <div className="cov4-sec-t">{ta("offerDistribution", "Offer distribution")}</div>
             <div className="cov4-dist-opts">
               <label className="cov4-dist-opt">
                 <input type="checkbox" checked={distMarketplace} onChange={() => setDistMarketplace((v) => !v)} />
                 <div>
-                  <div className="cov4-dist-label">🏪 Publish to Marketplace</div>
-                  <div className="cov4-dist-desc">Visible to all buyers on the platform</div>
+                  <div className="cov4-dist-label">{ta("distMarketplace", "🏪 Publish to Marketplace")}</div>
+                  <div className="cov4-dist-desc">{ta("distMarketplaceDesc", "Visible to all buyers on the platform")}</div>
                 </div>
               </label>
               <label className="cov4-dist-opt">
                 <input type="checkbox" checked={distAllCustomers} onChange={() => setDistAllCustomers((v) => !v)} />
                 <div>
-                  <div className="cov4-dist-label">📨 Send to all my customers</div>
-                  <div className="cov4-dist-desc">Notify all registered buyers</div>
+                  <div className="cov4-dist-label">{ta("distAllCustomers", "📨 Send to all my customers")}</div>
+                  <div className="cov4-dist-desc">{ta("distAllCustomersDesc", "Notify all registered buyers")}</div>
                 </div>
               </label>
               <label className="cov4-dist-opt">
                 <input type="checkbox" checked={distSpecific} onChange={() => setDistSpecific((v) => !v)} />
                 <div>
-                  <div className="cov4-dist-label">🎯 Specific customers</div>
-                  <div className="cov4-dist-desc">Choose which buyers receive this offer</div>
+                  <div className="cov4-dist-label">{ta("distSpecific", "🎯 Specific customers")}</div>
+                  <div className="cov4-dist-desc">{ta("distSpecificDesc", "Choose which buyers receive this offer")}</div>
                 </div>
               </label>
             </div>
