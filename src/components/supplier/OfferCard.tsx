@@ -276,7 +276,7 @@ export function SupplierOfferCard({
             offerId={o.id}
             counts={social}
             readOnly
-            shareUrl={`${window.location.origin}/public/offers/${o.id}`}
+            shareUrl={`${window.location.origin}/s/offer/${o.id}`}
             shareTitle="Mundus Offer"
           />
         </div>
