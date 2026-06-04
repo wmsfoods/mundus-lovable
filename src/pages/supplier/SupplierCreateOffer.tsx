@@ -3234,7 +3234,7 @@ export default function SupplierCreateOffer() {
               <button
                 type="button"
                 className={`cov4-ready-pill ${canPublish ? "ready" : ""}`}
-                aria-label="Publishing checklist"
+                aria-label={ta("ariaPubChecklist", "Publishing checklist")}
               >
                 <span className="cov4-ready-ring" aria-hidden>
                   <svg viewBox="0 0 36 36" width="22" height="22">
@@ -3261,7 +3261,7 @@ export default function SupplierCreateOffer() {
             </PopoverTrigger>
             <PopoverContent side="top" align="start" className="cov4-ready-pop p-0 w-[320px]">
               <div className="cov4-ready-head">
-                {canPublish ? "All set — you can publish 🎉" : "A few things left"}
+                {canPublish ? ta("readyAllSet", "All set — you can publish 🎉") : ta("readyFewLeft", "A few things left")}
               </div>
               <ul className="cov4-ready-list">
                 {publishSteps.map((s) => (
@@ -3282,14 +3282,19 @@ export default function SupplierCreateOffer() {
                 ))}
               </ul>
               <div className="cov4-ready-foot">
-                {selMarkets.length} market{selMarkets.length !== 1 ? "s" : ""} · {cuts.length} product / cut{cuts.length !== 1 ? "s" : ""} · {fmtWeight(tw, unit)} {wLbl}
+                {ta("footerSummary", "{{m}} market(s) · {{c}} product / cut(s) · {{w}} {{u}}", {
+                  m: selMarkets.length,
+                  c: cuts.length,
+                  w: fmtWeight(tw, unit),
+                  u: wLbl,
+                })}
               </div>
             </PopoverContent>
           </Popover>
         </div>
         <div className="cov4-ft-r">
-          <button type="button" className="cov4-btn-s" onClick={handleCancel}>Cancel</button>
-          <button type="button" className="cov4-btn-s" onClick={handleSaveDraft}>Save draft</button>
+          <button type="button" className="cov4-btn-s" onClick={handleCancel}>{ta("cancel", "Cancel")}</button>
+          <button type="button" className="cov4-btn-s" onClick={handleSaveDraft}>{ta("saveDraft", "Save draft")}</button>
           <button
             type="button"
             className="cov4-btn-p"
@@ -3297,9 +3302,9 @@ export default function SupplierCreateOffer() {
               if (!canPublish && nextStep) { scrollToSection(nextStep.anchor); return; }
               handlePublish();
             }}
-            title={nextStep ? `Next: ${nextStep.label}` : (isEditing ? "Save changes" : "Review & publish your offer")}
+            title={nextStep ? ta("titleNextStep", "Next: {{label}}", { label: nextStep.label }) : (isEditing ? ta("titleSaveChanges", "Save changes") : ta("titleReviewPublish", "Review & publish your offer"))}
           >
-            {isEditing ? "Save changes →" : "Review & publish →"}
+            {isEditing ? ta("btnSaveChanges", "Save changes →") : ta("btnReviewPublish", "Review & publish →")}
           </button>
         </div>
       </footer>
