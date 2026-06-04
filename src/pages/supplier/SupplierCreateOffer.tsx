@@ -1277,7 +1277,7 @@ export default function SupplierCreateOffer() {
           .insert({
             supplier_id: supplierId,
             supplier_name: supplierName,
-            status: "active",
+            status: asDraft ? "draft" : "active",
             origin_country: originCountryVal ?? (company?.country ?? null),
             origin_port: originPortLabel,
             origin_port_id: originPortId || null,
