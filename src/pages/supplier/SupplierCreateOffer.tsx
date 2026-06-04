@@ -891,11 +891,15 @@ export default function SupplierCreateOffer() {
       if (Object.keys(imgs).length) setCutImgs(imgs);
     }
 
-    toast.success(isEditing ? "Editing offer — make your changes and save" : "Cloned — review changes and publish");
+    toast.success(
+      isEditing
+        ? ta("toastEditingOffer", "Editing offer — make your changes and save")
+        : ta("toastCloned", "Cloned — review changes and publish"),
+    );
   }, [hydrateSource, isEditing, MARKETS, cutsByCategory, setUnit]);
 
   useEffect(() => {
-    if (dataError) toast.error(`Failed to load catalog: ${dataError}`);
+    if (dataError) toast.error(ta("toastCatalogFail", "Failed to load catalog: {{err}}", { err: dataError }));
   }, [dataError]);
 
   /* Auto-pick the primary pricing incoterm: prefer CFR, then CIF, else first */
@@ -932,7 +936,7 @@ export default function SupplierCreateOffer() {
   useEffect(() => {
     if (csize === "20ft" && tw > 0 && !fitsIn20) {
       setCsize("40ft");
-      toast.message("Switched to 40' FCL", {
+      toast.message(ta("toastSwitchedTo40", "Switched to 40' FCL"), {
         description: "Quantity exceeds a 20' FCL capacity (14,000 kg per container).",
       });
     }
@@ -940,7 +944,7 @@ export default function SupplierCreateOffer() {
 
   const pickCsize = (next: "20ft" | "40ft") => {
     if (next === "20ft" && tw > 0 && !fitsIn20) {
-      toast.error("Due to the quantity, this must be a 40' FCL container.");
+      toast.error(ta("toastMustBe40", "Due to the quantity, this must be a 40' FCL container."));
       return;
     }
     setCsize(next);
@@ -995,7 +999,7 @@ export default function SupplierCreateOffer() {
   const addCut = useCallback(() => {
     if (!nf.cut || !nf.qty || !nf.ask) return;
     if (!validatePricePair(nf.ask, nf.floor).ok) {
-      toast.error("Asking price must be ≥ floor price");
+      toast.error(ta("toastAskGteFloor", "Asking price must be ≥ floor price"));
       return;
     }
     const id = Date.now().toString();
@@ -1054,7 +1058,7 @@ export default function SupplierCreateOffer() {
       setShowAiImport(false);
       setAiMode(null);
       setAiInput("");
-      toast.success("AI parsed 2 cuts");
+      toast.success(ta("toastAiParsed", "AI parsed {{n}} cuts", { n: 2 }));
     }, 1500);
   }, []);
 
