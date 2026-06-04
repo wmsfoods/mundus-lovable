@@ -1637,6 +1637,13 @@
       "showingShort": "Showing {{shown}} of {{total}} offers",
       "newOffer": "New offer",
       "openOffer": "Open offer",
+      "deleteDraft": "Delete",
+      "deleteDraftTitle": "Delete this draft?",
+      "deleteDraftBody": "This draft will be permanently removed. This action cannot be undone.",
+      "deleteDraftCancel": "Cancel",
+      "deleteDraftConfirm": "Delete draft",
+      "deleteDraftSuccess": "Draft deleted",
+      "deleting": "Deleting...",
       "statusFilter": "Status",
       "allStatuses": "All statuses",
       "kpi": {
