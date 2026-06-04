@@ -27,6 +27,7 @@ import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { NumberInput } from "@/components/inputs/NumberInput";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useMyCustomers } from "@/hooks/useMyCustomers";
 import {
   useOfficeAllowedPlants,
   useOfficeAllowedMarkets,
