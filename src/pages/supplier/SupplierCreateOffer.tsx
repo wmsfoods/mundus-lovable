@@ -1551,14 +1551,16 @@ export default function SupplierCreateOffer() {
       }
 
       toast.success(
-        isEditing
+        asDraft
+          ? ta("toastDraftSaved", "Draft saved — {{n}}", { n: formatOfferNumber(offer.offer_number) })
+          : isEditing
           ? ta("toastOfferUpdated", "Offer {{n}} updated successfully!", { n: formatOfferNumber(offer.offer_number) })
           : ta("toastOfferPublished", "Offer {{n}} published successfully!", { n: formatOfferNumber(offer.offer_number) }),
       );
       try {
         const { auditLog } = await import("@/lib/auditLog");
         auditLog({
-          action: isEditing ? "offer.edited" : "offer.published",
+          action: asDraft ? "offer.draft_saved" : (isEditing ? "offer.edited" : "offer.published"),
           category: "offer",
           entityType: "offer",
           entityId: offer.id as string,
@@ -1568,7 +1570,7 @@ export default function SupplierCreateOffer() {
           },
         });
       } catch { /* never break flow */ }
-      if (fromRequest?.requestId) {
+      if (!asDraft && fromRequest?.requestId) {
         await supabase
           .from("buyer_requests")
           .update({ status: "with_responses", updated_at: new Date().toISOString() })
