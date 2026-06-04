@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Logo } from "@/components/Logo";
 import { XIcon, ChevronDownIcon } from "@/components/icons";
 import { ChevronLeft, ChevronRight } from "lucide-react";
@@ -50,6 +51,7 @@ function renderItem(
   item: SidebarItem,
   onClose: (() => void) | undefined,
   onProBadgeClick: ((i: SidebarItem) => void) | undefined,
+  newBadgeLabel: string,
 ) {
   const I = item.icon;
   if (item.external) {
@@ -71,7 +73,7 @@ function renderItem(
             onClick={onProBadgeClick ? () => onProBadgeClick(item) : undefined}
           />
         )}
-        {item.newBadge && <span className="nav-new-badge">NEW</span>}
+        {item.newBadge && <span className="nav-new-badge">{newBadgeLabel}</span>}
       </a>
     );
   }
@@ -95,7 +97,7 @@ function renderItem(
           title={onProBadgeClick ? "Preview premium" : undefined}
         />
       )}
-      {item.newBadge && <span className="nav-new-badge">NEW</span>}
+      {item.newBadge && <span className="nav-new-badge">{newBadgeLabel}</span>}
       {item.badge ? <span className="sb-item-badge">{item.badge}</span> : null}
     </NavLink>
   );
@@ -105,10 +107,12 @@ function SectionGroup({
   section,
   onClose,
   onProBadgeClick,
+  newBadgeLabel,
 }: {
   section: SidebarSection;
   onClose?: () => void;
   onProBadgeClick?: (i: SidebarItem) => void;
+  newBadgeLabel: string;
 }) {
   const { pathname } = useLocation();
   const hasActive = section.children.some((c) =>
@@ -134,7 +138,7 @@ function SectionGroup({
       </button>
       {open && (
         <div className="sb-section-body">
-          {section.children.map((it) => renderItem(it, onClose, onProBadgeClick))}
+          {section.children.map((it) => renderItem(it, onClose, onProBadgeClick, newBadgeLabel))}
         </div>
       )}
     </div>
@@ -152,6 +156,8 @@ export function Sidebar({
   collapsed = false,
   onToggleCollapsed,
 }: SidebarProps) {
+  const { t } = useTranslation();
+  const newBadgeLabel = t("shell.nav.new", { defaultValue: "NEW" });
   const initials = userName
     ? userName
         .split(" ")
@@ -181,8 +187,8 @@ export function Sidebar({
               type="button"
               className="sb-collapse-toggle"
               onClick={onToggleCollapsed}
-              aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-              title={collapsed ? "Expand" : "Collapse"}
+              aria-label={collapsed ? t("shell.nav.expandSidebar") : t("shell.nav.collapseSidebar")}
+              title={collapsed ? t("shell.nav.expand") : t("shell.nav.collapse")}
             >
               {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
             </button>
@@ -191,7 +197,7 @@ export function Sidebar({
             type="button"
             className="sb-close"
             onClick={onClose}
-            aria-label="Close menu"
+            aria-label={t("shell.nav.closeMenu")}
           >
             <XIcon size={20} />
           </button>
@@ -205,6 +211,7 @@ export function Sidebar({
                   section={entry}
                   onClose={onClose}
                   onProBadgeClick={onProBadgeClick}
+                  newBadgeLabel={newBadgeLabel}
                 />
               );
             }
@@ -213,7 +220,7 @@ export function Sidebar({
                 {entry.groupLabel && (
                   <div className="sb-group-label">{entry.groupLabel}</div>
                 )}
-                {renderItem(entry, onClose, onProBadgeClick)}
+                {renderItem(entry, onClose, onProBadgeClick, newBadgeLabel)}
               </div>
             );
           })}
