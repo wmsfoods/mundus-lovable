@@ -23,6 +23,8 @@ import {
   isFinalDisplayRound,
   nextExpirationIso,
   getDeductionFeedback,
+  getCutRoundPrice,
+  getRoundTotalUsd,
   type AgreedItem,
 } from "@/lib/negotiationEngine";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -123,8 +125,10 @@ export function CounterOfferModal({
       const disp = Math.ceil(rp.round / 2);
       const key = `${isBid ? "bid" : "counter"}R${disp}UsdKg`;
       for (const c of rp.cut_rounds ?? []) {
+        const price = getCutRoundPrice(rp.round, c);
+        if (price == null) continue;
         const m = perItem.get(c.offer_item_id) ?? {};
-        m[key] = Number(c.price_per_kg);
+        m[key] = price;
         perItem.set(c.offer_item_id, m);
       }
     }
@@ -168,7 +172,10 @@ export function CounterOfferModal({
     const filtered = rounds.filter((r) => (r.round % 2 === 1) === wantOdd);
     const last = filtered[filtered.length - 1];
     const map = new Map<string, number>();
-    for (const c of last?.cut_rounds ?? []) map.set(c.offer_item_id, Number(c.price_per_kg));
+    for (const c of last?.cut_rounds ?? []) {
+      const price = getCutRoundPrice(last.round, c);
+      if (price != null) map.set(c.offer_item_id, price);
+    }
     return map;
   }, [rounds, perspective]);
 
@@ -263,7 +270,8 @@ export function CounterOfferModal({
       const supplierRoundsAll = rounds.filter((r) => r.round % 2 === 0);
       const lastSupplierRound = supplierRoundsAll[supplierRoundsAll.length - 1];
       for (const c of lastSupplierRound?.cut_rounds ?? []) {
-        supplierPrevCounter.set(c.offer_item_id, Number(c.price_per_kg));
+        const price = getCutRoundPrice(lastSupplierRound.round, c);
+        if (price != null) supplierPrevCounter.set(c.offer_item_id, price);
       }
     }
     setAllCounters((it) => {
@@ -310,7 +318,8 @@ export function CounterOfferModal({
       const supplierRoundsAll = rounds.filter((r) => r.round % 2 === 0);
       const lastSupplierRound = supplierRoundsAll[supplierRoundsAll.length - 1];
       for (const c of lastSupplierRound?.cut_rounds ?? []) {
-        prevSupplierCounter.set(c.offer_item_id, Number(c.price_per_kg));
+        const price = getCutRoundPrice(lastSupplierRound.round, c);
+        if (price != null) prevSupplierCounter.set(c.offer_item_id, price);
       }
     }
     const initial: Record<string, number> = {};
@@ -402,7 +411,10 @@ export function CounterOfferModal({
         if (v == null) continue;
         const asking = Number(it.price);
         const prevCounter = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
-        const ceiling = prevCounter ? Number(prevCounter.price_per_kg) : asking;
+        const prevCounterPrice = prevCounter && lastSupplierRound
+          ? getCutRoundPrice(lastSupplierRound.round, prevCounter)
+          : null;
+        const ceiling = prevCounterPrice ?? asking;
         if (v > ceiling + 1e-9) {
           out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(2)} (your ${prevCounter ? "previous counter" : "asking price"})`;
         }
@@ -437,10 +449,13 @@ export function CounterOfferModal({
       const lastSupplierRound = supplierRounds[supplierRounds.length - 1];
       for (const it of openItems) {
         const prev = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
+        const prevPrice = prev && lastSupplierRound
+          ? getCutRoundPrice(lastSupplierRound.round, prev)
+          : null;
         if (prev) {
           map.set(it.id, {
             kind: "max",
-            price: Number(prev.price_per_kg),
+            price: prevPrice ?? Number(it.price),
             label: "your previous counter",
           });
         } else {
@@ -818,10 +833,8 @@ export function CounterOfferModal({
           <div className="flex flex-wrap items-center gap-1 text-xs">
             {rounds.map((r, idx) => {
               const isBid = r.round % 2 === 1;
-              const total = (r.cut_rounds ?? []).reduce(
-                (s, c) => s + Number(c.price_per_kg) * Number(c.quantity_kg),
-                0,
-              );
+              const total = getRoundTotalUsd(r);
+              if (total == null) return null;
               return (
                 <span key={r.id} className="flex items-center gap-1">
                   {idx > 0 && <span className="text-muted-foreground">→</span>}
