@@ -1,59 +1,81 @@
-## Bug
+## Bug: Edit Offer perde dados
 
-O sistema deixou um supplier publicar uma offer com **floor (preço mínimo) maior que o ask (preço pedido)**. Isso quebra a lógica de negociação inteira — o "piso" virou um teto.
+Ao clicar **Edit** numa offer publicada, o sistema mostra a tela de criação mas **não traz** vários campos que já estavam salvos. Quando o supplier salva, mudanças desaparecem porque o estado nunca foi populado corretamente.
 
-A função `validatePricePair(ask, floor)` existe e checa `ask >= floor`, mas ela só é usada nos campos do "add new cut" e na exibição da tabela de derivados. **O `handlePublish` não revalida a lista final de cuts antes de inserir no banco**, então qualquer cut com floor > ask passa direto. Pior: na linha 1332 o código faz `floorVal = floor > 0 ? floor : ask` — aceita o floor mesmo sendo maior que o ask. Em `SupplierCreateAuction` a validação só roda no add-cut, não no submit final.
+### Causa raiz
 
-## Correção
+`OfferDetail.handleEdit` constrói um objeto `editOffer` parcial — busca poucas colunas e ignora children importantes — e `SupplierCreateOffer` reusa o mesmo `useEffect` de **clone** para hidratar (`hydrateSource = editOffer ?? cloneFrom`). Clone foi feito para criar uma offer **nova** (limpa campos opcionais), então:
 
-### 1) `src/pages/supplier/SupplierCreateOffer.tsx` — `handlePublish`
-Adicionar, logo após o bloco `invalidCuts` (~L1194), uma checagem que percorre `cuts` e bloqueia publish/draft se algum cut tem `floor > ask`:
+**Não são trazidos nem na query nem na hidratação:**
+
+- `plant_id` / plant por cut (`offer_items.plant_id`) — some sempre.
+- `packaging` (`offer_items.packaging`) — `pkg` é resetado para `"\n"`.
+- Marbling/grade do cut (`gr`) — resetado para `"\n"`.
+- Notes por cut (`notes`).
+- Portos selecionados por mercado (`offer_markets` traz só o país, não os ports).
+- Freight por porto / freight uniforme (tabela `freight_options`).
+- Distribuição (marketplace, specific customers, exclude lists).
+- `incoExtras` além de `exwCity` (cif insurance %, etc.).
+- `shipment_month/year`.
+- Imagens custom dos cuts (`customer_product_images`).
+- `negotiation_mode/dial/allow_quantity_negotiation` — já carregado em effect separado (ok, mas isolado).
+
+**Save (`handlePublish` em modo edit):**
+
+- Faz `DELETE` em `offer_items`, `offer_allowed_incoterms`, `offer_markets`, `freight_options` e re-insere a partir do estado. Como o estado está incompleto/zerado, os children são re-gravados **piores que o original** (plant, packaging, freight zerados).
+- Esse é o motivo de "não salvou as alterações" — o que foi alterado pelo usuário é gravado, **mas o que não foi tocado também é apagado** porque o estado não refletia o salvo.
+
+## Plano
+
+### 1) Expandir a query em `OfferDetail.handleEdit` (e por consistência em `handleClone`)
+
+Buscar TUDO o que a tela precisa:
 
 ```
-const badFloor = cuts.find(c => {
-  const a = parseFloat(c.ask), f = parseFloat(c.floor);
-  return Number.isFinite(a) && Number.isFinite(f) && f > a;
-});
-if (badFloor) {
-  toast.error("Floor price cannot be greater than asking price. Fix the cut and try again.");
-  return;
-}
+offers: shipment_month, shipment_year, plant_id, office_id,
+        negotiation_mode, negotiation_dial, allow_quantity_negotiation,
+        ...todos os campos já listados
+offer_items: + packaging, plant_id,
+             customer_product: + image_url (se houver), notes
+offer_markets: + selected_port_ids (via offer_markets ↔ ports — confirmar relação;
+               se não houver hoje, usar freight_options para inferir ports ativos)
+freight_options: market_id, port_id, freight_per_kg, uniform flag
+offer_distributions: tipo, customer_ids
 ```
 
-Aplicar também para `asDraft` (draft com floor inválido não deve ser salvo errado).
+Adicionar esses campos ao objeto `editOffer` enviado em `navigate("/supplier/offers/new", { state: { editOffer } })`.
 
-Na linha 1331-1332, trocar a regra silenciosa por clamp seguro:
-```
-const floorVal = Number.isFinite(floor) && floor > 0 && floor <= ask ? floor : ask;
-```
-(defesa em profundidade caso a validação acima seja burlada).
+### 2) Criar fluxo de hidratação dedicado para `editOffer`
 
-### 2) `src/pages/supplier/SupplierCreateOffer.tsx` — edição inline da tabela de cuts
-A coluna `floor` da tabela principal (L2797-2802) usa `updateCutField` direto, sem validação. Adicionar feedback visual (borda vermelha + tooltip "Floor ≤ asking") quando `c.floor > c.ask`, reusando `validatePricePair`. Não bloquear digitação — bloquear no submit.
+Em `SupplierCreateOffer.tsx`, separar do effect de clone:
 
-### 3) `src/pages/supplier/SupplierCreateAuction.tsx` — submit
-A validação atual (L225-226) só roda no botão "add cut". Adicionar no handler de publish da auction a mesma checagem sobre todos os cuts já adicionados, com o mesmo toast. Aplicar clamp na hora de gravar `minimum_price` se houver.
+- Manter o effect de **clone** intocado (usa defaults vazios para criar offer nova).
+- Adicionar **novo effect** que dispara só quando `isEditing`, e hidrata:
+  - `setCuts` com `pkg`, `gr`, `notes`, `plant`, `plantId`, `cutImage` preenchidos a partir dos `items`.
+  - `setMktCfg` com `sp` (selected ports), `gf` (general freight), `pf` (per-port freight) reconstruídos das tabelas `freight_options` + `offer_markets`.
+  - `setIncoExtras` completo.
+  - `setDistMarketplace/Specific/All/SelectedCustomers` a partir de `offer_distributions`.
+  - `setOriginPortId`, `setShipmentMonth/Year` se aplicável.
 
-### 4) Admin on-behalf
-O fluxo admin on-behalf reusa `SupplierCreateOffer`/`SupplierCreateAuction` (mesma tela), então herda a correção automaticamente. Sem mudança extra.
+### 3) Tornar `handlePublish` em modo edit menos destrutivo
 
-### 5) Backend (defesa em profundidade) — opcional, recomendado
-Adicionar um trigger `BEFORE INSERT OR UPDATE` em `offer_items` que rejeita `minimum_price > price`:
-```sql
-CREATE OR REPLACE FUNCTION public.enforce_floor_le_ask() RETURNS trigger ...
-  IF NEW.minimum_price IS NOT NULL AND NEW.price IS NOT NULL
-     AND NEW.minimum_price > NEW.price THEN
-    RAISE EXCEPTION 'minimum_price (%) cannot exceed price (%)', NEW.minimum_price, NEW.price;
-  END IF;
-```
-Garante que nenhum caminho (UI, API, edge function, import) consiga gravar floor > ask no futuro.
+Hoje deleta children e reinsere. Mantém a estratégia (mais simples que diff), **mas** só execute esse caminho **depois** que o estado foi hidratado por completo. Adicionar guard: se `isEditing && !hydratedFully`, bloquear save com toast "Loading offer data — try again in a moment".
 
-## Escopo
+Marcar `hydratedFully = true` ao final do novo effect.
 
-- Frontend: 2 arquivos (`SupplierCreateOffer.tsx`, `SupplierCreateAuction.tsx`).
-- Backend: 1 migration (trigger em `offer_items`) — confirmar se quer incluir.
-- Sem mudança de schema, sem mudança de UX além do toast e da borda vermelha.
+### 4) Sanidade visual
 
-## Pergunta
+Ao abrir Edit, exibir um spinner curto ou skeleton enquanto a hidratação roda, para o supplier não começar a editar campos vazios e perder a mudança quando o effect popular depois.
 
-Incluo o **trigger de banco** (item 5) na mesma entrega? Recomendo fortemente — sem ele, qualquer bug futuro de frontend volta a permitir o problema.
+## Escopo / arquivos
+
+- `src/pages/supplier/OfferDetail.tsx` — expandir query do Edit (e Clone).
+- `src/pages/supplier/SupplierCreateOffer.tsx` — separar effect de edit, hidratar todos campos, guard no save.
+- Sem mudança de schema.
+- Admin on-behalf usa a mesma tela → herda a correção. Confirmar se existe outra entrada de Edit (ex: `AdminOfferDetail`) e replicar a query expandida lá também.
+
+## Perguntas antes de implementar
+
+1. **Distribuição (marketplace vs specific customers)** — confirmo existência da tabela `offer_distributions` (vejo na lista de tabelas). Quer que eu hidrate também distribution no Edit? (recomendo sim, senão "exclusões" somem ao salvar) SIM
+2. **Edit deve travar campos que não podem mudar** após publicação (ex: supplier, offer number, origem) — ou tudo é editável como já é hoje? Se nao tiver negociacoes, sim TUDO
+3. Existe `AdminOfferDetail` com Edit próprio? Se sim, replico a mesma correção lá. NAO SEI
