@@ -136,9 +136,7 @@ export function useOffers(): UseOffersResult {
       //   top of the RPC's SETOF offers result via PostgREST.
       // - When no buyer company (admin / supplier viewing own / anon flows),
       //   keep the legacy direct query — preserving original behavior.
-      let query: ReturnType<typeof supabase.from<"offers">> extends never
-        ? any
-        : any;
+      let query: any;
       if (buyerCompanyId) {
         query = (supabase.rpc as any)("get_offers_visible_to_buyer", {
           p_buyer_company_id: buyerCompanyId,
