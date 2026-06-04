@@ -61,10 +61,13 @@ export function SupplierOfferCard({
   const incotermLabel = extraIncoterms > 0
     ? `${firstIncoterm} +${extraIncoterms}`
     : fmtIc(firstIncoterm);
-  const visibleCuts = o.items.slice(0, 3);
+  const visibleCuts = o.items.slice(0, 2);
   const moreCuts = Math.max(0, o.items.length - visibleCuts.length);
   const d = derive(o);
   const cutImgs = useCutImages(o.items.map((it) => it.name));
+  const titleText = o.items.length > 1
+    ? t("supplier.offers.card.mixedTitle", { count: o.items.length, defaultValue: `Mixed Container — ${o.items.length} cuts` })
+    : t("supplier.offers.card.fullContainerOneCut", { defaultValue: "Full Container — 1 Cut" });
 
   return (
     <article
@@ -143,26 +146,39 @@ export function SupplierOfferCard({
         </div>
       </div>
 
+      {o.originCountry && (
+        <div
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 6,
+            marginTop: 6,
+            fontSize: 12,
+            color: "#374151",
+            fontWeight: 500,
+          }}
+        >
+          <span style={{ color: "#9ca3af", fontWeight: 600, fontSize: 10, letterSpacing: "0.04em", textTransform: "uppercase" }}>
+            {t("supplier.offers.card.origin")}:
+          </span>
+          {o.originCountryCode && <FlagSVG code={o.originCountryCode} size={13} />}
+          {o.originCountry}
+        </div>
+      )}
+
       <div className="oc-title-block">
-        <div className="oc-title">{o.title}</div>
-        {o.mixed ? (
-          <div className="cut-chips">
-            {visibleCuts.map((it) => (
-              <span key={it.name} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
-                <CutThumb src={cutImgs[it.name]} size={20} />
-                {it.name}
-              </span>
-            ))}
-            {moreCuts > 0 && (
-              <span className="cut-chip is-more">{t("supplier.offers.card.moreCuts", { count: moreCuts })}</span>
-            )}
-          </div>
-        ) : (
-          <div className="oc-cut-text" style={{ display: "inline-flex", alignItems: "center" }}>
-            <CutThumb src={cutImgs[o.items[0]?.name ?? ""]} size={20} />
-            {o.cutsLabel}
-          </div>
-        )}
+        <div className="oc-title">{titleText}</div>
+        <div className="cut-chips">
+          {visibleCuts.map((it) => (
+            <span key={it.name} className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
+              <CutThumb src={cutImgs[it.name]} size={20} />
+              {it.name}
+            </span>
+          ))}
+          {moreCuts > 0 && (
+            <span className="cut-chip is-more">{t("supplier.offers.card.moreCuts", { count: moreCuts })}</span>
+          )}
+        </div>
       </div>
 
       <div className="oc-meta-grid">
