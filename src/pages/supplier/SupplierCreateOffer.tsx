@@ -1123,7 +1123,8 @@ export default function SupplierCreateOffer() {
   const multiInco = selInco.length > 1 && !!primaryInco;
   const cifInsuranceNum = parseFloat(incoExtras.cifInsurance || "0") || 0;
 
-  const handleSaveDraft = () => toast("Draft saved");
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const handleSaveDraft = () => { void handlePublish({ asDraft: true }); };
 
   const applyMarketplaceRate = useCallback((rate: MarketplaceRate) => {
     const market = MARKETS.find((m) => m.id === rate.countryCode);
