@@ -1,0 +1,3 @@
+ALTER TABLE public.offers ADD COLUMN IF NOT EXISTS specific_buyer_company_ids uuid[];
+CREATE INDEX IF NOT EXISTS offers_specific_buyer_company_ids_gin ON public.offers USING GIN (specific_buyer_company_ids);
+COMMENT ON COLUMN public.offers.specific_buyer_company_ids IS 'When non-null and non-empty, this offer is only visible in the buyer feed to buyers whose company_id is in the array. NULL = no targeting (visible to all, current behavior).';

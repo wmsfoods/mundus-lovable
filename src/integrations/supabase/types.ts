@@ -5470,6 +5470,7 @@ export type Database = {
           request_id: string | null
           shipment_month: number
           shipment_year: number
+          specific_buyer_company_ids: string[] | null
           status: string | null
           supplier_id: string
           supplier_name: string
@@ -5503,6 +5504,7 @@ export type Database = {
           request_id?: string | null
           shipment_month: number
           shipment_year: number
+          specific_buyer_company_ids?: string[] | null
           status?: string | null
           supplier_id: string
           supplier_name: string
@@ -5536,6 +5538,7 @@ export type Database = {
           request_id?: string | null
           shipment_month?: number
           shipment_year?: number
+          specific_buyer_company_ids?: string[] | null
           status?: string | null
           supplier_id?: string
           supplier_name?: string
