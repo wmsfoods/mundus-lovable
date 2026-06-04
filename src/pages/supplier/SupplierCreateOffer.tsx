@@ -2561,7 +2561,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "global") ? 0.5 : 1,
                   }}
                 >
-                  🌐 Global {usToggleProteinLabel}Cuts
+                  {ta("tabGlobalCuts", "🌐 Global {{p}}Cuts", { p: usToggleProteinLabel })}
                 </button>
                 <button
                   type="button"
@@ -2581,7 +2581,7 @@ export default function SupplierCreateOffer() {
                     opacity: (cuts.length > 0 && cutRegion !== "us") ? 0.5 : 1,
                   }}
                 >
-                  🇺🇸 US {usToggleProteinLabel}Cuts (IMPS)
+                  {ta("tabUsCuts", "🇺🇸 US {{p}}Cuts (IMPS)", { p: usToggleProteinLabel })}
                 </button>
                 {cuts.length > 0 && (
                   <button
@@ -2623,22 +2623,22 @@ export default function SupplierCreateOffer() {
             <table className="cov4-tbl">
               <thead>
                 <tr>
-                  <th style={{ width: 48 }}>Photo</th>
-                  <th style={{ width: 120 }}>Protein</th>
-                  <th style={{ width: 180 }}>Item / Cut</th>
-                  <th style={{ width: 90 }}>Spec</th>
-                  {showGradeColumn && <th style={{ width: 100 }}>Grade</th>}
-                  <th style={{ width: 120 }}>Packing</th>
-                  <th style={{ width: 80 }} title="USDA/SIF establishment number">Plant #</th>
+                  <th style={{ width: 48 }}>{ta("thPhoto", "Photo")}</th>
+                  <th style={{ width: 120 }}>{ta("thProtein", "Protein")}</th>
+                  <th style={{ width: 180 }}>{ta("thItemCut", "Item / Cut")}</th>
+                  <th style={{ width: 90 }}>{ta("thSpec", "Spec")}</th>
+                  {showGradeColumn && <th style={{ width: 100 }}>{ta("thGrade", "Grade")}</th>}
+                  <th style={{ width: 120 }}>{ta("thPacking", "Packing")}</th>
+                  <th style={{ width: 80 }} title="USDA/SIF establishment number">{ta("thPlant", "Plant #")}</th>
                   <th className="num" style={{ width: 100 }}>{qLbl}</th>
                   <th className="num">
-                    Ask {pLbl}
+                    {ta("thAsk", "Ask")} {pLbl}
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
                   </th>
                   <th className="num">
-                    Floor {pLbl} <span style={{ fontWeight: 400, opacity: 0.7, textTransform: "none" }}>(optional)</span>
+                    {ta("thFloor", "Floor")} {pLbl} <span style={{ fontWeight: 400, opacity: 0.7, textTransform: "none" }}>{ta("thOptional", "(optional)")}</span>
                     {multiInco && (
                       <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[primaryInco]?.bg, color: INCO_BADGE[primaryInco]?.fg, fontSize: 9, fontWeight: 700 }}>{primaryInco}</span>
                     )}
@@ -2646,16 +2646,16 @@ export default function SupplierCreateOffer() {
                   {multiInco && secondaryIncos.map((s) => (
                     <Fragment key={`h-${s}`}>
                       <th className="num">
-                        Ask {pLbl}
+                        {ta("thAsk", "Ask")} {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                       <th className="num">
-                        Floor {pLbl}
+                        {ta("thFloor", "Floor")} {pLbl}
                         <span style={{ marginLeft: 4, padding: "1px 5px", borderRadius: 999, background: INCO_BADGE[s]?.bg, color: INCO_BADGE[s]?.fg, fontSize: 9, fontWeight: 700 }}>{s}</span>
                       </th>
                     </Fragment>
                   ))}
-                  <th style={{ width: 120 }}>Notes</th>
+                  <th style={{ width: 120 }}>{ta("thNotes", "Notes")}</th>
                   <th style={{ width: 28 }} aria-label="actions" />
                 </tr>
               </thead>
