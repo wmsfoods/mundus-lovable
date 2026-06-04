@@ -1352,7 +1352,9 @@
         "markets": "选择至少一个目标市场",
         "cuts": "添加至少一个产品部位",
         "inco": "选择一个贸易术语"
-      }
+      },
+      "livePreview": "👁 实时预览",
+      "closePreview": "✕ 关闭预览"
     },
     "outreach": {
       "navLabel": "推广",

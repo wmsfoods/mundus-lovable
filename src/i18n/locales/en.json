@@ -1202,7 +1202,9 @@
         "markets": "Select at least one destination market",
         "cuts": "Add at least one PRODUCT / CUT",
         "inco": "Choose an incoterm"
-      }
+      },
+      "livePreview": "👁 Live preview",
+      "closePreview": "✕ Close preview"
     },
     "outreach": {
       "navLabel": "Outreach",

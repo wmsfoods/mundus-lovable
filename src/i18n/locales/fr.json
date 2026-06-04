@@ -1197,7 +1197,9 @@
         "markets": "Sélectionner au moins un marché de destination",
         "cuts": "Ajouter au moins une découpe de produit",
         "inco": "Choisir un incoterm"
-      }
+      },
+      "livePreview": "👁 Aperçu en direct",
+      "closePreview": "✕ Fermer l'aperçu"
     },
     "outreach": {
       "navLabel": "Prospection",

@@ -1202,7 +1202,9 @@
         "markets": "Seleccione al menos un mercado destino",
         "cuts": "Agregue al menos un corte",
         "inco": "Elija un Incoterm"
-      }
+      },
+      "livePreview": "👁 Vista previa en vivo",
+      "closePreview": "✕ Cerrar vista previa"
     },
     "outreach": {
       "navLabel": "Outreach",
