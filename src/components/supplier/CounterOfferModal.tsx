@@ -411,7 +411,10 @@ export function CounterOfferModal({
         if (v == null) continue;
         const asking = Number(it.price);
         const prevCounter = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
-        const ceiling = prevCounter ? Number(prevCounter.price_per_kg) : asking;
+        const prevCounterPrice = prevCounter && lastSupplierRound
+          ? getCutRoundPrice(lastSupplierRound.round, prevCounter)
+          : null;
+        const ceiling = prevCounterPrice ?? asking;
         if (v > ceiling + 1e-9) {
           out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(2)} (your ${prevCounter ? "previous counter" : "asking price"})`;
         }
@@ -446,10 +449,13 @@ export function CounterOfferModal({
       const lastSupplierRound = supplierRounds[supplierRounds.length - 1];
       for (const it of openItems) {
         const prev = lastSupplierRound?.cut_rounds?.find((c) => c.offer_item_id === it.id);
+        const prevPrice = prev && lastSupplierRound
+          ? getCutRoundPrice(lastSupplierRound.round, prev)
+          : null;
         if (prev) {
           map.set(it.id, {
             kind: "max",
-            price: Number(prev.price_per_kg),
+            price: prevPrice ?? Number(it.price),
             label: "your previous counter",
           });
         } else {
