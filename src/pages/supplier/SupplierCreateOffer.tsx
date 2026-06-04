@@ -1364,6 +1364,7 @@ export default function SupplierCreateOffer() {
               updated_at: new Date().toISOString(),
               specific_buyer_company_ids:
                 distSpecific && selectedCustomers.length > 0 ? selectedCustomers : null,
+              all_customers: !!distAllCustomers,
             })
             .eq("id", editOffer.offerId);
           if (error) throw error;
@@ -1408,6 +1409,7 @@ export default function SupplierCreateOffer() {
             negotiation_dial: negotiationDial,
             specific_buyer_company_ids:
               distSpecific && selectedCustomers.length > 0 ? selectedCustomers : null,
+            all_customers: !!distAllCustomers,
           })
           .select("id, offer_number")
           .single();
