@@ -1655,7 +1655,8 @@
         "new": "Nouveau",
         "negotiating": "En négociation",
         "closed": "Fermé",
-        "inactive": "Inactif"
+        "inactive": "Inactif",
+        "draft": "Brouillon"
       },
       "card": {
         "cuts": "{{count}} DÉCOUPES",
@@ -2035,7 +2036,12 @@
         "toastAddOneCut": "Veuillez ajouter au moins un produit/découpe avec un nom valide avant de publier.",
         "toastInvalidCuts": "{{n}} découpe(s) ont une quantité ou un prix manquant. Veuillez remplir tous les champs.",
         "toastOfferUpdated": "Offre {{n}} mise à jour avec succès !",
-        "toastOfferPublished": "Offre {{n}} publiée avec succès !"
+        "toastOfferPublished": "Offre {{n}} publiée avec succès !",
+        "discardTitle": "Abandonner cette offre ?",
+        "discardBody": "Vos modifications seront perdues. Vous pouvez les enregistrer comme brouillon et terminer plus tard, ou les abandonner maintenant.",
+        "discardKeepEditing": "Continuer l'édition",
+        "discardConfirm": "Abandonner",
+        "toastDraftSaved": "Brouillon enregistré — {{n}}"
       }
     },
     "home": {
