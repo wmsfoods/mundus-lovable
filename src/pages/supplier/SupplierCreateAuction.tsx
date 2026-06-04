@@ -902,7 +902,6 @@ function PricingRow({
   unit: "kg" | "lbs"; valueKg: string; onChangeKg: (v: string) => void;
   placeholder: string; pLbl: string;
 }) {
-  const display = valueKg === "" ? "" : (unit === "kg" ? valueKg : toDisplay(parseFloat(valueKg) || 0, "price", unit).toFixed(2));
   const toneBg = tone === "hidden" ? "#FEF3C7" : "#DCFCE7";
   const toneFg = tone === "hidden" ? "#92400E" : "#166534";
   return (
@@ -915,8 +914,12 @@ function PricingRow({
       </div>
       <div className="cov4-ip">
         <span className="cov4-ip-px">US{pLbl}</span>
-        <input
-          ref={undefined as never}
+        <NumberInput
+          kind="price"
+          unit={unit}
+          placeholder={placeholder}
+          valueKg={valueKg}
+          onChangeKg={onChangeKg}
         />
       </div>
     </div>
