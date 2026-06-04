@@ -12,6 +12,7 @@ import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
 import { useBuyerDashboard } from "@/hooks/useBuyerDashboard";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserFullName } from "@/hooks/useUserFullName";
 
 function useGreetingKey(): "morning" | "afternoon" | "evening" {
   const h = new Date().getHours();
@@ -58,8 +59,13 @@ export default function BuyerHome() {
   const dash = useBuyerDashboard();
   const { user } = useAuth();
   const greetingKey = useGreetingKey();
-  const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "there";
-  const firstName = userName.split(" ")[0].replace(/^./, (c) => c.toUpperCase());
+  const { fullName } = useUserFullName();
+  const displayName =
+    fullName ||
+    (user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "there")
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
 
   const proteinKeys = ["beef", "pork", "poultry", "ovine"] as const;
   return (
@@ -75,7 +81,7 @@ export default function BuyerHome() {
                 <span className="ping" />
                 <span className="dot" />
               </span>
-              {t(`supplier.home.greeting.${greetingKey}`, { name: firstName, defaultValue: `Good ${greetingKey}, ${firstName}` })}
+              {t(`supplier.home.greeting.${greetingKey}`, { name: displayName, defaultValue: `Good ${greetingKey}, ${displayName}` })}
             </span>
             <h2>
               <span className="sh-hero-title-lead">{t("buyer.home.hero")}</span>
