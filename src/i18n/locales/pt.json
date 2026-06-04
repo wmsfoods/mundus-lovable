@@ -52,6 +52,16 @@
       "body": "Você está confirmando este negócio. O fornecedor ainda precisa dar o aceite final — você será notificado assim que ele responder.",
       "confirm": "Confirmar negócio",
       "cancel": "Cancelar"
+    },
+    "statuses": {
+      "scl": {
+        "invited": "Convidado",
+        "pending_signup": "Cadastro pendente",
+        "accepted": "Aceito",
+        "declined": "Recusado",
+        "revoked": "Revogado",
+        "expired": "Expirado"
+      }
     }
   },
   "auth": {
@@ -1057,6 +1067,28 @@
     "marketplace": {
       "nav": "Marketplace",
       "title": "Marketplace"
+    },
+    "connectedSuppliers": {
+      "title": "Fornecedores conectados",
+      "table": {
+        "supplier": "Fornecedor",
+        "office": "Escritório",
+        "country": "País",
+        "status": "Status",
+        "invitedAt": "Convidado em",
+        "actions": "Ações"
+      },
+      "revoke": "Revogar",
+      "accept": "Aceitar",
+      "decline": "Recusar",
+      "inviteNotification": "Um fornecedor quer se conectar com você",
+      "confirmRevoke": {
+        "title": "Revogar conexão?",
+        "body": "Isso encerrará seu relacionamento com este escritório do fornecedor. Você pode ser reconvidado depois.",
+        "confirm": "Revogar",
+        "cancel": "Cancelar"
+      },
+      "empty": "Nenhum fornecedor conectado ainda."
     }
   },
   "supplier": {
@@ -2392,6 +2424,54 @@
       "dialBalancedDesc": "Padrão. Concessões razoáveis, ritmo justo para fechar negócio.",
       "dialWinLabel": "Ganhar o negócio",
       "dialWinDesc": "Agressivo. Mova-se mais rápido até o mínimo para fechar com o comprador."
+    },
+    "myCustomers": {
+      "title": "Meus clientes",
+      "searchPlaceholder": "Buscar por empresa ou email",
+      "statusFilter": {
+        "all": "Todos os status",
+        "invited": "Convidado",
+        "pending_signup": "Cadastro pendente",
+        "accepted": "Aceito",
+        "declined": "Recusado",
+        "revoked": "Revogado",
+        "expired": "Expirado"
+      },
+      "inviteNewCustomer": "Convidar novo cliente",
+      "empty": "Nenhum cliente ainda. Convide seu primeiro comprador.",
+      "modal": {
+        "title": "Convidar um cliente",
+        "companyName": "Nome da empresa",
+        "contactName": "Nome do contato",
+        "email": "Email",
+        "taxId": "CNPJ / Tax ID",
+        "phone": "Telefone",
+        "country": "País",
+        "privateLabel": "Apelido / rótulo interno",
+        "notes": "Observações",
+        "sendInvite": "Enviar convite",
+        "cancel": "Cancelar",
+        "resend": "Reenviar convite"
+      },
+      "dedup": {
+        "existing_user": "Este comprador já tem conta na Mundus. Ele será vinculado diretamente.",
+        "pending_invite": "Já existe um convite pendente para este email até {{expires_at}}.",
+        "existing_company_new_contact": "Esta empresa já está na Mundus. Um novo contato será adicionado.",
+        "new_buyer": "Novo comprador — um convite de cadastro será enviado.",
+        "invalid_input": "Por favor informe um email válido."
+      },
+      "toast": {
+        "invited_existing_buyer": "Comprador vinculado ao seu escritório.",
+        "reinvited_existing_buyer": "Convite reenviado.",
+        "invited_new_buyer": "Convite de cadastro enviado.",
+        "invited_new_contact_existing_company": "Contato adicionado ao comprador existente.",
+        "new_contact_existing_link": "Contato adicionado ao vínculo existente."
+      },
+      "errors": {
+        "already_in_list": "Este comprador já está na sua lista de clientes.",
+        "cooldown_active": "Você poderá reconvidar este comprador após {{retry_after}}.",
+        "max_reinvites_reached": "Limite de reconvites atingido para este comprador."
+      }
     }
   },
   "dealDetail": {

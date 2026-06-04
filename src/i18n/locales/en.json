@@ -52,6 +52,16 @@
       "body": "You're confirming this deal. The supplier still needs to give final acceptance — you'll be notified as soon as they respond.",
       "confirm": "Confirm deal",
       "cancel": "Cancel"
+    },
+    "statuses": {
+      "scl": {
+        "invited": "Invited",
+        "pending_signup": "Pending signup",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "revoked": "Revoked",
+        "expired": "Expired"
+      }
     }
   },
   "auth": {
@@ -1057,6 +1067,28 @@
     "marketplace": {
       "nav": "Marketplace",
       "title": "Marketplace"
+    },
+    "connectedSuppliers": {
+      "title": "Connected suppliers",
+      "table": {
+        "supplier": "Supplier",
+        "office": "Office",
+        "country": "Country",
+        "status": "Status",
+        "invitedAt": "Invited",
+        "actions": "Actions"
+      },
+      "revoke": "Revoke",
+      "accept": "Accept",
+      "decline": "Decline",
+      "inviteNotification": "A supplier wants to connect with you",
+      "confirmRevoke": {
+        "title": "Revoke connection?",
+        "body": "This will end your business relationship with this supplier office. You can be re-invited later.",
+        "confirm": "Revoke",
+        "cancel": "Cancel"
+      },
+      "empty": "No connected suppliers yet."
     }
   },
   "supplier": {
@@ -2392,6 +2424,54 @@
       "dialBalancedDesc": "Default. Reasonable concessions, fair pace toward a deal.",
       "dialWinLabel": "Win the deal",
       "dialWinDesc": "Aggressive. Move faster to floor to close the buyer."
+    },
+    "myCustomers": {
+      "title": "My customers",
+      "searchPlaceholder": "Search by company or email",
+      "statusFilter": {
+        "all": "All statuses",
+        "invited": "Invited",
+        "pending_signup": "Pending signup",
+        "accepted": "Accepted",
+        "declined": "Declined",
+        "revoked": "Revoked",
+        "expired": "Expired"
+      },
+      "inviteNewCustomer": "Invite new customer",
+      "empty": "No customers yet. Invite your first buyer.",
+      "modal": {
+        "title": "Invite a customer",
+        "companyName": "Company name",
+        "contactName": "Contact name",
+        "email": "Email",
+        "taxId": "Tax ID",
+        "phone": "Phone",
+        "country": "Country",
+        "privateLabel": "Private label / nickname",
+        "notes": "Notes",
+        "sendInvite": "Send invite",
+        "cancel": "Cancel",
+        "resend": "Resend invite"
+      },
+      "dedup": {
+        "existing_user": "This buyer already has a Mundus account. They will be linked directly.",
+        "pending_invite": "An invitation is already pending for this email until {{expires_at}}.",
+        "existing_company_new_contact": "This company is already on Mundus. A new contact will be added.",
+        "new_buyer": "New buyer — a signup invitation will be sent.",
+        "invalid_input": "Please enter a valid email address."
+      },
+      "toast": {
+        "invited_existing_buyer": "Buyer linked to your office.",
+        "reinvited_existing_buyer": "Re-invitation sent.",
+        "invited_new_buyer": "Signup invitation sent.",
+        "invited_new_contact_existing_company": "Contact added to existing buyer.",
+        "new_contact_existing_link": "Contact added to existing customer link."
+      },
+      "errors": {
+        "already_in_list": "This buyer is already in your customer list.",
+        "cooldown_active": "You can re-invite this buyer after {{retry_after}}.",
+        "max_reinvites_reached": "You have reached the maximum number of re-invites for this buyer."
+      }
     }
   },
   "dealDetail": {

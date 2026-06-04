@@ -7056,6 +7056,86 @@ export type Database = {
           },
         ]
       }
+      supplier_customer_links: {
+        Row: {
+          buyer_company_id: string | null
+          created_at: string
+          id: string
+          invited_at: string
+          invited_by_user_id: string | null
+          last_decline_at: string | null
+          notes: string | null
+          private_label: string | null
+          reinvite_count: number
+          responded_at: string | null
+          status: string
+          supplier_office_id: string
+          updated_at: string
+          user_request_id: string | null
+        }
+        Insert: {
+          buyer_company_id?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by_user_id?: string | null
+          last_decline_at?: string | null
+          notes?: string | null
+          private_label?: string | null
+          reinvite_count?: number
+          responded_at?: string | null
+          status?: string
+          supplier_office_id: string
+          updated_at?: string
+          user_request_id?: string | null
+        }
+        Update: {
+          buyer_company_id?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by_user_id?: string | null
+          last_decline_at?: string | null
+          notes?: string | null
+          private_label?: string | null
+          reinvite_count?: number
+          responded_at?: string | null
+          status?: string
+          supplier_office_id?: string
+          updated_at?: string
+          user_request_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_customer_links_buyer_company_id_fkey"
+            columns: ["buyer_company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_customer_links_invited_by_user_id_fkey"
+            columns: ["invited_by_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_customer_links_supplier_office_id_fkey"
+            columns: ["supplier_office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "supplier_customer_links_user_request_id_fkey"
+            columns: ["user_request_id"]
+            isOneToOne: false
+            referencedRelation: "user_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_negotiation_settings: {
         Row: {
           allow_manual_override: boolean
@@ -7207,6 +7287,8 @@ export type Database = {
           created_user_id: string | null
           email: string
           id: string
+          invited_by_office_id: string | null
+          invited_by_user_id: string | null
           name: string
           phone: string | null
           proteins: string[] | null
@@ -7235,6 +7317,8 @@ export type Database = {
           created_user_id?: string | null
           email: string
           id?: string
+          invited_by_office_id?: string | null
+          invited_by_user_id?: string | null
           name: string
           phone?: string | null
           proteins?: string[] | null
@@ -7263,6 +7347,8 @@ export type Database = {
           created_user_id?: string | null
           email?: string
           id?: string
+          invited_by_office_id?: string | null
+          invited_by_user_id?: string | null
           name?: string
           phone?: string | null
           proteins?: string[] | null
@@ -7302,6 +7388,20 @@ export type Database = {
           {
             foreignKeyName: "user_requests_created_user_id_fkey"
             columns: ["created_user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_requests_invited_by_office_id_fkey"
+            columns: ["invited_by_office_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_requests_invited_by_user_id_fkey"
+            columns: ["invited_by_user_id"]
             isOneToOne: false
             referencedRelation: "users"
             referencedColumns: ["id"]
@@ -7449,6 +7549,7 @@ export type Database = {
         }
         Returns: Json
       }
+      accept_supplier_invite: { Args: { p_link_id: string }; Returns: Json }
       accept_team_invitation: {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
@@ -7465,6 +7566,10 @@ export type Database = {
       can_act_on_company: {
         Args: { target_company_id: string }
         Returns: boolean
+      }
+      can_reinvite_buyer: {
+        Args: { p_buyer_company_id: string; p_supplier_office_id: string }
+        Returns: Json
       }
       cancel_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       check_rate_limit: {
@@ -7507,8 +7612,27 @@ export type Database = {
         }
         Returns: Json
       }
+      create_supplier_invite: {
+        Args: {
+          p_company_name?: string
+          p_contact_name?: string
+          p_country?: string
+          p_email: string
+          p_notes?: string
+          p_phone?: string
+          p_private_label?: string
+          p_supplier_office_id: string
+          p_tax_id?: string
+        }
+        Returns: Json
+      }
       current_user_company_id: { Args: never; Returns: string }
       current_user_company_ids: { Args: never; Returns: string[] }
+      decline_supplier_invite: { Args: { p_link_id: string }; Returns: Json }
+      dedup_check_invite: {
+        Args: { p_email: string; p_tax_id?: string }
+        Returns: Json
+      }
       delete_email: {
         Args: { message_id: number; queue_name: string }
         Returns: boolean
@@ -7540,6 +7664,7 @@ export type Database = {
             Returns: string
           }
         | { Args: { payload: Json; queue_name: string }; Returns: number }
+      expire_old_pending_signups: { Args: never; Returns: number }
       get_company_active_user_ids: {
         Args: { p_company_id: string }
         Returns: {
@@ -7659,6 +7784,7 @@ export type Database = {
         Args: { p_company_id: string; p_cut_id: string }
         Returns: string
       }
+      revoke_supplier_link: { Args: { p_link_id: string }; Returns: Json }
       submit_initial_bid: {
         Args: {
           p_buyer_company_id: string
@@ -7681,6 +7807,10 @@ export type Database = {
       }
       track_email_click: { Args: { email_id: string }; Returns: undefined }
       track_email_open: { Args: { email_id: string }; Returns: undefined }
+      transfer_supplier_link: {
+        Args: { p_link_id: string; p_target_office_id: string }
+        Returns: Json
+      }
       user_buyer_scope_ids: { Args: never; Returns: string[] }
       user_can_access_negotiation: {
         Args: { p_negotiation_id: string }
