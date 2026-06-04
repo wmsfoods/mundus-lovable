@@ -143,6 +143,7 @@ const App = () => (
            <Route path="/invite/:token" element={<InviteAccept />} />
             <Route path="/shipping-instructions/:token" element={<ShippingInstructionsForm />} />
             <Route path="/shipping-instructions/print/:requestId" element={<ShippingInstructionsPrint />} />
+            <Route path="/s/offer/:id" element={<ShareOfferRedirect />} />
             <Route
               path="/dashboard"
               element={
