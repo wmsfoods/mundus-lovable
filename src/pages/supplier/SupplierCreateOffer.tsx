@@ -3102,7 +3102,7 @@ export default function SupplierCreateOffer() {
                         <td className="num"><span style={{ color: "#bbb", fontSize: 11, fontStyle: "italic" }}>auto</span></td>
                       </Fragment>
                     ))}
-                    <td><input type="text" placeholder="Notes..." value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
+                    <td><input type="text" placeholder={ta("notesPh", "Notes...")} value={nf.notes} onChange={(e) => setNf((p) => ({ ...p, notes: e.target.value }))} /></td>
                     <td>
                       <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
                         <button
@@ -3130,11 +3130,11 @@ export default function SupplierCreateOffer() {
               onClick={() => navigate("/supplier/profile/plants")}
               style={{ background: "none", border: "none", padding: 0, color: "var(--p800, #8B2252)", cursor: "pointer", textDecoration: "underline", fontSize: 12 }}
             >
-              Manage plant numbers
+              {ta("managePlantNumbers", "Manage plant numbers")}
             </button>
           </div>
           {cuts.length === 0 && !addRow && !showAiImport && (
-            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>Add product / cuts manually or use AI Import</p></div>
+            <div className="cov4-empty"><span style={{ fontSize: 22 }}>📦</span><p>{ta("emptyCuts", "Add product / cuts manually or use AI Import")}</p></div>
           )}
         </main>
 
