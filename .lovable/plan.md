@@ -1,51 +1,35 @@
 ## Problema
 
-Na tela **Supplier → Buyer Requests** a coluna "Buyer" mostra sempre "—".
+No Supplier → Create new offer, ao abrir o seletor de idioma (Globe na topbar), as opções do meio (Español, parte do Português) ficam atrás do bloco branco "kg | lbs | Live preview" da página, e o item 中文 aparece num segundo "andar" abaixo do bloco. É bug visual de empilhamento (z-index).
 
-A causa não é o frontend (o código já busca `companies.name` e mapeia em `buyer_company_name`). A causa é **RLS**: a policy `companies_member_select` só permite ao usuário ver a própria company (`id = current_user_company_id()`). Como o supplier não pertence à company do buyer, o `select id, name from companies in (...)` retorna vazio e o nome cai para "—".
+## Causa
 
-## Solução
+Em `src/styles/mundus-shell.css`:
 
-Expor apenas `id + name` (dados não sensíveis, já mostrados no UI do buyer também) através de uma função `SECURITY DEFINER`, sem afrouxar a RLS da tabela `companies`.
+- `.tb` (topbar) é `position: sticky` com `z-index: 10` (linha 262).
 
-### Backend (migration)
+Em `src/styles/mundus-create-offer-v2.css`:
 
-Criar função:
+- `.cov4-header` é `position: sticky` com `z-index: 20` (linha 25).
+- `.cov4-footer` é `position: sticky` com `z-index: 20` (linha 494).
 
-```sql
-create or replace function public.get_company_names(_ids uuid[])
-returns table(id uuid, name text)
-language sql
-stable
-security definer
-set search_path = public
-as $$
-  select c.id, c.name
-  from public.companies c
-  where c.id = any(_ids)
-$$;
+Como a topbar é sticky com z-index, ela cria um *stacking context*; portanto o dropdown de idioma (z-index inline 50) fica confinado ao contexto da topbar — globalmente ele ainda paga em z = 10. O `.cov4-header` da página de criar oferta paga em z = 20 e por isso pinta por cima do dropdown.
 
-revoke all on function public.get_company_names(uuid[]) from public;
-grant execute on function public.get_company_names(uuid[]) to authenticated;
-```
+## Correção
 
-Retorna apenas nome — sem campos sensíveis. Acesso restrito a usuários autenticados.
+Subir a topbar acima dos elementos sticky da página de criar oferta.
 
-### Frontend
+**Arquivo:** `src/styles/mundus-shell.css`
 
-`src/pages/supplier/Requests.tsx` (linhas 100-107): trocar o `select` direto na tabela `companies` por:
+- Mudar o `z-index: 10` da classe `.tb` (linha 262) para `z-index: 30` — fica acima de `.cov4-header`/`.cov4-footer` (20) e abaixo do sidebar drawer/backdrop (39/40) e modais (≥60), mantendo a hierarquia atual.
 
-```ts
-const { data: cos } = await supabase.rpc("get_company_names", { _ids: companyIds });
-```
+O dropdown interno continua com z-index 50 inline, agora dentro de um contexto de empilhamento topbar = 30 (global), suficiente para sobrepor o conteúdo da página.
 
-Mesmo formato de retorno (`{ id, name }[]`), restante do código (mapeamento, render da coluna, busca textual, navegação) permanece igual.
+## Escopo / não escopo
+
+- Só ajusta o z-index da topbar; nenhuma alteração de comportamento ou layout.
+- Verifico o mesmo fluxo de abrir o seletor de idioma na tela de criar oferta para confirmar visualmente que todas as opções aparecem.
 
 ## Arquivos afetados
 
-- `supabase/migrations/<timestamp>_get_company_names.sql` (novo)
-- `src/pages/supplier/Requests.tsx` (1 trecho)
-
-## Fora de escopo
-
-Outras telas onde o supplier vê nomes de buyer (negociações, ofertas) — verifico se precisam do mesmo ajuste só se você reportar problema; este plano cobre só a tela de Buyer Requests reportada.
+- `src/styles/mundus-shell.css` (1 valor alterado)

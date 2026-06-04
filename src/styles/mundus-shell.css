@@ -259,7 +259,7 @@
   gap: 16px;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 30;
 }
 .tb-item {
   display: inline-flex;
