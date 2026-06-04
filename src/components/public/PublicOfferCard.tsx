@@ -291,6 +291,10 @@ export default function PublicOfferCard({
             {formatShipment(offer.shipment_month, offer.shipment_year)}
           </span>
         </div>
+        <div className="cm">
+          <span className="cm-label">{t("supplier.offers.card.volume", "Volume")}</span>
+          <span className="cm-value">{formatMT(totalKg)} MT</span>
+        </div>
       </div>
 
       <div className="oc-footer">
