@@ -11,6 +11,7 @@ import { StackHeaderProvider } from "@/contexts/StackHeaderContext";
 import { isStackRoute } from "@/lib/mobile-nav";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserFullName } from "@/hooks/useUserFullName";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import {
   HomeIcon,

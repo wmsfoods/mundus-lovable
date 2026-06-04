@@ -27,7 +27,8 @@ export default function AdminShell() {
   const isMobile = useIsMobileShell();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const userName = user?.email?.split("@")[0] ?? "User";
+  const { fullName } = useUserFullName();
+  const userName = fullName || (user?.email?.split("@")[0] ?? "User");
   const stackMode = isMobile && isStackRoute(location.pathname);
   const [pendingUserRequests, setPendingUserRequests] = useState<number>(0);
 
