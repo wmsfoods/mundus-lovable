@@ -1362,6 +1362,8 @@ export default function SupplierCreateOffer() {
               negotiation_mode: negotiationMode,
               negotiation_dial: negotiationDial,
               updated_at: new Date().toISOString(),
+              specific_buyer_company_ids:
+                distSpecific && selectedCustomers.length > 0 ? selectedCustomers : null,
             })
             .eq("id", editOffer.offerId);
           if (error) throw error;
@@ -1404,6 +1406,8 @@ export default function SupplierCreateOffer() {
             allow_quantity_negotiation: allowQtyNegotiation,
             negotiation_mode: negotiationMode,
             negotiation_dial: negotiationDial,
+            specific_buyer_company_ids:
+              distSpecific && selectedCustomers.length > 0 ? selectedCustomers : null,
           })
           .select("id, offer_number")
           .single();
