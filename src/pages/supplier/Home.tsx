@@ -10,6 +10,7 @@ import {
   ArrowRightIcon,
 } from "@/components/icons";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserFullName } from "@/hooks/useUserFullName";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { useSupplierDashboard } from "@/hooks/useSupplierDashboard";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
