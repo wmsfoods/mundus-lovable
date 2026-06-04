@@ -3338,6 +3338,52 @@ export default function SupplierCreateOffer() {
         origin="Santos (BRSSZ)"
         onApplyRate={applyMarketplaceRate}
       />
+
+      <AlertDialog open={discardOpen} onOpenChange={setDiscardOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {ta("discardTitle", "Discard this offer?")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {ta(
+                "discardBody",
+                "Your changes will be lost. You can save them as a draft and finish later, or discard them now.",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <button
+              type="button"
+              className="cov4-btn-s"
+              onClick={() => setDiscardOpen(false)}
+              disabled={publishing}
+            >
+              {ta("discardKeepEditing", "Keep editing")}
+            </button>
+            <button
+              type="button"
+              className="cov4-btn-s"
+              onClick={() => {
+                setDiscardOpen(false);
+                void handlePublish({ asDraft: true });
+              }}
+              disabled={publishing}
+            >
+              {ta("saveDraft", "Save draft")}
+            </button>
+            <button
+              type="button"
+              className="cov4-btn-p"
+              style={{ background: "#b91c1c", borderColor: "#b91c1c" }}
+              onClick={confirmDiscard}
+              disabled={publishing}
+            >
+              {ta("discardConfirm", "Discard")}
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
