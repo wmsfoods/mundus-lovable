@@ -9,6 +9,7 @@ import {
   GridIcon,
   FlagSVG,
 } from "@/components/icons";
+import { ListIcon } from "@/components/icons";
 import { useOffers, type OfferWithDetails } from "@/hooks/useOffers";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -317,10 +318,12 @@ export default function BuyerOffers() {
   const initialProtein = (searchParams.get("protein") as ProteinKey | null) ?? "all";
   const [protein, setProtein] = useState<ProteinKey>(initialProtein);
   const [sortBy, setSortBy] = useState<"newest" | "priceAsc" | "priceDesc" | "volumeDesc">("newest");
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [auctionsOnly, setAuctionsOnly] = useState(false);
   const [bidAuction, setBidAuction] = useState<MockAuction | null>(null);
   const [filter, setFilter] = useState<OffersFilterState>(DEFAULT_OFFERS_FILTER);
   const isMobile = useIsMobileShell();
+  const effectiveView = isMobile ? "grid" : viewMode;
 
   const { company } = useCurrentCompany();
   const buyerCompanyId = company?.id ?? null;
