@@ -2361,7 +2361,20 @@
         "settings": "Configurações",
         "team": "Time",
         "audit": "Log de auditoria",
-        "flags": "Feature flags"
+        "flags": "Feature flags",
+        "executive_overview": "Visão Executiva",
+        "market_intelligence": "Inteligência de Mercado",
+        "negotiation_funnel": "Funil de Negociação",
+        "buyer_demand": "Demanda de Compradores",
+        "user_requests": "Solicitações de Usuários",
+        "offer_requests": "Solicitações de Ofertas",
+        "all_offers": "Todas as Ofertas",
+        "email_activity": "Atividade de E-mail",
+        "mundus_whats": "Mundus Whats",
+        "communication": "COMUNICAÇÃO",
+        "import": "Importar",
+        "documents": "Documentos",
+        "resources": "RECURSOS"
       },
       "theme": {
         "light": "Modo claro",

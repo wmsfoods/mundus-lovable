@@ -48,15 +48,15 @@ export default function AdminShell() {
   const ADMIN_NAV: SidebarItem[] = [
     { to: "/admin/dashboard", label: t("admin.shell.nav.dashboard"), icon: LayoutDashboard as unknown as IconCmp, groupLabel: t("admin.shell.nav.overview") },
     { to: "/admin/analytics", label: t("admin.shell.nav.analytics"), icon: Activity as unknown as IconCmp },
-    { to: "/admin/bi", label: "Executive Overview", icon: LineChart as unknown as IconCmp },
-    { to: "/admin/bi/market", label: "Market Intelligence", icon: LineChart as unknown as IconCmp },
-    { to: "/admin/bi/negotiations", label: "Negotiation Funnel", icon: LineChart as unknown as IconCmp },
-    { to: "/admin/bi/demand", label: "Buyer Demand", icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi", label: t("admin.shell.nav.executive_overview", "Executive Overview"), icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi/market", label: t("admin.shell.nav.market_intelligence", "Market Intelligence"), icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi/negotiations", label: t("admin.shell.nav.negotiation_funnel", "Negotiation Funnel"), icon: LineChart as unknown as IconCmp },
+    { to: "/admin/bi/demand", label: t("admin.shell.nav.buyer_demand", "Buyer Demand"), icon: LineChart as unknown as IconCmp },
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
-    { to: "/admin/user-requests", label: "User Requests", icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },
-    { to: "/admin/offer-requests", label: "Offer Requests", icon: Inbox as unknown as IconCmp },
-    { to: "/admin/offers", label: "All Offers", icon: Package as unknown as IconCmp },
+    { to: "/admin/user-requests", label: t("admin.shell.nav.user_requests", "User Requests"), icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },
+    { to: "/admin/offer-requests", label: t("admin.shell.nav.offer_requests", "Offer Requests"), icon: Inbox as unknown as IconCmp },
+    { to: "/admin/offers", label: t("admin.shell.nav.all_offers", "All Offers"), icon: Package as unknown as IconCmp },
     { to: "/admin/deals", label: t("admin.shell.nav.deals"), icon: Package as unknown as IconCmp },
     { to: "/admin/negotiations", label: t("admin.shell.nav.negotiations"), icon: MessagesSquare as unknown as IconCmp },
 
@@ -75,16 +75,16 @@ export default function AdminShell() {
     { to: "/admin/outreach/campaigns", label: t("admin.outreach.nav.campaigns", "Campaigns"), icon: Megaphone as unknown as IconCmp },
     { to: "/admin/outreach/templates", label: t("admin.outreach.nav.templates", "Templates"), icon: FileText as unknown as IconCmp },
     { to: "/admin/settings/email", label: t("admin.outreach.nav.email_settings", "Email Settings"), icon: AtSign as unknown as IconCmp },
-    { to: "/admin/email-activity", label: "Email Activity", icon: Mail as unknown as IconCmp },
+    { to: "/admin/email-activity", label: t("admin.shell.nav.email_activity", "Email Activity"), icon: Mail as unknown as IconCmp },
 
     { to: "/admin/finance/revenue", label: t("admin.shell.nav.revenue"), icon: Coins as unknown as IconCmp, groupLabel: t("admin.shell.nav.finance") },
-    { to: "/admin/whats/conversas", label: "Mundus Whats", icon: MessageCircle as unknown as IconCmp, groupLabel: "COMMUNICATION" },
+    { to: "/admin/whats/conversas", label: t("admin.shell.nav.mundus_whats", "Mundus Whats"), icon: MessageCircle as unknown as IconCmp, groupLabel: t("admin.shell.nav.communication", "COMMUNICATION") },
 
     { to: "/admin/settings/team", label: t("admin.shell.nav.team"), icon: Users2 as unknown as IconCmp, groupLabel: t("admin.shell.nav.settings") },
     { to: "/admin/settings/audit", label: t("admin.shell.nav.audit"), icon: History as unknown as IconCmp },
     { to: "/admin/settings/flags", label: t("admin.shell.nav.flags"), icon: Flag as unknown as IconCmp },
-    { to: "/admin/import", label: "Import", icon: RefreshCw as unknown as IconCmp },
-    { to: "/admin/docs", label: "Documents", icon: BookOpen as unknown as IconCmp, groupLabel: "RESOURCES" },
+    { to: "/admin/import", label: t("admin.shell.nav.import", "Import"), icon: RefreshCw as unknown as IconCmp },
+    { to: "/admin/docs", label: t("admin.shell.nav.documents", "Documents"), icon: BookOpen as unknown as IconCmp, groupLabel: t("admin.shell.nav.resources", "RESOURCES") },
   ];
 
   const ADMIN_BOTTOM: BottomNavItem[] = [

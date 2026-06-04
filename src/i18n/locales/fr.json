@@ -2347,7 +2347,20 @@
         "settings": "Paramètres",
         "team": "Équipe",
         "audit": "Journal d'audit",
-        "flags": "Fonctionnalités"
+        "flags": "Fonctionnalités",
+        "executive_overview": "Vue Exécutive",
+        "market_intelligence": "Veille de Marché",
+        "negotiation_funnel": "Entonnoir de Négociation",
+        "buyer_demand": "Demande des Acheteurs",
+        "user_requests": "Demandes d'Utilisateurs",
+        "offer_requests": "Demandes d'Offres",
+        "all_offers": "Toutes les Offres",
+        "email_activity": "Activité E-mail",
+        "mundus_whats": "Mundus Whats",
+        "communication": "COMMUNICATION",
+        "import": "Importer",
+        "documents": "Documents",
+        "resources": "RESSOURCES"
       },
       "theme": {
         "light": "Mode clair",
