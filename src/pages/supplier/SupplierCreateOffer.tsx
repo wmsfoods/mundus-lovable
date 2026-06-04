@@ -1344,7 +1344,9 @@ export default function SupplierCreateOffer() {
           const qty = parseFloat(c.qty) || 0;
           const ask = parseFloat(c.ask) || 0;
           const floor = parseFloat(c.floor);
-          const floorVal = Number.isFinite(floor) && floor > 0 ? floor : ask;
+          // Clamp: never store a floor above the ask (defense in depth).
+          const floorVal =
+            Number.isFinite(floor) && floor > 0 && floor <= ask ? floor : ask;
           if (qty <= 0 || ask <= 0) continue;
 
           // Fallback: resolve cutId from cut name if missing
