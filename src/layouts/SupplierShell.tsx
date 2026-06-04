@@ -90,6 +90,7 @@ function SupplierShellInner() {
       icon: Settings2 as unknown as SidebarItem["icon"],
       children: [
         { to: "/supplier/sales", label: t("shell.nav.sales"), icon: FileTextIcon },
+        { to: "/supplier/customers", label: t("shell.nav.myCustomers"), icon: UsersIcon },
       ],
     },
     {
