@@ -240,6 +240,27 @@ export function OffersFilterBar({
                   </Section>
                 </>
               )}
+
+              <Section title="Engagement">
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "4px 0", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={!!draft.likedOnly}
+                    onChange={(e) => updateDraft({ likedOnly: e.target.checked })}
+                    style={{ accentColor: "hsl(335, 55%, 45%)" }}
+                  />
+                  Liked by my company
+                </label>
+                <label style={{ display: "flex", alignItems: "center", gap: 8, fontSize: 13, padding: "4px 0", cursor: "pointer" }}>
+                  <input
+                    type="checkbox"
+                    checked={!!draft.favoritedOnly}
+                    onChange={(e) => updateDraft({ favoritedOnly: e.target.checked })}
+                    style={{ accentColor: "hsl(335, 55%, 45%)" }}
+                  />
+                  Favorited by my company
+                </label>
+              </Section>
             </div>
 
             <div className="ofb-sheet-foot">
