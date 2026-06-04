@@ -27,6 +27,7 @@ import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { NumberInput } from "@/components/inputs/NumberInput";
 import { useActiveOffice } from "@/hooks/useActiveOffice";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useMyCustomers } from "@/hooks/useMyCustomers";
 import {
   useOfficeAllowedPlants,
   useOfficeAllowedMarkets,
@@ -98,14 +99,6 @@ const INCOTERMS: Incoterm[] = [
   { id: "EXW", name: "EXW - Ex Works", extra: "city" },
   { id: "DDP", name: "DDP - Delivered Duty Paid", extra: "city" },
   { id: "DAP", name: "DAP - Delivered at Place", extra: "city" },
-];
-
-const MOCK_CUSTOMERS = [
-  { id: "c1", name: "Delta Imports", country: "China" },
-  { id: "c2", name: "Gamma Buyers", country: "Argentina" },
-  { id: "c3", name: "Alpha Foods", country: "UAE" },
-  { id: "c4", name: "Atrides Mt", country: "Brazil" },
-  { id: "c5", name: "WMS Foods", country: "United States" },
 ];
 
 const CERTIFICATION_OPTIONS = ["Halal", "Kosher", "USDA", "HACCP", "BRC", "Organic"];
@@ -508,6 +501,12 @@ export default function SupplierCreateOffer() {
   const [distSpecific, setDistSpecific] = useState(false);
   const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
 
+  // Live "My Customers" picker (accepted links only). Replaces the legacy
+  // MOCK_CUSTOMERS array. Selected ids are buyer_company_id UUIDs.
+  const { customers: myCustomers, loading: myCustomersLoading } = useMyCustomers({
+    status: "accepted",
+  });
+
   const [showAiImport, setShowAiImport] = useState(false);
   const [aiMode, setAiMode] = useState<null | "paste" | "file" | "voice">(null);
   const [aiInput, setAiInput] = useState("");
@@ -814,14 +813,11 @@ export default function SupplierCreateOffer() {
       setAddRow(true);
     }
 
-    // Distribution: pre-check Marketplace + Specific Customers and select requester.
+    // Distribution: pre-check Marketplace only. Specific-customer prefill is
+    // dropped (Batch 3/5): the FromRequest shape does not carry the buyer's
+    // company_id, and matching by name would misfire with live customer data.
     setDistMarketplace(true);
     setDistAllCustomers(false);
-    setDistSpecific(true);
-    const customer = MOCK_CUSTOMERS.find(
-      (c) => c.name.toLowerCase() === fromRequest.client.toLowerCase()
-    );
-    if (customer) setSelectedCustomers([customer.id]);
   }, [fromRequest, MARKETS, cutsByCategory, setUnit]);
 
   /* Prefill from an existing offer (Clone Offer). */
@@ -1366,6 +1362,8 @@ export default function SupplierCreateOffer() {
               negotiation_mode: negotiationMode,
               negotiation_dial: negotiationDial,
               updated_at: new Date().toISOString(),
+              specific_buyer_company_ids:
+                distSpecific && selectedCustomers.length > 0 ? selectedCustomers : null,
             })
             .eq("id", editOffer.offerId);
           if (error) throw error;
@@ -1408,6 +1406,8 @@ export default function SupplierCreateOffer() {
             allow_quantity_negotiation: allowQtyNegotiation,
             negotiation_mode: negotiationMode,
             negotiation_dial: negotiationDial,
+            specific_buyer_company_ids:
+              distSpecific && selectedCustomers.length > 0 ? selectedCustomers : null,
           })
           .select("id, offer_number")
           .single();
@@ -2595,15 +2595,29 @@ export default function SupplierCreateOffer() {
             </div>
             {distSpecific && (
               <div className="cov4-cust-list">
-                {MOCK_CUSTOMERS.map((c) => {
-                  const on = selectedCustomers.includes(c.id);
-                  return (
-                    <button key={c.id} type="button" className={`cov4-cust-chip ${on ? "on" : ""}`} onClick={() => toggleCustomer(c.id)}>
-                      {on ? "✓ " : ""}{c.name}
-                      <span className="cov4-cust-country">{c.country}</span>
-                    </button>
-                  );
-                })}
+                {myCustomersLoading ? (
+                  <div className="cov4-cust-empty">{t("common.loading")}</div>
+                ) : myCustomers.length === 0 ? (
+                  <div className="cov4-cust-empty">{t("supplier.myCustomers.empty")}</div>
+                ) : (
+                  myCustomers
+                    .filter((c) => !!c.buyer_company_id)
+                    .map((c) => {
+                      const id = c.buyer_company_id as string;
+                      const on = selectedCustomers.includes(id);
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          className={`cov4-cust-chip ${on ? "on" : ""}`}
+                          onClick={() => toggleCustomer(id)}
+                        >
+                          {on ? "✓ " : ""}{c.company_name}
+                          {c.country ? <span className="cov4-cust-country">{c.country}</span> : null}
+                        </button>
+                      );
+                    })
+                )}
               </div>
             )}
           </div>
