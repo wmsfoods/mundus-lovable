@@ -3490,21 +3490,13 @@ function SecondaryPriceCell({
   const errTitle = invalid ? invalidMsg : undefined;
 
   if (override !== undefined) {
-    // `override` is stored in kg (raw). Show it in display unit and convert back on edit.
-    const overrideDisplay =
-      override === "" ? "" : toDisplay(parseFloat(override) || 0, "price", unit).toFixed(2);
     return (
       <span style={{ display: "inline-flex", alignItems: "center", gap: 4, justifyContent: "flex-end" }}>
-        <input
-          type="number"
-          step="0.01"
-          value={overrideDisplay}
-          onChange={(e) => {
-            const v = e.target.value;
-            if (v === "") return onOverride("");
-            const kg = fromDisplay(parseFloat(v) || 0, "price", unit);
-            onOverride(String(kg));
-          }}
+        <NumberInput
+          kind="price"
+          unit={unit}
+          valueKg={override}
+          onChangeKg={(v) => onOverride(v)}
           title={errTitle}
           style={{
             width: 64,
@@ -3534,22 +3526,19 @@ function SecondaryPriceCell({
   }
 
   if (editing) {
-    const initial = toDisplay(calculated, "price", unit).toFixed(2);
     return (
-      <input
-        type="number"
-        step="0.01"
+      <NumberInput
+        kind="price"
+        unit={unit}
+        valueKg={String(calculated)}
         autoFocus
-        defaultValue={initial}
-        onBlur={(e) => {
+        onChangeKg={(v) => {
           setEditing(false);
-          if (e.target.value) {
-            const kg = fromDisplay(parseFloat(e.target.value) || 0, "price", unit);
-            if (kg !== calculated) onOverride(String(kg));
-          }
+          if (!v) return;
+          const kg = parseFloat(v);
+          if (Number.isFinite(kg) && kg !== calculated) onOverride(String(kg));
         }}
         onKeyDown={(e) => {
-          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
           if (e.key === "Escape") setEditing(false);
         }}
         title={errTitle}
