@@ -118,6 +118,7 @@ export function OfferCard({
   const destCode = countryToCode(firstMarket);
 
   return (
+    <GlowCard glowColor="mundus" radius={14}>
     <article
       className="oc"
       role="button"
@@ -304,6 +305,7 @@ export function OfferCard({
         </span>
       </div>
     </article>
+    </GlowCard>
   );
 }
 
