@@ -14,6 +14,7 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
 import { BUYER_CHAT_TOTAL_UNREAD } from "@/hooks/useBuyerChat";
+import { useMyConnectedSuppliers } from "@/hooks/useMyConnectedSuppliers";
 import {
   HomeIcon,
   UsersIcon,
@@ -45,8 +46,17 @@ function BuyerShellInner() {
   const userName = fullName || (user?.email?.split("@")[0] ?? "User");
   const stackMode = isMobile && isStackRoute(location.pathname);
 
+  const { suppliers: connectedSuppliers } = useMyConnectedSuppliers();
+  const pendingInvitesCount = connectedSuppliers.filter((s) => s.status === "invited").length;
+
   const BUYER_NAV: SidebarEntry[] = [
     { to: "/buyer", label: t("shell.nav.home"), icon: HomeIcon, end: true },
+    {
+      to: "/buyer/connected-suppliers",
+      label: t("shell.nav.connectedSuppliers"),
+      icon: UsersIcon,
+      badge: pendingInvitesCount || undefined,
+    },
     {
       type: "section",
       key: "marketplace",
