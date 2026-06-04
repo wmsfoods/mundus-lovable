@@ -466,6 +466,7 @@ export default function SupplierCreateOffer() {
   const [cuts, setCuts] = useState<Cut[]>([]);
   const [cutImgs, setCutImgs] = useState<Record<string, string>>({});
   const [addRow, setAddRow] = useState(false);
+  const [resetCutsOpen, setResetCutsOpen] = useState(false);
   const [newImgPrev, setNewImgPrev] = useState<string | null>(null);
   const [nf, setNf] = useState<Omit<Cut, "id">>({ ...EMPTY_NF });
 
@@ -2726,14 +2727,7 @@ export default function SupplierCreateOffer() {
                 {cuts.length > 0 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      if (window.confirm("Remove all added cuts and start over?")) {
-                        setCuts([]);
-                        setCutImgs({});
-                        setAddRow(false);
-                        setNf({ ...EMPTY_NF });
-                      }
-                    }}
+                    onClick={() => setResetCutsOpen(true)}
                     style={{
                       padding: "6px 14px",
                       borderRadius: 8,
@@ -3434,6 +3428,54 @@ export default function SupplierCreateOffer() {
               disabled={publishing}
             >
               {ta("discardConfirm", "Discard")}
+            </button>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Reset Product / Cuts → switch catalog (Global ↔ US) */}
+      <AlertDialog open={resetCutsOpen} onOpenChange={setResetCutsOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {ta("resetCutsTitle", "Switch cut catalog?")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {cutRegion === "us"
+                ? ta(
+                    "resetCutsMsgToGlobal",
+                    "Do you want to switch to 🌐 Global {{p}}Cuts instead of 🇺🇸 US {{p}}Cuts (IMPS)? All added cuts will be removed.",
+                    { p: usToggleProteinLabel },
+                  )
+                : ta(
+                    "resetCutsMsgToUs",
+                    "Do you want to switch to 🇺🇸 US {{p}}Cuts (IMPS) instead of 🌐 Global {{p}}Cuts? All added cuts will be removed.",
+                    { p: usToggleProteinLabel },
+                  )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <button
+              type="button"
+              className="cov4-btn-s"
+              onClick={() => setResetCutsOpen(false)}
+            >
+              {ta("resetCutsNo", "No")}
+            </button>
+            <button
+              type="button"
+              className="cov4-btn-p"
+              style={{ background: "#8B1A3A", borderColor: "#8B1A3A" }}
+              onClick={() => {
+                setCuts([]);
+                setCutImgs({});
+                setAddRow(false);
+                setNf({ ...EMPTY_NF });
+                setCutRegion((r) => (r === "us" ? "global" : "us"));
+                setResetCutsOpen(false);
+              }}
+            >
+              {ta("resetCutsYes", "Yes, switch")}
             </button>
           </AlertDialogFooter>
         </AlertDialogContent>
