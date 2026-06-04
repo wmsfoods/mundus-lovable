@@ -18,6 +18,7 @@ import { useMarketplaceProteins, offerProtein } from "@/hooks/useMarketplaceProt
 import { AuctionInfoDialog } from "@/components/marketplace/AuctionInfoDialog";
 import { AuctionBidModal } from "@/components/marketplace/AuctionBidModal";
 import type { MockAuction } from "@/data/mockAuctions";
+import { GlowCard } from "@/components/ui/spotlight-card";
 import { Gavel } from "lucide-react";
 import {
   OffersFilterBar,
