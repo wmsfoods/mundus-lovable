@@ -466,6 +466,7 @@ export default function SupplierCreateOffer() {
   const [cuts, setCuts] = useState<Cut[]>([]);
   const [cutImgs, setCutImgs] = useState<Record<string, string>>({});
   const [addRow, setAddRow] = useState(false);
+  const [resetCutsOpen, setResetCutsOpen] = useState(false);
   const [newImgPrev, setNewImgPrev] = useState<string | null>(null);
   const [nf, setNf] = useState<Omit<Cut, "id">>({ ...EMPTY_NF });
 
