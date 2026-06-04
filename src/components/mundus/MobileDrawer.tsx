@@ -27,6 +27,7 @@ function renderMdItem(
   item: SidebarItem,
   onClose: () => void,
   onProBadgeClick?: (i: SidebarItem) => void,
+  newBadgeLabel?: string,
 ) {
   const I = item.icon;
   if (item.external) {
@@ -41,6 +42,7 @@ function renderMdItem(
       >
         <I size={20} />
         <span>{item.label}</span>
+        {item.newBadge && <span className="nav-new-badge">{newBadgeLabel}</span>}
         {item.proBadge && (
           <ProBadge
             onClick={
@@ -68,6 +70,7 @@ function renderMdItem(
     >
       <I size={20} />
       <span>{item.label}</span>
+      {item.newBadge && <span className="nav-new-badge">{newBadgeLabel}</span>}
       {item.proBadge && (
         <ProBadge
           onClick={
@@ -88,10 +91,12 @@ function MdSection({
   section,
   onClose,
   onProBadgeClick,
+  newBadgeLabel,
 }: {
   section: SidebarSection;
   onClose: () => void;
   onProBadgeClick?: (i: SidebarItem) => void;
+  newBadgeLabel: string;
 }) {
   const { pathname } = useLocation();
   const hasActive = section.children.some((c) =>
@@ -113,7 +118,7 @@ function MdSection({
       </button>
       {open && (
         <div className="md-section-body">
-          {section.children.map((it) => renderMdItem(it, onClose, onProBadgeClick))}
+          {section.children.map((it) => renderMdItem(it, onClose, onProBadgeClick, newBadgeLabel))}
         </div>
       )}
     </div>
@@ -132,6 +137,7 @@ export function MobileDrawer({
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
   const location = useLocation();
+  const newBadgeLabel = t("shell.nav.new", { defaultValue: "NEW" });
 
   // Close on route change
   useEffect(() => {
@@ -166,14 +172,14 @@ export function MobileDrawer({
         type="button"
         className="md-overlay"
         onClick={onClose}
-        aria-label="Close menu"
+        aria-label={t("shell.nav.closeMenu")}
         tabIndex={open ? 0 : -1}
       />
       <aside
         className="md-panel"
         role="dialog"
         aria-modal="true"
-        aria-label="Navigation"
+        aria-label={t("shell.nav.navigation")}
       >
         <div className="md-header">
           <Logo size="sm" />
@@ -181,7 +187,7 @@ export function MobileDrawer({
             type="button"
             className="md-close"
             onClick={onClose}
-            aria-label="Close menu"
+            aria-label={t("shell.nav.closeMenu")}
           >
             <XIcon size={20} />
           </button>
@@ -207,6 +213,7 @@ export function MobileDrawer({
                   section={entry}
                   onClose={onClose}
                   onProBadgeClick={onProBadgeClick}
+                  newBadgeLabel={newBadgeLabel}
                 />
               );
             }
@@ -215,7 +222,7 @@ export function MobileDrawer({
                 {entry.groupLabel && (
                   <div className="md-group-label">{entry.groupLabel}</div>
                 )}
-                {renderMdItem(entry, onClose, onProBadgeClick)}
+                {renderMdItem(entry, onClose, onProBadgeClick, newBadgeLabel)}
               </div>
             );
           })}
