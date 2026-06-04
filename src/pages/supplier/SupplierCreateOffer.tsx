@@ -2520,6 +2520,76 @@ export default function SupplierCreateOffer() {
             </div>
           </div>
 
+          {/* ═══════════ ✨ APPLY TO ALL — bulk setters (layout v3) ═══════════ */}
+          {cuts.length > 1 && (
+            <div className="co3-apply-bar">
+              <span className="co3-apply-l">✨ {ta("applyToAll", "APPLY TO ALL")}</span>
+              <div className="co3-apply-grp">
+                <label className="co3-apply-fld">
+                  <span>{ta("thPacking", "Packing")}</span>
+                  <select
+                    value={bulkPacking}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setBulkPacking(v);
+                      if (!v) return;
+                      setCuts((prev) => prev.map((x) => ({ ...x, pkg: v })));
+                    }}
+                  >
+                    <option value="">—</option>
+                    {Array.from(new Set(Object.values(PACKING_OPTIONS).flat())).map((p) => (
+                      <option key={p} value={p} title={PACKING_TOOLTIPS[p] || ""}>{p}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="co3-apply-fld">
+                  <span>{ta("thPlant", "Plant #")}</span>
+                  <select
+                    value={bulkPlantId}
+                    onChange={(e) => {
+                      const id = e.target.value;
+                      setBulkPlantId(id);
+                      if (!id) return;
+                      const p = plantById.get(id);
+                      setCuts((prev) =>
+                        prev.map((x) => ({
+                          ...x,
+                          plantId: id,
+                          plant: p?.plant_number || "",
+                        })),
+                      );
+                    }}
+                    disabled={allowedPlants.length === 0}
+                  >
+                    <option value="">—</option>
+                    {allowedPlants.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.plant_number ? `${p.plant_number} · ` : ""}
+                        {p.name}
+                        {p.country_code ? ` (${p.country_code})` : ""}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="co3-apply-fld">
+                  <span>{ta("thSpec", "Spec")}</span>
+                  <select
+                    value={bulkSpec}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setBulkSpec(v);
+                      if (!v) return;
+                      setCuts((prev) => prev.map((x) => ({ ...x, spec: v })));
+                    }}
+                  >
+                    <option value="">—</option>
+                    {SPECS.map((s) => <option key={s} value={s}>{s}</option>)}
+                  </select>
+                </label>
+              </div>
+            </div>
+          )}
+
           {/* Cuts table */}
           <div id="sec-cuts" className="cov4-tblw">
             {isUsCompany && (
