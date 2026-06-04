@@ -140,6 +140,7 @@ export type DealDetailData = {
   fullNegotiationHref?: string;
   orderId?: string;
   shipmentReadOnly?: boolean;
+  closedAtEst?: string;
 };
 
 type TabKey = "overview" | "negotiation" | "shipment" | "documents";
@@ -307,11 +308,19 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
         <span className="ddv-head-thumb"><FileTextIcon size={20} /></span>
         <div className="ddv-head-meta">
           <h1>{recordLabel} #{data.dealNumber}</h1>
-          <p className="ddv-head-sub">
-            <span>{data.date}</span>
-            <span className="dot">·</span>
+          <p className="ddv-head-party" style={{ margin: "2px 0 6px", fontSize: 15, fontWeight: 600, color: "#111827", display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", color: "#6B7280" }}>{partyHeaderLabel}</span>
             <span className="ddv-flag">{data.party.flagEmoji}</span>
             <span>{data.party.name}</span>
+          </p>
+          <p className="ddv-head-sub">
+            <span>{data.date}</span>
+            {data.closedAtEst && (
+              <>
+                <span className="dot">·</span>
+                <span title="Closing date/time (EST)">Closed {data.closedAtEst}</span>
+              </>
+            )}
             <span className="dot">·</span>
             <span>{data.fcls}× FCL</span>
             <span className="dot">·</span>

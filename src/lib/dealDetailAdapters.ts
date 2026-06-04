@@ -267,10 +267,18 @@ export function supplierSaleToDeal(
   t: (k: string, fallback: string) => string,
 ): DealDetailData {
   const completion = sale.status === "pending_supplier" ? 0 : 0.15;
+  const closedAtEst = sale.closedAtIso
+    ? new Intl.DateTimeFormat("en-US", {
+        month: "short", day: "2-digit", year: "numeric",
+        hour: "2-digit", minute: "2-digit", hour12: false,
+        timeZone: "America/New_York", timeZoneName: "short",
+      }).format(new Date(sale.closedAtIso))
+    : undefined;
   return {
     role: "supplier",
     dealNumber: sale.dealId,
     date: sale.orderDate,
+    closedAtEst,
     fcls: sale.fclCount,
     totalKg: sale.totalWeightKg,
     product: sale.product,
