@@ -17,6 +17,7 @@ import ResetPassword from "./pages/auth/ResetPassword.tsx";
 import Signup from "./pages/signup/Signup.tsx";
 import SignupSuccess from "./pages/signup/SignupSuccess.tsx";
 import PartnerSignup from "./pages/signup/PartnerSignup.tsx";
+import ShareOfferRedirect from "./pages/ShareOfferRedirect.tsx";
 import InviteAccept from "./pages/InviteAccept.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import Onboarding from "./pages/Onboarding.tsx";
@@ -143,6 +144,7 @@ const App = () => (
            <Route path="/invite/:token" element={<InviteAccept />} />
             <Route path="/shipping-instructions/:token" element={<ShippingInstructionsForm />} />
             <Route path="/shipping-instructions/print/:requestId" element={<ShippingInstructionsPrint />} />
+            <Route path="/s/offer/:id" element={<ShareOfferRedirect />} />
             <Route
               path="/dashboard"
               element={

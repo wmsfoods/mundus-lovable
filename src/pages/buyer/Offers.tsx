@@ -322,7 +322,7 @@ export function OfferCard({
             onToggleLike={onLike}
             onToggleFavorite={onFavorite}
             onShare={onShare}
-            shareUrl={`${window.location.origin}/public/offers/${offer.id}`}
+            shareUrl={`${window.location.origin}/s/offer/${offer.id}`}
             shareTitle="Mundus Offer"
           />
         </div>

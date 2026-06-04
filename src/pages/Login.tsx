@@ -41,8 +41,11 @@ export default function Login() {
   }, []);
 
   useEffect(() => {
-    if (!authLoading && user) navigate("/", { replace: true });
-  }, [user, authLoading, navigate]);
+    if (!authLoading && user) {
+      const redirect = searchParams.get("redirect");
+      navigate(redirect && redirect.startsWith("/") ? redirect : "/", { replace: true });
+    }
+  }, [user, authLoading, navigate, searchParams]);
 
   useEffect(() => {
     const id = setInterval(() => setSlide((s) => (s + 1) % slides.length), 5000);
@@ -61,7 +64,8 @@ export default function Login() {
       return;
     }
     toast.success(t("auth.welcomeBack"));
-    navigate("/", { replace: true });
+    const redirect = searchParams.get("redirect");
+    navigate(redirect && redirect.startsWith("/") ? redirect : "/", { replace: true });
   };
 
   return (
