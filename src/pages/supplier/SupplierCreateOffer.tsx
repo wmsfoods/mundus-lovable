@@ -1160,18 +1160,20 @@ export default function SupplierCreateOffer() {
   }, [tm, MARKETS]);
 
   const [publishing, setPublishing] = useState(false);
-  const handlePublish = async () => {
-    if (!canPublish || publishing) return;
+  const handlePublish = async (opts: { asDraft?: boolean } = {}) => {
+    const asDraft = !!opts.asDraft;
+    if (publishing) return;
+    if (!asDraft && !canPublish) return;
     if (companyLoading) return;
     if (!company?.id) {
       toast.error(ta("toastNoSupplierCo", "No supplier company linked to your account"));
       return;
     }
-    if (selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
+    if (!asDraft && selInco.includes("EXW") && !(incoExtras.exwCity || "").trim()) {
       toast.error(ta("toastEnterExw", "Please enter the EXW pickup location"));
       return;
     }
-    if (exceedsHardCap) {
+    if (!asDraft && exceedsHardCap) {
       toast.error(
         ta(
           "toastExceedHardCap",
@@ -1183,13 +1185,13 @@ export default function SupplierCreateOffer() {
     }
     // Pre-validate that at least one cut has a resolvable name or cutId
     const hasResolvableCut = cuts.some(c => c.cutId || c.cut.trim().length > 0);
-    if (!hasResolvableCut) {
+    if (!asDraft && !hasResolvableCut) {
       toast.error(ta("toastAddOneCut", "Please add at least one product/cut with a valid name before publishing."));
       return;
     }
     // Ensure cuts have qty and price
     const invalidCuts = cuts.filter(c => !(parseFloat(c.qty) > 0) || !(parseFloat(c.ask) > 0));
-    if (invalidCuts.length > 0) {
+    if (!asDraft && invalidCuts.length > 0) {
       toast.error(ta("toastInvalidCuts", "{{n}} cut(s) have missing quantity or price. Please fill all fields.", { n: invalidCuts.length }));
       return;
     }
