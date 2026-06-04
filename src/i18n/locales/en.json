@@ -1678,6 +1678,8 @@
       },
       "card": {
         "cuts": "{{count}} PRODUCT / CUTS",
+        "mixedTitle": "Mixed Container — {{count}} cuts",
+        "fullContainerOneCut": "Full Container — 1 Cut",
         "moreCuts": "+{{count}} more",
         "origin": "Origin",
         "destination": "Destination",
