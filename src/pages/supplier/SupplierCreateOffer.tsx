@@ -479,6 +479,13 @@ export default function SupplierCreateOffer() {
 
   const [showPreview, setShowPreview] = useState(false);
 
+  // Layout v3 — logistics shown as summary pills; full editor lives in a modal.
+  const [logisticsOpen, setLogisticsOpen] = useState(false);
+  // Apply-to-all controls (only enabled when more than 1 cut exists)
+  const [bulkPacking, setBulkPacking] = useState<string>("");
+  const [bulkPlantId, setBulkPlantId] = useState<string>("");
+  const [bulkSpec, setBulkSpec] = useState<string>("");
+
   /* Phase 3: per-cut plant selector is now sourced from `allowedPlants`
      (office-scoped, with family fallback). Legacy plant_numbers strings
      are still surfaced for display under `c.plant`. */
