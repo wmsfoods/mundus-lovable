@@ -50,7 +50,12 @@ export function useRealSupplierOffers() {
           shipment_month, shipment_year, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location,
           items:offer_items ( id, amount, price, minimum_price, condition, packaging,
-            customer_product:customer_products ( id, name ) ),
+            customer_product:customer_products (
+              id, name,
+              standard_product:standard_products (
+                product_category:product_categories ( code, name_en )
+              )
+            ) ),
           markets:offer_markets ( market:markets ( country:countries ( english_name ) ) ),
           incoterms:offer_allowed_incoterms ( incoterm_type ),
           negotiations ( id )
@@ -86,6 +91,9 @@ export function useRealSupplierOffers() {
         // NOT divide the per-FCL value.
         const pricePerFclUsd = askingPrice;
         const firstName = items[0]?.customer_product?.name ?? null;
+        const firstCategory =
+          items[0]?.customer_product?.standard_product?.product_category?.name_en
+          ?? "—";
         const formattedNumber = formatOfferNumber(o.offer_number, o.created_at);
         const title =
           items.length === 0 ? formattedNumber :
@@ -106,7 +114,7 @@ export function useRealSupplierOffers() {
           status,
         createdAt: o.created_at,
           offerNumber: o.offer_number,
-          category: "Beef",
+          category: firstCategory,
           condition,
           title,
           mixed: items.length > 1,
