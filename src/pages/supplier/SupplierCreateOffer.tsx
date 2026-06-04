@@ -2591,15 +2591,29 @@ export default function SupplierCreateOffer() {
             </div>
             {distSpecific && (
               <div className="cov4-cust-list">
-                {MOCK_CUSTOMERS.map((c) => {
-                  const on = selectedCustomers.includes(c.id);
-                  return (
-                    <button key={c.id} type="button" className={`cov4-cust-chip ${on ? "on" : ""}`} onClick={() => toggleCustomer(c.id)}>
-                      {on ? "✓ " : ""}{c.name}
-                      <span className="cov4-cust-country">{c.country}</span>
-                    </button>
-                  );
-                })}
+                {myCustomersLoading ? (
+                  <div className="cov4-cust-empty">{t("common.loading")}</div>
+                ) : myCustomers.length === 0 ? (
+                  <div className="cov4-cust-empty">{t("supplier.myCustomers.empty")}</div>
+                ) : (
+                  myCustomers
+                    .filter((c) => !!c.buyer_company_id)
+                    .map((c) => {
+                      const id = c.buyer_company_id as string;
+                      const on = selectedCustomers.includes(id);
+                      return (
+                        <button
+                          key={id}
+                          type="button"
+                          className={`cov4-cust-chip ${on ? "on" : ""}`}
+                          onClick={() => toggleCustomer(id)}
+                        >
+                          {on ? "✓ " : ""}{c.company_name}
+                          {c.country ? <span className="cov4-cust-country">{c.country}</span> : null}
+                        </button>
+                      );
+                    })
+                )}
               </div>
             )}
           </div>
