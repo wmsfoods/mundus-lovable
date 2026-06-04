@@ -1622,6 +1622,13 @@
       "showingShort": "Exibindo {{shown}} de {{total}} ofertas",
       "newOffer": "Nova oferta",
       "openOffer": "Abrir oferta",
+      "deleteDraft": "Excluir",
+      "deleteDraftTitle": "Excluir este rascunho?",
+      "deleteDraftBody": "Este rascunho será removido permanentemente. Esta ação não pode ser desfeita.",
+      "deleteDraftCancel": "Cancelar",
+      "deleteDraftConfirm": "Excluir rascunho",
+      "deleteDraftSuccess": "Rascunho excluído",
+      "deleting": "Excluindo...",
       "statusFilter": "Status",
       "allStatuses": "Todos status",
       "kpi": {
