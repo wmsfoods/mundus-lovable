@@ -342,5 +342,6 @@ export default function PublicOfferCard({
         </div>
       )}
     </article>
+    </GlowCard>
   );
 }
