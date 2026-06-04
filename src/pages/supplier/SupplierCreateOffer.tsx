@@ -1781,9 +1781,71 @@ export default function SupplierCreateOffer() {
         </div>
       </header>
 
-      <div className={`cov4-grid ${showPreview ? "with-preview" : ""}`}>
-        {/* ═══════════ LEFT PANEL ═══════════ */}
-        <aside className="cov4-panel cov4-panel-l">
+      {/* ═══════════ LOGISTICS SUMMARY BAR (layout v3) ═══════════ */}
+      <div className="co3-logistics-bar">
+        <div className="co3-pill">
+          <span className="co3-pill-l">{ta("logisticsFrom", "FROM")}</span>
+          <span className="co3-pill-v">
+            {(() => {
+              const p = originPorts.find((x) => x.id === originPortId);
+              return p ? `${p.name}${p.code ? ` (${p.code})` : ""}` : "—";
+            })()}
+          </span>
+        </div>
+        <div className="co3-pill">
+          <span className="co3-pill-l">
+            {ta("logisticsTo", "TO · {{n}} COUNTRIES", { n: selMarkets.length })}
+          </span>
+          <span className="co3-pill-v">
+            {selMarkets.length === 0
+              ? "—"
+              : selMarkets.map((m) => m.f).join(" ") +
+                " · " +
+                selMarkets.reduce((acc, m) => acc + (mcfg[m.id]?.sp.length || 0), 0) +
+                " " +
+                ta("ports", "ports")}
+          </span>
+        </div>
+        <div className="co3-pill">
+          <span className="co3-pill-l">{ta("logisticsContainer", "CONTAINER")}</span>
+          <span className="co3-pill-v">{`${fcl}× ${csize} · ${temp}`}</span>
+        </div>
+        <div className="co3-pill">
+          <span className="co3-pill-l">{ta("logisticsIncoterm", "INCOTERM")}</span>
+          <span className="co3-pill-v">{selInco.length ? selInco.join(", ") : "—"}</span>
+        </div>
+        <div className="co3-pill">
+          <span className="co3-pill-l">{ta("logisticsCertifications", "CERTIFICATIONS")}</span>
+          <span className="co3-pill-v">
+            {certifications.length ? certifications.join(" · ") : "—"}
+          </span>
+        </div>
+        <button
+          type="button"
+          className="co3-edit-logistics"
+          onClick={() => setLogisticsOpen(true)}
+        >
+          ✎ {ta("editLogistics", "Edit logistics")}
+        </button>
+      </div>
+
+      <div className={`cov4-grid co3-single ${showPreview ? "with-preview" : ""}`}>
+        {/* ═══════════ LEFT PANEL — rendered as MODAL only (layout v3) ═══════════ */}
+        {logisticsOpen && (
+        <>
+        <div className="co3-modal-backdrop" onClick={() => setLogisticsOpen(false)} />
+        <aside className="cov4-panel cov4-panel-l co3-modal-panel" role="dialog" aria-modal="true">
+          <div className="co3-modal-h">
+            <h2>{ta("editLogistics", "Edit logistics")}</h2>
+            <button
+              type="button"
+              className="co3-modal-close"
+              onClick={() => setLogisticsOpen(false)}
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
           <SectionHeader icon="🌍" t={ta("secMarketsTitle", "Markets & freight")} s={ta("secMarketsSub", "Countries, ports, freight costs")} />
 
           {/* ── Origin Port ─────────────────────────────────── */}
