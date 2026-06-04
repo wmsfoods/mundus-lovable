@@ -2177,19 +2177,19 @@ export default function SupplierCreateOffer() {
 
             {selInco.includes("CIF") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">🛡 CIF Insurance cost</span>
+                <span className="cov4-inco-ex-lbl">{ta("cifInsLabel", "🛡 CIF Insurance cost")}</span>
                 <PriceInput value={incoExtras.cifInsurance || ""} onChange={(v) => setIncoExtras((p) => ({ ...p, cifInsurance: v }))} />
               </div>
             )}
             {selInco.includes("EXW") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">📍 EXW Pickup location</span>
+                <span className="cov4-inco-ex-lbl">{ta("exwPickupLabel", "📍 EXW Pickup location")}</span>
                 <input
                   className="cov4-text-in"
                   type="text"
                   name="exw-pickup-address"
                   autoComplete="street-address"
-                  placeholder="City, warehouse address..."
+                  placeholder={ta("exwCityPh", "City, warehouse address...")}
                   value={incoExtras.exwCity || ""}
                   onChange={(e) => setIncoExtras((p) => ({ ...p, exwCity: e.target.value }))}
                 />
@@ -2197,14 +2197,14 @@ export default function SupplierCreateOffer() {
             )}
             {selInco.includes("DDP") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">🚚 DDP Delivery city</span>
-                <input className="cov4-text-in" placeholder="Final destination city..." value={incoExtras.ddpCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, ddpCity: e.target.value }))} />
+                <span className="cov4-inco-ex-lbl">{ta("ddpCityLabel", "🚚 DDP Delivery city")}</span>
+                <input className="cov4-text-in" placeholder={ta("ddpCityPh", "Final destination city...")} value={incoExtras.ddpCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, ddpCity: e.target.value }))} />
               </div>
             )}
             {selInco.includes("DAP") && (
               <div className="cov4-inco-extra">
-                <span className="cov4-inco-ex-lbl">📦 DAP Delivery place</span>
-                <input className="cov4-text-in" placeholder="Delivery address or terminal..." value={incoExtras.dapCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, dapCity: e.target.value }))} />
+                <span className="cov4-inco-ex-lbl">{ta("dapPlaceLabel", "📦 DAP Delivery place")}</span>
+                <input className="cov4-text-in" placeholder={ta("dapPlacePh", "Delivery address or terminal...")} value={incoExtras.dapCity || ""} onChange={(e) => setIncoExtras((p) => ({ ...p, dapCity: e.target.value }))} />
               </div>
             )}
 
