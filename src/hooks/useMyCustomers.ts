@@ -74,7 +74,7 @@ export function useMyCustomers(opts: UseMyCustomersOptions = {}) {
            invited_at, responded_at, reinvite_count, last_decline_at,
            private_label, notes, invited_by_user_id,
            buyer:companies!supplier_customer_links_buyer_company_id_fkey (id, name, country, tax_id),
-           request:user_requests!supplier_customer_links_user_request_id_fkey (id, company_name, contact_name, email, phone, country, tax_id, status)`,
+           request:user_requests!supplier_customer_links_user_request_id_fkey (id, company_name, name, email, phone, country, tax_id, status)`,
         )
         .eq("supplier_office_id", officeId);
       if (statuses && statuses.length) q = q.in("status", statuses);
@@ -98,7 +98,7 @@ export function useMyCustomers(opts: UseMyCustomersOptions = {}) {
           notes: r.notes,
           invited_by_user_id: r.invited_by_user_id,
           company_name: buyer?.name ?? req?.company_name ?? "—",
-          contact_name: req?.contact_name ?? null,
+          contact_name: req?.name ?? null,
           email: req?.email ?? null,
           phone: req?.phone ?? null,
           country: buyer?.country ?? req?.country ?? null,
