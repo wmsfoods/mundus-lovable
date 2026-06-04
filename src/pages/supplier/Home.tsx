@@ -78,8 +78,13 @@ export default function SupplierHome() {
   const officeFocus = activeOffice && !isAllOffices;
   const officeName = officeFocus ? (activeOffice.office_name || activeOffice.name) : "";
   const greetingKey = useGreetingKey();
-  const userName = user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "Antonio";
-  const firstName = userName.split(" ")[0].replace(/^./, (c) => c.toUpperCase());
+  const { fullName } = useUserFullName();
+  const displayName =
+    fullName ||
+    (user?.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "there")
+      .split(" ")
+      .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(" ");
   const { offers, loading } = useRealSupplierOffers();
   const dash = useSupplierDashboard();
 
@@ -135,7 +140,7 @@ export default function SupplierHome() {
                 <span className="ping" />
                 <span className="dot" />
               </span>
-              {t(`supplier.home.greeting.${greetingKey}`, { name: firstName })}
+              {t(`supplier.home.greeting.${greetingKey}`, { name: displayName })}
             </span>
             <h2>
               <span className="sh-hero-title-lead">{t("supplier.home.heroTitle")}</span>
