@@ -276,6 +276,12 @@ function CutRowView({
 
   const { cuts: catalog, loading: cutsLoading } = useCutsCatalog(row.protein, cutRegion);
 
+  const selectedCatalogCut = useMemo(
+    () => (row.cutId ? catalog.find((c) => c.id === row.cutId) : null),
+    [catalog, row.cutId],
+  );
+  const catalogPhotoUrl = selectedCatalogCut?.image_url ?? null;
+
   /* Validation (soft, UX-only this batch) */
   const errors = {
     cut: !row.cutName,
@@ -311,7 +317,8 @@ function CutRowView({
     <tr className="border-t border-border align-top">
       <td className="px-2 py-2">
         <PhotoCell
-          previewUrl={row.photoPreviewUrl}
+          previewUrl={row.photoPreviewUrl ?? catalogPhotoUrl}
+          canRemove={!!row.photoPreviewUrl}
           onPick={(f) => {
             if (row.photoPreviewUrl) URL.revokeObjectURL(row.photoPreviewUrl);
             onChange({
@@ -351,7 +358,12 @@ function CutRowView({
           onChange={(e) => {
             const id = e.target.value || null;
             const found = catalog.find((c) => c.id === id);
-            onChange({ cutId: id, cutName: found?.displayName ?? "" });
+            onChange({
+              cutId: id,
+              cutName: found?.displayName ?? "",
+              // Prefill spec from catalog when row spec is empty
+              spec: row.spec || (found?.bone_spec ?? ""),
+            });
           }}
         >
           <option value="">
