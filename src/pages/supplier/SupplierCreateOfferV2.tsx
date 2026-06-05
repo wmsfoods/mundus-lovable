@@ -548,7 +548,21 @@ export default function SupplierCreateOfferV2() {
       />
 
       <PageTitle
-        title={tk("title", "New offer")}
+        title={
+          mode === "edit" && offerPrefillQuery.data?.prefill
+            ? tk("editMode.title", "Edit offer {{n}}", {
+                n: formatOfferNumber(offerPrefillQuery.data.prefill.offerNumber),
+              })
+            : mode === "clone" && offerPrefillQuery.data?.prefill
+              ? tk("cloneMode.title", "New offer cloned from {{n}}", {
+                  n: formatOfferNumber(offerPrefillQuery.data.prefill.offerNumber),
+                })
+              : mode === "fromRequest" && requestPrefillQuery.data?.requestNumber
+                ? tk("fromRequestMode.title", "New offer from request #{{n}}", {
+                    n: requestPrefillQuery.data.requestNumber,
+                  })
+                : tk("title", "New offer")
+        }
         subtitle={tk("subtitle", "One screen · click any pill to edit")}
         right={
           <div className="flex items-center gap-3">
