@@ -11,6 +11,15 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { usePortsCatalog } from "@/hooks/usePortsCatalog";
@@ -28,7 +37,7 @@ import {
   type Temperature,
 } from "@/lib/offerOptions";
 import { cn } from "@/lib/utils";
-import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3 } from "lucide-react";
+import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
 import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
 import { type CutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
@@ -70,7 +79,7 @@ type DestinationState = {
 
 type LogisticsState = {
   originCountryId: string | null;
-  originPortId: string | null;
+  originPortIds: string[];
   destinations: DestinationState[];
   containerSize: ContainerSize;
   fclCount: number;
@@ -86,7 +95,7 @@ type LogisticsState = {
 
 const EMPTY_LOGISTICS: LogisticsState = {
   originCountryId: null,
-  originPortId: null,
+  originPortIds: [],
   destinations: [],
   containerSize: "40ft",
   fclCount: 1,
@@ -126,6 +135,190 @@ function SectionPlaceholder({ title, hint, height = 160 }: { title: string; hint
     >
       <p className="text-sm font-medium text-foreground">{title}</p>
       <p className="text-xs text-muted-foreground">{hint}</p>
+    </div>
+  );
+}
+
+type TkFn = (key: string, fallback: string, opts?: Record<string, unknown>) => string;
+
+function OriginPicker({
+  countries,
+  portsForCountry,
+  countryId,
+  onCountryChange,
+  portIds,
+  onPortIdsChange,
+  incoterms,
+  tk,
+}: {
+  countries: { id: string; english_name: string; flag_emoji: string | null }[];
+  portsForCountry: { id: string; name: string; code: string }[];
+  countryId: string | null;
+  onCountryChange: (id: string | null) => void;
+  portIds: string[];
+  onPortIdsChange: (ids: string[]) => void;
+  incoterms: string[];
+  tk: TkFn;
+}) {
+  const [countryOpen, setCountryOpen] = useState(false);
+  const [portOpen, setPortOpen] = useState(false);
+  const country = countryId ? countries.find((c) => c.id === countryId) ?? null : null;
+  const singleOriginRequired =
+    incoterms.includes("FOB") || incoterms.includes("EXW");
+  const tooManyPorts = singleOriginRequired && portIds.length > 1;
+  const noPort = portIds.length === 0;
+
+  const togglePort = (id: string) => {
+    if (portIds.includes(id)) onPortIdsChange(portIds.filter((p) => p !== id));
+    else onPortIdsChange([...portIds, id]);
+  };
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
+        <div>
+          <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            {tk("drawer.s1.country", "Country")}
+          </label>
+          <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="flex w-full items-center justify-between rounded-md border border-border bg-card px-2 py-2 text-sm"
+              >
+                <span className="truncate text-left">
+                  {country
+                    ? `${country.flag_emoji ?? ""} ${country.english_name}`
+                    : tk("drawer.s1.selectCountry", "Select…")}
+                </span>
+                <ChevronsUpDown size={14} className="ml-2 shrink-0 text-muted-foreground" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
+              <Command>
+                <CommandInput placeholder={tk("logistics.country.placeholder", "Search countries…")} />
+                <CommandList>
+                  <CommandEmpty>{tk("logistics.country.empty", "No country found")}</CommandEmpty>
+                  <CommandGroup>
+                    {countries.map((c) => (
+                      <CommandItem
+                        key={c.id}
+                        value={c.english_name}
+                        onSelect={() => {
+                          onCountryChange(c.id);
+                          setCountryOpen(false);
+                        }}
+                      >
+                        <Check
+                          size={14}
+                          className={cn(
+                            "mr-2",
+                            country?.id === c.id ? "opacity-100" : "opacity-0",
+                          )}
+                        />
+                        <span className="mr-2">{c.flag_emoji ?? ""}</span>
+                        {c.english_name}
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+
+        <div>
+          <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+            {tk("drawer.s1.port", "Port")}
+          </label>
+          <Popover open={portOpen} onOpenChange={(o) => countryId && setPortOpen(o)}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                disabled={!countryId}
+                className="flex w-full items-center justify-between rounded-md border border-border bg-card px-2 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <span className="truncate text-left">
+                  {!countryId
+                    ? tk("logistics.port.selectCountryFirst", "Select origin country first")
+                    : portIds.length === 0
+                      ? tk("logistics.port.addPort", "Add port")
+                      : tk("logistics.port.nSelected", "{{n}} port(s) selected", { n: portIds.length })}
+                </span>
+                <ChevronsUpDown size={14} className="ml-2 shrink-0 text-muted-foreground" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
+              <Command>
+                <CommandInput placeholder={tk("logistics.port.placeholder", "Search ports…")} />
+                <CommandList>
+                  <CommandEmpty>{tk("logistics.port.empty", "No port found")}</CommandEmpty>
+                  <CommandGroup>
+                    {portsForCountry.map((p) => {
+                      const checked = portIds.includes(p.id);
+                      return (
+                        <CommandItem
+                          key={p.id}
+                          value={`${p.name} ${p.code ?? ""}`}
+                          onSelect={() => togglePort(p.id)}
+                        >
+                          <Check
+                            size={14}
+                            className={cn("mr-2", checked ? "opacity-100" : "opacity-0")}
+                          />
+                          {p.name} {p.code ? `(${p.code})` : ""}
+                        </CommandItem>
+                      );
+                    })}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </div>
+      </div>
+
+      {portIds.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {portIds.map((pid) => {
+            const p = portsForCountry.find((x) => x.id === pid);
+            if (!p) return null;
+            return (
+              <span
+                key={pid}
+                className="inline-flex items-center gap-1 rounded-full border border-border bg-muted/40 px-2 py-0.5 text-xs"
+              >
+                {p.name}
+                {p.code ? ` (${p.code})` : ""}
+                <button
+                  type="button"
+                  onClick={() => togglePort(pid)}
+                  className="ml-0.5 text-muted-foreground hover:text-foreground"
+                  aria-label="Remove"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            );
+          })}
+        </div>
+      )}
+
+      {tooManyPorts && (
+        <div className="flex items-start gap-2 rounded-md border border-amber-500/40 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:bg-amber-950/40 dark:text-amber-200">
+          <AlertTriangle size={14} className="mt-0.5 shrink-0" />
+          <span>
+            {tk("logistics.warning.singlePortFobExw",
+              "{{n}} origin ports selected, but FOB/EXW supports only 1. Remove extras to continue.",
+              { n: portIds.length })}
+          </span>
+        </div>
+      )}
+      {!tooManyPorts && countryId && noPort && (
+        <div className="rounded-md border border-border bg-muted/30 px-3 py-2 text-xs text-muted-foreground">
+          {tk("logistics.warning.atLeastOnePort", "Select at least one origin port.")}
+        </div>
+      )}
     </div>
   );
 }
@@ -240,7 +433,7 @@ export default function SupplierCreateOfferV2() {
     if (!data) return;
     setLogistics({
       originCountryId: data.originCountryId,
-      originPortId: data.originPortId,
+      originPortIds: data.originPortIds,
       destinations: data.destinations,
       containerSize: data.containerSize,
       fclCount: data.fclCount,
@@ -383,7 +576,10 @@ export default function SupplierCreateOfferV2() {
   };
 
   // Top strip computed values
-  const originPort = logistics.originPortId ? catalog.ports.find((p) => p.id === logistics.originPortId) : null;
+  const originPort = logistics.originPortIds[0]
+    ? catalog.ports.find((p) => p.id === logistics.originPortIds[0])
+    : null;
+  const originPortExtraCount = Math.max(0, logistics.originPortIds.length - 1);
   const originCountry = logistics.originCountryId ? catalog.getCountryById(logistics.originCountryId) : null;
 
   const destPortCount = logistics.destinations.reduce((acc, d) => acc + d.selectedPortIds.length, 0);
@@ -642,7 +838,7 @@ export default function SupplierCreateOfferV2() {
           label={tk("strip.from", "From")}
           value={
             originPort && originCountry
-              ? `${originCountry.flag_emoji ?? ""} ${originPort.name}`
+              ? `${originCountry.flag_emoji ?? ""} ${originPort.name}${originPortExtraCount > 0 ? ` +${originPortExtraCount}` : ""}`
               : tk("strip.empty", "—")
           }
           onClick={() => openDrawer("origin")}
@@ -790,45 +986,18 @@ export default function SupplierCreateOfferV2() {
 
             {/* 1. Origin */}
             <DrawerSection number={1} title={tk("drawer.s1.title", "Origin")} focused={drawerFocus === "origin"}>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {tk("drawer.s1.country", "Country")}
-                  </label>
-                  <select
-                    className="w-full rounded-md border border-border bg-card px-2 py-2 text-sm"
-                    value={drawerDraft.originCountryId ?? ""}
-                    onChange={(e) =>
-                      setDrawerDraft((p) => ({ ...p, originCountryId: e.target.value || null, originPortId: null }))
-                    }
-                  >
-                    <option value="">{tk("drawer.s1.selectCountry", "Select…")}</option>
-                    {catalog.countries.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.flag_emoji ?? ""} {c.english_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {tk("drawer.s1.port", "Port")}
-                  </label>
-                  <select
-                    className="w-full rounded-md border border-border bg-card px-2 py-2 text-sm"
-                    value={drawerDraft.originPortId ?? ""}
-                    disabled={!drawerDraft.originCountryId}
-                    onChange={(e) => setDrawerDraft((p) => ({ ...p, originPortId: e.target.value || null }))}
-                  >
-                    <option value="">{tk("drawer.s1.selectPort", "Select…")}</option>
-                    {draftPortsForCountry(drawerDraft.originCountryId ?? "").map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <OriginPicker
+                countries={catalog.countries}
+                portsForCountry={draftPortsForCountry(drawerDraft.originCountryId ?? "")}
+                countryId={drawerDraft.originCountryId}
+                onCountryChange={(cid) =>
+                  setDrawerDraft((p) => ({ ...p, originCountryId: cid, originPortIds: [] }))
+                }
+                portIds={drawerDraft.originPortIds}
+                onPortIdsChange={(ids) => setDrawerDraft((p) => ({ ...p, originPortIds: ids }))}
+                incoterms={drawerDraft.incoterms}
+                tk={tk}
+              />
             </DrawerSection>
 
             {/* 2. Destinations */}

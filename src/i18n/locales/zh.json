@@ -2746,7 +2746,24 @@
       "loading": {
         "prefill": "正在加载报价数据…"
       },
-      "livePreviewComingSoon": "即将推出"
+      "livePreviewComingSoon": "即将推出",
+      "logistics": {
+        "country": {
+          "placeholder": "搜索国家…",
+          "empty": "未找到国家"
+        },
+        "port": {
+          "placeholder": "搜索港口…",
+          "empty": "未找到港口",
+          "selectCountryFirst": "请先选择来源国家",
+          "addPort": "添加港口",
+          "nSelected": "已选择 {{n}} 个港口"
+        },
+        "warning": {
+          "singlePortFobExw": "已选择 {{n}} 个来源港口，但 FOB/EXW 仅支持 1 个。请移除多余的以继续。",
+          "atLeastOnePort": "请至少选择一个来源港口。"
+        }
+      }
     }
   },
   "dealDetail": {

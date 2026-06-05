@@ -8,7 +8,7 @@ type PortFreightShape =
 
 export type SubmitLogistics = {
   originCountryId: string | null;
-  originPortId: string | null;
+  originPortIds: string[];
   destinations: {
     countryId: string;
     selectedPortIds: string[];
@@ -108,7 +108,10 @@ function deriveShipment(yyyymm: string): { shipment_month: number; shipment_year
 
 export function validateForPublish(input: SubmitInput): string | null {
   const { logistics: l, cuts, paymentTerms, distribution: d } = input;
-  if (!l.originPortId) return "missingOrigin";
+  if (!l.originPortIds || l.originPortIds.length === 0) return "missingOrigin";
+  if ((l.incoterms.includes("FOB") || l.incoterms.includes("EXW")) && l.originPortIds.length > 1) {
+    return "singleOriginPortRequired";
+  }
   if (l.destinations.length === 0) return "missingDestinations";
   if (l.incoterms.length === 0) return "missingIncoterm";
   if (cuts.length === 0) return "missingCuts";
@@ -142,11 +145,12 @@ export async function submitOfferV2(
   // Resolve origin port label + country name for snapshot columns.
   let originPortLabel: string | null = null;
   let originCountryName: string | null = null;
-  if (l.originPortId) {
+  const primaryOriginPortId = l.originPortIds[0] ?? null;
+  if (primaryOriginPortId) {
     const { data: port } = await supabase
       .from("ports")
       .select("name, code, country_id")
-      .eq("id", l.originPortId)
+      .eq("id", primaryOriginPortId)
       .maybeSingle();
     if (port) {
       originPortLabel = port.code ? `${port.name} (${port.code})` : port.name;
@@ -169,7 +173,7 @@ export async function submitOfferV2(
     status: ctx.status,
     origin_country: originCountryName,
     origin_port: originPortLabel,
-    origin_port_id: l.originPortId,
+    origin_port_id: primaryOriginPortId,
     shipment_month,
     shipment_year,
     payment_terms: paymentTerms || null,
@@ -289,6 +293,15 @@ export async function submitOfferV2(
       if (error) throw new Error(`offer_allowed_incoterms failed: ${error.message}`);
     }
 
+    // 4b. Origin ports (multi)
+    const originIds = Array.from(new Set(l.originPortIds.filter(Boolean)));
+    if (originIds.length > 0) {
+      const { error: oopErr } = await supabase
+        .from("offer_origin_ports")
+        .insert(originIds.map((port_id) => ({ offer_id: offerId, port_id })));
+      if (oopErr) throw new Error(`offer_origin_ports failed: ${oopErr.message}`);
+    }
+
     // 5. Markets (country → market_id)
     const countryIds = l.destinations.map((d) => d.countryId).filter(Boolean);
     if (countryIds.length > 0) {
@@ -375,11 +388,12 @@ export async function updateOfferV2(
   // Resolve origin port label for snapshot columns (same as create).
   let originPortLabel: string | null = null;
   let originCountryName: string | null = null;
-  if (l.originPortId) {
+  const primaryOriginPortId = l.originPortIds[0] ?? null;
+  if (primaryOriginPortId) {
     const { data: port } = await supabase
       .from("ports")
       .select("name, code, country_id")
-      .eq("id", l.originPortId)
+      .eq("id", primaryOriginPortId)
       .maybeSingle();
     if (port) {
       originPortLabel = port.code ? `${port.name} (${port.code})` : port.name;
@@ -399,7 +413,7 @@ export async function updateOfferV2(
     status: ctx.status,
     origin_country: originCountryName,
     origin_port: originPortLabel,
-    origin_port_id: l.originPortId,
+    origin_port_id: primaryOriginPortId,
     shipment_month,
     shipment_year,
     payment_terms: paymentTerms || null,
@@ -432,6 +446,7 @@ export async function updateOfferV2(
   await supabase.from("offer_allowed_incoterms").delete().eq("offer_id", offerId);
   await supabase.from("offer_markets").delete().eq("offer_id", offerId);
   await supabase.from("freight_options").delete().eq("offer_id", offerId);
+  await supabase.from("offer_origin_ports").delete().eq("offer_id", offerId);
 
   // Upload only newly-picked media (existing paths flow through).
   const media = await uploadCutMedia(cuts, ctx.supplierId, offerId);
@@ -500,6 +515,15 @@ export async function updateOfferV2(
       .from("offer_allowed_incoterms")
       .insert(allowed.map((it) => ({ offer_id: offerId, incoterm_type: it })));
     if (error) throw new Error(`offer_allowed_incoterms failed: ${error.message}`);
+  }
+
+  // origin ports (multi)
+  const originIds = Array.from(new Set(l.originPortIds.filter(Boolean)));
+  if (originIds.length > 0) {
+    const { error: oopErr } = await supabase
+      .from("offer_origin_ports")
+      .insert(originIds.map((port_id) => ({ offer_id: offerId, port_id })));
+    if (oopErr) throw new Error(`offer_origin_ports failed: ${oopErr.message}`);
   }
 
   // markets

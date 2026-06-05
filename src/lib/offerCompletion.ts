@@ -1,7 +1,7 @@
 import type { CutRow } from "@/lib/cutRowTypes";
 
 type LogisticsLike = {
-  originPortId: string | null;
+  originPortIds: string[];
   destinations: { selectedPortIds: string[]; freight: { mode: "same"; same: string } | { mode: "perPort"; perPort: Record<string, string> } }[];
   incoterms: string[];
   sameFreightGlobal: boolean;
@@ -34,7 +34,10 @@ export type CompletionBreakdown = {
 const SECTION = 25;
 
 function logisticsOk(l: LogisticsLike): boolean {
-  if (!l.originPortId) return false;
+  if (!l.originPortIds || l.originPortIds.length === 0) return false;
+  // FOB / EXW are single-origin incoterms — multi-port origin is invalid.
+  const singleOriginRequired = l.incoterms.includes("FOB") || l.incoterms.includes("EXW");
+  if (singleOriginRequired && l.originPortIds.length > 1) return false;
   if (l.destinations.length === 0) return false;
   const totalPorts = l.destinations.reduce((a, d) => a + d.selectedPortIds.length, 0);
   if (totalPorts === 0) return false;
