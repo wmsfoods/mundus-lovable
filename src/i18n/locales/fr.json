@@ -2638,6 +2638,36 @@
           "typeValue": "Saisir une valeur…",
           "disabledHint": "Ajoutez 2+ découpes pour activer"
         }
+      },
+      "payment": {
+        "title": "Conditions de paiement",
+        "subtitle": "Répartition acompte / solde convenue avec l'acheteur",
+        "loading": "Chargement…",
+        "empty": "Aucune condition disponible",
+        "hint": "Définit la répartition acompte/solde. Modifiable par offre."
+      },
+      "distribution": {
+        "title": "Distribution",
+        "subtitle": "Où cette offre sera affichée — combinez librement",
+        "marketplaceLabel": "Marketplace",
+        "marketplaceDesc": "Visible par tous les acheteurs de la plateforme.",
+        "allLabel": "Tous mes clients",
+        "allDesc": "Notifie tous les clients connectés (liens SCL acceptés).",
+        "specificLabel": "Clients spécifiques",
+        "specificDesc": "Envoie uniquement aux clients sélectionnés.",
+        "loading": "Chargement des clients…",
+        "emptyCustomers": "Vous n'avez pas encore de clients connectés. Connectez-vous via Mes Clients → Inviter un client.",
+        "searchPlaceholder": "Rechercher des clients…",
+        "countSummary": "{{n}} sélectionnés sur {{t}}",
+        "selectAll": "Tout sélectionner",
+        "clear": "Effacer",
+        "noMatch": "Aucun client ne correspond à votre recherche.",
+        "hintNone": "Sélectionnez au moins une option de distribution pour publier.",
+        "hintPickCustomers": "Sélectionnez au moins un client ou désactivez Spécifiques.",
+        "sumPrefix": "Publication vers : ",
+        "sumMarketplace": "Marketplace",
+        "sumAll": "Tous les clients ({{n}})",
+        "sumSpecific": "{{n}} spécifiques"
       }
     }
   },
