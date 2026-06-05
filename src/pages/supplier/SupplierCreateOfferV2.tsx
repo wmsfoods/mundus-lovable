@@ -1054,6 +1054,8 @@ export default function SupplierCreateOfferV2() {
               : tk("strip.empty", "—")
           }
           onClick={() => openDrawer("origin")}
+          status={sectionStatus(sectionByKey.origin)}
+          tooltipContent={<MissingTooltip section={sectionByKey.origin} tk={tk} />}
         />
         <Pill
           icon={MapPin}
@@ -1067,18 +1069,23 @@ export default function SupplierCreateOfferV2() {
               : tk("strip.empty", "—")
           }
           onClick={() => openDrawer("destinations")}
+          status={sectionStatus(sectionByKey.destinations)}
+          tooltipContent={<MissingTooltip section={sectionByKey.destinations} tk={tk} />}
         />
         <Pill
           icon={Box}
           label={tk("strip.container", "Container")}
           value={`${logistics.fclCount} × ${logistics.containerSize} · ${tk(`temp.${logistics.temperature}`, logistics.temperature)}`}
           onClick={() => openDrawer("container")}
+          status="ok"
         />
         <Pill
           icon={Truck}
           label={tk("strip.incoterm", "Incoterm")}
           value={logistics.incoterms.length > 0 ? logistics.incoterms.join(" · ") : tk("strip.empty", "—")}
           onClick={() => openDrawer("container")}
+          status={sectionStatus(sectionByKey.incoterm)}
+          tooltipContent={<MissingTooltip section={sectionByKey.incoterm} tk={tk} />}
         />
         <Pill
           icon={FileBadge}
@@ -1095,6 +1102,8 @@ export default function SupplierCreateOfferV2() {
               : tk("strip.setFreight", "Set freight")
           }
           onClick={() => openDrawer("freight")}
+          status={sectionStatus(sectionByKey.freight)}
+          tooltipContent={<MissingTooltip section={sectionByKey.freight} tk={tk} />}
         />
         <Button
           type="button"
@@ -1104,6 +1113,40 @@ export default function SupplierCreateOfferV2() {
           <Edit3 size={14} className="mr-1" />
           {tk("strip.editLogistics", "Edit logistics")}
         </Button>
+      </div>
+
+      {/* Missing fields banner + section status row */}
+      <MissingFieldsBanner sections={breakdown.sections} tk={tk} onJump={jumpToSection} />
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(["cuts", "payment", "distribution"] as const).map((k) => {
+          const s = sectionByKey[k];
+          if (!s) return null;
+          const status = sectionStatus(s);
+          const cls = status === "ok"
+            ? "border-green-300 bg-green-50 text-green-800 dark:bg-green-950/30 dark:text-green-200"
+            : status === "partial"
+              ? "border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+              : "border-border bg-muted/30 text-muted-foreground";
+          return (
+            <TooltipProvider key={k} delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => jumpToSection(k)}
+                    className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium", cls)}
+                  >
+                    {status === "ok" ? <Check size={11} /> : <AlertTriangle size={11} />}
+                    {tk(s.labelKey, k)}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <MissingTooltip section={s} tk={tk} />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })}
       </div>
 
       {/* Placeholders for R3-R5 */}
@@ -1163,6 +1206,8 @@ export default function SupplierCreateOfferV2() {
         onSaveDraft={() => handleSubmit("draft")}
         onPublish={() => handleSubmit("active")}
         mode={mode}
+        missingSections={missingSections(breakdown).filter((s) => s.group !== "logistics" || s.key !== "shipment")}
+        translate={tk}
       />
       </>
       )}
