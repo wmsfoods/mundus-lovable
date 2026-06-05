@@ -51,8 +51,10 @@ export default function CompaniesAdminTab() {
         (supabase as any).from("offers").select("supplier_id").in("supplier_id", ids).is("deleted_at", null),
       ]);
       if (cancelled) return;
-      const u = (users.data ?? []).reduce<Record<string, number>>((a, r) => { a[r.company_id] = (a[r.company_id] ?? 0) + 1; return a; }, {});
-      const o = (offers.data ?? []).reduce<Record<string, number>>((a, r) => { a[r.supplier_id] = (a[r.supplier_id] ?? 0) + 1; return a; }, {});
+      const u: Record<string, number> = {};
+      ((users.data ?? []) as any[]).forEach((r) => { u[r.company_id] = (u[r.company_id] ?? 0) + 1; });
+      const o: Record<string, number> = {};
+      ((offers.data ?? []) as any[]).forEach((r) => { o[r.supplier_id] = (o[r.supplier_id] ?? 0) + 1; });
       const m: Record<string, { users: number; offers: number }> = {};
       ids.forEach((id) => { m[id] = { users: u[id] ?? 0, offers: o[id] ?? 0 }; });
       setCounts(m);
