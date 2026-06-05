@@ -138,6 +138,7 @@ export default function CompanyProfilePage({
   const [loading, setLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"profile" | "locations" | "team">("profile");
 
   // Reference data from DB
   const [marketCountries, setMarketCountries] = useState<
@@ -577,7 +578,56 @@ export default function CompanyProfilePage({
         </div>
       </div>
 
-      {/* Locations */}
+      {/* Tabs */}
+      <div
+        role="tablist"
+        aria-label="Company sections"
+        style={{
+          display: "flex",
+          gap: 4,
+          background: "#F8FAFC",
+          border: "1px solid #E2E8F0",
+          padding: 4,
+          borderRadius: 12,
+          margin: "16px 0",
+          flexWrap: "wrap",
+        }}
+      >
+        {([
+          { id: "profile", label: "Profile" },
+          { id: "locations", label: `Offices & factories (${visibleLocations.length})` },
+          { id: "team", label: "Team" },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            style={{
+              flex: "1 1 auto",
+              minWidth: 120,
+              padding: "10px 14px",
+              borderRadius: 8,
+              border: 0,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              background: tab === t.id ? "#fff" : "transparent",
+              color: tab === t.id ? "#8B2252" : "#475569",
+              boxShadow: tab === t.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              transition: "background 0.15s, color 0.15s",
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* === LOCATIONS TAB === */}
+      {tab === "locations" && (
+        <>
+      <OfficesOverview locations={visibleLocations} />
       <Section
         icon={<MapPin size={18} />}
         title="Locations"
@@ -604,8 +654,12 @@ export default function CompanyProfilePage({
           ))}
         </div>
       </Section>
+        </>
+      )}
 
-      {/* Contact */}
+      {/* === PROFILE TAB === */}
+      {tab === "profile" && (
+        <>
       <Section
         icon={<Phone size={18} />}
         title="Contact & website"
@@ -730,7 +784,11 @@ export default function CompanyProfilePage({
         </FieldLabel>
       </Section>
 
-      {/* Team / Users — shown for everyone (master can manage; others view-only) */}
+        </>
+      )}
+
+      {/* === TEAM TAB === */}
+      {tab === "team" && (
       <Section
         icon={<UsersIcon size={18} />}
         title="Team members"
@@ -741,7 +799,10 @@ export default function CompanyProfilePage({
           companyIdOverride={companyId!}
         />
       </Section>
+      )}
 
+      {tab === "profile" && (
+        <>
       {/* Brands — supplier-only manager, shown for admin or supplier of a supplier company */}
       {company.is_supplier && companyId && (role === "admin" || role === "supplier") && (
         <Section
@@ -866,6 +927,8 @@ export default function CompanyProfilePage({
           <BillingSection side={role as "supplier" | "buyer"} />
         </div>
       )}
+        </>
+      )}
     </div>
   );
 }
@@ -908,6 +971,107 @@ function FieldLabel({ label, children }: { label: string; children: ReactNode })
       <label className="cprofile-label">{label}</label>
       {children}
     </div>
+  );
+}
+
+function OfficesOverview({ locations }: { locations: LocationRow[] }) {
+  if (!locations.length) return null;
+  const hqCount = locations.filter((l) => l.office_type === "headquarters").length;
+  const officeCount = locations.filter((l) => l.office_type === "office").length;
+  const factoryCount = locations.filter((l) => l.office_type === "factory").length;
+  return (
+    <section
+      style={{
+        background: "linear-gradient(135deg, #FDF2F8 0%, #FFF 100%)",
+        border: "1px solid #F9D0E0",
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 16,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#111827" }}>
+            Network overview
+          </h3>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+            {hqCount} HQ · {officeCount} office{officeCount === 1 ? "" : "s"} · {factoryCount} factor{factoryCount === 1 ? "y" : "ies"}
+          </p>
+        </div>
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: 10,
+        }}
+      >
+        {locations.map((loc) => {
+          const isHQ = loc.office_type === "headquarters";
+          const isFactory = loc.office_type === "factory";
+          const pillBg = isHQ ? "#8B2252" : isFactory ? "#F59E0B" : "#3B82F6";
+          const pillLabel = isHQ ? "HQ" : isFactory ? "FACTORY" : "OFFICE";
+          return (
+            <div
+              key={loc.id}
+              style={{
+                background: "#fff",
+                border: "1px solid #E5E7EB",
+                borderRadius: 12,
+                padding: 12,
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                minHeight: 92,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 22, lineHeight: 1 }}>{countryFlag(loc.country)}</span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                    color: "#fff",
+                    background: pillBg,
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                  }}
+                >
+                  {pillLabel}
+                </span>
+                {loc.est_number && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: "#92400E",
+                      background: "#FEF3C7",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      marginLeft: "auto",
+                    }}
+                  >
+                    EST {loc.est_number}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", lineHeight: 1.2 }}>
+                {loc.office_name || "—"}
+              </div>
+              <div style={{ fontSize: 12, color: "#6B7280" }}>
+                {[loc.city, loc.country].filter(Boolean).join(", ") || "No address yet"}
+              </div>
+              {isFactory && loc.plant_numbers && loc.plant_numbers.length > 0 && (
+                <div style={{ fontSize: 10, color: "#6B7280", marginTop: 2 }}>
+                  +{loc.plant_numbers.length} plant{loc.plant_numbers.length === 1 ? "" : "s"}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
   );
 }
 
