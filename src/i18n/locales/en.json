@@ -3868,7 +3868,6 @@
       "noData": "No data",
       "showTrash": "Show trash",
       "deleted": "Deleted",
-      "bulkSoon": "Coming soon: bulk actions (Batch A2)",
       "tabs": {
         "offers": "Offers",
         "negotiations": "Negotiations",
@@ -3916,6 +3915,31 @@
         "allCategories": "All categories",
         "allRegions": "All regions",
         "cutName": "Cut name…"
+      },
+      "bulk": {
+        "selected": "{{count}} selected",
+        "moveToTrash": "Move to trash",
+        "restore": "Restore",
+        "hardDelete": "Hard delete",
+        "clear": "Clear"
+      },
+      "confirm": {
+        "softTitle": "Move to trash",
+        "softBody": "Will mark {{count}} {{entity}} as deleted. Items will be hidden but can be restored.",
+        "hardTitle": "Hard delete (PERMANENT)",
+        "hardBody": "Will PERMANENTLY delete {{count}} {{entity}} + cascade children. This action CANNOT be undone.",
+        "hardTypeToConfirm": "Type DELETE to confirm",
+        "typeHere": "Type here…",
+        "restoreTitle": "Restore",
+        "restoreBody": "Will restore {{count}} deleted items.",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
+      },
+      "toast": {
+        "softSuccess": "Moved to trash",
+        "hardSuccess": "Permanently deleted",
+        "restoreSuccess": "Restored",
+        "blocked": "Blocked: {{reason}}"
       }
     }
   },

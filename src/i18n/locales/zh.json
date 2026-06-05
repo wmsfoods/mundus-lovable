@@ -3854,7 +3854,6 @@
       "noData": "无数据",
       "showTrash": "显示回收站",
       "deleted": "已删除",
-      "bulkSoon": "即将推出：批量操作 (Batch A2)",
       "tabs": {
         "offers": "报价",
         "negotiations": "谈判",
@@ -3902,6 +3901,31 @@
         "allCategories": "所有类别",
         "allRegions": "所有区域",
         "cutName": "切割名称…"
+      },
+      "bulk": {
+        "selected": "已选择 {{count}} 项",
+        "moveToTrash": "移至回收站",
+        "restore": "恢复",
+        "hardDelete": "永久删除",
+        "clear": "清除"
+      },
+      "confirm": {
+        "softTitle": "移至回收站",
+        "softBody": "将把 {{count}} 个 {{entity}} 标记为已删除。项目将被隐藏，但可以恢复。",
+        "hardTitle": "永久删除（PERMANENT）",
+        "hardBody": "将永久删除 {{count}} 个 {{entity}} 及其级联子项。此操作无法撤消。",
+        "hardTypeToConfirm": "输入 DELETE 以确认",
+        "typeHere": "在此输入…",
+        "restoreTitle": "恢复",
+        "restoreBody": "将恢复 {{count}} 个已删除的项目。",
+        "confirm": "确认",
+        "cancel": "取消"
+      },
+      "toast": {
+        "softSuccess": "已移至回收站",
+        "hardSuccess": "已永久删除",
+        "restoreSuccess": "已恢复",
+        "blocked": "已阻止：{{reason}}"
       }
     }
   },

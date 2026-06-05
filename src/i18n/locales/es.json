@@ -3868,7 +3868,6 @@
       "noData": "Sin datos",
       "showTrash": "Mostrar papelera",
       "deleted": "Eliminado",
-      "bulkSoon": "Próximamente: acciones masivas (Batch A2)",
       "tabs": {
         "offers": "Ofertas",
         "negotiations": "Negociaciones",
@@ -3916,6 +3915,31 @@
         "allCategories": "Todas las categorías",
         "allRegions": "Todas las regiones",
         "cutName": "Nombre del corte…"
+      },
+      "bulk": {
+        "selected": "{{count}} seleccionados",
+        "moveToTrash": "Mover a papelera",
+        "restore": "Restaurar",
+        "hardDelete": "Eliminar permanentemente",
+        "clear": "Limpiar"
+      },
+      "confirm": {
+        "softTitle": "Mover a papelera",
+        "softBody": "Marcará {{count}} {{entity}} como eliminados. Los elementos se ocultarán pero pueden ser restaurados.",
+        "hardTitle": "Eliminar permanentemente (PERMANENTE)",
+        "hardBody": "Eliminará PERMANENTEMENTE {{count}} {{entity}} + elementos en cascada. Esta acción NO se puede deshacer.",
+        "hardTypeToConfirm": "Escribe DELETE para confirmar",
+        "typeHere": "Escribe aquí…",
+        "restoreTitle": "Restaurar",
+        "restoreBody": "Restaurará {{count}} elementos eliminados.",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar"
+      },
+      "toast": {
+        "softSuccess": "Movido a papelera",
+        "hardSuccess": "Eliminado permanentemente",
+        "restoreSuccess": "Restaurado",
+        "blocked": "Bloqueado: {{reason}}"
       }
     }
   },

@@ -3868,7 +3868,6 @@
       "noData": "Sem dados",
       "showTrash": "Mostrar lixeira",
       "deleted": "Excluído",
-      "bulkSoon": "Em breve: ações em massa (Batch A2)",
       "tabs": {
         "offers": "Ofertas",
         "negotiations": "Negociações",
@@ -3916,6 +3915,31 @@
         "allCategories": "Todas as categorias",
         "allRegions": "Todas as regiões",
         "cutName": "Nome do corte…"
+      },
+      "bulk": {
+        "selected": "{{count}} selecionados",
+        "moveToTrash": "Mover para lixeira",
+        "restore": "Restaurar",
+        "hardDelete": "Deletar permanentemente",
+        "clear": "Limpar"
+      },
+      "confirm": {
+        "softTitle": "Mover para lixeira",
+        "softBody": "Marcará {{count}} {{entity}} como deletados. Itens ficarão escondidos mas podem ser restaurados.",
+        "hardTitle": "Deletar permanentemente (PERMANENTE)",
+        "hardBody": "Irá PERMANENTEMENTE deletar {{count}} {{entity}} + filhos em cascata. Esta ação NÃO pode ser desfeita.",
+        "hardTypeToConfirm": "Digite DELETE para confirmar",
+        "typeHere": "Digite aqui…",
+        "restoreTitle": "Restaurar",
+        "restoreBody": "Irá restaurar {{count}} itens deletados.",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar"
+      },
+      "toast": {
+        "softSuccess": "Movido para lixeira",
+        "hardSuccess": "Deletado permanentemente",
+        "restoreSuccess": "Restaurado",
+        "blocked": "Bloqueado: {{reason}}"
       }
     }
   },
