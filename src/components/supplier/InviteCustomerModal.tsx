@@ -6,6 +6,7 @@ import { TextField } from "@/components/mundus/TextField";
 import { useDedupCheck, type DedupCase } from "@/hooks/useDedupCheck";
 import { useInviteBuyer, type InviteBuyerFlow } from "@/hooks/useInviteBuyer";
 import { CountrySelect } from "@/components/admin/CountrySelect";
+import { useActiveOffice } from "@/hooks/useActiveOffice";
 
 type Props = {
   open: boolean;
@@ -50,6 +51,16 @@ export default function InviteCustomerModal({ open, onClose }: Props) {
   const [phone, setPhone] = useState("");
   const [country, setCountry] = useState("");
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const { activeOfficeId, offices } = useActiveOffice();
+  const [officeId, setOfficeId] = useState<string>("");
+
+  // Default office: active office, else single office, else empty (forces pick).
+  useEffect(() => {
+    if (!open) return;
+    if (activeOfficeId) setOfficeId(activeOfficeId);
+    else if (offices.length === 1) setOfficeId(offices[0].id);
+    else setOfficeId("");
+  }, [open, activeOfficeId, offices]);
 
   // Reset whenever the modal opens.
   useEffect(() => {
@@ -69,7 +80,7 @@ export default function InviteCustomerModal({ open, onClose }: Props) {
 
   const emailTrim = email.trim();
   const emailValid = EMAIL_RE.test(emailTrim);
-  const canSubmit = emailValid && !isInviting;
+  const canSubmit = emailValid && !isInviting && !!officeId;
 
   // Pick which dedup banner to show.
   let dedupCase: DedupCase | null = null;
@@ -92,6 +103,7 @@ export default function InviteCustomerModal({ open, onClose }: Props) {
     setSubmitError(null);
     try {
       const result = await inviteBuyer({
+        supplierOfficeId: officeId,
         email: emailTrim,
         companyName: companyName.trim() || undefined,
         contactName: contactName.trim() || undefined,
