@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
+import { sendEmailNotification } from "@/lib/emailSender";
 
 export type InviteBuyerFlow =
   | "invited_existing_buyer"
@@ -54,7 +55,33 @@ export function useInviteBuyer() {
       if (input.notes) args.p_notes = input.notes;
       const { data, error } = await (supabase as any).rpc("create_supplier_invite", args);
       if (error) throw error;
-      return (data ?? { ok: false, reason: "no_response" }) as InviteBuyerResult;
+      const result = (data ?? { ok: false, reason: "no_response" }) as InviteBuyerResult;
+
+      // Fire SCL invite email (non-blocking). Pick template based on flow.
+      if (result.ok && input.email) {
+        try {
+          const supplierName = company?.name ?? "A supplier";
+          const isSignup =
+            result.flow === "invited_new_buyer" ||
+            result.flow === "invited_new_contact_existing_company";
+          if (isSignup) {
+            await sendEmailNotification(
+              "scl_invite_signup" as any,
+              input.email,
+              { supplier: supplierName, linkId: result.link_id } as any,
+            );
+          } else {
+            await sendEmailNotification(
+              "scl_invite_existing" as any,
+              input.email,
+              { supplier: supplierName, recipientName: input.contactName } as any,
+            );
+          }
+        } catch (e) {
+          console.warn("[useInviteBuyer] SCL invite email failed (non-blocking)", e);
+        }
+      }
+      return result;
     },
     onSuccess: (_, vars) => {
       const officeId = vars.supplierOfficeId ?? fallbackOfficeId;
