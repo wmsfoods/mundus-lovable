@@ -31,6 +31,8 @@ import { auditLog } from "@/lib/auditLog";
 import { BillingSection } from "@/components/billing/BillingSection";
 import SupplierBrandsManager from "@/components/company/SupplierBrandsManager";
 import "@/styles/mundus-address.css";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { useIsCompanyMaster } from "@/hooks/useIsCompanyMaster";
 
 type Role = "buyer" | "supplier" | "admin";
 
@@ -88,6 +90,10 @@ export default function CompanyProfilePage({
   const navigate = useNavigate();
   const companyId = companyIdOverride ?? cur?.id ?? null;
   const { terms: PAYMENT_TERMS } = usePaymentTerms({ scope: "international" });
+  const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
+  const { isMaster } = useIsCompanyMaster(companyId);
+  const canEdit = isAdminView || isMundusAdmin || isMaster;
+  const readOnly = !canEdit;
   // In admin view we resolve the profile-role from the company itself.
   const [adminFlags, setAdminFlags] = useState<{
     is_verified: boolean;
@@ -487,22 +493,52 @@ export default function CompanyProfilePage({
             Update your company details, locations and plant numbers.
           </p>
         </div>
-        <button
-          type="button"
-          className="cprofile-save"
-          onClick={handleSave}
-          disabled={!dirty || saving}
-        >
-          {saving ? "Saving…" : "Save"}
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            className="cprofile-save"
+            onClick={handleSave}
+            disabled={!dirty || saving}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        )}
       </div>
 
+      {readOnly && (
+        <div
+          role="status"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 14px",
+            margin: "0 0 12px",
+            borderRadius: 10,
+            border: "1px solid #FCD34D",
+            background: "#FFFBEB",
+            color: "#92400E",
+            fontSize: 13,
+          }}
+        >
+          <Shield size={16} />
+          <span>
+            You are in read-only mode. Ask a master admin of this company to edit company
+            details, locations or the logo.
+          </span>
+        </div>
+      )}
+
+      <fieldset
+        disabled={readOnly}
+        style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+      >
       <div className="cprofile-card cprofile-namecard">
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
           <button
             type="button"
             onClick={() => logoInputRef.current?.click()}
-            disabled={uploadingLogo || !companyId}
+            disabled={uploadingLogo || !companyId || !canEdit}
             title="Upload company logo"
             style={{
               position: "relative", width: 96, height: 96, borderRadius: 999,
@@ -534,7 +570,7 @@ export default function CompanyProfilePage({
             <button
               type="button"
               onClick={() => logoInputRef.current?.click()}
-              disabled={uploadingLogo || !companyId}
+              disabled={uploadingLogo || !companyId || !canEdit}
               style={{
                 alignSelf: "flex-start", padding: "6px 12px", borderRadius: 8,
                 border: "1px solid #e5e7eb", background: "#fff", fontSize: 13, fontWeight: 600,
@@ -577,6 +613,7 @@ export default function CompanyProfilePage({
           />
         </div>
       </div>
+      </fieldset>
 
       {/* Tabs */}
       <div
@@ -626,7 +663,7 @@ export default function CompanyProfilePage({
 
       {/* === LOCATIONS TAB === */}
       {tab === "locations" && (
-        <>
+        <fieldset disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <OfficesOverview locations={visibleLocations} />
       <Section
         icon={<MapPin size={18} />}
@@ -654,12 +691,12 @@ export default function CompanyProfilePage({
           ))}
         </div>
       </Section>
-        </>
+        </fieldset>
       )}
 
       {/* === PROFILE TAB === */}
       {tab === "profile" && (
-        <>
+        <fieldset disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <Section
         icon={<Phone size={18} />}
         title="Contact & website"
@@ -784,7 +821,7 @@ export default function CompanyProfilePage({
         </FieldLabel>
       </Section>
 
-        </>
+        </fieldset>
       )}
 
       {/* === TEAM TAB === */}
@@ -802,7 +839,7 @@ export default function CompanyProfilePage({
       )}
 
       {tab === "profile" && (
-        <>
+        <fieldset disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       {/* Brands — supplier-only manager, shown for admin or supplier of a supplier company */}
       {company.is_supplier && companyId && (role === "admin" || role === "supplier") && (
         <Section
@@ -810,7 +847,7 @@ export default function CompanyProfilePage({
           title="Brands"
           subtitle="Brands you can attach to each cut on your offers."
         >
-          <SupplierBrandsManager companyId={companyId} canEdit={true} />
+          <SupplierBrandsManager companyId={companyId} canEdit={canEdit} />
         </Section>
       )}
 
@@ -927,7 +964,7 @@ export default function CompanyProfilePage({
           <BillingSection side={role as "supplier" | "buyer"} />
         </div>
       )}
-        </>
+        </fieldset>
       )}
     </div>
   );
