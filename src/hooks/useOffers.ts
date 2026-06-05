@@ -9,6 +9,7 @@ export type OfferItem = {
   price: number;
   minimum_price: number;
   condition: string;
+  fob_ask_price?: number | null;
   customer_product: {
     id: string;
     name: string;
@@ -56,6 +57,7 @@ export type OfferWithDetails = {
   items: OfferItem[];
   markets: OfferMarket[];
   incoterms: { incoterm_type: string }[];
+  has_fob: boolean;
 };
 
 export type UseOffersResult = {
@@ -109,6 +111,7 @@ export function useOffers(): UseOffersResult {
             price,
             minimum_price,
             condition,
+            fob_ask_price,
             customer_product:customer_products (
               id,
               name,
@@ -184,7 +187,10 @@ export function useOffers(): UseOffersResult {
           .map((o) => {
             const total = o.total_fcl ?? 1;
             const sold = soldMap[o.id] || 0;
-            return { ...o, sold_fcl: sold, remaining_fcl: Math.max(total - sold, 0) };
+            const has_fob = (o.items ?? []).some(
+              (it) => it.fob_ask_price != null && Number(it.fob_ask_price) > 0,
+            );
+            return { ...o, sold_fcl: sold, remaining_fcl: Math.max(total - sold, 0), has_fob };
           })
           .filter((o) => o.remaining_fcl > 0);
         if (cancelled) return;
