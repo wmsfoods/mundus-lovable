@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { AdminDataTable, filterInputStyle } from "../AdminDataTable";
 import { useAdminDataQuery } from "../useAdminDataQuery";
 import type { AdminColumn } from "../types";
+import { useBulkSelection } from "../useBulkSelection";
 
 type Row = {
   id: string; name: string | null; category: string | null;
@@ -35,12 +36,23 @@ export default function CutsAdminTab() {
     { key: "created", label: t("admin.dataManagement.col.created", "Created"), render: (r) => r.created_at ? new Date(r.created_at).toLocaleDateString() : "—" },
   ];
 
+  const rows = q.data?.rows ?? [];
+  const bulk = useBulkSelection<any>("cut", rows as any);
+
   return (
+    <>
     <AdminDataTable
-      rows={q.data?.rows ?? []} columns={columns} loading={q.isLoading}
+      rows={rows} columns={columns} loading={q.isLoading}
       total={q.data?.total ?? 0} page={page} pageSize={50} onPageChange={setPage}
       includeTrash={true} onToggleTrash={() => {}}
       rowKey={(r) => r.id}
+      selectable
+      selectedIds={bulk.selectedIds}
+      onToggleId={bulk.toggleId}
+      onToggleAll={bulk.toggleAll}
+      onClearSelection={bulk.clear}
+      onHardDelete={bulk.openHard}
+      bulkConfig={{ showSoft: false, showRestore: false, showHard: true }}
       toolbar={(
         <>
           <select value={category} onChange={(e) => setCategory(e.target.value)} style={filterInputStyle}>
@@ -57,5 +69,7 @@ export default function CutsAdminTab() {
         </>
       )}
     />
+    {bulk.modalEl}
+    </>
   );
 }

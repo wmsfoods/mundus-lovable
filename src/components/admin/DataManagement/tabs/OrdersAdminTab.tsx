@@ -4,6 +4,7 @@ import { AdminDataTable, filterInputStyle } from "../AdminDataTable";
 import { TrashBadge } from "../TrashBadge";
 import { useAdminDataQuery } from "../useAdminDataQuery";
 import type { AdminColumn } from "../types";
+import { useBulkSelection } from "../useBulkSelection";
 
 type Row = {
   id: string; order_number: number | null; status: string | null;
@@ -52,12 +53,23 @@ export default function OrdersAdminTab() {
     { key: "trash", label: "", width: 70, render: (r) => r.deleted_at ? <TrashBadge label={t("admin.dataManagement.deleted", "Deleted")} /> : null },
   ];
 
+  const bulk = useBulkSelection<Row>("order", filtered);
+
   return (
+    <>
     <AdminDataTable
       rows={filtered} columns={columns} loading={q.isLoading}
       total={q.data?.total ?? 0} page={page} pageSize={50} onPageChange={setPage}
       includeTrash={includeTrash} onToggleTrash={() => setTrash((v) => !v)}
       rowKey={(r) => r.id} rowDeleted={(r) => !!r.deleted_at}
+      selectable
+      selectedIds={bulk.selectedIds}
+      onToggleId={bulk.toggleId}
+      onToggleAll={bulk.toggleAll}
+      onClearSelection={bulk.clear}
+      onSoftDelete={bulk.hasActive ? bulk.openSoft : undefined}
+      onRestore={bulk.hasDeleted ? bulk.openRestore : undefined}
+      onHardDelete={bulk.openHard}
       toolbar={(
         <>
           <select value={status} onChange={(e) => setStatus(e.target.value)} style={filterInputStyle}>
@@ -71,5 +83,7 @@ export default function OrdersAdminTab() {
         </>
       )}
     />
+    {bulk.modalEl}
+    </>
   );
 }
