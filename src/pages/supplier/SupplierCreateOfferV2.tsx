@@ -802,45 +802,18 @@ export default function SupplierCreateOfferV2() {
 
             {/* 1. Origin */}
             <DrawerSection number={1} title={tk("drawer.s1.title", "Origin")} focused={drawerFocus === "origin"}>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {tk("drawer.s1.country", "Country")}
-                  </label>
-                  <select
-                    className="w-full rounded-md border border-border bg-card px-2 py-2 text-sm"
-                    value={drawerDraft.originCountryId ?? ""}
-                    onChange={(e) =>
-                      setDrawerDraft((p) => ({ ...p, originCountryId: e.target.value || null, originPortId: null }))
-                    }
-                  >
-                    <option value="">{tk("drawer.s1.selectCountry", "Select…")}</option>
-                    {catalog.countries.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.flag_emoji ?? ""} {c.english_name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-                    {tk("drawer.s1.port", "Port")}
-                  </label>
-                  <select
-                    className="w-full rounded-md border border-border bg-card px-2 py-2 text-sm"
-                    value={drawerDraft.originPortId ?? ""}
-                    disabled={!drawerDraft.originCountryId}
-                    onChange={(e) => setDrawerDraft((p) => ({ ...p, originPortId: e.target.value || null }))}
-                  >
-                    <option value="">{tk("drawer.s1.selectPort", "Select…")}</option>
-                    {draftPortsForCountry(drawerDraft.originCountryId ?? "").map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.name} ({p.code})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <OriginPicker
+                countries={catalog.countries}
+                portsForCountry={draftPortsForCountry(drawerDraft.originCountryId ?? "")}
+                countryId={drawerDraft.originCountryId}
+                onCountryChange={(cid) =>
+                  setDrawerDraft((p) => ({ ...p, originCountryId: cid, originPortIds: [] }))
+                }
+                portIds={drawerDraft.originPortIds}
+                onPortIdsChange={(ids) => setDrawerDraft((p) => ({ ...p, originPortIds: ids }))}
+                incoterms={drawerDraft.incoterms}
+                tk={tk}
+              />
             </DrawerSection>
 
             {/* 2. Destinations */}
