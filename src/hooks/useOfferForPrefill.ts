@@ -94,6 +94,7 @@ export function useOfferForPrefill(
           items:offer_items (
             id, amount, price, minimum_price, condition, packaging,
             plant_id, brand_id, notes, photo_url, files_urls,
+            fob_ask_price, fob_floor_price,
             customer_product:customer_products (
               id, name,
               standard_product:standard_products (
@@ -257,6 +258,8 @@ export function useOfferForPrefill(
         notes: string | null;
         photo_url: string | null;
         files_urls: string[] | null;
+        fob_ask_price: number | null;
+        fob_floor_price: number | null;
         customer_product?: {
           id?: string;
           name?: string | null;
@@ -319,6 +322,8 @@ export function useOfferForPrefill(
           qty: Number(it.amount ?? 0),
           askPrice: Number(it.price ?? 0),
           floorPrice: Number(it.minimum_price ?? it.price ?? 0),
+          fobAskPrice: it.fob_ask_price != null ? Number(it.fob_ask_price) : null,
+          fobFloorPrice: it.fob_floor_price != null ? Number(it.fob_floor_price) : null,
           photoFile: null,
           photoPreviewUrl: null, // signed URL will be resolved lazily by media hook
           files: [],
