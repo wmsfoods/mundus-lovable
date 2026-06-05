@@ -3863,7 +3863,7 @@
     },
     "dataManagement": {
       "title": "Data Management",
-      "subtitle": "Read-only inventory of platform data (delete actions arrive in A2)",
+      "subtitle": "Inventory & cleanup of platform data — soft/hard delete with audit log",
       "loading": "Loading…",
       "noData": "No data",
       "showTrash": "Show trash",

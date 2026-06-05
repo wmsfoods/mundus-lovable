@@ -3863,7 +3863,7 @@
     },
     "dataManagement": {
       "title": "Gestão de Dados",
-      "subtitle": "Inventário somente-leitura dos dados da plataforma (ações de exclusão chegam no A2)",
+      "subtitle": "Inventário e limpeza de dados — soft/hard delete com log de auditoria",
       "loading": "Carregando…",
       "noData": "Sem dados",
       "showTrash": "Mostrar lixeira",

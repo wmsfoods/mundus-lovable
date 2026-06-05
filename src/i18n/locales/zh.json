@@ -3849,7 +3849,7 @@
     },
     "dataManagement": {
       "title": "数据管理",
-      "subtitle": "平台数据只读清单（删除操作将在 A2 中提供）",
+      "subtitle": "平台数据清单与清理 — 软/硬删除并记录审计",
       "loading": "加载中…",
       "noData": "无数据",
       "showTrash": "显示回收站",

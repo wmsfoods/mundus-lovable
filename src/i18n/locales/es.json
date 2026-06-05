@@ -3863,7 +3863,7 @@
     },
     "dataManagement": {
       "title": "Gestión de Datos",
-      "subtitle": "Inventario de solo lectura de los datos (las acciones de eliminar llegan en A2)",
+      "subtitle": "Inventario y limpieza de datos — soft/hard delete con registro de auditoría",
       "loading": "Cargando…",
       "noData": "Sin datos",
       "showTrash": "Mostrar papelera",

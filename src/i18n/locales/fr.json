@@ -3849,7 +3849,7 @@
     },
     "dataManagement": {
       "title": "Gestion des Données",
-      "subtitle": "Inventaire en lecture seule des données (les actions de suppression arrivent en A2)",
+      "subtitle": "Inventaire et nettoyage des données — soft/hard delete avec journal d audit",
       "loading": "Chargement…",
       "noData": "Aucune donnée",
       "showTrash": "Afficher la corbeille",
