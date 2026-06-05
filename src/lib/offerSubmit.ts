@@ -13,6 +13,7 @@ export type SubmitLogistics = {
     countryId: string;
     selectedPortIds: string[];
     freight: PortFreightShape;
+    insurance: PortFreightShape;
   }[];
   containerSize: string;
   fclCount: number;
@@ -22,6 +23,8 @@ export type SubmitLogistics = {
   shipmentReady: string; // YYYY-MM (may be empty)
   sameFreightGlobal: boolean;
   globalFreight: string;
+  globalInsurance: string;
+  exwPickupLocation: string;
 };
 
 export type SubmitDistribution = {
@@ -180,6 +183,10 @@ export async function submitOfferV2(
     specific_buyer_company_ids:
       distribution.specificCustomerIds.length > 0 ? distribution.specificCustomerIds : null,
     all_customers: !!distribution.allCustomers,
+    exw_pickup_location:
+      l.incoterms.includes("EXW") && l.exwPickupLocation.trim()
+        ? l.exwPickupLocation.trim()
+        : null,
   };
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
@@ -296,6 +303,7 @@ export async function submitOfferV2(
     // 6. Freight options (one row per unique port)
     const freightInserts: Array<{ offer_id: string; port_id: string; cost: number; insurance: number }> = [];
     const seen = new Set<string>();
+    const cifEnabled = l.incoterms.includes("CIF");
     for (const d of l.destinations) {
       for (const pid of d.selectedPortIds) {
         if (!pid || seen.has(pid)) continue;
@@ -309,7 +317,18 @@ export async function submitOfferV2(
           raw = d.freight.perPort[pid] ?? "";
         }
         const cost = parseFloat(String(raw ?? "").replace(/,/g, "")) || 0;
-        freightInserts.push({ offer_id: offerId, port_id: pid, cost, insurance: 0 });
+        let insRaw = "";
+        if (cifEnabled) {
+          if (l.sameFreightGlobal) {
+            insRaw = l.globalInsurance;
+          } else if (d.insurance?.mode === "same") {
+            insRaw = d.insurance.same;
+          } else if (d.insurance?.mode === "perPort") {
+            insRaw = d.insurance.perPort[pid] ?? "";
+          }
+        }
+        const insurance = parseFloat(String(insRaw ?? "").replace(/,/g, "")) || 0;
+        freightInserts.push({ offer_id: offerId, port_id: pid, cost, insurance });
       }
     }
     if (freightInserts.length > 0) {
