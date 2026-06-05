@@ -360,6 +360,7 @@ export default function SupplierCreateOfferV2() {
             flag: c.flag_emoji ?? "🏳️",
             selectedPortIds: [],
             freight: { mode: "same", same: "" },
+            insurance: { mode: "same", same: "" },
           },
         ],
       };
