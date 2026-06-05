@@ -2780,15 +2780,39 @@
           "destinations": "Destinos",
           "incoterms": "Incoterms",
           "container": "Container",
-          "shipment": "Embarque"
+          "shipment": "Embarque",
+          "sameFreight": "Mesmo frete para todos os destinos"
         },
         "item": {
           "qty": "Qtd",
           "price": "Pedido",
-          "plant": "Planta"
+          "plant": "Planta",
+          "cut": "Corte"
         },
         "brand": {
-          "willCreate": "— precisará de seleção ou criação manual na linha."
+          "willCreate": "— precisará de seleção ou criação manual na linha.",
+          "create": "Criar",
+          "skip": "Pular",
+          "created": "Marca pronta",
+          "namePlaceholder": "Nome da marca"
+        },
+        "skipped": "pulado",
+        "undo": "Desfazer",
+        "plant": {
+          "create": "Criar",
+          "skip": "Pular",
+          "created": "Planta criada",
+          "namePlaceholder": "Nome da planta (opcional)"
+        },
+        "cut": {
+          "useThis": "Usar este",
+          "tryOther": "Outras opções",
+          "manualSelect": "Selecionar manual",
+          "skip": "Pular",
+          "notFoundWarning": "Corte fora do catálogo — selecione manual ou pule",
+          "didYouMean": "Você quis dizer?",
+          "search": "Buscar cortes…",
+          "noResults": "Nenhum corte"
         }
       },
       "submit": {

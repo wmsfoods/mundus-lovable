@@ -2766,15 +2766,39 @@
           "destinations": "Destinations",
           "incoterms": "Incoterms",
           "container": "Conteneur",
-          "shipment": "Expédition"
+          "shipment": "Expédition",
+          "sameFreight": "Même fret pour toutes les destinations"
         },
         "item": {
           "qty": "Qté",
           "price": "Prix",
-          "plant": "Usine"
+          "plant": "Usine",
+          "cut": "Coupe"
         },
         "brand": {
-          "willCreate": "— nécessitera une sélection ou création manuelle dans la ligne."
+          "willCreate": "— nécessitera une sélection ou création manuelle dans la ligne.",
+          "create": "Créer",
+          "skip": "Ignorer",
+          "created": "Marque prête",
+          "namePlaceholder": "Nom de marque"
+        },
+        "skipped": "ignoré",
+        "undo": "Annuler",
+        "plant": {
+          "create": "Créer",
+          "skip": "Ignorer",
+          "created": "Usine créée",
+          "namePlaceholder": "Nom de l'usine (facultatif)"
+        },
+        "cut": {
+          "useThis": "Utiliser",
+          "tryOther": "Autres options",
+          "manualSelect": "Sélection manuelle",
+          "skip": "Ignorer",
+          "notFoundWarning": "Coupe hors catalogue — sélectionner ou ignorer",
+          "didYouMean": "Voulez-vous dire ?",
+          "search": "Rechercher…",
+          "noResults": "Aucune coupe"
         }
       },
       "submit": {

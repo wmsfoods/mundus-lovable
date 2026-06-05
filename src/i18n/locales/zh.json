@@ -2766,15 +2766,39 @@
           "destinations": "目的地",
           "incoterms": "贸易条款",
           "container": "集装箱",
-          "shipment": "装运"
+          "shipment": "装运",
+          "sameFreight": "所有目的地相同运费"
         },
         "item": {
           "qty": "数量",
           "price": "报价",
-          "plant": "工厂"
+          "plant": "工厂",
+          "cut": "切割"
         },
         "brand": {
-          "willCreate": "— 需在行内手动选择或创建。"
+          "willCreate": "— 需在行内手动选择或创建。",
+          "create": "创建",
+          "skip": "跳过",
+          "created": "品牌就绪",
+          "namePlaceholder": "品牌名称"
+        },
+        "skipped": "已跳过",
+        "undo": "撤消",
+        "plant": {
+          "create": "创建",
+          "skip": "跳过",
+          "created": "工厂已创建",
+          "namePlaceholder": "工厂名称（可选）"
+        },
+        "cut": {
+          "useThis": "使用此项",
+          "tryOther": "其他匹配",
+          "manualSelect": "手动选择",
+          "skip": "跳过",
+          "notFoundWarning": "目录中无此切割 — 手动选择或跳过",
+          "didYouMean": "是否指？",
+          "search": "搜索切割…",
+          "noResults": "未找到"
         }
       },
       "submit": {
