@@ -2522,10 +2522,12 @@
         "distributionHint": "Coming in R4"
       },
       "actionBar": {
-        "comingSoon": "Action bar — coming in R5",
         "cancel": "Cancel",
         "saveDraft": "Save draft",
-        "publish": "Publish"
+        "publish": "Publish",
+        "readyToPublish": "Ready to publish",
+        "percentComplete": "{{n}}% complete",
+        "toastWiringSoon": "Wiring comes in R5.B"
       },
       "drawer": {
         "title": "Edit logistics",
@@ -2682,6 +2684,43 @@
         "sumMarketplace": "Marketplace",
         "sumAll": "All customers ({{n}})",
         "sumSpecific": "{{n}} specific"
+      },
+      "review": {
+        "title": "Review before publish",
+        "edit": "Edit",
+        "logisticsTitle": "Logistics",
+        "cutsTitle": "Cuts",
+        "paymentTitle": "Payment terms",
+        "distributionTitle": "Distribution",
+        "from": "From",
+        "to": "To",
+        "toValue": "{{c}} countries · {{p}} ports",
+        "incoterm": "Incoterm",
+        "freight": "Freight",
+        "count": "Items",
+        "totalQty": "Total quantity",
+        "grossValue": "Gross value",
+        "capacity": "Capacity",
+        "term": "Term",
+        "channels": "Channels",
+        "distMarketplace": "Marketplace",
+        "distAll": "All customers",
+        "distSpecific": "{{n}} specific"
+      },
+      "engine": {
+        "openButton": "Engine",
+        "title": "Negotiation engine",
+        "subtitle": "Choose how counter-offers are handled for this offer.",
+        "done": "Done"
+      },
+      "quickFill": {
+        "openButton": "AI Quick-fill",
+        "title": "AI Quick-fill",
+        "subtitle": "Paste an offer email, spec sheet, or any text — AI will parse and prefill the form.",
+        "placeholder": "Paste here…",
+        "cancel": "Cancel",
+        "parse": "Parse",
+        "comingSoon": "AI Quick-fill is in development — coming soon"
       }
     }
   },

@@ -2508,10 +2508,12 @@
         "distributionHint": "À venir en R4"
       },
       "actionBar": {
-        "comingSoon": "Barre d'actions — à venir en R5",
         "cancel": "Annuler",
         "saveDraft": "Enregistrer le brouillon",
-        "publish": "Publier"
+        "publish": "Publier",
+        "readyToPublish": "Prêt à publier",
+        "percentComplete": "{{n}}% complété",
+        "toastWiringSoon": "Câblage prévu en R5.B"
       },
       "drawer": {
         "title": "Modifier la logistique",
@@ -2668,6 +2670,43 @@
         "sumMarketplace": "Marketplace",
         "sumAll": "Tous les clients ({{n}})",
         "sumSpecific": "{{n}} spécifiques"
+      },
+      "review": {
+        "title": "Vérifier avant publication",
+        "edit": "Modifier",
+        "logisticsTitle": "Logistique",
+        "cutsTitle": "Coupes",
+        "paymentTitle": "Conditions de paiement",
+        "distributionTitle": "Distribution",
+        "from": "De",
+        "to": "Vers",
+        "toValue": "{{c}} pays · {{p}} ports",
+        "incoterm": "Incoterm",
+        "freight": "Fret",
+        "count": "Articles",
+        "totalQty": "Quantité totale",
+        "grossValue": "Valeur brute",
+        "capacity": "Capacité",
+        "term": "Condition",
+        "channels": "Canaux",
+        "distMarketplace": "Marketplace",
+        "distAll": "Tous les clients",
+        "distSpecific": "{{n}} spécifiques"
+      },
+      "engine": {
+        "openButton": "Moteur",
+        "title": "Moteur de négociation",
+        "subtitle": "Choisissez comment gérer les contre-offres pour cette offre.",
+        "done": "Terminé"
+      },
+      "quickFill": {
+        "openButton": "Pré-remplir IA",
+        "title": "Pré-remplissage IA",
+        "subtitle": "Collez un email d'offre, une fiche technique ou tout texte — l'IA analysera et remplira.",
+        "placeholder": "Collez ici…",
+        "cancel": "Annuler",
+        "parse": "Analyser",
+        "comingSoon": "Pré-remplissage IA en développement — bientôt disponible"
       }
     }
   },

@@ -2508,10 +2508,12 @@
         "distributionHint": "R4 即将推出"
       },
       "actionBar": {
-        "comingSoon": "操作栏 — R5 即将推出",
         "cancel": "取消",
         "saveDraft": "保存草稿",
-        "publish": "发布"
+        "publish": "发布",
+        "readyToPublish": "已可发布",
+        "percentComplete": "已完成 {{n}}%",
+        "toastWiringSoon": "将在 R5.B 接入"
       },
       "drawer": {
         "title": "编辑物流",
@@ -2668,6 +2670,43 @@
         "sumMarketplace": "市场",
         "sumAll": "全部客户({{n}})",
         "sumSpecific": "{{n}} 位指定"
+      },
+      "review": {
+        "title": "发布前审核",
+        "edit": "编辑",
+        "logisticsTitle": "物流",
+        "cutsTitle": "切割",
+        "paymentTitle": "付款条款",
+        "distributionTitle": "分发",
+        "from": "起",
+        "to": "至",
+        "toValue": "{{c}} 国 · {{p}} 港",
+        "incoterm": "贸易条款",
+        "freight": "运费",
+        "count": "条目",
+        "totalQty": "总数量",
+        "grossValue": "总价值",
+        "capacity": "装载率",
+        "term": "条款",
+        "channels": "渠道",
+        "distMarketplace": "市场",
+        "distAll": "全部客户",
+        "distSpecific": "{{n}} 位指定"
+      },
+      "engine": {
+        "openButton": "引擎",
+        "title": "议价引擎",
+        "subtitle": "选择本报价的还价处理方式。",
+        "done": "完成"
+      },
+      "quickFill": {
+        "openButton": "AI 快速填充",
+        "title": "AI 快速填充",
+        "subtitle": "粘贴报价邮件、规格说明或任何文本 — AI 将解析并预填表单。",
+        "placeholder": "在此粘贴…",
+        "cancel": "取消",
+        "parse": "解析",
+        "comingSoon": "AI 快速填充正在开发中 — 即将推出"
       }
     }
   },
