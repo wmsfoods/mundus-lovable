@@ -42,6 +42,7 @@ export type OfferPrefill = {
   globalFreight: string;
   globalInsurance: string;
   exwPickupLocation: string;
+  primaryPricingIncoterm: "CFR" | "FOB" | null;
   // Cuts
   cuts: CutRow[];
   cutRegion: "global" | "us";
