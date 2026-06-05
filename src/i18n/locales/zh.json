@@ -2567,6 +2567,77 @@
           "cancel": "取消",
           "save": "保存并搜索运费"
         }
+      },
+      "cutsTable": {
+        "title": "产品与价格",
+        "subtitle": "每行 = 一种分割。价格单位 {{unit}}。",
+        "regionGlobal": "🌐 全球",
+        "regionUs": "🇺🇸 美国 (IMPS/NAMP)",
+        "regionLockedHint": "添加第一行后将锁定区域",
+        "applyChipsLabel": "应用到全部",
+        "addCut": "添加分割",
+        "removeRow": "删除分割",
+        "emptyState": "尚无分割。点击\"添加分割\"开始。",
+        "totals": "合计",
+        "avgWeighted": "加权",
+        "rowCount": "{{n}} 条 · 底价合计 ${{f}}",
+        "toastApplied": "已应用到 {{n}} 条",
+        "loading": "加载中…",
+        "col": {
+          "photo": "照片",
+          "protein": "蛋白",
+          "proteinPh": "—",
+          "brand": "品牌",
+          "cut": "项目 / 分割",
+          "pickProteinFirst": "请先选择蛋白",
+          "pickCut": "选择分割…",
+          "spec": "规格",
+          "packing": "包装",
+          "plant": "工厂号",
+          "plantPh": "工厂号",
+          "pickPlant": "选择工厂…",
+          "notes": "备注",
+          "notesPh": "备注…",
+          "qty": "数量 ({{u}})",
+          "ask": "报价 {{u}}",
+          "floor": "底价 {{u}}",
+          "floorErr": "底价必须 ≤ 报价",
+          "subtotal": "小计"
+        },
+        "capacity": {
+          "title": "集装箱容量",
+          "stateEmpty": "添加分割以开始装填集装箱",
+          "stateLow": "利用率不足 — 增加更多分割",
+          "stateAlmost": "即将装满",
+          "stateFull": "集装箱最佳装载",
+          "stateOver": "超载 — 超过集装箱限值"
+        },
+        "brand": {
+          "placeholder": "选择品牌…",
+          "searchPlaceholder": "搜索品牌…",
+          "loading": "搜索中…",
+          "none": "未找到品牌。",
+          "typeToSearch": "输入以搜索品牌。",
+          "creating": "创建中…",
+          "createCta": "创建 \"{{name}}\""
+        },
+        "photo": {
+          "add": "添加照片",
+          "replace": "替换照片",
+          "remove": "删除照片"
+        },
+        "files": {
+          "manage": "文件",
+          "title": "此分割的文件",
+          "empty": "暂无文件。",
+          "addFile": "添加文件"
+        },
+        "applyToAll": {
+          "apply": "应用",
+          "applyToAll": "应用到所有分割",
+          "typeValue": "输入值…",
+          "disabledHint": "添加 2+ 条分割以启用"
+        }
       }
     }
   },
