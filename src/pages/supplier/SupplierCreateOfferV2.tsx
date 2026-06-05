@@ -838,7 +838,7 @@ export default function SupplierCreateOfferV2() {
           label={tk("strip.from", "From")}
           value={
             originPort && originCountry
-              ? `${originCountry.flag_emoji ?? ""} ${originPort.name}`
+              ? `${originCountry.flag_emoji ?? ""} ${originPort.name}${originPortExtraCount > 0 ? ` +${originPortExtraCount}` : ""}`
               : tk("strip.empty", "—")
           }
           onClick={() => openDrawer("origin")}
