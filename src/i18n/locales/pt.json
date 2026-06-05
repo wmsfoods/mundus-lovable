@@ -2649,6 +2649,9 @@
           "ask": "Pedido {{u}}",
           "floor": "Piso {{u}}",
           "floorErr": "Piso deve ser ≤ Pedido",
+          "fobAsk": "FOB Pedido {{u}}",
+          "fobFloor": "FOB Piso {{u}}",
+          "fobFloorErr": "FOB Piso deve ser ≤ FOB Pedido",
           "subtotal": "Subtotal"
         },
         "capacity": {
