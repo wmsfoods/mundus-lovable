@@ -47,6 +47,8 @@ export type SubmitInput = {
   distribution: SubmitDistribution;
   negotiationMode: string;
   negotiationDial: string;
+  cutRegion?: "global" | "us";
+  requestId?: string | null;
 };
 
 export type SubmitResult = { offerId: string; offerNumber: number };
@@ -187,6 +189,8 @@ export async function submitOfferV2(
       l.incoterms.includes("EXW") && l.exwPickupLocation.trim()
         ? l.exwPickupLocation.trim()
         : null,
+    cut_region: input.cutRegion ?? "global",
+    request_id: input.requestId ?? null,
   };
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
@@ -260,8 +264,13 @@ export async function submitOfferV2(
         plant_id: c.plantId,
         brand_id: c.brandId,
         notes: c.notes || null,
-        photo_url: media[i]?.photoUrl ?? null,
-        files_urls: media[i]?.filesUrls?.length ? media[i].filesUrls : null,
+        photo_url: media[i]?.photoUrl ?? c.existingPhotoPath ?? null,
+        files_urls:
+          media[i]?.filesUrls?.length
+            ? media[i].filesUrls
+            : c.existingFilesPaths && c.existingFilesPaths.length > 0
+              ? c.existingFilesPaths
+              : null,
       });
     }
     if (itemsRows.length === 0 && ctx.status === "active") {
