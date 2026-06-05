@@ -202,6 +202,11 @@ export async function submitOfferV2(
         : null,
     cut_region: input.cutRegion ?? "global",
     request_id: input.requestId ?? null,
+    primary_pricing_incoterm:
+      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+        ? l.primaryPricingIncoterm
+        : null,
+    pricing_includes_freight: computePricingIncludesFreight(l),
   };
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
