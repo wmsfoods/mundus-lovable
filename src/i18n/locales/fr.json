@@ -3849,12 +3849,11 @@
     },
     "dataManagement": {
       "title": "Gestion des Données",
-      "subtitle": "Inventaire en lecture seule des données (les actions de suppression arrivent en A2)",
+      "subtitle": "Inventaire et nettoyage des données — soft/hard delete avec journal d audit",
       "loading": "Chargement…",
       "noData": "Aucune donnée",
       "showTrash": "Afficher la corbeille",
       "deleted": "Supprimé",
-      "bulkSoon": "Bientôt : actions groupées (Batch A2)",
       "tabs": {
         "offers": "Offres",
         "negotiations": "Négociations",
@@ -3902,6 +3901,31 @@
         "allCategories": "Toutes les catégories",
         "allRegions": "Toutes les régions",
         "cutName": "Nom de découpe…"
+      },
+      "bulk": {
+        "selected": "{{count}} sélectionnés",
+        "moveToTrash": "Déplacer vers la corbeille",
+        "restore": "Restaurer",
+        "hardDelete": "Suppression définitive",
+        "clear": "Effacer"
+      },
+      "confirm": {
+        "softTitle": "Déplacer vers la corbeille",
+        "softBody": "Marquera {{count}} {{entity}} comme supprimés. Les éléments seront cachés mais peuvent être restaurés.",
+        "hardTitle": "Suppression définitive (PERMANENT)",
+        "hardBody": "Supprimera DÉFINITIVEMENT {{count}} {{entity}} + enfants en cascade. Cette action NE PEUT PAS être annulée.",
+        "hardTypeToConfirm": "Tapez DELETE pour confirmer",
+        "typeHere": "Tapez ici…",
+        "restoreTitle": "Restaurer",
+        "restoreBody": "Restaurera {{count}} éléments supprimés.",
+        "confirm": "Confirmer",
+        "cancel": "Annuler"
+      },
+      "toast": {
+        "softSuccess": "Déplacé vers la corbeille",
+        "hardSuccess": "Supprimé définitivement",
+        "restoreSuccess": "Restauré",
+        "blocked": "Bloqué : {{reason}}"
       }
     }
   },

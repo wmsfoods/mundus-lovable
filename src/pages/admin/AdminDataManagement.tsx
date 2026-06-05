@@ -40,7 +40,7 @@ export default function AdminDataManagement() {
           {t("admin.dataManagement.title", "Data Management")}
         </h1>
         <span style={{ fontSize: 11, color: "#908d85" }}>
-          {t("admin.dataManagement.subtitle", "Read-only inventory of platform data (delete actions arrive in A2)")}
+          {t("admin.dataManagement.subtitle", "Inventory & cleanup of platform data — soft/hard delete with audit log")}
         </span>
       </div>
 
