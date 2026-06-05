@@ -2908,6 +2908,8 @@
           "cutQty": "quantidade",
           "cutPrice": "preço pedido",
           "cutFloorAboveAsk": "preço mínimo maior que o pedido",
+          "fobAskPrice": "preço FOB pedido",
+          "fobFloorAboveAsk": "FOB piso maior que FOB pedido",
           "cutPlant": "planta atribuída",
           "paymentTerm": "forma de pagamento",
           "distributionChannel": "canal de distribuição"
