@@ -18,6 +18,8 @@ import { closeDealFromOffer } from "@/lib/closeDeal";
 import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import FreightCalculator from "@/components/buyer/FreightCalculator";
+import LogisticsOverview from "@/components/buyer/LogisticsOverview";
+import { useOfferOriginPorts } from "@/hooks/useOfferOriginPorts";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -238,6 +240,7 @@ function OfferDetailContent({
   const { t } = useTranslation();
   const { unit } = useWeightUnit();
   const destinationPorts = useOfferDestinationPorts(offer.id);
+  const originPorts = useOfferOriginPorts(offer.id);
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
@@ -311,6 +314,7 @@ function OfferDetailContent({
         totalValuePerFcl={totalValuePerFcl}
         totalKg={totalKg}
         destinationPorts={destinationPorts}
+        originPorts={originPorts}
         destinations={destinations}
         incotermLabels={incotermLabels}
         originCode={originCode}
@@ -393,6 +397,8 @@ function BuyerOfferBody({
   totalValuePerFcl,
   totalKg,
   destinations,
+  destinationPorts,
+  originPorts,
   incotermLabels,
   originCode,
   destCode,
@@ -450,6 +456,13 @@ function BuyerOfferBody({
   const containerLabel = `${offer.total_fcl ?? 1} × ${offer.container_size ?? ""} FCL`.trim();
   const shipmentLabel = formatShipment(offer.shipment_month, offer.shipment_year);
 
+  const originPortsAll: string[] = (originPorts ?? []).map((p: any) =>
+    p.code ? `${p.name} (${p.code})` : p.name,
+  );
+  const originPortPrimary =
+    originPortsAll[0] ?? offer.origin_port ?? null;
+  const originExtraCount = Math.max(0, originPortsAll.length - 1);
+
   const statusPill = (
     <span
       className="status-pill"
@@ -504,7 +517,13 @@ function BuyerOfferBody({
         totalQtyKg={totalKg}
         containerLabel={containerLabel}
         shipmentLabel={shipmentLabel}
-        origin={{ country: offer.origin_country, port: offer.origin_port, code: originCode }}
+        origin={{
+          country: offer.origin_country,
+          port: originPortPrimary,
+          code: originCode,
+          extraCount: originExtraCount,
+          allPorts: originPortsAll.length ? originPortsAll : (offer.origin_port ? [offer.origin_port] : []),
+        }}
         destination={{
           country: firstDest,
           port: null,
@@ -516,6 +535,7 @@ function BuyerOfferBody({
         paymentTerms={offer.payment_terms}
         containerSize={offer.container_size}
         containerCount={offer.total_fcl ?? 1}
+        destinationPortsCount={destinationPorts?.length ?? 0}
         createdAt={offer.created_at}
         supplierName={offer.supplier_name}
         items={cardItems}
@@ -526,16 +546,25 @@ function BuyerOfferBody({
       />
 
       {items.length > 0 && incotermLabels.length > 0 && (
-        <FreightCalculator
-          offerId={offer.id}
-          primaryPricingIncoterm={offer.primary_pricing_incoterm ?? null}
-          pricingIncludesFreight={offer.pricing_includes_freight ?? null}
-          acceptedIncoterms={incotermLabels}
-          basePricePerKg={
-            totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)
-          }
-          totalKg={totalKg}
-        />
+        <>
+          <LogisticsOverview
+            offerId={offer.id}
+            basePricePerKg={totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)}
+            totalKg={totalKg}
+            primaryPricingIncoterm={offer.primary_pricing_incoterm ?? null}
+            pricingIncludesFreight={offer.pricing_includes_freight ?? null}
+          />
+          <FreightCalculator
+            offerId={offer.id}
+            primaryPricingIncoterm={offer.primary_pricing_incoterm ?? null}
+            pricingIncludesFreight={offer.pricing_includes_freight ?? null}
+            acceptedIncoterms={incotermLabels}
+            basePricePerKg={
+              totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)
+            }
+            totalKg={totalKg}
+          />
+        </>
       )}
 
       <div style={{ marginTop: 14 }}>
