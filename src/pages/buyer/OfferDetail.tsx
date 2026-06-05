@@ -17,6 +17,7 @@ import { CloseDealDialog } from "@/components/common/CloseDealDialog";
 import { closeDealFromOffer } from "@/lib/closeDeal";
 import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
+import FreightCalculator from "@/components/buyer/FreightCalculator";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -523,6 +524,19 @@ function BuyerOfferBody({
         unit={unit}
         statusPill={statusPill}
       />
+
+      {items.length > 0 && incotermLabels.length > 0 && (
+        <FreightCalculator
+          offerId={offer.id}
+          primaryPricingIncoterm={offer.primary_pricing_incoterm ?? null}
+          pricingIncludesFreight={offer.pricing_includes_freight ?? null}
+          acceptedIncoterms={incotermLabels}
+          basePricePerKg={
+            totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)
+          }
+          totalKg={totalKg}
+        />
+      )}
 
       <div style={{ marginTop: 14 }}>
         <button

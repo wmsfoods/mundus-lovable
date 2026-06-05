@@ -735,6 +735,20 @@
         "3": "Alto",
         "4": "Premium",
         "default": "Não Classificado"
+      },
+      "freightCalc": {
+        "title": "Calculadora de frete",
+        "selectPort": "Porto de destino",
+        "selectIncoterm": "Incoterm",
+        "basePrice": "Preço base ({{incoterm}})",
+        "freight": "Frete",
+        "insurance": "Seguro",
+        "final": "Preço final {{incoterm}}",
+        "priceIncludesFreight": "Preço já inclui frete",
+        "freightUnavailable": "Frete não disponível para este destino",
+        "matchesPrimary": "Mesmo incoterm cotado pelo fornecedor — sem ajuste",
+        "estimatedNote": "Estimado — preço final depende da cotação do fornecedor",
+        "contactSupplier": "Cotação de frete necessária — contate o fornecedor"
       }
     },
     "bid": {
