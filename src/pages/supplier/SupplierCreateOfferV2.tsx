@@ -59,6 +59,7 @@ type DestinationState = {
   flag: string;
   selectedPortIds: string[];
   freight: PortFreightShape;
+  insurance: PortFreightShape;
 };
 
 type LogisticsState = {
@@ -73,6 +74,8 @@ type LogisticsState = {
   shipmentReady: string; // YYYY-MM
   sameFreightGlobal: boolean;
   globalFreight: string;
+  globalInsurance: string;
+  exwPickupLocation: string;
 };
 
 const EMPTY_LOGISTICS: LogisticsState = {
@@ -87,6 +90,8 @@ const EMPTY_LOGISTICS: LogisticsState = {
   shipmentReady: "",
   sameFreightGlobal: false,
   globalFreight: "",
+  globalInsurance: "",
+  exwPickupLocation: "",
 };
 
 function Pill({ label, value, onClick, icon: Icon }: { label: string; value: React.ReactNode; onClick: () => void; icon: React.ElementType }) {
