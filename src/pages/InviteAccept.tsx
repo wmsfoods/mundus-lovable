@@ -65,28 +65,20 @@ export default function InviteAccept() {
     }
     setBusy(true);
     try {
-      // Try sign up; if user already exists, sign in
-      let userId: string | null = null;
-      const { data: signUp, error: suErr } = await supabase.auth.signUp({
+      // Server-side: creates auth user with email already confirmed (no
+      // "Confirm your signup" e-mail) and links company_users in one call.
+      const { data: res, error: fnErr } = await supabase.functions.invoke("accept-team-invite", {
+        body: { token, password },
+      });
+      if (fnErr) throw fnErr;
+      if ((res as any)?.error) throw new Error((res as any).error);
+
+      // Now sign in the user in the browser so the session is established.
+      const { error: siErr } = await supabase.auth.signInWithPassword({
         email: invite.email,
         password,
-        options: { data: { full_name: invite.full_name } },
       });
-      if (suErr && !/already/i.test(suErr.message)) throw suErr;
-      userId = signUp?.user?.id ?? null;
-      if (!userId) {
-        const { data: signIn, error: siErr } = await supabase.auth.signInWithPassword({
-          email: invite.email, password,
-        });
-        if (siErr) throw siErr;
-        userId = signIn.user?.id ?? null;
-      }
-      if (!userId) throw new Error("no_user_id");
-
-      const { error: acceptErr } = await (supabase as any).rpc("accept_team_invitation", {
-        p_token: token, p_user_id: userId,
-      });
-      if (acceptErr) throw acceptErr;
+      if (siErr) throw siErr;
 
       toast.success(t("inviteAccept.success", { defaultValue: "Welcome! Redirecting to your workspace…" }));
       setTimeout(() => navigate("/"), 800);
