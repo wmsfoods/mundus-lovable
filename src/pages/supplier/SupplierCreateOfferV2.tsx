@@ -39,6 +39,7 @@ import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFil
 import { computeCompletion } from "@/lib/offerCompletion";
 import { containerCapacityKg } from "@/lib/units";
 import { useCompanyPlants } from "@/hooks/useCompanyPlants";
+import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { Sparkles, Settings2 } from "lucide-react";
 import type { NegotiationMode, NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
 
@@ -191,7 +192,8 @@ export default function SupplierCreateOfferV2() {
   const [negotiationDial, setNegotiationDial] = useState<NegotiationDial>("balanced");
   const [engineModalOpen, setEngineModalOpen] = useState(false);
   const [quickFillOpen, setQuickFillOpen] = useState(false);
-  const { plants } = useCompanyPlants();
+  const { company } = useCurrentCompany();
+  const { plants } = useCompanyPlants(company?.id);
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerDraft, setDrawerDraft] = useState<LogisticsState>(EMPTY_LOGISTICS);
