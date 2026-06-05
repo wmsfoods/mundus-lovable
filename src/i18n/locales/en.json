@@ -749,6 +749,15 @@
         "matchesPrimary": "Matches supplier's quoted incoterm — no adjustment",
         "estimatedNote": "Estimated — final price depends on supplier quote",
         "contactSupplier": "Freight quote required — contact supplier"
+      },
+      "logisticsOverview": {
+        "title": "Logistics breakdown",
+        "port": "Port",
+        "country": "Country",
+        "freight": "Freight (USD)",
+        "insurance": "Insurance (USD)",
+        "cfrPerKg": "CFR / kg",
+        "cifPerKg": "CIF / kg"
       }
     },
     "bid": {
