@@ -249,7 +249,7 @@ export default function SupplierCreateOfferV2() {
     if (!data) return;
     setLogistics({
       originCountryId: data.originCountryId,
-      originPortId: data.originPortId,
+      originPortIds: data.originPortIds,
       destinations: data.destinations,
       containerSize: data.containerSize,
       fclCount: data.fclCount,
@@ -392,7 +392,9 @@ export default function SupplierCreateOfferV2() {
   };
 
   // Top strip computed values
-  const originPort = logistics.originPortId ? catalog.ports.find((p) => p.id === logistics.originPortId) : null;
+  const originPortFirst = logistics.originPortIds[0]
+    ? catalog.ports.find((p) => p.id === logistics.originPortIds[0])
+    : null;
   const originCountry = logistics.originCountryId ? catalog.getCountryById(logistics.originCountryId) : null;
 
   const destPortCount = logistics.destinations.reduce((acc, d) => acc + d.selectedPortIds.length, 0);
