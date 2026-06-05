@@ -7743,6 +7743,10 @@ export type Database = {
       company_family_ids: { Args: { p_company_id: string }; Returns: string[] }
       company_family_root: { Args: { p_company_id: string }; Returns: string }
       company_has_pro: { Args: { p_company_id: string }; Returns: boolean }
+      company_visible_via_supplier_link: {
+        Args: { _company_id: string }
+        Returns: boolean
+      }
       confirm_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       confirm_negotiation: {
         Args: { p_negotiation_id: string; p_user_id: string }
