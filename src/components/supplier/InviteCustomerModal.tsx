@@ -139,6 +139,28 @@ export default function InviteCustomerModal({ open, onClose }: Props) {
       <form onSubmit={handleSubmit} className="flex flex-col gap-4 p-1">
         <h2 className="text-lg font-semibold">{t("supplier.myCustomers.modal.title")}</h2>
 
+        {offices.length > 1 && (
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-medium">
+              {t("supplier.myCustomers.modal.office", { defaultValue: "Office" })}
+              <span className="text-[#b42323]"> *</span>
+            </label>
+            <select
+              className="input"
+              value={officeId}
+              onChange={(e) => setOfficeId(e.target.value)}
+              required
+            >
+              <option value="">
+                {t("supplier.myCustomers.modal.selectOffice", { defaultValue: "Select an office" })}
+              </option>
+              {offices.map((o) => (
+                <option key={o.id} value={o.id}>{o.name}</option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <TextField
           label={t("supplier.myCustomers.modal.companyName")}
           value={companyName}
