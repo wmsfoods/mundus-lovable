@@ -5561,6 +5561,8 @@ export type Database = {
           payment_terms: string
           plant_id: string | null
           price: number | null
+          pricing_includes_freight: boolean | null
+          primary_pricing_incoterm: string | null
           request_id: string | null
           shipment_month: number
           shipment_year: number
@@ -5596,6 +5598,8 @@ export type Database = {
           payment_terms: string
           plant_id?: string | null
           price?: number | null
+          pricing_includes_freight?: boolean | null
+          primary_pricing_incoterm?: string | null
           request_id?: string | null
           shipment_month: number
           shipment_year: number
@@ -5631,6 +5635,8 @@ export type Database = {
           payment_terms?: string
           plant_id?: string | null
           price?: number | null
+          pricing_includes_freight?: boolean | null
+          primary_pricing_incoterm?: string | null
           request_id?: string | null
           shipment_month?: number
           shipment_year?: number
@@ -7884,6 +7890,8 @@ export type Database = {
           payment_terms: string
           plant_id: string | null
           price: number | null
+          pricing_includes_freight: boolean | null
+          primary_pricing_incoterm: string | null
           request_id: string | null
           shipment_month: number
           shipment_year: number

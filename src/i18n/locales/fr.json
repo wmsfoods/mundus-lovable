@@ -2763,6 +2763,17 @@
           "singlePortFobExw": "{{n}} ports d'origine sélectionnés, mais FOB/EXW n'en prend en charge qu'un seul. Supprimez les autres pour continuer.",
           "atLeastOnePort": "Sélectionnez au moins un port d'origine."
         }
+      },
+      "incoterm": {
+        "primaryPricing": {
+          "question": "Vos prix sont basés sur quel incoterm ?",
+          "help": "Aide les acheteurs à calculer le prix équivalent à destination.",
+          "cfr": "CFR",
+          "fob": "FOB"
+        }
+      },
+      "validation": {
+        "primaryPricingMissing": "Choisissez l'incoterm de référence avant d'enregistrer."
       }
     }
   },

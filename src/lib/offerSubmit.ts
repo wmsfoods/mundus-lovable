@@ -25,6 +25,8 @@ export type SubmitLogistics = {
   globalFreight: string;
   globalInsurance: string;
   exwPickupLocation: string;
+  /** Only relevant when incoterms include FOB or EXW. CFR | FOB | null. */
+  primaryPricingIncoterm: "CFR" | "FOB" | null;
 };
 
 export type SubmitDistribution = {
@@ -106,6 +108,22 @@ function deriveShipment(yyyymm: string): { shipment_month: number; shipment_year
   return { shipment_month: d.getMonth() + 1, shipment_year: d.getFullYear() };
 }
 
+/**
+ * Decides whether displayed prices already include freight.
+ * - Returns null when freight is not relevant (only FOB/EXW selected).
+ * - Returns true when supplier uses a single global freight value (same across destinations).
+ * - Returns false when freight is per-port (buyer must add the right port's freight).
+ */
+export function computePricingIncludesFreight(l: SubmitLogistics): boolean | null {
+  const hasFreightIncoterm =
+    l.incoterms.includes("CFR") ||
+    l.incoterms.includes("CIF") ||
+    l.incoterms.includes("CNF") ||
+    l.incoterms.includes("C&F");
+  if (!hasFreightIncoterm) return null;
+  return !!l.sameFreightGlobal;
+}
+
 export function validateForPublish(input: SubmitInput): string | null {
   const { logistics: l, cuts, paymentTerms, distribution: d } = input;
   if (!l.originPortIds || l.originPortIds.length === 0) return "missingOrigin";
@@ -114,6 +132,12 @@ export function validateForPublish(input: SubmitInput): string | null {
   }
   if (l.destinations.length === 0) return "missingDestinations";
   if (l.incoterms.length === 0) return "missingIncoterm";
+  if (
+    (l.incoterms.includes("FOB") || l.incoterms.includes("EXW")) &&
+    !l.primaryPricingIncoterm
+  ) {
+    return "primaryPricingMissing";
+  }
   if (cuts.length === 0) return "missingCuts";
   for (const c of cuts) {
     if (!c.cutId) return "missingCutResolution";
@@ -194,6 +218,11 @@ export async function submitOfferV2(
         : null,
     cut_region: input.cutRegion ?? "global",
     request_id: input.requestId ?? null,
+    primary_pricing_incoterm:
+      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+        ? l.primaryPricingIncoterm
+        : null,
+    pricing_includes_freight: computePricingIncludesFreight(l),
   };
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
@@ -433,6 +462,11 @@ export async function updateOfferV2(
         : null,
     cut_region: input.cutRegion ?? "global",
     request_id: input.requestId ?? null,
+    primary_pricing_incoterm:
+      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+        ? l.primaryPricingIncoterm
+        : null,
+    pricing_includes_freight: computePricingIncludesFreight(l),
   };
 
   const { error: updErr } = await supabase

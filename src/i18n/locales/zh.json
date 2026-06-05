@@ -2763,6 +2763,17 @@
           "singlePortFobExw": "已选择 {{n}} 个来源港口，但 FOB/EXW 仅支持 1 个。请移除多余的以继续。",
           "atLeastOnePort": "请至少选择一个来源港口。"
         }
+      },
+      "incoterm": {
+        "primaryPricing": {
+          "question": "您的价格基于哪个贸易术语?",
+          "help": "帮助买家计算目的港的等效价格。",
+          "cfr": "CFR",
+          "fob": "FOB"
+        }
+      },
+      "validation": {
+        "primaryPricingMissing": "保存前请选择价格参考的贸易术语。"
       }
     }
   },

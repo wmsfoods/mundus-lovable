@@ -42,6 +42,7 @@ export type OfferPrefill = {
   globalFreight: string;
   globalInsurance: string;
   exwPickupLocation: string;
+  primaryPricingIncoterm: "CFR" | "FOB" | null;
   // Cuts
   cuts: CutRow[];
   cutRegion: "global" | "us";
@@ -89,6 +90,7 @@ export function useOfferForPrefill(
           payment_terms, is_halal, is_kosher, shipment_month, shipment_year,
           exw_pickup_location, cut_region, negotiation_mode, negotiation_dial,
           all_customers, specific_buyer_company_ids,
+          primary_pricing_incoterm,
           items:offer_items (
             id, amount, price, minimum_price, condition, packaging,
             plant_id, brand_id, notes, photo_url, files_urls,
@@ -371,6 +373,12 @@ export function useOfferForPrefill(
         globalFreight,
         globalInsurance,
         exwPickupLocation: (offer.exw_pickup_location as string | null) ?? "",
+        primaryPricingIncoterm:
+          ((offer.primary_pricing_incoterm as string | null) === "CFR"
+            ? "CFR"
+            : (offer.primary_pricing_incoterm as string | null) === "FOB"
+              ? "FOB"
+              : null) as "CFR" | "FOB" | null,
         cuts,
         cutRegion: ((offer.cut_region as string) === "us" ? "us" : "global") as "global" | "us",
         paymentTerms: (offer.payment_terms as string | null) ?? "",

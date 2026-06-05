@@ -6,6 +6,7 @@ type LogisticsLike = {
   incoterms: string[];
   sameFreightGlobal: boolean;
   globalFreight: string;
+  primaryPricingIncoterm?: "CFR" | "FOB" | null;
 };
 
 type DistributionLike = {
@@ -42,6 +43,8 @@ function logisticsOk(l: LogisticsLike): boolean {
   const totalPorts = l.destinations.reduce((a, d) => a + d.selectedPortIds.length, 0);
   if (totalPorts === 0) return false;
   if (l.incoterms.length === 0) return false;
+  // Primary pricing incoterm is required when FOB / EXW is offered.
+  if (singleOriginRequired && !l.primaryPricingIncoterm) return false;
   if (l.sameFreightGlobal) {
     if (!(parseFloat(l.globalFreight) > 0)) return false;
   } else {

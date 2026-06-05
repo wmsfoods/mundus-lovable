@@ -2777,6 +2777,17 @@
           "singlePortFobExw": "{{n}} origin ports selected, but FOB/EXW supports only 1. Remove extras to continue.",
           "atLeastOnePort": "Select at least one origin port."
         }
+      },
+      "incoterm": {
+        "primaryPricing": {
+          "question": "Your prices are based on which incoterm?",
+          "help": "Helps buyers calculate equivalent prices at destination.",
+          "cfr": "CFR",
+          "fob": "FOB"
+        }
+      },
+      "validation": {
+        "primaryPricingMissing": "Pick the incoterm your prices reference before saving."
       }
     }
   },
