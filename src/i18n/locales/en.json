@@ -735,6 +735,20 @@
         "3": "High",
         "4": "Premium",
         "default": "\n"
+      },
+      "freightCalc": {
+        "title": "Freight calculator",
+        "selectPort": "Destination port",
+        "selectIncoterm": "Incoterm",
+        "basePrice": "Base price ({{incoterm}})",
+        "freight": "Freight",
+        "insurance": "Insurance",
+        "final": "Final {{incoterm}} price",
+        "priceIncludesFreight": "Price already includes freight",
+        "freightUnavailable": "Freight not available for this destination",
+        "matchesPrimary": "Matches supplier's quoted incoterm — no adjustment",
+        "estimatedNote": "Estimated — final price depends on supplier quote",
+        "contactSupplier": "Freight quote required — contact supplier"
       }
     },
     "bid": {
