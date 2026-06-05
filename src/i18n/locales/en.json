@@ -2649,8 +2649,12 @@
           "ask": "Ask {{u}}",
           "floor": "Floor {{u}}",
           "floorErr": "Floor must be ≤ Ask",
+          "fobAsk": "FOB Ask {{u}}",
+          "fobFloor": "FOB Floor {{u}}",
+          "fobFloorErr": "FOB Floor must be ≤ FOB Ask",
           "subtotal": "Subtotal"
         },
+        "fobTooltip": "FOB price is fixed at origin and does not vary by destination port",
         "capacity": {
           "title": "Container capacity",
           "stateEmpty": "Add cuts to start filling the container",
