@@ -493,22 +493,52 @@ export default function CompanyProfilePage({
             Update your company details, locations and plant numbers.
           </p>
         </div>
-        <button
-          type="button"
-          className="cprofile-save"
-          onClick={handleSave}
-          disabled={!dirty || saving}
-        >
-          {saving ? "Saving…" : "Save"}
-        </button>
+        {canEdit && (
+          <button
+            type="button"
+            className="cprofile-save"
+            onClick={handleSave}
+            disabled={!dirty || saving}
+          >
+            {saving ? "Saving…" : "Save"}
+          </button>
+        )}
       </div>
 
+      {readOnly && (
+        <div
+          role="status"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            padding: "10px 14px",
+            margin: "0 0 12px",
+            borderRadius: 10,
+            border: "1px solid #FCD34D",
+            background: "#FFFBEB",
+            color: "#92400E",
+            fontSize: 13,
+          }}
+        >
+          <Shield size={16} />
+          <span>
+            You are in read-only mode. Ask a master admin of this company to edit company
+            details, locations or the logo.
+          </span>
+        </div>
+      )}
+
+      <fieldset
+        disabled={readOnly}
+        style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}
+      >
       <div className="cprofile-card cprofile-namecard">
         <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 12 }}>
           <button
             type="button"
             onClick={() => logoInputRef.current?.click()}
-            disabled={uploadingLogo || !companyId}
+            disabled={uploadingLogo || !companyId || !canEdit}
             title="Upload company logo"
             style={{
               position: "relative", width: 96, height: 96, borderRadius: 999,
@@ -540,7 +570,7 @@ export default function CompanyProfilePage({
             <button
               type="button"
               onClick={() => logoInputRef.current?.click()}
-              disabled={uploadingLogo || !companyId}
+              disabled={uploadingLogo || !companyId || !canEdit}
               style={{
                 alignSelf: "flex-start", padding: "6px 12px", borderRadius: 8,
                 border: "1px solid #e5e7eb", background: "#fff", fontSize: 13, fontWeight: 600,
