@@ -23,6 +23,11 @@ export type CutRow = {
   photoFile: File | null;   // R3: in-memory; R5 uploads on submit
   photoPreviewUrl: string | null;
   files: { file: File; previewUrl: string }[];
+  // R5.B2 — preserved storage paths when prefilling for Edit/Clone.
+  // If the user does not pick a new photoFile/files, these paths are
+  // re-used directly on the new offer_items row (no re-upload).
+  existingPhotoPath?: string | null;
+  existingFilesPaths?: string[];
 };
 
 export const PROTEINS = ["Beef", "Pork", "Poultry", "Ovine"] as const;
@@ -50,5 +55,7 @@ export function emptyCutRow(): CutRow {
     photoFile: null,
     photoPreviewUrl: null,
     files: [],
+    existingPhotoPath: null,
+    existingFilesPaths: [],
   };
 }
