@@ -1721,9 +1721,9 @@ export default function SupplierCreateOffer() {
         // Non-blocking — failures must not affect the publish flow.
         if (!asDraft && !isEditing) {
           try {
-            const supplierName = supplierName || company?.name || "Your supplier";
+            const sclSupplierName = supplierName || company?.name || "Your supplier";
             const offerTitle =
-              (cuts[0]?.cutName || "").trim() ||
+              (cuts[0]?.cut || "").trim() ||
               ta("toastOfferPublishedShort", "New offer", {});
             const offerIdStr = offer.id as string;
             const recipientCompanyIds = new Set<string>();
@@ -1753,7 +1753,7 @@ export default function SupplierCreateOffer() {
                 await sendEmailNotification(
                   templateName as any,
                   row.email,
-                  { supplier: supplierName, offerTitle, offerId: offerIdStr } as any,
+                  { supplier: sclSupplierName, offerTitle, offerId: offerIdStr } as any,
                 ).catch((e) => console.warn("[publish] SCL email failed", e));
               }
             }
