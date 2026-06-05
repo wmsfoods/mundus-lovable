@@ -2775,6 +2775,36 @@
       "validation": {
         "primaryPricingMissing": "保存前请选择价格参考的贸易术语。"
       }
+    },
+    "brands": {
+      "title": "品牌",
+      "loading": "正在加载品牌…",
+      "empty": "还没有品牌。添加您的第一个品牌,以便在报价项目中显示。",
+      "addBrand": "添加品牌",
+      "addHint": "品牌会显示在报价中每个分割旁边。",
+      "brandName": "品牌名称",
+      "brandNamePh": "例如:Premium Cut",
+      "setDefault": "设为默认",
+      "defaultBadge": "默认",
+      "editTitle": "重命名品牌",
+      "save": "保存",
+      "saving": "保存中…",
+      "delete": {
+        "title": "删除品牌",
+        "confirm": "将 \"{{name}}\" 从此公司的品牌中移除?已使用的报价项目仍保留关联。",
+        "cancel": "取消",
+        "confirmCta": "删除",
+        "deleting": "删除中…"
+      },
+      "toast": {
+        "created": "品牌已添加",
+        "updated": "品牌已更新",
+        "deleted": "品牌已删除",
+        "defaultSet": "默认品牌已更新"
+      },
+      "validation": {
+        "nameRequired": "名称为必填项"
+      }
     }
   },
   "dealDetail": {

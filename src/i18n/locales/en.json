@@ -2789,6 +2789,36 @@
       "validation": {
         "primaryPricingMissing": "Pick the incoterm your prices reference before saving."
       }
+    },
+    "brands": {
+      "title": "Brands",
+      "loading": "Loading brands…",
+      "empty": "No brands yet. Add your first brand to display it on offer items.",
+      "addBrand": "Add brand",
+      "addHint": "Brands are shown next to each cut on your offers.",
+      "brandName": "Brand name",
+      "brandNamePh": "e.g. Premium Cut",
+      "setDefault": "Set as default",
+      "defaultBadge": "Default",
+      "editTitle": "Rename brand",
+      "save": "Save",
+      "saving": "Saving…",
+      "delete": {
+        "title": "Delete brand",
+        "confirm": "Remove \"{{name}}\" from this company's brands? Offer items already using it will keep the link.",
+        "cancel": "Cancel",
+        "confirmCta": "Delete",
+        "deleting": "Deleting…"
+      },
+      "toast": {
+        "created": "Brand added",
+        "updated": "Brand updated",
+        "deleted": "Brand deleted",
+        "defaultSet": "Default brand updated"
+      },
+      "validation": {
+        "nameRequired": "Name is required"
+      }
     }
   },
   "dealDetail": {

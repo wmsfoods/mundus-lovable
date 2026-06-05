@@ -2775,6 +2775,36 @@
       "validation": {
         "primaryPricingMissing": "Choisissez l'incoterm de référence avant d'enregistrer."
       }
+    },
+    "brands": {
+      "title": "Marques",
+      "loading": "Chargement des marques…",
+      "empty": "Aucune marque pour l'instant. Ajoutez votre première marque pour l'afficher sur les articles d'offre.",
+      "addBrand": "Ajouter une marque",
+      "addHint": "Les marques apparaissent à côté de chaque coupe dans vos offres.",
+      "brandName": "Nom de la marque",
+      "brandNamePh": "ex. : Premium Cut",
+      "setDefault": "Définir par défaut",
+      "defaultBadge": "Par défaut",
+      "editTitle": "Renommer la marque",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "delete": {
+        "title": "Supprimer la marque",
+        "confirm": "Retirer \"{{name}}\" des marques de cette entreprise ? Les articles d'offre déjà liés conservent le lien.",
+        "cancel": "Annuler",
+        "confirmCta": "Supprimer",
+        "deleting": "Suppression…"
+      },
+      "toast": {
+        "created": "Marque ajoutée",
+        "updated": "Marque mise à jour",
+        "deleted": "Marque supprimée",
+        "defaultSet": "Marque par défaut mise à jour"
+      },
+      "validation": {
+        "nameRequired": "Le nom est obligatoire"
+      }
     }
   },
   "dealDetail": {
