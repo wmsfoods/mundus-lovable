@@ -293,6 +293,15 @@ export async function submitOfferV2(
       if (error) throw new Error(`offer_allowed_incoterms failed: ${error.message}`);
     }
 
+    // 4b. Origin ports (multi)
+    const originIds = Array.from(new Set(l.originPortIds.filter(Boolean)));
+    if (originIds.length > 0) {
+      const { error: oopErr } = await supabase
+        .from("offer_origin_ports")
+        .insert(originIds.map((port_id) => ({ offer_id: offerId, port_id })));
+      if (oopErr) throw new Error(`offer_origin_ports failed: ${oopErr.message}`);
+    }
+
     // 5. Markets (country → market_id)
     const countryIds = l.destinations.map((d) => d.countryId).filter(Boolean);
     if (countryIds.length > 0) {
