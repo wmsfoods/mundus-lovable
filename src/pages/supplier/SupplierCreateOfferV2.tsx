@@ -778,14 +778,29 @@ export default function SupplierCreateOfferV2() {
                       p: draftDestPortCount,
                     })}
                   </span>
-                  <div className="ml-auto flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">US$</span>
-                    <Input
-                      type="number"
-                      className="w-28"
-                      value={drawerDraft.globalFreight}
-                      onChange={(e) => setDrawerDraft((p) => ({ ...p, globalFreight: e.target.value }))}
-                    />
+                  <div className="ml-auto flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">US$</span>
+                      <Input
+                        type="number"
+                        className="w-28"
+                        value={drawerDraft.globalFreight}
+                        onChange={(e) => setDrawerDraft((p) => ({ ...p, globalFreight: e.target.value }))}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">
+                        {tk("drawer.s3.insurance", "Insurance")}
+                      </span>
+                      <Input
+                        type="number"
+                        className="w-24"
+                        disabled={!cifEnabled}
+                        placeholder={cifEnabled ? "0" : "N/A"}
+                        value={drawerDraft.globalInsurance}
+                        onChange={(e) => setDrawerDraft((p) => ({ ...p, globalInsurance: e.target.value }))}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
