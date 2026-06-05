@@ -179,7 +179,6 @@ export async function submitOfferV2(
     is_kosher: certifications.includes("Kosher"),
     office_id: ctx.officeId ?? ctx.supplierId,
     plant_id: cuts.find((c) => c.plantId)?.plantId ?? null,
-    cut_region: cuts.some((c) => c.cutId) ? undefined : undefined,
     negotiation_mode: negotiationMode,
     negotiation_dial: negotiationDial,
     specific_buyer_company_ids:
