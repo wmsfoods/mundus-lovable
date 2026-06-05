@@ -131,26 +131,34 @@ function shipmentSection(l: LogisticsLike): SectionStatus {
   return { key: "shipment", group: "logistics", labelKey: "completion.section.shipment", ok: missing.length === 0, started, missingFields: missing };
 }
 
-function cutsSection(cuts: CutRow[], hasPlants: boolean): SectionStatus {
+function cutsSection(cuts: CutRow[], hasPlants: boolean, incoterms: string[]): SectionStatus {
   const missing: string[] = [];
   const started = cuts.length > 0 && cuts.some((c) => c.cutName || c.qty > 0 || c.askPrice > 0);
   if (cuts.length === 0) {
     missing.push(f("cutAtLeastOne"));
     return { key: "cuts", group: "cuts", labelKey: "completion.section.cuts", ok: false, started, missingFields: missing };
   }
+  const fobRequired = incoterms.includes("FOB");
   let needCut = false, needQty = false, needPrice = false, badFloor = false, needPlant = false;
+  let needFobAsk = false, badFobFloor = false;
   for (const c of cuts) {
     if (!c.cutId) needCut = true;
     if (!(c.qty > 0)) needQty = true;
     if (!(c.askPrice > 0)) needPrice = true;
     if (c.floorPrice > 0 && c.floorPrice > c.askPrice) badFloor = true;
     if (hasPlants && !c.plantId) needPlant = true;
+    if (fobRequired) {
+      if (!(c.fobAskPrice != null && c.fobAskPrice > 0)) needFobAsk = true;
+      if (c.fobFloorPrice != null && c.fobAskPrice != null && c.fobFloorPrice > 0 && c.fobFloorPrice > c.fobAskPrice) badFobFloor = true;
+    }
   }
   if (needCut) missing.push(f("cutSelection"));
   if (needQty) missing.push(f("cutQty"));
   if (needPrice) missing.push(f("cutPrice"));
   if (badFloor) missing.push(f("cutFloorAboveAsk"));
   if (needPlant) missing.push(f("cutPlant"));
+  if (needFobAsk) missing.push(f("fobAskPrice"));
+  if (badFobFloor) missing.push(f("fobFloorAboveAsk"));
   return { key: "cuts", group: "cuts", labelKey: "completion.section.cuts", ok: missing.length === 0, started, missingFields: missing };
 }
 
@@ -175,7 +183,7 @@ export function computeCompletion(input: CompletionInput): CompletionBreakdown {
     incotermSection(input.logistics),
     freightSection(input.logistics),
     shipmentSection(input.logistics),
-    cutsSection(input.cuts, input.hasPlants),
+    cutsSection(input.cuts, input.hasPlants, input.logistics.incoterms),
     paymentSection(input.paymentTerms),
     distributionSection(input.distribution),
   ];
