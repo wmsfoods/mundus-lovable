@@ -2733,11 +2733,49 @@
       "quickFill": {
         "openButton": "AI 快速填充",
         "title": "AI 快速填充",
-        "subtitle": "粘贴报价邮件、规格说明或任何文本 — AI 将解析并预填表单。",
-        "placeholder": "在此粘贴…",
+        "subtitle": "粘贴报价邮件、规格表或任何文本——AI 将解析并预填表单。",
+        "placeholder": "粘贴到这里…",
         "cancel": "取消",
-        "parse": "解析",
-        "comingSoon": "AI 快速填充正在开发中 — 即将推出"
+        "parse": "AI 解析",
+        "comingSoon": "AI 快速填充正在开发中 — 即将推出",
+        "parsing": "解析中…",
+        "hint": "AI 将识别品牌、工厂、商品、起运/目的港、贸易条款、运费和付款方式。保存前您可以调整所有内容。",
+        "tooShort": "请粘贴至少 20 个字符。",
+        "error": "解析失败,请重试。",
+        "applied": "已应用解析数据——请核对并按需调整。",
+        "previewTitle": "查看解析结果",
+        "previewSubtitle": "请核对 AI 提取的内容——绿色 = 已匹配,黄色 = 可能匹配,红色 = 不在您的目录中。点击应用以填入表单。",
+        "back": "返回",
+        "apply": "应用到表单",
+        "modelLabel": "模型",
+        "none": "未识别",
+        "noItems": "未识别到商品",
+        "badge": {
+          "exact": "已匹配",
+          "fuzzy": "可能匹配",
+          "notFound": "未登记"
+        },
+        "section": {
+          "brand": "品牌",
+          "logistics": "物流",
+          "payment": "付款条件",
+          "items": "商品"
+        },
+        "logistics": {
+          "origin": "起运地",
+          "destinations": "目的地",
+          "incoterms": "贸易条款",
+          "container": "集装箱",
+          "shipment": "装运"
+        },
+        "item": {
+          "qty": "数量",
+          "price": "报价",
+          "plant": "工厂"
+        },
+        "brand": {
+          "willCreate": "— 需在行内手动选择或创建。"
+        }
       },
       "submit": {
         "noCompany": "您的账户未关联任何供应商公司。",

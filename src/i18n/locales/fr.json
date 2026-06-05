@@ -2733,11 +2733,49 @@
       "quickFill": {
         "openButton": "Pré-remplir IA",
         "title": "Pré-remplissage IA",
-        "subtitle": "Collez un email d'offre, une fiche technique ou tout texte — l'IA analysera et remplira.",
+        "subtitle": "Collez un e-mail d'offre, une fiche technique ou tout texte — l'IA analysera et pré-remplira le formulaire.",
         "placeholder": "Collez ici…",
         "cancel": "Annuler",
-        "parse": "Analyser",
-        "comingSoon": "Pré-remplissage IA en développement — bientôt disponible"
+        "parse": "Analyser avec l'IA",
+        "comingSoon": "Pré-remplissage IA en développement — bientôt disponible",
+        "parsing": "Analyse…",
+        "hint": "L'IA détecte marque, usine, articles, ports d'origine/destination, incoterms, fret et conditions de paiement. Vous pouvez tout ajuster avant d'enregistrer.",
+        "tooShort": "Collez au moins 20 caractères.",
+        "error": "Échec de l'analyse — réessayez.",
+        "applied": "Données appliquées — vérifiez et ajustez si besoin.",
+        "previewTitle": "Vérifier les données extraites",
+        "previewSubtitle": "Vérifiez ce que l'IA a extrait — vert = correspond, ambre = correspondance possible, rouge = pas dans votre catalogue. Cliquez sur Appliquer pour remplir.",
+        "back": "Retour",
+        "apply": "Appliquer au formulaire",
+        "modelLabel": "Modèle",
+        "none": "Non détecté",
+        "noItems": "Aucun article détecté",
+        "badge": {
+          "exact": "Correspond",
+          "fuzzy": "Possible",
+          "notFound": "Non enregistré"
+        },
+        "section": {
+          "brand": "Marque",
+          "logistics": "Logistique",
+          "payment": "Conditions de paiement",
+          "items": "Articles"
+        },
+        "logistics": {
+          "origin": "Origine",
+          "destinations": "Destinations",
+          "incoterms": "Incoterms",
+          "container": "Conteneur",
+          "shipment": "Expédition"
+        },
+        "item": {
+          "qty": "Qté",
+          "price": "Prix",
+          "plant": "Usine"
+        },
+        "brand": {
+          "willCreate": "— nécessitera une sélection ou création manuelle dans la ligne."
+        }
       },
       "submit": {
         "noCompany": "Aucune entreprise fournisseur liée à votre compte.",

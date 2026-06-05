@@ -2747,11 +2747,49 @@
       "quickFill": {
         "openButton": "Rellenar con IA",
         "title": "Rellenar con IA",
-        "subtitle": "Pega un correo de oferta, ficha técnica o cualquier texto — la IA analizará y rellenará.",
+        "subtitle": "Pega un correo de oferta, ficha técnica o cualquier texto — la IA analizará y rellenará el formulario.",
         "placeholder": "Pega aquí…",
         "cancel": "Cancelar",
-        "parse": "Analizar",
-        "comingSoon": "Rellenar con IA en desarrollo — próximamente"
+        "parse": "Analizar con IA",
+        "comingSoon": "Rellenar con IA en desarrollo — próximamente",
+        "parsing": "Analizando…",
+        "hint": "La IA detectará marca, planta, ítems, puertos de origen/destino, incoterms, flete y condiciones de pago. Puedes ajustar todo antes de guardar.",
+        "tooShort": "Pega al menos 20 caracteres.",
+        "error": "Error al analizar — inténtalo de nuevo.",
+        "applied": "Datos aplicados — revisa y ajusta lo necesario.",
+        "previewTitle": "Revisar datos extraídos",
+        "previewSubtitle": "Verifica lo extraído — verde = coincide, ámbar = posible coincidencia, rojo = no está en tu catálogo. Pulsa Aplicar para rellenar.",
+        "back": "Atrás",
+        "apply": "Aplicar al formulario",
+        "modelLabel": "Modelo",
+        "none": "No detectado",
+        "noItems": "No se detectaron ítems",
+        "badge": {
+          "exact": "Coincide",
+          "fuzzy": "Posible",
+          "notFound": "No registrado"
+        },
+        "section": {
+          "brand": "Marca",
+          "logistics": "Logística",
+          "payment": "Condiciones de pago",
+          "items": "Ítems"
+        },
+        "logistics": {
+          "origin": "Origen",
+          "destinations": "Destinos",
+          "incoterms": "Incoterms",
+          "container": "Contenedor",
+          "shipment": "Embarque"
+        },
+        "item": {
+          "qty": "Cant",
+          "price": "Precio",
+          "plant": "Planta"
+        },
+        "brand": {
+          "willCreate": "— requerirá selección o creación manual en la fila."
+        }
       },
       "submit": {
         "noCompany": "No hay empresa proveedora vinculada a tu cuenta.",
