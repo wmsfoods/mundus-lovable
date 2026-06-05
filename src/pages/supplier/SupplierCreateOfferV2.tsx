@@ -40,6 +40,7 @@ import { cn } from "@/lib/utils";
 import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
 import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
 import { type CutRow } from "@/lib/cutRowTypes";
+import { emptyCutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
 import { DistributionCard, type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
@@ -426,6 +427,91 @@ export default function SupplierCreateOfferV2() {
   const [quickFillOpen, setQuickFillOpen] = useState(false);
   const { company } = useCurrentCompany();
   const { plants } = useCompanyPlants(company?.id);
+
+  // R6.A — apply parsed AI payload onto the V2 form state.
+  const applyAiPrefill = (p: import("@/hooks/useAiParseOffer").ParsedOfferPayload) => {
+    setLogistics((prev) => {
+      const next: LogisticsState = { ...prev };
+      // Origin
+      if (p.origin.country?.id) {
+        next.originCountryId = p.origin.country.id;
+        const ports = catalog.getPortsByCountryId(p.origin.country.id);
+        if (p.origin.portName) {
+          const needle = p.origin.portName.toLowerCase();
+          const match = ports.find(
+            (po) => po.name.toLowerCase() === needle || po.name.toLowerCase().includes(needle),
+          );
+          if (match) next.originPortIds = [match.id];
+        }
+      }
+      // Destinations
+      if (p.destinations.length > 0) {
+        next.destinations = p.destinations
+          .filter((d) => d.country?.id)
+          .map((d) => {
+            const cid = d.country!.id!;
+            const ports = catalog.getPortsByCountryId(cid);
+            const selected: string[] = [];
+            if (d.portName) {
+              const needle = d.portName.toLowerCase();
+              const match = ports.find(
+                (po) => po.name.toLowerCase() === needle || po.name.toLowerCase().includes(needle),
+              );
+              if (match) selected.push(match.id);
+            }
+            return {
+              countryId: cid,
+              iso: d.country!.iso,
+              name: d.country!.name,
+              flag: d.country!.flag,
+              selectedPortIds: selected,
+              freight: { mode: "same" as const, same: d.freightUsd != null ? String(d.freightUsd) : "" },
+              insurance: { mode: "same" as const, same: d.insuranceUsd != null ? String(d.insuranceUsd) : "" },
+            };
+          });
+      }
+      // Incoterms
+      const validIncoterms = p.incoterms.filter((i): i is LogisticsState["incoterms"][number] =>
+        ["FOB", "CFR", "CIF", "EXW", "DDP", "DAP"].includes(i),
+      );
+      if (validIncoterms.length > 0) next.incoterms = validIncoterms;
+      // Container
+      if (p.containerSize) next.containerSize = p.containerSize;
+      if (p.fclCount && p.fclCount > 0) next.fclCount = Math.floor(p.fclCount);
+      if (p.temperature) next.temperature = p.temperature;
+      if (p.shipmentReady) next.shipmentReady = p.shipmentReady;
+      return next;
+    });
+
+    // Payment terms — only set if exact/fuzzy match found in catalog
+    if (p.paymentTerms.label && (p.paymentTerms.match === "exact" || p.paymentTerms.match === "fuzzy")) {
+      setPaymentTerms(p.paymentTerms.label);
+    }
+
+    // Items → append as new CutRow entries (preserve any user-entered rows)
+    if (p.items.length > 0) {
+      setCuts((prev) => {
+        const additions: CutRow[] = p.items.map((it) => {
+          const row = emptyCutRow();
+          row.cutName = it.cutName;
+          row.protein = it.protein;
+          row.spec = it.spec ?? "";
+          row.packing = it.packing ?? "";
+          row.qty = it.qtyKg ?? 0;
+          row.askPrice = it.askPricePerKg ?? 0;
+          row.notes = it.notes ?? "";
+          row.plantId = it.plant.plantId;
+          row.plantNumber = it.plant.plantNumber ?? "";
+          row.brandId = p.brand.id;
+          row.brandName = p.brand.name ?? "";
+          return row;
+        });
+        // If the only existing row is the default empty row, replace it.
+        const onlyEmpty = prev.length === 1 && !prev[0].cutName && prev[0].qty === 0;
+        return onlyEmpty ? additions : [...prev, ...additions];
+      });
+    }
+  };
 
   // Prefill from offer (Edit/Clone)
   const [prefillApplied, setPrefillApplied] = useState(false);
@@ -968,7 +1054,12 @@ export default function SupplierCreateOfferV2() {
           setNegotiationDial(d);
         }}
       />
-      <AiQuickFillModal open={quickFillOpen} onOpenChange={setQuickFillOpen} />
+      <AiQuickFillModal
+        open={quickFillOpen}
+        onOpenChange={setQuickFillOpen}
+        supplierId={company?.id ?? null}
+        onApply={applyAiPrefill}
+      />
 
       {/* Logistics Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
