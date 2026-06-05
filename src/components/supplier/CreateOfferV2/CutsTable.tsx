@@ -491,52 +491,52 @@ function CutRowView({
         />
       </td>
       <td className="px-2 py-2">
-        <Input
-          type="number"
-          inputMode="decimal"
+        <NumberCell
+          value={qtyDisplay}
+          fractionDigits={2}
+          minFractionDigits={0}
+          onCommit={(s) => handleQty(s)}
           className={cn(inputCls(errors.qty), "text-right tabular-nums")}
-          value={qtyDisplay || ""}
-          onChange={(e) => handleQty(e.target.value)}
         />
       </td>
       <td className="px-2 py-2">
-        <Input
-          type="number"
-          inputMode="decimal"
+        <NumberCell
+          value={askDisplay}
+          fractionDigits={2}
+          minFractionDigits={2}
+          onCommit={(s) => handleAsk(s)}
           className={cn(inputCls(errors.ask), "text-right tabular-nums")}
-          value={askDisplay || ""}
-          onChange={(e) => handleAsk(e.target.value)}
         />
       </td>
       <td className="px-2 py-2">
-        <Input
-          type="number"
-          inputMode="decimal"
+        <NumberCell
+          value={floorDisplay}
+          fractionDigits={2}
+          minFractionDigits={2}
+          onCommit={(s) => handleFloor(s)}
           className={cn(inputCls(errors.floor), "text-right tabular-nums")}
-          value={floorDisplay || ""}
-          onChange={(e) => handleFloor(e.target.value)}
           title={errors.floor ? tk("col.floorErr", "Floor must be ≤ Ask") : undefined}
         />
       </td>
       {showFob && (
         <>
           <td className="px-2 py-2">
-            <Input
-              type="number"
-              inputMode="decimal"
+            <NumberCell
+              value={fobAskDisplay}
+              fractionDigits={2}
+              minFractionDigits={2}
+              onCommit={(s) => handleFobAsk(s)}
               className={cn(inputCls(fobAskErr), "text-right tabular-nums")}
-              value={fobAskDisplay || ""}
-              onChange={(e) => handleFobAsk(e.target.value)}
               title={tk("fobTooltip", "FOB price is fixed at origin and does not vary by destination port")}
             />
           </td>
           <td className="px-2 py-2">
-            <Input
-              type="number"
-              inputMode="decimal"
+            <NumberCell
+              value={fobFloorDisplay}
+              fractionDigits={2}
+              minFractionDigits={2}
+              onCommit={(s) => handleFobFloor(s)}
               className={cn(inputCls(!!fobFloorErr), "text-right tabular-nums")}
-              value={fobFloorDisplay || ""}
-              onChange={(e) => handleFobFloor(e.target.value)}
               title={fobFloorErr ? tk("col.fobFloorErr", "FOB Floor must be ≤ FOB Ask") : undefined}
             />
           </td>
