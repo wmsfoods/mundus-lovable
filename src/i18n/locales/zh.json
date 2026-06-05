@@ -2635,6 +2635,9 @@
           "ask": "报价 {{u}}",
           "floor": "底价 {{u}}",
           "floorErr": "底价必须 ≤ 报价",
+          "fobAsk": "FOB 报价 {{u}}",
+          "fobFloor": "FOB 底价 {{u}}",
+          "fobFloorErr": "FOB 底价必须 ≤ FOB 报价",
           "subtotal": "小计"
         },
         "capacity": {
