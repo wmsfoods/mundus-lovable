@@ -5360,6 +5360,39 @@ export type Database = {
           },
         ]
       }
+      offer_origin_ports: {
+        Row: {
+          created_at: string
+          offer_id: string
+          port_id: string
+        }
+        Insert: {
+          created_at?: string
+          offer_id: string
+          port_id: string
+        }
+        Update: {
+          created_at?: string
+          offer_id?: string
+          port_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_origin_ports_offer_id_fkey"
+            columns: ["offer_id"]
+            isOneToOne: false
+            referencedRelation: "offers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offer_origin_ports_port_id_fkey"
+            columns: ["port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_shares: {
         Row: {
           channel: string | null
