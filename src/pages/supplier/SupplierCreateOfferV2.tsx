@@ -1159,6 +1159,7 @@ export default function SupplierCreateOfferV2() {
           containerSize={logistics.containerSize}
           cutRegion={cutRegion}
           setCutRegion={setCutRegion}
+          showFob={logistics.incoterms.includes("FOB")}
         />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">

@@ -743,7 +743,9 @@
         "freightUnavailable": "该目的地无运费数据",
         "matchesPrimary": "与供应商报价的贸易术语一致 — 无需调整",
         "estimatedNote": "估算 — 最终价格取决于供应商报价",
-        "contactSupplier": "需要运费报价 — 请联系供应商"
+        "contactSupplier": "需要运费报价 — 请联系供应商",
+        "fobNote": "FOB 价格在原产地固定 — 港口选择不影响 FOB 价格",
+        "fobUnavailable": "供应商未提供 FOB 价格 — 请联系获取详情"
       },
       "logisticsOverview": {
         "title": "物流概览",
@@ -2633,6 +2635,9 @@
           "ask": "报价 {{u}}",
           "floor": "底价 {{u}}",
           "floorErr": "底价必须 ≤ 报价",
+          "fobAsk": "FOB 报价 {{u}}",
+          "fobFloor": "FOB 底价 {{u}}",
+          "fobFloorErr": "FOB 底价必须 ≤ FOB 报价",
           "subtotal": "小计"
         },
         "capacity": {
@@ -2889,6 +2894,8 @@
           "cutQty": "数量",
           "cutPrice": "报价",
           "cutFloorAboveAsk": "底价高于报价",
+          "fobAskPrice": "FOB 报价",
+          "fobFloorAboveAsk": "FOB 底价高于 FOB 报价",
           "cutPlant": "分配工厂",
           "paymentTerm": "付款条款",
           "distributionChannel": "分发渠道"

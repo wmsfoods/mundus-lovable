@@ -20,6 +20,10 @@ export type CutRow = {
   qty: number;              // kg
   askPrice: number;         // $/kg
   floorPrice: number;       // $/kg
+  // FOB pricing — used when offer's incoterms includes "FOB".
+  // Fixed at origin, independent of destination port.
+  fobAskPrice: number | null;   // $/kg or null when not provided
+  fobFloorPrice: number | null; // $/kg or null when not provided
   photoFile: File | null;   // R3: in-memory; R5 uploads on submit
   photoPreviewUrl: string | null;
   files: { file: File; previewUrl: string }[];
@@ -52,6 +56,8 @@ export function emptyCutRow(): CutRow {
     qty: 0,
     askPrice: 0,
     floorPrice: 0,
+    fobAskPrice: null,
+    fobFloorPrice: null,
     photoFile: null,
     photoPreviewUrl: null,
     files: [],

@@ -38,9 +38,11 @@ type Props = {
   containerSize: "20ft" | "40ft";
   cutRegion: "global" | "us";
   setCutRegion: (r: "global" | "us") => void;
+  /** Show FOB ask/floor columns when offer's accepted incoterms include "FOB". */
+  showFob?: boolean;
 };
 
-export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion }: Props) {
+export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, showFob = false }: Props) {
   const { t } = useTranslation();
   const { company } = useCurrentCompany();
   const companyId = company?.id ?? null;
@@ -188,6 +190,16 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
               <th className="w-28 px-2 py-2 text-right">{tk("col.qty", "Qty ({{u}})", { u: weightLabel(unit) })}</th>
               <th className="w-24 px-2 py-2 text-right">{tk("col.ask", "Ask {{u}}", { u: priceLabel(unit) })}</th>
               <th className="w-24 px-2 py-2 text-right">{tk("col.floor", "Floor {{u}}", { u: priceLabel(unit) })}</th>
+              {showFob && (
+                <>
+                  <th className="w-24 px-2 py-2 text-right" title={tk("fobTooltip", "FOB price is fixed at origin and does not vary by destination port")}>
+                    {tk("col.fobAsk", "FOB Ask {{u}}", { u: priceLabel(unit) })} ℹ️
+                  </th>
+                  <th className="w-24 px-2 py-2 text-right">
+                    {tk("col.fobFloor", "FOB Floor {{u}}", { u: priceLabel(unit) })}
+                  </th>
+                </>
+              )}
               <th className="w-28 px-2 py-2 text-right">{tk("col.subtotal", "Subtotal")}</th>
               <th className="w-8 px-1 py-2"></th>
             </tr>
@@ -195,7 +207,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           <tbody>
             {cuts.length === 0 && (
               <tr>
-                <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={showFob ? 15 : 13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   {tk("emptyState", "No cuts yet. Click \"Add cut\" to start.")}
                 </td>
               </tr>
@@ -211,6 +223,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 cutRegion={cutRegion}
                 plantOptions={plantOptions}
                 plants={plants}
+                showFob={showFob}
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
@@ -230,6 +243,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">
                   {tk("avgWeighted", "weighted")}
                 </td>
+                {showFob && <td colSpan={2}></td>}
                 <td className="px-2 py-2 text-right tabular-nums">
                   ${fmtNum(totals.askSum, 0)}
                 </td>
@@ -270,6 +284,7 @@ type RowProps = {
   cutRegion: "global" | "us";
   plantOptions: string[];
   plants: CompanyPlant[];
+  showFob: boolean;
   onChange: (patch: Partial<CutRow>) => void;
   onRemove: () => void;
   fmtNum: (n: number, frac?: number) => string;
@@ -283,6 +298,7 @@ function CutRowView({
   cutRegion,
   plantOptions,
   plants,
+  showFob,
   onChange,
   onRemove,
   fmtNum,
@@ -326,6 +342,24 @@ function CutRowView({
     const n = parseFloat(v) || 0;
     onChange({ floorPrice: n > 0 ? fromDisplay(n, "price", unit) : 0 });
   };
+  const handleFobAsk = (v: string) => {
+    const n = parseFloat(v) || 0;
+    onChange({ fobAskPrice: n > 0 ? fromDisplay(n, "price", unit) : null });
+  };
+  const handleFobFloor = (v: string) => {
+    const n = parseFloat(v) || 0;
+    onChange({ fobFloorPrice: n > 0 ? fromDisplay(n, "price", unit) : null });
+  };
+
+  const fobAskDisplay = row.fobAskPrice && row.fobAskPrice > 0 ? toDisplay(row.fobAskPrice, "price", unit) : 0;
+  const fobFloorDisplay = row.fobFloorPrice && row.fobFloorPrice > 0 ? toDisplay(row.fobFloorPrice, "price", unit) : 0;
+  const fobAskErr = showFob && !(row.fobAskPrice != null && row.fobAskPrice > 0);
+  const fobFloorErr =
+    showFob &&
+    row.fobFloorPrice != null &&
+    row.fobAskPrice != null &&
+    row.fobFloorPrice > 0 &&
+    row.fobFloorPrice > row.fobAskPrice;
 
   const inputCls = (err: boolean) =>
     cn("h-8 text-xs", err && "border-destructive/60 focus-visible:ring-destructive/30");
@@ -484,6 +518,30 @@ function CutRowView({
           title={errors.floor ? tk("col.floorErr", "Floor must be ≤ Ask") : undefined}
         />
       </td>
+      {showFob && (
+        <>
+          <td className="px-2 py-2">
+            <Input
+              type="number"
+              inputMode="decimal"
+              className={cn(inputCls(fobAskErr), "text-right tabular-nums")}
+              value={fobAskDisplay || ""}
+              onChange={(e) => handleFobAsk(e.target.value)}
+              title={tk("fobTooltip", "FOB price is fixed at origin and does not vary by destination port")}
+            />
+          </td>
+          <td className="px-2 py-2">
+            <Input
+              type="number"
+              inputMode="decimal"
+              className={cn(inputCls(!!fobFloorErr), "text-right tabular-nums")}
+              value={fobFloorDisplay || ""}
+              onChange={(e) => handleFobFloor(e.target.value)}
+              title={fobFloorErr ? tk("col.fobFloorErr", "FOB Floor must be ≤ FOB Ask") : undefined}
+            />
+          </td>
+        </>
+      )}
       <td className="px-2 py-2 text-right">
         <div className="text-xs font-semibold tabular-nums">
           {subtotal > 0 ? `$${fmtNum(subtotal, 0)}` : "—"}

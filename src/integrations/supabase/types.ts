@@ -5205,6 +5205,8 @@ export type Database = {
           created_at: string | null
           customer_product_id: string
           files_urls: string[] | null
+          fob_ask_price: number | null
+          fob_floor_price: number | null
           id: string
           maximum_amount: number
           meat_specification: number | null
@@ -5226,6 +5228,8 @@ export type Database = {
           created_at?: string | null
           customer_product_id: string
           files_urls?: string[] | null
+          fob_ask_price?: number | null
+          fob_floor_price?: number | null
           id?: string
           maximum_amount: number
           meat_specification?: number | null
@@ -5247,6 +5251,8 @@ export type Database = {
           created_at?: string | null
           customer_product_id?: string
           files_urls?: string[] | null
+          fob_ask_price?: number | null
+          fob_floor_price?: number | null
           id?: string
           maximum_amount?: number
           meat_specification?: number | null

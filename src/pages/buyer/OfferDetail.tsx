@@ -19,6 +19,7 @@ import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPor
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import FreightCalculator from "@/components/buyer/FreightCalculator";
 import LogisticsOverview from "@/components/buyer/LogisticsOverview";
+import { computeFinalPrice } from "@/lib/freightMath";
 import { useOfferOriginPorts } from "@/hooks/useOfferOriginPorts";
 
 const MONTH_NAMES = [
@@ -423,19 +424,81 @@ function BuyerOfferBody({
   const category =
     firstItem?.customer_product?.standard_product?.product_category?.name_en ?? null;
 
+  // Lifted selection state so LogisticsOverview, FreightCalculator and the
+  // cuts table can all reflect the same port + incoterm pick.
+  const [calcSelection, setCalcSelection] = useState<{ portId: string | null; incoterm: string | null }>({
+    portId: null,
+    incoterm: null,
+  });
+
+  // Load freight rows for adjusted per-row pricing (only when items present).
+  const { data: freightRows } = useQuery({
+    queryKey: ["offerFreightForCuts", offer.id],
+    enabled: !!offer.id && items.length > 0,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("freight_options")
+        .select("port_id, cost, insurance, ports(name, code)")
+        .eq("offer_id", offer.id);
+      return (data ?? []) as Array<{ port_id: string; cost: number | null; insurance: number | null; ports: { name: string; code: string | null } | null }>;
+    },
+    staleTime: 30_000,
+  });
+
+  const selectedFreight = (freightRows ?? []).find((f) => f.port_id === calcSelection.portId) ?? null;
+  const selectedPortLabel = selectedFreight?.ports
+    ? `${selectedFreight.ports.name}${selectedFreight.ports.code ? ` (${selectedFreight.ports.code})` : ""}`
+    : null;
+
+  // FOB avg (weighted by amount)
+  const fobAvgPricePerKg = (() => {
+    let totalAmt = 0;
+    let totalFob = 0;
+    for (const it of items) {
+      const amt = Number(it.amount ?? 0);
+      const fob = it.fob_ask_price != null ? Number(it.fob_ask_price) : null;
+      if (amt > 0 && fob != null && fob > 0) {
+        totalAmt += amt;
+        totalFob += fob * amt;
+      }
+    }
+    return totalAmt > 0 ? totalFob / totalAmt : null;
+  })();
+
   const cardItems: OfferCardItem[] = items.map((it: OfferDetailItem) => {
-    const img = galleryImages.find(
-      (g: any) =>
-        (g.label ?? "").trim().toLowerCase() ===
-        (it.customer_product?.name ?? "").trim().toLowerCase(),
-    );
+    const basePrice = Number(it.price ?? 0);
+    const qty = Number(it.amount ?? 0);
+    let adjustedPricePerKgUsd: number | null = null;
+    let adjustedLabel: string | null = null;
+    if (calcSelection.incoterm) {
+      if (calcSelection.incoterm === "FOB") {
+        if (it.fob_ask_price != null && Number(it.fob_ask_price) > 0) {
+          adjustedPricePerKgUsd = Number(it.fob_ask_price);
+          adjustedLabel = "FOB";
+        }
+      } else if (selectedFreight && qty > 0) {
+        const br = computeFinalPrice(
+          basePrice,
+          qty,
+          selectedFreight.cost,
+          selectedFreight.insurance,
+          offer.primary_pricing_incoterm ?? null,
+          calcSelection.incoterm,
+          offer.pricing_includes_freight ?? null,
+        );
+        adjustedPricePerKgUsd = br.final;
+        adjustedLabel = `${calcSelection.incoterm}${selectedPortLabel ? ` · ${selectedPortLabel}` : ""}`;
+      }
+    }
     return {
       id: it.id,
       name: it.customer_product?.name ?? "—",
       specLabel: it.aging_method || it.meat_specification ? `Spec · ${it.aging_method ?? it.meat_specification}` : null,
       packing: it.packaging,
-      qtyKg: Number(it.amount ?? 0),
-      pricePerKgUsd: Number(it.price ?? 0),
+      qtyKg: qty,
+      pricePerKgUsd: basePrice,
+      adjustedPricePerKgUsd,
+      adjustedLabel,
     };
   });
   // attach images by name
@@ -549,10 +612,7 @@ function BuyerOfferBody({
         <>
           <LogisticsOverview
             offerId={offer.id}
-            basePricePerKg={totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)}
-            totalKg={totalKg}
-            primaryPricingIncoterm={offer.primary_pricing_incoterm ?? null}
-            pricingIncludesFreight={offer.pricing_includes_freight ?? null}
+            selectedPortId={calcSelection.portId}
           />
           <FreightCalculator
             offerId={offer.id}
@@ -563,6 +623,8 @@ function BuyerOfferBody({
               totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)
             }
             totalKg={totalKg}
+            fobAvgPricePerKg={fobAvgPricePerKg}
+            onSelectionChange={setCalcSelection}
           />
         </>
       )}

@@ -19,6 +19,10 @@ export type OfferCardItem = {
   askingPerKgUsd?: number | null;
   floorPerKgUsd?: number | null;
   imageSrc?: string | null;
+  /** When set, the cell shows a secondary "Final" price line under the base. */
+  adjustedPricePerKgUsd?: number | null;
+  /** Short label for the adjusted line, e.g. "CIF · Buenos Aires" or "FOB". */
+  adjustedLabel?: string | null;
 };
 
 export type OfferCardsProps = {
@@ -244,6 +248,12 @@ export function OfferDetailCards(props: OfferCardsProps) {
                     <td className="num">
                       <span className="ofc-price-main">US$ {fmtPrice(it.pricePerKgUsd, unit)}</span>
                       <span className="ofc-price-unit">/{wLbl}</span>
+                      {it.adjustedPricePerKgUsd != null && it.adjustedPricePerKgUsd > 0 && (
+                        <div style={{ fontSize: 10, marginTop: 2, color: it.adjustedPricePerKgUsd >= it.pricePerKgUsd ? "#15803d" : "#b91c1c" }}>
+                          → US$ {fmtPrice(it.adjustedPricePerKgUsd, unit)}/{wLbl}
+                          {it.adjustedLabel ? <span style={{ color: "#6b7280" }}> · {it.adjustedLabel}</span> : null}
+                        </div>
+                      )}
                     </td>
                     {showSupplierPricing && (
                       <td className="num ofc-secondary-price">
@@ -288,6 +298,12 @@ export function OfferDetailCards(props: OfferCardsProps) {
               </div>
               <div className="ofc-mob-right">
                 <div className="ofc-price-main">US$ {fmtPrice(it.pricePerKgUsd, unit)}/{wLbl}</div>
+                {it.adjustedPricePerKgUsd != null && it.adjustedPricePerKgUsd > 0 && (
+                  <div style={{ fontSize: 10, color: it.adjustedPricePerKgUsd >= it.pricePerKgUsd ? "#15803d" : "#b91c1c" }}>
+                    → US$ {fmtPrice(it.adjustedPricePerKgUsd, unit)}/{wLbl}
+                    {it.adjustedLabel ? <span style={{ color: "#6b7280" }}> · {it.adjustedLabel}</span> : null}
+                  </div>
+                )}
                 {showSupplierPricing && (
                   <div style={{ color: "#6b7280", fontSize: 11 }}>
                     Ask {fmtPrice(it.askingPerKgUsd ?? it.pricePerKgUsd * 1.05, unit)} ·

@@ -748,7 +748,9 @@
         "freightUnavailable": "Flete no disponible para este destino",
         "matchesPrimary": "Mismo incoterm cotizado por el proveedor — sin ajuste",
         "estimatedNote": "Estimado — el precio final depende de la cotización",
-        "contactSupplier": "Se requiere cotización de flete — contacte al proveedor"
+        "contactSupplier": "Se requiere cotización de flete — contacte al proveedor",
+        "fobNote": "El precio FOB es fijo en origen — la selección de puerto no afecta el precio FOB",
+        "fobUnavailable": "Precio FOB no proporcionado por el proveedor — contacte para detalles"
       },
       "logisticsOverview": {
         "title": "Resumen logístico",
@@ -2647,6 +2649,9 @@
           "ask": "Oferta {{u}}",
           "floor": "Piso {{u}}",
           "floorErr": "Piso debe ser ≤ Oferta",
+          "fobAsk": "FOB Oferta {{u}}",
+          "fobFloor": "FOB Piso {{u}}",
+          "fobFloorErr": "FOB Piso debe ser ≤ FOB Oferta",
           "subtotal": "Subtotal"
         },
         "capacity": {
@@ -2903,6 +2908,8 @@
           "cutQty": "cantidad",
           "cutPrice": "precio solicitado",
           "cutFloorAboveAsk": "precio mínimo mayor que el solicitado",
+          "fobAskPrice": "precio FOB solicitado",
+          "fobFloorAboveAsk": "FOB piso mayor que FOB oferta",
           "cutPlant": "planta asignada",
           "paymentTerm": "forma de pago",
           "distributionChannel": "canal de distribución"

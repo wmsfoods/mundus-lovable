@@ -748,7 +748,9 @@
         "freightUnavailable": "Freight not available for this destination",
         "matchesPrimary": "Matches supplier's quoted incoterm — no adjustment",
         "estimatedNote": "Estimated — final price depends on supplier quote",
-        "contactSupplier": "Freight quote required — contact supplier"
+        "contactSupplier": "Freight quote required — contact supplier",
+        "fobNote": "FOB price is fixed at origin — port selection does not affect FOB pricing",
+        "fobUnavailable": "FOB pricing not provided by supplier — contact for details"
       },
       "logisticsOverview": {
         "title": "Logistics breakdown",
@@ -2647,8 +2649,12 @@
           "ask": "Ask {{u}}",
           "floor": "Floor {{u}}",
           "floorErr": "Floor must be ≤ Ask",
+          "fobAsk": "FOB Ask {{u}}",
+          "fobFloor": "FOB Floor {{u}}",
+          "fobFloorErr": "FOB Floor must be ≤ FOB Ask",
           "subtotal": "Subtotal"
         },
+        "fobTooltip": "FOB price is fixed at origin and does not vary by destination port",
         "capacity": {
           "title": "Container capacity",
           "stateEmpty": "Add cuts to start filling the container",
@@ -2904,6 +2910,8 @@
           "cutPrice": "ask price",
           "cutFloorAboveAsk": "floor price exceeds ask",
           "cutPlant": "plant assignment",
+          "fobAskPrice": "FOB ask price",
+          "fobFloorAboveAsk": "FOB floor exceeds FOB ask",
           "paymentTerm": "payment term",
           "distributionChannel": "distribution channel"
         },
