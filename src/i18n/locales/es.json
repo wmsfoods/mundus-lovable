@@ -685,6 +685,10 @@
         "new": "Nuevo",
         "negotiating": "En negociación",
         "closed": "Cerrado"
+      },
+      "badge": {
+        "directOffer": "Oferta directa de {{supplier}}",
+        "fromNetwork": "De tu red"
       }
     },
     "offerDetail": {

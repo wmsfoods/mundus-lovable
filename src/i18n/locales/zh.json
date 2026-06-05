@@ -680,6 +680,10 @@
         "new": "新",
         "negotiating": "谈判中",
         "closed": "已关闭"
+      },
+      "badge": {
+        "directOffer": "来自 {{supplier}} 的直接报价",
+        "fromNetwork": "来自您的网络"
       }
     },
     "offerDetail": {
