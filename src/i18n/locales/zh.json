@@ -2707,6 +2707,21 @@
         "cancel": "取消",
         "parse": "解析",
         "comingSoon": "AI 快速填充正在开发中 — 即将推出"
+      },
+      "submit": {
+        "noCompany": "您的账户未关联任何供应商公司。",
+        "successPublish": "报价 {{n}} 发布成功！",
+        "successDraft": "草稿已保存 — {{n}}",
+        "errorGeneric": "保存报价失败：{{err}}",
+        "missingOrigin": "发布前请选择起运港。",
+        "missingDestinations": "至少添加一个目的港。",
+        "missingIncoterm": "至少选择一个贸易术语。",
+        "missingCuts": "至少添加一个切块。",
+        "missingCutResolution": "一个或多个切块未选择产品。",
+        "invalidCutNumbers": "每个切块都需要大于零的数量和报价。",
+        "floorGtAsk": "底价不能高于报价。",
+        "missingPayment": "请选择付款条件。",
+        "missingDistribution": "请至少选择一个分发渠道。"
       }
     }
   },

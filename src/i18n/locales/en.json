@@ -2721,6 +2721,21 @@
         "cancel": "Cancel",
         "parse": "Parse",
         "comingSoon": "AI Quick-fill is in development — coming soon"
+      },
+      "submit": {
+        "noCompany": "No supplier company linked to your account.",
+        "successPublish": "Offer {{n}} published successfully!",
+        "successDraft": "Draft saved — {{n}}",
+        "errorGeneric": "Failed to save offer: {{err}}",
+        "missingOrigin": "Select an origin port before publishing.",
+        "missingDestinations": "Add at least one destination port.",
+        "missingIncoterm": "Select at least one incoterm.",
+        "missingCuts": "Add at least one cut.",
+        "missingCutResolution": "One or more cuts have no product selected.",
+        "invalidCutNumbers": "Every cut needs a quantity and asking price greater than zero.",
+        "floorGtAsk": "Floor price cannot be greater than asking price.",
+        "missingPayment": "Select a payment term.",
+        "missingDistribution": "Pick at least one distribution channel."
       }
     }
   },
