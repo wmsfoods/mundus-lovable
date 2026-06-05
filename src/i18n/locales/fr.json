@@ -2923,7 +2923,8 @@
         "communication": "COMMUNICATION",
         "import": "Importer",
         "documents": "Documents",
-        "resources": "RESSOURCES"
+        "resources": "RESSOURCES",
+        "dataManagement": "Gestion des Données"
       },
       "theme": {
         "light": "Mode clair",
@@ -3844,6 +3845,63 @@
         "buyer": "Acheteur",
         "supplier": "Fournisseur",
         "admin": "Admin"
+      }
+    },
+    "dataManagement": {
+      "title": "Gestion des Données",
+      "subtitle": "Inventaire en lecture seule des données (les actions de suppression arrivent en A2)",
+      "loading": "Chargement…",
+      "noData": "Aucune donnée",
+      "showTrash": "Afficher la corbeille",
+      "deleted": "Supprimé",
+      "bulkSoon": "Bientôt : actions groupées (Batch A2)",
+      "tabs": {
+        "offers": "Offres",
+        "negotiations": "Négociations",
+        "orders": "Ventes / Commandes",
+        "requests": "Demandes",
+        "companies": "Sociétés",
+        "users": "Utilisateurs",
+        "cuts": "Découpes"
+      },
+      "col": {
+        "id": "ID",
+        "supplier": "Fournisseur",
+        "status": "Statut",
+        "items": "Articles",
+        "negotiations": "Négociations",
+        "orders": "Commandes",
+        "created": "Créé",
+        "offer": "Offre",
+        "buyer": "Acheteur",
+        "round": "Tour",
+        "total": "Total",
+        "product": "Produit",
+        "destination": "Destination",
+        "name": "Nom",
+        "role": "Rôle",
+        "users": "Utilisateurs",
+        "offers": "Offres",
+        "country": "Pays",
+        "email": "E-mail",
+        "type": "Type",
+        "activeCompany": "Société active",
+        "category": "Catégorie",
+        "region": "Région",
+        "active": "Actif"
+      },
+      "filter": {
+        "allStatuses": "Tous les statuts",
+        "supplier": "Fournisseur…",
+        "buyerOrSupplier": "Acheteur ou fournisseur…",
+        "product": "Produit…",
+        "allRoles": "Tous les rôles",
+        "country": "Pays…",
+        "companyName": "Nom de société…",
+        "emailOrName": "E-mail ou nom…",
+        "allCategories": "Toutes les catégories",
+        "allRegions": "Toutes les régions",
+        "cutName": "Nom de découpe…"
       }
     }
   },

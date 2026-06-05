@@ -2937,7 +2937,8 @@
         "communication": "COMUNICACIÓN",
         "import": "Importar",
         "documents": "Documentos",
-        "resources": "RECURSOS"
+        "resources": "RECURSOS",
+        "dataManagement": "Gestión de Datos"
       },
       "theme": {
         "light": "Modo claro",
@@ -3858,6 +3859,63 @@
         "buyer": "Comprador",
         "supplier": "Proveedor",
         "admin": "Admin"
+      }
+    },
+    "dataManagement": {
+      "title": "Gestión de Datos",
+      "subtitle": "Inventario de solo lectura de los datos (las acciones de eliminar llegan en A2)",
+      "loading": "Cargando…",
+      "noData": "Sin datos",
+      "showTrash": "Mostrar papelera",
+      "deleted": "Eliminado",
+      "bulkSoon": "Próximamente: acciones masivas (Batch A2)",
+      "tabs": {
+        "offers": "Ofertas",
+        "negotiations": "Negociaciones",
+        "orders": "Ventas / Pedidos",
+        "requests": "Solicitudes",
+        "companies": "Empresas",
+        "users": "Usuarios",
+        "cuts": "Cortes"
+      },
+      "col": {
+        "id": "ID",
+        "supplier": "Proveedor",
+        "status": "Estado",
+        "items": "Ítems",
+        "negotiations": "Negociaciones",
+        "orders": "Pedidos",
+        "created": "Creado",
+        "offer": "Oferta",
+        "buyer": "Comprador",
+        "round": "Ronda",
+        "total": "Total",
+        "product": "Producto",
+        "destination": "Destino",
+        "name": "Nombre",
+        "role": "Tipo",
+        "users": "Usuarios",
+        "offers": "Ofertas",
+        "country": "País",
+        "email": "Email",
+        "type": "Tipo",
+        "activeCompany": "Empresa activa",
+        "category": "Categoría",
+        "region": "Región",
+        "active": "Activo"
+      },
+      "filter": {
+        "allStatuses": "Todos los estados",
+        "supplier": "Proveedor…",
+        "buyerOrSupplier": "Comprador o proveedor…",
+        "product": "Producto…",
+        "allRoles": "Todos los tipos",
+        "country": "País…",
+        "companyName": "Nombre de empresa…",
+        "emailOrName": "Email o nombre…",
+        "allCategories": "Todas las categorías",
+        "allRegions": "Todas las regiones",
+        "cutName": "Nombre del corte…"
       }
     }
   },
