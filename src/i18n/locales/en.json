@@ -2750,8 +2750,46 @@
         "subtitle": "Paste an offer email, spec sheet, or any text — AI will parse and prefill the form.",
         "placeholder": "Paste here…",
         "cancel": "Cancel",
-        "parse": "Parse",
-        "comingSoon": "AI Quick-fill is in development — coming soon"
+        "parse": "Parse with AI",
+        "comingSoon": "AI Quick-fill is in development — coming soon",
+        "parsing": "Parsing…",
+        "hint": "AI will detect brand, plant, items, origin/destination ports, incoterms, freight and payment terms. You can adjust everything before saving.",
+        "tooShort": "Please paste at least 20 characters.",
+        "error": "Failed to parse — try again.",
+        "applied": "AI parsed data applied — review and adjust as needed.",
+        "previewTitle": "Review parsed data",
+        "previewSubtitle": "Verify what AI extracted — green = matched, amber = possible match, red = not in your catalog. Click Apply to fill the form.",
+        "back": "Back",
+        "apply": "Apply to form",
+        "modelLabel": "Model",
+        "none": "Not detected",
+        "noItems": "No items detected",
+        "badge": {
+          "exact": "Matched",
+          "fuzzy": "Possible match",
+          "notFound": "Not registered"
+        },
+        "section": {
+          "brand": "Brand",
+          "logistics": "Logistics",
+          "payment": "Payment terms",
+          "items": "Items"
+        },
+        "logistics": {
+          "origin": "Origin",
+          "destinations": "Destinations",
+          "incoterms": "Incoterms",
+          "container": "Container",
+          "shipment": "Shipment"
+        },
+        "item": {
+          "qty": "Qty",
+          "price": "Ask",
+          "plant": "Plant"
+        },
+        "brand": {
+          "willCreate": "— will need manual selection or creation in the row."
+        }
       },
       "submit": {
         "noCompany": "No supplier company linked to your account.",
