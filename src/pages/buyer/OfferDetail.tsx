@@ -509,12 +509,14 @@ function BuyerOfferBody({
           port: null,
           code: destCode,
           extraCount: Math.max(0, destinations.length - 1),
+          allCountries: destinations,
         }}
         incoterms={incotermsFormatted}
         paymentTerms={offer.payment_terms}
         containerSize={offer.container_size}
         containerCount={offer.total_fcl ?? 1}
         createdAt={offer.created_at}
+        supplierName={offer.supplier_name}
         items={cardItems}
         gallery={galleryImages}
         illustrativeLabel={t("buyer.offerDetail.illustrative", "Illustrative")}
