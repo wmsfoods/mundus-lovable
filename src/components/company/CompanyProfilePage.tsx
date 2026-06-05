@@ -821,7 +821,7 @@ export default function CompanyProfilePage({
         </FieldLabel>
       </Section>
 
-        </>
+        </fieldset>
       )}
 
       {/* === TEAM TAB === */}
@@ -839,7 +839,7 @@ export default function CompanyProfilePage({
       )}
 
       {tab === "profile" && (
-        <>
+        <fieldset disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       {/* Brands — supplier-only manager, shown for admin or supplier of a supplier company */}
       {company.is_supplier && companyId && (role === "admin" || role === "supplier") && (
         <Section
@@ -847,7 +847,7 @@ export default function CompanyProfilePage({
           title="Brands"
           subtitle="Brands you can attach to each cut on your offers."
         >
-          <SupplierBrandsManager companyId={companyId} canEdit={true} />
+          <SupplierBrandsManager companyId={companyId} canEdit={canEdit} />
         </Section>
       )}
 
