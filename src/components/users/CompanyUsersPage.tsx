@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import {
-  Users2, Plus, Search as SearchIcon, MoreVertical, KeyRound, Mail, Pencil, Ban, CheckCircle2, X,
+  Users2, Plus, Search as SearchIcon, MoreVertical, KeyRound, Mail, Pencil, Ban, CheckCircle2, X, Trash2,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { auditLog } from "@/lib/auditLog";
@@ -89,6 +89,9 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
   const companyId = companyIdOverride ?? company?.id ?? null;
   const { role, isMundusAdmin } = useCompanyRole();
   const canManage =
+    isMundusAdmin ||
+    ["master_supplier", "supplier_global_director", "master_buyer", "buyer_global_director"].includes(role ?? "");
+  const canDelete =
     isMundusAdmin ||
     ["master_supplier", "supplier_global_director", "master_buyer", "buyer_global_director"].includes(role ?? "");
 
@@ -185,6 +188,28 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
       action: next === "inactive" ? "team.deactivated" : "team.reactivated",
       category: "user", entityLabel: m.email,
       severity: next === "inactive" ? "warn" : "info",
+    });
+    refetch();
+  };
+
+  const deleteUser = async (m: Row) => {
+    const ok = typeof window !== "undefined" && window.confirm(
+      `Permanently delete ${m.name || m.email}?\n\nThis cannot be undone. If the user already has activity on the platform, the system will block the deletion and ask you to deactivate instead.`
+    );
+    if (!ok) return;
+    setBusyId(m.id);
+    const { data: resp, error } = await supabase.functions.invoke("delete-team-member", {
+      body: { member_id: m.id },
+    });
+    setBusyId(null);
+    if (error || (resp && (resp as any).error)) {
+      const msg = (resp as any)?.message || (resp as any)?.error || error?.message || "Failed to delete";
+      toast.error(msg);
+      return;
+    }
+    toast.success("User deleted");
+    auditLog({
+      action: "team.deleted", category: "user", entityLabel: m.email, severity: "warn",
     });
     refetch();
   };
@@ -301,6 +326,11 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
                             <CheckCircle2 size={14} /> Reactivate
                           </DropdownMenuItem>
                         )}
+                        {canDelete && (
+                          <DropdownMenuItem onClick={() => deleteUser(m)} style={{ color: "#b91c1c" }}>
+                            <Trash2 size={14} /> Delete user
+                          </DropdownMenuItem>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                     ) : (
@@ -364,6 +394,11 @@ export default function CompanyUsersPage({ context, companyIdOverride }: { conte
                         ) : (
                           <DropdownMenuItem onClick={() => setStatus(m, "active")}>
                             <CheckCircle2 size={14} /> Reactivate
+                          </DropdownMenuItem>
+                        )}
+                        {canDelete && (
+                          <DropdownMenuItem onClick={() => deleteUser(m)} style={{ color: "#b91c1c" }}>
+                            <Trash2 size={14} /> Delete user
                           </DropdownMenuItem>
                         )}
                       </DropdownMenuContent>
