@@ -8,7 +8,7 @@ type PortFreightShape =
 
 export type SubmitLogistics = {
   originCountryId: string | null;
-  originPortId: string | null;
+  originPortIds: string[];
   destinations: {
     countryId: string;
     selectedPortIds: string[];
@@ -108,7 +108,10 @@ function deriveShipment(yyyymm: string): { shipment_month: number; shipment_year
 
 export function validateForPublish(input: SubmitInput): string | null {
   const { logistics: l, cuts, paymentTerms, distribution: d } = input;
-  if (!l.originPortId) return "missingOrigin";
+  if (!l.originPortIds || l.originPortIds.length === 0) return "missingOrigin";
+  if ((l.incoterms.includes("FOB") || l.incoterms.includes("EXW")) && l.originPortIds.length > 1) {
+    return "singleOriginPortRequired";
+  }
   if (l.destinations.length === 0) return "missingDestinations";
   if (l.incoterms.length === 0) return "missingIncoterm";
   if (cuts.length === 0) return "missingCuts";
