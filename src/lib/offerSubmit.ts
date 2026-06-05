@@ -446,6 +446,7 @@ export async function updateOfferV2(
   await supabase.from("offer_allowed_incoterms").delete().eq("offer_id", offerId);
   await supabase.from("offer_markets").delete().eq("offer_id", offerId);
   await supabase.from("freight_options").delete().eq("offer_id", offerId);
+  await supabase.from("offer_origin_ports").delete().eq("offer_id", offerId);
 
   // Upload only newly-picked media (existing paths flow through).
   const media = await uploadCutMedia(cuts, ctx.supplierId, offerId);
@@ -514,6 +515,15 @@ export async function updateOfferV2(
       .from("offer_allowed_incoterms")
       .insert(allowed.map((it) => ({ offer_id: offerId, incoterm_type: it })));
     if (error) throw new Error(`offer_allowed_incoterms failed: ${error.message}`);
+  }
+
+  // origin ports (multi)
+  const originIds = Array.from(new Set(l.originPortIds.filter(Boolean)));
+  if (originIds.length > 0) {
+    const { error: oopErr } = await supabase
+      .from("offer_origin_ports")
+      .insert(originIds.map((port_id) => ({ offer_id: offerId, port_id })));
+    if (oopErr) throw new Error(`offer_origin_ports failed: ${oopErr.message}`);
   }
 
   // markets
