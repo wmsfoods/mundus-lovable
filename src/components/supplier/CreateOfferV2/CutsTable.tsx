@@ -54,6 +54,19 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
     () => plants.map((p) => p.plant_number || p.name || p.id).filter(Boolean) as string[],
     [plants],
   );
+  const applyPlantToAll = (label: string) => {
+    const match = plants.find(
+      (p) => (p.plant_number || p.name || p.id) === label,
+    );
+    setCuts(
+      cuts.map((c) => ({
+        ...c,
+        plantId: match?.id ?? null,
+        plantNumber: match ? (match.plant_number || match.name || "") : label,
+      })),
+    );
+    toast.success(tk("toastApplied", "Applied to {{n}} cuts", { n: cuts.length }));
+  };
 
   // Force global region for non-US companies
   useEffect(() => {
@@ -142,7 +155,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           options={plantOptions.length > 0 ? plantOptions : undefined}
           freeText={plantOptions.length === 0}
           disabled={!multipleCuts}
-          onApply={(v) => applyToAll("plantNumber", v)}
+          onApply={(v) => (plants.length > 0 ? applyPlantToAll(v) : applyToAll("plantNumber", v))}
         />
         <ApplyToAllChip
           label={tk("col.spec", "Spec")}
@@ -196,6 +209,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 proteinOptions={proteinOptions}
                 cutRegion={cutRegion}
                 plantOptions={plantOptions}
+                plants={plants}
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
