@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { sendEmailNotification } from "@/lib/emailSender";
 import { useTranslation, Trans } from "react-i18next";
 import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
@@ -1716,6 +1717,50 @@ export default function SupplierCreateOffer() {
       if (isEditing && editOffer) {
         navigate(isAdminActor && asCompanyId ? `/admin/offers/${editOffer.offerId}` : `/supplier/offers/${editOffer.offerId}`);
       } else {
+        // SCL email notifications (Batch 5.B): direct-offer & all-customers-offer.
+        // Non-blocking — failures must not affect the publish flow.
+        if (!asDraft && !isEditing) {
+          try {
+            const sclSupplierName = supplierName || company?.name || "Your supplier";
+            const offerTitle =
+              (cuts[0]?.cut || "").trim() ||
+              ta("toastOfferPublishedShort", "New offer", {});
+            const offerIdStr = offer.id as string;
+            const recipientCompanyIds = new Set<string>();
+            if (distSpecific && selectedCustomers.length > 0) {
+              selectedCustomers.forEach((id) => recipientCompanyIds.add(id));
+            }
+            if (distAllCustomers) {
+              const { data: links } = await supabase
+                .from("supplier_customer_links")
+                .select("buyer_company_id")
+                .eq("supplier_office_id", actingOfficeId ?? supplierId)
+                .eq("status", "accepted");
+              for (const l of links ?? []) {
+                if (l.buyer_company_id) recipientCompanyIds.add(l.buyer_company_id as string);
+              }
+            }
+            if (recipientCompanyIds.size > 0) {
+              const { data: emails } = await (supabase as any).rpc(
+                "get_company_recipient_emails",
+                { p_company_ids: Array.from(recipientCompanyIds) },
+              );
+              const templateName = distSpecific && selectedCustomers.length > 0
+                ? "scl_direct_offer"
+                : "scl_all_customers_offer";
+              for (const row of (emails ?? []) as Array<{ email: string }>) {
+                if (!row?.email) continue;
+                await sendEmailNotification(
+                  templateName as any,
+                  row.email,
+                  { supplier: sclSupplierName, offerTitle, offerId: offerIdStr } as any,
+                ).catch((e) => console.warn("[publish] SCL email failed", e));
+              }
+            }
+          } catch (e) {
+            console.warn("[publish] SCL email dispatch failed (non-blocking)", e);
+          }
+        }
         navigate(isAdminActor && asCompanyId ? `/admin/companies/${asCompanyId}` : "/supplier/offers");
       }
     } catch (e: unknown) {

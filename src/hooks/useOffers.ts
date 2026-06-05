@@ -51,6 +51,8 @@ export type OfferWithDetails = {
   is_halal: boolean | null;
   is_kosher: boolean | null;
   created_at: string | null;
+  specific_buyer_company_ids: string[] | null;
+  all_customers: boolean | null;
   items: OfferItem[];
   markets: OfferMarket[];
   incoterms: { incoterm_type: string }[];
@@ -99,6 +101,8 @@ export function useOffers(): UseOffersResult {
           is_halal,
           is_kosher,
           created_at,
+          specific_buyer_company_ids,
+          all_customers,
           items:offer_items (
             id,
             amount,

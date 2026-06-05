@@ -20,6 +20,10 @@ const samples: Record<EmailTemplateName, any> = {
   customerInvitation: { recipientName: "John Chen", inviterCompany: "Friboi Exports", inviterName: "Maria Silva", inviterEmail: "maria@friboi.com" },
   weeklyDigest: { name: "Maria Silva", dateRange: "May 19 – May 25, 2026", activeOffers: 12, newBids: 28, activeNegos: 6, dealsClosed: 3, revenue: "412,500", marketHighlight: "Beef striploin prices rose 4.2% week-over-week driven by stronger Asian demand.", topOffers: [{ cut: "Beef Striploin", price: "5.40", country: "🇧🇷 Brazil" }, { cut: "Pork Belly", price: "3.85", country: "🇺🇸 USA" }, { cut: "Chicken Leg", price: "1.95", country: "🇧🇷 Brazil" }] },
   publicLeadCaptured: { email: "lead@example.com", name: "Jane Buyer", company: "ACME Foods", phone: "+1 555 123 4567", country: "United States", protein: "beef", leadType: "buyer", mundusRep: "Fernando Nascimento", lang: "en" },
+  scl_invite_existing: { supplier: "Friboi Exports", recipientName: "John Chen" },
+  scl_invite_signup: { supplier: "Friboi Exports", linkId: "abc-123" },
+  scl_direct_offer: { supplier: "Friboi Exports", offerTitle: "Beef Striploin IMPS 180 — Brazil → China, Mar 2026", offerId: "abc-123" },
+  scl_all_customers_offer: { supplier: "Friboi Exports", offerTitle: "Beef Striploin IMPS 180 — Brazil → China, Mar 2026", offerId: "abc-123" },
 };
 
 const templateNames = Object.keys(emailTemplates) as EmailTemplateName[];
