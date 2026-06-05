@@ -298,6 +298,12 @@ export function OfferDetailCards(props: OfferCardsProps) {
               </div>
               <div className="ofc-mob-right">
                 <div className="ofc-price-main">US$ {fmtPrice(it.pricePerKgUsd, unit)}/{wLbl}</div>
+                {it.adjustedPricePerKgUsd != null && it.adjustedPricePerKgUsd > 0 && (
+                  <div style={{ fontSize: 10, color: it.adjustedPricePerKgUsd >= it.pricePerKgUsd ? "#15803d" : "#b91c1c" }}>
+                    → US$ {fmtPrice(it.adjustedPricePerKgUsd, unit)}/{wLbl}
+                    {it.adjustedLabel ? <span style={{ color: "#6b7280" }}> · {it.adjustedLabel}</span> : null}
+                  </div>
+                )}
                 {showSupplierPricing && (
                   <div style={{ color: "#6b7280", fontSize: 11 }}>
                     Ask {fmtPrice(it.askingPerKgUsd ?? it.pricePerKgUsd * 1.05, unit)} ·
