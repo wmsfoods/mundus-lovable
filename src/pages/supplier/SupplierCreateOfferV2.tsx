@@ -326,6 +326,25 @@ export default function SupplierCreateOfferV2() {
     return s;
   }, [logistics, destPortCount]);
 
+  const totalInsurance = useMemo(() => {
+    if (!logistics.incoterms.includes("CIF")) return 0;
+    if (logistics.sameFreightGlobal) {
+      const v = parseFloat(logistics.globalInsurance) || 0;
+      return v * destPortCount;
+    }
+    let s = 0;
+    for (const d of logistics.destinations) {
+      if (d.insurance.mode === "same") {
+        s += (parseFloat(d.insurance.same) || 0) * d.selectedPortIds.length;
+      } else {
+        for (const pid of d.selectedPortIds) {
+          s += parseFloat(d.insurance.perPort[pid] ?? "") || 0;
+        }
+      }
+    }
+    return s;
+  }, [logistics, destPortCount]);
+
   // Drawer destination list (filtered)
   const drawerCountriesFiltered = useMemo(() => {
     const q = destSearch.trim().toLowerCase();
@@ -600,6 +619,9 @@ export default function SupplierCreateOfferV2() {
             destPorts: destPortCount,
             freightTotal: totalFreight,
             incoterms: logistics.incoterms,
+            insuranceTotal: totalInsurance,
+            exwPickup:
+              logistics.incoterms.includes("EXW") ? logistics.exwPickupLocation : "",
           }}
           cuts={cuts}
           capacityPct={capacityPct}
