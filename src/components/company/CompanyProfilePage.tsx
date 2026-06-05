@@ -138,6 +138,7 @@ export default function CompanyProfilePage({
   const [loading, setLoading] = useState(true);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [tab, setTab] = useState<"profile" | "locations" | "team">("profile");
 
   // Reference data from DB
   const [marketCountries, setMarketCountries] = useState<
