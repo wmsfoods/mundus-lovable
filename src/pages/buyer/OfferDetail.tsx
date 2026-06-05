@@ -19,6 +19,7 @@ import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPor
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import FreightCalculator from "@/components/buyer/FreightCalculator";
 import LogisticsOverview from "@/components/buyer/LogisticsOverview";
+import { computeFinalPrice } from "@/lib/freightMath";
 import { useOfferOriginPorts } from "@/hooks/useOfferOriginPorts";
 
 const MONTH_NAMES = [
