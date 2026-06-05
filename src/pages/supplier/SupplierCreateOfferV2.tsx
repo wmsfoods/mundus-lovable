@@ -664,11 +664,12 @@ export default function SupplierCreateOfferV2() {
                               onChange={(e) => setDestSameFreight(d.countryId, e.target.value)}
                             />
                           </div>
-                        ) : (
+                        ) : d.freight.mode === "perPort" ? (
                           <div className="flex flex-col gap-2">
                             {d.selectedPortIds.map((pid) => {
                               const port = allPorts.find((p) => p.id === pid);
                               if (!port) return null;
+                              const perPort = (d.freight as { mode: "perPort"; perPort: Record<string, string> }).perPort;
                               return (
                                 <div key={pid} className="flex items-center gap-2 text-xs">
                                   <span className="flex-1 truncate">
@@ -678,14 +679,14 @@ export default function SupplierCreateOfferV2() {
                                   <Input
                                     type="number"
                                     className="w-28"
-                                    value={d.freight.perPort[pid] ?? ""}
+                                    value={perPort[pid] ?? ""}
                                     onChange={(e) => setDestPerPortFreight(d.countryId, pid, e.target.value)}
                                   />
                                 </div>
                               );
                             })}
                           </div>
-                        )}
+                        ) : null}
                       </div>
                     );
                   })}
