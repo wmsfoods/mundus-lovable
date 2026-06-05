@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { sendEmailNotification } from "@/lib/emailSender";
 import { useTranslation, Trans } from "react-i18next";
 import { DEFAULT_PROTEINS, PROTEINS_WITH_US_NOMENCLATURE, resolveProteinProfile } from "@/lib/proteins";
 import MarketplaceLogisticsDrawer, { type MarketplaceRate } from "@/components/supplier/MarketplaceLogisticsDrawer";
