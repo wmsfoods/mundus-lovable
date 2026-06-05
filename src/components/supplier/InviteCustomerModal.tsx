@@ -5,6 +5,7 @@ import { Modal } from "@/components/mundus/Modal";
 import { TextField } from "@/components/mundus/TextField";
 import { useDedupCheck, type DedupCase } from "@/hooks/useDedupCheck";
 import { useInviteBuyer, type InviteBuyerFlow } from "@/hooks/useInviteBuyer";
+import { CountrySelect } from "@/components/admin/CountrySelect";
 
 type Props = {
   open: boolean;
@@ -172,11 +173,16 @@ export default function InviteCustomerModal({ open, onClose }: Props) {
           value={phone}
           onChange={setPhone}
         />
-        <TextField
-          label={t("supplier.myCustomers.modal.country")}
-          value={country}
-          onChange={setCountry}
-        />
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-medium">
+            {t("supplier.myCustomers.modal.country")}
+          </label>
+          <CountrySelect
+            value={country}
+            onChange={setCountry}
+            className="input"
+          />
+        </div>
 
         {submitError && (
           <div className="rounded-md border border-[#f5c6c6] bg-[#fdecec] px-3 py-2 text-sm text-[#b42323]">
