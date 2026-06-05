@@ -2910,6 +2910,8 @@
           "cutPrice": "ask price",
           "cutFloorAboveAsk": "floor price exceeds ask",
           "cutPlant": "plant assignment",
+          "fobAskPrice": "FOB ask price",
+          "fobFloorAboveAsk": "FOB floor exceeds FOB ask",
           "paymentTerm": "payment term",
           "distributionChannel": "distribution channel"
         },
