@@ -7889,6 +7889,10 @@ export type Database = {
           read_ct: number
         }[]
       }
+      refresh_user_company_access: {
+        Args: { p_changed_company_id?: string; p_user_id: string }
+        Returns: undefined
+      }
       reject_negotiation: {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
         Returns: Json
