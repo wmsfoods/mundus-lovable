@@ -2746,7 +2746,24 @@
       "loading": {
         "prefill": "Chargement des données de l'offre…"
       },
-      "livePreviewComingSoon": "Bientôt disponible"
+      "livePreviewComingSoon": "Bientôt disponible",
+      "logistics": {
+        "country": {
+          "placeholder": "Rechercher des pays…",
+          "empty": "Aucun pays trouvé"
+        },
+        "port": {
+          "placeholder": "Rechercher des ports…",
+          "empty": "Aucun port trouvé",
+          "selectCountryFirst": "Sélectionnez d'abord le pays d'origine",
+          "addPort": "Ajouter un port",
+          "nSelected": "{{n}} port(s) sélectionné(s)"
+        },
+        "warning": {
+          "singlePortFobExw": "{{n}} ports d'origine sélectionnés, mais FOB/EXW n'en prend en charge qu'un seul. Supprimez les autres pour continuer.",
+          "atLeastOnePort": "Sélectionnez au moins un port d'origine."
+        }
+      }
     }
   },
   "dealDetail": {
