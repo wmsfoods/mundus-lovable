@@ -2545,7 +2545,8 @@
           "title": "运费设置",
           "toggleTitle": "所有市场和港口使用相同运费",
           "toggleHint": "对所有选定的港口应用统一的运费",
-          "globalFreightLabel": "每 {{size}} FCL 运费 · 适用于 {{c}} 个国家和 {{p}} 个港口"
+          "globalFreightLabel": "每 {{size}} FCL 运费 · 适用于 {{c}} 个国家和 {{p}} 个港口",
+          "insurance": "保险"
         },
         "s4": {
           "title": "各国运费",
@@ -2553,7 +2554,9 @@
           "portsOfEntry": "入境港口",
           "noPorts": "该国没有可用港口。",
           "sameAllPorts": "所有港口使用相同运费?",
-          "freightUSD": "运费 USD"
+          "freightUSD": "运费 USD",
+          "insuranceUSD": "保险 USD",
+          "insShort": "保险"
         },
         "s5": {
           "title": "集装箱与贸易术语",
@@ -2562,7 +2565,9 @@
           "temperature": "温度",
           "incoterms": "贸易术语",
           "certifications": "屠宰认证",
-          "shipmentReady": "装运准备"
+          "shipmentReady": "装运准备",
+          "exwPickup": "EXW 提货地点",
+          "exwPickupPh": "城市、州 — 买方提货地"
         },
         "footer": {
           "summary": "{{c}} 个目的地 · {{p}} 个港口 · {{k}} FCL · {{i}}",
@@ -2691,7 +2696,9 @@
         "channels": "渠道",
         "distMarketplace": "市场",
         "distAll": "全部客户",
-        "distSpecific": "{{n}} 位指定"
+        "distSpecific": "{{n}} 位指定",
+        "pickup": "提货",
+        "totalInsurance": "保险总额"
       },
       "engine": {
         "openButton": "引擎",

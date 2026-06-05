@@ -2559,7 +2559,8 @@
           "title": "Freight setup",
           "toggleTitle": "Same freight for all markets and ports",
           "toggleHint": "Apply one freight cost across every selected port",
-          "globalFreightLabel": "Freight per {{size}} FCL · applies to {{c}} countries & {{p}} ports"
+          "globalFreightLabel": "Freight per {{size}} FCL · applies to {{c}} countries & {{p}} ports",
+          "insurance": "Insurance"
         },
         "s4": {
           "title": "Per-country freight",
@@ -2567,7 +2568,9 @@
           "portsOfEntry": "Ports of entry",
           "noPorts": "No ports listed for this country.",
           "sameAllPorts": "Same freight all ports?",
-          "freightUSD": "Freight USD"
+          "freightUSD": "Freight USD",
+          "insuranceUSD": "Insurance USD",
+          "insShort": "Ins"
         },
         "s5": {
           "title": "Container & Incoterm",
@@ -2576,7 +2579,9 @@
           "temperature": "Temperature",
           "incoterms": "Incoterms",
           "certifications": "Slaughter certifications",
-          "shipmentReady": "Shipment ready"
+          "shipmentReady": "Shipment ready",
+          "exwPickup": "EXW pickup location",
+          "exwPickupPh": "City, state — where buyer collects"
         },
         "footer": {
           "summary": "{{c}} destinations · {{p}} ports · {{k}} FCL · {{i}}",
@@ -2705,7 +2710,9 @@
         "channels": "Channels",
         "distMarketplace": "Marketplace",
         "distAll": "All customers",
-        "distSpecific": "{{n}} specific"
+        "distSpecific": "{{n}} specific",
+        "pickup": "Pickup",
+        "totalInsurance": "Total insurance"
       },
       "engine": {
         "openButton": "Engine",

@@ -5,6 +5,7 @@ import { useOffer, type OfferDetailed, type OfferDetailItem } from "@/hooks/useO
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { OfferDetailCards, type OfferCardItem } from "@/components/offer/OfferDetailCards";
 import { useOfferImages } from "@/hooks/useOfferImages";
+import { useOfferItemMediaImages } from "@/lib/offerMediaUrls";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { BidModal } from "@/components/buyer/BidModal";
@@ -239,7 +240,9 @@ function OfferDetailContent({
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
-  const galleryImages = useOfferImages(items);
+  const baseImages = useOfferImages(items);
+  const mediaImages = useOfferItemMediaImages(items);
+  const galleryImages = [...mediaImages, ...baseImages];
 
   const title = mixed
     ? t("buyer.offers.card.mixedTitle", { count: items.length })

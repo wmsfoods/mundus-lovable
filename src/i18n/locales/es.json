@@ -2559,7 +2559,8 @@
           "title": "Configuración de flete",
           "toggleTitle": "Mismo flete para todos los mercados y puertos",
           "toggleHint": "Aplica un único costo de flete a todos los puertos seleccionados",
-          "globalFreightLabel": "Flete por FCL {{size}} · aplica a {{c}} países y {{p}} puertos"
+          "globalFreightLabel": "Flete por FCL {{size}} · aplica a {{c}} países y {{p}} puertos",
+          "insurance": "Seguro"
         },
         "s4": {
           "title": "Flete por país",
@@ -2567,7 +2568,9 @@
           "portsOfEntry": "Puertos de entrada",
           "noPorts": "No hay puertos listados para este país.",
           "sameAllPorts": "¿Mismo flete en todos los puertos?",
-          "freightUSD": "Flete USD"
+          "freightUSD": "Flete USD",
+          "insuranceUSD": "Seguro USD",
+          "insShort": "Seg"
         },
         "s5": {
           "title": "Contenedor e Incoterm",
@@ -2576,7 +2579,9 @@
           "temperature": "Temperatura",
           "incoterms": "Incoterms",
           "certifications": "Certificaciones de faena",
-          "shipmentReady": "Embarque listo"
+          "shipmentReady": "Embarque listo",
+          "exwPickup": "Lugar de recogida EXW",
+          "exwPickupPh": "Ciudad, estado — donde el comprador retira"
         },
         "footer": {
           "summary": "{{c}} destinos · {{p}} puertos · {{k}} FCL · {{i}}",
@@ -2705,7 +2710,9 @@
         "channels": "Canales",
         "distMarketplace": "Marketplace",
         "distAll": "Todos los clientes",
-        "distSpecific": "{{n}} específicos"
+        "distSpecific": "{{n}} específicos",
+        "pickup": "Recogida",
+        "totalInsurance": "Seguro total"
       },
       "engine": {
         "openButton": "Motor",

@@ -59,6 +59,7 @@ type DestinationState = {
   flag: string;
   selectedPortIds: string[];
   freight: PortFreightShape;
+  insurance: PortFreightShape;
 };
 
 type LogisticsState = {
@@ -73,6 +74,8 @@ type LogisticsState = {
   shipmentReady: string; // YYYY-MM
   sameFreightGlobal: boolean;
   globalFreight: string;
+  globalInsurance: string;
+  exwPickupLocation: string;
 };
 
 const EMPTY_LOGISTICS: LogisticsState = {
@@ -87,6 +90,8 @@ const EMPTY_LOGISTICS: LogisticsState = {
   shipmentReady: "",
   sameFreightGlobal: false,
   globalFreight: "",
+  globalInsurance: "",
+  exwPickupLocation: "",
 };
 
 function Pill({ label, value, onClick, icon: Icon }: { label: string; value: React.ReactNode; onClick: () => void; icon: React.ElementType }) {
@@ -321,6 +326,25 @@ export default function SupplierCreateOfferV2() {
     return s;
   }, [logistics, destPortCount]);
 
+  const totalInsurance = useMemo(() => {
+    if (!logistics.incoterms.includes("CIF")) return 0;
+    if (logistics.sameFreightGlobal) {
+      const v = parseFloat(logistics.globalInsurance) || 0;
+      return v * destPortCount;
+    }
+    let s = 0;
+    for (const d of logistics.destinations) {
+      if (d.insurance.mode === "same") {
+        s += (parseFloat(d.insurance.same) || 0) * d.selectedPortIds.length;
+      } else {
+        for (const pid of d.selectedPortIds) {
+          s += parseFloat(d.insurance.perPort[pid] ?? "") || 0;
+        }
+      }
+    }
+    return s;
+  }, [logistics, destPortCount]);
+
   // Drawer destination list (filtered)
   const drawerCountriesFiltered = useMemo(() => {
     const q = destSearch.trim().toLowerCase();
@@ -355,6 +379,7 @@ export default function SupplierCreateOfferV2() {
             flag: c.flag_emoji ?? "🏳️",
             selectedPortIds: [],
             freight: { mode: "same", same: "" },
+            insurance: { mode: "same", same: "" },
           },
         ],
       };
@@ -405,6 +430,29 @@ export default function SupplierCreateOfferV2() {
       }),
     }));
   };
+
+  const setDestSameInsurance = (countryId: string, value: string) => {
+    setDrawerDraft((prev) => ({
+      ...prev,
+      destinations: prev.destinations.map((d) => {
+        if (d.countryId !== countryId) return d;
+        if (d.insurance.mode === "same") return { ...d, insurance: { mode: "same", same: value } };
+        return { ...d, insurance: { mode: "same", same: value } };
+      }),
+    }));
+  };
+  const setDestPerPortInsurance = (countryId: string, portId: string, value: string) => {
+    setDrawerDraft((prev) => ({
+      ...prev,
+      destinations: prev.destinations.map((d) => {
+        if (d.countryId !== countryId) return d;
+        const cur = d.insurance.mode === "perPort" ? d.insurance.perPort : {};
+        return { ...d, insurance: { mode: "perPort", perPort: { ...cur, [portId]: value } } };
+      }),
+    }));
+  };
+
+  const cifEnabled = drawerDraft.incoterms.includes("CIF");
 
   const draftIncotermsText = drawerDraft.incoterms.join(" · ") || "—";
   const draftDestPortCount = drawerDraft.destinations.reduce((a, d) => a + d.selectedPortIds.length, 0);
@@ -571,6 +619,9 @@ export default function SupplierCreateOfferV2() {
             destPorts: destPortCount,
             freightTotal: totalFreight,
             incoterms: logistics.incoterms,
+            insuranceTotal: totalInsurance,
+            exwPickup:
+              logistics.incoterms.includes("EXW") ? logistics.exwPickupLocation : "",
           }}
           cuts={cuts}
           capacityPct={capacityPct}
@@ -749,14 +800,29 @@ export default function SupplierCreateOfferV2() {
                       p: draftDestPortCount,
                     })}
                   </span>
-                  <div className="ml-auto flex items-center gap-1">
-                    <span className="text-xs text-muted-foreground">US$</span>
-                    <Input
-                      type="number"
-                      className="w-28"
-                      value={drawerDraft.globalFreight}
-                      onChange={(e) => setDrawerDraft((p) => ({ ...p, globalFreight: e.target.value }))}
-                    />
+                  <div className="ml-auto flex items-center gap-3">
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">US$</span>
+                      <Input
+                        type="number"
+                        className="w-28"
+                        value={drawerDraft.globalFreight}
+                        onChange={(e) => setDrawerDraft((p) => ({ ...p, globalFreight: e.target.value }))}
+                      />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground">
+                        {tk("drawer.s3.insurance", "Insurance")}
+                      </span>
+                      <Input
+                        type="number"
+                        className="w-24"
+                        disabled={!cifEnabled}
+                        placeholder={cifEnabled ? "0" : "N/A"}
+                        value={drawerDraft.globalInsurance}
+                        onChange={(e) => setDrawerDraft((p) => ({ ...p, globalInsurance: e.target.value }))}
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -812,14 +878,27 @@ export default function SupplierCreateOfferV2() {
                           </div>
                         )}
                         {d.freight.mode === "same" ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{tk("drawer.s4.freightUSD", "Freight USD")}</span>
-                            <Input
-                              type="number"
-                              className="w-32"
-                              value={d.freight.same}
-                              onChange={(e) => setDestSameFreight(d.countryId, e.target.value)}
-                            />
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">{tk("drawer.s4.freightUSD", "Freight USD")}</span>
+                              <Input
+                                type="number"
+                                className="w-32"
+                                value={d.freight.same}
+                                onChange={(e) => setDestSameFreight(d.countryId, e.target.value)}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">{tk("drawer.s4.insuranceUSD", "Insurance USD")}</span>
+                              <Input
+                                type="number"
+                                className="w-24"
+                                disabled={!cifEnabled}
+                                placeholder={cifEnabled ? "0" : "N/A"}
+                                value={d.insurance.mode === "same" ? d.insurance.same : ""}
+                                onChange={(e) => setDestSameInsurance(d.countryId, e.target.value)}
+                              />
+                            </div>
                           </div>
                         ) : d.freight.mode === "perPort" ? (
                           <div className="flex flex-col gap-2">
@@ -827,6 +906,7 @@ export default function SupplierCreateOfferV2() {
                               const port = allPorts.find((p) => p.id === pid);
                               if (!port) return null;
                               const perPort = (d.freight as { mode: "perPort"; perPort: Record<string, string> }).perPort;
+                              const perPortIns = d.insurance.mode === "perPort" ? d.insurance.perPort : {};
                               return (
                                 <div key={pid} className="flex items-center gap-2 text-xs">
                                   <span className="flex-1 truncate">
@@ -838,6 +918,17 @@ export default function SupplierCreateOfferV2() {
                                     className="w-28"
                                     value={perPort[pid] ?? ""}
                                     onChange={(e) => setDestPerPortFreight(d.countryId, pid, e.target.value)}
+                                  />
+                                  <span className="text-muted-foreground">
+                                    {tk("drawer.s4.insShort", "Ins")}
+                                  </span>
+                                  <Input
+                                    type="number"
+                                    className="w-20"
+                                    disabled={!cifEnabled}
+                                    placeholder={cifEnabled ? "0" : "N/A"}
+                                    value={perPortIns[pid] ?? ""}
+                                    onChange={(e) => setDestPerPortInsurance(d.countryId, pid, e.target.value)}
                                   />
                                 </div>
                               );
@@ -894,6 +985,20 @@ export default function SupplierCreateOfferV2() {
                       </Chip>
                     ))}
                   </div>
+                  {drawerDraft.incoterms.includes("EXW") && (
+                    <div className="mt-2">
+                      <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        {tk("drawer.s5.exwPickup", "EXW pickup location")}
+                      </label>
+                      <Input
+                        placeholder={tk("drawer.s5.exwPickupPh", "City, state — where buyer collects")}
+                        value={drawerDraft.exwPickupLocation}
+                        onChange={(e) =>
+                          setDrawerDraft((p) => ({ ...p, exwPickupLocation: e.target.value }))
+                        }
+                      />
+                    </div>
+                  )}
                 </Field>
                 <Field label={tk("drawer.s5.certifications", "Slaughter certifications")}>
                   <div className="flex flex-wrap gap-1">

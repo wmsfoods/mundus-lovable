@@ -10,6 +10,8 @@ type LogisticsSummary = {
   destPorts: number;
   freightTotal: number;
   incoterms: string[];
+  insuranceTotal: number;
+  exwPickup: string;
 };
 
 type DistributionSummary = {
@@ -105,6 +107,19 @@ export function FinalReviewCard({
                   ? `US$ ${logistics.freightTotal.toLocaleString()}`
                   : "—",
               ],
+              ...(logistics.incoterms.includes("CIF")
+                ? ([
+                    [
+                      tk("totalInsurance", "Total insurance"),
+                      logistics.insuranceTotal > 0
+                        ? `US$ ${logistics.insuranceTotal.toLocaleString()}`
+                        : "—",
+                    ],
+                  ] as [string, string][])
+                : []),
+              ...(logistics.incoterms.includes("EXW")
+                ? ([[tk("pickup", "Pickup"), logistics.exwPickup || "—"]] as [string, string][])
+                : []),
             ]}
           />
           <ReviewBlock

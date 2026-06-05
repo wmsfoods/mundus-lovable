@@ -117,6 +117,8 @@ export function useOffer(id: string | undefined): UseOfferResult {
             meat_specification,
             aging_method,
             packaging,
+            photo_url,
+            files_urls,
             customer_product:customer_products (
               id,
               name,
