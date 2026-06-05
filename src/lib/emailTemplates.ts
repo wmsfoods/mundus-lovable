@@ -519,6 +519,60 @@ export const emailTemplates = {
     ctaUrl: "https://app.mundustrade.us/admin/crm/prospects",
     ctaLabel: "Open CRM →",
   }),
+
+  scl_invite_existing: (vars: { supplier: string; recipientName?: string }) => masterLayout({
+    heroTitle: `You've been invited by ${vars.supplier}`,
+    heroColor: "wine",
+    preheader: `${vars.supplier} has added you as a customer on Mundus Trade`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">Hi${vars.recipientName ? ` <strong>${vars.recipientName}</strong>` : ""},</p>
+      <p style="margin:0 0 16px;"><strong>${vars.supplier}</strong> has invited you to connect with them on Mundus Trade as one of their customers.</p>
+      <p style="margin:0 0 16px;">Once you accept, you'll start receiving offers tailored to your relationship — including offers shared only with their network.</p>
+    `,
+    ctaUrl: "https://app.mundustrade.us/buyer/connected-suppliers",
+    ctaLabel: "Review invitation →",
+  }),
+
+  scl_invite_signup: (vars: { supplier: string; linkId?: string }) => masterLayout({
+    heroTitle: `${vars.supplier} invited you to Mundus Trade`,
+    heroColor: "wine",
+    preheader: `${vars.supplier} wants to connect with you on Mundus Trade`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">Hi there,</p>
+      <p style="margin:0 0 16px;"><strong>${vars.supplier}</strong> has invited you to join Mundus Trade — the global B2B protein trading platform — as one of their customers.</p>
+      <p style="margin:0 0 16px;">Sign up to start receiving direct offers and access the wider marketplace.</p>
+    `,
+    ctaUrl: `https://app.mundustrade.us/signup${vars.linkId ? `?invite=${vars.linkId}` : ""}`,
+    ctaLabel: "Create your account →",
+  }),
+
+  scl_direct_offer: (vars: { supplier: string; offerTitle: string; offerId: string }) => masterLayout({
+    heroTitle: `Direct offer from ${vars.supplier}`,
+    heroColor: "wine",
+    preheader: `${vars.supplier} sent you a direct offer: ${vars.offerTitle}`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">Hi,</p>
+      <p style="margin:0 0 16px;"><strong>${vars.supplier}</strong> published a new offer targeted specifically to you:</p>
+      <p style="margin:0 0 16px;font-size:17px;font-weight:600;color:#8B2252;">${vars.offerTitle}</p>
+      <p style="margin:0 0 16px;">Open the offer to review prices, terms and place a bid.</p>
+    `,
+    ctaUrl: `https://app.mundustrade.us/buyer/offers/${vars.offerId}`,
+    ctaLabel: "View offer →",
+  }),
+
+  scl_all_customers_offer: (vars: { supplier: string; offerTitle: string; offerId: string }) => masterLayout({
+    heroTitle: `New offer from ${vars.supplier}`,
+    heroColor: "wine",
+    preheader: `${vars.supplier} shared a new offer with their customers`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">Hi,</p>
+      <p style="margin:0 0 16px;"><strong>${vars.supplier}</strong> just published a new offer to their network:</p>
+      <p style="margin:0 0 16px;font-size:17px;font-weight:600;color:#8B2252;">${vars.offerTitle}</p>
+      <p style="margin:0 0 16px;">As one of their connected customers, you have early access.</p>
+    `,
+    ctaUrl: `https://app.mundustrade.us/buyer/offers/${vars.offerId}`,
+    ctaLabel: "View offer →",
+  }),
 };
 
 export type EmailTemplateName = keyof typeof emailTemplates;
@@ -539,4 +593,8 @@ export const emailSubjects: Record<EmailTemplateName, (vars: any) => string> = {
   customerInvitation: (v) => `${v.inviterCompany} has invited you to Mundus Trade`,
   weeklyDigest: (v) => `Your Mundus Trade Weekly Digest — ${v.dateRange}`,
   publicLeadCaptured: (v) => `New public-home lead — ${v.email}`,
+  scl_invite_existing: (v) => `You've been invited by ${v.supplier} on Mundus Trade`,
+  scl_invite_signup: (v) => `You've been invited to join Mundus Trade by ${v.supplier}`,
+  scl_direct_offer: (v) => `Direct offer from ${v.supplier}: ${v.offerTitle}`,
+  scl_all_customers_offer: (v) => `New offer from ${v.supplier}: ${v.offerTitle}`,
 };
