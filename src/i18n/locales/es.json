@@ -2649,6 +2649,9 @@
           "ask": "Oferta {{u}}",
           "floor": "Piso {{u}}",
           "floorErr": "Piso debe ser ≤ Oferta",
+          "fobAsk": "FOB Oferta {{u}}",
+          "fobFloor": "FOB Piso {{u}}",
+          "fobFloorErr": "FOB Piso debe ser ≤ FOB Oferta",
           "subtotal": "Subtotal"
         },
         "capacity": {
