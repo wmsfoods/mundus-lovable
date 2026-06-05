@@ -28,6 +28,7 @@ import { CapacityBar } from "./CapacityBar";
 import { BrandPicker } from "./BrandPicker";
 import { PhotoCell } from "./PhotoCell";
 import { FilesCell } from "./FilesCell";
+import { NumberCell } from "./NumberCell";
 import { ApplyToAllChip } from "./ApplyToAllChip";
 import { cn } from "@/lib/utils";
 
