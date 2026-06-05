@@ -974,6 +974,107 @@ function FieldLabel({ label, children }: { label: string; children: ReactNode })
   );
 }
 
+function OfficesOverview({ locations }: { locations: LocationRow[] }) {
+  if (!locations.length) return null;
+  const hqCount = locations.filter((l) => l.office_type === "headquarters").length;
+  const officeCount = locations.filter((l) => l.office_type === "office").length;
+  const factoryCount = locations.filter((l) => l.office_type === "factory").length;
+  return (
+    <section
+      style={{
+        background: "linear-gradient(135deg, #FDF2F8 0%, #FFF 100%)",
+        border: "1px solid #F9D0E0",
+        borderRadius: 16,
+        padding: 20,
+        marginBottom: 16,
+      }}
+    >
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 16, flexWrap: "wrap", gap: 8 }}>
+        <div>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#111827" }}>
+            Network overview
+          </h3>
+          <p style={{ margin: "4px 0 0", fontSize: 12, color: "#6B7280" }}>
+            {hqCount} HQ · {officeCount} office{officeCount === 1 ? "" : "s"} · {factoryCount} factor{factoryCount === 1 ? "y" : "ies"}
+          </p>
+        </div>
+      </div>
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gap: 10,
+        }}
+      >
+        {locations.map((loc) => {
+          const isHQ = loc.office_type === "headquarters";
+          const isFactory = loc.office_type === "factory";
+          const pillBg = isHQ ? "#8B2252" : isFactory ? "#F59E0B" : "#3B82F6";
+          const pillLabel = isHQ ? "HQ" : isFactory ? "FACTORY" : "OFFICE";
+          return (
+            <div
+              key={loc.id}
+              style={{
+                background: "#fff",
+                border: "1px solid #E5E7EB",
+                borderRadius: 12,
+                padding: 12,
+                display: "flex",
+                flexDirection: "column",
+                gap: 6,
+                minHeight: 92,
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 22, lineHeight: 1 }}>{countryFlag(loc.country)}</span>
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: 0.5,
+                    color: "#fff",
+                    background: pillBg,
+                    padding: "2px 6px",
+                    borderRadius: 4,
+                  }}
+                >
+                  {pillLabel}
+                </span>
+                {loc.est_number && (
+                  <span
+                    style={{
+                      fontSize: 10,
+                      fontWeight: 600,
+                      color: "#92400E",
+                      background: "#FEF3C7",
+                      padding: "2px 6px",
+                      borderRadius: 4,
+                      marginLeft: "auto",
+                    }}
+                  >
+                    EST {loc.est_number}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: "#111827", lineHeight: 1.2 }}>
+                {loc.office_name || "—"}
+              </div>
+              <div style={{ fontSize: 12, color: "#6B7280" }}>
+                {[loc.city, loc.country].filter(Boolean).join(", ") || "No address yet"}
+              </div>
+              {isFactory && loc.plant_numbers && loc.plant_numbers.length > 0 && (
+                <div style={{ fontSize: 10, color: "#6B7280", marginTop: 2 }}>
+                  +{loc.plant_numbers.length} plant{loc.plant_numbers.length === 1 ? "" : "s"}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function AdminToggle({
   label, description, checked, onChange,
 }: { label: string; description: string; checked: boolean; onChange: (v: boolean) => unknown | Promise<unknown> }) {
