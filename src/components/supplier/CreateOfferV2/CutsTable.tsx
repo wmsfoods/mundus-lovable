@@ -190,6 +190,16 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
               <th className="w-28 px-2 py-2 text-right">{tk("col.qty", "Qty ({{u}})", { u: weightLabel(unit) })}</th>
               <th className="w-24 px-2 py-2 text-right">{tk("col.ask", "Ask {{u}}", { u: priceLabel(unit) })}</th>
               <th className="w-24 px-2 py-2 text-right">{tk("col.floor", "Floor {{u}}", { u: priceLabel(unit) })}</th>
+              {showFob && (
+                <>
+                  <th className="w-24 px-2 py-2 text-right" title={tk("fobTooltip", "FOB price is fixed at origin and does not vary by destination port")}>
+                    {tk("col.fobAsk", "FOB Ask {{u}}", { u: priceLabel(unit) })} ℹ️
+                  </th>
+                  <th className="w-24 px-2 py-2 text-right">
+                    {tk("col.fobFloor", "FOB Floor {{u}}", { u: priceLabel(unit) })}
+                  </th>
+                </>
+              )}
               <th className="w-28 px-2 py-2 text-right">{tk("col.subtotal", "Subtotal")}</th>
               <th className="w-8 px-1 py-2"></th>
             </tr>
@@ -197,7 +207,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           <tbody>
             {cuts.length === 0 && (
               <tr>
-                <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={showFob ? 15 : 13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   {tk("emptyState", "No cuts yet. Click \"Add cut\" to start.")}
                 </td>
               </tr>
@@ -213,6 +223,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 cutRegion={cutRegion}
                 plantOptions={plantOptions}
                 plants={plants}
+                showFob={showFob}
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
@@ -232,6 +243,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">
                   {tk("avgWeighted", "weighted")}
                 </td>
+                {showFob && <td colSpan={2}></td>}
                 <td className="px-2 py-2 text-right tabular-nums">
                   ${fmtNum(totals.askSum, 0)}
                 </td>
