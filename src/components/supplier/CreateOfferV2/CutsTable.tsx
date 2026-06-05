@@ -342,6 +342,24 @@ function CutRowView({
     const n = parseFloat(v) || 0;
     onChange({ floorPrice: n > 0 ? fromDisplay(n, "price", unit) : 0 });
   };
+  const handleFobAsk = (v: string) => {
+    const n = parseFloat(v) || 0;
+    onChange({ fobAskPrice: n > 0 ? fromDisplay(n, "price", unit) : null });
+  };
+  const handleFobFloor = (v: string) => {
+    const n = parseFloat(v) || 0;
+    onChange({ fobFloorPrice: n > 0 ? fromDisplay(n, "price", unit) : null });
+  };
+
+  const fobAskDisplay = row.fobAskPrice && row.fobAskPrice > 0 ? toDisplay(row.fobAskPrice, "price", unit) : 0;
+  const fobFloorDisplay = row.fobFloorPrice && row.fobFloorPrice > 0 ? toDisplay(row.fobFloorPrice, "price", unit) : 0;
+  const fobAskErr = showFob && !(row.fobAskPrice != null && row.fobAskPrice > 0);
+  const fobFloorErr =
+    showFob &&
+    row.fobFloorPrice != null &&
+    row.fobAskPrice != null &&
+    row.fobFloorPrice > 0 &&
+    row.fobFloorPrice > row.fobAskPrice;
 
   const inputCls = (err: boolean) =>
     cn("h-8 text-xs", err && "border-destructive/60 focus-visible:ring-destructive/30");
@@ -500,6 +518,30 @@ function CutRowView({
           title={errors.floor ? tk("col.floorErr", "Floor must be ≤ Ask") : undefined}
         />
       </td>
+      {showFob && (
+        <>
+          <td className="px-2 py-2">
+            <Input
+              type="number"
+              inputMode="decimal"
+              className={cn(inputCls(fobAskErr), "text-right tabular-nums")}
+              value={fobAskDisplay || ""}
+              onChange={(e) => handleFobAsk(e.target.value)}
+              title={tk("fobTooltip", "FOB price is fixed at origin and does not vary by destination port")}
+            />
+          </td>
+          <td className="px-2 py-2">
+            <Input
+              type="number"
+              inputMode="decimal"
+              className={cn(inputCls(!!fobFloorErr), "text-right tabular-nums")}
+              value={fobFloorDisplay || ""}
+              onChange={(e) => handleFobFloor(e.target.value)}
+              title={fobFloorErr ? tk("col.fobFloorErr", "FOB Floor must be ≤ FOB Ask") : undefined}
+            />
+          </td>
+        </>
+      )}
       <td className="px-2 py-2 text-right">
         <div className="text-xs font-semibold tabular-nums">
           {subtotal > 0 ? `$${fmtNum(subtotal, 0)}` : "—"}
