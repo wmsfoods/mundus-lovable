@@ -352,7 +352,7 @@ export function useOfferForPrefill(
         offerNumber: offer.offer_number as number,
         status: (offer.status as string) ?? "draft",
         originCountryId,
-        originPortId: (offer.origin_port_id as string | null) ?? null,
+        originPortIds,
         destinations,
         containerSize: ((offer.container_size as string) === "20ft" ? "20ft" : "40ft") as
           | "20ft"
