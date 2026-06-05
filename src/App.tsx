@@ -313,6 +313,7 @@ const App = () => (
               <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
               <Route path="docs" element={<AdminDocs />} />
+              <Route path="data-management" element={<AdminDataManagement />} />
               <Route path="import" element={<AdminImport />} />
               <Route path="migration" element={<AdminImport />} />
               <Route path="user-requests" element={<AdminUserRequests />} />
