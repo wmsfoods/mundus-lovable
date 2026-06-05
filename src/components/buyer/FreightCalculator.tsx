@@ -13,6 +13,10 @@ export type FreightCalculatorProps = {
   acceptedIncoterms: string[];
   basePricePerKg: number;
   totalKg: number;
+  /** Average FOB ask price across items (weighted by amount), null when no item has FOB pricing. */
+  fobAvgPricePerKg?: number | null;
+  /** Notify parent (OfferDetail) when selection changes so other widgets can re-render. */
+  onSelectionChange?: (sel: { portId: string | null; incoterm: string | null }) => void;
 };
 
 type Breakdown = FreightBreakdown;
@@ -28,6 +32,8 @@ export default function FreightCalculator({
   acceptedIncoterms,
   basePricePerKg,
   totalKg,
+  fobAvgPricePerKg = null,
+  onSelectionChange,
 }: FreightCalculatorProps) {
   const { t } = useTranslation();
   const [ports, setPorts] = useState<Port[]>([]);
@@ -36,6 +42,11 @@ export default function FreightCalculator({
   const [selectedIncoterm, setSelectedIncoterm] = useState<string | null>(
     acceptedIncoterms[0] ?? null,
   );
+
+  useEffect(() => {
+    onSelectionChange?.({ portId: selectedPortId, incoterm: selectedIncoterm });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedPortId, selectedIncoterm]);
 
   useEffect(() => {
     let cancelled = false;
@@ -74,8 +85,12 @@ export default function FreightCalculator({
     [freight, selectedPortId],
   );
 
+  const isFob = selectedIncoterm === "FOB";
+  const fobUnavailable = isFob && (fobAvgPricePerKg == null || !(fobAvgPricePerKg > 0));
+
   const breakdown = useMemo<Breakdown | null>(() => {
     if (!selectedIncoterm) return null;
+    if (isFob) return null; // FOB is fixed at origin, no freight math
     return computeFinalPrice(
       basePricePerKg,
       totalKg,
@@ -92,6 +107,7 @@ export default function FreightCalculator({
     primaryPricingIncoterm,
     selectedIncoterm,
     pricingIncludesFreight,
+    isFob,
   ]);
 
   if (!acceptedIncoterms.length) return null;
@@ -142,13 +158,16 @@ export default function FreightCalculator({
           </label>
           <select
             value={selectedPortId ?? ""}
+            disabled={isFob}
             onChange={(e) => setSelectedPortId(e.target.value || null)}
             style={{
               padding: "6px 10px",
               borderRadius: 6,
               border: "1px solid #d1d5db",
               fontSize: 13,
-              background: "white",
+              background: isFob ? "#f3f4f6" : "white",
+              color: isFob ? "#9ca3af" : undefined,
+              cursor: isFob ? "not-allowed" : undefined,
               maxWidth: 320,
             }}
           >
@@ -170,11 +189,15 @@ export default function FreightCalculator({
         <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
           {acceptedIncoterms.map((inc) => {
             const active = selectedIncoterm === inc;
+            const isFobBtn = inc === "FOB";
+            const fobBtnDisabled = isFobBtn && (fobAvgPricePerKg == null || !(fobAvgPricePerKg > 0));
             return (
               <button
                 key={inc}
                 type="button"
-                onClick={() => setSelectedIncoterm(inc)}
+                onClick={() => !fobBtnDisabled && setSelectedIncoterm(inc)}
+                disabled={fobBtnDisabled}
+                title={fobBtnDisabled ? t("buyer.offerDetail.freightCalc.fobUnavailable") as string : undefined}
                 style={{
                   padding: "4px 12px",
                   borderRadius: 999,
@@ -183,7 +206,8 @@ export default function FreightCalculator({
                   color: active ? "white" : "#374151",
                   fontSize: 12,
                   fontWeight: 600,
-                  cursor: "pointer",
+                  cursor: fobBtnDisabled ? "not-allowed" : "pointer",
+                  opacity: fobBtnDisabled ? 0.5 : 1,
                 }}
               >
                 {inc}
@@ -193,8 +217,42 @@ export default function FreightCalculator({
         </div>
       </div>
 
+      {/* FOB-specific display */}
+      {isFob && (
+        <div
+          style={{
+            display: "grid",
+            gap: 4,
+            fontSize: 13,
+            color: "#374151",
+            background: "white",
+            padding: 12,
+            borderRadius: 8,
+            border: "1px solid #e5e7eb",
+          }}
+        >
+          {fobUnavailable ? (
+            <div style={{ fontSize: 12, color: "#92400e" }}>
+              ⚠️ {t("buyer.offerDetail.freightCalc.fobUnavailable")}
+            </div>
+          ) : (
+            <>
+              <div style={{ display: "flex", justifyContent: "space-between", fontWeight: 700, color: "#111827" }}>
+                <span>{t("buyer.offerDetail.freightCalc.final", { incoterm: "FOB" })}</span>
+                <span style={{ fontVariantNumeric: "tabular-nums" }}>
+                  {fmt(fobAvgPricePerKg ?? 0, 4)}/kg
+                </span>
+              </div>
+              <div style={{ fontSize: 11, color: "#6b7280", marginTop: 4 }}>
+                {t("buyer.offerDetail.freightCalc.fobNote")}
+              </div>
+            </>
+          )}
+        </div>
+      )}
+
       {/* Warnings */}
-      {noFreightDataForPort && isFreightInco && !includesFreight && (
+      {!isFob && noFreightDataForPort && isFreightInco && !includesFreight && (
         <div
           style={{
             padding: "8px 12px",
