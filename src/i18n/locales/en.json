@@ -2527,7 +2527,8 @@
         "publish": "Publish",
         "readyToPublish": "Ready to publish",
         "percentComplete": "{{n}}% complete",
-        "toastWiringSoon": "Wiring comes in R5.B"
+        "toastWiringSoon": "Wiring comes in R5.B",
+        "saveChanges": "Save changes"
       },
       "drawer": {
         "title": "Edit logistics",
@@ -2742,7 +2743,22 @@
         "invalidCutNumbers": "Every cut needs a quantity and asking price greater than zero.",
         "floorGtAsk": "Floor price cannot be greater than asking price.",
         "missingPayment": "Select a payment term.",
-        "missingDistribution": "Pick at least one distribution channel."
+        "missingDistribution": "Pick at least one distribution channel.",
+        "successUpdate": "Offer #{{n}} updated successfully"
+      },
+      "editMode": {
+        "title": "Edit offer #{{n}}",
+        "activeNegotiationsWarning_one": "1 active negotiation — changes won't affect ongoing chats",
+        "activeNegotiationsWarning_other": "{{count}} active negotiations — changes won't affect ongoing chats"
+      },
+      "cloneMode": {
+        "title": "New offer (cloned from #{{n}})"
+      },
+      "fromRequestMode": {
+        "title": "New offer (from request #{{n}})"
+      },
+      "loading": {
+        "prefill": "Loading offer data…"
       }
     }
   },

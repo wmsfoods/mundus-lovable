@@ -2527,7 +2527,8 @@
         "publish": "Publicar",
         "readyToPublish": "Listo para publicar",
         "percentComplete": "{{n}}% completo",
-        "toastWiringSoon": "Conexión llega en R5.B"
+        "toastWiringSoon": "Conexión llega en R5.B",
+        "saveChanges": "Guardar cambios"
       },
       "drawer": {
         "title": "Editar logística",
@@ -2742,7 +2743,22 @@
         "invalidCutNumbers": "Cada corte necesita cantidad y precio de venta mayores a cero.",
         "floorGtAsk": "El precio mínimo no puede ser mayor que el precio de venta.",
         "missingPayment": "Selecciona una condición de pago.",
-        "missingDistribution": "Elige al menos un canal de distribución."
+        "missingDistribution": "Elige al menos un canal de distribución.",
+        "successUpdate": "Oferta #{{n}} actualizada con éxito"
+      },
+      "editMode": {
+        "title": "Editar oferta #{{n}}",
+        "activeNegotiationsWarning_one": "1 negociación activa — los cambios no afectarán los chats en curso",
+        "activeNegotiationsWarning_other": "{{count}} negociaciones activas — los cambios no afectarán los chats en curso"
+      },
+      "cloneMode": {
+        "title": "Nueva oferta (clonada de #{{n}})"
+      },
+      "fromRequestMode": {
+        "title": "Nueva oferta (desde solicitud #{{n}})"
+      },
+      "loading": {
+        "prefill": "Cargando datos de la oferta…"
       }
     }
   },

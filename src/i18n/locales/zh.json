@@ -2513,7 +2513,8 @@
         "publish": "发布",
         "readyToPublish": "已可发布",
         "percentComplete": "已完成 {{n}}%",
-        "toastWiringSoon": "将在 R5.B 接入"
+        "toastWiringSoon": "将在 R5.B 接入",
+        "saveChanges": "保存更改"
       },
       "drawer": {
         "title": "编辑物流",
@@ -2728,7 +2729,22 @@
         "invalidCutNumbers": "每个切块都需要大于零的数量和报价。",
         "floorGtAsk": "底价不能高于报价。",
         "missingPayment": "请选择付款条件。",
-        "missingDistribution": "请至少选择一个分发渠道。"
+        "missingDistribution": "请至少选择一个分发渠道。",
+        "successUpdate": "报价 #{{n}} 更新成功"
+      },
+      "editMode": {
+        "title": "编辑报价 #{{n}}",
+        "activeNegotiationsWarning_one": "1 个进行中的谈判 — 修改不会影响正在进行的对话",
+        "activeNegotiationsWarning_other": "{{count}} 个进行中的谈判 — 修改不会影响正在进行的对话"
+      },
+      "cloneMode": {
+        "title": "新报价（从 #{{n}} 克隆）"
+      },
+      "fromRequestMode": {
+        "title": "新报价（来自请求 #{{n}}）"
+      },
+      "loading": {
+        "prefill": "正在加载报价数据…"
       }
     }
   },
