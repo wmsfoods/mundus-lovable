@@ -612,10 +612,7 @@ function BuyerOfferBody({
         <>
           <LogisticsOverview
             offerId={offer.id}
-            basePricePerKg={totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)}
-            totalKg={totalKg}
-            primaryPricingIncoterm={offer.primary_pricing_incoterm ?? null}
-            pricingIncludesFreight={offer.pricing_includes_freight ?? null}
+            selectedPortId={calcSelection.portId}
           />
           <FreightCalculator
             offerId={offer.id}
@@ -626,6 +623,8 @@ function BuyerOfferBody({
               totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)
             }
             totalKg={totalKg}
+            fobAvgPricePerKg={fobAvgPricePerKg}
+            onSelectionChange={setCalcSelection}
           />
         </>
       )}
