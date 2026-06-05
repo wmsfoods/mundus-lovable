@@ -13,6 +13,7 @@ import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useOfferImages } from "@/hooks/useOfferImages";
+import { useOfferItemMediaImages } from "@/lib/offerMediaUrls";
 import {
   Dialog,
   DialogContent,
@@ -82,7 +83,9 @@ export default function SupplierOfferDetail() {
     [id, realOffers]
   );
 
-  const galleryImages = useOfferImages(offer?.items ?? []);
+  const baseImages = useOfferImages(offer?.items ?? []);
+  const mediaImages = useOfferItemMediaImages(offer?.items ?? []);
+  const galleryImages = useMemo(() => [...mediaImages, ...baseImages], [mediaImages, baseImages]);
   const destinationPorts = useOfferDestinationPorts(id);
 
   if (offersLoading && !offer) {
