@@ -1,49 +1,37 @@
 project_id = "kypyqxicwbusadnlhnwe"
 
-[functions.prospect-phone-webhook]
-verify_jwt = false
-
-[functions.verify-email]
-verify_jwt = false
-
-[functions.verify-document]
-verify_jwt = false
-
-[functions.signup-notifications]
-verify_jwt = false
-
-[functions.negotiation-notifications]
-verify_jwt = false
-
-[functions.extract-bl]
-verify_jwt = false
-
-[functions.shipping-instructions-send-link]
-verify_jwt = false
-
-[functions.shipping-instructions-validate]
-verify_jwt = false
-
-[functions.shipping-instructions-submit]
-verify_jwt = false
-
-[functions.shipping-instructions-notify-approved]
-verify_jwt = false
-
-[functions.email-track]
-verify_jwt = false
-
-[functions.resend-webhook]
-verify_jwt = false
-
-[functions.stripe-webhook]
-verify_jwt = false
-
-[functions.public-lead-notify]
-verify_jwt = false
-
-[functions.process-email-queue]
-verify_jwt = true
-
-[functions.send-password-reset]
-verify_jwt = false
+[functions]
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.email-track]
+    verify_jwt = false
+  [functions.extract-bl]
+    verify_jwt = false
+  [functions.negotiation-notifications]
+    verify_jwt = false
+  [functions.process-email-queue]
+    verify_jwt = true
+  [functions.prospect-phone-webhook]
+    verify_jwt = false
+  [functions.public-lead-notify]
+    verify_jwt = false
+  [functions.resend-webhook]
+    verify_jwt = false
+  [functions.send-password-reset]
+    verify_jwt = false
+  [functions.shipping-instructions-notify-approved]
+    verify_jwt = false
+  [functions.shipping-instructions-send-link]
+    verify_jwt = false
+  [functions.shipping-instructions-submit]
+    verify_jwt = false
+  [functions.shipping-instructions-validate]
+    verify_jwt = false
+  [functions.signup-notifications]
+    verify_jwt = false
+  [functions.stripe-webhook]
+    verify_jwt = false
+  [functions.verify-document]
+    verify_jwt = false
+  [functions.verify-email]
+    verify_jwt = false
