@@ -38,9 +38,11 @@ type Props = {
   containerSize: "20ft" | "40ft";
   cutRegion: "global" | "us";
   setCutRegion: (r: "global" | "us") => void;
+  /** Show FOB ask/floor columns when offer's accepted incoterms include "FOB". */
+  showFob?: boolean;
 };
 
-export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion }: Props) {
+export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, showFob = false }: Props) {
   const { t } = useTranslation();
   const { company } = useCurrentCompany();
   const companyId = company?.id ?? null;
