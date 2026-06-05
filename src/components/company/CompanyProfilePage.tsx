@@ -578,7 +578,56 @@ export default function CompanyProfilePage({
         </div>
       </div>
 
-      {/* Locations */}
+      {/* Tabs */}
+      <div
+        role="tablist"
+        aria-label="Company sections"
+        style={{
+          display: "flex",
+          gap: 4,
+          background: "#F8FAFC",
+          border: "1px solid #E2E8F0",
+          padding: 4,
+          borderRadius: 12,
+          margin: "16px 0",
+          flexWrap: "wrap",
+        }}
+      >
+        {([
+          { id: "profile", label: "Profile" },
+          { id: "locations", label: `Offices & factories (${visibleLocations.length})` },
+          { id: "team", label: "Team" },
+        ] as const).map((t) => (
+          <button
+            key={t.id}
+            type="button"
+            role="tab"
+            aria-selected={tab === t.id}
+            onClick={() => setTab(t.id)}
+            style={{
+              flex: "1 1 auto",
+              minWidth: 120,
+              padding: "10px 14px",
+              borderRadius: 8,
+              border: 0,
+              fontSize: 13,
+              fontWeight: 600,
+              cursor: "pointer",
+              background: tab === t.id ? "#fff" : "transparent",
+              color: tab === t.id ? "#8B2252" : "#475569",
+              boxShadow: tab === t.id ? "0 1px 3px rgba(0,0,0,0.08)" : "none",
+              transition: "background 0.15s, color 0.15s",
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* === LOCATIONS TAB === */}
+      {tab === "locations" && (
+        <>
+      <OfficesOverview locations={visibleLocations} />
       <Section
         icon={<MapPin size={18} />}
         title="Locations"
@@ -605,8 +654,12 @@ export default function CompanyProfilePage({
           ))}
         </div>
       </Section>
+        </>
+      )}
 
-      {/* Contact */}
+      {/* === PROFILE TAB === */}
+      {tab === "profile" && (
+        <>
       <Section
         icon={<Phone size={18} />}
         title="Contact & website"
