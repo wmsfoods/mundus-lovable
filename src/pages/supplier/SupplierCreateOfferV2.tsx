@@ -200,7 +200,7 @@ function MissingFieldsBanner({
           onClick={() => setExpanded((v) => !v)}
           className="flex-1 text-left text-xs font-medium"
         >
-          {tk("completion.missingFieldsBanner", "{{n}} fields missing to publish — see pills above", { n: totalFields } as any)}
+          {tk("completion.missingFieldsBanner", `${totalFields} fields missing to publish — see pills above`).replace("{{n}}", String(totalFields))}
         </button>
         <button type="button" onClick={() => setExpanded((v) => !v)} className="text-xs underline">
           {expanded ? tk("completion.collapse", "Hide") : tk("completion.expand", "Details")}
