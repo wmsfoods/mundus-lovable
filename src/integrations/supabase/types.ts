@@ -7652,8 +7652,20 @@ export type Database = {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
       }
+      admin_hard_delete: {
+        Args: { p_entity_type: string; p_ids: string[] }
+        Returns: Json
+      }
+      admin_restore: {
+        Args: { p_entity_type: string; p_ids: string[] }
+        Returns: Json
+      }
       admin_set_subscription_status: {
         Args: { p_status: string; p_subscription_id: string }
+        Returns: Json
+      }
+      admin_soft_delete: {
+        Args: { p_entity_type: string; p_ids: string[] }
         Returns: Json
       }
       assign_request_to_office: {
