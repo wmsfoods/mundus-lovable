@@ -2581,6 +2581,77 @@
           "cancel": "Cancel",
           "save": "Save & search freight"
         }
+      },
+      "cutsTable": {
+        "title": "Products & pricing",
+        "subtitle": "Each row = one cut. Prices in {{unit}}.",
+        "regionGlobal": "🌐 Global",
+        "regionUs": "🇺🇸 US (IMPS/NAMP)",
+        "regionLockedHint": "Region locks once cuts are added",
+        "applyChipsLabel": "Apply to all",
+        "addCut": "Add cut",
+        "removeRow": "Remove cut",
+        "emptyState": "No cuts yet. Click \"Add cut\" to start.",
+        "totals": "Totals",
+        "avgWeighted": "weighted",
+        "rowCount": "{{n}} cut(s) · floor total ${{f}}",
+        "toastApplied": "Applied to {{n}} cuts",
+        "loading": "Loading…",
+        "col": {
+          "photo": "Photo",
+          "protein": "Protein",
+          "proteinPh": "—",
+          "brand": "Brand",
+          "cut": "Item / Cut",
+          "pickProteinFirst": "Pick protein first",
+          "pickCut": "Pick cut…",
+          "spec": "Spec",
+          "packing": "Packing",
+          "plant": "Plant #",
+          "plantPh": "Plant #",
+          "pickPlant": "Pick plant…",
+          "notes": "Notes",
+          "notesPh": "Notes…",
+          "qty": "Qty ({{u}})",
+          "ask": "Ask {{u}}",
+          "floor": "Floor {{u}}",
+          "floorErr": "Floor must be ≤ Ask",
+          "subtotal": "Subtotal"
+        },
+        "capacity": {
+          "title": "Container capacity",
+          "stateEmpty": "Add cuts to start filling the container",
+          "stateLow": "Underutilized — add more cuts",
+          "stateAlmost": "Almost full",
+          "stateFull": "Container optimally filled",
+          "stateOver": "Over capacity — exceeds container limit"
+        },
+        "brand": {
+          "placeholder": "Pick brand…",
+          "searchPlaceholder": "Search brands…",
+          "loading": "Searching…",
+          "none": "No brands found.",
+          "typeToSearch": "Type to search your brands.",
+          "creating": "Creating…",
+          "createCta": "Create \"{{name}}\""
+        },
+        "photo": {
+          "add": "Add photo",
+          "replace": "Replace photo",
+          "remove": "Remove photo"
+        },
+        "files": {
+          "manage": "Files",
+          "title": "Files for this cut",
+          "empty": "No files yet.",
+          "addFile": "Add file"
+        },
+        "applyToAll": {
+          "apply": "Apply",
+          "applyToAll": "Apply to all cuts",
+          "typeValue": "Type value…",
+          "disabledHint": "Add 2+ cuts to enable apply-to-all"
+        }
       }
     }
   },

@@ -2567,6 +2567,77 @@
           "cancel": "Annuler",
           "save": "Enregistrer et rechercher le fret"
         }
+      },
+      "cutsTable": {
+        "title": "Produits & prix",
+        "subtitle": "Chaque ligne = une découpe. Prix en {{unit}}.",
+        "regionGlobal": "🌐 Global",
+        "regionUs": "🇺🇸 États-Unis (IMPS/NAMP)",
+        "regionLockedHint": "La région se verrouille dès l'ajout d'une découpe",
+        "applyChipsLabel": "Appliquer à tout",
+        "addCut": "Ajouter une découpe",
+        "removeRow": "Supprimer la découpe",
+        "emptyState": "Aucune découpe. Cliquez sur « Ajouter une découpe » pour commencer.",
+        "totals": "Totaux",
+        "avgWeighted": "pondéré",
+        "rowCount": "{{n}} découpe(s) · plancher total ${{f}}",
+        "toastApplied": "Appliqué à {{n}} découpes",
+        "loading": "Chargement…",
+        "col": {
+          "photo": "Photo",
+          "protein": "Protéine",
+          "proteinPh": "—",
+          "brand": "Marque",
+          "cut": "Article / Découpe",
+          "pickProteinFirst": "Choisissez d'abord la protéine",
+          "pickCut": "Choisir la découpe…",
+          "spec": "Spec",
+          "packing": "Conditionnement",
+          "plant": "Usine n°",
+          "plantPh": "Usine n°",
+          "pickPlant": "Choisir l'usine…",
+          "notes": "Notes",
+          "notesPh": "Notes…",
+          "qty": "Qté ({{u}})",
+          "ask": "Prix {{u}}",
+          "floor": "Plancher {{u}}",
+          "floorErr": "Le plancher doit être ≤ Prix",
+          "subtotal": "Sous-total"
+        },
+        "capacity": {
+          "title": "Capacité du conteneur",
+          "stateEmpty": "Ajoutez des découpes pour commencer à remplir le conteneur",
+          "stateLow": "Sous-utilisé — ajoutez plus de découpes",
+          "stateAlmost": "Presque plein",
+          "stateFull": "Conteneur rempli de façon optimale",
+          "stateOver": "Surcapacité — dépasse la limite du conteneur"
+        },
+        "brand": {
+          "placeholder": "Choisir la marque…",
+          "searchPlaceholder": "Rechercher des marques…",
+          "loading": "Recherche…",
+          "none": "Aucune marque trouvée.",
+          "typeToSearch": "Tapez pour rechercher vos marques.",
+          "creating": "Création…",
+          "createCta": "Créer « {{name}} »"
+        },
+        "photo": {
+          "add": "Ajouter une photo",
+          "replace": "Remplacer la photo",
+          "remove": "Supprimer la photo"
+        },
+        "files": {
+          "manage": "Fichiers",
+          "title": "Fichiers pour cette découpe",
+          "empty": "Aucun fichier.",
+          "addFile": "Ajouter un fichier"
+        },
+        "applyToAll": {
+          "apply": "Appliquer",
+          "applyToAll": "Appliquer à toutes les découpes",
+          "typeValue": "Saisir une valeur…",
+          "disabledHint": "Ajoutez 2+ découpes pour activer"
+        }
       }
     }
   },

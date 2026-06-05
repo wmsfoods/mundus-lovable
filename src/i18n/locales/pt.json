@@ -2581,6 +2581,77 @@
           "cancel": "Cancelar",
           "save": "Salvar & buscar frete"
         }
+      },
+      "cutsTable": {
+        "title": "Produtos & preços",
+        "subtitle": "Cada linha = um corte. Preços em {{unit}}.",
+        "regionGlobal": "🌐 Global",
+        "regionUs": "🇺🇸 EUA (IMPS/NAMP)",
+        "regionLockedHint": "A região trava ao adicionar o primeiro corte",
+        "applyChipsLabel": "Aplicar a todos",
+        "addCut": "Adicionar corte",
+        "removeRow": "Remover corte",
+        "emptyState": "Nenhum corte ainda. Clique em \"Adicionar corte\" para começar.",
+        "totals": "Totais",
+        "avgWeighted": "ponderado",
+        "rowCount": "{{n}} corte(s) · floor total ${{f}}",
+        "toastApplied": "Aplicado a {{n}} cortes",
+        "loading": "Carregando…",
+        "col": {
+          "photo": "Foto",
+          "protein": "Proteína",
+          "proteinPh": "—",
+          "brand": "Marca",
+          "cut": "Item / Corte",
+          "pickProteinFirst": "Escolha a proteína primeiro",
+          "pickCut": "Escolher corte…",
+          "spec": "Spec",
+          "packing": "Embalagem",
+          "plant": "Planta nº",
+          "plantPh": "Planta nº",
+          "pickPlant": "Escolher planta…",
+          "notes": "Notas",
+          "notesPh": "Notas…",
+          "qty": "Qtd ({{u}})",
+          "ask": "Pedido {{u}}",
+          "floor": "Piso {{u}}",
+          "floorErr": "Piso deve ser ≤ Pedido",
+          "subtotal": "Subtotal"
+        },
+        "capacity": {
+          "title": "Capacidade do contêiner",
+          "stateEmpty": "Adicione cortes para começar a preencher o contêiner",
+          "stateLow": "Subutilizado — adicione mais cortes",
+          "stateAlmost": "Quase cheio",
+          "stateFull": "Contêiner com preenchimento ótimo",
+          "stateOver": "Acima da capacidade — excede o limite do contêiner"
+        },
+        "brand": {
+          "placeholder": "Escolher marca…",
+          "searchPlaceholder": "Buscar marcas…",
+          "loading": "Buscando…",
+          "none": "Nenhuma marca encontrada.",
+          "typeToSearch": "Digite para buscar suas marcas.",
+          "creating": "Criando…",
+          "createCta": "Criar \"{{name}}\""
+        },
+        "photo": {
+          "add": "Adicionar foto",
+          "replace": "Substituir foto",
+          "remove": "Remover foto"
+        },
+        "files": {
+          "manage": "Arquivos",
+          "title": "Arquivos deste corte",
+          "empty": "Nenhum arquivo ainda.",
+          "addFile": "Adicionar arquivo"
+        },
+        "applyToAll": {
+          "apply": "Aplicar",
+          "applyToAll": "Aplicar a todos os cortes",
+          "typeValue": "Digite o valor…",
+          "disabledHint": "Adicione 2+ cortes para habilitar"
+        }
       }
     }
   },
