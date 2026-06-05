@@ -108,6 +108,22 @@ function deriveShipment(yyyymm: string): { shipment_month: number; shipment_year
   return { shipment_month: d.getMonth() + 1, shipment_year: d.getFullYear() };
 }
 
+/**
+ * Decides whether displayed prices already include freight.
+ * - Returns null when freight is not relevant (only FOB/EXW selected).
+ * - Returns true when supplier uses a single global freight value (same across destinations).
+ * - Returns false when freight is per-port (buyer must add the right port's freight).
+ */
+export function computePricingIncludesFreight(l: SubmitLogistics): boolean | null {
+  const hasFreightIncoterm =
+    l.incoterms.includes("CFR") ||
+    l.incoterms.includes("CIF") ||
+    l.incoterms.includes("CNF") ||
+    l.incoterms.includes("C&F");
+  if (!hasFreightIncoterm) return null;
+  return !!l.sameFreightGlobal;
+}
+
 export function validateForPublish(input: SubmitInput): string | null {
   const { logistics: l, cuts, paymentTerms, distribution: d } = input;
   if (!l.originPortIds || l.originPortIds.length === 0) return "missingOrigin";
