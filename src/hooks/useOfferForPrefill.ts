@@ -30,7 +30,7 @@ export type OfferPrefill = {
   status: string;
   // Logistics
   originCountryId: string | null;
-  originPortId: string | null;
+  originPortIds: string[];
   destinations: PrefillDestination[];
   containerSize: "20ft" | "40ft";
   fclCount: number;
@@ -102,7 +102,8 @@ export function useOfferForPrefill(
           ),
           markets:offer_markets ( market:markets ( country_id ) ),
           incoterms:offer_allowed_incoterms ( incoterm_type ),
-          freight:freight_options ( port_id, cost, insurance )
+          freight:freight_options ( port_id, cost, insurance ),
+          originPorts:offer_origin_ports ( port_id )
         `)
         .eq("id", offerId as string)
         .maybeSingle();
@@ -125,9 +126,16 @@ export function useOfferForPrefill(
         cost: number;
         insurance: number;
       }>;
+      const originPortRows = (offer.originPorts ?? []) as Array<{ port_id: string }>;
+      const originPortIds: string[] =
+        originPortRows.length > 0
+          ? Array.from(new Set(originPortRows.map((r) => r.port_id).filter(Boolean)))
+          : offer.origin_port_id
+            ? [offer.origin_port_id as string]
+            : [];
       const allPortIds = Array.from(
         new Set(
-          [offer.origin_port_id, ...freightRows.map((f) => f.port_id)].filter(
+          [offer.origin_port_id, ...originPortIds, ...freightRows.map((f) => f.port_id)].filter(
             (x): x is string => !!x,
           ),
         ),
