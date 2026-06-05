@@ -29,6 +29,7 @@ import { AddressAutocomplete } from "@/components/mundus/AddressAutocomplete";
 import CompanyUsersPage from "@/components/users/CompanyUsersPage";
 import { auditLog } from "@/lib/auditLog";
 import { BillingSection } from "@/components/billing/BillingSection";
+import SupplierBrandsManager from "@/components/company/SupplierBrandsManager";
 import "@/styles/mundus-address.css";
 
 type Role = "buyer" | "supplier" | "admin";
@@ -740,6 +741,17 @@ export default function CompanyProfilePage({
           companyIdOverride={companyId!}
         />
       </Section>
+
+      {/* Brands — supplier-only manager, shown for admin or supplier of a supplier company */}
+      {company.is_supplier && companyId && (role === "admin" || role === "supplier") && (
+        <Section
+          icon={<Star size={18} />}
+          title="Brands"
+          subtitle="Brands you can attach to each cut on your offers."
+        >
+          <SupplierBrandsManager companyId={companyId} canEdit={true} />
+        </Section>
+      )}
 
       {/* Mundus Admin Controls — visible only when admin team views this record */}
       {isAdminView && (

@@ -2789,6 +2789,36 @@
       "validation": {
         "primaryPricingMissing": "Elige el incoterm de referencia antes de guardar."
       }
+    },
+    "brands": {
+      "title": "Marcas",
+      "loading": "Cargando marcas…",
+      "empty": "Aún no hay marcas. Agrega tu primera marca para mostrarla en los artículos de la oferta.",
+      "addBrand": "Agregar marca",
+      "addHint": "Las marcas se muestran junto a cada corte en tus ofertas.",
+      "brandName": "Nombre de la marca",
+      "brandNamePh": "ej.: Premium Cut",
+      "setDefault": "Establecer como predeterminada",
+      "defaultBadge": "Predeterminada",
+      "editTitle": "Renombrar marca",
+      "save": "Guardar",
+      "saving": "Guardando…",
+      "delete": {
+        "title": "Eliminar marca",
+        "confirm": "¿Quitar \"{{name}}\" de las marcas de esta empresa? Los artículos ya vinculados mantienen el enlace.",
+        "cancel": "Cancelar",
+        "confirmCta": "Eliminar",
+        "deleting": "Eliminando…"
+      },
+      "toast": {
+        "created": "Marca añadida",
+        "updated": "Marca actualizada",
+        "deleted": "Marca eliminada",
+        "defaultSet": "Marca predeterminada actualizada"
+      },
+      "validation": {
+        "nameRequired": "El nombre es obligatorio"
+      }
     }
   },
   "dealDetail": {

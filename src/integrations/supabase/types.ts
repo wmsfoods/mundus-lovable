@@ -7167,6 +7167,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           id: string
+          is_default: boolean
           name: string
         }
         Insert: {
@@ -7174,6 +7175,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_default?: boolean
           name: string
         }
         Update: {
@@ -7181,6 +7183,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           id?: string
+          is_default?: boolean
           name?: string
         }
         Relationships: [
