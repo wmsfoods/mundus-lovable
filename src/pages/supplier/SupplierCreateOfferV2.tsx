@@ -11,6 +11,15 @@ import {
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+} from "@/components/ui/command";
 import { Crumbs } from "@/components/mundus/Crumbs";
 import { PageTitle } from "@/components/mundus/PageTitle";
 import { usePortsCatalog } from "@/hooks/usePortsCatalog";
@@ -28,7 +37,7 @@ import {
   type Temperature,
 } from "@/lib/offerOptions";
 import { cn } from "@/lib/utils";
-import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3 } from "lucide-react";
+import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
 import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
 import { type CutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
@@ -70,7 +79,7 @@ type DestinationState = {
 
 type LogisticsState = {
   originCountryId: string | null;
-  originPortId: string | null;
+  originPortIds: string[];
   destinations: DestinationState[];
   containerSize: ContainerSize;
   fclCount: number;
@@ -86,7 +95,7 @@ type LogisticsState = {
 
 const EMPTY_LOGISTICS: LogisticsState = {
   originCountryId: null,
-  originPortId: null,
+  originPortIds: [],
   destinations: [],
   containerSize: "40ft",
   fclCount: 1,
