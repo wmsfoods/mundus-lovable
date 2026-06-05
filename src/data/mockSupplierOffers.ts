@@ -43,6 +43,7 @@ export type SupplierOffer = {
   exwPickupLocation?: string | null;
   viewCount?: number;
   proposalCount?: number;
+  hasFob?: boolean;
 };
 
 export const MOCK_SUPPLIER_OFFERS: SupplierOffer[] = [

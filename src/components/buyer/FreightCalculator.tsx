@@ -282,15 +282,6 @@ export default function FreightCalculator({
             border: "1px solid #e5e7eb",
           }}
         >
-          <div style={{ display: "flex", justifyContent: "space-between" }}>
-            <span>
-              {t("buyer.offerDetail.freightCalc.basePrice", { incoterm: primaryEff })}
-            </span>
-            <span style={{ fontVariantNumeric: "tabular-nums" }}>
-              {fmt(basePricePerKg, 4)}/kg
-            </span>
-          </div>
-
           {breakdown.parts?.freight && breakdown.freightPerKg ? (
             <div
               style={{
@@ -343,7 +334,9 @@ export default function FreightCalculator({
             }}
           >
             <span>
-              {t("buyer.offerDetail.freightCalc.final", { incoterm: selectedIncoterm })}
+              {t("buyer.offerDetail.freightCalc.finalPrice", {
+                defaultValue: "Final price",
+              })}
             </span>
             <span style={{ fontVariantNumeric: "tabular-nums" }}>
               {fmt(breakdown.final, 4)}/kg

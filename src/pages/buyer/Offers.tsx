@@ -223,6 +223,23 @@ export function OfferCard({
               {(offer.remaining_fcl ?? offer.total_fcl)} of {offer.total_fcl} FCL available
             </span>
           )}
+          {offer.has_fob && (
+            <span
+              title={t("buyer.offerDetail.freightCalc.fobAvailableTooltip", { defaultValue: "Supplier offers FOB pricing for this offer" })}
+              style={{
+                padding: "3px 8px",
+                borderRadius: 12,
+                background: "#eef2ff",
+                color: "#3730a3",
+                border: "1px solid #c7d2fe",
+                fontSize: 10,
+                fontWeight: 700,
+                whiteSpace: "nowrap",
+              }}
+            >
+              ⚓ {t("buyer.offerDetail.freightCalc.fobAvailable", { defaultValue: "FOB Available" })}
+            </span>
+          )}
         </span>
       </div>
 

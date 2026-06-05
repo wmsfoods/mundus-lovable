@@ -16,6 +16,28 @@ import { GlowCard } from "@/components/ui/spotlight-card";
 import type { SocialCounts } from "@/hooks/useOfferSocial";
 import { OfferSocialBar } from "@/components/offers/OfferSocialBar";
 
+function FobBadge({ t }: { t: (k: string, opts?: Record<string, unknown>) => string }) {
+  return (
+    <span
+      title={t("buyer.offerDetail.freightCalc.fobAvailableTooltip", {
+        defaultValue: "Supplier offers FOB pricing for this offer",
+      })}
+      style={{
+        padding: "2px 8px",
+        borderRadius: 10,
+        background: "#eef2ff",
+        color: "#3730a3",
+        border: "1px solid #c7d2fe",
+        fontSize: 10,
+        fontWeight: 700,
+        whiteSpace: "nowrap",
+      }}
+    >
+      ⚓ {t("buyer.offerDetail.freightCalc.fobAvailable", { defaultValue: "FOB Available" })}
+    </span>
+  );
+}
+
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a" },
   new:         { bg: "#fff4e0", fg: "#a85b00", dot: "#f59e0b" },
@@ -144,6 +166,7 @@ export function SupplierOfferCard({
               )}
             </span>
           ) : null}
+          {o.hasFob && <FobBadge t={t} />}
         </div>
       </div>
 
