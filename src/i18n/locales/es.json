@@ -2522,10 +2522,12 @@
         "distributionHint": "Próximamente en R4"
       },
       "actionBar": {
-        "comingSoon": "Barra de acciones — próximamente en R5",
         "cancel": "Cancelar",
         "saveDraft": "Guardar borrador",
-        "publish": "Publicar"
+        "publish": "Publicar",
+        "readyToPublish": "Listo para publicar",
+        "percentComplete": "{{n}}% completo",
+        "toastWiringSoon": "Conexión llega en R5.B"
       },
       "drawer": {
         "title": "Editar logística",
@@ -2682,6 +2684,43 @@
         "sumMarketplace": "Marketplace",
         "sumAll": "Todos los clientes ({{n}})",
         "sumSpecific": "{{n}} específicos"
+      },
+      "review": {
+        "title": "Revisar antes de publicar",
+        "edit": "Editar",
+        "logisticsTitle": "Logística",
+        "cutsTitle": "Cortes",
+        "paymentTitle": "Condiciones de pago",
+        "distributionTitle": "Distribución",
+        "from": "De",
+        "to": "A",
+        "toValue": "{{c}} países · {{p}} puertos",
+        "incoterm": "Incoterm",
+        "freight": "Flete",
+        "count": "Ítems",
+        "totalQty": "Cantidad total",
+        "grossValue": "Valor bruto",
+        "capacity": "Capacidad",
+        "term": "Condición",
+        "channels": "Canales",
+        "distMarketplace": "Marketplace",
+        "distAll": "Todos los clientes",
+        "distSpecific": "{{n}} específicos"
+      },
+      "engine": {
+        "openButton": "Motor",
+        "title": "Motor de negociación",
+        "subtitle": "Elige cómo se gestionan las contra-ofertas para esta oferta.",
+        "done": "Listo"
+      },
+      "quickFill": {
+        "openButton": "Rellenar con IA",
+        "title": "Rellenar con IA",
+        "subtitle": "Pega un correo de oferta, ficha técnica o cualquier texto — la IA analizará y rellenará.",
+        "placeholder": "Pega aquí…",
+        "cancel": "Cancelar",
+        "parse": "Analizar",
+        "comingSoon": "Rellenar con IA en desarrollo — próximamente"
       }
     }
   },
