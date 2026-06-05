@@ -28,6 +28,8 @@ import {
 } from "@/lib/offerOptions";
 import { cn } from "@/lib/utils";
 import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3 } from "lucide-react";
+import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
+import { type CutRow } from "@/lib/cutRowTypes";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
@@ -160,6 +162,10 @@ export default function SupplierCreateOfferV2() {
   const [unit, setUnit] = useState<Unit>("kg");
   const [unitLocked, setUnitLocked] = useState(false);
   const [logistics, setLogistics] = useState<LogisticsState>(EMPTY_LOGISTICS);
+
+  // R3 — cuts state (in-memory only; persistence comes in R5)
+  const [cuts, setCuts] = useState<CutRow[]>([]);
+  const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerDraft, setDrawerDraft] = useState<LogisticsState>(EMPTY_LOGISTICS);
@@ -414,10 +420,13 @@ export default function SupplierCreateOfferV2() {
 
       {/* Placeholders for R3-R5 */}
       <div className="mt-6 flex flex-col gap-4">
-        <SectionPlaceholder
-          title={tk("placeholders.productsTitle", "Products & pricing")}
-          hint={tk("placeholders.productsHint", "Coming in R3 — cuts table, brand picker, per-cut photo & files")}
-          height={200}
+        <CutsTable
+          cuts={cuts}
+          setCuts={setCuts}
+          unit={unit}
+          containerSize={logistics.containerSize}
+          cutRegion={cutRegion}
+          setCutRegion={setCutRegion}
         />
         <div className="grid gap-4 sm:grid-cols-2">
           <SectionPlaceholder
