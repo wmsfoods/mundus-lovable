@@ -180,8 +180,11 @@ export function computeCompletion(input: CompletionInput): CompletionBreakdown {
     distributionSection(input.distribution),
   ];
 
-  // Logistics group OK = all logistics subsections OK
-  const logisticsOk = sections.filter((s) => s.group === "logistics").every((s) => s.ok);
+  // Logistics group OK = all logistics subsections OK EXCEPT shipment
+  // (shipment is informational only — does not gate publish, matching legacy behavior)
+  const logisticsOk = sections
+    .filter((s) => s.group === "logistics" && s.key !== "shipment")
+    .every((s) => s.ok);
   const cutsOk = sections.find((s) => s.key === "cuts")!.ok;
   const paymentOk = sections.find((s) => s.key === "payment")!.ok;
   const distOk = sections.find((s) => s.key === "distribution")!.ok;
