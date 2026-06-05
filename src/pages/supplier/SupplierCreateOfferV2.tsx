@@ -91,6 +91,7 @@ type LogisticsState = {
   globalFreight: string;
   globalInsurance: string;
   exwPickupLocation: string;
+  primaryPricingIncoterm: "CFR" | "FOB" | null;
 };
 
 const EMPTY_LOGISTICS: LogisticsState = {
@@ -107,6 +108,7 @@ const EMPTY_LOGISTICS: LogisticsState = {
   globalFreight: "",
   globalInsurance: "",
   exwPickupLocation: "",
+  primaryPricingIncoterm: null,
 };
 
 function Pill({ label, value, onClick, icon: Icon }: { label: string; value: React.ReactNode; onClick: () => void; icon: React.ElementType }) {
@@ -445,6 +447,7 @@ export default function SupplierCreateOfferV2() {
       globalFreight: data.globalFreight,
       globalInsurance: data.globalInsurance,
       exwPickupLocation: data.exwPickupLocation,
+      primaryPricingIncoterm: data.primaryPricingIncoterm,
     });
     setCuts(data.cuts);
     setCutRegion(data.cutRegion);
