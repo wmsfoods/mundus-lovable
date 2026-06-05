@@ -2513,7 +2513,8 @@
         "publish": "Publier",
         "readyToPublish": "Prêt à publier",
         "percentComplete": "{{n}}% complété",
-        "toastWiringSoon": "Câblage prévu en R5.B"
+        "toastWiringSoon": "Câblage prévu en R5.B",
+        "saveChanges": "Enregistrer les modifications"
       },
       "drawer": {
         "title": "Modifier la logistique",
@@ -2728,7 +2729,22 @@
         "invalidCutNumbers": "Chaque découpe a besoin d'une quantité et d'un prix demandé supérieurs à zéro.",
         "floorGtAsk": "Le prix plancher ne peut pas être supérieur au prix demandé.",
         "missingPayment": "Sélectionnez une condition de paiement.",
-        "missingDistribution": "Choisissez au moins un canal de distribution."
+        "missingDistribution": "Choisissez au moins un canal de distribution.",
+        "successUpdate": "Offre #{{n}} mise à jour avec succès"
+      },
+      "editMode": {
+        "title": "Modifier l'offre #{{n}}",
+        "activeNegotiationsWarning_one": "1 négociation active — les modifications n'affecteront pas les discussions en cours",
+        "activeNegotiationsWarning_other": "{{count}} négociations actives — les modifications n'affecteront pas les discussions en cours"
+      },
+      "cloneMode": {
+        "title": "Nouvelle offre (clonée de #{{n}})"
+      },
+      "fromRequestMode": {
+        "title": "Nouvelle offre (depuis la demande #{{n}})"
+      },
+      "loading": {
+        "prefill": "Chargement des données de l'offre…"
       }
     }
   },

@@ -51,6 +51,7 @@ import { formatOfferNumber } from "@/lib/offerNumber";
 import { useOfferForPrefill } from "@/hooks/useOfferForPrefill";
 import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
 import { EditModeWarningBanner } from "@/components/supplier/CreateOfferV2/EditModeWarningBanner";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
@@ -619,6 +620,22 @@ export default function SupplierCreateOfferV2() {
         }
       />
 
+      {mode === "edit" && activeNegotiations > 0 && (
+        <EditModeWarningBanner activeNegotiations={activeNegotiations} />
+      )}
+
+      {prefilling ? (
+        <div className="mt-4 flex flex-col gap-4" aria-busy="true" aria-label={tk("loading.prefill", "Loading offer data…")}>
+          <Skeleton className="h-20 w-full rounded-xl" />
+          <Skeleton className="h-64 w-full rounded-xl" />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Skeleton className="h-48 w-full rounded-xl" />
+            <Skeleton className="h-48 w-full rounded-xl" />
+          </div>
+          <Skeleton className="h-40 w-full rounded-xl" />
+        </div>
+      ) : (
+      <>
       {/* Top strip */}
       <div className="mt-4 flex flex-wrap items-stretch gap-2 rounded-xl border border-border bg-card p-2">
         <Pill
@@ -738,7 +755,10 @@ export default function SupplierCreateOfferV2() {
         submitting={submitting}
         onSaveDraft={() => handleSubmit("draft")}
         onPublish={() => handleSubmit("active")}
+        mode={mode}
       />
+      </>
+      )}
 
       <EngineSettingsModal
         open={engineModalOpen}
