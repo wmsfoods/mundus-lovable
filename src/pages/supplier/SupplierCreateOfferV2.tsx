@@ -452,12 +452,12 @@ export default function SupplierCreateOfferV2() {
             const cid = d.country!.id!;
             const ports = catalog.getPortsByCountryId(cid);
             const selected: string[] = [];
-            if (d.portName) {
-              const needle = d.portName.toLowerCase();
+            for (const pn of d.portNames) {
+              const needle = pn.toLowerCase();
               const match = ports.find(
                 (po) => po.name.toLowerCase() === needle || po.name.toLowerCase().includes(needle),
               );
-              if (match) selected.push(match.id);
+              if (match && !selected.includes(match.id)) selected.push(match.id);
             }
             return {
               countryId: cid,
@@ -469,6 +469,12 @@ export default function SupplierCreateOfferV2() {
               insurance: { mode: "same" as const, same: d.insuranceUsd != null ? String(d.insuranceUsd) : "" },
             };
           });
+      }
+      // Same-freight-global
+      if (p.sameFreightGlobal) {
+        next.sameFreightGlobal = true;
+        if (p.globalFreight != null) next.globalFreight = String(p.globalFreight);
+        if (p.globalInsurance != null) next.globalInsurance = String(p.globalInsurance);
       }
       // Incoterms
       const validIncoterms = p.incoterms.filter((i): i is LogisticsState["incoterms"][number] =>
@@ -493,6 +499,7 @@ export default function SupplierCreateOfferV2() {
       setCuts((prev) => {
         const additions: CutRow[] = p.items.map((it) => {
           const row = emptyCutRow();
+          row.cutId = it.cut?.id ?? null;
           row.cutName = it.cutName;
           row.protein = it.protein;
           row.spec = it.spec ?? "";

@@ -2780,15 +2780,39 @@
           "destinations": "Destinations",
           "incoterms": "Incoterms",
           "container": "Container",
-          "shipment": "Shipment"
+          "shipment": "Shipment",
+          "sameFreight": "Same freight for all destinations"
         },
         "item": {
           "qty": "Qty",
           "price": "Ask",
-          "plant": "Plant"
+          "plant": "Plant",
+          "cut": "Cut"
         },
         "brand": {
-          "willCreate": "— will need manual selection or creation in the row."
+          "willCreate": "— will need manual selection or creation in the row.",
+          "create": "Create",
+          "skip": "Skip",
+          "created": "Brand ready",
+          "namePlaceholder": "Brand name"
+        },
+        "skipped": "skipped",
+        "undo": "Undo",
+        "plant": {
+          "create": "Create",
+          "skip": "Skip",
+          "created": "Plant created",
+          "namePlaceholder": "Plant name (optional)"
+        },
+        "cut": {
+          "useThis": "Use this",
+          "tryOther": "Try other matches",
+          "manualSelect": "Manual select",
+          "skip": "Skip",
+          "notFoundWarning": "Cut not in catalog — pick manually or skip",
+          "didYouMean": "Did you mean?",
+          "search": "Search cuts…",
+          "noResults": "No cuts found"
         }
       },
       "submit": {
