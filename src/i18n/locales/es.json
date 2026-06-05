@@ -2721,6 +2721,21 @@
         "cancel": "Cancelar",
         "parse": "Analizar",
         "comingSoon": "Rellenar con IA en desarrollo — próximamente"
+      },
+      "submit": {
+        "noCompany": "No hay empresa proveedora vinculada a tu cuenta.",
+        "successPublish": "¡Oferta {{n}} publicada con éxito!",
+        "successDraft": "Borrador guardado — {{n}}",
+        "errorGeneric": "Error al guardar la oferta: {{err}}",
+        "missingOrigin": "Selecciona un puerto de origen antes de publicar.",
+        "missingDestinations": "Agrega al menos un puerto de destino.",
+        "missingIncoterm": "Selecciona al menos un incoterm.",
+        "missingCuts": "Agrega al menos un corte.",
+        "missingCutResolution": "Uno o más cortes no tienen producto seleccionado.",
+        "invalidCutNumbers": "Cada corte necesita cantidad y precio de venta mayores a cero.",
+        "floorGtAsk": "El precio mínimo no puede ser mayor que el precio de venta.",
+        "missingPayment": "Selecciona una condición de pago.",
+        "missingDistribution": "Elige al menos un canal de distribución."
       }
     }
   },

@@ -42,6 +42,10 @@ import { useCompanyPlants } from "@/hooks/useCompanyPlants";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { Sparkles, Settings2 } from "lucide-react";
 import type { NegotiationMode, NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
+import { submitOfferV2 } from "@/lib/offerSubmit";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { formatOfferNumber } from "@/lib/offerNumber";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
@@ -170,6 +174,8 @@ function Segmented<T extends string>({
 export default function SupplierCreateOfferV2() {
   const { t } = useTranslation();
   const catalog = usePortsCatalog();
+  const navigate = useNavigate();
+  const [submitting, setSubmitting] = useState(false);
 
   const [unit, setUnit] = useState<Unit>("kg");
   const [unitLocked, setUnitLocked] = useState(false);
@@ -194,6 +200,52 @@ export default function SupplierCreateOfferV2() {
   const [quickFillOpen, setQuickFillOpen] = useState(false);
   const { company } = useCurrentCompany();
   const { plants } = useCompanyPlants(company?.id);
+
+  const handleSubmit = async (status: "draft" | "active") => {
+    if (submitting) return;
+    if (!company?.id) {
+      toast.error(t("supplier.createOfferV2.submit.noCompany", { defaultValue: "No supplier company linked to your account." }) as string);
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await submitOfferV2(
+        {
+          logistics,
+          cuts,
+          paymentTerms,
+          distribution,
+          negotiationMode,
+          negotiationDial,
+        },
+        {
+          supplierId: company.id,
+          supplierName: company.name || "Mundus Supplier",
+          officeId: null,
+          status,
+        },
+      );
+      const label = formatOfferNumber(res.offerNumber);
+      toast.success(
+        status === "draft"
+          ? (t("supplier.createOfferV2.submit.successDraft", { defaultValue: "Draft saved — {{n}}", n: label }) as string)
+          : (t("supplier.createOfferV2.submit.successPublish", { defaultValue: "Offer {{n}} published successfully!", n: label }) as string),
+      );
+      navigate("/supplier/offers");
+    } catch (e: unknown) {
+      const raw = e instanceof Error ? e.message : String(e);
+      const knownKeys = new Set([
+        "missingOrigin","missingDestinations","missingIncoterm","missingCuts",
+        "missingCutResolution","invalidCutNumbers","floorGtAsk","missingPayment","missingDistribution",
+      ]);
+      const msg = knownKeys.has(raw)
+        ? (t(`supplier.createOfferV2.submit.${raw}`, { defaultValue: raw }) as string)
+        : (t("supplier.createOfferV2.submit.errorGeneric", { defaultValue: "Failed to save offer: {{err}}", err: raw }) as string);
+      toast.error(msg);
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerDraft, setDrawerDraft] = useState<LogisticsState>(EMPTY_LOGISTICS);
@@ -535,7 +587,12 @@ export default function SupplierCreateOfferV2() {
         />
       </div>
 
-      <ActionBar completion={completion} />
+      <ActionBar
+        completion={completion}
+        submitting={submitting}
+        onSaveDraft={() => handleSubmit("draft")}
+        onPublish={() => handleSubmit("active")}
+      />
 
       <EngineSettingsModal
         open={engineModalOpen}

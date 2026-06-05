@@ -2707,6 +2707,21 @@
         "cancel": "Annuler",
         "parse": "Analyser",
         "comingSoon": "Pré-remplissage IA en développement — bientôt disponible"
+      },
+      "submit": {
+        "noCompany": "Aucune entreprise fournisseur liée à votre compte.",
+        "successPublish": "Offre {{n}} publiée avec succès !",
+        "successDraft": "Brouillon enregistré — {{n}}",
+        "errorGeneric": "Échec de l'enregistrement : {{err}}",
+        "missingOrigin": "Sélectionnez un port d'origine avant de publier.",
+        "missingDestinations": "Ajoutez au moins un port de destination.",
+        "missingIncoterm": "Sélectionnez au moins un incoterm.",
+        "missingCuts": "Ajoutez au moins une découpe.",
+        "missingCutResolution": "Une ou plusieurs découpes n'ont pas de produit sélectionné.",
+        "invalidCutNumbers": "Chaque découpe a besoin d'une quantité et d'un prix demandé supérieurs à zéro.",
+        "floorGtAsk": "Le prix plancher ne peut pas être supérieur au prix demandé.",
+        "missingPayment": "Sélectionnez une condition de paiement.",
+        "missingDistribution": "Choisissez au moins un canal de distribution."
       }
     }
   },
