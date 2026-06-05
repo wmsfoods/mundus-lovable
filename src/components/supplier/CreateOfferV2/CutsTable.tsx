@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useCompanyPlants } from "@/hooks/useCompanyPlants";
+import type { CompanyPlant } from "@/hooks/useCompanyPlants";
 import { useCutsCatalog } from "@/hooks/useCutsCatalog";
 import { isUsCompany } from "@/lib/companyHelpers";
 import {
@@ -54,6 +55,19 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
     () => plants.map((p) => p.plant_number || p.name || p.id).filter(Boolean) as string[],
     [plants],
   );
+  const applyPlantToAll = (label: string) => {
+    const match = plants.find(
+      (p) => (p.plant_number || p.name || p.id) === label,
+    );
+    setCuts(
+      cuts.map((c) => ({
+        ...c,
+        plantId: match?.id ?? null,
+        plantNumber: match ? (match.plant_number || match.name || "") : label,
+      })),
+    );
+    toast.success(tk("toastApplied", "Applied to {{n}} cuts", { n: cuts.length }));
+  };
 
   // Force global region for non-US companies
   useEffect(() => {
@@ -142,7 +156,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           options={plantOptions.length > 0 ? plantOptions : undefined}
           freeText={plantOptions.length === 0}
           disabled={!multipleCuts}
-          onApply={(v) => applyToAll("plantNumber", v)}
+          onApply={(v) => (plants.length > 0 ? applyPlantToAll(v) : applyToAll("plantNumber", v))}
         />
         <ApplyToAllChip
           label={tk("col.spec", "Spec")}
@@ -196,6 +210,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 proteinOptions={proteinOptions}
                 cutRegion={cutRegion}
                 plantOptions={plantOptions}
+                plants={plants}
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
@@ -254,6 +269,7 @@ type RowProps = {
   proteinOptions: readonly string[];
   cutRegion: "global" | "us";
   plantOptions: string[];
+  plants: CompanyPlant[];
   onChange: (patch: Partial<CutRow>) => void;
   onRemove: () => void;
   fmtNum: (n: number, frac?: number) => string;
@@ -266,6 +282,7 @@ function CutRowView({
   proteinOptions,
   cutRegion,
   plantOptions,
+  plants,
   onChange,
   onRemove,
   fmtNum,
@@ -288,7 +305,7 @@ function CutRowView({
     qty: !(row.qty > 0),
     ask: !(row.askPrice > 0),
     floor: row.floorPrice > 0 && row.floorPrice > row.askPrice,
-    plant: plantOptions.length > 0 && !row.plantNumber,
+    plant: plants.length > 0 && !row.plantId,
   };
 
   /* Display values (converted to current unit) */
@@ -399,18 +416,27 @@ function CutRowView({
         </select>
       </td>
       <td className="px-2 py-2">
-        {plantOptions.length > 0 ? (
+        {plants.length > 0 ? (
           <select
             className={cn(
               "h-8 w-full rounded-md border border-border bg-card px-1 text-xs",
               errors.plant && "border-destructive/60",
             )}
-            value={row.plantNumber}
-            onChange={(e) => onChange({ plantNumber: e.target.value })}
+            value={row.plantId ?? ""}
+            onChange={(e) => {
+              const id = e.target.value || null;
+              const p = plants.find((x) => x.id === id);
+              onChange({
+                plantId: id,
+                plantNumber: p ? (p.plant_number || p.name || "") : "",
+              });
+            }}
           >
             <option value="">{tk("col.pickPlant", "Pick plant…")}</option>
-            {plantOptions.map((p) => (
-              <option key={p} value={p}>{p}</option>
+            {plants.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.plant_number || p.name || p.id}
+              </option>
             ))}
           </select>
         ) : (
@@ -418,7 +444,7 @@ function CutRowView({
             className="h-8 text-xs"
             placeholder={tk("col.plantPh", "Plant #")}
             value={row.plantNumber}
-            onChange={(e) => onChange({ plantNumber: e.target.value })}
+            onChange={(e) => onChange({ plantNumber: e.target.value, plantId: null })}
           />
         )}
       </td>
