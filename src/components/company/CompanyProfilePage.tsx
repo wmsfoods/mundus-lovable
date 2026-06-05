@@ -964,7 +964,7 @@ export default function CompanyProfilePage({
           <BillingSection side={role as "supplier" | "buyer"} />
         </div>
       )}
-        </>
+        </fieldset>
       )}
     </div>
   );
