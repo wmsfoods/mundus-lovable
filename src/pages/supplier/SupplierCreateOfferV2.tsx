@@ -210,7 +210,6 @@ export default function SupplierCreateOfferV2() {
   const [submitting, setSubmitting] = useState(false);
 
   const [unit, setUnit] = useState<Unit>("kg");
-  const [unitLocked, setUnitLocked] = useState(false);
   const [logistics, setLogistics] = useState<LogisticsState>(EMPTY_LOGISTICS);
 
   // R3 — cuts state (in-memory only; persistence comes in R5)
@@ -368,11 +367,9 @@ export default function SupplierCreateOfferV2() {
   const tk = (key: string, fallback: string, opts?: Record<string, unknown>) =>
     t(`supplier.createOfferV2.${key}`, { defaultValue: fallback, ...(opts ?? {}) }) as string;
 
-  const setUnitChoice = (next: Unit) => {
-    if (unitLocked) return;
-    setUnit(next);
-    setUnitLocked(true);
-  };
+  // No lock: replicate legacy wizard behavior (free toggle anytime).
+  // Qty/prices are stored in kg and only converted at display time.
+  const setUnitChoice = (next: Unit) => setUnit(next);
 
   const openDrawer = (focus: DrawerFocus) => {
     setDrawerDraft(logistics);
@@ -567,9 +564,14 @@ export default function SupplierCreateOfferV2() {
         subtitle={tk("subtitle", "One screen · click any pill to edit")}
         right={
           <div className="flex items-center gap-3">
-            <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+            <button
+              type="button"
+              disabled
+              title={tk("livePreviewComingSoon", "Coming soon")}
+              className="cursor-not-allowed rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground opacity-50"
+            >
               {tk("livePreview", "Live preview")}
-            </span>
+            </button>
             <Button
               type="button"
               variant="outline"
@@ -593,13 +595,10 @@ export default function SupplierCreateOfferV2() {
                 <button
                   key={u}
                   type="button"
-                  disabled={unitLocked && unit !== u}
-                  title={unitLocked ? tk("unitLockedHint", "Cannot change unit after first selection") : undefined}
                   onClick={() => setUnitChoice(u)}
                   className={cn(
                     "rounded-full px-3 py-1 text-xs font-semibold",
                     unit === u ? "bg-primary text-primary-foreground" : "text-muted-foreground",
-                    unitLocked && unit !== u && "cursor-not-allowed opacity-40",
                   )}
                 >
                   {u}
