@@ -71,7 +71,7 @@ const EMPTY_LOGISTICS: LogisticsState = {
   globalFreight: "",
 };
 
-function Pill({ label, value, onClick, icon: Icon }: { label: string; value: React.ReactNode; onClick: () => void; icon: React.ComponentType<{ className?: string; size?: number }> }) {
+function Pill({ label, value, onClick, icon: Icon }: { label: string; value: React.ReactNode; onClick: () => void; icon: React.ElementType }) {
   return (
     <button
       type="button"
