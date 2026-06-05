@@ -134,18 +134,25 @@ export async function submitOfferV2(
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
   const { shipment_month, shipment_year } = deriveShipment(l.shipmentReady);
 
-  // Resolve origin port label/country for snapshot columns.
+  // Resolve origin port label + country name for snapshot columns.
   let originPortLabel: string | null = null;
   let originCountryName: string | null = null;
   if (l.originPortId) {
     const { data: port } = await supabase
       .from("ports")
-      .select("name, code, country")
+      .select("name, code, country_id")
       .eq("id", l.originPortId)
       .maybeSingle();
     if (port) {
       originPortLabel = port.code ? `${port.name} (${port.code})` : port.name;
-      originCountryName = port.country ?? null;
+      if (port.country_id) {
+        const { data: country } = await supabase
+          .from("countries")
+          .select("english_name")
+          .eq("id", port.country_id)
+          .maybeSingle();
+        originCountryName = country?.english_name ?? null;
+      }
     }
   }
 
@@ -200,7 +207,24 @@ export async function submitOfferV2(
     const media = await uploadCutMedia(cuts, ctx.supplierId, offerId);
 
     // 3. Resolve customer_products + insert offer_items
-    const itemsRows: Array<Record<string, unknown>> = [];
+    type OfferItemInsert = {
+      offer_id: string;
+      customer_product_id: string;
+      amount: number;
+      price: number;
+      minimum_price: number;
+      minimum_amount: number;
+      maximum_amount: number;
+      condition: string;
+      aging_method: string | null;
+      packaging: string | null;
+      plant_id: string | null;
+      brand_id: string | null;
+      notes: string | null;
+      photo_url: string | null;
+      files_urls: string[] | null;
+    };
+    const itemsRows: OfferItemInsert[] = [];
     for (let i = 0; i < cuts.length; i++) {
       const c = cuts[i];
       if (!c.cutId) continue;
