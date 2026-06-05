@@ -40,6 +40,30 @@ export default function InviteAccept() {
         .eq("invite_token", token)
         .maybeSingle();
       if (cancelled) return;
+      const isStale =
+        !!data && (
+          data.status === "inactive" ||
+          (data.expires_at && new Date(data.expires_at) < new Date())
+        ) && !data.accepted_at;
+
+      // If this token is stale (deactivated / expired) but the same e-mail has
+      // a newer, still-valid invite, transparently redirect the user to it.
+      if (isStale && data?.email) {
+        const { data: fresh } = await (supabase as any)
+          .from("company_users")
+          .select("invite_token, expires_at, accepted_at, status")
+          .eq("email", String(data.email).toLowerCase())
+          .eq("status", "invited")
+          .is("accepted_at", null)
+          .order("invited_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        if (!cancelled && fresh?.invite_token && fresh.invite_token !== token) {
+          navigate(`/invite/${fresh.invite_token}`, { replace: true });
+          return;
+        }
+      }
+
       if (error || !data || data.status === "inactive") {
         setError(t("inviteAccept.errors.invalid", { defaultValue: "This invitation link is invalid or has expired." }));
       } else if (data.accepted_at) {
@@ -55,7 +79,7 @@ export default function InviteAccept() {
       setLoading(false);
     })();
     return () => { cancelled = true; };
-  }, [token, t, i18n]);
+  }, [token, t, i18n, navigate]);
 
   async function handleAccept(e: React.FormEvent) {
     e.preventDefault();
