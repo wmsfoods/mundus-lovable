@@ -784,7 +784,11 @@ export default function CompanyProfilePage({
         </FieldLabel>
       </Section>
 
-      {/* Team / Users — shown for everyone (master can manage; others view-only) */}
+        </>
+      )}
+
+      {/* === TEAM TAB === */}
+      {tab === "team" && (
       <Section
         icon={<UsersIcon size={18} />}
         title="Team members"
@@ -795,7 +799,10 @@ export default function CompanyProfilePage({
           companyIdOverride={companyId!}
         />
       </Section>
+      )}
 
+      {tab === "profile" && (
+        <>
       {/* Brands — supplier-only manager, shown for admin or supplier of a supplier company */}
       {company.is_supplier && companyId && (role === "admin" || role === "supplier") && (
         <Section
@@ -919,6 +926,8 @@ export default function CompanyProfilePage({
         <div style={{ marginTop: 16 }}>
           <BillingSection side={role as "supplier" | "buyer"} />
         </div>
+      )}
+        </>
       )}
     </div>
   );
