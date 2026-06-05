@@ -613,6 +613,7 @@ export default function CompanyProfilePage({
           />
         </div>
       </div>
+      </fieldset>
 
       {/* Tabs */}
       <div
@@ -662,7 +663,7 @@ export default function CompanyProfilePage({
 
       {/* === LOCATIONS TAB === */}
       {tab === "locations" && (
-        <>
+        <fieldset disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <OfficesOverview locations={visibleLocations} />
       <Section
         icon={<MapPin size={18} />}
@@ -690,12 +691,12 @@ export default function CompanyProfilePage({
           ))}
         </div>
       </Section>
-        </>
+        </fieldset>
       )}
 
       {/* === PROFILE TAB === */}
       {tab === "profile" && (
-        <>
+        <fieldset disabled={readOnly} style={{ border: 0, padding: 0, margin: 0, minWidth: 0 }}>
       <Section
         icon={<Phone size={18} />}
         title="Contact & website"
