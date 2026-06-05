@@ -2937,7 +2937,8 @@
         "communication": "COMMUNICATION",
         "import": "Import",
         "documents": "Documents",
-        "resources": "RESOURCES"
+        "resources": "RESOURCES",
+        "dataManagement": "Data Management"
       },
       "theme": {
         "light": "Light mode",
@@ -3858,6 +3859,63 @@
         "buyer": "Buyer",
         "supplier": "Supplier",
         "admin": "Admin"
+      }
+    },
+    "dataManagement": {
+      "title": "Data Management",
+      "subtitle": "Read-only inventory of platform data (delete actions arrive in A2)",
+      "loading": "Loading…",
+      "noData": "No data",
+      "showTrash": "Show trash",
+      "deleted": "Deleted",
+      "bulkSoon": "Coming soon: bulk actions (Batch A2)",
+      "tabs": {
+        "offers": "Offers",
+        "negotiations": "Negotiations",
+        "orders": "Sales / Orders",
+        "requests": "Buyer Requests",
+        "companies": "Companies",
+        "users": "Users",
+        "cuts": "Cuts"
+      },
+      "col": {
+        "id": "ID",
+        "supplier": "Supplier",
+        "status": "Status",
+        "items": "Items",
+        "negotiations": "Negotiations",
+        "orders": "Orders",
+        "created": "Created",
+        "offer": "Offer",
+        "buyer": "Buyer",
+        "round": "Round",
+        "total": "Total",
+        "product": "Product",
+        "destination": "Destination",
+        "name": "Name",
+        "role": "Role",
+        "users": "Users",
+        "offers": "Offers",
+        "country": "Country",
+        "email": "Email",
+        "type": "Type",
+        "activeCompany": "Active company",
+        "category": "Category",
+        "region": "Region",
+        "active": "Active"
+      },
+      "filter": {
+        "allStatuses": "All statuses",
+        "supplier": "Supplier…",
+        "buyerOrSupplier": "Buyer or supplier…",
+        "product": "Product…",
+        "allRoles": "All roles",
+        "country": "Country…",
+        "companyName": "Company name…",
+        "emailOrName": "Email or name…",
+        "allCategories": "All categories",
+        "allRegions": "All regions",
+        "cutName": "Cut name…"
       }
     }
   },

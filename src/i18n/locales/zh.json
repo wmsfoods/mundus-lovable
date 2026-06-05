@@ -2923,7 +2923,8 @@
         "communication": "通讯",
         "import": "导入",
         "documents": "文档",
-        "resources": "资源"
+        "resources": "资源",
+        "dataManagement": "数据管理"
       },
       "theme": {
         "light": "浅色模式",
@@ -3844,6 +3845,63 @@
         "buyer": "买家",
         "supplier": "供应商",
         "admin": "管理员"
+      }
+    },
+    "dataManagement": {
+      "title": "数据管理",
+      "subtitle": "平台数据只读清单（删除操作将在 A2 中提供）",
+      "loading": "加载中…",
+      "noData": "无数据",
+      "showTrash": "显示回收站",
+      "deleted": "已删除",
+      "bulkSoon": "即将推出：批量操作 (Batch A2)",
+      "tabs": {
+        "offers": "报价",
+        "negotiations": "谈判",
+        "orders": "销售/订单",
+        "requests": "采购请求",
+        "companies": "公司",
+        "users": "用户",
+        "cuts": "切割"
+      },
+      "col": {
+        "id": "ID",
+        "supplier": "供应商",
+        "status": "状态",
+        "items": "项目",
+        "negotiations": "谈判",
+        "orders": "订单",
+        "created": "创建",
+        "offer": "报价",
+        "buyer": "买家",
+        "round": "轮次",
+        "total": "总计",
+        "product": "产品",
+        "destination": "目的地",
+        "name": "名称",
+        "role": "角色",
+        "users": "用户",
+        "offers": "报价",
+        "country": "国家",
+        "email": "邮箱",
+        "type": "类型",
+        "activeCompany": "当前公司",
+        "category": "类别",
+        "region": "区域",
+        "active": "活跃"
+      },
+      "filter": {
+        "allStatuses": "所有状态",
+        "supplier": "供应商…",
+        "buyerOrSupplier": "买家或供应商…",
+        "product": "产品…",
+        "allRoles": "所有角色",
+        "country": "国家…",
+        "companyName": "公司名称…",
+        "emailOrName": "邮箱或姓名…",
+        "allCategories": "所有类别",
+        "allRegions": "所有区域",
+        "cutName": "切割名称…"
       }
     }
   },
