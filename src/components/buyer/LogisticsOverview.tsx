@@ -1,7 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
-import { computeFinalPrice } from "@/lib/freightMath";
 
 type Row = {
   port_id: string;
@@ -14,10 +13,10 @@ type Row = {
 
 export type LogisticsOverviewProps = {
   offerId: string;
-  basePricePerKg: number;
-  totalKg: number;
-  primaryPricingIncoterm: string | null;
-  pricingIncludesFreight: boolean | null;
+  basePricePerKg?: number;
+  totalKg?: number;
+  primaryPricingIncoterm?: string | null;
+  pricingIncludesFreight?: boolean | null;
   selectedPortId?: string | null;
 };
 
@@ -31,10 +30,6 @@ function fmt(n: number | null | undefined, digits = 2): string {
 
 export default function LogisticsOverview({
   offerId,
-  basePricePerKg,
-  totalKg,
-  primaryPricingIncoterm,
-  pricingIncludesFreight,
   selectedPortId,
 }: LogisticsOverviewProps) {
   const { t } = useTranslation();
@@ -69,20 +64,6 @@ export default function LogisticsOverview({
     return () => { cancelled = true; };
   }, [offerId]);
 
-  const computed = useMemo(() => {
-    return rows.map((r) => {
-      const cfr = computeFinalPrice(
-        basePricePerKg, totalKg, r.cost, r.insurance,
-        primaryPricingIncoterm, "CFR", pricingIncludesFreight,
-      );
-      const cif = computeFinalPrice(
-        basePricePerKg, totalKg, r.cost, r.insurance,
-        primaryPricingIncoterm, "CIF", pricingIncludesFreight,
-      );
-      return { ...r, cfrPerKg: cfr.final, cifPerKg: cif.final };
-    });
-  }, [rows, basePricePerKg, totalKg, primaryPricingIncoterm, pricingIncludesFreight]);
-
   if (!rows.length) return null;
 
   return (
@@ -106,12 +87,10 @@ export default function LogisticsOverview({
               <th style={{ padding: "6px 8px" }}>{t("buyer.offerDetail.logisticsOverview.country")}</th>
               <th style={{ padding: "6px 8px", textAlign: "right" }}>{t("buyer.offerDetail.logisticsOverview.freight")}</th>
               <th style={{ padding: "6px 8px", textAlign: "right" }}>{t("buyer.offerDetail.logisticsOverview.insurance")}</th>
-              <th style={{ padding: "6px 8px", textAlign: "right" }}>{t("buyer.offerDetail.logisticsOverview.cfrPerKg")}</th>
-              <th style={{ padding: "6px 8px", textAlign: "right" }}>{t("buyer.offerDetail.logisticsOverview.cifPerKg")}</th>
             </tr>
           </thead>
           <tbody>
-            {computed.map((r) => {
+            {rows.map((r) => {
               const isSel = selectedPortId === r.port_id;
               return (
                 <tr
@@ -132,12 +111,6 @@ export default function LogisticsOverview({
                   </td>
                   <td style={{ padding: "6px 8px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
                     {fmt(r.insurance, 2)}
-                  </td>
-                  <td style={{ padding: "6px 8px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                    {fmt(r.cfrPerKg, 4)}
-                  </td>
-                  <td style={{ padding: "6px 8px", textAlign: "right", fontVariantNumeric: "tabular-nums" }}>
-                    {fmt(r.cifPerKg, 4)}
                   </td>
                 </tr>
               );
