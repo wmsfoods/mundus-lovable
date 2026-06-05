@@ -32,6 +32,15 @@ import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
 import { type CutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
 import { DistributionCard, type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
+import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
+import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
+import { EngineSettingsModal } from "@/components/supplier/CreateOfferV2/EngineSettingsModal";
+import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFillModal";
+import { computeCompletion } from "@/lib/offerCompletion";
+import { containerCapacityKg } from "@/lib/units";
+import { useCompanyPlants } from "@/hooks/useCompanyPlants";
+import { Sparkles, Settings2 } from "lucide-react";
+import type { NegotiationMode, NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
@@ -177,13 +186,43 @@ export default function SupplierCreateOfferV2() {
     specificCustomerIds: [],
   });
 
+  // R5.A — engine + quick-fill + review state
+  const [negotiationMode, setNegotiationMode] = useState<NegotiationMode>("manual");
+  const [negotiationDial, setNegotiationDial] = useState<NegotiationDial>("balanced");
+  const [engineModalOpen, setEngineModalOpen] = useState(false);
+  const [quickFillOpen, setQuickFillOpen] = useState(false);
+  const { plants } = useCompanyPlants();
+
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerDraft, setDrawerDraft] = useState<LogisticsState>(EMPTY_LOGISTICS);
   const [drawerFocus, setDrawerFocus] = useState<DrawerFocus>("origin");
   const [destSearch, setDestSearch] = useState("");
   const [destRegion, setDestRegion] = useState<Region>("All");
 
-  const completion = 0; // computed in R3-R5
+  const breakdown = useMemo(
+    () =>
+      computeCompletion({
+        logistics,
+        cuts,
+        hasPlants: plants.length > 0,
+        paymentTerms,
+        distribution,
+      }),
+    [logistics, cuts, plants.length, paymentTerms, distribution],
+  );
+  const completion = breakdown.total;
+
+  // Capacity % for review block
+  const totalCutKg = useMemo(() => cuts.reduce((a, c) => a + (c.qty || 0), 0), [cuts]);
+  const capacityPct = useMemo(() => {
+    const cap = containerCapacityKg(logistics.containerSize) * Math.max(1, logistics.fclCount);
+    return cap > 0 ? (totalCutKg / cap) * 100 : 0;
+  }, [totalCutKg, logistics.containerSize, logistics.fclCount]);
+
+  const scrollTo = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   const tk = (key: string, fallback: string, opts?: Record<string, unknown>) =>
     t(`supplier.createOfferV2.${key}`, { defaultValue: fallback, ...(opts ?? {}) }) as string;
@@ -333,6 +372,24 @@ export default function SupplierCreateOfferV2() {
             <span className="rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
               {tk("livePreview", "Live preview")}
             </span>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setQuickFillOpen(true)}
+            >
+              <Sparkles size={14} className="mr-1" />
+              {tk("quickFill.openButton", "AI Quick-fill")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => setEngineModalOpen(true)}
+            >
+              <Settings2 size={14} className="mr-1" />
+              {tk("engine.openButton", "Engine")}
+            </Button>
             <div className="inline-flex rounded-full bg-muted p-0.5">
               {(["kg", "lbs"] as const).map((u) => (
                 <button
@@ -430,6 +487,7 @@ export default function SupplierCreateOfferV2() {
 
       {/* Placeholders for R3-R5 */}
       <div className="mt-6 flex flex-col gap-4">
+        <div id="v2-section-cuts">
         <CutsTable
           cuts={cuts}
           setCuts={setCuts}
@@ -438,27 +496,56 @@ export default function SupplierCreateOfferV2() {
           cutRegion={cutRegion}
           setCutRegion={setCutRegion}
         />
-        <div className="grid gap-4 sm:grid-cols-2">
-          <PaymentTermsCard value={paymentTerms} onChange={setPaymentTerms} />
-          <DistributionCard value={distribution} onChange={setDistribution} />
         </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div id="v2-section-payment">
+            <PaymentTermsCard value={paymentTerms} onChange={setPaymentTerms} />
+          </div>
+          <div id="v2-section-distribution">
+            <DistributionCard value={distribution} onChange={setDistribution} />
+          </div>
+        </div>
+
+        <FinalReviewCard
+          completion={completion}
+          logistics={{
+            originLabel:
+              originPort && originCountry
+                ? `${originCountry.flag_emoji ?? ""} ${originPort.name}`
+                : "",
+            destCountries: logistics.destinations.length,
+            destPorts: destPortCount,
+            freightTotal: totalFreight,
+            incoterms: logistics.incoterms,
+          }}
+          cuts={cuts}
+          capacityPct={capacityPct}
+          paymentTerms={paymentTerms}
+          distribution={{
+            marketplace: distribution.marketplace,
+            allCustomers: distribution.allCustomers,
+            specificCount: distribution.specificCustomerIds.length,
+          }}
+          onEditLogistics={() => openDrawer("origin")}
+          onEditCuts={() => scrollTo("v2-section-cuts")}
+          onEditPayment={() => scrollTo("v2-section-payment")}
+          onEditDistribution={() => scrollTo("v2-section-distribution")}
+        />
       </div>
 
-      {/* Sticky action bar placeholder */}
-      <div className="sticky bottom-0 -mx-4 mt-8 flex items-center justify-end gap-2 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
-        <span className="mr-auto text-xs text-muted-foreground">
-          {tk("actionBar.comingSoon", "Action bar — coming in R5")}
-        </span>
-        <Button variant="outline" disabled>
-          {tk("actionBar.cancel", "Cancel")}
-        </Button>
-        <Button variant="outline" disabled>
-          {tk("actionBar.saveDraft", "Save draft")}
-        </Button>
-        <Button disabled>
-          {tk("actionBar.publish", "Publish")}
-        </Button>
-      </div>
+      <ActionBar completion={completion} />
+
+      <EngineSettingsModal
+        open={engineModalOpen}
+        onOpenChange={setEngineModalOpen}
+        mode={negotiationMode}
+        dial={negotiationDial}
+        onChange={(m, d) => {
+          setNegotiationMode(m);
+          setNegotiationDial(d);
+        }}
+      />
+      <AiQuickFillModal open={quickFillOpen} onOpenChange={setQuickFillOpen} />
 
       {/* Logistics Drawer */}
       <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
