@@ -743,7 +743,9 @@
         "freightUnavailable": "该目的地无运费数据",
         "matchesPrimary": "与供应商报价的贸易术语一致 — 无需调整",
         "estimatedNote": "估算 — 最终价格取决于供应商报价",
-        "contactSupplier": "需要运费报价 — 请联系供应商"
+        "contactSupplier": "需要运费报价 — 请联系供应商",
+        "fobNote": "FOB 价格在原产地固定 — 港口选择不影响 FOB 价格",
+        "fobUnavailable": "供应商未提供 FOB 价格 — 请联系获取详情"
       },
       "logisticsOverview": {
         "title": "物流概览",
