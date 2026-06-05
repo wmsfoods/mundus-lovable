@@ -2760,7 +2760,24 @@
       "loading": {
         "prefill": "Carregando dados da oferta…"
       },
-      "livePreviewComingSoon": "Em breve"
+      "livePreviewComingSoon": "Em breve",
+      "logistics": {
+        "country": {
+          "placeholder": "Buscar países…",
+          "empty": "Nenhum país encontrado"
+        },
+        "port": {
+          "placeholder": "Buscar portos…",
+          "empty": "Nenhum porto encontrado",
+          "selectCountryFirst": "Selecione o país de origem primeiro",
+          "addPort": "Adicionar porto",
+          "nSelected": "{{n}} porto(s) selecionado(s)"
+        },
+        "warning": {
+          "singlePortFobExw": "{{n}} portos de origem selecionados, mas FOB/EXW suporta apenas 1. Remova os extras para continuar.",
+          "atLeastOnePort": "Selecione ao menos um porto de origem."
+        }
+      }
     }
   },
   "dealDetail": {
