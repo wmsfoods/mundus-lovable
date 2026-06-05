@@ -226,22 +226,6 @@ function MissingFieldsBanner({
     </div>
   );
 }
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-muted/50"
-    >
-      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
-        <Icon size={16} />
-      </span>
-      <span className="flex min-w-0 flex-col">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
-        <span className="truncate text-sm font-semibold text-foreground">{value}</span>
-      </span>
-    </button>
-  );
-}
 
 function SectionPlaceholder({ title, hint, height = 160 }: { title: string; hint: string; height?: number }) {
   return (
