@@ -9,9 +9,10 @@ type Props = {
   submitting?: boolean;
   onSaveDraft?: () => void;
   onPublish?: () => void;
+  mode?: "create" | "edit" | "clone" | "fromRequest";
 };
 
-export function ActionBar({ completion, submitting = false, onSaveDraft, onPublish }: Props) {
+export function ActionBar({ completion, submitting = false, onSaveDraft, onPublish, mode = "create" }: Props) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const tk = (k: string, fb: string, opts?: Record<string, unknown>) =>
@@ -21,6 +22,7 @@ export function ActionBar({ completion, submitting = false, onSaveDraft, onPubli
   const draftDisabled = completion === 0 || submitting;
 
   const handleCancel = () => navigate("/supplier/offers");
+  const isEdit = mode === "edit";
 
   return (
     <div className="sticky bottom-0 -mx-4 mt-8 flex items-center gap-3 border-t border-border bg-background/95 px-4 py-3 backdrop-blur">
@@ -37,14 +39,23 @@ export function ActionBar({ completion, submitting = false, onSaveDraft, onPubli
       <Button variant="outline" onClick={handleCancel} disabled={submitting}>
         {tk("cancel", "Cancel")}
       </Button>
-      <Button variant="outline" disabled={draftDisabled} onClick={onSaveDraft}>
-        {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
-        {tk("saveDraft", "Save draft")}
-      </Button>
-      <Button disabled={publishDisabled} onClick={onPublish}>
-        {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
-        {tk("publish", "Publish")}
-      </Button>
+      {isEdit ? (
+        <Button disabled={submitting || completion === 0} onClick={onPublish}>
+          {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
+          {tk("saveChanges", "Save changes")}
+        </Button>
+      ) : (
+        <>
+          <Button variant="outline" disabled={draftDisabled} onClick={onSaveDraft}>
+            {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
+            {tk("saveDraft", "Save draft")}
+          </Button>
+          <Button disabled={publishDisabled} onClick={onPublish}>
+            {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
+            {tk("publish", "Publish")}
+          </Button>
+        </>
+      )}
     </div>
   );
 }

@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Sheet,
@@ -43,9 +44,13 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { Sparkles, Settings2 } from "lucide-react";
 import type { NegotiationMode, NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
 import { submitOfferV2 } from "@/lib/offerSubmit";
+import { updateOfferV2 } from "@/lib/offerSubmit";
 import { toast } from "sonner";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatOfferNumber } from "@/lib/offerNumber";
+import { useOfferForPrefill } from "@/hooks/useOfferForPrefill";
+import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
+import { EditModeWarningBanner } from "@/components/supplier/CreateOfferV2/EditModeWarningBanner";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
@@ -180,6 +185,27 @@ export default function SupplierCreateOfferV2() {
   const { t } = useTranslation();
   const catalog = usePortsCatalog();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const editId = searchParams.get("id");
+  const cloneId = searchParams.get("clone");
+  const requestId = searchParams.get("request_id");
+  const mode: "create" | "edit" | "clone" | "fromRequest" = editId
+    ? "edit"
+    : cloneId
+      ? "clone"
+      : requestId
+        ? "fromRequest"
+        : "create";
+
+  const offerPrefillQuery = useOfferForPrefill(
+    editId ?? cloneId ?? null,
+    editId ? "edit" : cloneId ? "clone" : null,
+  );
+  const requestPrefillQuery = useBuyerRequestForPrefill(requestId);
+  const prefilling = offerPrefillQuery.isLoading || requestPrefillQuery.isLoading;
+  const activeNegotiations =
+    mode === "edit" ? offerPrefillQuery.data?.activeNegotiations ?? 0 : 0;
+
   const [submitting, setSubmitting] = useState(false);
 
   const [unit, setUnit] = useState<Unit>("kg");
@@ -206,6 +232,55 @@ export default function SupplierCreateOfferV2() {
   const { company } = useCurrentCompany();
   const { plants } = useCompanyPlants(company?.id);
 
+  // Prefill from offer (Edit/Clone)
+  const [prefillApplied, setPrefillApplied] = useState(false);
+  useEffect(() => {
+    if (prefillApplied) return;
+    const data = offerPrefillQuery.data?.prefill;
+    if (!data) return;
+    setLogistics({
+      originCountryId: data.originCountryId,
+      originPortId: data.originPortId,
+      destinations: data.destinations,
+      containerSize: data.containerSize,
+      fclCount: data.fclCount,
+      temperature: data.temperature,
+      incoterms: data.incoterms as LogisticsState["incoterms"],
+      certifications: data.certifications as LogisticsState["certifications"],
+      shipmentReady: data.shipmentReady,
+      sameFreightGlobal: data.sameFreightGlobal,
+      globalFreight: data.globalFreight,
+      globalInsurance: data.globalInsurance,
+      exwPickupLocation: data.exwPickupLocation,
+    });
+    setCuts(data.cuts);
+    setCutRegion(data.cutRegion);
+    setPaymentTerms(data.paymentTerms);
+    setDistribution(data.distribution);
+    setNegotiationMode(data.negotiationMode);
+    setNegotiationDial(data.negotiationDial);
+    setPrefillApplied(true);
+  }, [offerPrefillQuery.data, prefillApplied]);
+
+  // Prefill from buyer request
+  useEffect(() => {
+    if (prefillApplied) return;
+    const data = requestPrefillQuery.data;
+    if (!data) return;
+    setLogistics((prev) => ({
+      ...prev,
+      destinations: data.destinations ?? prev.destinations,
+      containerSize: data.containerSize ?? prev.containerSize,
+      fclCount: data.fclCount ?? prev.fclCount,
+      temperature: data.temperature ?? prev.temperature,
+      incoterms: (data.incoterms as LogisticsState["incoterms"]) ?? prev.incoterms,
+      shipmentReady: data.shipmentReady ?? prev.shipmentReady,
+    }));
+    if (data.cuts && data.cuts.length > 0) setCuts(data.cuts);
+    if (data.cutRegion) setCutRegion(data.cutRegion);
+    setPrefillApplied(true);
+  }, [requestPrefillQuery.data, prefillApplied]);
+
   const handleSubmit = async (status: "draft" | "active") => {
     if (submitting) return;
     if (!company?.id) {
@@ -214,27 +289,33 @@ export default function SupplierCreateOfferV2() {
     }
     setSubmitting(true);
     try {
-      const res = await submitOfferV2(
-        {
-          logistics,
-          cuts,
-          paymentTerms,
-          distribution,
-          negotiationMode,
-          negotiationDial,
-        },
-        {
-          supplierId: company.id,
-          supplierName: company.name || "Mundus Supplier",
-          officeId: null,
-          status,
-        },
-      );
+      const input = {
+        logistics,
+        cuts,
+        paymentTerms,
+        distribution,
+        negotiationMode,
+        negotiationDial,
+        cutRegion,
+        requestId: mode === "fromRequest" ? requestId : null,
+      };
+      const ctx = {
+        supplierId: company.id,
+        supplierName: company.name || "Mundus Supplier",
+        officeId: null,
+        status,
+      };
+      const res =
+        mode === "edit" && editId
+          ? await updateOfferV2(editId, input, ctx)
+          : await submitOfferV2(input, ctx);
       const label = formatOfferNumber(res.offerNumber);
       toast.success(
-        status === "draft"
-          ? (t("supplier.createOfferV2.submit.successDraft", { defaultValue: "Draft saved — {{n}}", n: label }) as string)
-          : (t("supplier.createOfferV2.submit.successPublish", { defaultValue: "Offer {{n}} published successfully!", n: label }) as string),
+        mode === "edit"
+          ? (t("supplier.createOfferV2.submit.successUpdate", { defaultValue: "Offer {{n}} updated", n: label }) as string)
+          : status === "draft"
+            ? (t("supplier.createOfferV2.submit.successDraft", { defaultValue: "Draft saved — {{n}}", n: label }) as string)
+            : (t("supplier.createOfferV2.submit.successPublish", { defaultValue: "Offer {{n}} published successfully!", n: label }) as string),
       );
       navigate("/supplier/offers");
     } catch (e: unknown) {
@@ -467,7 +548,21 @@ export default function SupplierCreateOfferV2() {
       />
 
       <PageTitle
-        title={tk("title", "New offer")}
+        title={
+          mode === "edit" && offerPrefillQuery.data?.prefill
+            ? tk("editMode.title", "Edit offer {{n}}", {
+                n: formatOfferNumber(offerPrefillQuery.data.prefill.offerNumber),
+              })
+            : mode === "clone" && offerPrefillQuery.data?.prefill
+              ? tk("cloneMode.title", "New offer cloned from {{n}}", {
+                  n: formatOfferNumber(offerPrefillQuery.data.prefill.offerNumber),
+                })
+              : mode === "fromRequest" && requestPrefillQuery.data?.requestNumber
+                ? tk("fromRequestMode.title", "New offer from request #{{n}}", {
+                    n: requestPrefillQuery.data.requestNumber,
+                  })
+                : tk("title", "New offer")
+        }
         subtitle={tk("subtitle", "One screen · click any pill to edit")}
         right={
           <div className="flex items-center gap-3">
