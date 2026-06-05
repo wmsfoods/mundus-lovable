@@ -748,7 +748,9 @@
         "freightUnavailable": "Freight not available for this destination",
         "matchesPrimary": "Matches supplier's quoted incoterm — no adjustment",
         "estimatedNote": "Estimated — final price depends on supplier quote",
-        "contactSupplier": "Freight quote required — contact supplier"
+        "contactSupplier": "Freight quote required — contact supplier",
+        "fobNote": "FOB price is fixed at origin — port selection does not affect FOB pricing",
+        "fobUnavailable": "FOB pricing not provided by supplier — contact for details"
       },
       "logisticsOverview": {
         "title": "Logistics breakdown",
