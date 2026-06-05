@@ -2635,6 +2635,9 @@
           "ask": "Prix {{u}}",
           "floor": "Plancher {{u}}",
           "floorErr": "Le plancher doit être ≤ Prix",
+          "fobAsk": "FOB Prix {{u}}",
+          "fobFloor": "FOB Plancher {{u}}",
+          "fobFloorErr": "FOB Plancher doit être ≤ FOB Prix",
           "subtotal": "Sous-total"
         },
         "capacity": {
