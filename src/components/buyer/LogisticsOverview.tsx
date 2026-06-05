@@ -46,7 +46,7 @@ export default function LogisticsOverview({
     (async () => {
       const { data } = await supabase
         .from("freight_options")
-        .select("port_id, cost, insurance, ports(id, name, code, country)")
+        .select("port_id, cost, insurance, ports(id, name, code, countries(english_name))")
         .eq("offer_id", offerId);
       if (cancelled) return;
       const out: Row[] = [];
@@ -59,7 +59,7 @@ export default function LogisticsOverview({
           port_id: p.id,
           port_name: p.name,
           port_code: p.code,
-          country: p.country ?? null,
+          country: p.countries?.english_name ?? null,
           cost: r.cost,
           insurance: r.insurance,
         });
