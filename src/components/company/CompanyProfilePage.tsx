@@ -31,6 +31,8 @@ import { auditLog } from "@/lib/auditLog";
 import { BillingSection } from "@/components/billing/BillingSection";
 import SupplierBrandsManager from "@/components/company/SupplierBrandsManager";
 import "@/styles/mundus-address.css";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { useIsCompanyMaster } from "@/hooks/useIsCompanyMaster";
 
 type Role = "buyer" | "supplier" | "admin";
 
@@ -88,6 +90,10 @@ export default function CompanyProfilePage({
   const navigate = useNavigate();
   const companyId = companyIdOverride ?? cur?.id ?? null;
   const { terms: PAYMENT_TERMS } = usePaymentTerms({ scope: "international" });
+  const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
+  const { isMaster } = useIsCompanyMaster(companyId);
+  const canEdit = isAdminView || isMundusAdmin || isMaster;
+  const readOnly = !canEdit;
   // In admin view we resolve the profile-role from the company itself.
   const [adminFlags, setAdminFlags] = useState<{
     is_verified: boolean;
