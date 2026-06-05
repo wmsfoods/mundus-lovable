@@ -26,6 +26,11 @@ export default function InviteAccept() {
   const [confirm, setConfirm] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const goToLoginClean = async () => {
+    await supabase.auth.signOut({ scope: "local" });
+    navigate(`/login${invite?.email ? `?email=${encodeURIComponent(invite.email)}` : ""}`, { replace: true });
+  };
+
   useEffect(() => {
     let cancelled = false;
     (async () => {
@@ -98,7 +103,7 @@ export default function InviteAccept() {
         <div className="max-w-md w-full rounded-xl border bg-card p-8 text-center">
           <h1 className="text-lg font-semibold mb-2">{t("inviteAccept.errors.title", { defaultValue: "Invitation unavailable" })}</h1>
           <p className="text-sm text-muted-foreground mb-6">{error}</p>
-          <button className="ufm-btn-primary" onClick={() => navigate("/login")}>{t("common.signIn", { defaultValue: "Sign in" })}</button>
+          <button className="ufm-btn-primary" onClick={goToLoginClean}>{t("common.signIn", { defaultValue: "Sign in" })}</button>
         </div>
       </div>
     );

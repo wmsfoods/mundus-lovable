@@ -47,8 +47,19 @@ export function useCurrentCompany(): State {
         .maybeSingle();
       if (cancelled) return;
       if (userRow) {
-        companyId = userRow.active_company_id ?? userRow.company_id ?? null;
+        const preferredCompanyId = userRow.active_company_id ?? userRow.company_id ?? null;
         usersRowHadCompany = Boolean(userRow.company_id);
+        if (preferredCompanyId) {
+          const { data: activeMembership } = await supabase
+            .from("company_users")
+            .select("company_id")
+            .eq("user_id", userId)
+            .eq("company_id", preferredCompanyId)
+            .eq("status", "active")
+            .maybeSingle();
+          if (cancelled) return;
+          if (activeMembership?.company_id) companyId = activeMembership.company_id;
+        }
       }
 
       // Strategy 2: company_users fallback
