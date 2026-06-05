@@ -244,6 +244,48 @@ export function OfferCard({
         {offer.supplier_name && (
           <div className="oc-supplier">🏭 {offer.supplier_name}</div>
         )}
+        {(isDirectTarget || isNetworkOnly) && (
+          <div style={{ marginTop: 4, display: "flex", flexWrap: "wrap", gap: 6 }}>
+            {isDirectTarget && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "3px 9px",
+                  borderRadius: 999,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  background: "#fdecef",
+                  color: "#8B2252",
+                  border: "1px solid #f3c8d2",
+                  letterSpacing: 0.2,
+                }}
+              >
+                🎯 {t("buyer.offers.badge.directOffer", { supplier: offer.supplier_name ?? "" })}
+              </span>
+            )}
+            {isNetworkOnly && (
+              <span
+                style={{
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  padding: "3px 9px",
+                  borderRadius: 999,
+                  fontSize: 11,
+                  fontWeight: 600,
+                  background: "#e8f1ff",
+                  color: "#1d4ed8",
+                  border: "1px solid #c7dafd",
+                  letterSpacing: 0.2,
+                }}
+              >
+                🤝 {t("buyer.offers.badge.fromNetwork")}
+              </span>
+            )}
+          </div>
+        )}
         <div className="cut-chips">
           {firstItem && (
             <span className="cut-chip" style={{ display: "inline-flex", alignItems: "center" }}>
