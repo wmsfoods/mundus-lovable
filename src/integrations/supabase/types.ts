@@ -7691,6 +7691,14 @@ export type Database = {
           full_name: string
         }[]
       }
+      get_company_recipient_emails: {
+        Args: { p_company_ids: string[] }
+        Returns: {
+          company_id: string
+          email: string
+          name: string
+        }[]
+      }
       get_offer_floors: {
         Args: { _offer_ids: string[] }
         Returns: {
