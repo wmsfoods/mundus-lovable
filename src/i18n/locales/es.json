@@ -4176,5 +4176,16 @@
         "body": "Empieza publicando tu primera oferta."
       }
     }
+  },
+  "noAccess": {
+    "title": "Tu cuenta aún no tiene acceso",
+    "body1": "Has iniciado sesión, pero este correo aún no está vinculado a ninguna empresa en Mundus Trade.",
+    "body2": "Si recibiste una invitación, verifica que estés usando el mismo correo. Si aún no tienes invitación, contáctanos y te daremos acceso.",
+    "loggedAs": "Conectado como",
+    "contact": "Hablar con Mundus",
+    "retry": "Verificar de nuevo",
+    "retrying": "Verificando…",
+    "mailSubject": "Acceso a la plataforma Mundus Trade",
+    "mailBody": "Hola,\n\nIngresé a Mundus Trade pero mi cuenta aún no está vinculada a ninguna empresa.\n\nCorreo: {{email}}\nUser ID: {{uid}}\n\n¿Pueden ayudarme con el acceso?\n\nGracias."
   }
 }

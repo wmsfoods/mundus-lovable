@@ -4176,5 +4176,16 @@
         "body": "Start by publishing your first offer."
       }
     }
+  },
+  "noAccess": {
+    "title": "Your account does not have access yet",
+    "body1": "You signed in successfully, but this e-mail is not yet linked to any company on Mundus Trade.",
+    "body2": "If you received an invitation, make sure you are using the same e-mail as the invite. If you have not received an invitation, contact our team and we will grant you access.",
+    "loggedAs": "Signed in as",
+    "contact": "Contact Mundus",
+    "retry": "Check again",
+    "retrying": "Checking…",
+    "mailSubject": "Access to the Mundus Trade platform",
+    "mailBody": "Hi,\n\nI signed in to Mundus Trade but my account is not linked to any company yet.\n\nE-mail: {{email}}\nUser ID: {{uid}}\n\nCould you grant me access?\n\nThanks."
   }
 }

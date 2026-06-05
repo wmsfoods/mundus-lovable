@@ -4162,5 +4162,16 @@
         "body": "从发布第一条报价开始。"
       }
     }
+  },
+  "noAccess": {
+    "title": "您的账户尚无访问权限",
+    "body1": "您已成功登录，但此邮箱尚未与 Mundus Trade 上的任何公司关联。",
+    "body2": "如果您收到了邀请，请确认使用的是邀请邮箱。否则请联系我们的团队为您开通访问权限。",
+    "loggedAs": "已登录为",
+    "contact": "联系 Mundus",
+    "retry": "重新检查",
+    "retrying": "检查中…",
+    "mailSubject": "Mundus Trade 平台访问",
+    "mailBody": "您好，\n\n我已登录 Mundus Trade，但账户尚未关联任何公司。\n\n邮箱: {{email}}\nUser ID: {{uid}}\n\n请协助开通访问。\n\n谢谢。"
   }
 }

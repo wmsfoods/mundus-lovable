@@ -57,9 +57,9 @@ export default function Dashboard() {
   }
 
   const supportMailto = `mailto:contact@mundustrade.com?subject=${encodeURIComponent(
-    "Acesso à plataforma Mundus Trade",
+    t("noAccess.mailSubject"),
   )}&body=${encodeURIComponent(
-    `Olá,\n\nFiz login na Mundus Trade mas minha conta ainda não está vinculada a nenhuma empresa.\n\nE-mail: ${user?.email ?? ""}\nUser ID: ${user?.id ?? ""}\n\nPodem me ajudar a liberar o acesso?\n\nObrigado.`,
+    t("noAccess.mailBody", { email: user?.email ?? "", uid: user?.id ?? "" }),
   )}`;
 
   return (
@@ -80,17 +80,17 @@ export default function Dashboard() {
         <div style={{ maxWidth: 520 }}>
           <div style={{ fontSize: 44, marginBottom: 12 }}>🔒</div>
           <h1 className="text-2xl font-bold text-foreground" style={{ marginBottom: 10 }}>
-            Sua conta ainda não tem acesso
+            {t("noAccess.title")}
           </h1>
           <p className="text-muted-foreground" style={{ fontSize: 15, marginBottom: 8, lineHeight: 1.6 }}>
-            Você fez login com sucesso, mas este e-mail ainda não está vinculado a nenhuma empresa na Mundus Trade.
+            {t("noAccess.body1")}
           </p>
           <p className="text-muted-foreground" style={{ fontSize: 14, marginBottom: 20, lineHeight: 1.6 }}>
-            Se você recebeu um convite, verifique se está usando o mesmo e-mail do convite. Caso ainda não tenha um convite, fale com nossa equipe e liberamos seu acesso.
+            {t("noAccess.body2")}
           </p>
           {user?.email && (
             <p className="text-muted-foreground" style={{ fontSize: 13, marginBottom: 24, opacity: 0.75 }}>
-              Logado como <strong>{user.email}</strong>
+              {t("noAccess.loggedAs")} <strong>{user.email}</strong>
             </p>
           )}
           <div style={{ display: "flex", flexWrap: "wrap", gap: 10, justifyContent: "center" }}>
@@ -98,14 +98,14 @@ export default function Dashboard() {
               href={supportMailto}
               style={{ padding: "10px 22px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "#B64769", color: "white", textDecoration: "none", display: "inline-flex", alignItems: "center" }}
             >
-              Falar com a Mundus
+              {t("noAccess.contact")}
             </a>
             <button
               onClick={handleRetry}
               disabled={retrying}
               style={{ padding: "10px 22px", borderRadius: 8, fontSize: 14, fontWeight: 600, background: "white", color: "#374151", border: "1px solid #D1D5DB", cursor: retrying ? "wait" : "pointer" }}
             >
-              {retrying ? "Verificando..." : "Verificar novamente"}
+              {retrying ? t("noAccess.retrying") : t("noAccess.retry")}
             </button>
             <button
               onClick={handleLogout}
