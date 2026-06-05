@@ -84,6 +84,15 @@ export function OfferCard({
   onShare?: (id: string, channel?: string) => void;
 }) {
   const { t } = useTranslation();
+  const { company: currentBuyerCompany } = useCurrentCompany();
+  const currentBuyerCompanyId = currentBuyerCompany?.id ?? null;
+  const isDirectTarget = Boolean(
+    currentBuyerCompanyId &&
+      Array.isArray(offer.specific_buyer_company_ids) &&
+      offer.specific_buyer_company_ids.includes(currentBuyerCompanyId),
+  );
+  const isNetworkOnly =
+    !isDirectTarget && Boolean(offer.all_customers);
   const items = offer.items ?? [];
   const mixed = items.length > 1;
   const firstItem = items[0];
