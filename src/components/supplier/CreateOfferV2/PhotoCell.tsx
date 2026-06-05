@@ -5,9 +5,10 @@ import { Camera, X } from "lucide-react";
 type Props = {
   previewUrl: string | null;
   onPick: (file: File | null) => void;
+  canRemove?: boolean;
 };
 
-export function PhotoCell({ previewUrl, onPick }: Props) {
+export function PhotoCell({ previewUrl, onPick, canRemove = true }: Props) {
   const { t } = useTranslation();
   const ref = useRef<HTMLInputElement | null>(null);
   const tk = (k: string, fb: string) =>
@@ -27,7 +28,7 @@ export function PhotoCell({ previewUrl, onPick }: Props) {
           <Camera size={14} />
         )}
       </button>
-      {previewUrl && (
+      {previewUrl && canRemove && (
         <button
           type="button"
           onClick={() => onPick(null)}

@@ -2745,7 +2745,8 @@
       },
       "loading": {
         "prefill": "正在加载报价数据…"
-      }
+      },
+      "livePreviewComingSoon": "即将推出"
     }
   },
   "dealDetail": {

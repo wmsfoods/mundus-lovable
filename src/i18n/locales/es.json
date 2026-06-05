@@ -2759,7 +2759,8 @@
       },
       "loading": {
         "prefill": "Cargando datos de la oferta…"
-      }
+      },
+      "livePreviewComingSoon": "Próximamente"
     }
   },
   "dealDetail": {
