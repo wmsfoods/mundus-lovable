@@ -379,11 +379,12 @@ export async function updateOfferV2(
   // Resolve origin port label for snapshot columns (same as create).
   let originPortLabel: string | null = null;
   let originCountryName: string | null = null;
-  if (l.originPortId) {
+  const primaryOriginPortId = l.originPortIds[0] ?? null;
+  if (primaryOriginPortId) {
     const { data: port } = await supabase
       .from("ports")
       .select("name, code, country_id")
-      .eq("id", l.originPortId)
+      .eq("id", primaryOriginPortId)
       .maybeSingle();
     if (port) {
       originPortLabel = port.code ? `${port.name} (${port.code})` : port.name;
@@ -403,7 +404,7 @@ export async function updateOfferV2(
     status: ctx.status,
     origin_country: originCountryName,
     origin_port: originPortLabel,
-    origin_port_id: l.originPortId,
+    origin_port_id: primaryOriginPortId,
     shipment_month,
     shipment_year,
     payment_terms: paymentTerms || null,
