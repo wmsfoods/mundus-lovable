@@ -2,6 +2,8 @@ import { useState, useRef, useEffect } from "react";
 import { FlagSVG } from "@/components/icons";
 import type { GalleryImage } from "@/components/offer/OfferImageGallery";
 import { fmtWeight, fmtPrice, weightLabel, type WeightUnit } from "@/lib/units";
+import { countryToCode } from "@/lib/countryCodes";
+import "@/styles/mundus-offer-card-tooltip.css";
 
 function formatUsdInt(n: number) {
   return new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(n));
@@ -29,12 +31,19 @@ export type OfferCardsProps = {
   containerLabel: string;
   shipmentLabel: string;
   origin: { country: string | null; port?: string | null; code?: string | null };
-  destination: { country: string | null; port?: string | null; code?: string | null; extraCount?: number };
+  destination: {
+    country: string | null;
+    port?: string | null;
+    code?: string | null;
+    extraCount?: number;
+    allCountries?: string[];
+  };
   incoterms: string[];
   paymentTerms?: string | null;
   containerSize?: string | null;
   containerCount?: number | null;
   createdAt?: string | null;
+  supplierName?: string | null;
   items: OfferCardItem[];
   showSupplierPricing?: boolean;
   gallery: GalleryImage[];
@@ -49,6 +58,7 @@ export function OfferDetailCards(props: OfferCardsProps) {
     totalValueUsd, totalQtyKg, containerLabel, shipmentLabel,
     origin, destination, incoterms, paymentTerms,
     containerSize, containerCount, createdAt,
+    supplierName,
     items, showSupplierPricing, gallery, illustrativeLabel, unit, statusPill,
   } = props;
 
@@ -69,6 +79,20 @@ export function OfferDetailCards(props: OfferCardsProps) {
         <div className="ofc-header-main">
           <div className="ofc-offer-number">{offerNumber}</div>
           <h1 className="ofc-title">{title}</h1>
+          {supplierName && (
+            <div
+              style={{
+                fontSize: 13,
+                color: "#6b7280",
+                marginTop: 4,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 4,
+              }}
+            >
+              🏭 {supplierName}
+            </div>
+          )}
           <div className="ofc-chip-row">
             {category && (
               <span className="ofc-chip ofc-chip-protein">● {category}</span>
@@ -120,12 +144,24 @@ export function OfferDetailCards(props: OfferCardsProps) {
           <div className="ofc-route-place">
             <div className="ofc-route-label">Destination</div>
             <div className="ofc-route-country">
-              {destination.country || "—"}
-              {destination.extraCount ? (
-                <span style={{ fontSize: 12, fontWeight: 500, color: "#6b7280", marginLeft: 6 }}>
-                  +{destination.extraCount}
+              {destination.extraCount && destination.allCountries && destination.allCountries.length > 1 ? (
+                <span className="dest-hover-wrap">
+                  {destination.country || "—"}
+                  <span style={{ fontSize: 12, fontWeight: 500, color: "#6b7280", marginLeft: 6 }}>
+                    +{destination.extraCount}
+                  </span>
+                  <div className="dest-tooltip">
+                    <div className="dest-tooltip-title">Available destinations:</div>
+                    {destination.allCountries.map((n, i) => (
+                      <div key={i} className="dest-tooltip-row">
+                        <FlagSVG code={countryToCode(n)} size={12} /> {n}
+                      </div>
+                    ))}
+                  </div>
                 </span>
-              ) : null}
+              ) : (
+                <>{destination.country || "—"}</>
+              )}
             </div>
             {destination.port && <div className="ofc-route-port">{destination.port}</div>}
           </div>
