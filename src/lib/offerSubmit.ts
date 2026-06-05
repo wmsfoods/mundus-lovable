@@ -423,7 +423,7 @@ export async function updateOfferV2(
 
   const { error: updErr } = await supabase
     .from("offers")
-    .update(offerUpdate)
+    .update(offerUpdate as never)
     .eq("id", offerId);
   if (updErr) throw new Error(`Failed to update offer: ${updErr.message}`);
 
