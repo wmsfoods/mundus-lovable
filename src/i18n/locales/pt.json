@@ -748,7 +748,9 @@
         "freightUnavailable": "Frete não disponível para este destino",
         "matchesPrimary": "Mesmo incoterm cotado pelo fornecedor — sem ajuste",
         "estimatedNote": "Estimado — preço final depende da cotação do fornecedor",
-        "contactSupplier": "Cotação de frete necessária — contate o fornecedor"
+        "contactSupplier": "Cotação de frete necessária — contate o fornecedor",
+        "fobNote": "Preço FOB é fixo na origem — a seleção do porto não afeta o preço FOB",
+        "fobUnavailable": "Preço FOB não fornecido pelo fornecedor — entre em contato para detalhes"
       },
       "logisticsOverview": {
         "title": "Resumo logístico",
