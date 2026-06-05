@@ -16,10 +16,13 @@ export type ParsedOfferPayload = {
   origin: { country: ResolvedCountry; portName: string | null };
   destinations: Array<{
     country: ResolvedCountry;
-    portName: string | null;
+    portNames: string[];
     freightUsd: number | null;
     insuranceUsd: number | null;
   }>;
+  sameFreightGlobal: boolean;
+  globalFreight: number | null;
+  globalInsurance: number | null;
   incoterms: string[];
   containerSize: "20ft" | "40ft" | null;
   fclCount: number | null;
@@ -35,6 +38,12 @@ export type ParsedOfferPayload = {
     askPricePerKg: number | null;
     notes: string | null;
     plant: { plantNumber: string | null; plantId: string | null; match: MatchStatus };
+    cut: {
+      id: string | null;
+      name: string | null;
+      match: MatchStatus;
+      candidates: Array<{ id: string; name: string; score: number }>;
+    };
   }>;
   model: string;
 };

@@ -95,6 +95,12 @@ Deno.serve(async (req: Request) => {
     supabase.from('payment_terms').select('label').eq('is_active', true).eq('scope', 'international').limit(100),
   ]);
 
+  const cutsRes = await supabase
+    .from('cuts')
+    .select('id,name,category,bone_spec')
+    .eq('is_active', true)
+    .limit(1000);
+
   const brands = (brandsRes.data ?? []).map((b: any) => ({ id: b.id as string, name: b.name as string, _key: norm(b.name) }));
   const plants = (plantsRes.data ?? []).map((p: any) => ({
     id: p.id as string, plant_number: (p.plant_number ?? '') as string, name: (p.name ?? '') as string,
@@ -105,6 +111,13 @@ Deno.serve(async (req: Request) => {
     flag: (c.flag_emoji ?? '🏳️') as string, _key: norm(c.english_name),
   }));
   const paymentTerms = (paymentsRes.data ?? []).map((p: any) => ({ label: p.label as string, _key: norm(p.label) }));
+  const cuts = (cutsRes.data ?? []).map((c: any) => ({
+    id: c.id as string,
+    name: c.name as string,
+    category: (c.category ?? '') as string,
+    bone_spec: (c.bone_spec ?? '') as string,
+    _key: norm(c.name),
+  }));
 
   const systemPrompt = `You extract structured meat offer data from raw text emails, spec sheets, or chat messages.
 Return ONLY valid JSON matching the schema below. No markdown code fences, no commentary, no prose outside the JSON.
@@ -135,7 +148,10 @@ JSON schema to return:
 {
   "brand": { "name": string|null },
   "origin": { "countryName": string|null, "portName": string|null },
-  "destinations": [{ "countryName": string, "portName": string|null, "freightUsd": number|null, "insuranceUsd": number|null }],
+  "destinations": [{ "countryName": string, "portNames": string[], "freightUsd": number|null, "insuranceUsd": number|null }],
+  "sameFreightGlobal": boolean,
+  "globalFreight": number|null,
+  "globalInsurance": number|null,
   "incoterms": string[],
   "containerSize": "20ft"|"40ft"|null,
   "fclCount": number|null,
@@ -154,7 +170,12 @@ JSON schema to return:
   }]
 }
 
-If something is missing in the text, set the field to null (or empty array for lists). Never invent values.`;
+Important:
+- "incoterms" must be an array — if the user writes "CFR, CIF, FOB" return ["CFR","CIF","FOB"].
+- "destinations[].portNames" must be an array — if the user writes "Buenos Aires + Montevideo - Argentina" return one destination with portNames ["Buenos Aires","Montevideo"]. Each distinct country = one destination entry.
+- "sameFreightGlobal" true ONLY if the text explicitly says one freight value applies to ALL destinations (e.g. "Same freight USD 4500 for all destinations"). Otherwise false and put per-destination values in freightUsd/insuranceUsd.
+
+If something is missing in the text, set the field to null (or empty array/false). Never invent values.`;
 
   const aiResp = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
     method: 'POST',
@@ -238,6 +259,37 @@ If something is missing in the text, set the field to null (or empty array for l
     return { label, match: 'not_found' as MatchStatus };
   };
 
+  // Cut resolution returns top candidate + up to 5 alternatives (substring/word overlap scoring).
+  function scoreCut(needle: string, cut: { name: string; _key: string }) {
+    const n = norm(needle);
+    if (!n) return 0;
+    if (cut._key === n) return 100;
+    if (cut._key.includes(n) || n.includes(cut._key)) {
+      const lenScore = Math.min(cut._key.length, n.length) / Math.max(cut._key.length, n.length);
+      return 70 + Math.round(lenScore * 25);
+    }
+    const nWords = new Set(n.split(' ').filter((w) => w.length > 2));
+    const cWords = new Set(cut._key.split(' ').filter((w) => w.length > 2));
+    let overlap = 0;
+    nWords.forEach((w) => { if (cWords.has(w)) overlap++; });
+    if (overlap === 0) return 0;
+    return Math.round((overlap / Math.max(nWords.size, cWords.size)) * 65);
+  }
+
+  function resolveCut(name: string | null) {
+    if (!name) return { id: null, name: null, match: 'none' as MatchStatus, candidates: [] as Array<{ id: string; name: string; score: number }> };
+    const scored = cuts
+      .map((c) => ({ id: c.id, name: c.name, score: scoreCut(name, c) }))
+      .filter((c) => c.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 5);
+    if (scored.length === 0) return { id: null, name, match: 'not_found' as MatchStatus, candidates: [] };
+    const top = scored[0];
+    if (top.score >= 100) return { id: top.id, name: top.name, match: 'exact' as MatchStatus, candidates: scored };
+    if (top.score >= 60) return { id: top.id, name: top.name, match: 'fuzzy' as MatchStatus, candidates: scored };
+    return { id: null, name, match: 'not_found' as MatchStatus, candidates: scored };
+  }
+
   const result = {
     brand: resolveBrand(parsed?.brand?.name ?? null),
     origin: {
@@ -246,10 +298,15 @@ If something is missing in the text, set the field to null (or empty array for l
     },
     destinations: Array.isArray(parsed?.destinations) ? parsed.destinations.map((d: any) => ({
       country: resolveCountry(d?.countryName ?? null),
-      portName: d?.portName ?? null,
+      portNames: Array.isArray(d?.portNames)
+        ? d.portNames.filter((x: any) => typeof x === 'string' && x.trim().length > 0)
+        : (typeof d?.portName === 'string' && d.portName ? [d.portName] : []),
       freightUsd: typeof d?.freightUsd === 'number' ? d.freightUsd : null,
       insuranceUsd: typeof d?.insuranceUsd === 'number' ? d.insuranceUsd : null,
     })) : [],
+    sameFreightGlobal: parsed?.sameFreightGlobal === true,
+    globalFreight: typeof parsed?.globalFreight === 'number' ? parsed.globalFreight : null,
+    globalInsurance: typeof parsed?.globalInsurance === 'number' ? parsed.globalInsurance : null,
     incoterms: Array.isArray(parsed?.incoterms) ? parsed.incoterms.filter((x: any) => typeof x === 'string') : [],
     containerSize: parsed?.containerSize === '20ft' || parsed?.containerSize === '40ft' ? parsed.containerSize : null,
     fclCount: typeof parsed?.fclCount === 'number' ? parsed.fclCount : null,
@@ -265,6 +322,7 @@ If something is missing in the text, set the field to null (or empty array for l
       askPricePerKg: typeof it?.askPricePerKg === 'number' ? it.askPricePerKg : null,
       notes: typeof it?.notes === 'string' ? it.notes : null,
       plant: resolvePlant(it?.plantNumber ?? null),
+      cut: resolveCut(String(it?.cutName ?? '').trim() || null),
     })) : [],
     model: MODEL,
   };
