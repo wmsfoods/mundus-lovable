@@ -229,6 +229,7 @@ const App = () => (
               <Route path="auctions/create" element={<SupplierCreateAuction />} />
               <Route path="auctions/:id" element={<SupplierAuctionDetail />} />
               <Route path="offers/new" element={<SupplierCreateOffer />} />
+              <Route path="offers/new-v2" element={<SupplierCreateOfferV2 />} />
               <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="requests" element={<SupplierRequests />} />
               <Route path="requests/:id" element={<SupplierRequestDetail />} />
