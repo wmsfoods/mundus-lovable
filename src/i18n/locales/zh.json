@@ -2859,6 +2859,46 @@
       },
       "validation": {
         "primaryPricingMissing": "保存前请选择价格参考的贸易术语。"
+      },
+      "completion": {
+        "section": {
+          "origin": "原产地",
+          "destinations": "目的地",
+          "incoterm": "贸易术语",
+          "freight": "运费",
+          "shipment": "装运",
+          "cuts": "项目",
+          "payment": "付款",
+          "distribution": "分发"
+        },
+        "field": {
+          "originCountry": "原产国",
+          "originPort": "原产港",
+          "originSinglePort": "FOB/EXW 仅允许一个原产港",
+          "destinationCountry": "至少一个目的国",
+          "destinationPort": "至少一个目的港",
+          "incoterm": "至少一个贸易术语",
+          "primaryPricingIncoterm": "主定价术语 (FOB/CFR)",
+          "globalFreight": "统一运费",
+          "destinationFreight": "各目的地运费",
+          "portFreight": "各港口运费",
+          "freightAwaitingDestinations": "先添加目的地再设置运费",
+          "shipmentMonth": "装运月份",
+          "cutAtLeastOne": "至少一个切割",
+          "cutSelection": "从目录中选择切割",
+          "cutQty": "数量",
+          "cutPrice": "报价",
+          "cutFloorAboveAsk": "底价高于报价",
+          "cutPlant": "分配工厂",
+          "paymentTerm": "付款条款",
+          "distributionChannel": "分发渠道"
+        },
+        "missingToPublish": "发布前需补充：",
+        "missingInSection": "本节缺失：",
+        "allSet": "已完成",
+        "expand": "详情",
+        "collapse": "隐藏",
+        "missingFieldsBanner": "还有 {{n}} 个字段未填——见上方标签"
       }
     },
     "brands": {

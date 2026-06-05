@@ -37,7 +37,7 @@ import {
   type Temperature,
 } from "@/lib/offerOptions";
 import { cn } from "@/lib/utils";
-import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3, Check, ChevronsUpDown, AlertTriangle } from "lucide-react";
+import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3, Check, ChevronsUpDown, AlertTriangle, ChevronDown } from "lucide-react";
 import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
 import { type CutRow } from "@/lib/cutRowTypes";
 import { emptyCutRow } from "@/lib/cutRowTypes";
@@ -47,7 +47,8 @@ import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
 import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
 import { EngineSettingsModal } from "@/components/supplier/CreateOfferV2/EngineSettingsModal";
 import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFillModal";
-import { computeCompletion } from "@/lib/offerCompletion";
+import { computeCompletion, sectionStatus, missingSections, type SectionStatus, type SectionKey } from "@/lib/offerCompletion";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { containerCapacityKg } from "@/lib/units";
 import { useCompanyPlants } from "@/hooks/useCompanyPlants";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -112,21 +113,117 @@ const EMPTY_LOGISTICS: LogisticsState = {
   primaryPricingIncoterm: null,
 };
 
-function Pill({ label, value, onClick, icon: Icon }: { label: string; value: React.ReactNode; onClick: () => void; icon: React.ElementType }) {
-  return (
+function Pill({
+  label, value, onClick, icon: Icon, status, tooltipContent,
+}: {
+  label: string;
+  value: React.ReactNode;
+  onClick: () => void;
+  icon: React.ElementType;
+  status?: "ok" | "partial" | "empty";
+  tooltipContent?: React.ReactNode;
+}) {
+  const ring =
+    status === "ok" ? "ring-1 ring-green-400/60"
+    : status === "partial" ? "ring-1 ring-amber-400/60"
+    : "";
+  const dot =
+    status === "ok" ? "bg-green-500"
+    : status === "partial" ? "bg-amber-500"
+    : "bg-muted-foreground/30";
+  const btn = (
     <button
       type="button"
       onClick={onClick}
-      className="flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-muted/50"
+      className={cn(
+        "relative flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-muted/50",
+        ring,
+      )}
     >
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
         <Icon size={16} />
       </span>
       <span className="flex min-w-0 flex-col">
-        <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">{label}</span>
+        <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+          {status && <span className={cn("inline-block h-1.5 w-1.5 rounded-full", dot)} aria-hidden />}
+          {label}
+        </span>
         <span className="truncate text-sm font-semibold text-foreground">{value}</span>
       </span>
     </button>
+  );
+  if (!tooltipContent) return btn;
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild>{btn}</TooltipTrigger>
+        <TooltipContent side="bottom" className="max-w-xs">{tooltipContent}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function MissingTooltip({
+  section, tk,
+}: { section: SectionStatus; tk: (k: string, fb: string) => string }) {
+  if (section.ok) return <span className="text-xs text-green-700">{tk("completion.allSet", "All set")}</span>;
+  return (
+    <div className="text-xs">
+      <p className="font-semibold mb-1">{tk("completion.missingInSection", "Missing in this section:")}</p>
+      <ul className="list-disc pl-4 space-y-0.5">
+        {section.missingFields.map((k) => (
+          <li key={k}>{tk(k, k.split(".").pop() ?? k)}</li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function MissingFieldsBanner({
+  sections, tk, onJump,
+}: {
+  sections: SectionStatus[];
+  tk: (k: string, fb: string) => string;
+  onJump: (key: SectionKey) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [dismissed, setDismissed] = useState(false);
+  const missing = sections.filter((s) => !s.ok);
+  if (dismissed || missing.length === 0) return null;
+  const totalFields = missing.reduce((a, s) => a + s.missingFields.length, 0);
+  return (
+    <div className="mt-3 rounded-lg border border-amber-300/60 bg-amber-50 dark:bg-amber-950/30 text-amber-900 dark:text-amber-200">
+      <div className="flex items-center gap-2 px-3 py-2">
+        <AlertTriangle size={14} className="shrink-0" />
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex-1 text-left text-xs font-medium"
+        >
+          {tk("completion.missingFieldsBanner", `${totalFields} fields missing to publish — see pills above`).replace("{{n}}", String(totalFields))}
+        </button>
+        <button type="button" onClick={() => setExpanded((v) => !v)} className="text-xs underline">
+          {expanded ? tk("completion.collapse", "Hide") : tk("completion.expand", "Details")}
+        </button>
+        <button type="button" onClick={() => setDismissed(true)} aria-label="Dismiss" className="ml-1 opacity-60 hover:opacity-100">
+          <X size={14} />
+        </button>
+      </div>
+      {expanded && (
+        <ul className="border-t border-amber-300/40 px-3 py-2 text-xs space-y-1.5">
+          {missing.map((s) => (
+            <li key={s.key}>
+              <button type="button" onClick={() => onJump(s.key)} className="font-semibold underline-offset-2 hover:underline">
+                {tk(s.labelKey, s.key)}
+              </button>
+              <span className="text-amber-900/80 dark:text-amber-200/80">
+                {": "}{s.missingFields.map((k) => tk(k, k.split(".").pop() ?? k)).join(", ")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
   );
 }
 
@@ -641,6 +738,25 @@ export default function SupplierCreateOfferV2() {
   );
   const completion = breakdown.total;
 
+  const sectionByKey = useMemo(() => {
+    const m: Record<string, SectionStatus> = {};
+    for (const s of breakdown.sections) m[s.key] = s;
+    return m;
+  }, [breakdown]);
+
+  const jumpToSection = (key: SectionKey) => {
+    switch (key) {
+      case "origin": openDrawer("origin"); break;
+      case "destinations": openDrawer("destinations"); break;
+      case "incoterm":
+      case "freight": openDrawer("freight"); break;
+      case "shipment": openDrawer("container"); break;
+      case "cuts": scrollTo("v2-section-cuts"); break;
+      case "payment": scrollTo("v2-section-payment"); break;
+      case "distribution": scrollTo("v2-section-distribution"); break;
+    }
+  };
+
   // Capacity % for review block
   const totalCutKg = useMemo(() => cuts.reduce((a, c) => a + (c.qty || 0), 0), [cuts]);
   const capacityPct = useMemo(() => {
@@ -938,6 +1054,8 @@ export default function SupplierCreateOfferV2() {
               : tk("strip.empty", "—")
           }
           onClick={() => openDrawer("origin")}
+          status={sectionStatus(sectionByKey.origin)}
+          tooltipContent={<MissingTooltip section={sectionByKey.origin} tk={tk} />}
         />
         <Pill
           icon={MapPin}
@@ -951,18 +1069,23 @@ export default function SupplierCreateOfferV2() {
               : tk("strip.empty", "—")
           }
           onClick={() => openDrawer("destinations")}
+          status={sectionStatus(sectionByKey.destinations)}
+          tooltipContent={<MissingTooltip section={sectionByKey.destinations} tk={tk} />}
         />
         <Pill
           icon={Box}
           label={tk("strip.container", "Container")}
           value={`${logistics.fclCount} × ${logistics.containerSize} · ${tk(`temp.${logistics.temperature}`, logistics.temperature)}`}
           onClick={() => openDrawer("container")}
+          status="ok"
         />
         <Pill
           icon={Truck}
           label={tk("strip.incoterm", "Incoterm")}
           value={logistics.incoterms.length > 0 ? logistics.incoterms.join(" · ") : tk("strip.empty", "—")}
           onClick={() => openDrawer("container")}
+          status={sectionStatus(sectionByKey.incoterm)}
+          tooltipContent={<MissingTooltip section={sectionByKey.incoterm} tk={tk} />}
         />
         <Pill
           icon={FileBadge}
@@ -979,6 +1102,8 @@ export default function SupplierCreateOfferV2() {
               : tk("strip.setFreight", "Set freight")
           }
           onClick={() => openDrawer("freight")}
+          status={sectionStatus(sectionByKey.freight)}
+          tooltipContent={<MissingTooltip section={sectionByKey.freight} tk={tk} />}
         />
         <Button
           type="button"
@@ -988,6 +1113,40 @@ export default function SupplierCreateOfferV2() {
           <Edit3 size={14} className="mr-1" />
           {tk("strip.editLogistics", "Edit logistics")}
         </Button>
+      </div>
+
+      {/* Missing fields banner + section status row */}
+      <MissingFieldsBanner sections={breakdown.sections} tk={tk} onJump={jumpToSection} />
+      <div className="mt-3 flex flex-wrap gap-2">
+        {(["cuts", "payment", "distribution"] as const).map((k) => {
+          const s = sectionByKey[k];
+          if (!s) return null;
+          const status = sectionStatus(s);
+          const cls = status === "ok"
+            ? "border-green-300 bg-green-50 text-green-800 dark:bg-green-950/30 dark:text-green-200"
+            : status === "partial"
+              ? "border-amber-300 bg-amber-50 text-amber-800 dark:bg-amber-950/30 dark:text-amber-200"
+              : "border-border bg-muted/30 text-muted-foreground";
+          return (
+            <TooltipProvider key={k} delayDuration={150}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    onClick={() => jumpToSection(k)}
+                    className={cn("inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium", cls)}
+                  >
+                    {status === "ok" ? <Check size={11} /> : <AlertTriangle size={11} />}
+                    {tk(s.labelKey, k)}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <MissingTooltip section={s} tk={tk} />
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          );
+        })}
       </div>
 
       {/* Placeholders for R3-R5 */}
@@ -1047,6 +1206,8 @@ export default function SupplierCreateOfferV2() {
         onSaveDraft={() => handleSubmit("draft")}
         onPublish={() => handleSubmit("active")}
         mode={mode}
+        missingSections={missingSections(breakdown).filter((s) => s.group !== "logistics" || s.key !== "shipment")}
+        translate={tk}
       />
       </>
       )}

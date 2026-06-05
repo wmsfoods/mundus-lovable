@@ -2873,6 +2873,46 @@
       },
       "validation": {
         "primaryPricingMissing": "Elige el incoterm de referencia antes de guardar."
+      },
+      "completion": {
+        "section": {
+          "origin": "Origen",
+          "destinations": "Destinos",
+          "incoterm": "Incoterm",
+          "freight": "Flete",
+          "shipment": "Embarque",
+          "cuts": "Ítems",
+          "payment": "Pago",
+          "distribution": "Distribución"
+        },
+        "field": {
+          "originCountry": "país de origen",
+          "originPort": "puerto de origen",
+          "originSinglePort": "solo un puerto de origen para FOB/EXW",
+          "destinationCountry": "al menos un país de destino",
+          "destinationPort": "al menos un puerto de destino",
+          "incoterm": "al menos un incoterm",
+          "primaryPricingIncoterm": "incoterm de precio (FOB/CFR)",
+          "globalFreight": "valor de flete global",
+          "destinationFreight": "flete por destino",
+          "portFreight": "flete por puerto",
+          "freightAwaitingDestinations": "añada destinos para fijar flete",
+          "shipmentMonth": "mes de embarque",
+          "cutAtLeastOne": "al menos un corte",
+          "cutSelection": "seleccione corte del catálogo",
+          "cutQty": "cantidad",
+          "cutPrice": "precio solicitado",
+          "cutFloorAboveAsk": "precio mínimo mayor que el solicitado",
+          "cutPlant": "planta asignada",
+          "paymentTerm": "forma de pago",
+          "distributionChannel": "canal de distribución"
+        },
+        "missingToPublish": "Falta para publicar:",
+        "missingInSection": "Falta en esta sección:",
+        "allSet": "Todo listo",
+        "expand": "Detalles",
+        "collapse": "Ocultar",
+        "missingFieldsBanner": "{{n}} campos faltan para publicar — vea las píldoras arriba"
       }
     },
     "brands": {

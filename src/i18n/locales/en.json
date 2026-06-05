@@ -2873,6 +2873,46 @@
       },
       "validation": {
         "primaryPricingMissing": "Pick the incoterm your prices reference before saving."
+      },
+      "completion": {
+        "section": {
+          "origin": "Origin",
+          "destinations": "Destinations",
+          "incoterm": "Incoterm",
+          "freight": "Freight",
+          "shipment": "Shipment",
+          "cuts": "Items",
+          "payment": "Payment",
+          "distribution": "Distribution"
+        },
+        "field": {
+          "originCountry": "origin country",
+          "originPort": "origin port",
+          "originSinglePort": "only one origin port allowed for FOB/EXW",
+          "destinationCountry": "at least one destination country",
+          "destinationPort": "at least one destination port",
+          "incoterm": "at least one incoterm",
+          "primaryPricingIncoterm": "primary pricing incoterm (FOB/CFR)",
+          "globalFreight": "global freight value",
+          "destinationFreight": "freight per destination",
+          "portFreight": "freight per port",
+          "freightAwaitingDestinations": "add destinations to set freight",
+          "shipmentMonth": "shipment month",
+          "cutAtLeastOne": "at least one cut",
+          "cutSelection": "select cut from catalog",
+          "cutQty": "quantity",
+          "cutPrice": "ask price",
+          "cutFloorAboveAsk": "floor price exceeds ask",
+          "cutPlant": "plant assignment",
+          "paymentTerm": "payment term",
+          "distributionChannel": "distribution channel"
+        },
+        "missingToPublish": "Missing to publish:",
+        "missingInSection": "Missing in this section:",
+        "allSet": "All set",
+        "expand": "Details",
+        "collapse": "Hide",
+        "missingFieldsBanner": "{{n}} fields missing to publish — see pills above"
       }
     },
     "brands": {
