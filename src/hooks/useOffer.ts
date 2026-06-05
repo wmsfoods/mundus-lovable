@@ -16,6 +16,8 @@ export type OfferDetailItem = {
   meat_specification: number | null;
   aging_method: string | null;
   packaging: string | null;
+  fob_ask_price: number | null;
+  fob_floor_price: number | null;
   customer_product: {
     id: string;
     name: string;
@@ -123,6 +125,8 @@ export function useOffer(id: string | undefined): UseOfferResult {
             packaging,
             photo_url,
             files_urls,
+            fob_ask_price,
+            fob_floor_price,
             customer_product:customer_products (
               id,
               name,
