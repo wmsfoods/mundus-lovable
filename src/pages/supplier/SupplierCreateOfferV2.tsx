@@ -900,6 +900,20 @@ export default function SupplierCreateOfferV2() {
                       </Chip>
                     ))}
                   </div>
+                  {drawerDraft.incoterms.includes("EXW") && (
+                    <div className="mt-2">
+                      <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
+                        {tk("drawer.s5.exwPickup", "EXW pickup location")}
+                      </label>
+                      <Input
+                        placeholder={tk("drawer.s5.exwPickupPh", "City, state — where buyer collects")}
+                        value={drawerDraft.exwPickupLocation}
+                        onChange={(e) =>
+                          setDrawerDraft((p) => ({ ...p, exwPickupLocation: e.target.value }))
+                        }
+                      />
+                    </div>
+                  )}
                 </Field>
                 <Field label={tk("drawer.s5.certifications", "Slaughter certifications")}>
                   <div className="flex flex-wrap gap-1">
