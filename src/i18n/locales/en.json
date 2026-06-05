@@ -2489,6 +2489,99 @@
         "cooldown_active": "You can re-invite this buyer after {{retry_after}}.",
         "max_reinvites_reached": "You have reached the maximum number of re-invites for this buyer."
       }
+    },
+    "createOfferV2": {
+      "title": "New offer",
+      "subtitle": "One screen · click any pill to edit",
+      "livePreview": "Live preview",
+      "unitLockedHint": "Cannot change unit after first selection",
+      "percentComplete": "{{n}}% complete",
+      "readyToPublish": "Ready to publish",
+      "strip": {
+        "from": "From",
+        "toCountries": "To countries",
+        "container": "Container",
+        "incoterm": "Incoterm",
+        "certifications": "Certifications",
+        "freight": "Freight",
+        "empty": "—",
+        "setFreight": "Set freight",
+        "countriesPortsSummary": "{{c}} countries · {{p}} ports",
+        "editLogistics": "Edit logistics"
+      },
+      "temp": {
+        "Frozen": "Frozen",
+        "Chilled": "Chilled"
+      },
+      "placeholders": {
+        "productsTitle": "Products & pricing",
+        "productsHint": "Coming in R3 — cuts table, brand picker, per-cut photo & files",
+        "paymentTitle": "Payment terms",
+        "paymentHint": "Coming in R4",
+        "distributionTitle": "Distribution",
+        "distributionHint": "Coming in R4"
+      },
+      "actionBar": {
+        "comingSoon": "Action bar — coming in R5",
+        "cancel": "Cancel",
+        "saveDraft": "Save draft",
+        "publish": "Publish"
+      },
+      "drawer": {
+        "title": "Edit logistics",
+        "subtitle": "Origin, destinations, container & items — used to compute freight",
+        "loading": "Loading countries & ports…",
+        "s1": {
+          "title": "Origin",
+          "country": "Country",
+          "port": "Port",
+          "selectCountry": "Select…",
+          "selectPort": "Select…"
+        },
+        "s2": {
+          "title": "Destinations",
+          "summary": "{{c}} countries · {{p}} ports",
+          "search": "Search countries…",
+          "empty": "No countries match.",
+          "region": {
+            "All": "All",
+            "Americas": "Americas",
+            "Asia": "Asia",
+            "Europe": "Europe",
+            "Middle East": "Middle East",
+            "Africa": "Africa",
+            "Oceania": "Oceania"
+          }
+        },
+        "s3": {
+          "title": "Freight setup",
+          "toggleTitle": "Same freight for all markets and ports",
+          "toggleHint": "Apply one freight cost across every selected port",
+          "globalFreightLabel": "Freight per {{size}} FCL · applies to {{c}} countries & {{p}} ports"
+        },
+        "s4": {
+          "title": "Per-country freight",
+          "portsSelected": "{{n}} of {{m}} ports",
+          "portsOfEntry": "Ports of entry",
+          "noPorts": "No ports listed for this country.",
+          "sameAllPorts": "Same freight all ports?",
+          "freightUSD": "Freight USD"
+        },
+        "s5": {
+          "title": "Container & Incoterm",
+          "containerSize": "Container size",
+          "fclCount": "Number of containers (FCL)",
+          "temperature": "Temperature",
+          "incoterms": "Incoterms",
+          "certifications": "Slaughter certifications",
+          "shipmentReady": "Shipment ready"
+        },
+        "footer": {
+          "summary": "{{c}} destinations · {{p}} ports · {{k}} FCL · {{i}}",
+          "cancel": "Cancel",
+          "save": "Save & search freight"
+        }
+      }
     }
   },
   "dealDetail": {

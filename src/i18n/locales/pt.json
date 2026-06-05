@@ -2489,6 +2489,99 @@
         "cooldown_active": "Você poderá reconvidar este comprador após {{retry_after}}.",
         "max_reinvites_reached": "Limite de reconvites atingido para este comprador."
       }
+    },
+    "createOfferV2": {
+      "title": "Nova oferta",
+      "subtitle": "Uma tela · clique em qualquer pill para editar",
+      "livePreview": "Pré-visualização",
+      "unitLockedHint": "Não é possível alterar a unidade após a primeira seleção",
+      "percentComplete": "{{n}}% completo",
+      "readyToPublish": "Pronto para publicar",
+      "strip": {
+        "from": "Origem",
+        "toCountries": "Países destino",
+        "container": "Container",
+        "incoterm": "Incoterm",
+        "certifications": "Certificações",
+        "freight": "Frete",
+        "empty": "—",
+        "setFreight": "Definir frete",
+        "countriesPortsSummary": "{{c}} países · {{p}} portos",
+        "editLogistics": "Editar logística"
+      },
+      "temp": {
+        "Frozen": "Congelado",
+        "Chilled": "Resfriado"
+      },
+      "placeholders": {
+        "productsTitle": "Produtos & preços",
+        "productsHint": "Em breve no R3 — tabela de cortes, marca, foto e arquivos por corte",
+        "paymentTitle": "Condições de pagamento",
+        "paymentHint": "Em breve no R4",
+        "distributionTitle": "Distribuição",
+        "distributionHint": "Em breve no R4"
+      },
+      "actionBar": {
+        "comingSoon": "Barra de ações — em breve no R5",
+        "cancel": "Cancelar",
+        "saveDraft": "Salvar rascunho",
+        "publish": "Publicar"
+      },
+      "drawer": {
+        "title": "Editar logística",
+        "subtitle": "Origem, destinos, container & itens — usados para calcular o frete",
+        "loading": "Carregando países e portos…",
+        "s1": {
+          "title": "Origem",
+          "country": "País",
+          "port": "Porto",
+          "selectCountry": "Selecione…",
+          "selectPort": "Selecione…"
+        },
+        "s2": {
+          "title": "Destinos",
+          "summary": "{{c}} países · {{p}} portos",
+          "search": "Buscar países…",
+          "empty": "Nenhum país encontrado.",
+          "region": {
+            "All": "Todos",
+            "Americas": "Américas",
+            "Asia": "Ásia",
+            "Europe": "Europa",
+            "Middle East": "Oriente Médio",
+            "Africa": "África",
+            "Oceania": "Oceania"
+          }
+        },
+        "s3": {
+          "title": "Configuração de frete",
+          "toggleTitle": "Mesmo frete para todos os mercados e portos",
+          "toggleHint": "Aplica um único custo de frete para todos os portos selecionados",
+          "globalFreightLabel": "Frete por FCL {{size}} · aplica-se a {{c}} países & {{p}} portos"
+        },
+        "s4": {
+          "title": "Frete por país",
+          "portsSelected": "{{n}} de {{m}} portos",
+          "portsOfEntry": "Portos de entrada",
+          "noPorts": "Nenhum porto listado para este país.",
+          "sameAllPorts": "Mesmo frete em todos os portos?",
+          "freightUSD": "Frete USD"
+        },
+        "s5": {
+          "title": "Container & Incoterm",
+          "containerSize": "Tamanho do container",
+          "fclCount": "Número de containers (FCL)",
+          "temperature": "Temperatura",
+          "incoterms": "Incoterms",
+          "certifications": "Certificações de abate",
+          "shipmentReady": "Embarque pronto"
+        },
+        "footer": {
+          "summary": "{{c}} destinos · {{p}} portos · {{k}} FCL · {{i}}",
+          "cancel": "Cancelar",
+          "save": "Salvar & buscar frete"
+        }
+      }
     }
   },
   "dealDetail": {

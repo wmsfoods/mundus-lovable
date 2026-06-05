@@ -2475,6 +2475,99 @@
         "cooldown_active": "您可在 {{retry_after}} 后重新邀请该买家。",
         "max_reinvites_reached": "您已达到该买家的最大重邀请次数。"
       }
+    },
+    "createOfferV2": {
+      "title": "新建报价",
+      "subtitle": "一个页面 · 点击任意标签编辑",
+      "livePreview": "实时预览",
+      "unitLockedHint": "首次选择后无法更改单位",
+      "percentComplete": "{{n}}% 完成",
+      "readyToPublish": "可以发布",
+      "strip": {
+        "from": "起运",
+        "toCountries": "目的国家",
+        "container": "集装箱",
+        "incoterm": "贸易术语",
+        "certifications": "认证",
+        "freight": "运费",
+        "empty": "—",
+        "setFreight": "设置运费",
+        "countriesPortsSummary": "{{c}} 个国家 · {{p}} 个港口",
+        "editLogistics": "编辑物流"
+      },
+      "temp": {
+        "Frozen": "冷冻",
+        "Chilled": "冷藏"
+      },
+      "placeholders": {
+        "productsTitle": "产品与定价",
+        "productsHint": "R3 即将推出 — 分割表、品牌选择器、每个分割的照片和文件",
+        "paymentTitle": "付款条件",
+        "paymentHint": "R4 即将推出",
+        "distributionTitle": "分销",
+        "distributionHint": "R4 即将推出"
+      },
+      "actionBar": {
+        "comingSoon": "操作栏 — R5 即将推出",
+        "cancel": "取消",
+        "saveDraft": "保存草稿",
+        "publish": "发布"
+      },
+      "drawer": {
+        "title": "编辑物流",
+        "subtitle": "起运、目的地、集装箱与商品 — 用于计算运费",
+        "loading": "正在加载国家和港口…",
+        "s1": {
+          "title": "起运地",
+          "country": "国家",
+          "port": "港口",
+          "selectCountry": "选择…",
+          "selectPort": "选择…"
+        },
+        "s2": {
+          "title": "目的地",
+          "summary": "{{c}} 个国家 · {{p}} 个港口",
+          "search": "搜索国家…",
+          "empty": "未找到匹配的国家。",
+          "region": {
+            "All": "全部",
+            "Americas": "美洲",
+            "Asia": "亚洲",
+            "Europe": "欧洲",
+            "Middle East": "中东",
+            "Africa": "非洲",
+            "Oceania": "大洋洲"
+          }
+        },
+        "s3": {
+          "title": "运费设置",
+          "toggleTitle": "所有市场和港口使用相同运费",
+          "toggleHint": "对所有选定的港口应用统一的运费",
+          "globalFreightLabel": "每 {{size}} FCL 运费 · 适用于 {{c}} 个国家和 {{p}} 个港口"
+        },
+        "s4": {
+          "title": "各国运费",
+          "portsSelected": "{{m}} 个港口中的 {{n}} 个",
+          "portsOfEntry": "入境港口",
+          "noPorts": "该国没有可用港口。",
+          "sameAllPorts": "所有港口使用相同运费?",
+          "freightUSD": "运费 USD"
+        },
+        "s5": {
+          "title": "集装箱与贸易术语",
+          "containerSize": "集装箱尺寸",
+          "fclCount": "集装箱数量 (FCL)",
+          "temperature": "温度",
+          "incoterms": "贸易术语",
+          "certifications": "屠宰认证",
+          "shipmentReady": "装运准备"
+        },
+        "footer": {
+          "summary": "{{c}} 个目的地 · {{p}} 个港口 · {{k}} FCL · {{i}}",
+          "cancel": "取消",
+          "save": "保存并搜索运费"
+        }
+      }
     }
   },
   "dealDetail": {
