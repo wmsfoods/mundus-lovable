@@ -30,6 +30,8 @@ import { cn } from "@/lib/utils";
 import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3 } from "lucide-react";
 import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
 import { type CutRow } from "@/lib/cutRowTypes";
+import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
+import { DistributionCard, type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
@@ -166,6 +168,14 @@ export default function SupplierCreateOfferV2() {
   // R3 — cuts state (in-memory only; persistence comes in R5)
   const [cuts, setCuts] = useState<CutRow[]>([]);
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+
+  // R4 — payment + distribution state (in-memory only; persistence comes in R5)
+  const [paymentTerms, setPaymentTerms] = useState<string>("");
+  const [distribution, setDistribution] = useState<DistributionValue>({
+    marketplace: true,
+    allCustomers: false,
+    specificCustomerIds: [],
+  });
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [drawerDraft, setDrawerDraft] = useState<LogisticsState>(EMPTY_LOGISTICS);
@@ -429,16 +439,8 @@ export default function SupplierCreateOfferV2() {
           setCutRegion={setCutRegion}
         />
         <div className="grid gap-4 sm:grid-cols-2">
-          <SectionPlaceholder
-            title={tk("placeholders.paymentTitle", "Payment terms")}
-            hint={tk("placeholders.paymentHint", "Coming in R4")}
-            height={180}
-          />
-          <SectionPlaceholder
-            title={tk("placeholders.distributionTitle", "Distribution")}
-            hint={tk("placeholders.distributionHint", "Coming in R4")}
-            height={180}
-          />
+          <PaymentTermsCard value={paymentTerms} onChange={setPaymentTerms} />
+          <DistributionCard value={distribution} onChange={setDistribution} />
         </div>
       </div>
 
