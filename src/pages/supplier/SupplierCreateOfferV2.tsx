@@ -392,9 +392,10 @@ export default function SupplierCreateOfferV2() {
   };
 
   // Top strip computed values
-  const originPortFirst = logistics.originPortIds[0]
+  const originPort = logistics.originPortIds[0]
     ? catalog.ports.find((p) => p.id === logistics.originPortIds[0])
     : null;
+  const originPortExtraCount = Math.max(0, logistics.originPortIds.length - 1);
   const originCountry = logistics.originCountryId ? catalog.getCountryById(logistics.originCountryId) : null;
 
   const destPortCount = logistics.destinations.reduce((acc, d) => acc + d.selectedPortIds.length, 0);
