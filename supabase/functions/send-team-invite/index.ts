@@ -141,8 +141,7 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const SERVICE_ROLE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const ANON_KEY = Deno.env.get('SUPABASE_ANON_KEY')!
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY')
-    const RESEND_API_KEY = Deno.env.get('resend_mundus')
+    const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 
     const userClient = createClient(SUPABASE_URL, ANON_KEY, { global: { headers: { Authorization: authHeader } } })
     const { data: claims } = await userClient.auth.getClaims(authHeader.replace('Bearer ', ''))
@@ -203,13 +202,12 @@ Deno.serve(async (req) => {
     let emailSent = false
     let emailError: string | null = null
     let resendId: string | null = null
-    if (LOVABLE_API_KEY && RESEND_API_KEY) {
-      const resp = await fetch('https://connector-gateway.lovable.dev/resend/emails', {
+    if (RESEND_API_KEY) {
+      const resp = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-          'X-Connection-Api-Key': RESEND_API_KEY,
+          'Authorization': `Bearer ${RESEND_API_KEY}`,
         },
         body: JSON.stringify({
           from: 'Mundus Trade <contact@mundustrade.com>',
@@ -226,6 +224,7 @@ Deno.serve(async (req) => {
         } catch { /* ignore */ }
       } else {
         emailError = `resend_${resp.status}: ${await resp.text()}`
+        console.warn('[send-team-invite]', emailError)
       }
     } else {
       emailError = 'missing_resend_credentials'
