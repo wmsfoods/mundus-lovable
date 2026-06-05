@@ -25,6 +25,8 @@ export type SubmitLogistics = {
   globalFreight: string;
   globalInsurance: string;
   exwPickupLocation: string;
+  /** Only relevant when incoterms include FOB or EXW. CFR | FOB | null. */
+  primaryPricingIncoterm: "CFR" | "FOB" | null;
 };
 
 export type SubmitDistribution = {
@@ -114,6 +116,12 @@ export function validateForPublish(input: SubmitInput): string | null {
   }
   if (l.destinations.length === 0) return "missingDestinations";
   if (l.incoterms.length === 0) return "missingIncoterm";
+  if (
+    (l.incoterms.includes("FOB") || l.incoterms.includes("EXW")) &&
+    !l.primaryPricingIncoterm
+  ) {
+    return "primaryPricingMissing";
+  }
   if (cuts.length === 0) return "missingCuts";
   for (const c of cuts) {
     if (!c.cutId) return "missingCutResolution";
