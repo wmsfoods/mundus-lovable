@@ -509,6 +509,8 @@ export async function updateOfferV2(
     notes: string | null;
     photo_url: string | null;
     files_urls: string[] | null;
+    fob_ask_price: number | null;
+    fob_floor_price: number | null;
   };
   const itemsRows: OfferItemInsert[] = [];
   for (let i = 0; i < cuts.length; i++) {
@@ -542,6 +544,11 @@ export async function updateOfferV2(
           : c.existingFilesPaths && c.existingFilesPaths.length > 0
             ? c.existingFilesPaths
             : null,
+      fob_ask_price: c.fobAskPrice != null && c.fobAskPrice > 0 ? c.fobAskPrice : null,
+      fob_floor_price:
+        c.fobFloorPrice != null && c.fobFloorPrice > 0 && c.fobAskPrice != null && c.fobFloorPrice <= c.fobAskPrice
+          ? c.fobFloorPrice
+          : null,
     });
   }
   if (itemsRows.length > 0) {
