@@ -50,6 +50,8 @@ export type OfferDetailed = {
   is_kosher: boolean | null;
   observation: string | null;
   exw_pickup_location: string | null;
+  primary_pricing_incoterm: string | null;
+  pricing_includes_freight: boolean | null;
   created_at: string | null;
   items: OfferDetailItem[];
   markets: { market: { id: string; country: { english_name: string | null } | null } | null }[];
@@ -105,6 +107,8 @@ export function useOffer(id: string | undefined): UseOfferResult {
           is_kosher,
           observation,
           exw_pickup_location,
+          primary_pricing_incoterm,
+          pricing_includes_freight,
           created_at,
           items:offer_items (
             id,
