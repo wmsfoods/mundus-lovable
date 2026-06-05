@@ -744,6 +744,15 @@
         "matchesPrimary": "与供应商报价的贸易术语一致 — 无需调整",
         "estimatedNote": "估算 — 最终价格取决于供应商报价",
         "contactSupplier": "需要运费报价 — 请联系供应商"
+      },
+      "logisticsOverview": {
+        "title": "物流概览",
+        "port": "港口",
+        "country": "国家",
+        "freight": "运费 (USD)",
+        "insurance": "保险 (USD)",
+        "cfrPerKg": "CFR / kg",
+        "cifPerKg": "CIF / kg"
       }
     },
     "bid": {

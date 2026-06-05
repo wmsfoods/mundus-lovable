@@ -749,6 +749,15 @@
         "matchesPrimary": "Mesmo incoterm cotado pelo fornecedor — sem ajuste",
         "estimatedNote": "Estimado — preço final depende da cotação do fornecedor",
         "contactSupplier": "Cotação de frete necessária — contate o fornecedor"
+      },
+      "logisticsOverview": {
+        "title": "Resumo logístico",
+        "port": "Porto",
+        "country": "País",
+        "freight": "Frete (USD)",
+        "insurance": "Seguro (USD)",
+        "cfrPerKg": "CFR / kg",
+        "cifPerKg": "CIF / kg"
       }
     },
     "bid": {

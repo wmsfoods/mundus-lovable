@@ -30,7 +30,13 @@ export type OfferCardsProps = {
   totalQtyKg: number;
   containerLabel: string;
   shipmentLabel: string;
-  origin: { country: string | null; port?: string | null; code?: string | null };
+  origin: {
+    country: string | null;
+    port?: string | null;
+    code?: string | null;
+    extraCount?: number;
+    allPorts?: string[];
+  };
   destination: {
     country: string | null;
     port?: string | null;
@@ -42,6 +48,7 @@ export type OfferCardsProps = {
   paymentTerms?: string | null;
   containerSize?: string | null;
   containerCount?: number | null;
+  destinationPortsCount?: number;
   createdAt?: string | null;
   supplierName?: string | null;
   items: OfferCardItem[];
@@ -57,7 +64,7 @@ export function OfferDetailCards(props: OfferCardsProps) {
     offerNumber, title, category, condition,
     totalValueUsd, totalQtyKg, containerLabel, shipmentLabel,
     origin, destination, incoterms, paymentTerms,
-    containerSize, containerCount, createdAt,
+    containerSize, containerCount, destinationPortsCount, createdAt,
     supplierName,
     items, showSupplierPricing, gallery, illustrativeLabel, unit, statusPill,
   } = props;
@@ -128,7 +135,26 @@ export function OfferDetailCards(props: OfferCardsProps) {
           <div className="ofc-route-place">
             <div className="ofc-route-label">Origin</div>
             <div className="ofc-route-country">{origin.country || "—"}</div>
-            {origin.port && <div className="ofc-route-port">{origin.port}</div>}
+            {origin.port && (
+              <div className="ofc-route-port">
+                {origin.extraCount && origin.allPorts && origin.allPorts.length > 1 ? (
+                  <span className="dest-hover-wrap">
+                    {origin.port}
+                    <span style={{ fontSize: 11, fontWeight: 500, color: "#6b7280", marginLeft: 4 }}>
+                      +{origin.extraCount}
+                    </span>
+                    <div className="dest-tooltip">
+                      <div className="dest-tooltip-title">All origin ports:</div>
+                      {origin.allPorts.map((n, i) => (
+                        <div key={i} className="dest-tooltip-row">📍 {n}</div>
+                      ))}
+                    </div>
+                  </span>
+                ) : (
+                  origin.port
+                )}
+              </div>
+            )}
           </div>
         </div>
 
@@ -300,6 +326,11 @@ export function OfferDetailCards(props: OfferCardsProps) {
           <div className="ofc-meta-label">Container</div>
           <div className="ofc-meta-value">
             {containerCount ?? 1} × {containerSize || "—"}
+            {destinationPortsCount && destinationPortsCount > 0 ? (
+              <span style={{ color: "#6b7280", fontWeight: 400, fontSize: 12 }}>
+                {" · "}{destinationPortsCount} {destinationPortsCount === 1 ? "destination port" : "destination ports"}
+              </span>
+            ) : null}
           </div>
         </div>
         <div className="ofc-meta-cell">
