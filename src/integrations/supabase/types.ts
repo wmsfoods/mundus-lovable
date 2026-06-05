@@ -5159,16 +5159,20 @@ export type Database = {
         Row: {
           aging_method: string | null
           amount: number
+          brand_id: string | null
           condition: string
           created_at: string | null
           customer_product_id: string
+          files_urls: string[] | null
           id: string
           maximum_amount: number
           meat_specification: number | null
           minimum_amount: number
           minimum_price: number
+          notes: string | null
           offer_id: string
           packaging: string | null
+          photo_url: string | null
           plant_id: string | null
           plant_number: string | null
           price: number
@@ -5176,16 +5180,20 @@ export type Database = {
         Insert: {
           aging_method?: string | null
           amount: number
+          brand_id?: string | null
           condition?: string
           created_at?: string | null
           customer_product_id: string
+          files_urls?: string[] | null
           id?: string
           maximum_amount: number
           meat_specification?: number | null
           minimum_amount: number
           minimum_price: number
+          notes?: string | null
           offer_id: string
           packaging?: string | null
+          photo_url?: string | null
           plant_id?: string | null
           plant_number?: string | null
           price: number
@@ -5193,21 +5201,32 @@ export type Database = {
         Update: {
           aging_method?: string | null
           amount?: number
+          brand_id?: string | null
           condition?: string
           created_at?: string | null
           customer_product_id?: string
+          files_urls?: string[] | null
           id?: string
           maximum_amount?: number
           meat_specification?: number | null
           minimum_amount?: number
           minimum_price?: number
+          notes?: string | null
           offer_id?: string
           packaging?: string | null
+          photo_url?: string | null
           plant_id?: string | null
           plant_number?: string | null
           price?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "offer_items_brand_id_fkey"
+            columns: ["brand_id"]
+            isOneToOne: false
+            referencedRelation: "supplier_brands"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "offer_items_customer_product_id_fkey"
             columns: ["customer_product_id"]
@@ -7062,6 +7081,38 @@ export type Database = {
           },
         ]
       }
+      supplier_brands: {
+        Row: {
+          company_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          company_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          company_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "supplier_brands_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       supplier_customer_links: {
         Row: {
           buyer_company_id: string | null
@@ -7618,6 +7669,10 @@ export type Database = {
         }
         Returns: Json
       }
+      create_or_find_supplier_brand: {
+        Args: { p_company_id: string; p_name: string }
+        Returns: Json
+      }
       create_supplier_invite: {
         Args: {
           p_company_name?: string
@@ -7843,6 +7898,13 @@ export type Database = {
         Returns: string
       }
       revoke_supplier_link: { Args: { p_link_id: string }; Returns: Json }
+      search_supplier_brands: {
+        Args: { p_company_id: string; p_query?: string }
+        Returns: {
+          id: string
+          name: string
+        }[]
+      }
       submit_initial_bid: {
         Args: {
           p_buyer_company_id: string
