@@ -2638,6 +2638,36 @@
           "typeValue": "输入值…",
           "disabledHint": "添加 2+ 条分割以启用"
         }
+      },
+      "payment": {
+        "title": "付款条款",
+        "subtitle": "与买家约定的预付/余款比例",
+        "loading": "加载中…",
+        "empty": "暂无可用付款条款",
+        "hint": "定义预付/余款的分配方式。可按报价编辑。"
+      },
+      "distribution": {
+        "title": "分发",
+        "subtitle": "选择此报价的展示范围 — 可自由组合",
+        "marketplaceLabel": "市场",
+        "marketplaceDesc": "对平台上的所有买家可见。",
+        "allLabel": "我的所有客户",
+        "allDesc": "通知所有已连接的客户(SCL 已接受)。",
+        "specificLabel": "指定客户",
+        "specificDesc": "仅发送给您选择的客户。",
+        "loading": "正在加载客户…",
+        "emptyCustomers": "您还没有已连接的客户。请通过 我的客户 → 邀请客户 连接。",
+        "searchPlaceholder": "搜索客户…",
+        "countSummary": "已选 {{n}} / 共 {{t}}",
+        "selectAll": "全选",
+        "clear": "清除",
+        "noMatch": "没有匹配的客户。",
+        "hintNone": "请至少选择一种分发方式以发布。",
+        "hintPickCustomers": "请至少选择一位客户,或关闭指定模式。",
+        "sumPrefix": "发布到:",
+        "sumMarketplace": "市场",
+        "sumAll": "全部客户({{n}})",
+        "sumSpecific": "{{n}} 位指定"
       }
     }
   },

@@ -2652,6 +2652,36 @@
           "typeValue": "Digite o valor…",
           "disabledHint": "Adicione 2+ cortes para habilitar"
         }
+      },
+      "payment": {
+        "title": "Condições de pagamento",
+        "subtitle": "Divisão adiantamento / saldo acordada com o comprador",
+        "loading": "Carregando…",
+        "empty": "Nenhuma condição disponível",
+        "hint": "Define a divisão adiantamento/saldo. Editável por oferta."
+      },
+      "distribution": {
+        "title": "Distribuição",
+        "subtitle": "Onde a oferta será exibida — combine livremente",
+        "marketplaceLabel": "Marketplace",
+        "marketplaceDesc": "Visível a todos os compradores da plataforma.",
+        "allLabel": "Todos os meus clientes",
+        "allDesc": "Notifica todos os clientes conectados (SCL aceito).",
+        "specificLabel": "Clientes específicos",
+        "specificDesc": "Envia somente aos clientes que você escolher.",
+        "loading": "Carregando clientes…",
+        "emptyCustomers": "Você ainda não tem clientes conectados. Conecte via Meus Clientes → Convidar Cliente.",
+        "searchPlaceholder": "Buscar clientes…",
+        "countSummary": "{{n}} selecionados de {{t}}",
+        "selectAll": "Selecionar todos",
+        "clear": "Limpar",
+        "noMatch": "Nenhum cliente corresponde à busca.",
+        "hintNone": "Selecione ao menos uma opção de distribuição para publicar.",
+        "hintPickCustomers": "Escolha ao menos um cliente ou desative Específicos.",
+        "sumPrefix": "Publicando em: ",
+        "sumMarketplace": "Marketplace",
+        "sumAll": "Todos os clientes ({{n}})",
+        "sumSpecific": "{{n}} específicos"
       }
     }
   },

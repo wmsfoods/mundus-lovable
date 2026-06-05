@@ -2652,6 +2652,36 @@
           "typeValue": "Type value…",
           "disabledHint": "Add 2+ cuts to enable apply-to-all"
         }
+      },
+      "payment": {
+        "title": "Payment terms",
+        "subtitle": "Advance / balance split agreed with the buyer",
+        "loading": "Loading…",
+        "empty": "No payment terms available",
+        "hint": "Defines advance/balance split agreed with buyer. Editable per offer."
+      },
+      "distribution": {
+        "title": "Distribution",
+        "subtitle": "Where this offer will be shown — combine freely",
+        "marketplaceLabel": "Marketplace",
+        "marketplaceDesc": "Visible to all buyers on the platform.",
+        "allLabel": "All my customers",
+        "allDesc": "Notify every connected customer (accepted SCL links).",
+        "specificLabel": "Specific customers",
+        "specificDesc": "Send only to the customers you pick.",
+        "loading": "Loading customers…",
+        "emptyCustomers": "You don't have any connected customers yet. Connect via My Customers → Invite Customer.",
+        "searchPlaceholder": "Search customers…",
+        "countSummary": "{{n}} selected of {{t}}",
+        "selectAll": "Select all",
+        "clear": "Clear",
+        "noMatch": "No customers match your search.",
+        "hintNone": "Select at least one distribution option to publish.",
+        "hintPickCustomers": "Pick at least one customer or turn Specific off.",
+        "sumPrefix": "Publishing to: ",
+        "sumMarketplace": "Marketplace",
+        "sumAll": "All customers ({{n}})",
+        "sumSpecific": "{{n}} specific"
       }
     }
   },
