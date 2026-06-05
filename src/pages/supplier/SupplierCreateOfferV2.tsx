@@ -412,6 +412,29 @@ export default function SupplierCreateOfferV2() {
     }));
   };
 
+  const setDestSameInsurance = (countryId: string, value: string) => {
+    setDrawerDraft((prev) => ({
+      ...prev,
+      destinations: prev.destinations.map((d) => {
+        if (d.countryId !== countryId) return d;
+        if (d.insurance.mode === "same") return { ...d, insurance: { mode: "same", same: value } };
+        return { ...d, insurance: { mode: "same", same: value } };
+      }),
+    }));
+  };
+  const setDestPerPortInsurance = (countryId: string, portId: string, value: string) => {
+    setDrawerDraft((prev) => ({
+      ...prev,
+      destinations: prev.destinations.map((d) => {
+        if (d.countryId !== countryId) return d;
+        const cur = d.insurance.mode === "perPort" ? d.insurance.perPort : {};
+        return { ...d, insurance: { mode: "perPort", perPort: { ...cur, [portId]: value } } };
+      }),
+    }));
+  };
+
+  const cifEnabled = drawerDraft.incoterms.includes("CIF");
+
   const draftIncotermsText = drawerDraft.incoterms.join(" · ") || "—";
   const draftDestPortCount = drawerDraft.destinations.reduce((a, d) => a + d.selectedPortIds.length, 0);
 
