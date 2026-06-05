@@ -856,14 +856,27 @@ export default function SupplierCreateOfferV2() {
                           </div>
                         )}
                         {d.freight.mode === "same" ? (
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">{tk("drawer.s4.freightUSD", "Freight USD")}</span>
-                            <Input
-                              type="number"
-                              className="w-32"
-                              value={d.freight.same}
-                              onChange={(e) => setDestSameFreight(d.countryId, e.target.value)}
-                            />
+                          <div className="flex flex-wrap items-center gap-3">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">{tk("drawer.s4.freightUSD", "Freight USD")}</span>
+                              <Input
+                                type="number"
+                                className="w-32"
+                                value={d.freight.same}
+                                onChange={(e) => setDestSameFreight(d.countryId, e.target.value)}
+                              />
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs text-muted-foreground">{tk("drawer.s4.insuranceUSD", "Insurance USD")}</span>
+                              <Input
+                                type="number"
+                                className="w-24"
+                                disabled={!cifEnabled}
+                                placeholder={cifEnabled ? "0" : "N/A"}
+                                value={d.insurance.mode === "same" ? d.insurance.same : ""}
+                                onChange={(e) => setDestSameInsurance(d.countryId, e.target.value)}
+                              />
+                            </div>
                           </div>
                         ) : d.freight.mode === "perPort" ? (
                           <div className="flex flex-col gap-2">
@@ -871,6 +884,7 @@ export default function SupplierCreateOfferV2() {
                               const port = allPorts.find((p) => p.id === pid);
                               if (!port) return null;
                               const perPort = (d.freight as { mode: "perPort"; perPort: Record<string, string> }).perPort;
+                              const perPortIns = d.insurance.mode === "perPort" ? d.insurance.perPort : {};
                               return (
                                 <div key={pid} className="flex items-center gap-2 text-xs">
                                   <span className="flex-1 truncate">
@@ -882,6 +896,17 @@ export default function SupplierCreateOfferV2() {
                                     className="w-28"
                                     value={perPort[pid] ?? ""}
                                     onChange={(e) => setDestPerPortFreight(d.countryId, pid, e.target.value)}
+                                  />
+                                  <span className="text-muted-foreground">
+                                    {tk("drawer.s4.insShort", "Ins")}
+                                  </span>
+                                  <Input
+                                    type="number"
+                                    className="w-20"
+                                    disabled={!cifEnabled}
+                                    placeholder={cifEnabled ? "0" : "N/A"}
+                                    value={perPortIns[pid] ?? ""}
+                                    onChange={(e) => setDestPerPortInsurance(d.countryId, pid, e.target.value)}
                                   />
                                 </div>
                               );
