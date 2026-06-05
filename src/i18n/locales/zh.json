@@ -2894,6 +2894,8 @@
           "cutQty": "数量",
           "cutPrice": "报价",
           "cutFloorAboveAsk": "底价高于报价",
+          "fobAskPrice": "FOB 报价",
+          "fobFloorAboveAsk": "FOB 底价高于 FOB 报价",
           "cutPlant": "分配工厂",
           "paymentTerm": "付款条款",
           "distributionChannel": "分发渠道"
