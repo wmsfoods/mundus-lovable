@@ -803,7 +803,54 @@ export default function SupplierCreateOfferV2() {
   };
 
   const saveDrawer = () => {
+    const refChanged =
+      drawerDraft.pricingReferencePortId !== logistics.pricingReferencePortId;
+    const hasPricedCuts = cuts.some((c) => c.askPrice > 0);
+    if (refChanged && hasPricedCuts) {
+      setRefChangeModal({ open: true, nextLogistics: drawerDraft, mode: "keepFob" });
+      return;
+    }
     setLogistics(drawerDraft);
+    setDrawerOpen(false);
+  };
+
+  const freightPerKgForPort = (l: LogisticsState, portId: string, totalKg: number): number => {
+    if (!(totalKg > 0)) return 0;
+    if (l.sameFreightGlobal) return (parseFloat(l.globalFreight) || 0) / totalKg;
+    for (const d of l.destinations) {
+      if (!d.selectedPortIds.includes(portId)) continue;
+      const usd =
+        d.freight.mode === "same"
+          ? parseFloat(d.freight.same) || 0
+          : parseFloat(d.freight.perPort[portId] ?? "") || 0;
+      return usd / totalKg;
+    }
+    return 0;
+  };
+
+  const applyRefChange = (mode: "keepFob" | "keepAsk") => {
+    const next = refChangeModal.nextLogistics;
+    if (!next) return;
+    if (mode === "keepFob") {
+      // Determine current FOB per-kg per cut (using OLD reference), then recompute ASK with new reference.
+      const totalKg = cuts.reduce((s, c) => s + (c.qty || 0), 0);
+      const oldRef = logistics.pricingReferencePortId;
+      const newRef = next.pricingReferencePortId;
+      const oldFreightPerKg = oldRef ? freightPerKgForPort(logistics, oldRef, totalKg) : 0;
+      const newFreightPerKg = newRef ? freightPerKgForPort(next, newRef, totalKg) : 0;
+      setCuts(
+        cuts.map((c) => {
+          if (!(c.askPrice > 0)) return c;
+          const fob = c.askPrice - oldFreightPerKg;
+          const newAsk = fob + newFreightPerKg;
+          const oldFloorFob = c.floorPrice > 0 ? c.floorPrice - oldFreightPerKg : 0;
+          const newFloor = oldFloorFob > 0 ? oldFloorFob + newFreightPerKg : c.floorPrice;
+          return { ...c, askPrice: Math.max(0, newAsk), floorPrice: Math.max(0, newFloor) };
+        }),
+      );
+    }
+    setLogistics(next);
+    setRefChangeModal({ open: false, nextLogistics: null, mode: "keepFob" });
     setDrawerOpen(false);
   };
 
