@@ -22,16 +22,10 @@ import LogisticsOverview from "@/components/buyer/LogisticsOverview";
 import { computeFinalPrice } from "@/lib/freightMath";
 import { useOfferOriginPorts } from "@/hooks/useOfferOriginPorts";
 
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
 import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
-function formatShipment(month: number, year: number): string {
-  return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
-}
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
+import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string; key: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a", key: "active" },
   new:         { bg: "#fff4e0", fg: "#a85b00", dot: "#f59e0b", key: "new" },
