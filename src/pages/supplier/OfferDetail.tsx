@@ -578,7 +578,7 @@ export default function SupplierOfferDetail({ adminMode = false }: Props) {
 
       {(adminMode ? isManaged : true) && (
         <div style={{ marginTop: 14 }}>
-          <AutoNegotiationSettingsCard offerId={offer.id} offerNumber={offer.offerNumber} />
+          <AutoNegotiationSettingsCard offerId={offer.id} />
         </div>
       )}
     </>
