@@ -6,6 +6,7 @@ import { formatOfferNumber } from "@/lib/offerNumber";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import type { PublicOffer } from "@/hooks/usePublicOffers";
 import { GlowCard } from "@/components/ui/spotlight-card";
+import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -256,6 +257,14 @@ export default function PublicOfferCard({
             </button>
           )}
         </div>
+        {!mixed && firstItem && (() => {
+          const meta = formatCutMetaFromOfferItem(firstItem, t);
+          return meta.length > 0 ? (
+            <div className="text-[11px] text-muted-foreground" style={{ marginTop: 4 }}>
+              {meta.join(" · ")}
+            </div>
+          ) : null;
+        })()}
       </div>
 
       <div className="oc-meta-grid">
