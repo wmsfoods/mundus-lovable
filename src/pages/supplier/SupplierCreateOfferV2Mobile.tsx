@@ -777,6 +777,8 @@ export default function SupplierCreateOfferV2Mobile() {
         open={logisticsSheetOpen}
         onOpenChange={setLogisticsSheetOpen}
         subtitle={logisticsSubtitle}
+        value={logistics}
+        onSave={(next) => setLogistics(next)}
       />
       <CutSheetMobile
         open={cutSheet.open}
