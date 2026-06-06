@@ -420,6 +420,14 @@ function CutRowView({
           <option value="">
             {!row.protein ? tk("col.pickProteinFirst", "Pick protein first") : cutsLoading ? tk("loading", "Loading…") : tk("col.pickCut", "Pick cut…")}
           </option>
+          {/* Orphan cut (prefilled from Edit/Clone but not in current
+              catalog, e.g. region mismatch) — render a synthetic option so
+              the saved cut name is still visible. */}
+          {row.cutId && row.cutName && !catalog.some((c) => c.id === row.cutId) && (
+            <option value={row.cutId}>
+              {row.cutName} (other region)
+            </option>
+          )}
           {catalog.map((c) => (
             <option key={c.id} value={c.id}>{c.displayName}</option>
           ))}
