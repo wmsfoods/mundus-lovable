@@ -94,6 +94,7 @@ type LogisticsState = {
   globalInsurance: string;
   exwPickupLocation: string;
   primaryPricingIncoterm: "CFR" | "FOB" | null;
+  pricingReferencePortId: string | null;
 };
 
 const EMPTY_LOGISTICS: LogisticsState = {
@@ -111,6 +112,7 @@ const EMPTY_LOGISTICS: LogisticsState = {
   globalInsurance: "",
   exwPickupLocation: "",
   primaryPricingIncoterm: null,
+  pricingReferencePortId: null,
 };
 
 function Pill({
@@ -638,6 +640,7 @@ export default function SupplierCreateOfferV2() {
       globalInsurance: data.globalInsurance,
       exwPickupLocation: data.exwPickupLocation,
       primaryPricingIncoterm: data.primaryPricingIncoterm,
+      pricingReferencePortId: data.pricingReferencePortId,
     });
     setCuts(data.cuts);
     setCutRegion(data.cutRegion);
@@ -1159,7 +1162,16 @@ export default function SupplierCreateOfferV2() {
           containerSize={logistics.containerSize}
           cutRegion={cutRegion}
           setCutRegion={setCutRegion}
-          showFob={logistics.incoterms.includes("FOB")}
+          pricingRefLabel={(() => {
+            if (!logistics.pricingReferencePortId) {
+              const op = logistics.originPortIds[0]
+                ? catalog.ports.find((p) => p.id === logistics.originPortIds[0])
+                : null;
+              return `FOB ${op?.name ?? "origin"}`;
+            }
+            const dp = catalog.ports.find((p) => p.id === logistics.pricingReferencePortId);
+            return `CFR ${dp?.name ?? "destination"}`;
+          })()}
         />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
