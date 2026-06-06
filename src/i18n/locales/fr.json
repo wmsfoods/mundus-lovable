@@ -2938,7 +2938,7 @@
         "floorLabelCfr": "PLANCHER $/kg (CFR {{port}})"
       },
       "admin": {
-        "actingAs": "En train d agir en tant que fournisseur: {{name}}"
+        "actingAs": "Agissant en tant que fournisseur : {{name}}"
       }
     },
     "brands": {
