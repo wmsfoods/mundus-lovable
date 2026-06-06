@@ -603,7 +603,6 @@ function BuyerOfferBody({
               totalKg > 0 ? totalValuePerFcl / totalKg : Number(firstItem?.price ?? 0)
             }
             totalKg={totalKg}
-            fobAvgPricePerKg={fobAvgPricePerKg}
             onSelectionChange={setCalcSelection}
           />
         </>
