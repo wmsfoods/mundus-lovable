@@ -112,6 +112,8 @@ export function useOffers(): UseOffersResult {
             price,
             minimum_price,
             condition,
+            aging_method,
+            us_grade,
             customer_product:customer_products (
               id,
               name,
