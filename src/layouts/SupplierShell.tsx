@@ -43,11 +43,8 @@ function SupplierShellInner() {
   const isMobile = useIsMobileShell();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const focusRoute =
-    location.pathname.startsWith("/supplier/offers/new") ||
-    location.pathname.startsWith("/supplier/auctions/create");
   const [sidebarManual, setSidebarManual] = useState<boolean | null>(null);
-  const sidebarCollapsed = !isMobile && (sidebarManual ?? focusRoute);
+  const sidebarCollapsed = !isMobile && (sidebarManual ?? false);
   useEffect(() => { setSidebarManual(null); }, [location.pathname]);
   const { fullName } = useUserFullName();
   const userName = fullName || (user?.email?.split("@")[0] ?? "User");
