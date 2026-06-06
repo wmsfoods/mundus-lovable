@@ -2848,7 +2848,8 @@
         "title": "Nueva oferta (clonada de #{{n}})"
       },
       "fromRequestMode": {
-        "title": "Nueva oferta (desde solicitud #{{n}})"
+        "title": "Nueva oferta (desde solicitud #{{n}})",
+        "toast": "Rellenado desde la solicitud #{{requestNumber}}"
       },
       "loading": {
         "prefill": "Cargando datos de la oferta…"
@@ -2949,6 +2950,9 @@
         "askLabelCfr": "ASK $/kg (CFR {{port}})",
         "floorLabelFob": "PISO $/kg (FOB {{port}})",
         "floorLabelCfr": "PISO $/kg (CFR {{port}})"
+      },
+      "admin": {
+        "actingAs": "Actuando como proveedor: {{name}}"
       }
     },
     "brands": {

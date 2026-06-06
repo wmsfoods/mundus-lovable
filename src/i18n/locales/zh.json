@@ -2834,7 +2834,8 @@
         "title": "新报价（从 #{{n}} 克隆）"
       },
       "fromRequestMode": {
-        "title": "新报价（来自请求 #{{n}}）"
+        "title": "新报价（来自请求 #{{n}}）",
+        "toast": "已从请求 #{{requestNumber}} 预填充"
       },
       "loading": {
         "prefill": "正在加载报价数据…"
@@ -2935,6 +2936,9 @@
         "askLabelCfr": "ASK $/kg (CFR {{port}})",
         "floorLabelFob": "下限 $/kg (FOB {{port}})",
         "floorLabelCfr": "下限 $/kg (CFR {{port}})"
+      },
+      "admin": {
+        "actingAs": "以供应商身份操作: {{name}}"
       }
     },
     "brands": {
