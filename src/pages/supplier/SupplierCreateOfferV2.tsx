@@ -773,8 +773,8 @@ export default function SupplierCreateOfferV2() {
             ? (t("supplier.createOfferV2.submit.successDraft", { defaultValue: "Draft saved — {{n}}", n: label }) as string)
             : (t("supplier.createOfferV2.submit.successPublish", { defaultValue: "Offer {{n}} published successfully!", n: label }) as string),
       );
-      if (adminMode && asCompanyParam) {
-        navigate(`/admin/companies/${asCompanyParam}`);
+      if (adminMode) {
+        navigate("/admin/offers");
       } else {
         navigate("/supplier/offers");
       }
