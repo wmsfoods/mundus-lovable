@@ -303,10 +303,12 @@ export function useOfferForPrefill(
       const cuts: CutRow[] = items.map((it) => {
         const cpName = (it.customer_product?.name ?? "").trim();
         const match = cpName ? cutsMap.get(cpName.toLowerCase()) : null;
-        const protein =
-          it.customer_product?.standard_product?.product_category?.code ??
-          match?.category ??
-          null;
+        // Prefer cuts.category (properly cased "Beef"/"Pork"/...) since
+        // product_categories.code is lowercase ("beef") and would break the
+        // V2 protein <select> and cuts catalog lookup.
+        const codeRaw = it.customer_product?.standard_product?.product_category?.code ?? null;
+        const codeCap = codeRaw ? codeRaw.charAt(0).toUpperCase() + codeRaw.slice(1).toLowerCase() : null;
+        const protein = match?.category ?? codeCap ?? null;
         const base = emptyCutRow();
         return {
           ...base,
