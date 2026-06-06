@@ -1262,6 +1262,26 @@ export default function SupplierCreateOfferV2() {
             return `CFR ${dp?.name ?? "destination"}`;
           })()}
         />
+        {(() => {
+          const op = logistics.originPortIds[0]
+            ? catalog.ports.find((p) => p.id === logistics.originPortIds[0])
+            : null;
+          const destPorts = logistics.destinations.flatMap((d) =>
+            d.selectedPortIds
+              .map((pid) => catalog.ports.find((p) => p.id === pid))
+              .filter((p): p is NonNullable<typeof p> => !!p)
+              .map((p) => ({ id: p.id, name: p.name })),
+          );
+          return (
+            <DerivedPricesPreview
+              cuts={cuts}
+              logistics={logistics}
+              originPortName={op?.name ?? ""}
+              destinationPorts={destPorts}
+              totalKgPerOffer={totalCutKg}
+            />
+          );
+        })()}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div id="v2-section-payment">
