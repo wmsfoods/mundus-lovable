@@ -43,6 +43,7 @@ import { DerivedPricesPreview } from "@/components/supplier/CreateOfferV2/Derive
 import { type CutRow } from "@/lib/cutRowTypes";
 import { emptyCutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
+import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
 import { DistributionCard, type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
 import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
