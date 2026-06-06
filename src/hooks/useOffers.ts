@@ -95,7 +95,7 @@ export function useOffers(): UseOffersResult {
           origin_city,
           origin_port,
           shipment_month,
-          shipment_year,
+          shipment_year, shipment_ready_raw,
           payment_terms,
           container_size,
           total_fcl,

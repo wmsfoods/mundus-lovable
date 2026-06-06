@@ -68,7 +68,7 @@ export function useRealNegotiationsList(role: Role) {
           buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
           offer:offers!inner (
             id, offer_number, created_at, supplier_id, supplier_name, origin_country, origin_port,
-            payment_terms, container_size, shipment_month, shipment_year, total_fcl,
+            payment_terms, container_size, shipment_month, shipment_year, shipment_ready_raw, total_fcl,
             items:offer_items (
               id, amount, price, minimum_price,
               customer_product:customer_products ( id, name )

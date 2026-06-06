@@ -44,9 +44,13 @@ const MONTH_NAMES = [
 import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 
-function formatShipment(month: number, year: number): string {
-  const m = MONTH_NAMES[(month - 1) % 12] ?? "";
-  return `${m} ${year}`;
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
+function formatShipment(
+  month: number,
+  year: number,
+  raw?: string | null,
+): string {
+  return formatShipmentReadyDisplay({ raw, month, year });
 }
 
 function formatMT(kg: number): string {
@@ -366,7 +370,7 @@ export function OfferCard({
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.shipment")}</span>
           <span className="cm-value">
-            {formatShipment(offer.shipment_month, offer.shipment_year)}
+            {formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}
           </span>
         </div>
         <div className="cm">
@@ -792,7 +796,7 @@ export default function BuyerOffers() {
                         </span>
                       </td>
                       <td>{incLabel}</td>
-                      <td>{formatShipment(offer.shipment_month, offer.shipment_year)}</td>
+                      <td>{formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}</td>
                       <td className="offers-list-right">{formatMT(totalKg)} MT</td>
                       <td>
                         <span className="status-pill" style={{ background: status.bg, color: status.fg }}>

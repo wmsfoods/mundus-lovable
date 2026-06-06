@@ -24,6 +24,7 @@ import {
   type Certification,
 } from "@/lib/offerOptions";
 import { containerCapacityKg } from "@/lib/units";
+import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
 
 // ---------- Mirror desktop types exactly ----------
 type PortFreightShape =
@@ -1116,11 +1117,10 @@ function ContainerTab({
         <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
           {tk("container.shipmentReady", "Shipment ready")}
         </h3>
-        <Input
-          type="month"
-          className="h-11 text-base"
+        <ShipmentReadyPicker
+          size="compact"
           value={draft.shipmentReady}
-          onChange={(e) => setDraft((p) => ({ ...p, shipmentReady: e.target.value }))}
+          onChange={(v) => setDraft((p) => ({ ...p, shipmentReady: v }))}
         />
       </section>
     </div>

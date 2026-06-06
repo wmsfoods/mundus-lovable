@@ -12,9 +12,13 @@ const MONTH_NAMES = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-function formatShipment(month: number, year: number): string {
-  const m = MONTH_NAMES[(month - 1) % 12] ?? "";
-  return `${m} ${year}`;
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
+function formatShipment(
+  month: number,
+  year: number,
+  raw?: string | null,
+): string {
+  return formatShipmentReadyDisplay({ raw, month, year });
 }
 
 function formatMT(kg: number): string {
@@ -289,7 +293,7 @@ export default function PublicOfferCard({
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.shipment", "Shipment")}</span>
           <span className="cm-value">
-            {formatShipment(offer.shipment_month, offer.shipment_year)}
+            {formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}
           </span>
         </div>
         <div className="cm">

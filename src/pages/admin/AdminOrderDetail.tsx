@@ -1,3 +1,4 @@
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -12,7 +13,7 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 const SELECT = `
   id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at, negotiation_id,
   offer:offers (
-    supplier_name, origin_country, shipment_month, shipment_year,
+    supplier_name, origin_country, shipment_month, shipment_year, shipment_ready_raw,
     payment_terms, container_size, total_fcl,
     items:offer_items ( amount, price, customer_product:customer_products ( name ) )
   ),
@@ -40,8 +41,7 @@ function mapRow(r: Row): BuyerOrder {
     ? items.reduce((s, i) => s + (Number(i.amount) || 0) * (Number(i.price) || 0), 0) / totalKg
     : 0;
   const productName = items[0]?.customer_product?.name ?? "—";
-  const shipmentMonth = offer?.shipment_month && offer?.shipment_year
-    ? `${MONTHS[(offer.shipment_month - 1) % 12]} ${offer.shipment_year}` : "—";
+  const shipmentMonth = formatShipmentReadyDisplay({ raw: (offer as any)?.shipment_ready_raw, month: offer?.shipment_month, year: offer?.shipment_year }) || "—";
   const fcls = r.fcl_count ?? offer?.total_fcl ?? 0;
   const fclSize: '20ft' | '40ft' = offer?.container_size === '20ft' ? '20ft' : '40ft';
   const incoterm = (['CFR','CIF','FOB'] as const).includes((r.incoterm as never))

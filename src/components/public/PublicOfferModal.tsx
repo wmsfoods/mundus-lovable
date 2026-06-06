@@ -57,7 +57,7 @@ export default function PublicOfferModal({
     .filter((c): c is string => !!c);
   const originCode = countryToCode(offer.origin_country);
 
-  const shipment = `${MONTH_NAMES[(offer.shipment_month - 1) % 12] ?? ""} ${offer.shipment_year}`;
+  const shipment = formatShipmentReadyDisplay({ raw: (offer as any).shipment_ready_raw, month: offer.shipment_month, year: offer.shipment_year });
 
   return (
     <Dialog open={!!offer} onOpenChange={(o) => !o && onClose()}>

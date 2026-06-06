@@ -70,7 +70,7 @@ export default function SupplierRespond() {
           fcl_count, freight_cost_per_kg, created_at, updated_at, expires_at,
           offer:offers (
             id, offer_number, supplier_id, supplier_name, origin_country, origin_port,
-            payment_terms, container_size, shipment_month, shipment_year, total_fcl,
+            payment_terms, container_size, shipment_month, shipment_year, shipment_ready_raw, total_fcl,
             items:offer_items (
               id, amount, price, minimum_price,
               customer_product:customer_products ( id, name )

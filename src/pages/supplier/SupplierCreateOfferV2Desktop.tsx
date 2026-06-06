@@ -43,6 +43,7 @@ import { DerivedPricesPreview } from "@/components/supplier/CreateOfferV2/Derive
 import { type CutRow } from "@/lib/cutRowTypes";
 import { emptyCutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
+import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
 import { DistributionCard, type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
 import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
@@ -1377,7 +1378,12 @@ export default function SupplierCreateOfferV2Desktop() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div id="v2-section-payment">
-            <PaymentTermsCard value={paymentTerms} onChange={setPaymentTerms} />
+            <PaymentTermsCard
+              value={paymentTerms}
+              onChange={setPaymentTerms}
+              supplierContextId={supplierContextId}
+              mode={mode}
+            />
           </div>
           <div id="v2-section-distribution">
             <DistributionCard value={distribution} onChange={setDistribution} />
@@ -1814,11 +1820,9 @@ export default function SupplierCreateOfferV2Desktop() {
                   </div>
                 </Field>
                 <Field label={tk("drawer.s5.shipmentReady", "Shipment ready")}>
-                  <Input
-                    type="month"
-                    className="w-48"
+                  <ShipmentReadyPicker
                     value={drawerDraft.shipmentReady}
-                    onChange={(e) => setDrawerDraft((p) => ({ ...p, shipmentReady: e.target.value }))}
+                    onChange={(v) => setDrawerDraft((p) => ({ ...p, shipmentReady: v }))}
                   />
                 </Field>
               </div>

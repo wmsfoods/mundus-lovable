@@ -46,6 +46,9 @@ import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFil
 import { type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 import { LogisticsSheetMobile } from "@/components/supplier/CreateOfferV2/mobile/LogisticsSheetMobile";
 import { CutSheetMobile } from "@/components/supplier/CreateOfferV2/mobile/CutSheetMobile";
+import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
+import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
+import { formatCutMeta } from "@/lib/cutMetaDisplay";
 
 // ---------- Types shared with desktop ----------
 type Unit = "kg" | "lbs";
@@ -632,6 +635,14 @@ export default function SupplierCreateOfferV2Mobile() {
                       ))}
                     </div>
                   )}
+                  {(() => {
+                    const meta = formatCutMeta(c, t);
+                    return meta.length > 0 ? (
+                      <div className="mb-1 text-[11px] text-muted-foreground">
+                        {meta.join(" · ")}
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
                       {fmtQty(c.qty || 0, unit)} · {fmtPricePerUnit(c.askPrice || 0, unit)}
@@ -676,22 +687,22 @@ export default function SupplierCreateOfferV2Mobile() {
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {tk("mobile.payment.terms", "Terms")}
             </label>
-            <Input
-              className="text-base"
-              placeholder={tk("mobile.payment.placeholder", "e.g. CAD 30 days")}
+            <PaymentTermsCard
               value={paymentTerms}
-              onChange={(e) => setPaymentTerms(e.target.value)}
+              onChange={setPaymentTerms}
+              supplierContextId={supplierContextId}
+              mode={mode}
+              showChrome={false}
             />
           </div>
           <div>
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {tk("mobile.payment.shipmentReady", "Shipment ready")}
             </label>
-            <Input
-              className="text-base"
-              type="month"
+            <ShipmentReadyPicker
+              size="compact"
               value={logistics.shipmentReady}
-              onChange={(e) => setLogistics((p) => ({ ...p, shipmentReady: e.target.value }))}
+              onChange={(v) => setLogistics((p) => ({ ...p, shipmentReady: v }))}
             />
           </div>
         </div>
