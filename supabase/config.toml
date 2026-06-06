@@ -18,6 +18,9 @@ verify_jwt = false
 
 [functions.send-push]
 verify_jwt = false
+
+[functions.seed-push-secret]
+verify_jwt = false
   [functions.resend-webhook]
     verify_jwt = false
   [functions.send-password-reset]
