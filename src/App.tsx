@@ -121,7 +121,17 @@ import ShippingInstructionsForm from "./pages/public/ShippingInstructionsForm.ts
 import ShippingInstructionsPrint from "./pages/public/ShippingInstructionsPrint.tsx";
 import PublicHome from "./pages/public/PublicHome.tsx";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      // Evita o "flash" de re-render quando a janela/iframe ganha foco
+      // (clicar no preview disparava refetch global e parecia que a página recarregava).
+      refetchOnWindowFocus: false,
+      refetchOnReconnect: false,
+      staleTime: 30_000,
+    },
+  },
+});
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
