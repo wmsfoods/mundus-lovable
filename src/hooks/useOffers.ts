@@ -9,6 +9,8 @@ export type OfferItem = {
   price: number;
   minimum_price: number;
   condition: string;
+  aging_method: string | null;
+  us_grade: string | null;
   customer_product: {
     id: string;
     name: string;
