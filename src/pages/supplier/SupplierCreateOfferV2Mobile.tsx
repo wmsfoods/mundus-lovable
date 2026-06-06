@@ -784,9 +784,29 @@ export default function SupplierCreateOfferV2Mobile() {
         open={cutSheet.open}
         onOpenChange={(b) => setCutSheet((p) => ({ ...p, open: b }))}
         mode={cutSheet.mode}
-        cutName={
+        value={
           cutSheet.mode === "edit"
-            ? cuts.find((c, i) => (c.cutId ?? `idx-${i}`) === cutSheet.cutId)?.cutName ?? undefined
+            ? cuts.find((c, i) => (c.cutId ?? `idx-${i}`) === cutSheet.cutId)
+            : undefined
+        }
+        cutRegion={cutRegion}
+        unit={unit}
+        supplierContextId={supplierContextId}
+        onSave={(cut) => {
+          if (cutSheet.mode === "new") {
+            setCuts((prev) => [...prev, cut]);
+          } else {
+            setCuts((prev) =>
+              prev.map((c, i) => ((c.cutId ?? `idx-${i}`) === cutSheet.cutId ? cut : c)),
+            );
+          }
+        }}
+        onDelete={
+          cutSheet.mode === "edit"
+            ? () =>
+                setCuts((prev) =>
+                  prev.filter((c, i) => (c.cutId ?? `idx-${i}`) !== cutSheet.cutId),
+                )
             : undefined
         }
       />
