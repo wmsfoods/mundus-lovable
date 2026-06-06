@@ -84,7 +84,7 @@ export default function AdminOffers() {
         const [{ data: offers, error: offersErr }, { data: views }, { data: dist }, { data: marketsLink }] = await Promise.all([
           supabase
             .from("offers")
-            .select("id, offer_number, supplier_id, supplier_name, status, origin_country, shipment_month, shipment_year, total_fcl, created_at, offer_items(id, customer_products(name))")
+            .select("id, offer_number, supplier_id, supplier_name, status, origin_country, shipment_month, shipment_year, shipment_ready_raw, total_fcl, created_at, offer_items(id, customer_products(name))")
             .is("deleted_at", null)
             .order("created_at", { ascending: false }),
           supabase.from("offer_views").select("offer_id, viewed_at"),

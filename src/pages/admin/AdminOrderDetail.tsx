@@ -12,7 +12,7 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 const SELECT = `
   id, order_number, status, fcl_count, incoterm, freight_cost, placed_at, created_at, negotiation_id,
   offer:offers (
-    supplier_name, origin_country, shipment_month, shipment_year,
+    supplier_name, origin_country, shipment_month, shipment_year, shipment_ready_raw,
     payment_terms, container_size, total_fcl,
     items:offer_items ( amount, price, customer_product:customer_products ( name ) )
   ),

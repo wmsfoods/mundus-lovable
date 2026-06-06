@@ -35,7 +35,7 @@ export function useSupplierOfferById(id: string | null) {
         .from("offers")
         .select(`
           id, offer_number, status, supplier_id, supplier_name, origin_country, origin_port, view_count,
-          shipment_month, shipment_year, payment_terms, container_size,
+          shipment_month, shipment_year, shipment_ready_raw, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location, observation,
           items:offer_items ( id, amount, price, minimum_price, condition, packaging, photo_url, files_urls,
             customer_product:customer_products (

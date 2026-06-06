@@ -53,7 +53,7 @@ export function TransferOffersModal({ open, onClose, source, targets, onTransfer
       const { data, error } = await (supabase as any)
         .from("offers")
         .select(
-          "id, offer_number, created_at, status, origin_country, shipment_month, shipment_year, items:offer_items(customer_product:customer_products(name))"
+          "id, offer_number, created_at, status, origin_country, shipment_month, shipment_year, shipment_ready_raw, items:offer_items(customer_product:customer_products(name))"
         )
         .eq("office_id", source.id)
         .is("deleted_at", null);
