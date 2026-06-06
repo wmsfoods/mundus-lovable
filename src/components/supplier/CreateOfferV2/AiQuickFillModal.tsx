@@ -250,6 +250,19 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
               {tk("subtitle", "Paste an offer email, spec sheet, or any text — AI will parse and prefill the form.")}
             </DialogDescription>
           </DialogHeader>
+          {isAdmin && (
+            <p className="text-[11px] text-muted-foreground">
+              📥 Need sample data?{" "}
+              <a
+                href="/dev/ai-quickfill-samples"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-primary underline"
+              >
+                Download templates →
+              </a>
+            </p>
+          )}
           <Textarea
             value={text}
             onChange={(e) => setText(e.target.value)}
