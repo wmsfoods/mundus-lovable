@@ -2949,7 +2949,22 @@
         "askLabelFob": "ASK $/kg (FOB {{port}})",
         "askLabelCfr": "ASK $/kg (CFR {{port}})",
         "floorLabelFob": "PISO $/kg (FOB {{port}})",
-        "floorLabelCfr": "PISO $/kg (CFR {{port}})"
+        "floorLabelCfr": "PISO $/kg (CFR {{port}})",
+        "aging": {
+          "label": "Maturação",
+          "none": "—",
+          "wet": "Wet Aged (Úmido)",
+          "dry": "Dry Aged (Seco)"
+        },
+        "usGrade": {
+          "label": "Classificação USDA",
+          "none": "—",
+          "prime": "Prime",
+          "choice": "Choice",
+          "select": "Select",
+          "nonRoll": "Non Roll",
+          "ungraded": "Sem classificação"
+        }
       },
       "admin": {
         "actingAs": "Atuando como fornecedor: {{name}}"
