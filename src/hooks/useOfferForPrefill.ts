@@ -43,6 +43,7 @@ export type OfferPrefill = {
   globalInsurance: string;
   exwPickupLocation: string;
   primaryPricingIncoterm: "CFR" | "FOB" | null;
+  pricingReferencePortId: string | null;
   // Cuts
   cuts: CutRow[];
   cutRegion: "global" | "us";
@@ -91,10 +92,10 @@ export function useOfferForPrefill(
           exw_pickup_location, cut_region, negotiation_mode, negotiation_dial,
           all_customers, specific_buyer_company_ids,
           primary_pricing_incoterm,
+          pricing_reference_port_id,
           items:offer_items (
             id, amount, price, minimum_price, condition, packaging,
             plant_id, brand_id, notes, photo_url, files_urls,
-            fob_ask_price, fob_floor_price,
             customer_product:customer_products (
               id, name,
               standard_product:standard_products (
@@ -258,8 +259,6 @@ export function useOfferForPrefill(
         notes: string | null;
         photo_url: string | null;
         files_urls: string[] | null;
-        fob_ask_price: number | null;
-        fob_floor_price: number | null;
         customer_product?: {
           id?: string;
           name?: string | null;
@@ -322,8 +321,6 @@ export function useOfferForPrefill(
           qty: Number(it.amount ?? 0),
           askPrice: Number(it.price ?? 0),
           floorPrice: Number(it.minimum_price ?? it.price ?? 0),
-          fobAskPrice: it.fob_ask_price != null ? Number(it.fob_ask_price) : null,
-          fobFloorPrice: it.fob_floor_price != null ? Number(it.fob_floor_price) : null,
           photoFile: null,
           photoPreviewUrl: null, // signed URL will be resolved lazily by media hook
           files: [],
@@ -384,6 +381,7 @@ export function useOfferForPrefill(
             : (offer.primary_pricing_incoterm as string | null) === "FOB"
               ? "FOB"
               : null) as "CFR" | "FOB" | null,
+        pricingReferencePortId: (offer.pricing_reference_port_id as string | null) ?? null,
         cuts,
         cutRegion: ((offer.cut_region as string) === "us" ? "us" : "global") as "global" | "us",
         paymentTerms: (offer.payment_terms as string | null) ?? "",
