@@ -12,6 +12,8 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import type { PublicOffer } from "@/hooks/usePublicOffers";
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
+import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
 
 const MONTH_NAMES = [
   "January", "February", "March", "April", "May", "June",
@@ -122,6 +124,12 @@ export default function PublicOfferModal({
                   <tr key={it.id} className="text-[#1A1A2E]">
                     <td className="px-3 py-2 font-medium">
                       {it.product_name || it.category_name || "—"}
+                      {(() => {
+                        const meta = formatCutMetaFromOfferItem(it, t);
+                        return meta.length > 0 ? (
+                          <div className="text-[11px] text-muted-foreground mt-0.5">{meta.join(" · ")}</div>
+                        ) : null;
+                      })()}
                     </td>
                     <td className="px-3 py-2 text-gray-600">
                       {it.category_name || it.category_code || "—"}
@@ -164,6 +172,12 @@ export default function PublicOfferModal({
                   <div className="min-w-0">
                     <div className="font-semibold text-[#1A1A2E] text-sm">{it.product_name || it.category_name || "—"}</div>
                     <div className="text-xs text-gray-500 mt-0.5">{it.category_name || it.category_code || "—"}</div>
+                    {(() => {
+                      const meta = formatCutMetaFromOfferItem(it, t);
+                      return meta.length > 0 ? (
+                        <div className="text-[11px] text-muted-foreground mt-0.5">{meta.join(" · ")}</div>
+                      ) : null;
+                    })()}
                   </div>
                   <div className="text-right shrink-0">
                     <div className="text-sm font-bold tabular-nums text-[#1A1A2E]">{fmtPrice(Number(it.price ?? 0))}</div>

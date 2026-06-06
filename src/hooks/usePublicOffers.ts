@@ -9,6 +9,8 @@ export type PublicOfferItem = {
   product_name: string | null;
   category_code: string | null;
   category_name: string | null;
+  aging_method: string | null;
+  us_grade: string | null;
 };
 
 export type PublicOffer = {
@@ -18,6 +20,7 @@ export type PublicOffer = {
   origin_port: string | null;
   shipment_month: number;
   shipment_year: number;
+  shipment_ready_raw?: string | null;
   payment_terms: string;
   container_size: string;
   total_fcl: number;
