@@ -296,7 +296,6 @@ type RowProps = {
   cutRegion: "global" | "us";
   plantOptions: string[];
   plants: CompanyPlant[];
-  showUsGradeCol: boolean;
   onChange: (patch: Partial<CutRow>) => void;
   onRemove: () => void;
   fmtNum: (n: number, frac?: number) => string;
@@ -310,7 +309,6 @@ function CutRowView({
   cutRegion,
   plantOptions,
   plants,
-  showUsGradeCol,
   onChange,
   onRemove,
   fmtNum,
