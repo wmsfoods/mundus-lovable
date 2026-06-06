@@ -510,6 +510,34 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
           {/* Logistics */}
           <section className="rounded-lg border border-border bg-card p-3">
             <h4 className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tk("section.logistics", "Logistics")}</h4>
+            {/* Pricing model banner (fix9 alignment) */}
+            {p.pricingModel ? (
+              <div className="mb-2 rounded-md border border-blue-300 bg-blue-50 p-2 text-[11px] text-blue-900 dark:bg-blue-950/40 dark:text-blue-100">
+                <p className="font-semibold">💰 {tk("pricing.detectedTitle", "Pricing detected")}</p>
+                <p className="mt-0.5">
+                  {p.pricingModel === "FOB" || p.pricingModel === "EXW" ? (
+                    <>{p.pricingModel} {tk("pricing.fobDesc", "— freight quoted separately per destination")}</>
+                  ) : (
+                    <>{p.pricingModel} {p.pricingReferencePort.name ?? tk("pricing.portFallback", "(port)")} — {tk("pricing.cfrDesc", "prices include freight to this anchor port")}</>
+                  )}
+                </p>
+                {p.pricingReferencePort.match === "fuzzy" && (
+                  <p className="mt-1 text-amber-800 dark:text-amber-200">
+                    ⚠️ {tk("pricing.fuzzyWarn", "Anchor port matched fuzzy — verify after applying.")}
+                  </p>
+                )}
+                {p.pricingReferencePort.name && p.pricingReferencePort.match === "not_found" &&
+                  (p.pricingModel === "CFR" || p.pricingModel === "CIF") && (
+                  <p className="mt-1 text-amber-800 dark:text-amber-200">
+                    ⚠️ {tk("pricing.notFoundWarn", "Anchor port not found in catalog — set Pricing Reference manually after applying.")}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="mb-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+                ⚠️ {tk("pricing.undetected", "Pricing model not detected. After applying, set Pricing Reference manually in “Edit Logistics”.")}
+              </div>
+            )}
             <Row label={tk("logistics.origin", "Origin")}>
               {p.origin.country ? (
                 <span className="inline-flex items-center gap-1.5">
