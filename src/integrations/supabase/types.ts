@@ -5205,8 +5205,6 @@ export type Database = {
           created_at: string | null
           customer_product_id: string
           files_urls: string[] | null
-          fob_ask_price: number | null
-          fob_floor_price: number | null
           id: string
           maximum_amount: number
           meat_specification: number | null
@@ -5228,8 +5226,6 @@ export type Database = {
           created_at?: string | null
           customer_product_id: string
           files_urls?: string[] | null
-          fob_ask_price?: number | null
-          fob_floor_price?: number | null
           id?: string
           maximum_amount: number
           meat_specification?: number | null
@@ -5251,8 +5247,6 @@ export type Database = {
           created_at?: string | null
           customer_product_id?: string
           files_urls?: string[] | null
-          fob_ask_price?: number | null
-          fob_floor_price?: number | null
           id?: string
           maximum_amount?: number
           meat_specification?: number | null
@@ -5568,6 +5562,7 @@ export type Database = {
           plant_id: string | null
           price: number | null
           pricing_includes_freight: boolean | null
+          pricing_reference_port_id: string | null
           primary_pricing_incoterm: string | null
           request_id: string | null
           shipment_month: number
@@ -5605,6 +5600,7 @@ export type Database = {
           plant_id?: string | null
           price?: number | null
           pricing_includes_freight?: boolean | null
+          pricing_reference_port_id?: string | null
           primary_pricing_incoterm?: string | null
           request_id?: string | null
           shipment_month: number
@@ -5642,6 +5638,7 @@ export type Database = {
           plant_id?: string | null
           price?: number | null
           pricing_includes_freight?: boolean | null
+          pricing_reference_port_id?: string | null
           primary_pricing_incoterm?: string | null
           request_id?: string | null
           shipment_month?: number
@@ -5675,6 +5672,13 @@ export type Database = {
             columns: ["plant_id"]
             isOneToOne: false
             referencedRelation: "company_plants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "offers_pricing_reference_port_id_fkey"
+            columns: ["pricing_reference_port_id"]
+            isOneToOne: false
+            referencedRelation: "ports"
             referencedColumns: ["id"]
           },
           {
@@ -7904,6 +7908,7 @@ export type Database = {
           plant_id: string | null
           price: number | null
           pricing_includes_freight: boolean | null
+          pricing_reference_port_id: string | null
           primary_pricing_incoterm: string | null
           request_id: string | null
           shipment_month: number
