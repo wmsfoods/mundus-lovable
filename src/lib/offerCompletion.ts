@@ -9,6 +9,8 @@ type LogisticsLike = {
   globalFreight: string;
   primaryPricingIncoterm?: "CFR" | "FOB" | null;
   shipmentReady?: string;
+  /** When set: supplier is pricing CFR at this destination port. Must be present in destinations.selectedPortIds. */
+  pricingReferencePortId?: string | null;
 };
 
 type DistributionLike = {
@@ -121,6 +123,26 @@ function freightSection(l: LogisticsLike): SectionStatus {
     // If no destinations yet, freight cannot be set — surface as missing only if dests exist
     if (l.destinations.length === 0 && missing.length === 0) missing.push(f("freightAwaitingDestinations"));
   }
+  // Pricing reference port validation (CFR-mode).
+  if (l.pricingReferencePortId) {
+    const allPorts = l.destinations.flatMap((d) => d.selectedPortIds);
+    if (!allPorts.includes(l.pricingReferencePortId)) {
+      missing.push(f("referencePortNotInDestinations"));
+    } else {
+      // Ensure the reference port has freight > 0.
+      let refFreight = 0;
+      if (l.sameFreightGlobal) {
+        refFreight = parseFloat(l.globalFreight) || 0;
+      } else {
+        for (const d of l.destinations) {
+          if (!d.selectedPortIds.includes(l.pricingReferencePortId)) continue;
+          if (d.freight.mode === "same") refFreight = parseFloat(d.freight.same) || 0;
+          else refFreight = parseFloat(d.freight.perPort[l.pricingReferencePortId] ?? "") || 0;
+        }
+      }
+      if (!(refFreight > 0)) missing.push(f("referencePortFreight"));
+    }
+  }
   return { key: "freight", group: "logistics", labelKey: "completion.section.freight", ok: missing.length === 0, started, missingFields: missing };
 }
 
@@ -138,27 +160,19 @@ function cutsSection(cuts: CutRow[], hasPlants: boolean, incoterms: string[]): S
     missing.push(f("cutAtLeastOne"));
     return { key: "cuts", group: "cuts", labelKey: "completion.section.cuts", ok: false, started, missingFields: missing };
   }
-  const fobRequired = incoterms.includes("FOB");
   let needCut = false, needQty = false, needPrice = false, badFloor = false, needPlant = false;
-  let needFobAsk = false, badFobFloor = false;
   for (const c of cuts) {
     if (!c.cutId) needCut = true;
     if (!(c.qty > 0)) needQty = true;
     if (!(c.askPrice > 0)) needPrice = true;
     if (c.floorPrice > 0 && c.floorPrice > c.askPrice) badFloor = true;
     if (hasPlants && !c.plantId) needPlant = true;
-    if (fobRequired) {
-      if (!(c.fobAskPrice != null && c.fobAskPrice > 0)) needFobAsk = true;
-      if (c.fobFloorPrice != null && c.fobAskPrice != null && c.fobFloorPrice > 0 && c.fobFloorPrice > c.fobAskPrice) badFobFloor = true;
-    }
   }
   if (needCut) missing.push(f("cutSelection"));
   if (needQty) missing.push(f("cutQty"));
   if (needPrice) missing.push(f("cutPrice"));
   if (badFloor) missing.push(f("cutFloorAboveAsk"));
   if (needPlant) missing.push(f("cutPlant"));
-  if (needFobAsk) missing.push(f("fobAskPrice"));
-  if (badFobFloor) missing.push(f("fobFloorAboveAsk"));
   return { key: "cuts", group: "cuts", labelKey: "completion.section.cuts", ok: missing.length === 0, started, missingFields: missing };
 }
 

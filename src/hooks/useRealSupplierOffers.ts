@@ -50,7 +50,6 @@ export function useRealSupplierOffers() {
           shipment_month, shipment_year, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location,
           items:offer_items ( id, amount, price, minimum_price, condition, packaging, photo_url, files_urls,
-            fob_ask_price,
             customer_product:customer_products (
               id, name,
               standard_product:standard_products (
@@ -78,14 +77,13 @@ export function useRealSupplierOffers() {
       }
       const mapped: SupplierOffer[] = (data ?? []).map((o: any) => {
         const items = (o.items ?? []) as Array<any>;
-        const hasFob = items.some(
-          (it: any) => it.fob_ask_price != null && Number(it.fob_ask_price) > 0,
-        );
+        const incotermsList = ((o.incoterms ?? []) as any[]).map((i) => i.incoterm_type);
+        const hasFob = incotermsList.includes("FOB");
         const dests = ((o.markets ?? []) as any[])
           .map((m) => m?.market?.country?.english_name)
           .filter(Boolean)
           .map((n: string) => ({ name: n, code: code(n) }));
-        const incoterms = ((o.incoterms ?? []) as any[]).map((i) => i.incoterm_type);
+        const incoterms = incotermsList;
         const totalKg = items.reduce((s, it) => s + Number(it.amount ?? 0), 0);
         const askingPrice = items.reduce((s, it) => s + Number(it.price ?? 0) * Number(it.amount ?? 0), 0);
         const floorPrice = items.reduce((s, it) => s + Number(it.minimum_price ?? it.price ?? 0) * Number(it.amount ?? 0), 0);
