@@ -10,6 +10,8 @@ import {
 } from "@/components/icons";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
 import { useRealSupplierOffers } from "@/hooks/useRealSupplierOffers";
+import { useSupplierOfferById } from "@/hooks/useSupplierOfferById";
+import { useIsManagedSupplier } from "@/hooks/useIsManagedSupplier";
 import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { useOfferImages } from "@/hooks/useOfferImages";
@@ -33,13 +35,16 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { type WeightUnit } from "@/lib/units";
+import { Pencil, Trash2, AlertCircle, ExternalLink } from "lucide-react";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-export default function SupplierOfferDetail() {
+type Props = { adminMode?: boolean };
+
+export default function SupplierOfferDetail({ adminMode = false }: Props) {
   const { id = "" } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -50,6 +55,8 @@ export default function SupplierOfferDetail() {
   const [activeNegCount, setActiveNegCount] = useState<number>(0);
   const [deactivating, setDeactivating] = useState(false);
   const [activating, setActivating] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [negotiations, setNegotiations] = useState<Array<{
     id: string;
     status: string;
@@ -77,11 +84,16 @@ export default function SupplierOfferDetail() {
     return () => { cancelled = true; };
   }, [id]);
 
-  const { offers: realOffers, loading: offersLoading } = useRealSupplierOffers();
-  const offer: SupplierOffer | undefined = useMemo(
-    () => realOffers.find((o) => o.id === id),
-    [id, realOffers]
-  );
+  const supplierList = useRealSupplierOffers();
+  const adminOne = useSupplierOfferById(adminMode ? id : null);
+  const offer: (SupplierOffer & { supplierId?: string }) | undefined = adminMode
+    ? (adminOne.offer ?? undefined)
+    : supplierList.offers.find((o) => o.id === id);
+  const offersLoading = adminMode ? adminOne.loading : supplierList.loading;
+  const adminSupplierId = adminMode ? (adminOne.offer?.supplierId ?? null) : null;
+  const adminSupplierName = adminMode ? adminOne.supplierName : null;
+  const { isManaged, loading: managedLoading } = useIsManagedSupplier(adminSupplierId);
+  const backTo = adminMode ? "/admin/offers" : "/supplier/offers";
 
   const baseImages = useOfferImages(offer?.items ?? []);
   const mediaImages = useOfferItemMediaImages(offer?.items ?? []);
@@ -96,19 +108,19 @@ export default function SupplierOfferDetail() {
     return (
       <>
         <div className="crumbs">
-          <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
-            {t("supplier.offers.crumbHome")}
+          <a onClick={(e) => { e.preventDefault(); navigate(adminMode ? "/admin" : "/supplier"); }} href={adminMode ? "/admin" : "/supplier"}>
+            {adminMode ? "Admin" : t("supplier.offers.crumbHome")}
           </a>
           <span className="sep">›</span>
-          <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
-            {t("supplier.offers.title")}
+          <a onClick={(e) => { e.preventDefault(); navigate(backTo); }} href={backTo}>
+            {adminMode ? "Offers" : t("supplier.offers.title")}
           </a>
           <span className="sep">›</span>
           <b>{t("supplier.offers.detail.notFoundTitle")}</b>
         </div>
         <div className="empty-state">
           <p>{t("supplier.offers.detail.notFoundBody")}</p>
-          <button className="btn-back" onClick={() => navigate("/supplier/offers")}>
+          <button className="btn-back" onClick={() => navigate(backTo)}>
             <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
           </button>
         </div>
@@ -263,12 +275,40 @@ export default function SupplierOfferDetail() {
 
   const handleEdit = async () => {
     if (!offer) return;
-    navigate(`/supplier/offers/new?id=${offer.id}`);
+    const suffix = adminMode && adminSupplierId ? `&as_company=${adminSupplierId}` : "";
+    navigate(`/supplier/offers/new?id=${offer.id}${suffix}`);
   };
 
   const handleClone = () => {
     if (!offer) return;
-    navigate(`/supplier/offers/new?clone=${offer.id}`);
+    const suffix = adminMode && adminSupplierId ? `&as_company=${adminSupplierId}` : "";
+    navigate(`/supplier/offers/new?clone=${offer.id}${suffix}`);
+  };
+
+  const handleAdminDelete = async () => {
+    if (deleting || !offer) return;
+    setDeleting(true);
+    try {
+      const { error: delErr } = await supabase
+        .from("offers")
+        .update({ deleted_at: new Date().toISOString() })
+        .eq("id", offer.id);
+      if (delErr) { toast.error(delErr.message || "Failed to delete offer"); return; }
+      auditLog({
+        action: "offer.deleted",
+        category: "offer",
+        entityType: "offer",
+        entityId: offer.id,
+        entityLabel: formatOfferNumber(offer.offerNumber, offer.createdAt),
+        details: { adminAction: true, supplierId: adminSupplierId },
+        severity: "warn",
+      });
+      toast.success("Offer deleted.");
+      navigate("/admin/offers");
+    } finally {
+      setDeleting(false);
+      setConfirmDelete(false);
+    }
   };
 
   const supplierActions = (
@@ -292,6 +332,25 @@ export default function SupplierOfferDetail() {
         onClick={() => alert(t("supplier.offers.detail.shareComingSoon"))}
       >
         <ShareIcon size={14} /> {t("supplier.offers.detail.share")}
+      </button>
+    </>
+  );
+
+  const adminActions = (
+    <>
+      <button type="button" className="btn-tb" onClick={handleEdit}>
+        <Pencil size={12} style={{ marginRight: 6 }} /> Edit
+      </button>
+      <button type="button" className="btn-tb" onClick={handleClone}>
+        <CopyIcon size={14} /> Clone
+      </button>
+      <button
+        type="button"
+        className="btn-tb"
+        onClick={() => setConfirmDelete(true)}
+        style={{ color: "#b91c1c", borderColor: "#fecaca" }}
+      >
+        <Trash2 size={12} style={{ marginRight: 6 }} /> Delete
       </button>
     </>
   );
@@ -378,21 +437,35 @@ export default function SupplierOfferDetail() {
       <button
         type="button"
         className="btn-back"
-        onClick={() => navigate("/supplier/offers")}
+        onClick={() => navigate(backTo)}
         style={{ marginBottom: 12 }}
       >
         <ArrowLeftIcon size={14} /> {t("supplier.offers.detail.backToOffers")}
       </button>
       <div className="crumbs">
-        <a onClick={(e) => { e.preventDefault(); navigate("/supplier"); }} href="/supplier">
-          {t("supplier.offers.crumbHome")}
+        <a onClick={(e) => { e.preventDefault(); navigate(adminMode ? "/admin" : "/supplier"); }} href={adminMode ? "/admin" : "/supplier"}>
+          {adminMode ? "Admin" : t("supplier.offers.crumbHome")}
         </a>
         <span className="sep">›</span>
-        <a onClick={(e) => { e.preventDefault(); navigate("/supplier/offers"); }} href="/supplier/offers">
-          {t("supplier.offers.title")}
+        <a onClick={(e) => { e.preventDefault(); navigate(backTo); }} href={backTo}>
+          {adminMode ? "Offers" : t("supplier.offers.title")}
         </a>
         <span className="sep">›</span>
-        <b>{offer.title}</b>
+        <b>
+          {offer.title}
+          {adminMode && adminSupplierName && (
+            <>
+              {" "}
+              <a
+                href={`/admin/companies/${adminSupplierId}`}
+                onClick={(e) => { e.preventDefault(); navigate(`/admin/companies/${adminSupplierId}`); }}
+                style={{ fontWeight: 400, color: "#6b7280", marginLeft: 6 }}
+              >
+                · {adminSupplierName} <ExternalLink size={10} style={{ display: "inline" }} />
+              </a>
+            </>
+          )}
+        </b>
       </div>
 
       <Dialog open={deactivateOpen} onOpenChange={setDeactivateOpen}>
@@ -435,6 +508,43 @@ export default function SupplierOfferDetail() {
         </DialogContent>
       </Dialog>
 
+      {adminMode && (
+        <Dialog open={confirmDelete} onOpenChange={setConfirmDelete}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Delete offer?</DialogTitle>
+              <DialogDescription>
+                This will soft-delete <b>{formatOfferNumber(offer.offerNumber, offer.createdAt)}</b>
+                {adminSupplierName ? <> from <b>{adminSupplierName}</b></> : null}.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setConfirmDelete(false)} disabled={deleting}>Cancel</Button>
+              <Button variant="destructive" onClick={handleAdminDelete} disabled={deleting}>
+                {deleting ? "Deleting…" : "Delete"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {adminMode && !managedLoading && !isManaged && (
+        <div
+          style={{
+            padding: "12px 16px",
+            borderRadius: 8,
+            background: "#f3f4f6",
+            border: "1px solid #e5e7eb",
+            color: "#4b5563",
+            fontSize: 13,
+            marginBottom: 12,
+          }}
+        >
+          <AlertCircle size={14} style={{ display: "inline", marginRight: 6 }} />
+          This supplier is self-managed. Admin edit/clone/delete actions are disabled.
+        </div>
+      )}
+
       <div
         style={{
           display: "flex",
@@ -445,8 +555,10 @@ export default function SupplierOfferDetail() {
           flexWrap: "wrap",
         }}
       >
-        <div>{supplierToggle}</div>
-        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>{supplierActions}</div>
+        <div>{adminMode ? null : supplierToggle}</div>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          {adminMode ? (isManaged ? adminActions : null) : supplierActions}
+        </div>
       </div>
 
       <SupplierOfferBuyerStyleBody
