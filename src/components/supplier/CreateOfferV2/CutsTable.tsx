@@ -41,13 +41,22 @@ type Props = {
   setCutRegion: (r: "global" | "us") => void;
   /** Dynamic header label, e.g. "FOB Santos" or "CFR Hong Kong". Reflects the pricing reference. */
   pricingRefLabel?: string;
+  /**
+   * Admin on-behalf mode: when set, overrides `useCurrentCompany()` so plants,
+   * brands and the US-grade region toggle reflect the target supplier instead
+   * of the admin's own company. Pass `null`/omit to use the logged-in company.
+   */
+  companyOverride?: { id: string; name?: string | null; country?: string | null } | null;
 };
 
-export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel }: Props) {
+export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel, companyOverride }: Props) {
   const { t } = useTranslation();
-  const { company } = useCurrentCompany();
-  const companyId = company?.id ?? null;
-  const showRegionToggle = isUsCompany(company);
+  const { company: liveCompany } = useCurrentCompany();
+  const effectiveCompany = companyOverride
+    ? { country: companyOverride.country ?? null }
+    : liveCompany;
+  const companyId = companyOverride ? companyOverride.id : liveCompany?.id ?? null;
+  const showRegionToggle = isUsCompany(effectiveCompany);
   const regionLocked = cuts.length > 0;
 
   const tk = (k: string, fb: string, opts?: Record<string, unknown>) =>
