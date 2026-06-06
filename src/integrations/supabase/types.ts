@@ -3087,6 +3087,33 @@ export type Database = {
         }
         Relationships: []
       }
+      device_push_tokens: {
+        Row: {
+          created_at: string
+          id: string
+          platform: string
+          token: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          platform: string
+          token: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          platform?: string
+          token?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       documents: {
         Row: {
           created_at: string | null
@@ -4990,6 +5017,7 @@ export type Database = {
           new_request_response: boolean
           offer_deactivated: boolean
           order_status_changes: boolean
+          push: boolean
           shipping_instructions: boolean
           updated_at: string
           user_id: string
@@ -5006,6 +5034,7 @@ export type Database = {
           new_request_response?: boolean
           offer_deactivated?: boolean
           order_status_changes?: boolean
+          push?: boolean
           shipping_instructions?: boolean
           updated_at?: string
           user_id: string
@@ -5022,6 +5051,7 @@ export type Database = {
           new_request_response?: boolean
           offer_deactivated?: boolean
           order_status_changes?: boolean
+          push?: boolean
           shipping_instructions?: boolean
           updated_at?: string
           user_id?: string
