@@ -117,6 +117,10 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
   const proteinOptions = PROTEINS as readonly string[];
   const multipleCuts = cuts.length > 1;
 
+  const showUsGradeCol = cutRegion === "us";
+  const tkCuts = (k: string, fb: string) =>
+    t(`supplier.createOfferV2.cuts.${k}`, { defaultValue: fb }) as string;
+
   return (
     <div className="rounded-xl border border-border bg-card p-4">
       {/* Header */}
@@ -186,7 +190,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className="w-full min-w-[1100px] text-xs">
+        <table className={cn("w-full text-xs", showUsGradeCol ? "min-w-[1280px]" : "min-w-[1180px]")}>
           <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="w-12 px-2 py-2 text-left">{tk("col.photo", "Photo")}</th>
@@ -196,6 +200,10 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
               <th className="w-28 px-2 py-2 text-left">{tk("col.spec", "Spec")}</th>
               <th className="w-32 px-2 py-2 text-left">{tk("col.packing", "Packing")}</th>
               <th className="w-28 px-2 py-2 text-left">{tk("col.plant", "Plant #")}</th>
+              <th className="w-28 px-2 py-2 text-left">{tkCuts("aging.label", "Aging")}</th>
+              {showUsGradeCol && (
+                <th className="w-28 px-2 py-2 text-left">{tkCuts("usGrade.label", "USDA Grade")}</th>
+              )}
               <th className="w-40 px-2 py-2 text-left">{tk("col.notes", "Notes")}</th>
               <th className="w-28 px-2 py-2 text-right">{tk("col.qty", "Qty ({{u}})", { u: weightLabel(unit) })}</th>
               <th
@@ -216,7 +224,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           <tbody>
             {cuts.length === 0 && (
               <tr>
-                <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={showUsGradeCol ? 15 : 14} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   {tk("emptyState", "No cuts yet. Click \"Add cut\" to start.")}
                 </td>
               </tr>
@@ -232,6 +240,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 cutRegion={cutRegion}
                 plantOptions={plantOptions}
                 plants={plants}
+                showUsGradeCol={showUsGradeCol}
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
@@ -239,7 +248,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
             ))}
             {cuts.length > 0 && (
               <tr className="border-t-2 border-border bg-muted/30 font-semibold">
-                <td colSpan={8} className="px-2 py-2 text-right text-[11px] uppercase tracking-wider text-muted-foreground">
+                <td colSpan={showUsGradeCol ? 10 : 9} className="px-2 py-2 text-right text-[11px] uppercase tracking-wider text-muted-foreground">
                   {tk("totals", "Totals")}
                 </td>
                 <td className="px-2 py-2 text-right tabular-nums">
