@@ -36,6 +36,7 @@ import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { type WeightUnit } from "@/lib/units";
 import { Pencil, Trash2, AlertCircle, ExternalLink } from "lucide-react";
+import { AutoNegotiationSettingsCard } from "@/components/supplier/AutoNegotiationSettingsCard";
 
 const MONTH_NAMES = [
   "Jan", "Feb", "Mar", "Apr", "May", "Jun",
@@ -574,6 +575,12 @@ export default function SupplierOfferDetail({ adminMode = false }: Props) {
         unit={unit}
         illustrativeLabel={t("supplier.offers.detail.illustrative")}
       />
+
+      {(adminMode ? isManaged : true) && (
+        <div style={{ marginTop: 14 }}>
+          <AutoNegotiationSettingsCard offerId={offer.id} />
+        </div>
+      )}
     </>
   );
 }
