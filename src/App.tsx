@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 // build: 2026-05-27 republish revenue/team/audit routes
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -133,6 +133,11 @@ const queryClient = new QueryClient({
   },
 });
 
+function RedirectPreservingQuery({ to }: { to: string }) {
+  const { search } = useLocation();
+  return <Navigate to={`${to}${search}`} replace />;
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider>
@@ -241,8 +246,8 @@ const App = () => (
               <Route path="auctions" element={<SupplierAuctions />} />
               <Route path="auctions/create" element={<SupplierCreateAuction />} />
               <Route path="auctions/:id" element={<SupplierAuctionDetail />} />
-              <Route path="offers/new" element={<SupplierCreateOffer />} />
-              <Route path="offers/new-v2" element={<SupplierCreateOfferV2 />} />
+              <Route path="offers/new" element={<SupplierCreateOfferV2 />} />
+              <Route path="offers/new-v2" element={<RedirectPreservingQuery to="/supplier/offers/new" />} />
               <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="requests" element={<SupplierRequests />} />
               <Route path="requests/:id" element={<SupplierRequestDetail />} />
@@ -335,7 +340,7 @@ const App = () => (
               <Route path="outreach/templates" element={<OutreachTemplates />} />
               <Route path="settings/email" element={<EmailSettings />} />
               <Route path="email-preview" element={<EmailPreview />} />
-              <Route path="create-offer" element={<SupplierCreateOffer />} />
+              <Route path="create-offer" element={<SupplierCreateOfferV2 />} />
               <Route path="create-request" element={<BuyerCreateRequest />} />
               <Route path="email-queue" element={<EmailQueue />} />
               <Route path="email-activity" element={<EmailActivity />} />
