@@ -46,6 +46,9 @@ import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFil
 import { type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 import { LogisticsSheetMobile } from "@/components/supplier/CreateOfferV2/mobile/LogisticsSheetMobile";
 import { CutSheetMobile } from "@/components/supplier/CreateOfferV2/mobile/CutSheetMobile";
+import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
+import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
+import { formatCutMeta } from "@/lib/cutMetaDisplay";
 
 // ---------- Types shared with desktop ----------
 type Unit = "kg" | "lbs";
@@ -676,22 +679,22 @@ export default function SupplierCreateOfferV2Mobile() {
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {tk("mobile.payment.terms", "Terms")}
             </label>
-            <Input
-              className="text-base"
-              placeholder={tk("mobile.payment.placeholder", "e.g. CAD 30 days")}
+            <PaymentTermsCard
               value={paymentTerms}
-              onChange={(e) => setPaymentTerms(e.target.value)}
+              onChange={setPaymentTerms}
+              supplierContextId={supplierContextId}
+              mode={mode}
+              showChrome={false}
             />
           </div>
           <div>
             <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
               {tk("mobile.payment.shipmentReady", "Shipment ready")}
             </label>
-            <Input
-              className="text-base"
-              type="month"
+            <ShipmentReadyPicker
+              size="compact"
               value={logistics.shipmentReady}
-              onChange={(e) => setLogistics((p) => ({ ...p, shipmentReady: e.target.value }))}
+              onChange={(v) => setLogistics((p) => ({ ...p, shipmentReady: v }))}
             />
           </div>
         </div>
