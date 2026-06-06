@@ -12,9 +12,13 @@ const MONTH_NAMES = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-function formatShipment(month: number, year: number): string {
-  const m = MONTH_NAMES[(month - 1) % 12] ?? "";
-  return `${m} ${year}`;
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
+function formatShipment(
+  month: number,
+  year: number,
+  raw?: string | null,
+): string {
+  return formatShipmentReadyDisplay({ raw, month, year });
 }
 
 function formatMT(kg: number): string {

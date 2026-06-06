@@ -370,7 +370,7 @@ export function OfferCard({
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.shipment")}</span>
           <span className="cm-value">
-            {formatShipment(offer.shipment_month, offer.shipment_year)}
+            {formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}
           </span>
         </div>
         <div className="cm">
@@ -796,7 +796,7 @@ export default function BuyerOffers() {
                         </span>
                       </td>
                       <td>{incLabel}</td>
-                      <td>{formatShipment(offer.shipment_month, offer.shipment_year)}</td>
+                      <td>{formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}</td>
                       <td className="offers-list-right">{formatMT(totalKg)} MT</td>
                       <td>
                         <span className="status-pill" style={{ background: status.bg, color: status.fg }}>
