@@ -96,7 +96,6 @@ import ProspectListDetail from "./pages/admin/prospect/ListDetail.tsx";
 import SupplierHome from "./pages/supplier/Home.tsx";
 import SupplierOffers from "./pages/supplier/Offers.tsx";
 import SupplierAuctions from "./pages/supplier/SupplierAuctions.tsx";
-import SupplierCreateOffer from "./pages/supplier/SupplierCreateOffer.tsx";
 import SupplierCreateOfferV2 from "./pages/supplier/SupplierCreateOfferV2.tsx";
 import SupplierCreateAuction from "./pages/supplier/SupplierCreateAuction.tsx";
 import SupplierAuctionDetail from "./pages/supplier/SupplierAuctionDetail.tsx";
