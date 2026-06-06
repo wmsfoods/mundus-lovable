@@ -16,8 +16,6 @@ export type OfferDetailItem = {
   meat_specification: number | null;
   aging_method: string | null;
   packaging: string | null;
-  fob_ask_price: number | null;
-  fob_floor_price: number | null;
   customer_product: {
     id: string;
     name: string;
@@ -54,6 +52,7 @@ export type OfferDetailed = {
   exw_pickup_location: string | null;
   primary_pricing_incoterm: string | null;
   pricing_includes_freight: boolean | null;
+  pricing_reference_port_id: string | null;
   created_at: string | null;
   items: OfferDetailItem[];
   markets: { market: { id: string; country: { english_name: string | null } | null } | null }[];
@@ -111,6 +110,7 @@ export function useOffer(id: string | undefined): UseOfferResult {
           exw_pickup_location,
           primary_pricing_incoterm,
           pricing_includes_freight,
+          pricing_reference_port_id,
           created_at,
           items:offer_items (
             id,
@@ -125,8 +125,6 @@ export function useOffer(id: string | undefined): UseOfferResult {
             packaging,
             photo_url,
             files_urls,
-            fob_ask_price,
-            fob_floor_price,
             customer_product:customer_products (
               id,
               name,
