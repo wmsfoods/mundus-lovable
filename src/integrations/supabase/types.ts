@@ -5217,6 +5217,7 @@ export type Database = {
           plant_id: string | null
           plant_number: string | null
           price: number
+          us_grade: string | null
         }
         Insert: {
           aging_method?: string | null
@@ -5238,6 +5239,7 @@ export type Database = {
           plant_id?: string | null
           plant_number?: string | null
           price: number
+          us_grade?: string | null
         }
         Update: {
           aging_method?: string | null
@@ -5259,6 +5261,7 @@ export type Database = {
           plant_id?: string | null
           plant_number?: string | null
           price?: number
+          us_grade?: string | null
         }
         Relationships: [
           {
