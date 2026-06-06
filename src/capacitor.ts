@@ -3,6 +3,7 @@ import { App } from "@capacitor/app";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { applySafeAreaInsets } from "@/lib/platform";
+import { registerPushNotifications } from "@/lib/pushNotifications";
 
 export async function initCapacitor(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
@@ -34,4 +35,6 @@ export async function initCapacitor(): Promise<void> {
       App.exitApp();
     }
   });
+
+  void registerPushNotifications();
 }

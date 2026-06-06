@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireAdmin } from "../_shared/auth.ts";
+import { insertAppNotificationForCompany } from "../_shared/appNotificationInsert.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -53,6 +54,21 @@ Deno.serve(async (req) => {
       template_vars: { offerNumber: offer.offer_number, hours },
       status: "queued",
     });
+
+    const link =
+      neg.status === "pending_buyer_review"
+        ? `/buyer/negotiations/${neg.id}`
+        : `/supplier/negotiations/${neg.id}`;
+    await insertAppNotificationForCompany(supabase, target, {
+      title: `Negotiation waiting — M-${offer.offer_number}`,
+      body: `No activity for ${hours}h. Please review.`,
+      icon: "alert",
+      category: "negotiations",
+      linkUrl: link,
+      relatedType: "negotiation",
+      relatedId: neg.id,
+    });
+
     nudged++;
   }
 

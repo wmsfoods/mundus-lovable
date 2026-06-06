@@ -13,8 +13,11 @@ project_id = "kypyqxicwbusadnlhnwe"
     verify_jwt = true
   [functions.prospect-phone-webhook]
     verify_jwt = false
-  [functions.public-lead-notify]
-    verify_jwt = false
+[functions.public-lead-notify]
+verify_jwt = false
+
+[functions.send-push]
+verify_jwt = false
   [functions.resend-webhook]
     verify_jwt = false
   [functions.send-password-reset]

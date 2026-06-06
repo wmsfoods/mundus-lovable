@@ -1,6 +1,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { requireUser } from "../_shared/auth.ts";
 import { checkRateLimit, rateLimitResponse, getClientIp } from "../_shared/rateLimit.ts";
+import { insertAppNotification } from "../_shared/appNotificationInsert.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -140,6 +141,28 @@ Deno.serve(async (req) => {
       }
     } else if (!skip_email) {
       console.warn('RESEND_API_KEY (resend_mundus) not set, skipping email');
+    }
+
+    const orderNumber = order?.order_number
+      ? `M-${String(order.order_number).padStart(6, '0')}-${new Date(order.placed_at).getFullYear()}`
+      : 'pending';
+    const { data: buyerUser } = await supabase
+      .from('users')
+      .select('id, company_id')
+      .eq('email', buyer_email)
+      .maybeSingle();
+    if (buyerUser?.id) {
+      await insertAppNotification(supabase, {
+        userId: buyerUser.id,
+        companyId: buyerUser.company_id,
+        title: 'Shipping instructions required',
+        body: `Please submit logistics details for order ${orderNumber}`,
+        icon: 'truck',
+        category: 'orders',
+        linkUrl: `/buyer/orders/${order_id}`,
+        relatedType: 'order',
+        relatedId: order_id,
+      });
     }
 
     return new Response(JSON.stringify({ url, token: request.token, request_id: request.id, expires_at: request.expires_at, email_sent: emailSent }), {

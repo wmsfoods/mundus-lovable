@@ -8,6 +8,7 @@ import {
   removePersistedValue,
   setPersistedValue,
 } from "@/lib/authStorage";
+import { registerPushNotifications, unregisterPushNotifications } from "@/lib/pushNotifications";
 
 const REMEMBER_KEY = "mundus.rememberMe";
 const TAB_MARKER_KEY = "mundus.session-tab";
@@ -53,6 +54,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       applySession(newSession);
       if (event === "SIGNED_IN" && newSession?.user) {
+        if (Capacitor.isNativePlatform()) {
+          void registerPushNotifications();
+        }
         // Fire-and-forget audit log; deferred so it runs after the auth handler returns
         setTimeout(() => {
           import("@/lib/auditLog").then(({ auditLog }) => {
@@ -68,6 +72,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (error) console.warn("[claim_pending_invites]", error.message);
           });
         }, 0);
+      }
+      if (event === "SIGNED_OUT" && Capacitor.isNativePlatform()) {
+        void unregisterPushNotifications();
       }
     });
 
@@ -98,6 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = async () => {
     try {
+      if (Capacitor.isNativePlatform()) {
+        await unregisterPushNotifications();
+      }
       await removePersistedValue(REMEMBER_KEY);
       sessionStorage.removeItem(TAB_MARKER_KEY);
     } catch {

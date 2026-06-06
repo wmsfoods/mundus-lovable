@@ -1,18 +1,10 @@
 /**
- * Mobile push notifications — Phase 1 stub.
- *
- * No Capacitor PushNotifications plugin is installed yet and there is no
- * `device_push_tokens` table, so this helper is intentionally a no-op that
- * resolves successfully. This satisfies the "degrade gracefully" requirement
- * (callers can always await it without try/catch).
- *
- * Phase 2 TODO:
- *   - install @capacitor/push-notifications
- *   - capture token on app start (src/capacitor.ts)
- *   - create `device_push_tokens(user_id, token, platform)` table + RLS
- *   - add `supabase/functions/send-push/index.ts` (FCM/APNs)
- *   - replace the body of `sendPushToCompanyUsers` with a call to that fn
+ * Server-side push dispatch helpers.
+ * Primary path: INSERT into app_notifications → DB trigger/webhook → send-push edge fn.
+ * This helper is for explicit client-side fan-out (e.g. closeDeal) when needed.
  */
+
+import { supabase } from "@/integrations/supabase/client";
 
 export type PushPayload = {
   title: string;
@@ -22,10 +14,41 @@ export type PushPayload = {
 };
 
 export async function sendPushToCompanyUsers(
-  _companyId: string | null | undefined,
-  _payload: PushPayload,
+  companyId: string | null | undefined,
+  payload: PushPayload,
 ): Promise<{ delivered: number; skipped: boolean }> {
-  // Phase 1: no tokens registered anywhere → always "skipped".
-  // Returning a resolved value (never throws) guarantees graceful degradation.
-  return { delivered: 0, skipped: true };
+  if (!companyId) return { delivered: 0, skipped: true };
+
+  try {
+    const { data: recipients, error: lookupErr } = await supabase.rpc(
+      "get_company_active_user_ids",
+      { p_company_id: companyId },
+    );
+    if (lookupErr || !recipients?.length) return { delivered: 0, skipped: true };
+
+    const userIds = (recipients as { user_id: string }[])
+      .map((r) => r.user_id)
+      .filter(Boolean);
+    if (userIds.length === 0) return { delivered: 0, skipped: true };
+
+    let totalDelivered = 0;
+    for (const userId of userIds) {
+      const { data, error } = await supabase.functions.invoke("send-push", {
+        body: {
+          user_id: userId,
+          title: payload.title,
+          body: payload.body ?? null,
+          url: payload.url ?? null,
+          category: payload.category ?? "system",
+        },
+      });
+      if (!error && data && typeof data.delivered === "number") {
+        totalDelivered += data.delivered;
+      }
+    }
+
+    return { delivered: totalDelivered, skipped: totalDelivered === 0 };
+  } catch {
+    return { delivered: 0, skipped: true };
+  }
 }

@@ -8,6 +8,7 @@ const WINE = "#8B2252";
 type Prefs = {
   in_app: boolean;
   email: boolean;
+  push: boolean;
   new_request_response: boolean;
   negotiation_rounds: boolean;
   order_status_changes: boolean;
@@ -21,6 +22,7 @@ type Prefs = {
 const DEFAULTS: Prefs = {
   in_app: true,
   email: true,
+  push: true,
   new_request_response: true,
   negotiation_rounds: true,
   order_status_changes: true,
@@ -121,6 +123,7 @@ export default function NotificationPreferences() {
         setPrefs({
           in_app: existing.in_app,
           email: existing.email,
+          push: existing.push ?? true,
           new_request_response: existing.new_request_response,
           negotiation_rounds: existing.negotiation_rounds,
           order_status_changes: existing.order_status_changes,
@@ -212,6 +215,12 @@ export default function NotificationPreferences() {
           sublabel={email ? `${email} · digest` : "Email digest"}
           value={prefs.email}
           onChange={(v) => update({ email: v })}
+        />
+        <ToggleRow
+          label="Push notifications"
+          sublabel="Alerts on your phone (Mundus app)"
+          value={prefs.push}
+          onChange={(v) => update({ push: v })}
         />
       </section>
 

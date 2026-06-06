@@ -11,6 +11,7 @@ import { RequireAuth } from "@/components/RequireAuth";
 import { RequireAdmin } from "@/components/RequireAdmin";
 import { PreLoginOnboardingRedirect } from "@/components/PreLoginOnboardingRedirect";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { PushNavigationHandler } from "@/components/PushNavigationHandler";
 import Login from "./pages/Login.tsx";
 import ForgotPassword from "./pages/auth/ForgotPassword.tsx";
 import ResetPassword from "./pages/auth/ResetPassword.tsx";
@@ -145,6 +146,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <PushNavigationHandler />
           <AuthProvider>
             <WeightUnitProvider>
             <Routes>

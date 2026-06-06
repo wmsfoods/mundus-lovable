@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { insertAppNotification } from "../_shared/appNotificationInsert.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -217,6 +218,30 @@ serve(async (req) => {
         "signupApproved",
         { userName },
       );
+      try {
+        const url = Deno.env.get("SUPABASE_URL");
+        const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+        if (url && key && userEmail) {
+          const sb = createClient(url, key);
+          const { data: authUser } = await sb
+            .from("users")
+            .select("id")
+            .eq("email", userEmail)
+            .maybeSingle();
+          if (authUser?.id) {
+            await insertAppNotification(sb, {
+              userId: authUser.id,
+              title: "Account approved",
+              body: "Your Mundus Trade account is ready. Sign in to get started.",
+              icon: "check",
+              category: "system",
+              linkUrl: "/login",
+            });
+          }
+        }
+      } catch (e) {
+        console.warn("[signup-notifications] in-app approval notify failed", e);
+      }
     } else if (action === "rejection") {
       const { userEmail, userName } = body;
       await sendAndLog(

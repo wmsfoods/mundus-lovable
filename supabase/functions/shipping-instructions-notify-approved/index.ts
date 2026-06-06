@@ -1,5 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 import { requireUser } from "../_shared/auth.ts";
+import { insertAppNotificationForCompany } from "../_shared/appNotificationInsert.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -121,6 +122,36 @@ Deno.serve(async (req) => {
     if (!resp.ok) {
       const txt = await resp.text();
       console.warn('Resend approved notify failed', resp.status, txt);
+    }
+
+    const buyerCompanyId = reqRow?.buyer_email
+      ? (await supabase.from('users').select('company_id').eq('email', reqRow.buyer_email).maybeSingle()).data?.company_id
+      : null;
+    const supplierCompanyId = supplier?.id ?? null;
+    const notifBody = `Shipping instructions approved for order ${orderNumber}`;
+    const orderLink = `/buyer/orders/${si.order_id}`;
+
+    if (buyerCompanyId) {
+      await insertAppNotificationForCompany(supabase, buyerCompanyId, {
+        title: 'Shipping instructions approved',
+        body: notifBody,
+        icon: 'truck',
+        category: 'orders',
+        linkUrl: orderLink,
+        relatedType: 'order',
+        relatedId: si.order_id,
+      });
+    }
+    if (supplierCompanyId) {
+      await insertAppNotificationForCompany(supabase, supplierCompanyId, {
+        title: 'Shipping instructions approved',
+        body: notifBody,
+        icon: 'truck',
+        category: 'orders',
+        linkUrl: `/supplier/sales/${si.order_id}`,
+        relatedType: 'order',
+        relatedId: si.order_id,
+      });
     }
 
     return new Response(JSON.stringify({ success: true, email_sent: emailSent, recipients }), {
