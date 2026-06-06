@@ -22,6 +22,7 @@ import { GlowCard } from "@/components/ui/spotlight-card";
 import { useOfferSocialBatch, type SocialCounts } from "@/hooks/useOfferSocial";
 import { OfferSocialBar } from "@/components/offers/OfferSocialBar";
 import { Gavel } from "lucide-react";
+import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
 import {
   OffersFilterBar,
   DEFAULT_OFFERS_FILTER,
@@ -333,6 +334,14 @@ export function OfferCard({
             </button>
           )}
         </div>
+        {!mixed && firstItem && (() => {
+          const meta = formatCutMetaFromOfferItem(firstItem, t);
+          return meta.length > 0 ? (
+            <div className="text-[11px] text-muted-foreground" style={{ marginTop: 4 }}>
+              {meta.join(" · ")}
+            </div>
+          ) : null;
+        })()}
       </div>
 
       <div className="oc-meta-grid">
@@ -781,6 +790,12 @@ export default function BuyerOffers() {
                         <div className="offers-list-muted">
                           {first?.customer_product?.standard_product?.product_category?.name_en ?? "—"} · {first?.condition ?? "—"}
                         </div>
+                        {!mixed && first && (() => {
+                          const meta = formatCutMetaFromOfferItem(first, t);
+                          return meta.length > 0 ? (
+                            <div className="offers-list-muted" style={{ fontSize: 11 }}>{meta.join(" · ")}</div>
+                          ) : null;
+                        })()}
                       </td>
                       <td>{offer.supplier_name ?? "—"}</td>
                       <td>
