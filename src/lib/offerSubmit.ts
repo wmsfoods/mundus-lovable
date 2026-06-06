@@ -1,6 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import type { CutRow } from "@/lib/cutRowTypes";
 import { compressImage } from "@/lib/imageOptimization";
+import { notifyCompanyUsers } from "@/lib/notifications";
 
 type PortFreightShape =
   | { mode: "same"; same: string }
@@ -389,6 +390,42 @@ export async function submitOfferV2(
       if (error) throw new Error(`freight_options failed: ${error.message}`);
     }
 
+    // 7. If this offer answers a buyer_request and is being published live,
+    // flip the request to `with_responses` and notify the buyer's company.
+    // Non-blocking — failures here must not roll back the offer.
+    if (input.requestId && ctx.status === "active") {
+      try {
+        const { error: updErr } = await supabase
+          .from("buyer_requests")
+          .update({ status: "with_responses", updated_at: new Date().toISOString() })
+          .eq("id", input.requestId);
+        if (updErr) {
+          console.error("[submitOfferV2] buyer_requests status update failed:", updErr.message);
+        }
+        const { data: req } = await supabase
+          .from("buyer_requests")
+          .select("buyer_company_id, product_name")
+          .eq("id", input.requestId)
+          .maybeSingle();
+        if (req?.buyer_company_id) {
+          await notifyCompanyUsers({
+            companyId: req.buyer_company_id as string,
+            title: "Supplier responded to your request",
+            body: `${ctx.supplierName} submitted an offer for ${
+              (req as { product_name?: string | null }).product_name || "your request"
+            }`,
+            icon: "package",
+            category: "requests",
+            linkUrl: `/buyer/requests/${input.requestId}`,
+            relatedType: "request",
+            relatedId: input.requestId,
+          }).catch((e) => console.error("[submitOfferV2] notify buyer failed:", e));
+        }
+      } catch (e) {
+        console.error("[submitOfferV2] post-publish request hook failed:", e);
+      }
+    }
+
     return { offerId, offerNumber: offer.offer_number as number };
   } catch (e) {
     console.error("[submitOfferV2] rollback after error:", e);
@@ -413,6 +450,14 @@ export async function updateOfferV2(
     const reason = validateForPublish(input);
     if (reason) throw new Error(reason);
   }
+
+  // Snapshot pre-update request_id so we can detect newly-linked requests.
+  const { data: priorRow } = await supabase
+    .from("offers")
+    .select("request_id")
+    .eq("id", offerId)
+    .maybeSingle();
+  const priorRequestId = (priorRow?.request_id as string | null) ?? null;
 
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
   const { shipment_month, shipment_year } = deriveShipment(l.shipmentReady);
@@ -616,5 +661,45 @@ export async function updateOfferV2(
     .select("offer_number")
     .eq("id", offerId)
     .maybeSingle();
+
+  // If edit newly attached a buyer_request and is published, fire the same
+  // post-publish hook (status flip + notify). Non-blocking.
+  if (
+    input.requestId &&
+    ctx.status === "active" &&
+    priorRequestId !== input.requestId
+  ) {
+    try {
+      const { error: updErr } = await supabase
+        .from("buyer_requests")
+        .update({ status: "with_responses", updated_at: new Date().toISOString() })
+        .eq("id", input.requestId);
+      if (updErr) {
+        console.error("[updateOfferV2] buyer_requests status update failed:", updErr.message);
+      }
+      const { data: req } = await supabase
+        .from("buyer_requests")
+        .select("buyer_company_id, product_name")
+        .eq("id", input.requestId)
+        .maybeSingle();
+      if (req?.buyer_company_id) {
+        await notifyCompanyUsers({
+          companyId: req.buyer_company_id as string,
+          title: "Supplier responded to your request",
+          body: `${ctx.supplierName} submitted an offer for ${
+            (req as { product_name?: string | null }).product_name || "your request"
+          }`,
+          icon: "package",
+          category: "requests",
+          linkUrl: `/buyer/requests/${input.requestId}`,
+          relatedType: "request",
+          relatedId: input.requestId,
+        }).catch((e) => console.error("[updateOfferV2] notify buyer failed:", e));
+      }
+    } catch (e) {
+      console.error("[updateOfferV2] post-publish request hook failed:", e);
+    }
+  }
+
   return { offerId, offerNumber: (row?.offer_number as number) ?? 0 };
 }
