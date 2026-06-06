@@ -53,7 +53,7 @@ import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
 import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
 import AdminNegotiations from "./pages/admin/AdminNegotiations.tsx";
 import AdminOffers from "./pages/admin/AdminOffers.tsx";
-import SupplierOfferDetail from "./pages/supplier/OfferDetail.tsx";
+// (admin route reuses SupplierOfferDetail imported below)
 import AdminOrders from "./pages/admin/AdminOrders.tsx";
 import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
