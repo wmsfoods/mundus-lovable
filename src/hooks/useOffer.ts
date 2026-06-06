@@ -15,6 +15,7 @@ export type OfferDetailItem = {
   condition: string;
   meat_specification: number | null;
   aging_method: string | null;
+  us_grade: string | null;
   packaging: string | null;
   customer_product: {
     id: string;
@@ -43,6 +44,7 @@ export type OfferDetailed = {
   origin_port: string;
   shipment_month: number;
   shipment_year: number;
+  shipment_ready_raw: string | null;
   payment_terms: string;
   container_size: string;
   total_fcl: number | null;
