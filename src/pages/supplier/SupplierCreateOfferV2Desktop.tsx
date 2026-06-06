@@ -1377,7 +1377,12 @@ export default function SupplierCreateOfferV2Desktop() {
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div id="v2-section-payment">
-            <PaymentTermsCard value={paymentTerms} onChange={setPaymentTerms} />
+            <PaymentTermsCard
+              value={paymentTerms}
+              onChange={setPaymentTerms}
+              supplierContextId={supplierContextId}
+              mode={mode}
+            />
           </div>
           <div id="v2-section-distribution">
             <DistributionCard value={distribution} onChange={setDistribution} />
