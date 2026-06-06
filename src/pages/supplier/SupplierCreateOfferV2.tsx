@@ -53,6 +53,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { containerCapacityKg } from "@/lib/units";
 import { useCompanyPlants } from "@/hooks/useCompanyPlants";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Settings2 } from "lucide-react";
 import type { NegotiationMode, NegotiationDial } from "@/components/offer/NegotiationHandlingControl";
 import { submitOfferV2 } from "@/lib/offerSubmit";
@@ -496,7 +498,12 @@ export default function SupplierCreateOfferV2() {
   const [searchParams] = useSearchParams();
   const editId = searchParams.get("id");
   const cloneId = searchParams.get("clone");
-  const requestId = searchParams.get("request_id");
+  // Accept V2 native param + legacy V1 aliases for cutover compatibility.
+  const requestId =
+    searchParams.get("request_id") ??
+    searchParams.get("from_request") ??
+    searchParams.get("from");
+  const asCompanyParam = searchParams.get("as_company");
   const mode: "create" | "edit" | "clone" | "fromRequest" = editId
     ? "edit"
     : cloneId
@@ -537,7 +544,46 @@ export default function SupplierCreateOfferV2() {
   const [engineModalOpen, setEngineModalOpen] = useState(false);
   const [quickFillOpen, setQuickFillOpen] = useState(false);
   const { company } = useCurrentCompany();
-  const { plants } = useCompanyPlants(company?.id);
+  const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
+
+  // Admin on-behalf: only honored for verified Mundus admins; non-admins
+  // silently fall back to their own company.
+  const adminMode = !!asCompanyParam && isMundusAdmin;
+  const [adminCompany, setAdminCompany] = useState<
+    { id: string; name: string; country: string | null } | null
+  >(null);
+  useEffect(() => {
+    if (!adminMode || !asCompanyParam) {
+      setAdminCompany(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      const { data } = await supabase
+        .from("companies")
+        .select("id, name, country")
+        .eq("id", asCompanyParam)
+        .maybeSingle();
+      if (cancelled) return;
+      if (data) {
+        setAdminCompany({
+          id: data.id as string,
+          name: (data.name as string) ?? "Supplier",
+          country: ((data as { country?: string | null }).country ?? null) as string | null,
+        });
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [adminMode, asCompanyParam]);
+
+  const supplierContextId = adminMode ? adminCompany?.id ?? null : company?.id ?? null;
+  const supplierContextName = adminMode
+    ? adminCompany?.name ?? "Supplier"
+    : company?.name ?? "Mundus Supplier";
+
+  const { plants } = useCompanyPlants(supplierContextId);
 
   // R6.A — apply parsed AI payload onto the V2 form state.
   const applyAiPrefill = (p: import("@/hooks/useAiParseOffer").ParsedOfferPayload) => {
@@ -684,7 +730,7 @@ export default function SupplierCreateOfferV2() {
 
   const handleSubmit = async (status: "draft" | "active") => {
     if (submitting) return;
-    if (!company?.id) {
+    if (!supplierContextId) {
       toast.error(t("supplier.createOfferV2.submit.noCompany", { defaultValue: "No supplier company linked to your account." }) as string);
       return;
     }
@@ -701,8 +747,8 @@ export default function SupplierCreateOfferV2() {
         requestId: mode === "fromRequest" ? requestId : null,
       };
       const ctx = {
-        supplierId: company.id,
-        supplierName: company.name || "Mundus Supplier",
+        supplierId: supplierContextId,
+        supplierName: supplierContextName,
         officeId: null,
         status,
       };
@@ -718,7 +764,11 @@ export default function SupplierCreateOfferV2() {
             ? (t("supplier.createOfferV2.submit.successDraft", { defaultValue: "Draft saved — {{n}}", n: label }) as string)
             : (t("supplier.createOfferV2.submit.successPublish", { defaultValue: "Offer {{n}} published successfully!", n: label }) as string),
       );
-      navigate("/supplier/offers");
+      if (adminMode && asCompanyParam) {
+        navigate(`/admin/companies/${asCompanyParam}`);
+      } else {
+        navigate("/supplier/offers");
+      }
     } catch (e: unknown) {
       const raw = e instanceof Error ? e.message : String(e);
       const knownKeys = new Set([
