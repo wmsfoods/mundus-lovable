@@ -643,6 +643,19 @@ export default function SupplierCreateOfferV2() {
       if (p.fclCount && p.fclCount > 0) next.fclCount = Math.floor(p.fclCount);
       if (p.temperature) next.temperature = p.temperature;
       if (p.shipmentReady) next.shipmentReady = p.shipmentReady;
+      // Pricing model — fix9 alignment
+      const pm = (p as any).pricingModel as "FOB" | "CFR" | "CIF" | "EXW" | null | undefined;
+      const refPort = (p as any).pricingReferencePort as
+        | { id: string | null; name: string | null; match: string; countryId: string | null }
+        | undefined;
+      if (pm === "FOB" || pm === "EXW") {
+        next.primaryPricingIncoterm = "FOB";
+        next.pricingReferencePortId = null;
+      } else if (pm === "CFR" || pm === "CIF") {
+        next.primaryPricingIncoterm = "CFR";
+        next.pricingReferencePortId = refPort?.id ?? null;
+      }
+      // pm === null → leave untouched so user decides in Edit Logistics
       return next;
     });
 
