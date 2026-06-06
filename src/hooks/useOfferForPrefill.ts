@@ -94,7 +94,7 @@ export function useOfferForPrefill(
           primary_pricing_incoterm,
           pricing_reference_port_id,
           items:offer_items (
-            id, amount, price, minimum_price, condition, packaging,
+            id, amount, price, minimum_price, condition, packaging, aging_method, us_grade,
             plant_id, brand_id, notes, photo_url, files_urls,
             customer_product:customer_products (
               id, name,
@@ -254,6 +254,8 @@ export function useOfferForPrefill(
         price: number;
         minimum_price: number;
         packaging: string | null;
+        aging_method: string | null;
+        us_grade: string | null;
         plant_id: string | null;
         brand_id: string | null;
         notes: string | null;
@@ -321,6 +323,16 @@ export function useOfferForPrefill(
           qty: Number(it.amount ?? 0),
           askPrice: Number(it.price ?? 0),
           floorPrice: Number(it.minimum_price ?? it.price ?? 0),
+          agingMethod:
+            it.aging_method === "wet" || it.aging_method === "dry" ? it.aging_method : null,
+          usGrade:
+            it.us_grade === "Prime" ||
+            it.us_grade === "Choice" ||
+            it.us_grade === "Select" ||
+            it.us_grade === "Non Roll" ||
+            it.us_grade === "Ungraded"
+              ? it.us_grade
+              : null,
           photoFile: null,
           photoPreviewUrl: null, // signed URL will be resolved lazily by media hook
           files: [],
