@@ -491,7 +491,11 @@ function BuyerOfferBody({
   );
 
   const containerLabel = `${offer.total_fcl ?? 1} × ${offer.container_size ?? ""} FCL`.trim();
-  const shipmentLabel = formatShipment(offer.shipment_month, offer.shipment_year);
+  const shipmentLabel = formatShipmentReadyDisplay({
+    raw: (offer as any).shipment_ready_raw,
+    month: offer.shipment_month,
+    year: offer.shipment_year,
+  });
 
   const originPortsAll: string[] = (originPorts ?? []).map((p: any) =>
     p.code ? `${p.name} (${p.code})` : p.name,
