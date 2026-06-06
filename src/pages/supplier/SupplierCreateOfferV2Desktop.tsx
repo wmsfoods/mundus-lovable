@@ -67,8 +67,6 @@ import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
 import { EditModeWarningBanner } from "@/components/supplier/CreateOfferV2/EditModeWarningBanner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { useIsMobile } from "@/hooks/use-mobile";
-import SupplierCreateOfferV2Mobile from "./SupplierCreateOfferV2Mobile";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -493,9 +491,7 @@ function Segmented<T extends string>({
   );
 }
 
-export default function SupplierCreateOfferV2() {
-  const isMobile = useIsMobile();
-  if (isMobile) return <SupplierCreateOfferV2Mobile />;
+export default function SupplierCreateOfferV2Desktop() {
   const { t } = useTranslation();
   const catalog = usePortsCatalog();
   const navigate = useNavigate();
