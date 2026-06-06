@@ -3,6 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { countryFlag } from "@/lib/countryFlags";
+import { Bot, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ArrowLeftIcon,
   ArrowsLeftRightIcon,
@@ -349,6 +352,10 @@ export default function SupplierNegotiationDetail() {
               <span className="nd-round-badge">
                 {t("supplier.negotiations.detail.roundOf", { round: d.round, max: d.maxRounds })}
               </span>
+              {rawNeg && <NegotiationModeBadge
+                mode={((rawNeg as any).negotiation_mode ?? "manual") as "manual" | "auto"}
+                dial={((rawNeg as any).negotiation_dial ?? "balanced") as "protect_margin" | "balanced" | "win_deal"}
+              />}
               <span className="nd-updated">
                 {t("supplier.negotiations.detail.updated", { date: fmtDate(d.updatedAt, locale) })}
               </span>
