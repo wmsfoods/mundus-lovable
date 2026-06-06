@@ -7759,6 +7759,7 @@ export type Database = {
         Args: { p_entity_type: string; p_ids: string[] }
         Returns: Json
       }
+      admin_reset_playground: { Args: { level?: string }; Returns: Json }
       admin_restore: {
         Args: { p_entity_type: string; p_ids: string[] }
         Returns: Json
