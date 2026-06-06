@@ -1731,6 +1731,83 @@ export default function SupplierCreateOfferV2() {
                 </Field>
               </div>
             </DrawerSection>
+
+            {/* 6. Pricing reference */}
+            <DrawerSection number={6} title={tk("pricingRef.title", "Pricing reference")}>
+              <p className="mb-3 text-xs text-muted-foreground">
+                {tk("pricingRef.subtitle", "How do you price this offer?")}
+              </p>
+              {(() => {
+                const op = drawerDraft.originPortIds[0]
+                  ? catalog.ports.find((p) => p.id === drawerDraft.originPortIds[0])
+                  : null;
+                const destPorts = drawerDraft.destinations.flatMap((d) =>
+                  d.selectedPortIds
+                    .map((pid) => catalog.ports.find((p) => p.id === pid))
+                    .filter((p): p is NonNullable<typeof p> => !!p),
+                );
+                const mode: "fob" | "cfr" = drawerDraft.pricingReferencePortId ? "cfr" : "fob";
+                return (
+                  <>
+                    <RadioGroup
+                      value={mode}
+                      onValueChange={(v) => {
+                        if (v === "fob") {
+                          setDrawerDraft((p) => ({ ...p, pricingReferencePortId: null }));
+                        } else {
+                          setDrawerDraft((p) => ({
+                            ...p,
+                            pricingReferencePortId: p.pricingReferencePortId ?? destPorts[0]?.id ?? null,
+                          }));
+                        }
+                      }}
+                      className="flex flex-col gap-2"
+                    >
+                      <label className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
+                        <RadioGroupItem value="fob" />
+                        <span>
+                          {tk("pricingRef.fobAtOrigin", "FOB at origin ({{port}})", {
+                            port: op?.name ?? "—",
+                          })}
+                        </span>
+                      </label>
+                      <div className="rounded-md border border-border p-2">
+                        <label className="flex items-center gap-2 text-sm">
+                          <RadioGroupItem value="cfr" />
+                          <span>{tk("pricingRef.cfrAtDest", "CFR at destination port:")}</span>
+                        </label>
+                        {mode === "cfr" && (
+                          <select
+                            className="mt-2 h-8 w-full rounded-md border border-border bg-card px-2 text-xs"
+                            value={drawerDraft.pricingReferencePortId ?? ""}
+                            onChange={(e) =>
+                              setDrawerDraft((p) => ({
+                                ...p,
+                                pricingReferencePortId: e.target.value || null,
+                              }))
+                            }
+                            disabled={destPorts.length === 0}
+                          >
+                            {destPorts.length === 0 && <option value="">—</option>}
+                            {destPorts.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </RadioGroup>
+                    <p className="mt-2 text-[11px] text-muted-foreground">
+                      {tk(
+                        "pricingRef.helpText",
+                        "All other incoterms will be calculated automatically from freight/insurance values.",
+                      )}
+                    </p>
+                  </>
+                );
+              })()}
+            </DrawerSection>
           </div>
 
           <SheetFooter className="flex-row items-center justify-between gap-3 border-t border-border bg-muted/20 p-4 sm:flex-row sm:justify-between">
@@ -1760,6 +1837,57 @@ export default function SupplierCreateOfferV2() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <AlertDialog
+        open={refChangeModal.open}
+        onOpenChange={(o) => !o && setRefChangeModal((s) => ({ ...s, open: false }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ⚠️ {tk("pricingRef.changeModal.title", "Change pricing reference")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {tk(
+                "pricingRef.changeModal.body",
+                "You're changing the pricing reference. What should happen?",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <RadioGroup
+            value={refChangeModal.mode}
+            onValueChange={(v) =>
+              setRefChangeModal((s) => ({ ...s, mode: v as "keepFob" | "keepAsk" }))
+            }
+            className="flex flex-col gap-2 py-2"
+          >
+            <label className="flex items-start gap-2 rounded-md border border-border p-2 text-sm">
+              <RadioGroupItem value="keepFob" className="mt-0.5" />
+              <span>
+                {tk(
+                  "pricingRef.changeModal.keepFob",
+                  "Keep the same FOB (recalculate ASK to match new port)",
+                )}
+              </span>
+            </label>
+            <label className="flex items-start gap-2 rounded-md border border-border p-2 text-sm">
+              <RadioGroupItem value="keepAsk" className="mt-0.5" />
+              <span>
+                {tk(
+                  "pricingRef.changeModal.keepAsk",
+                  "Keep the same ASK (FOB and other ports will recalculate)",
+                )}
+              </span>
+            </label>
+          </RadioGroup>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tk("drawer.footer.cancel", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => applyRefChange(refChangeModal.mode)}>
+              {tk("pricingRef.changeModal.apply", "Apply")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
