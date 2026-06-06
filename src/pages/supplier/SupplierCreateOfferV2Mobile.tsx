@@ -635,6 +635,14 @@ export default function SupplierCreateOfferV2Mobile() {
                       ))}
                     </div>
                   )}
+                  {(() => {
+                    const meta = formatCutMeta(c, t);
+                    return meta.length > 0 ? (
+                      <div className="mb-1 text-[11px] text-muted-foreground">
+                        {meta.join(" · ")}
+                      </div>
+                    ) : null;
+                  })()}
                   <div className="flex items-center justify-between text-xs">
                     <span className="text-muted-foreground">
                       {fmtQty(c.qty || 0, unit)} · {fmtPricePerUnit(c.askPrice || 0, unit)}
