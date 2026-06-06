@@ -224,6 +224,19 @@ Allowed enums:
 - protein: Beef, Pork, Poultry, Ovine
 - spec: Bone-In, Boneless, Offals
 - packing: Carton Box, Vacuum Pack, Bulk, Tray
+- pricingModel: FOB, CFR, CIF, EXW
+
+Pricing-model detection (CRITICAL):
+- Determine whether the QUOTED PRICE per item is FOB (origin port, freight quoted separately), CFR/CIF (price INCLUDES freight to a destination "anchor" port), or EXW (ex-works, treat similar to FOB).
+- Examples:
+  - "FOB Santos USD 4.20/kg, freight USD 0.18/kg to Shanghai" → pricingModel "FOB", pricingReferencePortName "Santos"
+  - "CFR Shanghai USD 4.38/kg" → pricingModel "CFR", pricingReferencePortName "Shanghai"
+  - "USD 4.20 delivered Hong Kong" → pricingModel "CFR", pricingReferencePortName "Hong Kong"
+  - "EXW plant USD 4.10/kg" → pricingModel "EXW", pricingReferencePortName null
+  - Just "price 4.20/kg" with no incoterm context → pricingModel null
+- When pricingModel is FOB or EXW, item prices are pure origin price; freight values for destinations must be separate.
+- When pricingModel is CFR or CIF, the item price ALREADY includes freight to pricingReferencePortName.
+- If multiple pricing models are mentioned, pick the most explicit / first.
 
 Conversion rules:
 - Quantities → kilograms (convert lbs ×0.4536, tons/MT ×1000).
@@ -253,6 +266,8 @@ JSON schema to return:
   "temperature": "Frozen"|"Chilled"|null,
   "shipmentReady": string|null,
   "paymentTerms": string|null,
+  "pricingModel": "FOB"|"CFR"|"CIF"|"EXW"|null,
+  "pricingReferencePortName": string|null,
   "items": [{
     "cutName": string,
     "protein": "Beef"|"Pork"|"Poultry"|"Ovine"|null,
@@ -421,6 +436,56 @@ If something is missing in the text, set the field to null (or empty array/false
     })) : [],
     model: MODEL,
   };
+
+  // ---- Pricing model + reference port resolution ----
+  const rawPricingModel = parsed?.pricingModel;
+  const pricingModel: 'FOB' | 'CFR' | 'CIF' | 'EXW' | null =
+    rawPricingModel === 'FOB' || rawPricingModel === 'CFR' ||
+    rawPricingModel === 'CIF' || rawPricingModel === 'EXW'
+      ? rawPricingModel
+      : null;
+  const refPortName: string | null = typeof parsed?.pricingReferencePortName === 'string'
+    ? parsed.pricingReferencePortName.trim() || null
+    : null;
+
+  let pricingReferencePort: { name: string | null; id: string | null; match: MatchStatus; countryId: string | null } = {
+    name: refPortName, id: null, match: refPortName ? 'not_found' : 'none', countryId: null,
+  };
+  if (refPortName) {
+    // For FOB/EXW the anchor is the origin port; for CFR/CIF it's a destination port.
+    // Constrain by candidate countries to keep the lookup small.
+    const candidateCountryIds: string[] = [];
+    if (pricingModel === 'FOB' || pricingModel === 'EXW') {
+      if ((result.origin.country as any)?.id) candidateCountryIds.push((result.origin.country as any).id);
+    } else {
+      for (const d of result.destinations) {
+        if ((d.country as any)?.id) candidateCountryIds.push((d.country as any).id);
+      }
+    }
+    let portsQuery = supabase.from('ports').select('id,name,country_id').limit(50);
+    if (candidateCountryIds.length > 0) {
+      portsQuery = supabase.from('ports').select('id,name,country_id').in('country_id', candidateCountryIds).limit(200);
+    } else {
+      portsQuery = supabase.from('ports').select('id,name,country_id').ilike('name', `%${refPortName}%`).limit(50);
+    }
+    const { data: portRows } = await portsQuery;
+    const portList = (portRows ?? []).map((p: any) => ({
+      id: p.id as string, name: p.name as string, country_id: (p.country_id ?? null) as string | null,
+      _key: norm(p.name),
+    }));
+    const exact = portList.find((p) => p._key === norm(refPortName));
+    if (exact) {
+      pricingReferencePort = { name: exact.name, id: exact.id, match: 'exact', countryId: exact.country_id };
+    } else {
+      const fuzzy = fuzzyMatch(refPortName, portList);
+      if (fuzzy) {
+        pricingReferencePort = { name: fuzzy.name, id: fuzzy.id, match: 'fuzzy', countryId: fuzzy.country_id };
+      }
+    }
+  }
+
+  (result as any).pricingModel = pricingModel;
+  (result as any).pricingReferencePort = pricingReferencePort;
 
   return new Response(JSON.stringify(result), {
     headers: { ...corsHeaders, 'Content-Type': 'application/json' },
