@@ -9,6 +9,8 @@ type LogisticsLike = {
   globalFreight: string;
   primaryPricingIncoterm?: "CFR" | "FOB" | null;
   shipmentReady?: string;
+  /** When set: supplier is pricing CFR at this destination port. Must be present in destinations.selectedPortIds. */
+  pricingReferencePortId?: string | null;
 };
 
 type DistributionLike = {
@@ -138,27 +140,19 @@ function cutsSection(cuts: CutRow[], hasPlants: boolean, incoterms: string[]): S
     missing.push(f("cutAtLeastOne"));
     return { key: "cuts", group: "cuts", labelKey: "completion.section.cuts", ok: false, started, missingFields: missing };
   }
-  const fobRequired = incoterms.includes("FOB");
   let needCut = false, needQty = false, needPrice = false, badFloor = false, needPlant = false;
-  let needFobAsk = false, badFobFloor = false;
   for (const c of cuts) {
     if (!c.cutId) needCut = true;
     if (!(c.qty > 0)) needQty = true;
     if (!(c.askPrice > 0)) needPrice = true;
     if (c.floorPrice > 0 && c.floorPrice > c.askPrice) badFloor = true;
     if (hasPlants && !c.plantId) needPlant = true;
-    if (fobRequired) {
-      if (!(c.fobAskPrice != null && c.fobAskPrice > 0)) needFobAsk = true;
-      if (c.fobFloorPrice != null && c.fobAskPrice != null && c.fobFloorPrice > 0 && c.fobFloorPrice > c.fobAskPrice) badFobFloor = true;
-    }
   }
   if (needCut) missing.push(f("cutSelection"));
   if (needQty) missing.push(f("cutQty"));
   if (needPrice) missing.push(f("cutPrice"));
   if (badFloor) missing.push(f("cutFloorAboveAsk"));
   if (needPlant) missing.push(f("cutPlant"));
-  if (needFobAsk) missing.push(f("fobAskPrice"));
-  if (badFobFloor) missing.push(f("fobFloorAboveAsk"));
   return { key: "cuts", group: "cuts", labelKey: "completion.section.cuts", ok: missing.length === 0, started, missingFields: missing };
 }
 
