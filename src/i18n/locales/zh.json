@@ -2935,7 +2935,22 @@
         "askLabelFob": "ASK $/kg (FOB {{port}})",
         "askLabelCfr": "ASK $/kg (CFR {{port}})",
         "floorLabelFob": "下限 $/kg (FOB {{port}})",
-        "floorLabelCfr": "下限 $/kg (CFR {{port}})"
+        "floorLabelCfr": "下限 $/kg (CFR {{port}})",
+        "aging": {
+          "label": "熟成",
+          "none": "—",
+          "wet": "湿式熟成",
+          "dry": "干式熟成"
+        },
+        "usGrade": {
+          "label": "USDA 等级",
+          "none": "—",
+          "prime": "Prime",
+          "choice": "Choice",
+          "select": "Select",
+          "nonRoll": "Non Roll",
+          "ungraded": "未分级"
+        }
       },
       "admin": {
         "actingAs": "以供应商身份操作: {{name}}"

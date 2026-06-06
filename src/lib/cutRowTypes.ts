@@ -20,6 +20,10 @@ export type CutRow = {
   qty: number;              // kg
   askPrice: number;         // $/kg
   floorPrice: number;       // $/kg
+  /** Beef aging — null when not set. Maps to offer_items.aging_method. */
+  agingMethod?: "wet" | "dry" | null;
+  /** USDA grade for US-region cuts. NULL otherwise. Maps to offer_items.us_grade. */
+  usGrade?: "Prime" | "Choice" | "Select" | "Non Roll" | "Ungraded" | null;
   photoFile: File | null;   // R3: in-memory; R5 uploads on submit
   photoPreviewUrl: string | null;
   files: { file: File; previewUrl: string }[];
@@ -52,6 +56,8 @@ export function emptyCutRow(): CutRow {
     qty: 0,
     askPrice: 0,
     floorPrice: 0,
+    agingMethod: null,
+    usGrade: null,
     photoFile: null,
     photoPreviewUrl: null,
     files: [],

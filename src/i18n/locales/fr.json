@@ -2935,7 +2935,22 @@
         "askLabelFob": "ASK $/kg (FOB {{port}})",
         "askLabelCfr": "ASK $/kg (CFR {{port}})",
         "floorLabelFob": "PLANCHER $/kg (FOB {{port}})",
-        "floorLabelCfr": "PLANCHER $/kg (CFR {{port}})"
+        "floorLabelCfr": "PLANCHER $/kg (CFR {{port}})",
+        "aging": {
+          "label": "Affinage",
+          "none": "—",
+          "wet": "Wet Aged",
+          "dry": "Dry Aged"
+        },
+        "usGrade": {
+          "label": "Classification USDA",
+          "none": "—",
+          "prime": "Prime",
+          "choice": "Choice",
+          "select": "Select",
+          "nonRoll": "Non Roll",
+          "ungraded": "Non classé"
+        }
       },
       "admin": {
         "actingAs": "Agissant en tant que fournisseur : {{name}}"

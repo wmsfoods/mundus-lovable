@@ -2949,7 +2949,22 @@
         "askLabelFob": "ASK $/kg (FOB {{port}})",
         "askLabelCfr": "ASK $/kg (CFR {{port}})",
         "floorLabelFob": "FLOOR $/kg (FOB {{port}})",
-        "floorLabelCfr": "FLOOR $/kg (CFR {{port}})"
+        "floorLabelCfr": "FLOOR $/kg (CFR {{port}})",
+        "aging": {
+          "label": "Aging",
+          "none": "—",
+          "wet": "Wet Aged",
+          "dry": "Dry Aged"
+        },
+        "usGrade": {
+          "label": "USDA Grade",
+          "none": "—",
+          "prime": "Prime",
+          "choice": "Choice",
+          "select": "Select",
+          "nonRoll": "Non Roll",
+          "ungraded": "Ungraded"
+        }
       },
       "admin": {
         "actingAs": "Acting as supplier: {{name}}"

@@ -1,0 +1,1 @@
+ALTER TABLE public.offer_items ADD COLUMN IF NOT EXISTS us_grade text NULL;
