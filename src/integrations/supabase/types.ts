@@ -5617,6 +5617,7 @@ export type Database = {
           primary_pricing_incoterm: string | null
           request_id: string | null
           shipment_month: number
+          shipment_ready_raw: string | null
           shipment_year: number
           specific_buyer_company_ids: string[] | null
           status: string | null
@@ -5655,6 +5656,7 @@ export type Database = {
           primary_pricing_incoterm?: string | null
           request_id?: string | null
           shipment_month: number
+          shipment_ready_raw?: string | null
           shipment_year: number
           specific_buyer_company_ids?: string[] | null
           status?: string | null
@@ -5693,6 +5695,7 @@ export type Database = {
           primary_pricing_incoterm?: string | null
           request_id?: string | null
           shipment_month?: number
+          shipment_ready_raw?: string | null
           shipment_year?: number
           specific_buyer_company_ids?: string[] | null
           status?: string | null
@@ -7964,6 +7967,7 @@ export type Database = {
           primary_pricing_incoterm: string | null
           request_id: string | null
           shipment_month: number
+          shipment_ready_raw: string | null
           shipment_year: number
           specific_buyer_company_ids: string[] | null
           status: string | null
