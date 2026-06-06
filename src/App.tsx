@@ -113,7 +113,6 @@ import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import CutComparison from "./pages/supplier/CutComparison.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
-import AiQuickfillSamples from "./pages/dev/AiQuickfillSamples.tsx";
 import Profile from "./pages/Profile.tsx";
 import Notifications from "./pages/Notifications.tsx";
 import NotificationPreferences from "./pages/settings/NotificationPreferences.tsx";
@@ -137,7 +136,8 @@ const App = () => (
             <Route path="/" element={<PreLoginOnboardingRedirect />} />
             <Route path="/welcome" element={<Navigate to="/onboarding" replace />} />
             <Route path="/dev" element={<DevIndex />} />
-            <Route path="/dev/ai-quickfill-samples" element={<AiQuickfillSamples />} />
+            <Route path="/dev/ai-quickfill-samples" element={<Navigate to="/admin/docs?tab=admin&doc=ai-quickfill-samples" replace />} />
+            <Route path="/admin/docs/ai-quickfill-samples" element={<Navigate to="/admin/docs?tab=admin&doc=ai-quickfill-samples" replace />} />
             <Route path="/home" element={<PublicHome />} />
             <Route path="/login" element={<Login />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
