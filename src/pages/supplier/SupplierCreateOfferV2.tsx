@@ -1325,6 +1325,11 @@ export default function SupplierCreateOfferV2() {
           containerSize={logistics.containerSize}
           cutRegion={cutRegion}
           setCutRegion={setCutRegion}
+          companyOverride={
+            adminMode && adminCompany
+              ? { id: adminCompany.id, name: adminCompany.name, country: adminCompany.country }
+              : null
+          }
           pricingRefLabel={(() => {
             if (!logistics.pricingReferencePortId) {
               const op = logistics.originPortIds[0]
