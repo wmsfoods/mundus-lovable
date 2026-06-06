@@ -53,6 +53,7 @@ import AdminCompanies from "./pages/admin/AdminCompanies.tsx";
 import AdminCompanyDetail from "./pages/admin/AdminCompanyDetail.tsx";
 import AdminNegotiations from "./pages/admin/AdminNegotiations.tsx";
 import AdminOffers from "./pages/admin/AdminOffers.tsx";
+import AdminOfferDetail from "./pages/admin/AdminOfferDetail.tsx";
 import AdminOrders from "./pages/admin/AdminOrders.tsx";
 import AdminOrderDetail from "./pages/admin/AdminOrderDetail.tsx";
 import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
@@ -309,7 +310,7 @@ const App = () => (
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
               <Route path="offers" element={<AdminOffers />} />
-              <Route path="offers/:id" element={<SupplierOfferDetail />} />
+              <Route path="offers/:id" element={<AdminOfferDetail />} />
               <Route path="deals" element={<AdminOrders />} />
               <Route path="deals/:id" element={<AdminOrderDetail />} />
               <Route path="negotiations" element={<AdminNegotiations />} />
