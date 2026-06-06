@@ -48,9 +48,11 @@ supabase functions deploy send-push
 
 ## iOS notes
 
-- Push capability must stay enabled in Xcode (entitlements: `App/App.entitlements`)
+- Push capability: `App/App.entitlements` (`aps-environment`)
 - Test on a **physical device** (simulator does not receive remote push)
-- For TestFlight/App Store, change `aps-environment` to `production` in entitlements
+- **TestFlight / App Store:** `aps-environment` must be `production` (already set in repo)
+
+See [TESTFLIGHT-PUSH-IOS.md](./TESTFLIGHT-PUSH-IOS.md) for full pre-TestFlight checklist and debugging.
 
 ## Android notes
 
