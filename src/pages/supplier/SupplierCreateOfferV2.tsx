@@ -866,6 +866,18 @@ export default function SupplierCreateOfferV2() {
     setDrawerDraft((prev) => {
       const exists = prev.destinations.find((d) => d.countryId === countryId);
       if (exists) {
+        if (
+          prev.pricingReferencePortId &&
+          exists.selectedPortIds.includes(prev.pricingReferencePortId)
+        ) {
+          const p = catalog.ports.find((x) => x.id === prev.pricingReferencePortId);
+          toast.error(
+            tk("pricingRef.cannotRemove",
+              "{{port}} is your pricing anchor. Change the reference port first before removing this destination.",
+              { port: p?.name ?? "Port" }),
+          );
+          return prev;
+        }
         return { ...prev, destinations: prev.destinations.filter((d) => d.countryId !== countryId) };
       }
       const c = catalog.getCountryById(countryId);
