@@ -450,33 +450,13 @@ function BuyerOfferBody({
     ? `${selectedFreight.ports.name}${selectedFreight.ports.code ? ` (${selectedFreight.ports.code})` : ""}`
     : null;
 
-  // FOB avg (weighted by amount)
-  const fobAvgPricePerKg = (() => {
-    let totalAmt = 0;
-    let totalFob = 0;
-    for (const it of items) {
-      const amt = Number(it.amount ?? 0);
-      const fob = it.fob_ask_price != null ? Number(it.fob_ask_price) : null;
-      if (amt > 0 && fob != null && fob > 0) {
-        totalAmt += amt;
-        totalFob += fob * amt;
-      }
-    }
-    return totalAmt > 0 ? totalFob / totalAmt : null;
-  })();
-
   const cardItems: OfferCardItem[] = items.map((it: OfferDetailItem) => {
     const basePrice = Number(it.price ?? 0);
     const qty = Number(it.amount ?? 0);
     let adjustedPricePerKgUsd: number | null = null;
     let adjustedLabel: string | null = null;
     if (calcSelection.incoterm) {
-      if (calcSelection.incoterm === "FOB") {
-        if (it.fob_ask_price != null && Number(it.fob_ask_price) > 0) {
-          adjustedPricePerKgUsd = Number(it.fob_ask_price);
-          adjustedLabel = "FOB";
-        }
-      } else if (selectedFreight && qty > 0) {
+      if (selectedFreight && qty > 0) {
         const br = computeFinalPrice(
           basePrice,
           qty,
