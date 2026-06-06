@@ -246,8 +246,8 @@ const App = () => (
               <Route path="auctions" element={<SupplierAuctions />} />
               <Route path="auctions/create" element={<SupplierCreateAuction />} />
               <Route path="auctions/:id" element={<SupplierAuctionDetail />} />
-              <Route path="offers/new" element={<SupplierCreateOffer />} />
-              <Route path="offers/new-v2" element={<SupplierCreateOfferV2 />} />
+              <Route path="offers/new" element={<SupplierCreateOfferV2 />} />
+              <Route path="offers/new-v2" element={<RedirectPreservingQuery to="/supplier/offers/new" />} />
               <Route path="offers/:id" element={<SupplierOfferDetail />} />
               <Route path="requests" element={<SupplierRequests />} />
               <Route path="requests/:id" element={<SupplierRequestDetail />} />
@@ -340,7 +340,7 @@ const App = () => (
               <Route path="outreach/templates" element={<OutreachTemplates />} />
               <Route path="settings/email" element={<EmailSettings />} />
               <Route path="email-preview" element={<EmailPreview />} />
-              <Route path="create-offer" element={<SupplierCreateOffer />} />
+              <Route path="create-offer" element={<SupplierCreateOfferV2 />} />
               <Route path="create-request" element={<BuyerCreateRequest />} />
               <Route path="email-queue" element={<EmailQueue />} />
               <Route path="email-activity" element={<EmailActivity />} />
