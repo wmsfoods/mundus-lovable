@@ -2911,11 +2911,11 @@
           "cutQty": "quantidade",
           "cutPrice": "preço pedido",
           "cutFloorAboveAsk": "preço mínimo maior que o pedido",
-          "fobAskPrice": "preço FOB pedido",
-          "fobFloorAboveAsk": "FOB piso maior que FOB pedido",
           "cutPlant": "planta atribuída",
           "paymentTerm": "forma de pagamento",
-          "distributionChannel": "canal de distribuição"
+          "distributionChannel": "canal de distribuição",
+          "referencePortFreight": "frete para o porto de referência de preço",
+          "referencePortNotInDestinations": "o porto de referência deve estar nos destinos"
         },
         "missingToPublish": "Faltando para publicar:",
         "missingInSection": "Faltando nesta seção:",
@@ -2923,6 +2923,32 @@
         "expand": "Detalhes",
         "collapse": "Ocultar",
         "missingFieldsBanner": "{{n}} campos faltando para publicar — veja as pílulas acima"
+      },
+      "pricingRef": {
+        "title": "Referência de preço",
+        "subtitle": "Como você precifica essa oferta?",
+        "fobAtOrigin": "FOB na origem ({{port}})",
+        "cfrAtDest": "CFR no porto de destino:",
+        "helpText": "Os demais incoterms serão calculados automaticamente a partir dos valores de frete/seguro.",
+        "cannotRemove": "{{port}} é seu porto âncora. Mude a referência antes de remover esse destino.",
+        "changeModal": {
+          "title": "Alterar referência de preço",
+          "body": "Você está alterando a referência de preço. O que deve acontecer?",
+          "keepFob": "Manter o mesmo FOB (recalcular ASK para o novo porto)",
+          "keepAsk": "Manter o mesmo ASK (FOB e outros portos serão recalculados)",
+          "apply": "Aplicar"
+        }
+      },
+      "derivedPreview": {
+        "title": "Prévia de preços derivados — o que os compradores verão",
+        "empty": "Adicione um cut com preço ASK para visualizar os preços derivados.",
+        "anchor": "âncora"
+      },
+      "cuts": {
+        "askLabelFob": "ASK $/kg (FOB {{port}})",
+        "askLabelCfr": "ASK $/kg (CFR {{port}})",
+        "floorLabelFob": "PISO $/kg (FOB {{port}})",
+        "floorLabelCfr": "PISO $/kg (CFR {{port}})"
       }
     },
     "brands": {

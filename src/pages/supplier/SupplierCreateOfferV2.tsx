@@ -39,6 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3, Check, ChevronsUpDown, AlertTriangle, ChevronDown } from "lucide-react";
 import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
+import { DerivedPricesPreview } from "@/components/supplier/CreateOfferV2/DerivedPricesPreview";
 import { type CutRow } from "@/lib/cutRowTypes";
 import { emptyCutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
@@ -63,6 +64,17 @@ import { useOfferForPrefill } from "@/hooks/useOfferForPrefill";
 import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
 import { EditModeWarningBanner } from "@/components/supplier/CreateOfferV2/EditModeWarningBanner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
@@ -727,6 +739,11 @@ export default function SupplierCreateOfferV2() {
   const [drawerFocus, setDrawerFocus] = useState<DrawerFocus>("origin");
   const [destSearch, setDestSearch] = useState("");
   const [destRegion, setDestRegion] = useState<Region>("All");
+  const [refChangeModal, setRefChangeModal] = useState<{
+    open: boolean;
+    nextLogistics: LogisticsState | null;
+    mode: "keepFob" | "keepAsk";
+  }>({ open: false, nextLogistics: null, mode: "keepFob" });
 
   const breakdown = useMemo(
     () =>
@@ -786,7 +803,54 @@ export default function SupplierCreateOfferV2() {
   };
 
   const saveDrawer = () => {
+    const refChanged =
+      drawerDraft.pricingReferencePortId !== logistics.pricingReferencePortId;
+    const hasPricedCuts = cuts.some((c) => c.askPrice > 0);
+    if (refChanged && hasPricedCuts) {
+      setRefChangeModal({ open: true, nextLogistics: drawerDraft, mode: "keepFob" });
+      return;
+    }
     setLogistics(drawerDraft);
+    setDrawerOpen(false);
+  };
+
+  const freightPerKgForPort = (l: LogisticsState, portId: string, totalKg: number): number => {
+    if (!(totalKg > 0)) return 0;
+    if (l.sameFreightGlobal) return (parseFloat(l.globalFreight) || 0) / totalKg;
+    for (const d of l.destinations) {
+      if (!d.selectedPortIds.includes(portId)) continue;
+      const usd =
+        d.freight.mode === "same"
+          ? parseFloat(d.freight.same) || 0
+          : parseFloat(d.freight.perPort[portId] ?? "") || 0;
+      return usd / totalKg;
+    }
+    return 0;
+  };
+
+  const applyRefChange = (mode: "keepFob" | "keepAsk") => {
+    const next = refChangeModal.nextLogistics;
+    if (!next) return;
+    if (mode === "keepFob") {
+      // Determine current FOB per-kg per cut (using OLD reference), then recompute ASK with new reference.
+      const totalKg = cuts.reduce((s, c) => s + (c.qty || 0), 0);
+      const oldRef = logistics.pricingReferencePortId;
+      const newRef = next.pricingReferencePortId;
+      const oldFreightPerKg = oldRef ? freightPerKgForPort(logistics, oldRef, totalKg) : 0;
+      const newFreightPerKg = newRef ? freightPerKgForPort(next, newRef, totalKg) : 0;
+      setCuts(
+        cuts.map((c) => {
+          if (!(c.askPrice > 0)) return c;
+          const fob = c.askPrice - oldFreightPerKg;
+          const newAsk = fob + newFreightPerKg;
+          const oldFloorFob = c.floorPrice > 0 ? c.floorPrice - oldFreightPerKg : 0;
+          const newFloor = oldFloorFob > 0 ? oldFloorFob + newFreightPerKg : c.floorPrice;
+          return { ...c, askPrice: Math.max(0, newAsk), floorPrice: Math.max(0, newFloor) };
+        }),
+      );
+    }
+    setLogistics(next);
+    setRefChangeModal({ open: false, nextLogistics: null, mode: "keepFob" });
     setDrawerOpen(false);
   };
 
@@ -854,6 +918,18 @@ export default function SupplierCreateOfferV2() {
     setDrawerDraft((prev) => {
       const exists = prev.destinations.find((d) => d.countryId === countryId);
       if (exists) {
+        if (
+          prev.pricingReferencePortId &&
+          exists.selectedPortIds.includes(prev.pricingReferencePortId)
+        ) {
+          const p = catalog.ports.find((x) => x.id === prev.pricingReferencePortId);
+          toast.error(
+            tk("pricingRef.cannotRemove",
+              "{{port}} is your pricing anchor. Change the reference port first before removing this destination.",
+              { port: p?.name ?? "Port" }),
+          );
+          return prev;
+        }
         return { ...prev, destinations: prev.destinations.filter((d) => d.countryId !== countryId) };
       }
       const c = catalog.getCountryById(countryId);
@@ -877,14 +953,27 @@ export default function SupplierCreateOfferV2() {
   };
 
   const togglePortInDest = (countryId: string, portId: string) => {
-    setDrawerDraft((prev) => ({
-      ...prev,
-      destinations: prev.destinations.map((d) => {
-        if (d.countryId !== countryId) return d;
-        const has = d.selectedPortIds.includes(portId);
-        return { ...d, selectedPortIds: has ? d.selectedPortIds.filter((p) => p !== portId) : [...d.selectedPortIds, portId] };
-      }),
-    }));
+    setDrawerDraft((prev) => {
+      const dest = prev.destinations.find((d) => d.countryId === countryId);
+      const removing = dest?.selectedPortIds.includes(portId);
+      if (removing && prev.pricingReferencePortId === portId) {
+        const p = catalog.ports.find((x) => x.id === portId);
+        toast.error(
+          tk("pricingRef.cannotRemove",
+            "{{port}} is your pricing anchor. Change the reference port first before removing this destination.",
+            { port: p?.name ?? "Port" }),
+        );
+        return prev;
+      }
+      return {
+        ...prev,
+        destinations: prev.destinations.map((d) => {
+          if (d.countryId !== countryId) return d;
+          const has = d.selectedPortIds.includes(portId);
+          return { ...d, selectedPortIds: has ? d.selectedPortIds.filter((p) => p !== portId) : [...d.selectedPortIds, portId] };
+        }),
+      };
+    });
   };
 
   const setDestFreightMode = (countryId: string, mode: "same" | "perPort") => {
@@ -1173,6 +1262,26 @@ export default function SupplierCreateOfferV2() {
             return `CFR ${dp?.name ?? "destination"}`;
           })()}
         />
+        {(() => {
+          const op = logistics.originPortIds[0]
+            ? catalog.ports.find((p) => p.id === logistics.originPortIds[0])
+            : null;
+          const destPorts = logistics.destinations.flatMap((d) =>
+            d.selectedPortIds
+              .map((pid) => catalog.ports.find((p) => p.id === pid))
+              .filter((p): p is NonNullable<typeof p> => !!p)
+              .map((p) => ({ id: p.id, name: p.name })),
+          );
+          return (
+            <DerivedPricesPreview
+              cuts={cuts}
+              logistics={logistics}
+              originPortName={op?.name ?? ""}
+              destinationPorts={destPorts}
+              totalKgPerOffer={totalCutKg}
+            />
+          );
+        })()}
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
           <div id="v2-section-payment">
@@ -1622,6 +1731,83 @@ export default function SupplierCreateOfferV2() {
                 </Field>
               </div>
             </DrawerSection>
+
+            {/* 6. Pricing reference */}
+            <DrawerSection number={6} title={tk("pricingRef.title", "Pricing reference")}>
+              <p className="mb-3 text-xs text-muted-foreground">
+                {tk("pricingRef.subtitle", "How do you price this offer?")}
+              </p>
+              {(() => {
+                const op = drawerDraft.originPortIds[0]
+                  ? catalog.ports.find((p) => p.id === drawerDraft.originPortIds[0])
+                  : null;
+                const destPorts = drawerDraft.destinations.flatMap((d) =>
+                  d.selectedPortIds
+                    .map((pid) => catalog.ports.find((p) => p.id === pid))
+                    .filter((p): p is NonNullable<typeof p> => !!p),
+                );
+                const mode: "fob" | "cfr" = drawerDraft.pricingReferencePortId ? "cfr" : "fob";
+                return (
+                  <>
+                    <RadioGroup
+                      value={mode}
+                      onValueChange={(v) => {
+                        if (v === "fob") {
+                          setDrawerDraft((p) => ({ ...p, pricingReferencePortId: null }));
+                        } else {
+                          setDrawerDraft((p) => ({
+                            ...p,
+                            pricingReferencePortId: p.pricingReferencePortId ?? destPorts[0]?.id ?? null,
+                          }));
+                        }
+                      }}
+                      className="flex flex-col gap-2"
+                    >
+                      <label className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
+                        <RadioGroupItem value="fob" />
+                        <span>
+                          {tk("pricingRef.fobAtOrigin", "FOB at origin ({{port}})", {
+                            port: op?.name ?? "—",
+                          })}
+                        </span>
+                      </label>
+                      <div className="rounded-md border border-border p-2">
+                        <label className="flex items-center gap-2 text-sm">
+                          <RadioGroupItem value="cfr" />
+                          <span>{tk("pricingRef.cfrAtDest", "CFR at destination port:")}</span>
+                        </label>
+                        {mode === "cfr" && (
+                          <select
+                            className="mt-2 h-8 w-full rounded-md border border-border bg-card px-2 text-xs"
+                            value={drawerDraft.pricingReferencePortId ?? ""}
+                            onChange={(e) =>
+                              setDrawerDraft((p) => ({
+                                ...p,
+                                pricingReferencePortId: e.target.value || null,
+                              }))
+                            }
+                            disabled={destPorts.length === 0}
+                          >
+                            {destPorts.length === 0 && <option value="">—</option>}
+                            {destPorts.map((p) => (
+                              <option key={p.id} value={p.id}>
+                                {p.name}
+                              </option>
+                            ))}
+                          </select>
+                        )}
+                      </div>
+                    </RadioGroup>
+                    <p className="mt-2 text-[11px] text-muted-foreground">
+                      {tk(
+                        "pricingRef.helpText",
+                        "All other incoterms will be calculated automatically from freight/insurance values.",
+                      )}
+                    </p>
+                  </>
+                );
+              })()}
+            </DrawerSection>
           </div>
 
           <SheetFooter className="flex-row items-center justify-between gap-3 border-t border-border bg-muted/20 p-4 sm:flex-row sm:justify-between">
@@ -1651,6 +1837,57 @@ export default function SupplierCreateOfferV2() {
           </SheetFooter>
         </SheetContent>
       </Sheet>
+
+      <AlertDialog
+        open={refChangeModal.open}
+        onOpenChange={(o) => !o && setRefChangeModal((s) => ({ ...s, open: false }))}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              ⚠️ {tk("pricingRef.changeModal.title", "Change pricing reference")}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {tk(
+                "pricingRef.changeModal.body",
+                "You're changing the pricing reference. What should happen?",
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <RadioGroup
+            value={refChangeModal.mode}
+            onValueChange={(v) =>
+              setRefChangeModal((s) => ({ ...s, mode: v as "keepFob" | "keepAsk" }))
+            }
+            className="flex flex-col gap-2 py-2"
+          >
+            <label className="flex items-start gap-2 rounded-md border border-border p-2 text-sm">
+              <RadioGroupItem value="keepFob" className="mt-0.5" />
+              <span>
+                {tk(
+                  "pricingRef.changeModal.keepFob",
+                  "Keep the same FOB (recalculate ASK to match new port)",
+                )}
+              </span>
+            </label>
+            <label className="flex items-start gap-2 rounded-md border border-border p-2 text-sm">
+              <RadioGroupItem value="keepAsk" className="mt-0.5" />
+              <span>
+                {tk(
+                  "pricingRef.changeModal.keepAsk",
+                  "Keep the same ASK (FOB and other ports will recalculate)",
+                )}
+              </span>
+            </label>
+          </RadioGroup>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tk("drawer.footer.cancel", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction onClick={() => applyRefChange(refChangeModal.mode)}>
+              {tk("pricingRef.changeModal.apply", "Apply")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }

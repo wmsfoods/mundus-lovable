@@ -2657,7 +2657,6 @@
           "fobFloorErr": "FOB Floor must be ≤ FOB Ask",
           "subtotal": "Subtotal"
         },
-        "fobTooltip": "FOB price is fixed at origin and does not vary by destination port",
         "capacity": {
           "title": "Container capacity",
           "stateEmpty": "Add cuts to start filling the container",
@@ -2913,10 +2912,10 @@
           "cutPrice": "ask price",
           "cutFloorAboveAsk": "floor price exceeds ask",
           "cutPlant": "plant assignment",
-          "fobAskPrice": "FOB ask price",
-          "fobFloorAboveAsk": "FOB floor exceeds FOB ask",
           "paymentTerm": "payment term",
-          "distributionChannel": "distribution channel"
+          "distributionChannel": "distribution channel",
+          "referencePortFreight": "freight for pricing reference port",
+          "referencePortNotInDestinations": "pricing reference port must be in destinations"
         },
         "missingToPublish": "Missing to publish:",
         "missingInSection": "Missing in this section:",
@@ -2924,6 +2923,32 @@
         "expand": "Details",
         "collapse": "Hide",
         "missingFieldsBanner": "{{n}} fields missing to publish — see pills above"
+      },
+      "pricingRef": {
+        "title": "Pricing reference",
+        "subtitle": "How do you price this offer?",
+        "fobAtOrigin": "FOB at origin ({{port}})",
+        "cfrAtDest": "CFR at destination port:",
+        "helpText": "All other incoterms will be calculated automatically from freight/insurance values.",
+        "cannotRemove": "{{port}} is your pricing anchor. Change the reference port first before removing this destination.",
+        "changeModal": {
+          "title": "Change pricing reference",
+          "body": "You're changing the pricing reference. What should happen?",
+          "keepFob": "Keep the same FOB (recalculate ASK to match new port)",
+          "keepAsk": "Keep the same ASK (FOB and other ports will recalculate)",
+          "apply": "Apply"
+        }
+      },
+      "derivedPreview": {
+        "title": "Derived prices preview — what buyers will see",
+        "empty": "Add a cut with ASK price to preview derived prices.",
+        "anchor": "anchor"
+      },
+      "cuts": {
+        "askLabelFob": "ASK $/kg (FOB {{port}})",
+        "askLabelCfr": "ASK $/kg (CFR {{port}})",
+        "floorLabelFob": "FLOOR $/kg (FOB {{port}})",
+        "floorLabelCfr": "FLOOR $/kg (CFR {{port}})"
       }
     },
     "brands": {

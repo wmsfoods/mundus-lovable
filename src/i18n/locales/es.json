@@ -2911,11 +2911,11 @@
           "cutQty": "cantidad",
           "cutPrice": "precio solicitado",
           "cutFloorAboveAsk": "precio mínimo mayor que el solicitado",
-          "fobAskPrice": "precio FOB solicitado",
-          "fobFloorAboveAsk": "FOB piso mayor que FOB oferta",
           "cutPlant": "planta asignada",
           "paymentTerm": "forma de pago",
-          "distributionChannel": "canal de distribución"
+          "distributionChannel": "canal de distribución",
+          "referencePortFreight": "flete para el puerto de referencia de precio",
+          "referencePortNotInDestinations": "el puerto de referencia debe estar en los destinos"
         },
         "missingToPublish": "Falta para publicar:",
         "missingInSection": "Falta en esta sección:",
@@ -2923,6 +2923,32 @@
         "expand": "Detalles",
         "collapse": "Ocultar",
         "missingFieldsBanner": "{{n}} campos faltan para publicar — vea las píldoras arriba"
+      },
+      "pricingRef": {
+        "title": "Referencia de precio",
+        "subtitle": "¿Cómo fija el precio de esta oferta?",
+        "fobAtOrigin": "FOB en origen ({{port}})",
+        "cfrAtDest": "CFR en puerto de destino:",
+        "helpText": "Los demás incoterms se calcularán automáticamente a partir de los valores de flete/seguro.",
+        "cannotRemove": "{{port}} es su puerto ancla. Cambie la referencia antes de eliminar este destino.",
+        "changeModal": {
+          "title": "Cambiar referencia de precio",
+          "body": "Está cambiando la referencia de precio. ¿Qué desea que ocurra?",
+          "keepFob": "Mantener el mismo FOB (recalcular ASK al nuevo puerto)",
+          "keepAsk": "Mantener el mismo ASK (FOB y otros puertos se recalcularán)",
+          "apply": "Aplicar"
+        }
+      },
+      "derivedPreview": {
+        "title": "Vista previa de precios derivados — lo que verán los compradores",
+        "empty": "Agregue un cut con precio ASK para previsualizar los precios derivados.",
+        "anchor": "ancla"
+      },
+      "cuts": {
+        "askLabelFob": "ASK $/kg (FOB {{port}})",
+        "askLabelCfr": "ASK $/kg (CFR {{port}})",
+        "floorLabelFob": "PISO $/kg (FOB {{port}})",
+        "floorLabelCfr": "PISO $/kg (CFR {{port}})"
       }
     },
     "brands": {

@@ -2897,11 +2897,11 @@
           "cutQty": "quantité",
           "cutPrice": "prix demandé",
           "cutFloorAboveAsk": "prix plancher supérieur au demandé",
-          "fobAskPrice": "prix FOB demandé",
-          "fobFloorAboveAsk": "FOB plancher supérieur au FOB prix",
           "cutPlant": "usine attribuée",
           "paymentTerm": "conditions de paiement",
-          "distributionChannel": "canal de distribution"
+          "distributionChannel": "canal de distribution",
+          "referencePortFreight": "fret pour le port de référence de prix",
+          "referencePortNotInDestinations": "le port de référence doit être dans les destinations"
         },
         "missingToPublish": "Manquant pour publier :",
         "missingInSection": "Manquant dans cette section :",
@@ -2909,6 +2909,32 @@
         "expand": "Détails",
         "collapse": "Masquer",
         "missingFieldsBanner": "{{n}} champs manquants pour publier — voir les pastilles ci-dessus"
+      },
+      "pricingRef": {
+        "title": "Référence de prix",
+        "subtitle": "Comment fixez-vous le prix de cette offre ?",
+        "fobAtOrigin": "FOB à l'origine ({{port}})",
+        "cfrAtDest": "CFR au port de destination :",
+        "helpText": "Les autres incoterms seront calculés automatiquement à partir des valeurs de fret/assurance.",
+        "cannotRemove": "{{port}} est votre port d'ancrage. Changez la référence avant de retirer cette destination.",
+        "changeModal": {
+          "title": "Changer la référence de prix",
+          "body": "Vous changez la référence de prix. Que doit-il se passer ?",
+          "keepFob": "Garder le même FOB (recalculer ASK pour le nouveau port)",
+          "keepAsk": "Garder le même ASK (FOB et autres ports seront recalculés)",
+          "apply": "Appliquer"
+        }
+      },
+      "derivedPreview": {
+        "title": "Aperçu des prix dérivés — ce que les acheteurs verront",
+        "empty": "Ajoutez un cut avec un prix ASK pour prévisualiser les prix dérivés.",
+        "anchor": "ancre"
+      },
+      "cuts": {
+        "askLabelFob": "ASK $/kg (FOB {{port}})",
+        "askLabelCfr": "ASK $/kg (CFR {{port}})",
+        "floorLabelFob": "PLANCHER $/kg (FOB {{port}})",
+        "floorLabelCfr": "PLANCHER $/kg (CFR {{port}})"
       }
     },
     "brands": {

@@ -2897,11 +2897,11 @@
           "cutQty": "数量",
           "cutPrice": "报价",
           "cutFloorAboveAsk": "底价高于报价",
-          "fobAskPrice": "FOB 报价",
-          "fobFloorAboveAsk": "FOB 底价高于 FOB 报价",
           "cutPlant": "分配工厂",
           "paymentTerm": "付款条款",
-          "distributionChannel": "分发渠道"
+          "distributionChannel": "分发渠道",
+          "referencePortFreight": "定价参考港口的运费",
+          "referencePortNotInDestinations": "定价参考港口必须在目的地中"
         },
         "missingToPublish": "发布前需补充：",
         "missingInSection": "本节缺失：",
@@ -2909,6 +2909,32 @@
         "expand": "详情",
         "collapse": "隐藏",
         "missingFieldsBanner": "还有 {{n}} 个字段未填——见上方标签"
+      },
+      "pricingRef": {
+        "title": "定价参考",
+        "subtitle": "您如何为此报价定价？",
+        "fobAtOrigin": "起运地 FOB ({{port}})",
+        "cfrAtDest": "目的港 CFR：",
+        "helpText": "其他贸易条款将根据运费/保险费自动计算。",
+        "cannotRemove": "{{port}} 是您的定价锚点。请先更改参考港口再移除此目的地。",
+        "changeModal": {
+          "title": "更改定价参考",
+          "body": "您正在更改定价参考。希望执行哪种操作？",
+          "keepFob": "保持相同 FOB（重新计算新港口的 ASK）",
+          "keepAsk": "保持相同 ASK（FOB 和其他港口将重新计算）",
+          "apply": "应用"
+        }
+      },
+      "derivedPreview": {
+        "title": "派生价格预览 — 买家将看到的内容",
+        "empty": "添加带 ASK 价格的切割以预览派生价格。",
+        "anchor": "锚点"
+      },
+      "cuts": {
+        "askLabelFob": "ASK $/kg (FOB {{port}})",
+        "askLabelCfr": "ASK $/kg (CFR {{port}})",
+        "floorLabelFob": "下限 $/kg (FOB {{port}})",
+        "floorLabelCfr": "下限 $/kg (CFR {{port}})"
       }
     },
     "brands": {
