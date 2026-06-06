@@ -20,6 +20,21 @@ const TAU: Record<Dial, Record<number, number>> = {
 // Bid below (floor - NON_NEG_FACTOR × margin) → HOLD (don't budge)
 const NON_NEG_FACTOR = 2.0;
 
+/**
+ * Floor protection — minimum buffer above minimum_price.
+ * The counter MUST NEVER be exactly at minimum_price (would reveal the floor
+ * to the buyer in the next round). Effective floor is the max of:
+ *   - 2% above floor (relative)
+ *   - $0.05/kg above floor (absolute, for very low-price items)
+ * Applied per-item; same formula across all dials.
+ */
+export const FLOOR_BUFFER_PCT = 0.02;
+export const FLOOR_BUFFER_ABS = 0.05;
+
+export function effectiveFloor(rawFloor: number): number {
+  return Math.max(rawFloor * (1 + FLOOR_BUFFER_PCT), rawFloor + FLOOR_BUFFER_ABS);
+}
+
 function theta(cycle: number, concRatio: number): number {
   if (cycle === 1) return 0.5;
   return Math.max(0.1, Math.min(0.5, (0.5 * concRatio) / 0.2));
@@ -77,9 +92,18 @@ export function autoCounter(inp: AutoInput): AutoOutput {
   c = Math.min(c, offerPrice);
   if (prevCounter != null) c = Math.min(c, prevCounter);
 
-  // Floor cushion: never reveal minimum_price.
-  const FLOOR_BUFFER = Math.max(0.01, 0.10 * margin);
-  c = Math.max(c, minimumPrice + FLOOR_BUFFER);
+  // Floor cushion: never reveal minimum_price. Clamp counter to effectiveFloor.
+  const floorWithBuffer = effectiveFloor(minimumPrice);
+  const computedCounter = c;
+  c = Math.max(c, floorWithBuffer);
+  if (computedCounter < floorWithBuffer) {
+    console.log('[autoEngineV2] counter clamped to floor+buffer', {
+      computed: computedCounter,
+      floor: minimumPrice,
+      effectiveFloor: floorWithBuffer,
+      counter: c,
+    });
+  }
 
   // If clamped counter is at or below bid, accept the bid.
   if (c <= bid) {
