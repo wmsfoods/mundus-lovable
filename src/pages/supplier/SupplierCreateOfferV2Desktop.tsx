@@ -1819,11 +1819,9 @@ export default function SupplierCreateOfferV2Desktop() {
                   </div>
                 </Field>
                 <Field label={tk("drawer.s5.shipmentReady", "Shipment ready")}>
-                  <Input
-                    type="month"
-                    className="w-48"
+                  <ShipmentReadyPicker
                     value={drawerDraft.shipmentReady}
-                    onChange={(e) => setDrawerDraft((p) => ({ ...p, shipmentReady: e.target.value }))}
+                    onChange={(v) => setDrawerDraft((p) => ({ ...p, shipmentReady: v }))}
                   />
                 </Field>
               </div>
