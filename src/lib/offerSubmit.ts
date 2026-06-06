@@ -27,6 +27,8 @@ export type SubmitLogistics = {
   exwPickupLocation: string;
   /** Only relevant when incoterms include FOB or EXW. CFR | FOB | null. */
   primaryPricingIncoterm: "CFR" | "FOB" | null;
+  /** NULL = supplier prices at FOB origin. SET = supplier prices at CFR(this port). */
+  pricingReferencePortId: string | null;
 };
 
 export type SubmitDistribution = {
@@ -223,6 +225,7 @@ export async function submitOfferV2(
         ? l.primaryPricingIncoterm
         : null,
     pricing_includes_freight: computePricingIncludesFreight(l),
+    pricing_reference_port_id: l.pricingReferencePortId ?? null,
   };
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
@@ -266,8 +269,6 @@ export async function submitOfferV2(
       notes: string | null;
       photo_url: string | null;
       files_urls: string[] | null;
-      fob_ask_price: number | null;
-      fob_floor_price: number | null;
     };
     const itemsRows: OfferItemInsert[] = [];
     for (let i = 0; i < cuts.length; i++) {
@@ -305,11 +306,6 @@ export async function submitOfferV2(
             : c.existingFilesPaths && c.existingFilesPaths.length > 0
               ? c.existingFilesPaths
               : null,
-        fob_ask_price: c.fobAskPrice != null && c.fobAskPrice > 0 ? c.fobAskPrice : null,
-        fob_floor_price:
-          c.fobFloorPrice != null && c.fobFloorPrice > 0 && c.fobAskPrice != null && c.fobFloorPrice <= c.fobAskPrice
-            ? c.fobFloorPrice
-            : null,
       });
     }
     if (itemsRows.length === 0 && ctx.status === "active") {
