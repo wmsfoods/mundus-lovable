@@ -293,7 +293,7 @@ export default function PublicOfferCard({
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.shipment", "Shipment")}</span>
           <span className="cm-value">
-            {formatShipment(offer.shipment_month, offer.shipment_year)}
+            {formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}
           </span>
         </div>
         <div className="cm">
