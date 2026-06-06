@@ -2834,7 +2834,8 @@
         "title": "Nouvelle offre (clonée de #{{n}})"
       },
       "fromRequestMode": {
-        "title": "Nouvelle offre (depuis la demande #{{n}})"
+        "title": "Nouvelle offre (depuis la demande #{{n}})",
+        "toast": "Pré-rempli à partir de la demande #{{requestNumber}}"
       },
       "loading": {
         "prefill": "Chargement des données de l'offre…"
@@ -2935,6 +2936,9 @@
         "askLabelCfr": "ASK $/kg (CFR {{port}})",
         "floorLabelFob": "PLANCHER $/kg (FOB {{port}})",
         "floorLabelCfr": "PLANCHER $/kg (CFR {{port}})"
+      },
+      "admin": {
+        "actingAs": "En train d agir en tant que fournisseur: {{name}}"
       }
     },
     "brands": {
