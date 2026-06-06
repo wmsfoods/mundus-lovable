@@ -1185,6 +1185,18 @@ export default function SupplierCreateOfferV2() {
         <EditModeWarningBanner activeNegotiations={activeNegotiations} />
       )}
 
+      {adminMode && (
+        <div
+          className="mt-3 rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-900"
+          role="status"
+        >
+          🛡️{" "}
+          {tk("admin.actingAs", "Acting as supplier: {{name}}", {
+            name: adminCompany?.name ?? "…",
+          })}
+        </div>
+      )}
+
       {prefilling ? (
         <div className="mt-4 flex flex-col gap-4" aria-busy="true" aria-label={tk("loading.prefill", "Loading offer data…")}>
           <Skeleton className="h-20 w-full rounded-xl" />
