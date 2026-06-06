@@ -1,3 +1,4 @@
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
@@ -59,8 +60,8 @@ function mapRow(r: OrderRow): BuyerOrder {
     ? items.reduce((s, i) => s + (Number(i.amount) || 0) * (Number(i.price) || 0), 0) / totalKg
     : 0;
   const productName = items[0]?.customer_product?.name ?? "—";
-  const shipmentMonth = offer?.shipment_month && offer?.shipment_year
-    ? `${MONTHS[(offer.shipment_month - 1) % 12]} ${offer.shipment_year}`
+  const shipmentMonth = (offer as any)?.shipment_ready_raw || (offer?.shipment_month && offer?.shipment_year)
+    ? formatShipmentReadyDisplay({ raw: (offer as any)?.shipment_ready_raw, month: offer?.shipment_month, year: offer?.shipment_year })
     : "—";
   const fcls = r.fcl_count ?? offer?.total_fcl ?? 0;
   const fclSize: '20ft' | '40ft' = offer?.container_size === '20ft' ? '20ft' : '40ft';

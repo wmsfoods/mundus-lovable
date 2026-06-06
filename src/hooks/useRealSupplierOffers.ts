@@ -1,3 +1,4 @@
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import type { SupplierOffer } from "@/data/mockSupplierOffers";
@@ -103,8 +104,7 @@ export function useRealSupplierOffers() {
           `Mixed Container — ${items.length} cuts`;
         const cutsLabel = items.map((it) => it.customer_product?.name).filter(Boolean).join(", ") || "—";
         const condition = (items[0]?.condition === "Chilled" ? "Chilled" : "Frozen") as SupplierOffer["condition"];
-        const m = Math.min(12, Math.max(1, Number(o.shipment_month ?? 1)));
-        const shipmentLabel = `${MONTH[m - 1]} ${o.shipment_year ?? new Date().getFullYear()}`;
+        const shipmentLabel = formatShipmentReadyDisplay({ raw: (o as any).shipment_ready_raw, month: o.shipment_month, year: o.shipment_year });
         const status: SupplierOffer["status"] =
           o.status === "active" ? "active" :
           o.status === "draft" ? "draft" :
