@@ -11,6 +11,7 @@ import BuyerRequestsAdminTab from "@/components/admin/DataManagement/tabs/BuyerR
 import CompaniesAdminTab from "@/components/admin/DataManagement/tabs/CompaniesAdminTab";
 import UsersAdminTab from "@/components/admin/DataManagement/tabs/UsersAdminTab";
 import CutsAdminTab from "@/components/admin/DataManagement/tabs/CutsAdminTab";
+import { DangerZoneSection } from "@/components/admin/DangerZoneSection";
 
 export default function AdminDataManagement() {
   const { t } = useTranslation();
@@ -56,6 +57,8 @@ export default function AdminDataManagement() {
           </TabsContent>
         ))}
       </Tabs>
+
+      <DangerZoneSection />
     </div>
   );
 }
