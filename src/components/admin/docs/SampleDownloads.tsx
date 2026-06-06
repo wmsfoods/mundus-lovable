@@ -1,9 +1,7 @@
 import { useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
 import { toast } from "sonner";
 import { Download, Copy, Check, FileText, FileSpreadsheet, FileType2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import {
   buildSampleMarkdown,
   SAMPLE_BRAND,
@@ -57,40 +55,16 @@ async function downloadXlsx() {
   sheetDetails["!cols"] = [{ wch: 20 }, { wch: 60 }];
 
   const itemRows: (string | number)[][] = [
-    [
-      "Product",
-      "Plant",
-      "Spec",
-      "Marbling",
-      "Qty (kg)",
-      "Min Qty",
-      "Max Qty",
-      "Price USD/mt",
-      "Floor USD/mt",
-    ],
+    ["Product", "Plant", "Spec", "Marbling", "Qty (kg)", "Min Qty", "Max Qty", "Price USD/mt", "Floor USD/mt"],
     ...SAMPLE_ITEMS.map((it) => [
-      it.product,
-      it.plant,
-      it.spec,
-      it.marbling,
-      it.qtyKg,
-      it.minQtyKg,
-      it.maxQtyKg,
-      it.priceUsdPerMt,
-      it.floorUsdPerMt,
+      it.product, it.plant, it.spec, it.marbling,
+      it.qtyKg, it.minQtyKg, it.maxQtyKg, it.priceUsdPerMt, it.floorUsdPerMt,
     ]),
   ];
   const sheetItems = XLSX.utils.aoa_to_sheet(itemRows);
   sheetItems["!cols"] = [
-    { wch: 18 },
-    { wch: 8 },
-    { wch: 12 },
-    { wch: 10 },
-    { wch: 10 },
-    { wch: 10 },
-    { wch: 10 },
-    { wch: 14 },
-    { wch: 14 },
+    { wch: 18 }, { wch: 8 }, { wch: 12 }, { wch: 10 },
+    { wch: 10 }, { wch: 10 }, { wch: 10 }, { wch: 14 }, { wch: 14 },
   ];
 
   const destRows: (string | number)[][] = [
@@ -107,9 +81,7 @@ async function downloadXlsx() {
 
   const arrayBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
   downloadBlob(
-    new Blob([arrayBuffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    }),
+    new Blob([arrayBuffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" }),
     "ai-quickfill-sample.xlsx",
   );
 }
@@ -121,9 +93,8 @@ async function downloadPdf() {
 
   const doc = new jsPDF({ unit: "pt", format: "a4" });
   const pageWidth = doc.internal.pageSize.getWidth();
-  const primary: [number, number, number] = [182, 71, 105]; // #B64769
+  const primary: [number, number, number] = [182, 71, 105];
 
-  // Header band
   doc.setFillColor(primary[0], primary[1], primary[2]);
   doc.rect(0, 0, pageWidth, 64, "F");
   doc.setTextColor(255, 255, 255);
@@ -136,18 +107,13 @@ async function downloadPdf() {
 
   doc.setTextColor(20, 20, 20);
   let y = 88;
-
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
   doc.text("Container & Origin", 32, y);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(10);
   y += 16;
-  doc.text(
-    `${SAMPLE_CONTAINER} (${SAMPLE_TEMPERATURE}, ${SAMPLE_CERTIFICATIONS} certified)`,
-    32,
-    y,
-  );
+  doc.text(`${SAMPLE_CONTAINER} (${SAMPLE_TEMPERATURE}, ${SAMPLE_CERTIFICATIONS} certified)`, 32, y);
   y += 14;
   doc.text(`Origin: ${SAMPLE_ORIGIN_COUNTRY} / ${SAMPLE_ORIGIN_PORT}`, 32, y);
   y += 14;
@@ -158,10 +124,7 @@ async function downloadPdf() {
     startY: y,
     head: [["Product", "Plant", "Spec", "Marbling", "Qty (kg)", "Price USD/mt", "Floor USD/mt"]],
     body: SAMPLE_ITEMS.map((it) => [
-      it.product,
-      it.plant,
-      it.spec,
-      it.marbling,
+      it.product, it.plant, it.spec, it.marbling,
       it.qtyKg.toLocaleString("en-US"),
       it.priceUsdPerMt.toLocaleString("en-US"),
       it.floorUsdPerMt.toLocaleString("en-US"),
@@ -177,8 +140,7 @@ async function downloadPdf() {
     startY: y,
     head: [["Port", "Country", "Freight USD", "Insurance USD"]],
     body: SAMPLE_DESTINATIONS.map((d) => [
-      d.port,
-      d.country,
+      d.port, d.country,
       d.freightUsd.toLocaleString("en-US"),
       d.insuranceUsd.toLocaleString("en-US"),
     ]),
@@ -211,19 +173,9 @@ async function downloadPdf() {
   doc.save("ai-quickfill-sample.pdf");
 }
 
-export default function AiQuickfillSamples() {
-  const { isAdmin, loading } = useIsMundusAdmin();
+export function SampleDownloads() {
   const [copied, setCopied] = useState(false);
   const markdown = useMemo(() => buildSampleMarkdown(), []);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-[60vh] items-center justify-center text-sm text-muted-foreground">
-        Loading…
-      </div>
-    );
-  }
-  if (!isAdmin) return <Navigate to="/" replace />;
 
   const onCopy = async () => {
     try {
@@ -244,101 +196,72 @@ export default function AiQuickfillSamples() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      <h1 className="text-2xl font-bold text-foreground">AI Quick-fill Sample Files</h1>
-      <p className="mt-2 max-w-2xl text-sm text-muted-foreground">
-        Use these mock files to test the AI Quick-fill parser. The same offer data is
-        provided in 3 formats so you can compare how the parser handles plain text,
-        spreadsheets and PDFs.
-      </p>
-
-      <div className="mt-8 grid gap-5 md:grid-cols-3">
-        {/* Markdown */}
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <FileText size={18} className="text-primary" />
-            <h2 className="text-base font-semibold">Plain Text (.md)</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Markdown-formatted email/quote. Best baseline format for the parser.
-          </p>
-          <pre className="mt-3 max-h-48 overflow-auto rounded-md bg-muted/50 p-3 text-[10px] leading-relaxed text-foreground">
-            {markdown}
-          </pre>
-          <div className="mt-4 flex gap-2">
-            <Button variant="outline" size="sm" onClick={onCopy}>
-              {copied ? <Check size={14} className="mr-1" /> : <Copy size={14} className="mr-1" />}
-              {copied ? "Copied" : "Copy"}
-            </Button>
-            <Button size="sm" onClick={onDownloadMd}>
-              <Download size={14} className="mr-1" />
-              Download .md
-            </Button>
-          </div>
+    <div className="grid gap-5 md:grid-cols-3">
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <div className="mb-3 flex items-center gap-2">
+          <FileText size={18} className="text-primary" />
+          <h3 className="text-base font-semibold">Plain Text (.md)</h3>
         </div>
-
-        {/* Excel */}
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <FileSpreadsheet size={18} className="text-primary" />
-            <h2 className="text-base font-semibold">Excel (.xlsx)</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Spreadsheet format common in Asian trade quotes. Three sheets: Offer
-            Details, Items, Logistics.
-          </p>
-          <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-            <li>• Sheet 1 — Offer Details</li>
-            <li>• Sheet 2 — Items ({SAMPLE_ITEMS.length} rows)</li>
-            <li>• Sheet 3 — Logistics ({SAMPLE_DESTINATIONS.length} ports)</li>
-          </ul>
-          <div className="mt-4">
-            <Button
-              size="sm"
-              onClick={() => {
-                downloadXlsx().catch((e) => toast.error(`Excel export failed: ${e?.message ?? e}`));
-              }}
-            >
-              <Download size={14} className="mr-1" />
-              Download .xlsx
-            </Button>
-          </div>
-        </div>
-
-        {/* PDF */}
-        <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-          <div className="mb-3 flex items-center gap-2">
-            <FileType2 size={18} className="text-primary" />
-            <h2 className="text-base font-semibold">PDF</h2>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Formal quotation format. Single page with branded header, item & logistics
-            tables.
-          </p>
-          <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
-            <li>• Branded header (primary color)</li>
-            <li>• Items table</li>
-            <li>• Logistics table</li>
-            <li>• Terms footer</li>
-          </ul>
-          <div className="mt-4">
-            <Button
-              size="sm"
-              onClick={() => {
-                downloadPdf().catch((e) => toast.error(`PDF export failed: ${e?.message ?? e}`));
-              }}
-            >
-              <Download size={14} className="mr-1" />
-              Download .pdf
-            </Button>
-          </div>
+        <p className="text-xs text-muted-foreground">
+          Markdown-formatted email/quote. Best baseline format for the parser.
+        </p>
+        <pre className="mt-3 max-h-48 overflow-auto rounded-md bg-muted/50 p-3 text-[10px] leading-relaxed text-foreground">
+{markdown}
+        </pre>
+        <div className="mt-4 flex gap-2">
+          <Button variant="outline" size="sm" onClick={onCopy}>
+            {copied ? <Check size={14} className="mr-1" /> : <Copy size={14} className="mr-1" />}
+            {copied ? "Copied" : "Copy"}
+          </Button>
+          <Button size="sm" onClick={onDownloadMd}>
+            <Download size={14} className="mr-1" />
+            Download .md
+          </Button>
         </div>
       </div>
 
-      <p className="mt-8 text-xs text-muted-foreground">
-        All three files contain identical data. Open the AI Quick-fill modal in Create
-        Offer V2 and paste/upload to test parsing.
-      </p>
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <div className="mb-3 flex items-center gap-2">
+          <FileSpreadsheet size={18} className="text-primary" />
+          <h3 className="text-base font-semibold">Excel (.xlsx)</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Spreadsheet format common in Asian trade quotes. Three sheets: Offer Details, Items, Logistics.
+        </p>
+        <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+          <li>• Sheet 1 — Offer Details</li>
+          <li>• Sheet 2 — Items ({SAMPLE_ITEMS.length} rows)</li>
+          <li>• Sheet 3 — Logistics ({SAMPLE_DESTINATIONS.length} ports)</li>
+        </ul>
+        <div className="mt-4">
+          <Button size="sm" onClick={() => { downloadXlsx().catch((e) => toast.error(`Excel export failed: ${e?.message ?? e}`)); }}>
+            <Download size={14} className="mr-1" />
+            Download .xlsx
+          </Button>
+        </div>
+      </div>
+
+      <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+        <div className="mb-3 flex items-center gap-2">
+          <FileType2 size={18} className="text-primary" />
+          <h3 className="text-base font-semibold">PDF</h3>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Formal quotation format. Single page with branded header, item & logistics tables.
+        </p>
+        <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
+          <li>• Branded header (primary color)</li>
+          <li>• Items table</li>
+          <li>• Logistics table</li>
+          <li>• Terms footer</li>
+        </ul>
+        <div className="mt-4">
+          <Button size="sm" onClick={() => { downloadPdf().catch((e) => toast.error(`PDF export failed: ${e?.message ?? e}`)); }}>
+            <Download size={14} className="mr-1" />
+            Download .pdf
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

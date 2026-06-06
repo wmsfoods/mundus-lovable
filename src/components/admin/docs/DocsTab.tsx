@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Search, X } from "lucide-react";
 import { BuyerGuideDocument } from "./BuyerGuideDocument";
 import { SupplierGuideDocument } from "./SupplierGuideDocument";
@@ -9,9 +10,11 @@ import { SupplierTrainingDocument } from "./SupplierTrainingDocument";
 import { PlatformDocDocument, CONTENT as PLATFORM_CONTENT } from "./PlatformDocDocument";
 import { GapReportDocument, CONTENT as GAP_CONTENT } from "./GapReportDocument";
 import { MultiOfficeDocument, CONTENT as MULTIOFFICE_CONTENT } from "./MultiOfficeDocument";
+import { AiQuickfillSamplesDocument } from "./AiQuickfillSamplesDocument";
 import { searchDocs, type DocRegistryEntry } from "./docSearch";
 
 type SubTab = "admin" | "buyers" | "suppliers" | "platform";
+type AdminDoc = "brandbook" | "discovery" | "buyer-training" | "supplier-training" | "ai-quickfill-samples";
 type PlatformDoc = "platform" | "gaps" | "multioffice";
 
 const TABS: Array<{ k: SubTab; l: string }> = [
@@ -22,11 +25,29 @@ const TABS: Array<{ k: SubTab; l: string }> = [
 ];
 
 export function DocsTab() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [sub, setSub] = useState<SubTab>("buyers");
-  const [adminDoc, setAdminDoc] = useState<"brandbook" | "discovery" | "buyer-training" | "supplier-training">("brandbook");
+  const [adminDoc, setAdminDoc] = useState<AdminDoc>("brandbook");
   const [platformDoc, setPlatformDoc] = useState<PlatformDoc>("platform");
   const [query, setQuery] = useState("");
   const [scrollTarget, setScrollTarget] = useState<string | null>(null);
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    const doc = searchParams.get("doc");
+    if (tab === "admin") setSub("admin");
+    if (doc === "ai-quickfill-samples") {
+      setSub("admin");
+      setAdminDoc("ai-quickfill-samples");
+    }
+    if (tab || doc) {
+      const next = new URLSearchParams(searchParams);
+      next.delete("tab");
+      next.delete("doc");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const registry = useMemo<DocRegistryEntry[]>(() => [
     { key: "platform", label: "Plataforma · Documentação", content: PLATFORM_CONTENT.pt },
@@ -156,11 +177,12 @@ export function DocsTab() {
               { k: "discovery", l: "🎯 Discovery Call Script" },
               { k: "buyer-training", l: "🛒 Treinamento Buyer" },
             { k: "supplier-training", l: "🥩 Treinamento Supplier" },
+            { k: "ai-quickfill-samples", l: "📥 AI Quick-fill Samples" },
             ].map((d) => (
               <button
                 key={d.k}
                 type="button"
-                onClick={() => setAdminDoc(d.k as "brandbook" | "discovery" | "buyer-training" | "supplier-training")}
+                onClick={() => setAdminDoc(d.k as AdminDoc)}
                 style={{
                   padding: "6px 12px",
                   borderRadius: 8,
@@ -181,6 +203,7 @@ export function DocsTab() {
           {adminDoc === "discovery" && <DiscoveryScriptDocument />}
           {adminDoc === "buyer-training" && <BuyerTrainingDocument />}
           {adminDoc === "supplier-training" && <SupplierTrainingDocument />}
+          {adminDoc === "ai-quickfill-samples" && <AiQuickfillSamplesDocument />}
         </div>
       )}
       {sub === "buyers" && <BuyerGuideDocument />}
