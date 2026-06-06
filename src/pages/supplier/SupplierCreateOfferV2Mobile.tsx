@@ -388,8 +388,8 @@ export default function SupplierCreateOfferV2Mobile() {
   const logisticsSubtitle = `${logistics.destinations.length} markets · ${totalDestPorts} ports · ${logistics.fclCount}× ${logistics.containerSize}`;
 
   // Customer count for distribution row
-  const { rows: customerRows } = useMyCustomers();
-  const customerCount = customerRows?.length ?? 0;
+  const { customers } = useMyCustomers();
+  const customerCount = customers?.length ?? 0;
 
   // ---------- Submit ----------
   const handleSubmit = async (status: "draft" | "active") => {
