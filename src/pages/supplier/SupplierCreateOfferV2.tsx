@@ -889,14 +889,27 @@ export default function SupplierCreateOfferV2() {
   };
 
   const togglePortInDest = (countryId: string, portId: string) => {
-    setDrawerDraft((prev) => ({
-      ...prev,
-      destinations: prev.destinations.map((d) => {
-        if (d.countryId !== countryId) return d;
-        const has = d.selectedPortIds.includes(portId);
-        return { ...d, selectedPortIds: has ? d.selectedPortIds.filter((p) => p !== portId) : [...d.selectedPortIds, portId] };
-      }),
-    }));
+    setDrawerDraft((prev) => {
+      const dest = prev.destinations.find((d) => d.countryId === countryId);
+      const removing = dest?.selectedPortIds.includes(portId);
+      if (removing && prev.pricingReferencePortId === portId) {
+        const p = catalog.ports.find((x) => x.id === portId);
+        toast.error(
+          tk("pricingRef.cannotRemove",
+            "{{port}} is your pricing anchor. Change the reference port first before removing this destination.",
+            { port: p?.name ?? "Port" }),
+        );
+        return prev;
+      }
+      return {
+        ...prev,
+        destinations: prev.destinations.map((d) => {
+          if (d.countryId !== countryId) return d;
+          const has = d.selectedPortIds.includes(portId);
+          return { ...d, selectedPortIds: has ? d.selectedPortIds.filter((p) => p !== portId) : [...d.selectedPortIds, portId] };
+        }),
+      };
+    });
   };
 
   const setDestFreightMode = (countryId: string, mode: "same" | "perPort") => {
