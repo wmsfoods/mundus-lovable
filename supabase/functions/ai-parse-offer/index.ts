@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import * as XLSX from 'npm:xlsx@0.18.5';
 
 // Configurable model — swap to google/gemini-2.5-pro if Flash is insufficient.
 const MODEL = 'google/gemini-2.5-flash';
@@ -24,6 +25,81 @@ function fuzzyMatch<T extends { _key: string }>(needle: string, list: T[]): T | 
   // substring both ways
   const sub = list.find((x) => x._key.includes(n) || n.includes(x._key));
   return sub ?? null;
+}
+
+/** Decode base64 to Uint8Array (Deno-safe). */
+function b64ToBytes(b64: string): Uint8Array {
+  const clean = b64.replace(/^data:[^;]+;base64,/, '');
+  const bin = atob(clean);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
+/** Convert an Excel workbook (first sheet) into a structured plain-text representation. */
+function xlsxToText(bytes: Uint8Array): string {
+  const wb = XLSX.read(bytes, { type: 'array' });
+  const firstSheetName = wb.SheetNames[0];
+  if (!firstSheetName) return '';
+  const ws = wb.Sheets[firstSheetName];
+  const rows: any[][] = XLSX.utils.sheet_to_json(ws, { header: 1, blankrows: false, defval: '' });
+  if (rows.length === 0) return '';
+  const headers = (rows[0] ?? []).map((h: any) => String(h ?? '').trim());
+  const dataRows = rows.slice(1).filter((r) => r.some((c) => String(c ?? '').trim().length > 0));
+  const lines = dataRows.map((r, i) => {
+    const parts = headers.map((h, idx) => {
+      const v = r[idx];
+      if (v === undefined || v === null || String(v).trim() === '') return null;
+      return `${h || `Col${idx + 1}`}=${String(v).trim()}`;
+    }).filter(Boolean);
+    return `Row ${i + 1}: ${parts.join(', ')}`;
+  });
+  return `Sheet: ${firstSheetName}\nHeaders: ${headers.join(' | ')}\n${lines.join('\n')}`;
+}
+
+/** Extract text from a PDF using unpdf (Deno/Node compatible). */
+async function pdfToText(bytes: Uint8Array): Promise<string> {
+  // @deno-types removed; dynamic import for tree-shake
+  const { extractText, getDocumentProxy } = await import('npm:unpdf@0.12.1');
+  const pdf = await getDocumentProxy(bytes);
+  const { text } = await extractText(pdf, { mergePages: true });
+  return Array.isArray(text) ? text.join('\n') : String(text ?? '');
+}
+
+/** Extract text from a .docx using mammoth. */
+async function docxToText(bytes: Uint8Array): Promise<string> {
+  const mammoth = await import('npm:mammoth@1.8.0');
+  const result = await (mammoth as any).extractRawText({ buffer: bytes });
+  return String(result?.value ?? '');
+}
+
+/** Route a file (by name/type) to the right extractor; throws with a friendly message. */
+async function extractFileText(file: { name: string; type: string; base64: string }): Promise<string> {
+  const bytes = b64ToBytes(file.base64);
+  if (bytes.byteLength > 5 * 1024 * 1024) {
+    throw new Error('File exceeds 5MB limit.');
+  }
+  const ext = (file.name.split('.').pop() ?? '').toLowerCase();
+  const t = (file.type ?? '').toLowerCase();
+  const isXlsx = ext === 'xlsx' || ext === 'xls' || t.includes('spreadsheet') || t.includes('excel');
+  const isPdf = ext === 'pdf' || t.includes('pdf');
+  const isDocx = ext === 'docx' || ext === 'doc' || t.includes('word') || t.includes('officedocument.wordprocessing');
+  if (isXlsx) {
+    const text = xlsxToText(bytes);
+    if (!text.trim()) throw new Error('Excel sheet appears empty.');
+    return text;
+  }
+  if (isPdf) {
+    const text = await pdfToText(bytes);
+    if (!text.trim()) throw new Error('PDF appears to be image-based. Please use a text PDF or the Excel template.');
+    return text;
+  }
+  if (isDocx) {
+    const text = await docxToText(bytes);
+    if (!text.trim()) throw new Error('Word document appears empty.');
+    return text;
+  }
+  throw new Error(`Unsupported file type: ${file.name}`);
 }
 
 Deno.serve(async (req: Request) => {
@@ -53,20 +129,39 @@ Deno.serve(async (req: Request) => {
     });
   }
 
-  let body: { text?: string; supplierId?: string };
+  let body: {
+    text?: string;
+    audioTranscript?: string;
+    file?: { name: string; type: string; base64: string };
+    supplierId?: string;
+  };
   try { body = await req.json(); } catch {
     return new Response(JSON.stringify({ error: 'invalid_json' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  const text = (body.text ?? '').trim();
   const supplierId = (body.supplierId ?? '').trim() || null;
+
+  // Resolve `text` from one of: text, audioTranscript, file extraction.
+  let text = ((body.text ?? body.audioTranscript) ?? '').trim();
+  if (!text && body.file) {
+    try {
+      text = (await extractFileText(body.file)).trim();
+    } catch (e: any) {
+      console.error('File extraction failed', e);
+      return new Response(JSON.stringify({
+        error: 'file_extraction_failed',
+        message: e?.message || 'Could not extract text from file.',
+      }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
+  }
+
   if (!text) {
-    return new Response(JSON.stringify({ error: 'empty_text' }), {
+    return new Response(JSON.stringify({ error: 'empty_input', message: 'Provide text, audioTranscript, or file.' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
   }
-  if (text.length > 20000) {
+  if (text.length > 40000) {
     return new Response(JSON.stringify({ error: 'text_too_long' }), {
       status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
