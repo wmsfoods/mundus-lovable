@@ -45,6 +45,13 @@ export type ParsedOfferPayload = {
       candidates: Array<{ id: string; name: string; score: number }>;
     };
   }>;
+  pricingModel: "FOB" | "CFR" | "CIF" | "EXW" | null;
+  pricingReferencePort: {
+    name: string | null;
+    id: string | null;
+    match: MatchStatus;
+    countryId: string | null;
+  };
   model: string;
 };
 
