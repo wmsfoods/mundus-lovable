@@ -426,6 +426,47 @@ function CutRowView({
             <option key={c.id} value={c.id}>{c.displayName}</option>
           ))}
         </select>
+        {/* Aging + (US-only) USDA Grade — inline below cut select; replaces the
+             dedicated columns. Read-only display is rendered via formatCutMeta()
+             in buyer views and mobile cards. */}
+        <div className="mt-1 flex gap-1">
+          <select
+            className="h-7 flex-1 rounded-md border border-border bg-card px-1 text-[11px] text-muted-foreground"
+            value={row.agingMethod ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              onChange({ agingMethod: v === "wet" || v === "dry" ? v : null });
+            }}
+          >
+            <option value="">{tkCuts("aging.none", "Aging —")}</option>
+            <option value="wet">{tkCuts("aging.wet", "Wet Aged")}</option>
+            <option value="dry">{tkCuts("aging.dry", "Dry Aged")}</option>
+          </select>
+          {cutRegion === "us" && (
+            <select
+              className="h-7 flex-1 rounded-md border border-border bg-card px-1 text-[11px] text-muted-foreground"
+              value={row.usGrade ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                const valid = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
+                onChange({ usGrade: valid.includes(v) ? (v as CutRow["usGrade"]) : null });
+              }}
+            >
+              <option value="">{tkCuts("usGrade.none", "Grade —")}</option>
+              <option value="Prime">{tkCuts("usGrade.prime", "Prime")}</option>
+              <option value="Choice">{tkCuts("usGrade.choice", "Choice")}</option>
+              <option value="Select">{tkCuts("usGrade.select", "Select")}</option>
+              <option value="Non Roll">{tkCuts("usGrade.nonRoll", "Non Roll")}</option>
+              <option value="Ungraded">{tkCuts("usGrade.ungraded", "Ungraded")}</option>
+            </select>
+          )}
+        </div>
+        {(() => {
+          const meta = formatCutMeta(row, t);
+          return meta.length > 0 ? (
+            <div className="mt-1 text-[10px] text-muted-foreground">{meta.join(" · ")}</div>
+          ) : null;
+        })()}
       </td>
       <td className="px-2 py-2">
         <select
@@ -484,40 +525,6 @@ function CutRowView({
           />
         )}
       </td>
-      <td className="px-2 py-2">
-        <select
-          className="h-8 w-full rounded-md border border-border bg-card px-1 text-xs"
-          value={row.agingMethod ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            onChange({ agingMethod: v === "wet" || v === "dry" ? v : null });
-          }}
-        >
-          <option value="">{tkCuts("aging.none", "—")}</option>
-          <option value="wet">{tkCuts("aging.wet", "Wet Aged")}</option>
-          <option value="dry">{tkCuts("aging.dry", "Dry Aged")}</option>
-        </select>
-      </td>
-      {showUsGradeCol && (
-        <td className="px-2 py-2">
-          <select
-            className="h-8 w-full rounded-md border border-border bg-card px-1 text-xs"
-            value={row.usGrade ?? ""}
-            onChange={(e) => {
-              const v = e.target.value;
-              const valid = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
-              onChange({ usGrade: valid.includes(v) ? (v as CutRow["usGrade"]) : null });
-            }}
-          >
-            <option value="">{tkCuts("usGrade.none", "—")}</option>
-            <option value="Prime">{tkCuts("usGrade.prime", "Prime")}</option>
-            <option value="Choice">{tkCuts("usGrade.choice", "Choice")}</option>
-            <option value="Select">{tkCuts("usGrade.select", "Select")}</option>
-            <option value="Non Roll">{tkCuts("usGrade.nonRoll", "Non Roll")}</option>
-            <option value="Ungraded">{tkCuts("usGrade.ungraded", "Ungraded")}</option>
-          </select>
-        </td>
-      )}
       <td className="px-2 py-2">
         <Input
           className="h-8 text-xs"
