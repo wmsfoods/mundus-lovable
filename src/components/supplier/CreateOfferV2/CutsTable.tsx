@@ -496,30 +496,6 @@ function CutRowView({
           title={errors.floor ? tk("col.floorErr", "Floor must be ≤ Ask") : undefined}
         />
       </td>
-      {showFob && (
-        <>
-          <td className="px-2 py-2">
-            <NumberCell
-              value={fobAskDisplay}
-              fractionDigits={2}
-              minFractionDigits={2}
-              onCommit={(s) => handleFobAsk(s)}
-              className={cn(inputCls(fobAskErr), "text-right tabular-nums")}
-              title={tk("fobTooltip", "FOB price is fixed at origin and does not vary by destination port")}
-            />
-          </td>
-          <td className="px-2 py-2">
-            <NumberCell
-              value={fobFloorDisplay}
-              fractionDigits={2}
-              minFractionDigits={2}
-              onCommit={(s) => handleFobFloor(s)}
-              className={cn(inputCls(!!fobFloorErr), "text-right tabular-nums")}
-              title={fobFloorErr ? tk("col.fobFloorErr", "FOB Floor must be ≤ FOB Ask") : undefined}
-            />
-          </td>
-        </>
-      )}
       <td className="px-2 py-2 text-right">
         <div className="text-xs font-semibold tabular-nums">
           {subtotal > 0 ? `$${fmtNum(subtotal, 0)}` : "—"}
