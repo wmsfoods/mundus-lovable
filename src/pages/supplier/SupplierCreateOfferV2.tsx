@@ -1072,15 +1072,18 @@ export default function SupplierCreateOfferV2() {
             >
               {tk("livePreview", "Live preview")}
             </button>
-            <Button
+            <button
               type="button"
-              variant="outline"
-              size="sm"
               onClick={() => setQuickFillOpen(true)}
+              className="group relative inline-flex h-8 items-center gap-1.5 overflow-hidden rounded-md bg-gradient-to-r from-primary via-primary to-accent px-3 text-xs font-semibold text-primary-foreground shadow-md shadow-primary/25 ring-1 ring-primary/30 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/40 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
-              <Sparkles size={14} className="mr-1" />
-              {tk("quickFill.openButton", "AI Quick-fill")}
-            </Button>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute inset-y-0 -left-12 w-10 -skew-x-12 bg-gradient-to-r from-transparent via-white/40 to-transparent opacity-0 transition-all duration-700 group-hover:left-[110%] group-hover:opacity-100"
+              />
+              <Sparkles size={14} className="animate-pulse drop-shadow-[0_0_4px_hsl(var(--primary-foreground)/0.6)]" />
+              <span className="relative">{tk("quickFill.openButton", "AI Quick-fill")}</span>
+            </button>
             <Button
               type="button"
               variant="outline"
