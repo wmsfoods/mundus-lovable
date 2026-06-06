@@ -105,7 +105,10 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
 
   const applyAllBids = (priceFor: (askingKg: number) => number) => {
     const next: Record<string, number> = Object.fromEntries(
-      offer.items.map((it) => [it.id, +priceFor(Number(it.price)).toFixed(4)]),
+      offer.items.map((it) => [
+        it.id,
+        +priceFor(effectiveAsking(Number(it.price))).toFixed(2),
+      ]),
     );
     setBids(next);
     // Re-sync the text buffers so the inputs reflect the new values.
