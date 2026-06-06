@@ -123,6 +123,26 @@ function freightSection(l: LogisticsLike): SectionStatus {
     // If no destinations yet, freight cannot be set — surface as missing only if dests exist
     if (l.destinations.length === 0 && missing.length === 0) missing.push(f("freightAwaitingDestinations"));
   }
+  // Pricing reference port validation (CFR-mode).
+  if (l.pricingReferencePortId) {
+    const allPorts = l.destinations.flatMap((d) => d.selectedPortIds);
+    if (!allPorts.includes(l.pricingReferencePortId)) {
+      missing.push(f("referencePortNotInDestinations"));
+    } else {
+      // Ensure the reference port has freight > 0.
+      let refFreight = 0;
+      if (l.sameFreightGlobal) {
+        refFreight = parseFloat(l.globalFreight) || 0;
+      } else {
+        for (const d of l.destinations) {
+          if (!d.selectedPortIds.includes(l.pricingReferencePortId)) continue;
+          if (d.freight.mode === "same") refFreight = parseFloat(d.freight.same) || 0;
+          else refFreight = parseFloat(d.freight.perPort[l.pricingReferencePortId] ?? "") || 0;
+        }
+      }
+      if (!(refFreight > 0)) missing.push(f("referencePortFreight"));
+    }
+  }
   return { key: "freight", group: "logistics", labelKey: "completion.section.freight", ok: missing.length === 0, started, missingFields: missing };
 }
 
