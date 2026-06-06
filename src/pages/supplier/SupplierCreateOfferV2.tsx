@@ -726,6 +726,15 @@ export default function SupplierCreateOfferV2() {
     if (data.cuts && data.cuts.length > 0) setCuts(data.cuts);
     if (data.cutRegion) setCutRegion(data.cutRegion);
     setPrefillApplied(true);
+    // One-shot toast confirming the prefill (parity with V1 behavior).
+    if (data.requestNumber != null) {
+      toast.success(
+        t("supplier.createOfferV2.fromRequestMode.toast", {
+          defaultValue: "Prefilled from request #{{requestNumber}}",
+          requestNumber: data.requestNumber,
+        }) as string,
+      );
+    }
   }, [requestPrefillQuery.data, prefillApplied]);
 
   const handleSubmit = async (status: "draft" | "active") => {
