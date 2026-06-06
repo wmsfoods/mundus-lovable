@@ -39,6 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Search, X, Globe, MapPin, Box, FileBadge, Ship, Truck, Edit3, Check, ChevronsUpDown, AlertTriangle, ChevronDown } from "lucide-react";
 import { CutsTable } from "@/components/supplier/CreateOfferV2/CutsTable";
+import { DerivedPricesPreview } from "@/components/supplier/CreateOfferV2/DerivedPricesPreview";
 import { type CutRow } from "@/lib/cutRowTypes";
 import { emptyCutRow } from "@/lib/cutRowTypes";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
@@ -63,6 +64,17 @@ import { useOfferForPrefill } from "@/hooks/useOfferForPrefill";
 import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
 import { EditModeWarningBanner } from "@/components/supplier/CreateOfferV2/EditModeWarningBanner";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 type Unit = "kg" | "lbs";
 type DrawerFocus = "origin" | "destinations" | "container" | "freight";
