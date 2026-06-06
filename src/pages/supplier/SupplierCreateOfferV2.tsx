@@ -739,6 +739,11 @@ export default function SupplierCreateOfferV2() {
   const [drawerFocus, setDrawerFocus] = useState<DrawerFocus>("origin");
   const [destSearch, setDestSearch] = useState("");
   const [destRegion, setDestRegion] = useState<Region>("All");
+  const [refChangeModal, setRefChangeModal] = useState<{
+    open: boolean;
+    nextLogistics: LogisticsState | null;
+    mode: "keepFob" | "keepAsk";
+  }>({ open: false, nextLogistics: null, mode: "keepFob" });
 
   const breakdown = useMemo(
     () =>
