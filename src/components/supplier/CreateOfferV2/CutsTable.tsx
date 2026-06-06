@@ -300,6 +300,7 @@ type RowProps = {
   cutRegion: "global" | "us";
   plantOptions: string[];
   plants: CompanyPlant[];
+  showUsGradeCol: boolean;
   onChange: (patch: Partial<CutRow>) => void;
   onRemove: () => void;
   fmtNum: (n: number, frac?: number) => string;
@@ -313,6 +314,7 @@ function CutRowView({
   cutRegion,
   plantOptions,
   plants,
+  showUsGradeCol,
   onChange,
   onRemove,
   fmtNum,
@@ -320,6 +322,8 @@ function CutRowView({
   const { t } = useTranslation();
   const tk = (k: string, fb: string) =>
     t(`supplier.createOfferV2.cutsTable.${k}`, { defaultValue: fb }) as string;
+  const tkCuts = (k: string, fb: string) =>
+    t(`supplier.createOfferV2.cuts.${k}`, { defaultValue: fb }) as string;
 
   const { cuts: catalog, loading: cutsLoading } = useCutsCatalog(row.protein, cutRegion);
 
@@ -478,6 +482,40 @@ function CutRowView({
           />
         )}
       </td>
+      <td className="px-2 py-2">
+        <select
+          className="h-8 w-full rounded-md border border-border bg-card px-1 text-xs"
+          value={row.agingMethod ?? ""}
+          onChange={(e) => {
+            const v = e.target.value;
+            onChange({ agingMethod: v === "wet" || v === "dry" ? v : null });
+          }}
+        >
+          <option value="">{tkCuts("aging.none", "—")}</option>
+          <option value="wet">{tkCuts("aging.wet", "Wet Aged")}</option>
+          <option value="dry">{tkCuts("aging.dry", "Dry Aged")}</option>
+        </select>
+      </td>
+      {showUsGradeCol && (
+        <td className="px-2 py-2">
+          <select
+            className="h-8 w-full rounded-md border border-border bg-card px-1 text-xs"
+            value={row.usGrade ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              const valid = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
+              onChange({ usGrade: valid.includes(v) ? (v as CutRow["usGrade"]) : null });
+            }}
+          >
+            <option value="">{tkCuts("usGrade.none", "—")}</option>
+            <option value="Prime">{tkCuts("usGrade.prime", "Prime")}</option>
+            <option value="Choice">{tkCuts("usGrade.choice", "Choice")}</option>
+            <option value="Select">{tkCuts("usGrade.select", "Select")}</option>
+            <option value="Non Roll">{tkCuts("usGrade.nonRoll", "Non Roll")}</option>
+            <option value="Ungraded">{tkCuts("usGrade.ungraded", "Ungraded")}</option>
+          </select>
+        </td>
+      )}
       <td className="px-2 py-2">
         <Input
           className="h-8 text-xs"
