@@ -485,7 +485,7 @@ export async function updateOfferV2(
   const priorRequestId = (priorRow?.request_id as string | null) ?? null;
 
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
-  const { shipment_month, shipment_year } = deriveShipment(l.shipmentReady);
+  const { shipment_month, shipment_year, shipment_ready_raw } = deriveShipment(l.shipmentReady);
 
   // Resolve origin port label for snapshot columns (same as create).
   let originPortLabel: string | null = null;
@@ -518,6 +518,7 @@ export async function updateOfferV2(
     origin_port_id: primaryOriginPortId,
     shipment_month,
     shipment_year,
+    shipment_ready_raw,
     payment_terms: paymentTerms || null,
     container_size: l.containerSize,
     total_fcl: Math.max(1, l.fclCount),
