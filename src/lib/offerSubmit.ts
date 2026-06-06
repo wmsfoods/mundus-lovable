@@ -546,6 +546,7 @@ export async function updateOfferV2(
     maximum_amount: number;
     condition: string;
     aging_method: string | null;
+    us_grade: string | null;
     packaging: string | null;
     plant_id: string | null;
     brand_id: string | null;
@@ -573,7 +574,8 @@ export async function updateOfferV2(
       minimum_amount: c.qty,
       maximum_amount: c.qty,
       condition: l.temperature,
-      aging_method: null,
+      aging_method: c.agingMethod ?? null,
+      us_grade: c.usGrade ?? null,
       packaging: c.packing || null,
       plant_id: c.plantId,
       brand_id: c.brandId,
