@@ -464,10 +464,13 @@ function BuyerOfferBody({
         adjustedLabel = `${calcSelection.incoterm}${selectedPortLabel ? ` · ${selectedPortLabel}` : ""}`;
       }
     }
+    const meta = formatCutMetaFromOfferItem(it as any);
+    const baseSpec = it.meat_specification ? `Spec · ${it.meat_specification}` : null;
+    const specLabel = [baseSpec, meta.join(" · ")].filter(Boolean).join(" · ") || null;
     return {
       id: it.id,
       name: it.customer_product?.name ?? "—",
-      specLabel: it.aging_method || it.meat_specification ? `Spec · ${it.aging_method ?? it.meat_specification}` : null,
+      specLabel,
       packing: it.packaging,
       qtyKg: qty,
       pricePerKgUsd: basePrice,
