@@ -12,6 +12,7 @@ import { cn } from "@/lib/utils";
 import { useAiParseOffer, type ParsedOfferPayload, type MatchStatus } from "@/hooks/useAiParseOffer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 
 type Props = {
   open: boolean;
@@ -78,6 +79,7 @@ function useAllCuts(enabled: boolean) {
 
 export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Props) {
   const { t } = useTranslation();
+  const { isAdmin } = useIsMundusAdmin();
   const [text, setText] = useState("");
   const [preview, setPreview] = useState<ParsedOfferPayload | null>(null);
   const mutation = useAiParseOffer();
