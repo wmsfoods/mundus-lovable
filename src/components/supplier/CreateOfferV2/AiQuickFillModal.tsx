@@ -254,7 +254,7 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
             <p className="text-[11px] text-muted-foreground">
               📥 Need sample data?{" "}
               <a
-                href="/dev/ai-quickfill-samples"
+                href="/admin/docs?tab=admin&doc=ai-quickfill-samples"
                 target="_blank"
                 rel="noreferrer"
                 className="font-medium text-primary underline"
