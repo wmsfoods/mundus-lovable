@@ -84,21 +84,25 @@ Deno.serve(async (req: Request) => {
   // Load history of cut_rounds with counter_proposals
   const { data: prev } = await admin
     .from('cut_rounds')
-    .select('price_per_kg, offer_item_id, round_proposals!inner(round, negotiation_id), counter_proposals(price_per_kg)')
+    .select('price_per_kg, offer_item_id, round_proposals!inner(round, side, negotiation_id), counter_proposals(price_per_kg)')
     .eq('round_proposals.negotiation_id', neg.id);
 
   type PrevRow = {
     price_per_kg: number; offer_item_id: string;
-    round_proposals: { round: number; negotiation_id: string };
+    round_proposals: { round: number; side: string | null; negotiation_id: string };
     counter_proposals: { price_per_kg: number }[] | null;
   };
-  const history = new Map<string, { proposals: number[]; counters: number[] }>();
+  const history = new Map<string, { buyerBids: number[]; counters: number[] }>();
   const prevSorted = ((prev ?? []) as PrevRow[]).slice().sort((a, b) => a.round_proposals.round - b.round_proposals.round);
   for (const row of prevSorted) {
-    if (!history.has(row.offer_item_id)) history.set(row.offer_item_id, { proposals: [], counters: [] });
+    if (!history.has(row.offer_item_id)) history.set(row.offer_item_id, { buyerBids: [], counters: [] });
     const h = history.get(row.offer_item_id)!;
-    h.proposals.push(Number(row.price_per_kg));
-    if (row.counter_proposals && row.counter_proposals[0]) h.counters.push(Number(row.counter_proposals[0].price_per_kg));
+    if (row.round_proposals.side === 'buyer') {
+      h.buyerBids.push(Number(row.price_per_kg));
+    }
+    if (row.counter_proposals && row.counter_proposals[0]) {
+      h.counters.push(Number(row.counter_proposals[0].price_per_kg));
+    }
   }
 
   // Cycle calc: nextRound = max(round) + 1; cycle = ceil(nextRound / 2)
@@ -109,12 +113,14 @@ Deno.serve(async (req: Request) => {
   // Compute counter per item
   const itemsWithCounters = body.items.map(it => {
     const oi: any = byId.get(it.offer_item_id);
-    const h = history.get(it.offer_item_id) ?? { proposals: [], counters: [] };
+    const h = history.get(it.offer_item_id) ?? { buyerBids: [], counters: [] };
     const counter = autoCounter({
       offerPrice: Number(oi.price),
       minimumPrice: Number(oi.minimum_price),
       bid: it.price_per_kg,
-      prevBid: h.proposals.length > 0 ? h.proposals[h.proposals.length - 1] : null,
+      // h.buyerBids JÁ inclui o bid atual (gravado antes do invoke).
+      // prevBid = penúltimo bid = bid do cycle anterior.
+      prevBid: h.buyerBids.length >= 2 ? h.buyerBids[h.buyerBids.length - 2] : null,
       prevCounter: h.counters.length > 0 ? h.counters[h.counters.length - 1] : null,
       cycle, dial,
     });
