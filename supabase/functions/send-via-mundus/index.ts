@@ -247,7 +247,7 @@ Deno.serve(async (req) => {
   };
 
   const enqueueOne = async (toEmail: string, isCopy = false) => {
-    const { data: id, error: e } = await admin.rpc("enqueue_email", {
+    const { data: id, error: e } = await userClient.rpc("enqueue_email", {
       p_to_email: toEmail,
       p_subject: isCopy ? `[copy] ${built.subject}` : built.subject,
       p_html_body: built.html,
