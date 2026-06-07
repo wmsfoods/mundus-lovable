@@ -558,6 +558,27 @@ export default function SupplierCreateOfferV2Mobile() {
 
       {/* BODY */}
       <main className="flex-1 space-y-3 px-3.5 pb-[120px] pt-3">
+        {editLocked && (
+          <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50 p-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <div className="flex-1">
+                <p className="text-[13px] font-semibold text-amber-900">
+                  {tk("editLocked.title", "This offer has {{n}} active bid(s)", {
+                    n: bidStatus.bidCount,
+                  })}
+                </p>
+                <p className="mt-0.5 text-[12px] leading-snug text-amber-800">
+                  {tk(
+                    "editLocked.body",
+                    "To protect ongoing negotiations, prices, quantities, and cuts cannot be edited. You can still update shipping, photos, notes, and payment terms. To change prices, clone this offer to create a new version.",
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Card A — Markets & freight */}
         <button
           type="button"
