@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { App } from "@capacitor/app";
 import { supabase } from "@/integrations/supabase/client";
 import { ChevronLeftIcon } from "@/components/icons";
+import { isNativeApp } from "@/lib/isNativeApp";
+import { getPushPermissionStatus, registerPushNotifications } from "@/lib/pushNotifications";
 
 const WINE = "#8B2252";
 
@@ -104,6 +107,9 @@ export default function NotificationPreferences() {
   const [email, setEmail] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [pushPerm, setPushPerm] = useState<string>("");
+  const [pushEnabling, setPushEnabling] = useState(false);
+  const native = isNativeApp();
 
   useEffect(() => {
     let active = true;
@@ -146,6 +152,22 @@ export default function NotificationPreferences() {
       active = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (!native) return;
+    void getPushPermissionStatus().then(setPushPerm);
+  }, [native]);
+
+  const enablePushOnDevice = async () => {
+    setPushEnabling(true);
+    const result = await registerPushNotifications();
+    const status = await getPushPermissionStatus();
+    setPushPerm(status);
+    setPushEnabling(false);
+    if (result === "denied") {
+      await App.openUrl({ url: "app-settings:" });
+    }
+  };
 
   const update = async (patch: Partial<Prefs>) => {
     const next = { ...prefs, ...patch };
@@ -222,6 +244,43 @@ export default function NotificationPreferences() {
           value={prefs.push}
           onChange={(v) => update({ push: v })}
         />
+        {native && pushPerm !== "granted" && (
+          <div
+            style={{
+              marginTop: 12,
+              padding: 14,
+              borderRadius: 10,
+              background: "#fdf2f8",
+              border: "1px solid #f5d0e0",
+            }}
+          >
+            <div style={{ fontSize: 13, fontWeight: 600, color: "var(--fg)", marginBottom: 4 }}>
+              Enable alerts on this iPhone
+            </div>
+            <div style={{ fontSize: 12, color: "var(--fg-muted)", marginBottom: 10 }}>
+              {pushPerm === "denied"
+                ? "Notifications are off for Mundus. Tap below to open Settings."
+                : "Tap to allow push notifications on this device."}
+            </div>
+            <button
+              type="button"
+              onClick={() => void enablePushOnDevice()}
+              disabled={pushEnabling}
+              style={{
+                padding: "10px 16px",
+                borderRadius: 8,
+                border: "none",
+                background: WINE,
+                color: "#fff",
+                fontWeight: 600,
+                fontSize: 13,
+                cursor: pushEnabling ? "wait" : "pointer",
+              }}
+            >
+              {pushEnabling ? "Enabling…" : pushPerm === "denied" ? "Open Settings" : "Allow notifications"}
+            </button>
+          </div>
+        )}
       </section>
 
       <section>

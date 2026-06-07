@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 const PUSH_NAV_EVENT = "mundus-push-navigate";
 let listenersAttached = false;
 let registrationStarted = false;
+let pendingToken: string | null = null;
 
 function dispatchPushNavigate(url: string) {
   if (!url) return;
@@ -23,10 +24,13 @@ export function onPushNavigate(handler: (url: string) => void): () => void {
 async function saveToken(token: string): Promise<void> {
   const { data: userData } = await supabase.auth.getUser();
   const userId = userData.user?.id;
-  if (!userId) return;
+  if (!userId) {
+    pendingToken = token;
+    return;
+  }
 
   const platform = Capacitor.getPlatform() === "ios" ? "ios" : "android";
-  await supabase.from("device_push_tokens").upsert(
+  const { error } = await supabase.from("device_push_tokens").upsert(
     {
       user_id: userId,
       token,
@@ -35,6 +39,15 @@ async function saveToken(token: string): Promise<void> {
     },
     { onConflict: "user_id,token" },
   );
+  if (error) {
+    console.warn("[push] saveToken failed:", error.message);
+  } else {
+    pendingToken = null;
+  }
+}
+
+async function flushPendingToken(): Promise<void> {
+  if (pendingToken) await saveToken(pendingToken);
 }
 
 async function attachListeners(): Promise<void> {
@@ -76,23 +89,30 @@ async function attachListeners(): Promise<void> {
 }
 
 /** Register for push on native platforms after login. Safe to call multiple times. */
-export async function registerPushNotifications(): Promise<void> {
-  if (!Capacitor.isNativePlatform()) return;
-  if (registrationStarted) {
-    await PushNotifications.register();
-    return;
-  }
-  registrationStarted = true;
+export async function registerPushNotifications(): Promise<"granted" | "denied" | "unavailable"> {
+  if (!Capacitor.isNativePlatform()) return "unavailable";
 
   await attachListeners();
 
   let perm = await PushNotifications.checkPermissions();
-  if (perm.receive === "prompt") {
+  if (perm.receive !== "granted") {
     perm = await PushNotifications.requestPermissions();
   }
-  if (perm.receive !== "granted") return;
+  if (perm.receive !== "granted") {
+    console.warn("[push] permission not granted:", perm.receive);
+    return "denied";
+  }
 
+  if (!registrationStarted) registrationStarted = true;
   await PushNotifications.register();
+  await flushPendingToken();
+  return "granted";
+}
+
+export async function getPushPermissionStatus(): Promise<string> {
+  if (!Capacitor.isNativePlatform()) return "unavailable";
+  const perm = await PushNotifications.checkPermissions();
+  return perm.receive;
 }
 
 /** Remove all tokens for the current user on sign-out. */

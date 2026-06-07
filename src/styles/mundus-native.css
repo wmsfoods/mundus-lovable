@@ -21,7 +21,22 @@
 }
 
 .auth-screen-safe-top {
-  padding-top: max(0px, var(--safe-top, env(safe-area-inset-top, 0px)));
+  padding-top: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px));
+}
+
+/* Guest /home navbar — WKWebView needs --safe-top probe (env() alone is often 0) */
+body.is-native-ios .public-layout-header {
+  padding-top: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px));
+}
+
+/* Logged-in mobile topbar */
+body.is-native-ios .app-shell.is-mobile > .tb {
+  padding-top: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px));
+  min-height: calc(56px + max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px)));
+}
+
+body.is-native-ios .app-shell.is-mobile .tb-brand-center {
+  top: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px));
 }
 
 /* Guest chat fullscreen on native — hide PublicLayout navbar */

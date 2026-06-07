@@ -3,7 +3,6 @@ import { App } from "@capacitor/app";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { applySafeAreaInsets } from "@/lib/platform";
-import { registerPushNotifications } from "@/lib/pushNotifications";
 
 export async function initCapacitor(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
@@ -28,6 +27,13 @@ export async function initCapacitor(): Promise<void> {
     // Splash may already be hidden
   }
 
+  // Re-probe after splash — WKWebView insets are often 0 until the webview is fully visible.
+  applySafeAreaInsets();
+
+  App.addListener("appStateChange", ({ isActive }) => {
+    if (isActive) applySafeAreaInsets();
+  });
+
   App.addListener("backButton", ({ canGoBack }) => {
     if (canGoBack) {
       window.history.back();
@@ -35,6 +41,4 @@ export async function initCapacitor(): Promise<void> {
       App.exitApp();
     }
   });
-
-  void registerPushNotifications();
 }

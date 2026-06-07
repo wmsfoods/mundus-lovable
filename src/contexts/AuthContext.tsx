@@ -10,6 +10,16 @@ import {
 } from "@/lib/authStorage";
 import { registerPushNotifications, unregisterPushNotifications } from "@/lib/pushNotifications";
 
+function maybeRegisterPush(event: string, hasUser: boolean) {
+  if (!Capacitor.isNativePlatform() || !hasUser) return;
+  if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") {
+    // Small delay so iOS shows the permission dialog after the UI is active.
+    setTimeout(() => {
+      void registerPushNotifications();
+    }, 800);
+  }
+}
+
 const REMEMBER_KEY = "mundus.rememberMe";
 const TAB_MARKER_KEY = "mundus.session-tab";
 
@@ -53,10 +63,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       applySession(newSession);
+      maybeRegisterPush(event, !!newSession?.user);
       if (event === "SIGNED_IN" && newSession?.user) {
-        if (Capacitor.isNativePlatform()) {
-          void registerPushNotifications();
-        }
         // Fire-and-forget audit log; deferred so it runs after the auth handler returns
         setTimeout(() => {
           import("@/lib/auditLog").then(({ auditLog }) => {
@@ -94,6 +102,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       applySession(currentSession);
+      if (currentSession?.user) {
+        maybeRegisterPush("INITIAL_SESSION", true);
+      }
       if (!cancelled) setLoading(false);
     })();
 
