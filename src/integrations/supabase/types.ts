@@ -5616,9 +5616,9 @@ export type Database = {
           pricing_reference_port_id: string | null
           primary_pricing_incoterm: string | null
           request_id: string | null
-          shipment_month: number
+          shipment_month: number | null
           shipment_ready_raw: string | null
-          shipment_year: number
+          shipment_year: number | null
           specific_buyer_company_ids: string[] | null
           status: string | null
           supplier_id: string
@@ -5655,9 +5655,9 @@ export type Database = {
           pricing_reference_port_id?: string | null
           primary_pricing_incoterm?: string | null
           request_id?: string | null
-          shipment_month: number
+          shipment_month?: number | null
           shipment_ready_raw?: string | null
-          shipment_year: number
+          shipment_year?: number | null
           specific_buyer_company_ids?: string[] | null
           status?: string | null
           supplier_id: string
@@ -5694,9 +5694,9 @@ export type Database = {
           pricing_reference_port_id?: string | null
           primary_pricing_incoterm?: string | null
           request_id?: string | null
-          shipment_month?: number
+          shipment_month?: number | null
           shipment_ready_raw?: string | null
-          shipment_year?: number
+          shipment_year?: number | null
           specific_buyer_company_ids?: string[] | null
           status?: string | null
           supplier_id?: string
@@ -7966,9 +7966,9 @@ export type Database = {
           pricing_reference_port_id: string | null
           primary_pricing_incoterm: string | null
           request_id: string | null
-          shipment_month: number
+          shipment_month: number | null
           shipment_ready_raw: string | null
-          shipment_year: number
+          shipment_year: number | null
           specific_buyer_company_ids: string[] | null
           status: string | null
           supplier_id: string
