@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 import { displayRoundFor, roundTypeFor } from "@/hooks/useRealNegotiation";
 import { getRoundTotalUsd } from "@/lib/negotiationEngine";
+import { TimelineMessageCard, type TimelineMessage } from "@/components/messageViaMundus/TimelineMessageCard";
+import { useCurrentUserSide } from "@/hooks/useCurrentUserSide";
 
 type ActivityEvent = {
   id: string;
@@ -49,13 +51,14 @@ type Props = {
 export function NegotiationActivityTab({ negotiation, buyerLabel, supplierLabel }: Props) {
   const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { side: currentUserSide } = useCurrentUserSide(negotiation.id);
 
   useEffect(() => {
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("negotiation_messages")
-        .select("id, created_at, sender_side, content")
+        .select("id, created_at, sender_user_id, sender_side, message_type, content, structured_data, emailed, emailed_at")
         .eq("negotiation_id", negotiation.id)
         .order("created_at", { ascending: true });
       if (cancelled) return;
@@ -93,6 +96,17 @@ export function NegotiationActivityTab({ negotiation, buyerLabel, supplierLabel 
   }
 
   for (const m of messages) {
+    if (m.message_type === "via_mundus") {
+      events.push({
+        id: `m-${m.id}`,
+        ts: m.created_at,
+        kind: "message",
+        actor: "",
+        title: "__via_mundus__",
+        detail: JSON.stringify(m),
+      });
+      continue;
+    }
     events.push({
       id: `m-${m.id}`,
       ts: m.created_at,
@@ -144,7 +158,39 @@ export function NegotiationActivityTab({ negotiation, buyerLabel, supplierLabel 
         <div style={{ padding: 12, color: "#6B7280", fontSize: 13 }}>No activity yet.</div>
       ) : (
         <ol style={{ listStyle: "none", padding: 0, margin: 0 }}>
-          {events.map((e, i) => (
+          {events.map((e, i) => {
+            if (e.title === "__via_mundus__" && e.detail) {
+              let m: TimelineMessage | null = null;
+              try {
+                m = JSON.parse(e.detail) as TimelineMessage;
+              } catch {
+                m = null;
+              }
+              if (m) {
+                const senderLabel =
+                  m.sender_side === "buyer"
+                    ? buyerLabel
+                    : m.sender_side === "supplier"
+                      ? supplierLabel
+                      : "Mundus Trade";
+                return (
+                  <li
+                    key={e.id}
+                    style={{
+                      padding: "4px 12px",
+                      borderTop: i === 0 ? "none" : "1px solid #F3F4F6",
+                    }}
+                  >
+                    <TimelineMessageCard
+                      message={m}
+                      currentUserSide={currentUserSide}
+                      senderLabel={senderLabel}
+                    />
+                  </li>
+                );
+              }
+            }
+            return (
             <li
               key={e.id}
               style={{
@@ -178,7 +224,8 @@ export function NegotiationActivityTab({ negotiation, buyerLabel, supplierLabel 
                 )}
               </div>
             </li>
-          ))}
+            );
+          })}
         </ol>
       )}
     </div>
