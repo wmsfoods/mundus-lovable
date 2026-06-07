@@ -54,6 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       applySession(newSession);
+      // Once Supabase emits INITIAL_SESSION the auth state is settled —
+      // flip loading off immediately so RequireAuth doesn't flash the
+      // spinner while the async bootstrap below finishes.
+      if (event === "INITIAL_SESSION" && !cancelled) {
+        setLoading(false);
+      }
       if (event === "SIGNED_IN" && newSession?.user) {
         // Fire-and-forget audit log; deferred so it runs after the auth handler returns
         setTimeout(() => {
