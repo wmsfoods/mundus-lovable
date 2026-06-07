@@ -174,7 +174,7 @@ Deno.serve(async (req) => {
   const recipientCompanyName = (recipientCoRow as any)?.name || "";
 
   // Recipient primary contact via SECURITY DEFINER RPC
-  const { data: contactRows, error: contactErr } = await admin.rpc(
+  const { data: contactRows, error: contactErr } = await userClient.rpc(
     "get_company_primary_contact",
     { p_company_id: recipientCompanyId },
   );

@@ -128,7 +128,21 @@ export async function sendViaMundus(
   });
 
   if (error) {
-    throw new ViaMundusError("invoke_failed", error.message);
+    let serverMessage = error.message || "Failed to send";
+    let serverCode = "invoke_failed";
+
+    try {
+      const resp = (error as any).context?.response;
+      if (resp && typeof resp.json === "function") {
+        const body = await resp.json();
+        if (body?.error) serverCode = body.error;
+        if (body?.message) serverMessage = body.message;
+      }
+    } catch {
+      /* fall back to generic client error */
+    }
+
+    throw new ViaMundusError(serverCode, serverMessage);
   }
   if (!data?.success) {
     throw new ViaMundusError(
