@@ -771,3 +771,42 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
     </div>
   );
 }
+
+function DealMessagesPanel({
+  orderId,
+  role,
+  partyName,
+}: {
+  orderId?: string;
+  role: "buyer" | "supplier";
+  partyName: string;
+}) {
+  const { t } = useTranslation();
+  const { negotiationId, loading } = useOrderNegotiationId(orderId ?? null);
+  if (!orderId || loading) {
+    return (
+      <div style={{ padding: 16, color: "#6B7280", fontSize: 13 }}>
+        {t("messageViaMundus.timeline.loading", { defaultValue: "Loading messages..." })}
+      </div>
+    );
+  }
+  if (!negotiationId) {
+    return (
+      <div style={{ padding: 16, color: "#6B7280", fontSize: 13 }}>
+        {t("messageViaMundus.timeline.emptyDeal", {
+          defaultValue:
+            "No messages yet. Use 'Message via Mundus' to start a conversation about this order.",
+        })}
+      </div>
+    );
+  }
+  const buyerLabel = role === "buyer" ? t("common.you", { defaultValue: "You" }) : partyName;
+  const supplierLabel = role === "supplier" ? t("common.you", { defaultValue: "You" }) : partyName;
+  return (
+    <DealTimeline
+      negotiationId={negotiationId}
+      buyerLabel={buyerLabel}
+      supplierLabel={supplierLabel}
+    />
+  );
+}
