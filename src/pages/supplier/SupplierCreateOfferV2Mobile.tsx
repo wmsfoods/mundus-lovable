@@ -612,6 +612,27 @@ export default function SupplierCreateOfferV2Mobile() {
           </Button>
         </div>
 
+        {/* Cut nomenclature region toggle (US suppliers only) */}
+        {showRegionToggle && (
+          <div className="inline-flex rounded-lg bg-muted p-0.5 self-start">
+            {(["global", "us"] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => requestRegionChange(r)}
+                className={cn(
+                  "min-h-[44px] rounded-md px-4 text-sm font-medium",
+                  cutRegion === r ? "bg-card text-primary shadow-sm" : "text-muted-foreground",
+                )}
+              >
+                {r === "global"
+                  ? tk("cutsTable.regionGlobal", "🌐 Global")
+                  : tk("cutsTable.regionUs", "🇺🇸 US (IMPS/NAMP)")}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Cards D[] — Cut cards */}
         {cuts.length === 0 ? (
           <div className="rounded-xl border border-dashed bg-card p-6 text-center text-sm text-muted-foreground">
