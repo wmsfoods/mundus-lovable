@@ -32,6 +32,17 @@ import { NumberCell } from "./NumberCell";
 import { ApplyToAllChip } from "./ApplyToAllChip";
 import { cn } from "@/lib/utils";
 import { formatCutMeta } from "@/lib/cutMetaDisplay";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 
 type Props = {
   cuts: CutRow[];
@@ -58,7 +69,22 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
     : liveCompany;
   const companyId = companyOverride ? companyOverride.id : liveCompany?.id ?? null;
   const showRegionToggle = isUsCompany(effectiveCompany);
-  const regionLocked = cuts.length > 0;
+  const [pendingRegion, setPendingRegion] = useState<"global" | "us" | null>(null);
+
+  const requestRegionChange = (newRegion: "global" | "us") => {
+    if (cutRegion === newRegion) return;
+    if (cuts.length === 0) {
+      setCutRegion(newRegion);
+      return;
+    }
+    setPendingRegion(newRegion);
+  };
+  const confirmRegionChange = () => {
+    if (!pendingRegion) return;
+    setCuts([]);
+    setCutRegion(pendingRegion);
+    setPendingRegion(null);
+  };
 
   const tk = (k: string, fb: string, opts?: Record<string, unknown>) =>
     t(`supplier.createOfferV2.cutsTable.${k}`, { defaultValue: fb, ...(opts ?? {}) }) as string;
@@ -136,14 +162,11 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
               <button
                 key={r}
                 type="button"
-                disabled={regionLocked && cutRegion !== r}
-                onClick={() => !regionLocked && setCutRegion(r)}
+                onClick={() => requestRegionChange(r)}
                 className={cn(
                   "rounded-md px-3 py-1 text-xs font-medium",
                   cutRegion === r ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
-                  regionLocked && cutRegion !== r && "cursor-not-allowed opacity-40",
                 )}
-                title={regionLocked && cutRegion !== r ? tk("regionLockedHint", "Region locks once cuts are added") : undefined}
               >
                 {r === "global" ? tk("regionGlobal", "🌐 Global") : tk("regionUs", "🇺🇸 US (IMPS/NAMP)")}
               </button>
@@ -151,6 +174,33 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           </div>
         )}
       </div>
+
+      <AlertDialog open={pendingRegion !== null} onOpenChange={(o) => { if (!o) setPendingRegion(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tk("regionSwitchTitle", "Switch cut catalog?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tk(
+                "regionSwitchDesc",
+                "Each offer uses cuts from a single catalog (Global OR US IMPS/NAMP). Switching to {{target}} will remove the {{n}} cut(s) you've already added. Continue?",
+                {
+                  target: pendingRegion === "us" ? "US (IMPS/NAMP)" : "Global",
+                  n: cuts.length,
+                },
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tk("regionSwitchCancel", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={confirmRegionChange}
+            >
+              {tk("regionSwitchConfirm", "Yes, switch and reset")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Capacity bar */}
       <div className="mb-3">
