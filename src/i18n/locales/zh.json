@@ -4207,5 +4207,19 @@
     "retrying": "检查中…",
     "mailSubject": "Mundus Trade 平台访问",
     "mailBody": "您好，\n\n我已登录 Mundus Trade，但账户尚未关联任何公司。\n\n邮箱: {{email}}\nUser ID: {{uid}}\n\n请协助开通访问。\n\n谢谢。"
+  },
+  "messageViaMundus": {
+    "timeline": {
+      "sent": "SENT",
+      "received": "RECEIVED",
+      "urgent": "URGENT",
+      "viaMundus": "via Mundus",
+      "from": "From",
+      "to": "To",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "emailedAt": "Emailed {{time}}",
+      "emailPending": "Email pending"
+    }
   }
 }

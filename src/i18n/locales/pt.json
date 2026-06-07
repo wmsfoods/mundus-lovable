@@ -4221,5 +4221,19 @@
     "retrying": "Verificando…",
     "mailSubject": "Acesso à plataforma Mundus Trade",
     "mailBody": "Olá,\n\nFiz login na Mundus Trade mas minha conta ainda não está vinculada a nenhuma empresa.\n\nE-mail: {{email}}\nUser ID: {{uid}}\n\nPodem me ajudar a liberar o acesso?\n\nObrigado."
+  },
+  "messageViaMundus": {
+    "timeline": {
+      "sent": "SENT",
+      "received": "RECEIVED",
+      "urgent": "URGENT",
+      "viaMundus": "via Mundus",
+      "from": "From",
+      "to": "To",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "emailedAt": "Emailed {{time}}",
+      "emailPending": "Email pending"
+    }
   }
 }

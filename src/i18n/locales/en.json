@@ -4271,6 +4271,18 @@
     "sending": "Sending…",
     "delivered": "Delivered to {{name}} · Both parties CC'd",
     "errorGeneric": "Failed to send: {{err}}",
-    "recipientUnreachable": "We couldn't find a contact email for the recipient company."
+    "recipientUnreachable": "We couldn't find a contact email for the recipient company.",
+    "timeline": {
+      "sent": "SENT",
+      "received": "RECEIVED",
+      "urgent": "URGENT",
+      "viaMundus": "via Mundus",
+      "from": "From",
+      "to": "To",
+      "showMore": "Show more",
+      "showLess": "Show less",
+      "emailedAt": "Emailed {{time}}",
+      "emailPending": "Email pending"
+    }
   }
 }
