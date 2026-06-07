@@ -165,7 +165,7 @@ export default function NotificationPreferences() {
     setPushPerm(status);
     setPushEnabling(false);
     if (result === "denied") {
-      await App.openUrl({ url: "app-settings:" });
+      window.open("app-settings:", "_system");
     }
   };
 
