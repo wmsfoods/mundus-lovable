@@ -1,4 +1,5 @@
 import type { CutRow } from "@/lib/cutRowTypes";
+import { decodeShipmentReady } from "@/lib/shipmentReady";
 
 type LogisticsLike = {
   originCountryId?: string | null;
@@ -148,8 +149,17 @@ function freightSection(l: LogisticsLike): SectionStatus {
 
 function shipmentSection(l: LogisticsLike): SectionStatus {
   const missing: string[] = [];
+  // Decode so that `custom:` (prefix only, empty text) does NOT count as ready —
+  // the prefix is preserved through round-trips so the picker keeps the mode,
+  // but the field is only filled when there's actual content.
+  const parts = l.shipmentReady ? decodeShipmentReady(l.shipmentReady) : null;
+  const filled =
+    !!parts &&
+    ((parts.mode === "month" && !!parts.monthIdx && !!parts.year) ||
+      (parts.mode === "week" && !!parts.week && !!parts.year) ||
+      (parts.mode === "custom" && !!parts.custom?.trim()));
   const started = !!l.shipmentReady;
-  if (!l.shipmentReady) missing.push(f("shipmentMonth"));
+  if (!filled) missing.push(f("shipmentMonth"));
   return { key: "shipment", group: "logistics", labelKey: "completion.section.shipment", ok: missing.length === 0, started, missingFields: missing };
 }
 
