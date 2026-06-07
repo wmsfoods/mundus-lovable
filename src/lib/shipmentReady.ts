@@ -47,7 +47,7 @@ type TFn = (key: string, opts?: any) => string;
 
 /** Decode a form-state string into structured parts. */
 export function decodeShipmentReady(value: string | null | undefined): ShipmentParts {
-  const v = (value ?? "").trim();
+  const v = value ?? "";
   if (!v) return { mode: "month" };
   // Legacy "YYYY-MM"
   const legacy = /^(\d{4})-(\d{2})$/.exec(v);
@@ -86,7 +86,7 @@ export function encodeShipmentReady(parts: ShipmentParts): string {
       return "";
     }
     case "custom": {
-      const c = (parts.custom ?? "").trim();
+      const c = parts.custom ?? "";
       // Always keep the `custom:` prefix so the mode survives a round-trip
       // through decode() even when the text is empty. Otherwise tapping the
       // Custom pill would visually revert to Month mode on the next render.
