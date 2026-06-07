@@ -249,7 +249,10 @@ export async function submitOfferV2(
         ? l.primaryPricingIncoterm
         : null,
     pricing_includes_freight: computePricingIncludesFreight(l),
-    pricing_reference_port_id: l.pricingReferencePortId ?? null,
+    pricing_reference_port_id:
+      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+        ? (l.pricingReferencePortId ?? null)
+        : null,
   };
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
@@ -541,6 +544,10 @@ export async function updateOfferV2(
         ? l.primaryPricingIncoterm
         : null,
     pricing_includes_freight: computePricingIncludesFreight(l),
+    pricing_reference_port_id:
+      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+        ? (l.pricingReferencePortId ?? null)
+        : null,
   };
 
   const { error: updErr } = await supabase
