@@ -14,7 +14,18 @@ import {
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { isUsCompany } from "@/lib/companyHelpers";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -178,6 +189,19 @@ export default function SupplierCreateOfferV2Mobile() {
   const [logistics, setLogistics] = useState<LogisticsState>(EMPTY_LOGISTICS);
   const [cuts, setCuts] = useState<CutRow[]>([]);
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+  const [pendingRegion, setPendingRegion] = useState<"global" | "us" | null>(null);
+  const showRegionToggle = isUsCompany(company);
+  const requestRegionChange = (newRegion: "global" | "us") => {
+    if (cutRegion === newRegion) return;
+    if (cuts.length === 0) { setCutRegion(newRegion); return; }
+    setPendingRegion(newRegion);
+  };
+  const confirmRegionChange = () => {
+    if (!pendingRegion) return;
+    setCuts([]);
+    setCutRegion(pendingRegion);
+    setPendingRegion(null);
+  };
   const [paymentTerms, setPaymentTerms] = useState<string>("");
   const [distribution, setDistribution] = useState<DistributionValue>({
     marketplace: true,
@@ -588,6 +612,27 @@ export default function SupplierCreateOfferV2Mobile() {
           </Button>
         </div>
 
+        {/* Cut nomenclature region toggle (US suppliers only) */}
+        {showRegionToggle && (
+          <div className="inline-flex rounded-lg bg-muted p-0.5 self-start">
+            {(["global", "us"] as const).map((r) => (
+              <button
+                key={r}
+                type="button"
+                onClick={() => requestRegionChange(r)}
+                className={cn(
+                  "min-h-[44px] rounded-md px-4 text-sm font-medium",
+                  cutRegion === r ? "bg-card text-primary shadow-sm" : "text-muted-foreground",
+                )}
+              >
+                {r === "global"
+                  ? tk("cutsTable.regionGlobal", "🌐 Global")
+                  : tk("cutsTable.regionUs", "🇺🇸 US (IMPS/NAMP)")}
+              </button>
+            ))}
+          </div>
+        )}
+
         {/* Cards D[] — Cut cards */}
         {cuts.length === 0 ? (
           <div className="rounded-xl border border-dashed bg-card p-6 text-center text-sm text-muted-foreground">
@@ -821,6 +866,32 @@ export default function SupplierCreateOfferV2Mobile() {
             : undefined
         }
       />
+      <AlertDialog open={pendingRegion !== null} onOpenChange={(o) => { if (!o) setPendingRegion(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tk("cutsTable.regionSwitchTitle", "Switch cut catalog?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tk(
+                "cutsTable.regionSwitchDesc",
+                "Each offer uses cuts from a single catalog (Global OR US IMPS/NAMP). Switching to {{target}} will remove the {{n}} cut(s) you've already added. Continue?",
+                {
+                  target: pendingRegion === "us" ? "US (IMPS/NAMP)" : "Global",
+                  n: cuts.length,
+                },
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tk("cutsTable.regionSwitchCancel", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={confirmRegionChange}
+            >
+              {tk("cutsTable.regionSwitchConfirm", "Yes, switch and reset")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
