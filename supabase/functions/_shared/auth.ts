@@ -10,6 +10,13 @@ export async function requireUser(req: Request): Promise<
     return { ok: false, response: new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { "Content-Type": "application/json" } }) };
   }
   const token = authHeader.slice("Bearer ".length).trim();
+  // Internal service-to-service: another edge function invoking this one
+  // with the service_role key is a legitimate call (only same-project code
+  // has access to that key). Skip user lookup.
+  const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (serviceKey && token === serviceKey) {
+    return { ok: true, userId: "service-role-internal", token };
+  }
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
