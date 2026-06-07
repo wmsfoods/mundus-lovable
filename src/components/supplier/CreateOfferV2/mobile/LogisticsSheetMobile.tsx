@@ -994,81 +994,110 @@ function ContainerTab({
         </div>
       </section>
 
-      {/* PRICING REFERENCE */}
-      <section>
-        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-          {tk("container.pricingRef", "Pricing reference")}
-        </h3>
-        <div className="space-y-2 rounded-xl border bg-card p-3">
-          <button
-            type="button"
-            onClick={() => setDraft((p) => ({ ...p, pricingReferencePortId: null }))}
-            className={cn(
-              "flex w-full items-center gap-2 rounded-md border p-2.5 text-left text-sm",
-              pricingMode === "fob" ? "border-primary bg-primary/5" : "border-border bg-card",
-            )}
-          >
-            <span
-              className={cn(
-                "h-4 w-4 shrink-0 rounded-full border-2",
-                pricingMode === "fob" ? "border-primary bg-primary" : "border-border",
+      {/* PRICING REFERENCE — only when FOB or EXW selected */}
+      {pricingRefVisible && (
+        <section>
+          <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            {tk("container.pricingRef", "Pricing reference")}
+          </h3>
+          <div className="space-y-2 rounded-xl border bg-card p-3">
+            <p className="text-xs font-semibold">
+              {tk("container.primaryPricing.q", "Your prices are based on which incoterm?")}
+            </p>
+            <p className="text-[11px] text-muted-foreground">
+              {tk(
+                "container.primaryPricing.help",
+                "Helps buyers calculate equivalent prices at destination.",
               )}
-            />
-            <span>
-              {tk("container.pricingRef.fob", "FOB at origin ({{port}})", { port: op?.name ?? "—" })}
-            </span>
-          </button>
-          <div
-            className={cn(
-              "rounded-md border p-2.5",
-              pricingMode === "cfr" ? "border-primary bg-primary/5" : "border-border bg-card",
-            )}
-          >
+            </p>
             <button
               type="button"
-              onClick={() => {
-                if (destPorts.length === 0) {
-                  toast.error(
-                    tk(
-                      "pricingRef.noDestPorts",
-                      "Add at least one destination port before choosing CFR.",
-                    ),
-                  );
-                  return;
-                }
+              onClick={() =>
                 setDraft((p) => ({
                   ...p,
-                  pricingReferencePortId: p.pricingReferencePortId ?? destPorts[0]?.id ?? null,
-                }));
-              }}
-              className="flex w-full items-center gap-2 text-left text-sm"
+                  primaryPricingIncoterm: "FOB",
+                  pricingReferencePortId: null,
+                }))
+              }
+              className={cn(
+                "flex w-full items-center gap-2 rounded-md border p-2.5 text-left text-sm",
+                pricingMode === "fob" ? "border-primary bg-primary/5" : "border-border bg-card",
+              )}
             >
               <span
                 className={cn(
                   "h-4 w-4 shrink-0 rounded-full border-2",
-                  pricingMode === "cfr" ? "border-primary bg-primary" : "border-border",
+                  pricingMode === "fob" ? "border-primary bg-primary" : "border-border",
                 )}
               />
-              <span>{tk("container.pricingRef.cfr", "CFR at destination port")}</span>
+              <span>
+                {tk("container.pricingRef.fob", "FOB at origin ({{port}})", {
+                  port: op?.name ?? "—",
+                })}
+              </span>
             </button>
-            {pricingMode === "cfr" && destPorts.length > 0 && (
-              <select
-                className="mt-2 h-11 w-full rounded-md border bg-background px-2 text-sm"
-                value={draft.pricingReferencePortId ?? ""}
-                onChange={(e) =>
-                  setDraft((p) => ({ ...p, pricingReferencePortId: e.target.value || null }))
-                }
+            <div
+              className={cn(
+                "rounded-md border p-2.5",
+                pricingMode === "cfr" ? "border-primary bg-primary/5" : "border-border bg-card",
+              )}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  if (destPorts.length === 0) {
+                    toast.error(
+                      tk(
+                        "pricingRef.noDestPorts",
+                        "Add at least one destination port before choosing CFR.",
+                      ),
+                    );
+                    return;
+                  }
+                  setDraft((p) => ({
+                    ...p,
+                    primaryPricingIncoterm: "CFR",
+                    pricingReferencePortId:
+                      p.pricingReferencePortId ?? destPorts[0]?.id ?? null,
+                  }));
+                }}
+                className="flex w-full items-center gap-2 text-left text-sm"
               >
-                {destPorts.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+                <span
+                  className={cn(
+                    "h-4 w-4 shrink-0 rounded-full border-2",
+                    pricingMode === "cfr" ? "border-primary bg-primary" : "border-border",
+                  )}
+                />
+                <span>{tk("container.pricingRef.cfr", "CFR at destination port")}</span>
+              </button>
+              {pricingMode === "cfr" && destPorts.length > 0 && (
+                <select
+                  className="mt-2 h-11 w-full rounded-md border bg-background px-2 text-sm"
+                  value={draft.pricingReferencePortId ?? ""}
+                  onChange={(e) =>
+                    setDraft((p) => ({ ...p, pricingReferencePortId: e.target.value || null }))
+                  }
+                >
+                  {destPorts.map((p) => (
+                    <option key={p.id} value={p.id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              )}
+            </div>
+            {!draft.primaryPricingIncoterm && (
+              <p className="text-[11px] font-medium text-amber-700">
+                {tk(
+                  "validation.primaryPricingMissing",
+                  "Pick which incoterm (FOB or CFR) your prices reference before saving.",
+                )}
+              </p>
             )}
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CERTIFICATIONS */}
       <section>
