@@ -1750,40 +1750,6 @@ export default function SupplierCreateOfferV2Desktop() {
                       </Chip>
                     ))}
                   </div>
-                  {(drawerDraft.incoterms.includes("FOB") || drawerDraft.incoterms.includes("EXW")) && (
-                    <div className="mt-3 rounded-md border border-border bg-muted/30 p-3">
-                      <p className="mb-1 text-xs font-semibold text-foreground">
-                        {tk("incoterm.primaryPricing.question", "Your prices are based on which incoterm?")}
-                      </p>
-                      <p className="mb-2 text-[11px] text-muted-foreground">
-                        {tk(
-                          "incoterm.primaryPricing.help",
-                          "Helps buyers calculate equivalent prices at destination.",
-                        )}
-                      </p>
-                      <div className="flex gap-2">
-                        {(["CFR", "FOB"] as const).map((opt) => (
-                          <Chip
-                            key={opt}
-                            active={drawerDraft.primaryPricingIncoterm === opt}
-                            onClick={() =>
-                              setDrawerDraft((p) => ({ ...p, primaryPricingIncoterm: opt }))
-                            }
-                          >
-                            {tk(`incoterm.primaryPricing.${opt.toLowerCase()}`, opt)}
-                          </Chip>
-                        ))}
-                      </div>
-                      {!drawerDraft.primaryPricingIncoterm && (
-                        <p className="mt-2 text-[11px] font-medium text-amber-700">
-                          {tk(
-                            "validation.primaryPricingMissing",
-                            "Pick the incoterm your prices reference before saving.",
-                          )}
-                        </p>
-                      )}
-                    </div>
-                  )}
                   {drawerDraft.incoterms.includes("EXW") && (
                     <div className="mt-2">
                       <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
