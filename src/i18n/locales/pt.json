@@ -4223,20 +4223,63 @@
     "mailBody": "Olá,\n\nFiz login na Mundus Trade mas minha conta ainda não está vinculada a nenhuma empresa.\n\nE-mail: {{email}}\nUser ID: {{uid}}\n\nPodem me ajudar a liberar o acesso?\n\nObrigado."
   },
   "messageViaMundus": {
+    "trigger": "Mensagem para {{name}} via Mundus",
+    "triggerCompact": "Mensagem via Mundus",
+    "title": "Enviar via Mundus",
+    "subtitle": "Entregamos esta mensagem a {{name}} em seu nome. Ambas as partes recebem cópia e o registro fica na timeline deste(a) {{recordType}}.",
+    "to": "Para",
+    "via": "via Mundus",
+    "subject": "Assunto",
+    "subjectPlaceholder": "Re: {{recordId}}",
+    "body": "Mensagem",
+    "bodyPlaceholder": "Escreva uma mensagem curta e direta…",
+    "templates": "Modelos rápidos",
+    "tpl": {
+      "shipment": "Atualização de embarque",
+      "payment": "Confirmar pagamento",
+      "specs": "Dúvida sobre specs",
+      "docs": "Solicitar documentos",
+      "delay": "Sinalizar atraso",
+      "blank": "Mensagem em branco"
+    },
+    "tplSubject": {
+      "shipment": "Atualização de embarque — {{recordId}}",
+      "payment": "Confirmação de pagamento do saldo",
+      "specs": "Dúvida rápida sobre especificações",
+      "docs": "Solicitação de documentos",
+      "delay": "Possível atraso — favor confirmar",
+      "blank": ""
+    },
+    "tplBody": {
+      "shipment": "Olá,\n\nAtualização rápida sobre o embarque:\n\n- Booking confirmado no [NAVIO] em [DATA]\n- ETD [PORTO]: [DATA]\n- ETA [PORTO]: [DATA]\n\nAvise se algo estiver divergente.\n\nObrigado.",
+      "payment": "Olá,\n\nGostaria de confirmar:\n\n- Adiantamento de [X] recebido em [DATA]\n- Saldo de [Y] com vencimento em [DATA]\n\nFavor confirmar.\n\nObrigado.",
+      "specs": "Olá,\n\nUma dúvida rápida sobre as especificações do produto:\n\n[SUA PERGUNTA]\n\nObrigado.",
+      "docs": "Olá,\n\nPoderia compartilhar os seguintes documentos:\n\n- [DOC 1]\n- [DOC 2]\n\nObrigado.",
+      "delay": "Olá,\n\nAviso sobre um possível atraso:\n\n- [O QUE]\n- Nova estimativa: [DATA]\n\nDesculpas, favor orientar.",
+      "blank": ""
+    },
+    "attach": "Anexar",
+    "removeAttachment": "Remover anexo",
+    "urgent": "Urgente",
+    "send": "Enviar via Mundus",
+    "sending": "Enviando…",
+    "delivered": "Entregue a {{name}} · Ambas as partes em cópia",
+    "errorGeneric": "Falha ao enviar: {{err}}",
+    "recipientUnreachable": "Não encontramos um email de contato para a empresa destinatária.",
     "timeline": {
-      "sent": "SENT",
-      "received": "RECEIVED",
-      "urgent": "URGENT",
+      "sent": "ENVIADO",
+      "received": "RECEBIDO",
+      "urgent": "URGENTE",
       "viaMundus": "via Mundus",
-      "from": "From",
-      "to": "To",
-      "showMore": "Show more",
-      "showLess": "Show less",
-      "emailedAt": "Emailed {{time}}",
-      "emailPending": "Email pending",
-      "tabMessages": "Messages",
-      "emptyDeal": "No messages yet. Use 'Message via Mundus' to start a conversation about this order.",
-      "loading": "Loading messages..."
+      "from": "De",
+      "to": "Para",
+      "showMore": "Mostrar mais",
+      "showLess": "Mostrar menos",
+      "emailedAt": "Enviado por email {{time}}",
+      "emailPending": "Email pendente",
+      "tabMessages": "Mensagens",
+      "emptyDeal": "Nenhuma mensagem ainda. Use 'Mensagem via Mundus' para iniciar uma conversa sobre este pedido.",
+      "loading": "Carregando mensagens..."
     }
   }
 }

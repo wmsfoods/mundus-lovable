@@ -4209,20 +4209,63 @@
     "mailBody": "您好，\n\n我已登录 Mundus Trade，但账户尚未关联任何公司。\n\n邮箱: {{email}}\nUser ID: {{uid}}\n\n请协助开通访问。\n\n谢谢。"
   },
   "messageViaMundus": {
+    "trigger": "通过 Mundus 向 {{name}} 发送消息",
+    "triggerCompact": "通过 Mundus 发送消息",
+    "title": "通过 Mundus 发送",
+    "subtitle": "我们将代您把此消息转交给 {{name}}。双方均会收到副本,且消息会记录在此 {{recordType}} 的时间线中。",
+    "to": "收件人",
+    "via": "via Mundus",
+    "subject": "主题",
+    "subjectPlaceholder": "回复: {{recordId}}",
+    "body": "消息内容",
+    "bodyPlaceholder": "请撰写一条简短、直接的消息…",
+    "templates": "快捷模板",
+    "tpl": {
+      "shipment": "装运更新",
+      "payment": "确认付款",
+      "specs": "规格咨询",
+      "docs": "索取文件",
+      "delay": "提示延误",
+      "blank": "空白消息"
+    },
+    "tplSubject": {
+      "shipment": "装运更新 — {{recordId}}",
+      "payment": "尾款付款确认",
+      "specs": "关于规格的快速咨询",
+      "docs": "文件索取",
+      "delay": "可能延误 — 请确认",
+      "blank": ""
+    },
+    "tplBody": {
+      "shipment": "您好,\n\n装运情况简要更新:\n\n- 已确认 [船名] 于 [日期] 的舱位\n- ETD [港口]: [日期]\n- ETA [港口]: [日期]\n\n如有不符,请告知。\n\n谢谢。",
+      "payment": "您好,\n\n请确认以下事项:\n\n- 预付款 [X] 已于 [日期] 收到\n- 尾款 [Y] 应于 [日期] 支付\n\n请确认。\n\n谢谢。",
+      "specs": "您好,\n\n关于产品规格的一个简短问题:\n\n[您的问题]\n\n谢谢。",
+      "docs": "您好,\n\n烦请提供以下文件:\n\n- [文件 1]\n- [文件 2]\n\n谢谢。",
+      "delay": "您好,\n\n关于可能延误的提示:\n\n- [情况]\n- 新预计: [日期]\n\n抱歉,请告知后续安排。",
+      "blank": ""
+    },
+    "attach": "附件",
+    "removeAttachment": "移除附件",
+    "urgent": "紧急",
+    "send": "通过 Mundus 发送",
+    "sending": "正在发送…",
+    "delivered": "已送达 {{name}} · 双方均已抄送",
+    "errorGeneric": "发送失败: {{err}}",
+    "recipientUnreachable": "未找到收件公司的联系邮箱。",
     "timeline": {
-      "sent": "SENT",
-      "received": "RECEIVED",
-      "urgent": "URGENT",
+      "sent": "已发送",
+      "received": "已接收",
+      "urgent": "紧急",
       "viaMundus": "via Mundus",
-      "from": "From",
-      "to": "To",
-      "showMore": "Show more",
-      "showLess": "Show less",
-      "emailedAt": "Emailed {{time}}",
-      "emailPending": "Email pending",
-      "tabMessages": "Messages",
-      "emptyDeal": "No messages yet. Use 'Message via Mundus' to start a conversation about this order.",
-      "loading": "Loading messages..."
+      "from": "发件人",
+      "to": "收件人",
+      "showMore": "查看更多",
+      "showLess": "收起",
+      "emailedAt": "已通过邮件发送 {{time}}",
+      "emailPending": "邮件待发送",
+      "tabMessages": "消息",
+      "emptyDeal": "暂无消息。使用'通过 Mundus 发送消息'开始关于此订单的对话。",
+      "loading": "正在加载消息..."
     }
   }
 }
