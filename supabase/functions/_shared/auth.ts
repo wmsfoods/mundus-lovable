@@ -34,6 +34,8 @@ export async function requireAdmin(req: Request): Promise<
 > {
   const u = await requireUser(req);
   if (!u.ok) return u;
+  // Internal service-role bypass already accepted by requireUser
+  if (u.userId === "service-role-internal") return u;
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_ANON_KEY")!,
