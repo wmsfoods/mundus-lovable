@@ -855,7 +855,13 @@ function ContainerTab({
       .map((pid) => catalog.ports.find((p) => p.id === pid))
       .filter((p): p is NonNullable<typeof p> => !!p),
   );
-  const pricingMode: "fob" | "cfr" = draft.pricingReferencePortId ? "cfr" : "fob";
+  const pricingRefVisible = draft.incoterms.includes("FOB") || draft.incoterms.includes("EXW");
+  const pricingMode: "fob" | "cfr" | null =
+    draft.primaryPricingIncoterm === "FOB"
+      ? "fob"
+      : draft.primaryPricingIncoterm === "CFR"
+        ? "cfr"
+        : null;
 
   const toggleIncoterm = (i: Incoterm) =>
     setDraft((p) => ({
