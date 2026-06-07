@@ -120,6 +120,15 @@ Deno.serve(async (req) => {
 
   if (!(await authorize(req))) return unauthorized();
 
+  const sa = parseServiceAccount(Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "");
+  const apns = parseApnsConfig();
+  if (!sa && !apns) {
+    return new Response(
+      JSON.stringify({ ok: true, delivered: 0, skipped: true, reason: "push_not_configured" }),
+      { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await req.json();
@@ -176,9 +185,6 @@ Deno.serve(async (req) => {
     });
   }
 
-  const apns = parseApnsConfig();
-  const fcm = parseServiceAccount(Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "");
-
   const pushPayload = {
     title: payload.title,
     body: payload.body ?? undefined,
@@ -187,34 +193,34 @@ Deno.serve(async (req) => {
 
   let delivered = 0;
   const staleIds: string[] = [];
-  const errors: string[] = [];
+  const errors: Array<{ platform: string; reason?: string; status?: number }> = [];
 
   for (const row of tokens as TokenRow[]) {
     if (row.platform === "ios") {
       if (!apns) {
-        errors.push("apns_not_configured");
+        errors.push({ platform: "ios", reason: "apns_not_configured" });
         continue;
       }
       const result = await sendApnsWithFallback(apns, row.token, pushPayload);
       if (result.ok) {
         delivered++;
       } else {
-        if (result.error) errors.push(`ios:${result.error.slice(0, 200)}`);
-        if (result.badToken) staleIds.push(row.id);
+        errors.push({ platform: "ios", reason: result.reason ?? result.error, status: result.status });
+        if (result.unregistered) staleIds.push(row.id);
       }
       continue;
     }
 
-    if (!fcm) {
-      errors.push("fcm_not_configured");
+    if (!sa) {
+      errors.push({ platform: row.platform || "android", reason: "fcm_not_configured" });
       continue;
     }
 
-    const result = await sendFcmToToken(fcm, row.token, pushPayload);
+    const result = await sendFcmToToken(sa, row.token, pushPayload);
     if (result.ok) {
       delivered++;
     } else {
-      if (result.error) errors.push(`android:${result.error.slice(0, 200)}`);
+      errors.push({ platform: row.platform || "android", reason: result.error });
       if (result.unregistered) staleIds.push(row.id);
     }
   }
@@ -228,7 +234,7 @@ Deno.serve(async (req) => {
       ok: true,
       delivered,
       skipped: delivered === 0,
-      reason: delivered === 0 ? (errors[0] ?? "delivery_failed") : undefined,
+      reason: delivered === 0 ? (errors[0]?.reason ?? "delivery_failed") : undefined,
       errors: errors.length ? errors : undefined,
     }),
     { headers: { ...corsHeaders, "Content-Type": "application/json" } },
