@@ -11,6 +11,7 @@ import {
   Megaphone,
   ChevronRight,
   Plus,
+  AlertTriangle,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { useOfferForPrefill } from "@/hooks/useOfferForPrefill";
 import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
+import { useOfferHasActiveBids } from "@/hooks/useOfferHasActiveBids";
 import { useMyCustomers } from "@/hooks/useMyCustomers";
 import { supabase } from "@/integrations/supabase/client";
 
