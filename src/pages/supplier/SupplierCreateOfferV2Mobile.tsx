@@ -866,6 +866,32 @@ export default function SupplierCreateOfferV2Mobile() {
             : undefined
         }
       />
+      <AlertDialog open={pendingRegion !== null} onOpenChange={(o) => { if (!o) setPendingRegion(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tk("cutsTable.regionSwitchTitle", "Switch cut catalog?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tk(
+                "cutsTable.regionSwitchDesc",
+                "Each offer uses cuts from a single catalog (Global OR US IMPS/NAMP). Switching to {{target}} will remove the {{n}} cut(s) you've already added. Continue?",
+                {
+                  target: pendingRegion === "us" ? "US (IMPS/NAMP)" : "Global",
+                  n: cuts.length,
+                },
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tk("cutsTable.regionSwitchCancel", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={confirmRegionChange}
+            >
+              {tk("cutsTable.regionSwitchConfirm", "Yes, switch and reset")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
