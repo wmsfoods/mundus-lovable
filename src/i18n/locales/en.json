@@ -2558,6 +2558,11 @@
         "activeNegotiationsWarning_one": "1 active negotiation — changes won't affect ongoing chats",
         "activeNegotiationsWarning_other": "{{count}} active negotiations — changes won't affect ongoing chats"
       },
+      "editLocked": {
+        "title": "This offer has {{n}} active bid(s)",
+        "body": "To protect ongoing negotiations, prices, quantities, and cuts cannot be edited. You can still update shipping, photos, notes, and payment terms. To change prices, clone this offer to create a new version.",
+        "fieldTooltip": "Locked — this offer has active bids. Clone the offer to change this field."
+      },
       "cloneMode": {
         "title": "New offer (cloned from #{{n}})"
       },

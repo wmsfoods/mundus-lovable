@@ -11,6 +11,7 @@ import {
   Megaphone,
   ChevronRight,
   Plus,
+  AlertTriangle,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -37,6 +38,7 @@ import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { useOfferForPrefill } from "@/hooks/useOfferForPrefill";
 import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
+import { useOfferHasActiveBids } from "@/hooks/useOfferHasActiveBids";
 import { useMyCustomers } from "@/hooks/useMyCustomers";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -152,6 +154,8 @@ export default function SupplierCreateOfferV2Mobile() {
     editId ? "edit" : cloneId ? "clone" : null,
   );
   const requestPrefillQuery = useBuyerRequestForPrefill(requestId);
+  const bidStatus = useOfferHasActiveBids(mode === "edit" ? editId : null);
+  const editLocked = mode === "edit" && !bidStatus.loading && bidStatus.hasBids;
 
   const { company } = useCurrentCompany();
   const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
@@ -554,6 +558,27 @@ export default function SupplierCreateOfferV2Mobile() {
 
       {/* BODY */}
       <main className="flex-1 space-y-3 px-3.5 pb-[120px] pt-3">
+        {editLocked && (
+          <div className="rounded-lg border-l-4 border-amber-500 bg-amber-50 p-3">
+            <div className="flex items-start gap-2">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600" />
+              <div className="flex-1">
+                <p className="text-[13px] font-semibold text-amber-900">
+                  {tk("editLocked.title", "This offer has {{n}} active bid(s)", {
+                    n: bidStatus.bidCount,
+                  })}
+                </p>
+                <p className="mt-0.5 text-[12px] leading-snug text-amber-800">
+                  {tk(
+                    "editLocked.body",
+                    "To protect ongoing negotiations, prices, quantities, and cuts cannot be edited. You can still update shipping, photos, notes, and payment terms. To change prices, clone this offer to create a new version.",
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Card A — Markets & freight */}
         <button
           type="button"
@@ -614,6 +639,7 @@ export default function SupplierCreateOfferV2Mobile() {
             variant="outline"
             className="h-9 border-primary text-primary"
             onClick={() => setCutSheet({ open: true, mode: "new", cutId: null })}
+            disabled={editLocked}
           >
             <Plus size={14} className="mr-1" />
             {tk("mobile.addCut", "Add cut")}
@@ -628,9 +654,11 @@ export default function SupplierCreateOfferV2Mobile() {
                 key={r}
                 type="button"
                 onClick={() => requestRegionChange(r)}
+                disabled={editLocked}
                 className={cn(
                   "min-h-[44px] rounded-md px-4 text-sm font-medium",
                   cutRegion === r ? "bg-card text-primary shadow-sm" : "text-muted-foreground",
+                  editLocked && "opacity-50",
                 )}
               >
                 {r === "global"
@@ -658,8 +686,15 @@ export default function SupplierCreateOfferV2Mobile() {
               <button
                 key={cutKey + idx}
                 type="button"
-                onClick={() => setCutSheet({ open: true, mode: "edit", cutId: cutKey })}
-                className="flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left active:bg-muted/30"
+                onClick={() => {
+                  if (editLocked) return;
+                  setCutSheet({ open: true, mode: "edit", cutId: cutKey });
+                }}
+                disabled={editLocked}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left active:bg-muted/30",
+                  editLocked && "opacity-70 cursor-not-allowed active:bg-card",
+                )}
               >
                 <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-2xl">
                   🥩

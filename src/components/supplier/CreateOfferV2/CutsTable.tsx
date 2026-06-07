@@ -59,9 +59,16 @@ type Props = {
    * of the admin's own company. Pass `null`/omit to use the logged-in company.
    */
   companyOverride?: { id: string; name?: string | null; country?: string | null } | null;
+  /**
+   * When true, all interactive controls inside the table (cut rows, inputs,
+   * region toggle, apply-to-all chips, add/remove buttons) are disabled. Used
+   * on the edit screen when the offer already has active buyer bids: editing
+   * price/qty/cuts would break the FK chain to cut_rounds.
+   */
+  locked?: boolean;
 };
 
-export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel, companyOverride }: Props) {
+export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel, companyOverride, locked = false }: Props) {
   const { t } = useTranslation();
   const { company: liveCompany } = useCurrentCompany();
   const effectiveCompany = companyOverride
@@ -149,7 +156,8 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
     t(`supplier.createOfferV2.cuts.${k}`, { defaultValue: fb }) as string;
 
   return (
-    <div className="rounded-xl border border-border bg-card p-4">
+    <div className={cn("rounded-xl border border-border bg-card p-4", locked && "opacity-80")}>
+    <fieldset disabled={locked} className="contents" aria-disabled={locked || undefined}>
       {/* Header */}
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
         <div>
@@ -331,6 +339,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           </span>
         )}
       </div>
+    </fieldset>
     </div>
   );
 }
