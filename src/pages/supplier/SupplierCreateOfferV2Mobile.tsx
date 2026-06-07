@@ -154,6 +154,8 @@ export default function SupplierCreateOfferV2Mobile() {
     editId ? "edit" : cloneId ? "clone" : null,
   );
   const requestPrefillQuery = useBuyerRequestForPrefill(requestId);
+  const bidStatus = useOfferHasActiveBids(mode === "edit" ? editId : null);
+  const editLocked = mode === "edit" && !bidStatus.loading && bidStatus.hasBids;
 
   const { company } = useCurrentCompany();
   const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
