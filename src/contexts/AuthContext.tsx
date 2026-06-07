@@ -8,17 +8,7 @@ import {
   removePersistedValue,
   setPersistedValue,
 } from "@/lib/authStorage";
-import { registerPushNotifications, unregisterPushNotifications } from "@/lib/pushNotifications";
-
-function maybeRegisterPush(event: string, hasUser: boolean) {
-  if (!Capacitor.isNativePlatform() || !hasUser) return;
-  if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") {
-    // Small delay so iOS shows the permission dialog after the UI is active.
-    setTimeout(() => {
-      void registerPushNotifications();
-    }, 800);
-  }
-}
+import { unregisterPushNotifications, syncPushTokenForUser } from "@/lib/pushNotifications";
 
 const REMEMBER_KEY = "mundus.rememberMe";
 const TAB_MARKER_KEY = "mundus.session-tab";
@@ -63,7 +53,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       applySession(newSession);
-      maybeRegisterPush(event, !!newSession?.user);
       if (event === "SIGNED_IN" && newSession?.user) {
         // Fire-and-forget audit log; deferred so it runs after the auth handler returns
         setTimeout(() => {
@@ -80,6 +69,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (error) console.warn("[claim_pending_invites]", error.message);
           });
         }, 0);
+      }
+      if (
+        (event === "SIGNED_IN" || event === "INITIAL_SESSION") &&
+        newSession?.user &&
+        Capacitor.isNativePlatform()
+      ) {
+        void syncPushTokenForUser();
       }
       if (event === "SIGNED_OUT" && Capacitor.isNativePlatform()) {
         void unregisterPushNotifications();
@@ -102,10 +98,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       const { data: { session: currentSession } } = await supabase.auth.getSession();
       applySession(currentSession);
-      if (currentSession?.user) {
-        maybeRegisterPush("INITIAL_SESSION", true);
-      }
       if (!cancelled) setLoading(false);
+      if (currentSession?.user && Capacitor.isNativePlatform()) {
+        void syncPushTokenForUser();
+      }
     })();
 
     return () => {

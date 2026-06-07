@@ -13,9 +13,6 @@ import * as Sentry from "@sentry/react";
 applyPlatformBodyClasses();
 void initCapacitor();
 
-// Cleanup any previously-registered service workers + caches.
-// We rely on manifest.json + apple-touch-icon for "Add to Home Screen"
-// (no SW needed) and Capacitor handles the native mobile shell.
 (() => {
   if (typeof window === "undefined") return;
   if ("serviceWorker" in navigator) {
@@ -28,7 +25,6 @@ void initCapacitor();
   }
 })();
 
-// Surface unhandled errors so they show up in console/logs instead of dying silently.
 window.addEventListener("error", (e) => {
   // eslint-disable-next-line no-console
   console.error("[window.error]", e.error ?? e.message);

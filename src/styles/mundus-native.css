@@ -39,6 +39,17 @@ body.is-native-ios .app-shell.is-mobile .tb-brand-center {
   top: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px));
 }
 
+/* Stack screens — same WKWebView safe-area probe as topbar */
+body.is-native-ios .app-shell.is-mobile.is-stack > .sh {
+  padding-top: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px));
+  min-height: calc(52px + max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px)));
+}
+
+body.is-native-android .app-shell.is-mobile.is-stack > .sh {
+  padding-top: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px));
+  min-height: calc(52px + max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px)));
+}
+
 /* Guest chat fullscreen on native — hide PublicLayout navbar */
 body.is-native-ios[data-guest-chat-open="1"] .public-layout-header {
   display: none !important;

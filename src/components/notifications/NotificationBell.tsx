@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import {
   BellIcon,
   CartIcon,
@@ -11,6 +11,7 @@ import {
 } from "@/components/icons";
 import { useAppNotifications, type AppNotification } from "@/hooks/useAppNotifications";
 import { formatTimeAgo } from "@/lib/notifications";
+import { notificationPreferencesPath } from "@/lib/mobile-nav";
 import { Settings as SettingsIcon } from "lucide-react";
 
 const WINE = "#8B2252";
@@ -39,6 +40,8 @@ const CATEGORIES = [
 
 export function NotificationBell() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefsPath = notificationPreferencesPath(location.pathname);
   const [open, setOpen] = useState(false);
   const [category, setCategory] = useState<string>("all");
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -163,7 +166,7 @@ export function NotificationBell() {
                 type="button"
                 onClick={() => {
                   setOpen(false);
-                  navigate("/settings/notifications");
+                  navigate(prefsPath);
                 }}
                 title="Notification preferences"
                 style={{

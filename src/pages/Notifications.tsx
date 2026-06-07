@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Settings as SettingsIcon } from "lucide-react";
 import {
   BellIcon,
@@ -12,6 +12,7 @@ import {
 } from "@/components/icons";
 import { useAppNotifications, type AppNotification } from "@/hooks/useAppNotifications";
 import { formatTimeAgo } from "@/lib/notifications";
+import { notificationPreferencesPath } from "@/lib/mobile-nav";
 import "@/styles/mundus-notifications.css";
 
 const WINE = "#8B2252";
@@ -38,6 +39,8 @@ const CATEGORIES = [
 
 export default function Notifications() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const prefsPath = notificationPreferencesPath(location.pathname);
   const { unreadCount, notifications, loadNotifications, markRead, markAllRead, loading } =
     useAppNotifications({ limit: 100 });
   const [category, setCategory] = useState("all");
@@ -64,7 +67,7 @@ export default function Notifications() {
               Mark all read
             </button>
           )}
-          <Link to="/settings/notifications">
+          <Link to={prefsPath}>
             <SettingsIcon size={14} /> Preferences
           </Link>
         </div>

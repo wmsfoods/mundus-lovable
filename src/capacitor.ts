@@ -3,6 +3,7 @@ import { App } from "@capacitor/app";
 import { SplashScreen } from "@capacitor/splash-screen";
 import { StatusBar, Style } from "@capacitor/status-bar";
 import { applySafeAreaInsets } from "@/lib/platform";
+import { initPushNotifications } from "@/lib/pushNotifications";
 
 export async function initCapacitor(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
@@ -10,7 +11,6 @@ export async function initCapacitor(): Promise<void> {
   try {
     await StatusBar.setStyle({ style: Style.Light });
     if (Capacitor.getPlatform() === "ios") {
-      // Edge-to-edge: use env(safe-area-inset-*) / --safe-top in CSS (no extra black band).
       await StatusBar.setOverlaysWebView({ overlay: true });
       await StatusBar.setBackgroundColor({ color: "#ffffff" });
       document.body.classList.add("status-bar-overlay");
@@ -27,8 +27,10 @@ export async function initCapacitor(): Promise<void> {
     // Splash may already be hidden
   }
 
-  // Re-probe after splash — WKWebView insets are often 0 until the webview is fully visible.
   applySafeAreaInsets();
+
+  // Listeners only — permission dialog is native (AppDelegate on iOS).
+  void initPushNotifications();
 
   App.addListener("appStateChange", ({ isActive }) => {
     if (isActive) applySafeAreaInsets();

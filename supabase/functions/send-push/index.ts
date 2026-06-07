@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { parseApnsConfig, sendApnsWithFallback } from "../_shared/apns.ts";
 import { parseServiceAccount, sendFcmToToken } from "../_shared/fcm.ts";
 
 const corsHeaders = {
@@ -16,6 +17,8 @@ type PushPayload = {
   notification_id?: string | null;
 };
 
+type TokenRow = { id: string; token: string; platform: string };
+
 function unauthorized(msg = "Unauthorized") {
   return new Response(JSON.stringify({ error: msg }), {
     status: 401,
@@ -27,7 +30,6 @@ function parsePayload(body: unknown): PushPayload | null {
   if (!body || typeof body !== "object") return null;
   const b = body as Record<string, unknown>;
 
-  // Supabase Database Webhook format
   if (b.type === "INSERT" && b.record && typeof b.record === "object") {
     const r = b.record as Record<string, unknown>;
     if (typeof r.user_id === "string" && typeof r.title === "string") {
@@ -82,7 +84,6 @@ function isPushAllowed(
     if (relatedType === "request") return prefs.new_request_response !== false;
     return prefs.new_buyer_request !== false;
   }
-  if (cat === "system") return true;
   return true;
 }
 
@@ -118,14 +119,6 @@ Deno.serve(async (req) => {
   }
 
   if (!(await authorize(req))) return unauthorized();
-
-  const saRaw = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "";
-  const sa = parseServiceAccount(saRaw);
-  if (!sa) {
-    return new Response(JSON.stringify({ ok: true, delivered: 0, skipped: true, reason: "fcm_not_configured" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
-  }
 
   let body: unknown;
   try {
@@ -174,7 +167,7 @@ Deno.serve(async (req) => {
 
   const { data: tokens } = await supabase
     .from("device_push_tokens")
-    .select("id, token")
+    .select("id, token, platform")
     .eq("user_id", payload.user_id);
 
   if (!tokens?.length) {
@@ -183,19 +176,46 @@ Deno.serve(async (req) => {
     });
   }
 
+  const apns = parseApnsConfig();
+  const fcm = parseServiceAccount(Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "");
+
+  const pushPayload = {
+    title: payload.title,
+    body: payload.body ?? undefined,
+    url: payload.url ?? undefined,
+  };
+
   let delivered = 0;
   const staleIds: string[] = [];
+  const errors: string[] = [];
 
-  for (const row of tokens) {
-    const result = await sendFcmToToken(sa, row.token, {
-      title: payload.title,
-      body: payload.body ?? undefined,
-      url: payload.url ?? undefined,
-    });
+  for (const row of tokens as TokenRow[]) {
+    if (row.platform === "ios") {
+      if (!apns) {
+        errors.push("apns_not_configured");
+        continue;
+      }
+      const result = await sendApnsWithFallback(apns, row.token, pushPayload);
+      if (result.ok) {
+        delivered++;
+      } else {
+        if (result.error) errors.push(`ios:${result.error.slice(0, 200)}`);
+        if (result.badToken) staleIds.push(row.id);
+      }
+      continue;
+    }
+
+    if (!fcm) {
+      errors.push("fcm_not_configured");
+      continue;
+    }
+
+    const result = await sendFcmToToken(fcm, row.token, pushPayload);
     if (result.ok) {
       delivered++;
-    } else if (result.unregistered) {
-      staleIds.push(row.id);
+    } else {
+      if (result.error) errors.push(`android:${result.error.slice(0, 200)}`);
+      if (result.unregistered) staleIds.push(row.id);
     }
   }
 
@@ -203,7 +223,14 @@ Deno.serve(async (req) => {
     await supabase.from("device_push_tokens").delete().in("id", staleIds);
   }
 
-  return new Response(JSON.stringify({ ok: true, delivered, skipped: delivered === 0 }), {
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      delivered,
+      skipped: delivered === 0,
+      reason: delivered === 0 ? (errors[0] ?? "delivery_failed") : undefined,
+      errors: errors.length ? errors : undefined,
+    }),
+    { headers: { ...corsHeaders, "Content-Type": "application/json" } },
+  );
 });

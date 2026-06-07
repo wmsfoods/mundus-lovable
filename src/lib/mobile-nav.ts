@@ -17,7 +17,9 @@ const STACK_PATHS: string[] = [
   "/buyer/profile",
   "/supplier/profile",
   "/buyer/notifications",
+  "/buyer/settings/notifications",
   "/supplier/notifications",
+  "/supplier/settings/notifications",
   "/buyer/company",
   "/buyer/users",
   "/buyer/offices",
@@ -80,6 +82,7 @@ const BACK_FALLBACK: Array<{ pattern: string; to: string }> = [
   { pattern: "/buyer/subscription-success", to: "/buyer" },
   { pattern: "/buyer/profile", to: "/buyer" },
   { pattern: "/buyer/notifications", to: "/buyer" },
+  { pattern: "/buyer/settings/notifications", to: "/buyer/notifications" },
   { pattern: "/supplier/offers/:id", to: "/supplier/offers" },
   { pattern: "/supplier/offers/new", to: "/supplier/offers" },
   { pattern: "/supplier/requests/:id", to: "/supplier/requests" },
@@ -95,6 +98,7 @@ const BACK_FALLBACK: Array<{ pattern: string; to: string }> = [
   { pattern: "/supplier/offices", to: "/supplier" },
   { pattern: "/supplier/profile", to: "/supplier" },
   { pattern: "/supplier/notifications", to: "/supplier" },
+  { pattern: "/supplier/settings/notifications", to: "/supplier/notifications" },
   { pattern: "/supplier/insights/price-benchmark", to: "/supplier" },
   { pattern: "/supplier/insights/analytics", to: "/supplier" },
   { pattern: "/supplier/insights/cut-comparison", to: "/supplier" },
@@ -124,6 +128,7 @@ const STACK_TITLES: Array<{ pattern: string; titleKey: string; fallback: string 
   { pattern: "/buyer/procurement-intelligence", titleKey: "shell.nav.procurement", fallback: "Procurement Intelligence" },
   { pattern: "/buyer/profile", titleKey: "shell.profile", fallback: "Profile" },
   { pattern: "/buyer/notifications", titleKey: "shell.notifications", fallback: "Notifications" },
+  { pattern: "/buyer/settings/notifications", titleKey: "shell.notificationPrefs", fallback: "Notification preferences" },
   { pattern: "/supplier/offers/:id", titleKey: "shell.nav.myOffers", fallback: "Offer" },
   { pattern: "/supplier/offers/new", titleKey: "shell.nav.createOffer", fallback: "New offer" },
   { pattern: "/supplier/auctions/:id", titleKey: "shell.nav.auctions", fallback: "Auction" },
@@ -139,6 +144,7 @@ const STACK_TITLES: Array<{ pattern: string; titleKey: string; fallback: string 
   { pattern: "/supplier/offices", titleKey: "shell.nav.offices", fallback: "Offices" },
   { pattern: "/supplier/profile", titleKey: "shell.profile", fallback: "Profile" },
   { pattern: "/supplier/notifications", titleKey: "shell.notifications", fallback: "Notifications" },
+  { pattern: "/supplier/settings/notifications", titleKey: "shell.notificationPrefs", fallback: "Notification preferences" },
   { pattern: "/supplier/insights/price-benchmark", titleKey: "supplier.insights.nav.priceBenchmark", fallback: "Price benchmark" },
   { pattern: "/supplier/insights/analytics", titleKey: "supplier.insights.nav.analytics", fallback: "Analytics" },
   { pattern: "/supplier/insights/cut-comparison", titleKey: "supplier.insights.nav.cutComparison", fallback: "Cut comparison" },
@@ -163,4 +169,11 @@ export function backFallbackFor(pathname: string): string {
 export function defaultTitleFor(pathname: string): { key: string; fallback: string } | null {
   const hit = STACK_TITLES.find((r) => matchPath({ path: r.pattern, end: true }, pathname));
   return hit ? { key: hit.titleKey, fallback: hit.fallback } : null;
+}
+
+/** Settings → notification preferences path for the current role shell. */
+export function notificationPreferencesPath(pathname: string): string {
+  return pathname.startsWith("/supplier")
+    ? "/supplier/settings/notifications"
+    : "/buyer/settings/notifications";
 }

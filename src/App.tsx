@@ -117,6 +117,17 @@ import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
 import Notifications from "./pages/Notifications.tsx";
 import NotificationPreferences from "./pages/settings/NotificationPreferences.tsx";
+import { getActiveRole } from "@/lib/activeRole";
+
+function NotificationPreferencesRedirect() {
+  const role = getActiveRole();
+  return (
+    <Navigate
+      to={role === "supplier" ? "/supplier/settings/notifications" : "/buyer/settings/notifications"}
+      replace
+    />
+  );
+}
 import SupplierRespond from "./pages/public/SupplierRespond.tsx";
 import ShippingInstructionsForm from "./pages/public/ShippingInstructionsForm.tsx";
 import ShippingInstructionsPrint from "./pages/public/ShippingInstructionsPrint.tsx";
@@ -188,7 +199,7 @@ const App = () => (
               path="/settings/notifications"
               element={
                 <RequireAuth>
-                  <NotificationPreferences />
+                  <NotificationPreferencesRedirect />
                 </RequireAuth>
               }
             />
@@ -232,6 +243,7 @@ const App = () => (
               <Route path="subscription-success" element={<SubscriptionSuccess side="buyer" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="settings/notifications" element={<NotificationPreferences />} />
             </Route>
             <Route
               path="/supplier"
@@ -288,6 +300,7 @@ const App = () => (
               <Route path="subscription-success" element={<SubscriptionSuccess side="supplier" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
+              <Route path="settings/notifications" element={<NotificationPreferences />} />
             </Route>
             <Route path="/admin" element={
               <RequireAuth>

@@ -14,6 +14,16 @@ Mobile push mirrors `app_notifications` to FCM (Firebase project `mundus-79ce7`)
 ```bash
 supabase secrets set FCM_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
 supabase secrets set PUSH_WEBHOOK_SECRET='your-random-secret'
+
+# iOS (Capacitor stores APNs device tokens — send via Apple directly)
+supabase secrets set APNS_KEY_ID='XXXXXXXXXX'
+supabase secrets set APNS_TEAM_ID='XXXXXXXXXX'
+supabase secrets set APNS_PRIVATE_KEY='-----BEGIN PRIVATE KEY-----
+...
+-----END PRIVATE KEY-----'
+# optional:
+supabase secrets set APNS_BUNDLE_ID='com.mundustrade.app'
+supabase secrets set APNS_ENVIRONMENT='production'  # or sandbox for some Xcode debug builds
 ```
 
 Generate the service account JSON in Firebase → Project Settings → Service Accounts.

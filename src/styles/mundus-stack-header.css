@@ -16,8 +16,8 @@
     background: #fff;
     border-bottom: 1px solid hsl(var(--border));
     box-sizing: border-box;
-    padding: env(safe-area-inset-top, 0px) 12px 0 12px;
-    min-height: calc(52px + env(safe-area-inset-top, 0px));
+    padding: max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px)) 12px 0 12px;
+    min-height: calc(52px + max(var(--safe-top, env(safe-area-inset-top, 0px)), env(safe-area-inset-top, 0px)));
     height: auto;
     position: relative;
     top: auto;
@@ -97,6 +97,8 @@
   .app-shell.is-stack .bcr-header,
   .app-shell.is-stack .cov4-header,
   .app-shell.is-stack .ntf-header h1,
+  .app-shell.is-stack .ntf-prefs-title,
+  .app-shell.is-stack .ntf-prefs-back,
   .app-shell.is-stack [data-stack-hide],
   .app-shell.is-stack [data-page-back],
   .app-shell.is-stack [data-page-title] { display: none !important; }
