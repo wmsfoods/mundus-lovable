@@ -566,6 +566,35 @@ export function CounterOfferModal({
         .eq("id", negotiation.id);
       if (nErr) throw nErr;
 
+      // AUTO NEGOTIATION: when buyer submits a follow-up bid on an auto-mode
+      // offer, immediately invoke the engine to generate the supplier counter.
+      // Failure here does NOT roll back the buyer's bid — falls back to manual
+      // supplier reply (status stays awaiting_supplier).
+      if (
+        perspective === "buyer" &&
+        !allLockedNow &&
+        (negotiation as { negotiation_mode?: string }).negotiation_mode === "auto"
+      ) {
+        try {
+          const engineItems = remaining.map((it) => ({
+            offer_item_id: it.id,
+            price_per_kg: counters[it.id] ?? Number(it.price),
+            quantity_kg: Number(it.amount),
+          }));
+          const { data: counterData, error: engineErr } = await supabase.functions.invoke(
+            "propose-counter",
+            { body: { negotiation_id: negotiation.id, items: engineItems } },
+          );
+          if (engineErr) {
+            console.warn("[auto-negotiation] propose-counter returned error:", engineErr);
+          } else if ((counterData as { error?: string } | null)?.error) {
+            console.warn("[auto-negotiation] propose-counter responded with error:", counterData);
+          }
+        } catch (err) {
+          console.warn("[auto-negotiation] propose-counter threw:", err);
+        }
+      }
+
       toast.success(t(`${perspective}.counter.successToast`));
       try {
         const { auditLog } = await import("@/lib/auditLog");
