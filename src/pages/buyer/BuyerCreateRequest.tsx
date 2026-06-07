@@ -878,32 +878,36 @@ export default function BuyerCreateRequest() {
               <div style={{ display: "flex", gap: 8, alignItems: "center", flexWrap: "wrap" }}>
                 <button
                   type="button"
-                  onClick={() => { if (filledRows === 0) setCutRegion("global"); }}
-                  disabled={filledRows > 0 && String(cutRegion) !== "global"}
+                  onClick={() => {
+                    if (cutRegion === "global") return;
+                    if (filledRows === 0) { setCutRegion("global"); return; }
+                    setPendingCutRegion("global");
+                  }}
                   style={{
                     padding: "8px 16px", borderRadius: 8, fontSize: 13,
                     border: cutRegion === "global" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                    background: cutRegion === "global" ? "#F5E6EC" : (filledRows > 0 && String(cutRegion) !== "global") ? "#F3F4F6" : "white",
+                    background: cutRegion === "global" ? "#F5E6EC" : "white",
                     fontWeight: cutRegion === "global" ? 700 : 400,
-                    color: cutRegion === "global" ? "#8B1A3A" : (filledRows > 0 && String(cutRegion) !== "global") ? "#D1D5DB" : "#6B7280",
-                    cursor: (filledRows > 0 && String(cutRegion) !== "global") ? "not-allowed" : "pointer",
-                    opacity: (filledRows > 0 && String(cutRegion) !== "global") ? 0.5 : 1,
+                    color: cutRegion === "global" ? "#8B1A3A" : "#6B7280",
+                    cursor: "pointer",
                   }}
                 >
                   🌐 Global Beef &amp; Pork Cuts
                 </button>
                 <button
                   type="button"
-                  onClick={() => { if (filledRows === 0) setCutRegion("us"); }}
-                  disabled={filledRows > 0 && String(cutRegion) !== "us"}
+                  onClick={() => {
+                    if (cutRegion === "us") return;
+                    if (filledRows === 0) { setCutRegion("us"); return; }
+                    setPendingCutRegion("us");
+                  }}
                   style={{
                     padding: "8px 16px", borderRadius: 8, fontSize: 13,
                     border: cutRegion === "us" ? "2px solid #8B1A3A" : "1.5px solid #D1D5DB",
-                    background: cutRegion === "us" ? "#F5E6EC" : (filledRows > 0 && String(cutRegion) !== "us") ? "#F3F4F6" : "white",
+                    background: cutRegion === "us" ? "#F5E6EC" : "white",
                     fontWeight: cutRegion === "us" ? 700 : 400,
-                    color: cutRegion === "us" ? "#8B1A3A" : (filledRows > 0 && String(cutRegion) !== "us") ? "#D1D5DB" : "#6B7280",
-                    cursor: (filledRows > 0 && String(cutRegion) !== "us") ? "not-allowed" : "pointer",
-                    opacity: (filledRows > 0 && String(cutRegion) !== "us") ? 0.5 : 1,
+                    color: cutRegion === "us" ? "#8B1A3A" : "#6B7280",
+                    cursor: "pointer",
                   }}
                 >
                   🇺🇸 US Beef &amp; Pork Cuts (IMPS)
@@ -937,6 +941,32 @@ export default function BuyerCreateRequest() {
                   💡 US Beef &amp; Pork Cuts use IMPS/NAMP nomenclature, recommended when sourcing from American suppliers
                 </div>
               )}
+              <AlertDialog open={pendingCutRegion !== null} onOpenChange={(o) => { if (!o) setPendingCutRegion(null); }}>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Switch cut catalog?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Each request uses cuts from a single catalog (Global OR US IMPS/NAMP). Switching to{" "}
+                      <strong>{pendingCutRegion === "us" ? "US (IMPS/NAMP)" : "Global"}</strong>{" "}
+                      will remove the <strong>{filledRows}</strong> cut{filledRows !== 1 ? "s" : ""} you've already added. Continue?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction
+                      className={buttonVariants({ variant: "destructive" })}
+                      onClick={() => {
+                        if (!pendingCutRegion) return;
+                        setRows([newRow()]);
+                        setCutRegion(pendingCutRegion);
+                        setPendingCutRegion(null);
+                      }}
+                    >
+                      Yes, switch and reset
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           )}
 
