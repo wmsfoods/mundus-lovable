@@ -4227,5 +4227,50 @@
     "retrying": "Checking…",
     "mailSubject": "Access to the Mundus Trade platform",
     "mailBody": "Hi,\n\nI signed in to Mundus Trade but my account is not linked to any company yet.\n\nE-mail: {{email}}\nUser ID: {{uid}}\n\nCould you grant me access?\n\nThanks."
+  },
+  "messageViaMundus": {
+    "trigger": "Message {{name}} via Mundus",
+    "triggerCompact": "Message via Mundus",
+    "title": "Send via Mundus",
+    "subtitle": "We deliver this to {{name}} on your behalf. Both parties are CC'd and the message is logged in this {{recordType}}'s timeline.",
+    "to": "To",
+    "via": "via Mundus",
+    "subject": "Subject",
+    "subjectPlaceholder": "Re: {{recordId}}",
+    "body": "Message",
+    "bodyPlaceholder": "Write a short, direct message…",
+    "templates": "Quick templates",
+    "tpl": {
+      "shipment": "Shipment update",
+      "payment": "Confirm payment",
+      "specs": "Ask about specs",
+      "docs": "Request documents",
+      "delay": "Flag delay",
+      "blank": "Blank message"
+    },
+    "tplSubject": {
+      "shipment": "Shipment update — {{recordId}}",
+      "payment": "Balance payment confirmation",
+      "specs": "Quick question on specs",
+      "docs": "Documents request",
+      "delay": "Possible delay — please confirm",
+      "blank": ""
+    },
+    "tplBody": {
+      "shipment": "Hi,\n\nQuick update on the shipment:\n\n- Booking confirmed for [VESSEL] on [DATE]\n- ETD [PORT]: [DATE]\n- ETA [PORT]: [DATE]\n\nLet me know if anything looks off.\n\nThanks.",
+      "payment": "Hi,\n\nI'd like to confirm:\n\n- Pre-payment of [X] received on [DATE]\n- Balance of [Y] due on [DATE]\n\nPlease confirm.\n\nThanks.",
+      "specs": "Hi,\n\nA quick question on the product specs:\n\n[YOUR QUESTION]\n\nThanks.",
+      "docs": "Hi,\n\nCould you share the following documents:\n\n- [DOC 1]\n- [DOC 2]\n\nThanks.",
+      "delay": "Hi,\n\nHeads-up on a potential delay:\n\n- [WHAT]\n- New estimate: [DATE]\n\nApologies, please advise.",
+      "blank": ""
+    },
+    "attach": "Attach",
+    "removeAttachment": "Remove attachment",
+    "urgent": "Urgent",
+    "send": "Send via Mundus",
+    "sending": "Sending…",
+    "delivered": "Delivered to {{name}} · Both parties CC'd",
+    "errorGeneric": "Failed to send: {{err}}",
+    "recipientUnreachable": "We couldn't find a contact email for the recipient company."
   }
 }
