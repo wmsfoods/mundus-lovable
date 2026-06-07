@@ -4282,7 +4282,10 @@
       "showMore": "Show more",
       "showLess": "Show less",
       "emailedAt": "Emailed {{time}}",
-      "emailPending": "Email pending"
+      "emailPending": "Email pending",
+      "tabMessages": "Messages",
+      "emptyDeal": "No messages yet. Use 'Message via Mundus' to start a conversation about this order.",
+      "loading": "Loading messages..."
     }
   }
 }
