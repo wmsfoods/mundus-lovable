@@ -556,12 +556,45 @@ export async function updateOfferV2(
     .eq("id", offerId);
   if (updErr) throw new Error(`Failed to update offer: ${updErr.message}`);
 
-  // Replace strategy: drop children, re-insert.
-  await supabase.from("offer_items").delete().eq("offer_id", offerId);
-  await supabase.from("offer_allowed_incoterms").delete().eq("offer_id", offerId);
-  await supabase.from("offer_markets").delete().eq("offer_id", offerId);
-  await supabase.from("freight_options").delete().eq("offer_id", offerId);
-  await supabase.from("offer_origin_ports").delete().eq("offer_id", offerId);
+  // PRE-CHECK: se algum offer_item desta offer tem cut_rounds (= já tem bid de buyer),
+  // a edição de items é bloqueada porque o FK cut_rounds.offer_item_id é RESTRICT.
+  // Sem essa checagem, o DELETE falharia silenciosamente e o INSERT criaria duplicatas.
+  const { data: existingItems } = await supabase
+    .from("offer_items")
+    .select("id")
+    .eq("offer_id", offerId);
+  const existingItemIds = (existingItems ?? []).map((r: any) => r.id as string);
+
+  if (existingItemIds.length > 0) {
+    const { count: activeBidsCount, error: cntErr } = await supabase
+      .from("cut_rounds")
+      .select("id", { count: "exact", head: true })
+      .in("offer_item_id", existingItemIds);
+    if (cntErr) {
+      throw new Error(`Failed to check active bids: ${cntErr.message}`);
+    }
+    if ((activeBidsCount ?? 0) > 0) {
+      throw new Error("offerHasActiveBids");
+    }
+  }
+
+  // Replace strategy: drop children, re-insert. Checa erros — FKs podem bloquear.
+  const deleteChildren = async () => {
+    const tables = [
+      "offer_items",
+      "offer_allowed_incoterms",
+      "offer_markets",
+      "freight_options",
+      "offer_origin_ports",
+    ] as const;
+    for (const table of tables) {
+      const { error } = await supabase.from(table).delete().eq("offer_id", offerId);
+      if (error) {
+        throw new Error(`Delete from ${table} failed: ${error.message}`);
+      }
+    }
+  };
+  await deleteChildren();
 
   // Upload only newly-picked media (existing paths flow through).
   const media = await uploadCutMedia(cuts, ctx.supplierId, offerId);

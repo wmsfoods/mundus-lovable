@@ -2550,7 +2550,8 @@
         "floorGtAsk": "Floor price cannot be greater than asking price.",
         "missingPayment": "Select a payment term.",
         "missingDistribution": "Pick at least one distribution channel.",
-        "successUpdate": "Offer #{{n}} updated successfully"
+        "successUpdate": "Offer #{{n}} updated successfully",
+        "offerHasActiveBids": "Cannot edit this offer: a buyer already submitted a bid. Reject or close the negotiation first, or clone this offer to create a new version."
       },
       "editMode": {
         "title": "Edit offer #{{n}}",

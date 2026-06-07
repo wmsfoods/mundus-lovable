@@ -458,7 +458,15 @@ export default function SupplierCreateOfferV2Mobile() {
       navigate(adminMode ? "/admin/offers" : "/supplier/offers");
     } catch (e: unknown) {
       const raw = e instanceof Error ? e.message : String(e);
-      toast.error(tk("submit.errorGeneric", "Failed to save offer: {{err}}", { err: raw }));
+      const knownKeys = new Set([
+        "missingOrigin","missingDestinations","missingIncoterm","missingCuts",
+        "missingCutResolution","invalidCutNumbers","floorGtAsk","missingPayment","missingDistribution",
+        "offerHasActiveBids",
+      ]);
+      const msg = knownKeys.has(raw)
+        ? tk(`submit.${raw}`, raw)
+        : tk("submit.errorGeneric", "Failed to save offer: {{err}}", { err: raw });
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }

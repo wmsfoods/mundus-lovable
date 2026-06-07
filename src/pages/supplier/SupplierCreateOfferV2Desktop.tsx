@@ -797,6 +797,7 @@ export default function SupplierCreateOfferV2Desktop() {
       const knownKeys = new Set([
         "missingOrigin","missingDestinations","missingIncoterm","missingCuts",
         "missingCutResolution","invalidCutNumbers","floorGtAsk","missingPayment","missingDistribution",
+        "offerHasActiveBids",
       ]);
       const msg = knownKeys.has(raw)
         ? (t(`supplier.createOfferV2.submit.${raw}`, { defaultValue: raw }) as string)
