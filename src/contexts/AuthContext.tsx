@@ -45,7 +45,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const applySession = (newSession: Session | null) => {
       if (cancelled) return;
       const nextUserId = newSession?.user?.id ?? null;
-      setSession(newSession);
+      // Avoid re-rendering every useAuth consumer when Supabase emits
+      // INITIAL_SESSION/TOKEN_REFRESHED events with the same underlying
+      // session — only update state when something actually changed.
+      setSession((prev) => {
+        if (prev?.access_token === newSession?.access_token &&
+            prev?.refresh_token === newSession?.refresh_token) {
+          return prev;
+        }
+        return newSession;
+      });
       if (nextUserId !== currentUserId) {
         currentUserId = nextUserId;
         setUser(newSession?.user ?? null);
