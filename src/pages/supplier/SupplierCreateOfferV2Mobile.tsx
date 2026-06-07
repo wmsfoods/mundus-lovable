@@ -639,6 +639,7 @@ export default function SupplierCreateOfferV2Mobile() {
             variant="outline"
             className="h-9 border-primary text-primary"
             onClick={() => setCutSheet({ open: true, mode: "new", cutId: null })}
+            disabled={editLocked}
           >
             <Plus size={14} className="mr-1" />
             {tk("mobile.addCut", "Add cut")}
@@ -653,9 +654,11 @@ export default function SupplierCreateOfferV2Mobile() {
                 key={r}
                 type="button"
                 onClick={() => requestRegionChange(r)}
+                disabled={editLocked}
                 className={cn(
                   "min-h-[44px] rounded-md px-4 text-sm font-medium",
                   cutRegion === r ? "bg-card text-primary shadow-sm" : "text-muted-foreground",
+                  editLocked && "opacity-50",
                 )}
               >
                 {r === "global"
