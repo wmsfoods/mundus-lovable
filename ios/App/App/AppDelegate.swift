@@ -48,10 +48,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
                 return
             }
             print("⚡️ [push] permission granted=\(granted)")
-            guard granted else { return }
-            DispatchQueue.main.async {
-                application.registerForRemoteNotifications()
-            }
+            // Do NOT call registerForRemoteNotifications here — the APNs token can
+            // arrive before Capacitor JS listeners attach and would be lost.
+            // JS calls PushNotifications.register() after listeners are ready.
         }
     }
 

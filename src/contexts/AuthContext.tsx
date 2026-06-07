@@ -8,6 +8,7 @@ import {
   removePersistedValue,
   setPersistedValue,
 } from "@/lib/authStorage";
+import { subscribeNativeAppResume } from "@/lib/nativeAppLifecycle";
 import { unregisterPushNotifications, syncPushTokenForUser } from "@/lib/pushNotifications";
 
 const REMEMBER_KEY = "mundus.rememberMe";
@@ -108,6 +109,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
       subscription.unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    let dispose: (() => void) | undefined;
+    void subscribeNativeAppResume(() => {
+      void syncPushTokenForUser();
+    }).then((fn) => {
+      dispose = fn;
+    });
+    return () => dispose?.();
   }, []);
 
   const signOut = async () => {
