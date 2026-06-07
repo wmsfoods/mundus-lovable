@@ -22,6 +22,7 @@ import { GlowCard } from "@/components/ui/spotlight-card";
 import { useOfferSocialBatch, type SocialCounts } from "@/hooks/useOfferSocial";
 import { OfferSocialBar } from "@/components/offers/OfferSocialBar";
 import { Gavel } from "lucide-react";
+import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
 import {
   OffersFilterBar,
   DEFAULT_OFFERS_FILTER,
@@ -44,9 +45,13 @@ const MONTH_NAMES = [
 import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 
-function formatShipment(month: number, year: number): string {
-  const m = MONTH_NAMES[(month - 1) % 12] ?? "";
-  return `${m} ${year}`;
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
+function formatShipment(
+  month: number,
+  year: number,
+  raw?: string | null,
+): string {
+  return formatShipmentReadyDisplay({ raw, month, year });
 }
 
 function formatMT(kg: number): string {
@@ -329,6 +334,14 @@ export function OfferCard({
             </button>
           )}
         </div>
+        {!mixed && firstItem && (() => {
+          const meta = formatCutMetaFromOfferItem(firstItem, t);
+          return meta.length > 0 ? (
+            <div className="text-[11px] text-muted-foreground" style={{ marginTop: 4 }}>
+              {meta.join(" · ")}
+            </div>
+          ) : null;
+        })()}
       </div>
 
       <div className="oc-meta-grid">
@@ -366,7 +379,7 @@ export function OfferCard({
         <div className="cm">
           <span className="cm-label">{t("buyer.offers.card.shipment")}</span>
           <span className="cm-value">
-            {formatShipment(offer.shipment_month, offer.shipment_year)}
+            {formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}
           </span>
         </div>
         <div className="cm">
@@ -777,6 +790,12 @@ export default function BuyerOffers() {
                         <div className="offers-list-muted">
                           {first?.customer_product?.standard_product?.product_category?.name_en ?? "—"} · {first?.condition ?? "—"}
                         </div>
+                        {!mixed && first && (() => {
+                          const meta = formatCutMetaFromOfferItem(first, t);
+                          return meta.length > 0 ? (
+                            <div className="offers-list-muted" style={{ fontSize: 11 }}>{meta.join(" · ")}</div>
+                          ) : null;
+                        })()}
                       </td>
                       <td>{offer.supplier_name ?? "—"}</td>
                       <td>
@@ -792,7 +811,7 @@ export default function BuyerOffers() {
                         </span>
                       </td>
                       <td>{incLabel}</td>
-                      <td>{formatShipment(offer.shipment_month, offer.shipment_year)}</td>
+                      <td>{formatShipment(offer.shipment_month, offer.shipment_year, (offer as any).shipment_ready_raw)}</td>
                       <td className="offers-list-right">{formatMT(totalKg)} MT</td>
                       <td>
                         <span className="status-pill" style={{ background: status.bg, color: status.fg }}>

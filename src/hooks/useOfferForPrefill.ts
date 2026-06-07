@@ -88,7 +88,7 @@ export function useOfferForPrefill(
         .from("offers")
         .select(`
           id, offer_number, status, origin_port_id, container_size, total_fcl,
-          payment_terms, is_halal, is_kosher, shipment_month, shipment_year,
+          payment_terms, is_halal, is_kosher, shipment_month, shipment_year, shipment_ready_raw,
           exw_pickup_location, cut_region, negotiation_mode, negotiation_dial,
           all_customers, specific_buyer_company_ids,
           primary_pricing_incoterm,
@@ -303,10 +303,12 @@ export function useOfferForPrefill(
       const cuts: CutRow[] = items.map((it) => {
         const cpName = (it.customer_product?.name ?? "").trim();
         const match = cpName ? cutsMap.get(cpName.toLowerCase()) : null;
-        const protein =
-          it.customer_product?.standard_product?.product_category?.code ??
-          match?.category ??
-          null;
+        // Prefer cuts.category (properly cased "Beef"/"Pork"/...) since
+        // product_categories.code is lowercase ("beef") and would break the
+        // V2 protein <select> and cuts catalog lookup.
+        const codeRaw = it.customer_product?.standard_product?.product_category?.code ?? null;
+        const codeCap = codeRaw ? codeRaw.charAt(0).toUpperCase() + codeRaw.slice(1).toLowerCase() : null;
+        const protein = match?.category ?? codeCap ?? null;
         const base = emptyCutRow();
         return {
           ...base,
@@ -341,10 +343,14 @@ export function useOfferForPrefill(
         };
       });
 
-      // 8. Shipment month → "YYYY-MM"
-      const shipmentReady =
-        offer.shipment_year && offer.shipment_month
-          ? `${offer.shipment_year}-${String(offer.shipment_month).padStart(2, "0")}`
+      // 8. Shipment ready → prefer the encoded raw string when present (full
+      //    fidelity for week/custom modes); fall back to month+year for legacy
+      //    rows.
+      const rawShip = (offer as any).shipment_ready_raw as string | null | undefined;
+      const shipmentReady = rawShip && rawShip.length > 0
+        ? rawShip
+        : offer.shipment_year && offer.shipment_month
+          ? `month:${offer.shipment_year}-${String(offer.shipment_month).padStart(2, "0")}`
           : "";
 
       // 9. Certifications from booleans

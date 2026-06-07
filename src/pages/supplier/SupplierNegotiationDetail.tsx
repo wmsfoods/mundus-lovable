@@ -3,6 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { countryFlag } from "@/lib/countryFlags";
+import { Bot, User } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ArrowLeftIcon,
   ArrowsLeftRightIcon,
@@ -349,6 +352,10 @@ export default function SupplierNegotiationDetail() {
               <span className="nd-round-badge">
                 {t("supplier.negotiations.detail.roundOf", { round: d.round, max: d.maxRounds })}
               </span>
+              {rawNeg && <NegotiationModeBadge
+                mode={((rawNeg as any).negotiation_mode ?? "manual") as "manual" | "auto"}
+                dial={((rawNeg as any).negotiation_dial ?? "balanced") as "protect_margin" | "balanced" | "win_deal"}
+              />}
               <span className="nd-updated">
                 {t("supplier.negotiations.detail.updated", { date: fmtDate(d.updatedAt, locale) })}
               </span>
@@ -513,5 +520,44 @@ export default function SupplierNegotiationDetail() {
         />
       )}
     </>
+  );
+}
+
+const DIAL_LABEL: Record<"protect_margin" | "balanced" | "win_deal", string> = {
+  protect_margin: "Protect margin",
+  balanced: "Balanced",
+  win_deal: "Win deal",
+};
+
+function NegotiationModeBadge({
+  mode,
+  dial,
+}: {
+  mode: "manual" | "auto";
+  dial: "protect_margin" | "balanced" | "win_deal";
+}) {
+  const isAuto = mode === "auto";
+  const badge = isAuto ? (
+    <Badge style={{ background: "#B64769", color: "#fff", border: "none" }}>
+      <Bot size={11} style={{ marginRight: 4 }} />
+      Auto · {DIAL_LABEL[dial]}
+    </Badge>
+  ) : (
+    <Badge variant="secondary">
+      <User size={11} style={{ marginRight: 4 }} />
+      Manual
+    </Badge>
+  );
+  return (
+    <TooltipProvider delayDuration={150}>
+      <Tooltip>
+        <TooltipTrigger asChild><span style={{ display: "inline-flex" }}>{badge}</span></TooltipTrigger>
+        <TooltipContent style={{ maxWidth: 260 }}>
+          {isAuto
+            ? "This negotiation runs on auto-engine. Counters are generated automatically based on your floor price and dial setting."
+            : "You reply to every buyer bid manually."}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

@@ -31,6 +31,18 @@ import { FilesCell } from "./FilesCell";
 import { NumberCell } from "./NumberCell";
 import { ApplyToAllChip } from "./ApplyToAllChip";
 import { cn } from "@/lib/utils";
+import { formatCutMeta } from "@/lib/cutMetaDisplay";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { buttonVariants } from "@/components/ui/button";
 
 type Props = {
   cuts: CutRow[];
@@ -57,7 +69,22 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
     : liveCompany;
   const companyId = companyOverride ? companyOverride.id : liveCompany?.id ?? null;
   const showRegionToggle = isUsCompany(effectiveCompany);
-  const regionLocked = cuts.length > 0;
+  const [pendingRegion, setPendingRegion] = useState<"global" | "us" | null>(null);
+
+  const requestRegionChange = (newRegion: "global" | "us") => {
+    if (cutRegion === newRegion) return;
+    if (cuts.length === 0) {
+      setCutRegion(newRegion);
+      return;
+    }
+    setPendingRegion(newRegion);
+  };
+  const confirmRegionChange = () => {
+    if (!pendingRegion) return;
+    setCuts([]);
+    setCutRegion(pendingRegion);
+    setPendingRegion(null);
+  };
 
   const tk = (k: string, fb: string, opts?: Record<string, unknown>) =>
     t(`supplier.createOfferV2.cutsTable.${k}`, { defaultValue: fb, ...(opts ?? {}) }) as string;
@@ -135,14 +162,11 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
               <button
                 key={r}
                 type="button"
-                disabled={regionLocked && cutRegion !== r}
-                onClick={() => !regionLocked && setCutRegion(r)}
+                onClick={() => requestRegionChange(r)}
                 className={cn(
                   "rounded-md px-3 py-1 text-xs font-medium",
                   cutRegion === r ? "bg-card text-primary shadow-sm" : "text-muted-foreground hover:text-foreground",
-                  regionLocked && cutRegion !== r && "cursor-not-allowed opacity-40",
                 )}
-                title={regionLocked && cutRegion !== r ? tk("regionLockedHint", "Region locks once cuts are added") : undefined}
               >
                 {r === "global" ? tk("regionGlobal", "🌐 Global") : tk("regionUs", "🇺🇸 US (IMPS/NAMP)")}
               </button>
@@ -150,6 +174,33 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           </div>
         )}
       </div>
+
+      <AlertDialog open={pendingRegion !== null} onOpenChange={(o) => { if (!o) setPendingRegion(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{tk("regionSwitchTitle", "Switch cut catalog?")}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {tk(
+                "regionSwitchDesc",
+                "Each offer uses cuts from a single catalog (Global OR US IMPS/NAMP). Switching to {{target}} will remove the {{n}} cut(s) you've already added. Continue?",
+                {
+                  target: pendingRegion === "us" ? "US (IMPS/NAMP)" : "Global",
+                  n: cuts.length,
+                },
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{tk("regionSwitchCancel", "Cancel")}</AlertDialogCancel>
+            <AlertDialogAction
+              className={buttonVariants({ variant: "destructive" })}
+              onClick={confirmRegionChange}
+            >
+              {tk("regionSwitchConfirm", "Yes, switch and reset")}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Capacity bar */}
       <div className="mb-3">
@@ -190,7 +241,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
 
       {/* Table */}
       <div className="overflow-x-auto rounded-lg border border-border">
-        <table className={cn("w-full text-xs", showUsGradeCol ? "min-w-[1280px]" : "min-w-[1180px]")}>
+        <table className="w-full min-w-[1100px] text-xs">
           <thead className="bg-muted/40 text-[10px] uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="w-12 px-2 py-2 text-left">{tk("col.photo", "Photo")}</th>
@@ -200,10 +251,6 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
               <th className="w-28 px-2 py-2 text-left">{tk("col.spec", "Spec")}</th>
               <th className="w-32 px-2 py-2 text-left">{tk("col.packing", "Packing")}</th>
               <th className="w-28 px-2 py-2 text-left">{tk("col.plant", "Plant #")}</th>
-              <th className="w-28 px-2 py-2 text-left">{tkCuts("aging.label", "Aging")}</th>
-              {showUsGradeCol && (
-                <th className="w-28 px-2 py-2 text-left">{tkCuts("usGrade.label", "USDA Grade")}</th>
-              )}
               <th className="w-40 px-2 py-2 text-left">{tk("col.notes", "Notes")}</th>
               <th className="w-28 px-2 py-2 text-right">{tk("col.qty", "Qty ({{u}})", { u: weightLabel(unit) })}</th>
               <th
@@ -224,7 +271,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
           <tbody>
             {cuts.length === 0 && (
               <tr>
-                <td colSpan={showUsGradeCol ? 15 : 14} className="px-4 py-8 text-center text-sm text-muted-foreground">
+                <td colSpan={13} className="px-4 py-8 text-center text-sm text-muted-foreground">
                   {tk("emptyState", "No cuts yet. Click \"Add cut\" to start.")}
                 </td>
               </tr>
@@ -240,7 +287,6 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 cutRegion={cutRegion}
                 plantOptions={plantOptions}
                 plants={plants}
-                showUsGradeCol={showUsGradeCol}
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
@@ -248,7 +294,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
             ))}
             {cuts.length > 0 && (
               <tr className="border-t-2 border-border bg-muted/30 font-semibold">
-                <td colSpan={showUsGradeCol ? 10 : 9} className="px-2 py-2 text-right text-[11px] uppercase tracking-wider text-muted-foreground">
+                <td colSpan={8} className="px-2 py-2 text-right text-[11px] uppercase tracking-wider text-muted-foreground">
                   {tk("totals", "Totals")}
                 </td>
                 <td className="px-2 py-2 text-right tabular-nums">
@@ -300,7 +346,6 @@ type RowProps = {
   cutRegion: "global" | "us";
   plantOptions: string[];
   plants: CompanyPlant[];
-  showUsGradeCol: boolean;
   onChange: (patch: Partial<CutRow>) => void;
   onRemove: () => void;
   fmtNum: (n: number, frac?: number) => string;
@@ -314,7 +359,6 @@ function CutRowView({
   cutRegion,
   plantOptions,
   plants,
-  showUsGradeCol,
   onChange,
   onRemove,
   fmtNum,
@@ -420,10 +464,59 @@ function CutRowView({
           <option value="">
             {!row.protein ? tk("col.pickProteinFirst", "Pick protein first") : cutsLoading ? tk("loading", "Loading…") : tk("col.pickCut", "Pick cut…")}
           </option>
+          {/* Orphan cut (prefilled from Edit/Clone but not in current
+              catalog, e.g. region mismatch) — render a synthetic option so
+              the saved cut name is still visible. */}
+          {row.cutId && row.cutName && !catalog.some((c) => c.id === row.cutId) && (
+            <option value={row.cutId}>
+              {row.cutName} (other region)
+            </option>
+          )}
           {catalog.map((c) => (
             <option key={c.id} value={c.id}>{c.displayName}</option>
           ))}
         </select>
+        {/* Aging + (US-only) USDA Grade — inline below cut select; replaces the
+             dedicated columns. Read-only display is rendered via formatCutMeta()
+             in buyer views and mobile cards. */}
+        <div className="mt-1 flex gap-1">
+          <select
+            className="h-7 flex-1 rounded-md border border-border bg-card px-1 text-[11px] text-muted-foreground"
+            value={row.agingMethod ?? ""}
+            onChange={(e) => {
+              const v = e.target.value;
+              onChange({ agingMethod: v === "wet" || v === "dry" ? v : null });
+            }}
+          >
+            <option value="">{tkCuts("aging.none", "Aging —")}</option>
+            <option value="wet">{tkCuts("aging.wet", "Wet Aged")}</option>
+            <option value="dry">{tkCuts("aging.dry", "Dry Aged")}</option>
+          </select>
+          {cutRegion === "us" && (
+            <select
+              className="h-7 flex-1 rounded-md border border-border bg-card px-1 text-[11px] text-muted-foreground"
+              value={row.usGrade ?? ""}
+              onChange={(e) => {
+                const v = e.target.value;
+                const valid = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
+                onChange({ usGrade: valid.includes(v) ? (v as CutRow["usGrade"]) : null });
+              }}
+            >
+              <option value="">{tkCuts("usGrade.none", "Grade —")}</option>
+              <option value="Prime">{tkCuts("usGrade.prime", "Prime")}</option>
+              <option value="Choice">{tkCuts("usGrade.choice", "Choice")}</option>
+              <option value="Select">{tkCuts("usGrade.select", "Select")}</option>
+              <option value="Non Roll">{tkCuts("usGrade.nonRoll", "Non Roll")}</option>
+              <option value="Ungraded">{tkCuts("usGrade.ungraded", "Ungraded")}</option>
+            </select>
+          )}
+        </div>
+        {(() => {
+          const meta = formatCutMeta(row, t);
+          return meta.length > 0 ? (
+            <div className="mt-1 text-[10px] text-muted-foreground">{meta.join(" · ")}</div>
+          ) : null;
+        })()}
       </td>
       <td className="px-2 py-2">
         <select
@@ -482,40 +575,6 @@ function CutRowView({
           />
         )}
       </td>
-      <td className="px-2 py-2">
-        <select
-          className="h-8 w-full rounded-md border border-border bg-card px-1 text-xs"
-          value={row.agingMethod ?? ""}
-          onChange={(e) => {
-            const v = e.target.value;
-            onChange({ agingMethod: v === "wet" || v === "dry" ? v : null });
-          }}
-        >
-          <option value="">{tkCuts("aging.none", "—")}</option>
-          <option value="wet">{tkCuts("aging.wet", "Wet Aged")}</option>
-          <option value="dry">{tkCuts("aging.dry", "Dry Aged")}</option>
-        </select>
-      </td>
-      {showUsGradeCol && (
-        <td className="px-2 py-2">
-          <select
-            className="h-8 w-full rounded-md border border-border bg-card px-1 text-xs"
-            value={row.usGrade ?? ""}
-            onChange={(e) => {
-              const v = e.target.value;
-              const valid = ["Prime", "Choice", "Select", "Non Roll", "Ungraded"];
-              onChange({ usGrade: valid.includes(v) ? (v as CutRow["usGrade"]) : null });
-            }}
-          >
-            <option value="">{tkCuts("usGrade.none", "—")}</option>
-            <option value="Prime">{tkCuts("usGrade.prime", "Prime")}</option>
-            <option value="Choice">{tkCuts("usGrade.choice", "Choice")}</option>
-            <option value="Select">{tkCuts("usGrade.select", "Select")}</option>
-            <option value="Non Roll">{tkCuts("usGrade.nonRoll", "Non Roll")}</option>
-            <option value="Ungraded">{tkCuts("usGrade.ungraded", "Ungraded")}</option>
-          </select>
-        </td>
-      )}
       <td className="px-2 py-2">
         <Input
           className="h-8 text-xs"

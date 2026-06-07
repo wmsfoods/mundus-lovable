@@ -22,16 +22,10 @@ import LogisticsOverview from "@/components/buyer/LogisticsOverview";
 import { computeFinalPrice } from "@/lib/freightMath";
 import { useOfferOriginPorts } from "@/hooks/useOfferOriginPorts";
 
-const MONTH_NAMES = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-];
-
 import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
-function formatShipment(month: number, year: number): string {
-  return `${MONTH_NAMES[(month - 1) % 12] ?? ""} ${year}`;
-}
+import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
+import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string; key: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a", key: "active" },
   new:         { bg: "#fff4e0", fg: "#a85b00", dot: "#f59e0b", key: "new" },
@@ -470,10 +464,13 @@ function BuyerOfferBody({
         adjustedLabel = `${calcSelection.incoterm}${selectedPortLabel ? ` · ${selectedPortLabel}` : ""}`;
       }
     }
+    const meta = formatCutMetaFromOfferItem(it as any);
+    const baseSpec = it.meat_specification ? `Spec · ${it.meat_specification}` : null;
+    const specLabel = [baseSpec, meta.join(" · ")].filter(Boolean).join(" · ") || null;
     return {
       id: it.id,
       name: it.customer_product?.name ?? "—",
-      specLabel: it.aging_method || it.meat_specification ? `Spec · ${it.aging_method ?? it.meat_specification}` : null,
+      specLabel,
       packing: it.packaging,
       qtyKg: qty,
       pricePerKgUsd: basePrice,
@@ -497,7 +494,11 @@ function BuyerOfferBody({
   );
 
   const containerLabel = `${offer.total_fcl ?? 1} × ${offer.container_size ?? ""} FCL`.trim();
-  const shipmentLabel = formatShipment(offer.shipment_month, offer.shipment_year);
+  const shipmentLabel = formatShipmentReadyDisplay({
+    raw: (offer as any).shipment_ready_raw,
+    month: offer.shipment_month,
+    year: offer.shipment_year,
+  });
 
   const originPortsAll: string[] = (originPorts ?? []).map((p: any) =>
     p.code ? `${p.name} (${p.code})` : p.name,

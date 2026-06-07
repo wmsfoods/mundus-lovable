@@ -9,6 +9,8 @@ export type OfferItem = {
   price: number;
   minimum_price: number;
   condition: string;
+  aging_method: string | null;
+  us_grade: string | null;
   customer_product: {
     id: string;
     name: string;
@@ -95,7 +97,7 @@ export function useOffers(): UseOffersResult {
           origin_city,
           origin_port,
           shipment_month,
-          shipment_year,
+          shipment_year, shipment_ready_raw,
           payment_terms,
           container_size,
           total_fcl,
@@ -110,6 +112,8 @@ export function useOffers(): UseOffersResult {
             price,
             minimum_price,
             condition,
+            aging_method,
+            us_grade,
             customer_product:customer_products (
               id,
               name,

@@ -15,6 +15,7 @@ export type OfferDetailItem = {
   condition: string;
   meat_specification: number | null;
   aging_method: string | null;
+  us_grade: string | null;
   packaging: string | null;
   customer_product: {
     id: string;
@@ -43,6 +44,7 @@ export type OfferDetailed = {
   origin_port: string;
   shipment_month: number;
   shipment_year: number;
+  shipment_ready_raw: string | null;
   payment_terms: string;
   container_size: string;
   total_fcl: number | null;
@@ -101,6 +103,7 @@ export function useOffer(id: string | undefined): UseOfferResult {
           origin_port,
           shipment_month,
           shipment_year,
+          shipment_ready_raw,
           payment_terms,
           container_size,
           total_fcl,
@@ -122,6 +125,7 @@ export function useOffer(id: string | undefined): UseOfferResult {
             condition,
             meat_specification,
             aging_method,
+            us_grade,
             packaging,
             photo_url,
             files_urls,

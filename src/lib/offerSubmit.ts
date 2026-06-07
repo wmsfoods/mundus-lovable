@@ -2,6 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { CutRow } from "@/lib/cutRowTypes";
 import { compressImage } from "@/lib/imageOptimization";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { decodeShipmentReady, deriveLegacyMonthYear } from "@/lib/shipmentReady";
 
 type PortFreightShape =
   | { mode: "same"; same: string }
@@ -103,12 +104,33 @@ export async function uploadCutMedia(
   return out;
 }
 
-function deriveShipment(yyyymm: string): { shipment_month: number; shipment_year: number } {
-  const m = /^(\d{4})-(\d{2})$/.exec(yyyymm || "");
-  if (m) return { shipment_year: Number(m[1]), shipment_month: Number(m[2]) };
-  const now = new Date();
-  const d = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-  return { shipment_month: d.getMonth() + 1, shipment_year: d.getFullYear() };
+/**
+ * Derive the (now optional) legacy month/year ints + the new raw string column
+ * from the wizard's prefixed `shipmentReady` value. Handles legacy "YYYY-MM"
+ * values transparently via decodeShipmentReady().
+ */
+function deriveShipment(raw: string): {
+  shipment_month: number | null;
+  shipment_year: number | null;
+  shipment_ready_raw: string | null;
+} {
+  const trimmed = (raw ?? "").trim();
+  if (!trimmed) {
+    return { shipment_month: null, shipment_year: null, shipment_ready_raw: null };
+  }
+  const parts = decodeShipmentReady(trimmed);
+  const { shipment_month, shipment_year } = deriveLegacyMonthYear(parts);
+  // Always normalize raw — even legacy "2026-06" gets stored as "month:2026-06"
+  // so reads can use a single code path.
+  const encoded =
+    parts.mode === "month" && shipment_month && shipment_year
+      ? `month:${shipment_year}-${String(shipment_month).padStart(2, "0")}`
+      : parts.mode === "week" && parts.year && parts.week
+        ? `week:${parts.year}-W${String(parts.week).padStart(2, "0")}`
+        : parts.mode === "custom" && parts.custom
+          ? `custom:${parts.custom}`
+          : null;
+  return { shipment_month, shipment_year, shipment_ready_raw: encoded };
 }
 
 /**
@@ -167,7 +189,7 @@ export async function submitOfferV2(
   }
 
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
-  const { shipment_month, shipment_year } = deriveShipment(l.shipmentReady);
+  const { shipment_month, shipment_year, shipment_ready_raw } = deriveShipment(l.shipmentReady);
 
   // Resolve origin port label + country name for snapshot columns.
   let originPortLabel: string | null = null;
@@ -203,6 +225,7 @@ export async function submitOfferV2(
     origin_port_id: primaryOriginPortId,
     shipment_month,
     shipment_year,
+    shipment_ready_raw,
     payment_terms: paymentTerms || null,
     container_size: l.containerSize,
     total_fcl: Math.max(1, l.fclCount),
@@ -226,7 +249,10 @@ export async function submitOfferV2(
         ? l.primaryPricingIncoterm
         : null,
     pricing_includes_freight: computePricingIncludesFreight(l),
-    pricing_reference_port_id: l.pricingReferencePortId ?? null,
+    pricing_reference_port_id:
+      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+        ? (l.pricingReferencePortId ?? null)
+        : null,
   };
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
@@ -462,7 +488,7 @@ export async function updateOfferV2(
   const priorRequestId = (priorRow?.request_id as string | null) ?? null;
 
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
-  const { shipment_month, shipment_year } = deriveShipment(l.shipmentReady);
+  const { shipment_month, shipment_year, shipment_ready_raw } = deriveShipment(l.shipmentReady);
 
   // Resolve origin port label for snapshot columns (same as create).
   let originPortLabel: string | null = null;
@@ -495,6 +521,7 @@ export async function updateOfferV2(
     origin_port_id: primaryOriginPortId,
     shipment_month,
     shipment_year,
+    shipment_ready_raw,
     payment_terms: paymentTerms || null,
     container_size: l.containerSize,
     total_fcl: Math.max(1, l.fclCount),
@@ -517,6 +544,10 @@ export async function updateOfferV2(
         ? l.primaryPricingIncoterm
         : null,
     pricing_includes_freight: computePricingIncludesFreight(l),
+    pricing_reference_port_id:
+      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+        ? (l.pricingReferencePortId ?? null)
+        : null,
   };
 
   const { error: updErr } = await supabase

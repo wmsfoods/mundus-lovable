@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
@@ -7,12 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Sparkles, Loader2, CheckCircle2, AlertCircle, HelpCircle, Plus, X, ChevronsUpDown } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sparkles, Loader2, CheckCircle2, AlertCircle, HelpCircle, Plus, X, ChevronsUpDown, Upload, FileSpreadsheet, Mic, MicOff, Download } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAiParseOffer, type ParsedOfferPayload, type MatchStatus } from "@/hooks/useAiParseOffer";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
+import { downloadOfferTemplate } from "@/lib/offerExcelTemplate";
 
 type Props = {
   open: boolean;
@@ -78,9 +80,14 @@ function useAllCuts(enabled: boolean) {
 }
 
 export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { isAdmin } = useIsMundusAdmin();
+  const [tab, setTab] = useState<"text" | "file" | "voice">("text");
   const [text, setText] = useState("");
+  const [file, setFile] = useState<File | null>(null);
+  const [voiceTranscript, setVoiceTranscript] = useState("");
+  const [recording, setRecording] = useState(false);
+  const recogRef = useRef<any>(null);
   const [preview, setPreview] = useState<ParsedOfferPayload | null>(null);
   const mutation = useAiParseOffer();
 
@@ -101,6 +108,11 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
 
   const reset = () => {
     setText("");
+    setFile(null);
+    setVoiceTranscript("");
+    setRecording(false);
+    try { recogRef.current?.stop?.(); } catch { /* noop */ }
+    recogRef.current = null;
     setPreview(null);
     mutation.reset();
     setBrandId(null); setBrandName(""); setBrandMatch("none"); setBrandDraft(""); setBrandSkip(false);
@@ -113,13 +125,21 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
   };
 
   const handleParse = async () => {
-    const trimmed = text.trim();
-    if (trimmed.length < 20) {
-      toast.error(tk("tooShort", "Please paste at least 20 characters."));
-      return;
+    let vars: { supplierId: string | null; text?: string; file?: File; audioTranscript?: string };
+    if (tab === "file") {
+      if (!file) { toast.error(tk("noFile", "Choose a file first.")); return; }
+      vars = { supplierId, file };
+    } else if (tab === "voice") {
+      const tr = voiceTranscript.trim();
+      if (tr.length < 10) { toast.error(tk("voiceTooShort", "Record at least a few words.")); return; }
+      vars = { supplierId, audioTranscript: tr };
+    } else {
+      const trimmed = text.trim();
+      if (trimmed.length < 20) { toast.error(tk("tooShort", "Please paste at least 20 characters.")); return; }
+      vars = { supplierId, text: trimmed };
     }
     try {
-      const result = await mutation.mutateAsync({ text: trimmed, supplierId });
+      const result = await mutation.mutateAsync(vars);
       setPreview(result);
       setBrandId(result.brand.id);
       setBrandName(result.brand.name ?? "");
@@ -141,6 +161,45 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
     } catch (e: any) {
       toast.error(e?.message || tk("error", "Failed to parse — try again."));
     }
+  };
+
+  // --- Voice recording (Web Speech API) ---
+  const speechSupported = typeof window !== "undefined" &&
+    !!((window as any).SpeechRecognition || (window as any).webkitSpeechRecognition);
+
+  const startRecording = () => {
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+    if (!SR) { toast.error(tk("voiceUnsupported", "Voice input not supported in this browser. Try Chrome or Edge.")); return; }
+    const localeMap: Record<string, string> = { en: "en-US", es: "es-ES", fr: "fr-FR", pt: "pt-BR", zh: "zh-CN" };
+    const lang = localeMap[(i18n.language || "en").split("-")[0]] || "en-US";
+    const rec = new SR();
+    rec.lang = lang;
+    rec.continuous = true;
+    rec.interimResults = true;
+    let finalText = voiceTranscript;
+    rec.onresult = (ev: any) => {
+      let interim = "";
+      for (let i = ev.resultIndex; i < ev.results.length; i++) {
+        const t = ev.results[i][0].transcript;
+        if (ev.results[i].isFinal) finalText += (finalText && !finalText.endsWith(" ") ? " " : "") + t;
+        else interim += t;
+      }
+      setVoiceTranscript((finalText + " " + interim).trim());
+    };
+    rec.onerror = (ev: any) => {
+      console.error("Speech recognition error", ev);
+      toast.error(`Voice error: ${ev?.error ?? "unknown"}`);
+      setRecording(false);
+    };
+    rec.onend = () => setRecording(false);
+    recogRef.current = rec;
+    setRecording(true);
+    try { rec.start(); } catch (e) { console.error(e); setRecording(false); }
+  };
+
+  const stopRecording = () => {
+    try { recogRef.current?.stop?.(); } catch { /* noop */ }
+    setRecording(false);
   };
 
   const handleCreateBrand = async () => {
@@ -247,7 +306,7 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
               {tk("title", "AI Quick-fill")}
             </DialogTitle>
             <DialogDescription>
-              {tk("subtitle", "Paste an offer email, spec sheet, or any text — AI will parse and prefill the form.")}
+              {tk("subtitle2", "Paste text, upload a file (Excel template, PDF, Word) or use your voice — AI will parse and prefill the form.")}
             </DialogDescription>
           </DialogHeader>
           {isAdmin && (
@@ -263,22 +322,129 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
               </a>
             </p>
           )}
-          <Textarea
-            value={text}
-            onChange={(e) => setText(e.target.value)}
-            placeholder={tk("placeholder", "Paste here…")}
-            rows={12}
-            className="font-mono text-xs"
-            disabled={mutation.isPending}
-          />
-          <p className="text-[11px] text-muted-foreground">
-            {tk("hint", "AI will detect brand, plant, items, origin/destination ports, incoterms, freight and payment terms. You can adjust everything before saving.")}
-          </p>
+
+          <Tabs value={tab} onValueChange={(v) => setTab(v as any)}>
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="text">{tk("tab.text", "Paste Text")}</TabsTrigger>
+              <TabsTrigger value="file"><Upload size={12} className="mr-1.5" />{tk("tab.file", "Upload File")}</TabsTrigger>
+              <TabsTrigger value="voice"><Mic size={12} className="mr-1.5" />{tk("tab.voice", "Voice")}</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="text" className="space-y-2">
+              <Textarea
+                value={text}
+                onChange={(e) => setText(e.target.value)}
+                placeholder={tk("placeholder", "Paste here…")}
+                rows={12}
+                className="font-mono text-xs"
+                disabled={mutation.isPending}
+              />
+              <p className="text-[11px] text-muted-foreground">
+                {tk("hint", "AI will detect brand, plant, items, origin/destination ports, incoterms, freight and payment terms. You can adjust everything before saving.")}
+              </p>
+            </TabsContent>
+
+            <TabsContent value="file" className="space-y-3">
+              <label
+                htmlFor="ai-file-input"
+                className={cn(
+                  "flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border p-6 text-center transition hover:border-primary hover:bg-muted/30",
+                  mutation.isPending && "pointer-events-none opacity-60",
+                )}
+              >
+                <Upload size={24} className="mb-2 text-muted-foreground" />
+                {file ? (
+                  <>
+                    <p className="text-sm font-medium">{file.name}</p>
+                    <p className="text-[11px] text-muted-foreground">{(file.size / 1024).toFixed(1)} KB</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm font-medium">{tk("file.choose", "Choose file or drag-and-drop")}</p>
+                    <p className="text-[11px] text-muted-foreground">{tk("file.types", "Excel (.xlsx), PDF, Word (.docx) — max 5MB")}</p>
+                  </>
+                )}
+                <input
+                  id="ai-file-input"
+                  type="file"
+                  accept=".xlsx,.xls,.pdf,.docx,.doc,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                  className="hidden"
+                  onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    if (f && f.size > 5 * 1024 * 1024) { toast.error(tk("file.tooLarge", "File too large (5MB max).")); return; }
+                    setFile(f);
+                  }}
+                  disabled={mutation.isPending}
+                />
+              </label>
+              <div className="flex items-center justify-between rounded-md border border-border bg-muted/20 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <FileSpreadsheet size={16} className="text-primary" />
+                  <div>
+                    <p className="text-xs font-medium">{tk("file.templateTitle", "Excel template")}</p>
+                    <p className="text-[10px] text-muted-foreground">{tk("file.templateHint", "Easiest format — fill in rows and upload.")}</p>
+                  </div>
+                </div>
+                <Button size="sm" variant="outline" onClick={() => downloadOfferTemplate()}>
+                  <Download size={12} className="mr-1" /> {tk("file.downloadTemplate", "Download template")}
+                </Button>
+              </div>
+              <p className="text-[11px] text-muted-foreground">
+                {tk("file.note", "PDF and Word are parsed by AI. Image-based / scanned PDFs are not supported.")}
+              </p>
+            </TabsContent>
+
+            <TabsContent value="voice" className="space-y-3">
+              {!speechSupported ? (
+                <div className="rounded-md border border-amber-300 bg-amber-50 p-3 text-xs text-amber-900">
+                  {tk("voiceUnsupported", "Voice input not supported in this browser. Try Chrome or Edge.")}
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-border bg-card p-6">
+                    {!recording ? (
+                      <Button size="lg" onClick={startRecording} disabled={mutation.isPending}>
+                        <Mic size={18} className="mr-2" /> {tk("voice.start", "Start recording")}
+                      </Button>
+                    ) : (
+                      <Button size="lg" variant="destructive" onClick={stopRecording}>
+                        <MicOff size={18} className="mr-2" /> {tk("voice.stop", "Stop")}
+                      </Button>
+                    )}
+                    <p className="text-[11px] text-muted-foreground">
+                      {recording ? tk("voice.listening", "Listening…") : tk("voice.idleHint", "Speak the offer details — brand, cut, quantity, price, origin, destination.")}
+                    </p>
+                  </div>
+                  <Textarea
+                    value={voiceTranscript}
+                    onChange={(e) => setVoiceTranscript(e.target.value)}
+                    placeholder={tk("voice.transcriptPlaceholder", "Live transcript will appear here. You can edit before parsing.")}
+                    rows={8}
+                    className="text-xs"
+                  />
+                  {voiceTranscript && (
+                    <Button size="sm" variant="ghost" onClick={() => setVoiceTranscript("")}>
+                      <X size={12} className="mr-1" /> {tk("voice.clear", "Clear transcript")}
+                    </Button>
+                  )}
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+
           <DialogFooter>
             <Button variant="outline" onClick={() => handleClose(false)} disabled={mutation.isPending}>
               {tk("cancel", "Cancel")}
             </Button>
-            <Button onClick={handleParse} disabled={mutation.isPending || text.trim().length < 20}>
+            <Button
+              onClick={handleParse}
+              disabled={
+                mutation.isPending ||
+                (tab === "text" && text.trim().length < 20) ||
+                (tab === "file" && !file) ||
+                (tab === "voice" && voiceTranscript.trim().length < 10)
+              }
+            >
               {mutation.isPending ? (
                 <><Loader2 size={14} className="mr-1 animate-spin" /> {tk("parsing", "Parsing…")}</>
               ) : (
@@ -344,6 +510,34 @@ export function AiQuickFillModal({ open, onOpenChange, supplierId, onApply }: Pr
           {/* Logistics */}
           <section className="rounded-lg border border-border bg-card p-3">
             <h4 className="mb-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{tk("section.logistics", "Logistics")}</h4>
+            {/* Pricing model banner (fix9 alignment) */}
+            {p.pricingModel ? (
+              <div className="mb-2 rounded-md border border-blue-300 bg-blue-50 p-2 text-[11px] text-blue-900 dark:bg-blue-950/40 dark:text-blue-100">
+                <p className="font-semibold">💰 {tk("pricing.detectedTitle", "Pricing detected")}</p>
+                <p className="mt-0.5">
+                  {p.pricingModel === "FOB" || p.pricingModel === "EXW" ? (
+                    <>{p.pricingModel} {tk("pricing.fobDesc", "— freight quoted separately per destination")}</>
+                  ) : (
+                    <>{p.pricingModel} {p.pricingReferencePort.name ?? tk("pricing.portFallback", "(port)")} — {tk("pricing.cfrDesc", "prices include freight to this anchor port")}</>
+                  )}
+                </p>
+                {p.pricingReferencePort.match === "fuzzy" && (
+                  <p className="mt-1 text-amber-800 dark:text-amber-200">
+                    ⚠️ {tk("pricing.fuzzyWarn", "Anchor port matched fuzzy — verify after applying.")}
+                  </p>
+                )}
+                {p.pricingReferencePort.name && p.pricingReferencePort.match === "not_found" &&
+                  (p.pricingModel === "CFR" || p.pricingModel === "CIF") && (
+                  <p className="mt-1 text-amber-800 dark:text-amber-200">
+                    ⚠️ {tk("pricing.notFoundWarn", "Anchor port not found in catalog — set Pricing Reference manually after applying.")}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="mb-2 rounded-md border border-amber-300 bg-amber-50 p-2 text-[11px] text-amber-900 dark:bg-amber-950/40 dark:text-amber-100">
+                ⚠️ {tk("pricing.undetected", "Pricing model not detected. After applying, set Pricing Reference manually in “Edit Logistics”.")}
+              </div>
+            )}
             <Row label={tk("logistics.origin", "Origin")}>
               {p.origin.country ? (
                 <span className="inline-flex items-center gap-1.5">

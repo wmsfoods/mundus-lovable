@@ -141,12 +141,12 @@ export function useRealNegotiation(negotiationId: string | undefined | null) {
           agreed_items, settled_total_value, buyer_message, supplier_message,
           accepted_by, accepted_by_user_id, accepted_at, accepted_total_value,
           rejection_cooldown_until, current_round, chat_enabled,
-          order_id, origin,
+          order_id, origin, negotiation_mode, negotiation_dial,
           order:orders!negotiations_order_id_fkey ( id, order_number ),
           buyer:companies!negotiations_buyer_company_id_fkey ( id, name ),
           offer:offers (
             id, offer_number, created_at, supplier_id, supplier_name, status, origin_country, origin_port, allow_quantity_negotiation,
-            payment_terms, container_size, shipment_month, shipment_year, total_fcl,
+            payment_terms, container_size, shipment_month, shipment_year, shipment_ready_raw, total_fcl,
             items:offer_items (
               id, amount, price, minimum_price, plant_number,
               customer_product:customer_products ( id, name )
