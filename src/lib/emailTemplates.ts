@@ -598,3 +598,112 @@ export const emailSubjects: Record<EmailTemplateName, (vars: any) => string> = {
   scl_direct_offer: (v) => `Direct offer from ${v.supplier}: ${v.offerTitle}`,
   scl_all_customers_offer: (v) => `New offer from ${v.supplier}: ${v.offerTitle}`,
 };
+
+// ============================================================================
+// "Message via Mundus" — formal Mundus-delivered email (separate from auto
+// negotiation notifications). Standalone helper that returns subject/html/text.
+// ============================================================================
+
+function escapeHtml(s: string): string {
+  return String(s ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function nl2br(s: string): string {
+  return escapeHtml(s).replace(/\r?\n/g, "<br/>");
+}
+
+function formatBytes(n?: number | null): string {
+  if (!n || n <= 0) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
+  return `${(n / 1024 / 1024).toFixed(1)} MB`;
+}
+
+export function buildViaMundusEmail(opts: {
+  senderName: string;
+  senderCompany: string;
+  recipientName: string;
+  recipientCompany: string;
+  subject: string;
+  body: string;
+  urgent: boolean;
+  recordId: string;
+  recordType: "negotiation" | "order" | "sale";
+  recordUrl: string;
+  attachmentUrl?: string;
+  attachmentName?: string;
+  attachmentSizeBytes?: number;
+}): { subject: string; html: string; text: string } {
+  const subjectLine = `${opts.urgent ? "⚡ " : ""}${opts.subject}`;
+  const recordLabel =
+    opts.recordType === "order"
+      ? "Order"
+      : opts.recordType === "sale"
+        ? "Sale"
+        : "Negotiation";
+
+  const attachmentBlock = opts.attachmentUrl
+    ? `
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:16px 0;background:#F9FAFB;border:1px solid #E5E7EB;border-radius:8px;">
+      <tr>
+        <td style="padding:12px 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#1A1A2E;">
+          📎 <a href="${escapeHtml(opts.attachmentUrl)}" target="_blank" style="color:#8B2252;font-weight:600;text-decoration:none;">${escapeHtml(opts.attachmentName ?? "Attachment")}</a>
+          ${opts.attachmentSizeBytes ? `<span style="color:#6B7280;font-size:12px;margin-left:8px;">(${formatBytes(opts.attachmentSizeBytes)})</span>` : ""}
+        </td>
+      </tr>
+    </table>`
+    : "";
+
+  const urgentBadge = opts.urgent
+    ? `<span style="display:inline-block;background:#FEE2E2;color:#991B1B;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;padding:3px 8px;border-radius:4px;margin-right:8px;vertical-align:middle;">URGENT</span>`
+    : "";
+
+  const bodyHtml = `
+    <p style="margin:0 0 8px;color:#6B7280;font-size:13px;">${urgentBadge}<span style="vertical-align:middle;">Sent via Mundus · ${recordLabel} <strong>${escapeHtml(opts.recordId)}</strong></span></p>
+    <p style="margin:0 0 16px;">Hi <strong>${escapeHtml(opts.recipientName || opts.recipientCompany)}</strong>,</p>
+    <div style="margin:0 0 16px;font-size:15px;line-height:1.6;color:#1A1A2E;">${nl2br(opts.body)}</div>
+    ${attachmentBlock}
+    <p style="margin:20px 0 0;color:#6B7280;font-size:13px;">
+      From <strong>${escapeHtml(opts.senderName)}</strong> (${escapeHtml(opts.senderCompany)}) — sent via Mundus on your behalf.
+    </p>
+    <p style="margin:16px 0 0;color:#9CA3AF;font-size:12px;line-height:1.5;">
+      Both parties were copied on this email. Replies to this address are not tracked.
+      Continue the conversation in Mundus.
+    </p>
+  `;
+
+  const html = masterLayout({
+    heroTitle: opts.subject,
+    heroColor: opts.urgent ? "amber" : "wine",
+    preheader: `${opts.senderName} sent you a message via Mundus`,
+    bodyHtml,
+    ctaUrl: opts.recordUrl,
+    ctaLabel: `View ${recordLabel.toLowerCase()} in Mundus →`,
+  });
+
+  const text = [
+    `Subject: ${opts.subject}`,
+    `From: ${opts.senderName} (${opts.senderCompany}) via Mundus`,
+    `To: ${opts.recipientName} (${opts.recipientCompany})`,
+    opts.urgent ? "Priority: URGENT" : "",
+    "",
+    opts.body,
+    "",
+    opts.attachmentUrl
+      ? `Attachment: ${opts.attachmentName ?? "file"} — ${opts.attachmentUrl}`
+      : "",
+    "",
+    `View in Mundus: ${opts.recordUrl}`,
+    "",
+    "Both parties were copied on this email. Replies are not tracked — continue in Mundus.",
+  ]
+    .filter(Boolean)
+    .join("\n");
+
+  return { subject: subjectLine, html, text };
+}
