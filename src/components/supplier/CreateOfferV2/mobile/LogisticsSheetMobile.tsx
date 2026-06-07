@@ -1048,12 +1048,21 @@ function ContainerTab({
           >
             <button
               type="button"
-              onClick={() =>
+              onClick={() => {
+                if (destPorts.length === 0) {
+                  toast.error(
+                    tk(
+                      "pricingRef.noDestPorts",
+                      "Add at least one destination port before choosing CFR.",
+                    ),
+                  );
+                  return;
+                }
                 setDraft((p) => ({
                   ...p,
                   pricingReferencePortId: p.pricingReferencePortId ?? destPorts[0]?.id ?? null,
-                }))
-              }
+                }));
+              }}
               className="flex w-full items-center gap-2 text-left text-sm"
             >
               <span
@@ -1064,16 +1073,14 @@ function ContainerTab({
               />
               <span>{tk("container.pricingRef.cfr", "CFR at destination port")}</span>
             </button>
-            {pricingMode === "cfr" && (
+            {pricingMode === "cfr" && destPorts.length > 0 && (
               <select
                 className="mt-2 h-11 w-full rounded-md border bg-background px-2 text-sm"
                 value={draft.pricingReferencePortId ?? ""}
                 onChange={(e) =>
                   setDraft((p) => ({ ...p, pricingReferencePortId: e.target.value || null }))
                 }
-                disabled={destPorts.length === 0}
               >
-                {destPorts.length === 0 && <option value="">—</option>}
                 {destPorts.map((p) => (
                   <option key={p.id} value={p.id}>
                     {p.name}

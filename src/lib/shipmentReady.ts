@@ -87,7 +87,10 @@ export function encodeShipmentReady(parts: ShipmentParts): string {
     }
     case "custom": {
       const c = (parts.custom ?? "").trim();
-      return c ? `custom:${c}` : "";
+      // Always keep the `custom:` prefix so the mode survives a round-trip
+      // through decode() even when the text is empty. Otherwise tapping the
+      // Custom pill would visually revert to Month mode on the next render.
+      return `custom:${c}`;
     }
   }
 }
