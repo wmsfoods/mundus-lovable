@@ -1794,82 +1794,116 @@ export default function SupplierCreateOfferV2Desktop() {
               </div>
             </DrawerSection>
 
-            {/* 6. Pricing reference */}
-            <DrawerSection number={6} title={tk("pricingRef.title", "Pricing reference")}>
-              <p className="mb-3 text-xs text-muted-foreground">
-                {tk("pricingRef.subtitle", "How do you price this offer?")}
-              </p>
-              {(() => {
-                const op = drawerDraft.originPortIds[0]
-                  ? catalog.ports.find((p) => p.id === drawerDraft.originPortIds[0])
-                  : null;
-                const destPorts = drawerDraft.destinations.flatMap((d) =>
-                  d.selectedPortIds
-                    .map((pid) => catalog.ports.find((p) => p.id === pid))
-                    .filter((p): p is NonNullable<typeof p> => !!p),
-                );
-                const mode: "fob" | "cfr" = drawerDraft.pricingReferencePortId ? "cfr" : "fob";
-                return (
-                  <>
-                    <RadioGroup
-                      value={mode}
-                      onValueChange={(v) => {
-                        if (v === "fob") {
-                          setDrawerDraft((p) => ({ ...p, pricingReferencePortId: null }));
-                        } else {
-                          setDrawerDraft((p) => ({
-                            ...p,
-                            pricingReferencePortId: p.pricingReferencePortId ?? destPorts[0]?.id ?? null,
-                          }));
-                        }
-                      }}
-                      className="flex flex-col gap-2"
-                    >
-                      <label className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
-                        <RadioGroupItem value="fob" />
-                        <span>
-                          {tk("pricingRef.fobAtOrigin", "FOB at origin ({{port}})", {
-                            port: op?.name ?? "—",
-                          })}
-                        </span>
-                      </label>
-                      <div className="rounded-md border border-border p-2">
-                        <label className="flex items-center gap-2 text-sm">
-                          <RadioGroupItem value="cfr" />
-                          <span>{tk("pricingRef.cfrAtDest", "CFR at destination port:")}</span>
-                        </label>
-                        {mode === "cfr" && (
-                          <select
-                            className="mt-2 h-8 w-full rounded-md border border-border bg-card px-2 text-xs"
-                            value={drawerDraft.pricingReferencePortId ?? ""}
-                            onChange={(e) =>
-                              setDrawerDraft((p) => ({
-                                ...p,
-                                pricingReferencePortId: e.target.value || null,
-                              }))
+            {/* 6. Pricing reference — only when FOB or EXW selected */}
+            {(drawerDraft.incoterms.includes("FOB") ||
+              drawerDraft.incoterms.includes("EXW")) && (
+              <DrawerSection number={6} title={tk("pricingRef.title", "Pricing reference")}>
+                <p className="mb-1 text-xs font-semibold text-foreground">
+                  {tk(
+                    "incoterm.primaryPricing.question",
+                    "Your prices are based on which incoterm?",
+                  )}
+                </p>
+                <p className="mb-3 text-[11px] text-muted-foreground">
+                  {tk(
+                    "incoterm.primaryPricing.help",
+                    "Helps buyers calculate equivalent prices at destination.",
+                  )}
+                </p>
+                {(() => {
+                  const op = drawerDraft.originPortIds[0]
+                    ? catalog.ports.find((p) => p.id === drawerDraft.originPortIds[0])
+                    : null;
+                  const destPorts = drawerDraft.destinations.flatMap((d) =>
+                    d.selectedPortIds
+                      .map((pid) => catalog.ports.find((p) => p.id === pid))
+                      .filter((p): p is NonNullable<typeof p> => !!p),
+                  );
+                  const mode: "fob" | "cfr" | null =
+                    drawerDraft.primaryPricingIncoterm === "FOB"
+                      ? "fob"
+                      : drawerDraft.primaryPricingIncoterm === "CFR"
+                        ? "cfr"
+                        : null;
+                  return (
+                    <>
+                      <RadioGroup
+                        value={mode ?? ""}
+                        onValueChange={(v) => {
+                          if (v === "fob") {
+                            setDrawerDraft((p) => ({
+                              ...p,
+                              primaryPricingIncoterm: "FOB",
+                              pricingReferencePortId: null,
+                            }));
+                          } else if (v === "cfr") {
+                            if (destPorts.length === 0) {
+                              toast.error(
+                                tk(
+                                  "pricingRef.noDestPorts",
+                                  "Add at least one destination port before choosing CFR.",
+                                ),
+                              );
+                              return;
                             }
-                            disabled={destPorts.length === 0}
-                          >
-                            {destPorts.length === 0 && <option value="">—</option>}
-                            {destPorts.map((p) => (
-                              <option key={p.id} value={p.id}>
-                                {p.name}
-                              </option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
-                    </RadioGroup>
-                    <p className="mt-2 text-[11px] text-muted-foreground">
-                      {tk(
-                        "pricingRef.helpText",
-                        "All other incoterms will be calculated automatically from freight/insurance values.",
+                            setDrawerDraft((p) => ({
+                              ...p,
+                              primaryPricingIncoterm: "CFR",
+                              pricingReferencePortId:
+                                p.pricingReferencePortId ?? destPorts[0]?.id ?? null,
+                            }));
+                          }
+                        }}
+                        className="flex flex-col gap-2"
+                      >
+                        <label className="flex items-center gap-2 rounded-md border border-border p-2 text-sm">
+                          <RadioGroupItem value="fob" />
+                          <span>
+                            {tk("pricingRef.fobAtOrigin", "FOB at origin ({{port}})", {
+                              port: op?.name ?? "—",
+                            })}
+                          </span>
+                        </label>
+                        <div className="rounded-md border border-border p-2">
+                          <label className="flex items-center gap-2 text-sm">
+                            <RadioGroupItem value="cfr" />
+                            <span>{tk("pricingRef.cfrAtDest", "CFR at destination port:")}</span>
+                          </label>
+                          {mode === "cfr" && (
+                            <select
+                              className="mt-2 h-8 w-full rounded-md border border-border bg-card px-2 text-xs"
+                              value={drawerDraft.pricingReferencePortId ?? ""}
+                              onChange={(e) =>
+                                setDrawerDraft((p) => ({
+                                  ...p,
+                                  pricingReferencePortId: e.target.value || null,
+                                }))
+                              }
+                              disabled={destPorts.length === 0}
+                            >
+                              {destPorts.length === 0 && <option value="">—</option>}
+                              {destPorts.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                  {p.name}
+                                </option>
+                              ))}
+                            </select>
+                          )}
+                        </div>
+                      </RadioGroup>
+                      {!drawerDraft.primaryPricingIncoterm && (
+                        <p className="mt-2 text-[11px] font-medium text-amber-700">
+                          {tk(
+                            "validation.primaryPricingMissing",
+                            "Pick which incoterm (FOB or CFR) your prices reference before saving.",
+                          )}
+                        </p>
                       )}
-                    </p>
-                  </>
-                );
-              })()}
-            </DrawerSection>
+                    </>
+                  );
+                })()}
+              </DrawerSection>
+            )}
           </div>
 
           <SheetFooter className="flex-row items-center justify-between gap-3 border-t border-border bg-muted/20 p-4 sm:flex-row sm:justify-between">
