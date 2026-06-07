@@ -8,6 +8,8 @@ import { ShippingInstructionsCard } from "@/components/shipping/ShippingInstruct
 import { StatusBadge, ShippingStatusTracker, OrderShippingStatus, getStatusConfig } from "@/lib/orderStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { useOrderNegotiationId } from "@/hooks/useOrderNegotiationId";
+import { DealTimeline } from "@/components/messageViaMundus/DealTimeline";
 import {
   FileTextIcon,
   ArrowLeftIcon,
@@ -143,7 +145,7 @@ export type DealDetailData = {
   closedAtEst?: string;
 };
 
-type TabKey = "overview" | "negotiation" | "shipment" | "documents";
+type TabKey = "overview" | "negotiation" | "shipment" | "documents" | "messages";
 
 function fmtKg(v: number) {
   return new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 }).format(v);
@@ -254,6 +256,10 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
     {
       value: "documents",
       label: `${tk("dealDetail.tabs.documents", "Documents")} ${docsDone}/${docsCount}`,
+    },
+    {
+      value: "messages",
+      label: tk("messageViaMundus.timeline.tabMessages", "Messages"),
     },
   ];
 
@@ -675,6 +681,14 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
               );
             })}
           </TabPanel>
+
+          <TabPanel active={tab === "messages"}>
+            <DealMessagesPanel
+              orderId={data.orderId}
+              role={data.role}
+              partyName={data.party.name}
+            />
+          </TabPanel>
         </div>
 
         <aside className="ddv-side">
@@ -755,5 +769,44 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
         </aside>
       </div>
     </div>
+  );
+}
+
+function DealMessagesPanel({
+  orderId,
+  role,
+  partyName,
+}: {
+  orderId?: string;
+  role: "buyer" | "supplier";
+  partyName: string;
+}) {
+  const { t } = useTranslation();
+  const { negotiationId, loading } = useOrderNegotiationId(orderId ?? null);
+  if (!orderId || loading) {
+    return (
+      <div style={{ padding: 16, color: "#6B7280", fontSize: 13 }}>
+        {t("messageViaMundus.timeline.loading", { defaultValue: "Loading messages..." })}
+      </div>
+    );
+  }
+  if (!negotiationId) {
+    return (
+      <div style={{ padding: 16, color: "#6B7280", fontSize: 13 }}>
+        {t("messageViaMundus.timeline.emptyDeal", {
+          defaultValue:
+            "No messages yet. Use 'Message via Mundus' to start a conversation about this order.",
+        })}
+      </div>
+    );
+  }
+  const buyerLabel = role === "buyer" ? t("common.you", { defaultValue: "You" }) : partyName;
+  const supplierLabel = role === "supplier" ? t("common.you", { defaultValue: "You" }) : partyName;
+  return (
+    <DealTimeline
+      negotiationId={negotiationId}
+      buyerLabel={buyerLabel}
+      supplierLabel={supplierLabel}
+    />
   );
 }
