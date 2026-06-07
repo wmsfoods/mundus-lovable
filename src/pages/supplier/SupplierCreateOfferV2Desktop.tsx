@@ -66,6 +66,7 @@ import { formatOfferNumber } from "@/lib/offerNumber";
 import { useOfferForPrefill } from "@/hooks/useOfferForPrefill";
 import { useBuyerRequestForPrefill } from "@/hooks/useBuyerRequestForPrefill";
 import { EditModeWarningBanner } from "@/components/supplier/CreateOfferV2/EditModeWarningBanner";
+import { useOfferHasActiveBids } from "@/hooks/useOfferHasActiveBids";
 import { Skeleton } from "@/components/ui/skeleton";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
@@ -521,6 +522,8 @@ export default function SupplierCreateOfferV2Desktop() {
   const prefilling = offerPrefillQuery.isLoading || requestPrefillQuery.isLoading;
   const activeNegotiations =
     mode === "edit" ? offerPrefillQuery.data?.activeNegotiations ?? 0 : 0;
+  const bidStatus = useOfferHasActiveBids(mode === "edit" ? editId : null);
+  const editLocked = mode === "edit" && !bidStatus.loading && bidStatus.hasBids;
 
   const [submitting, setSubmitting] = useState(false);
 
@@ -1200,6 +1203,27 @@ export default function SupplierCreateOfferV2Desktop() {
         <EditModeWarningBanner activeNegotiations={activeNegotiations} />
       )}
 
+      {editLocked && (
+        <div className="mt-3 rounded-md border-l-4 border-amber-500 bg-amber-50 p-4">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+            <div className="flex-1">
+              <p className="font-semibold text-amber-900">
+                {tk("editLocked.title", "This offer has {{n}} active bid(s)", {
+                  n: bidStatus.bidCount,
+                })}
+              </p>
+              <p className="mt-1 text-sm text-amber-800">
+                {tk(
+                  "editLocked.body",
+                  "To protect ongoing negotiations, prices, quantities, and cuts cannot be edited. You can still update shipping, photos, notes, and payment terms. To change prices, clone this offer to create a new version.",
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {adminMode && (
         <div
           className="mt-3 rounded-md border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-900"
@@ -1340,6 +1364,7 @@ export default function SupplierCreateOfferV2Desktop() {
           containerSize={logistics.containerSize}
           cutRegion={cutRegion}
           setCutRegion={setCutRegion}
+          locked={editLocked}
           companyOverride={
             adminMode && adminCompany
               ? { id: adminCompany.id, name: adminCompany.name, country: adminCompany.country }
