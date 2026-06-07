@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { parseServiceAccount, sendFcmToToken } from "../_shared/fcm.ts";
+import { parseApnsConfig, sendApnsToToken } from "../_shared/apns.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -121,8 +122,9 @@ Deno.serve(async (req) => {
 
   const saRaw = Deno.env.get("FCM_SERVICE_ACCOUNT_JSON") ?? "";
   const sa = parseServiceAccount(saRaw);
-  if (!sa) {
-    return new Response(JSON.stringify({ ok: true, delivered: 0, skipped: true, reason: "fcm_not_configured" }), {
+  const apns = parseApnsConfig();
+  if (!sa && !apns) {
+    return new Response(JSON.stringify({ ok: true, delivered: 0, skipped: true, reason: "push_not_configured" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   }
@@ -174,7 +176,7 @@ Deno.serve(async (req) => {
 
   const { data: tokens } = await supabase
     .from("device_push_tokens")
-    .select("id, token")
+    .select("id, token, platform")
     .eq("user_id", payload.user_id);
 
   if (!tokens?.length) {
@@ -185,17 +187,38 @@ Deno.serve(async (req) => {
 
   let delivered = 0;
   const staleIds: string[] = [];
+  const errors: Array<{ platform: string; reason?: string; status?: number }> = [];
 
   for (const row of tokens) {
-    const result = await sendFcmToToken(sa, row.token, {
+    const platform = (row as { platform?: string }).platform ?? "";
+    const msg = {
       title: payload.title,
       body: payload.body ?? undefined,
       url: payload.url ?? undefined,
-    });
-    if (result.ok) {
-      delivered++;
-    } else if (result.unregistered) {
-      staleIds.push(row.id);
+    };
+
+    if (platform === "ios") {
+      if (!apns) {
+        errors.push({ platform: "ios", reason: "apns_not_configured" });
+        continue;
+      }
+      const result = await sendApnsToToken(apns, row.token, msg);
+      if (result.ok) delivered++;
+      else {
+        errors.push({ platform: "ios", reason: result.reason, status: result.status });
+        if (result.unregistered) staleIds.push(row.id);
+      }
+    } else {
+      if (!sa) {
+        errors.push({ platform: platform || "android", reason: "fcm_not_configured" });
+        continue;
+      }
+      const result = await sendFcmToToken(sa, row.token, msg);
+      if (result.ok) delivered++;
+      else {
+        errors.push({ platform: platform || "android", reason: result.error });
+        if (result.unregistered) staleIds.push(row.id);
+      }
     }
   }
 
@@ -203,7 +226,7 @@ Deno.serve(async (req) => {
     await supabase.from("device_push_tokens").delete().in("id", staleIds);
   }
 
-  return new Response(JSON.stringify({ ok: true, delivered, skipped: delivered === 0 }), {
+  return new Response(JSON.stringify({ ok: true, delivered, skipped: delivered === 0, errors }), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });
