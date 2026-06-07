@@ -45,7 +45,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const applySession = (newSession: Session | null) => {
       if (cancelled) return;
       const nextUserId = newSession?.user?.id ?? null;
-      setSession(newSession);
+      // Avoid re-rendering every useAuth consumer when Supabase emits
+      // INITIAL_SESSION/TOKEN_REFRESHED events with the same underlying
+      // session — only update state when something actually changed.
+      setSession((prev) => {
+        if (prev?.access_token === newSession?.access_token &&
+            prev?.refresh_token === newSession?.refresh_token) {
+          return prev;
+        }
+        return newSession;
+      });
       if (nextUserId !== currentUserId) {
         currentUserId = nextUserId;
         setUser(newSession?.user ?? null);
@@ -54,6 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, newSession) => {
       applySession(newSession);
+      // Once Supabase emits INITIAL_SESSION the auth state is settled —
+      // flip loading off immediately so RequireAuth doesn't flash the
+      // spinner while the async bootstrap below finishes.
+      if (event === "INITIAL_SESSION" && !cancelled) {
+        setLoading(false);
+      }
       if (event === "SIGNED_IN" && newSession?.user) {
         // Fire-and-forget audit log; deferred so it runs after the auth handler returns
         setTimeout(() => {
