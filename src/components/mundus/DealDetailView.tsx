@@ -681,6 +681,14 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
               );
             })}
           </TabPanel>
+
+          <TabPanel active={tab === "messages"}>
+            <DealMessagesPanel
+              orderId={data.orderId}
+              role={data.role}
+              partyName={data.party.name}
+            />
+          </TabPanel>
         </div>
 
         <aside className="ddv-side">
