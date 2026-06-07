@@ -4,6 +4,7 @@ import { DealDetailView } from "@/components/mundus/DealDetailView";
 import { buyerOrderToDeal } from "@/lib/dealDetailAdapters";
 import { useBuyerOrder } from "@/hooks/useBuyerOrders";
 import { OrderNegotiationLink } from "@/components/negotiation/OrderNegotiationLink";
+import { MessageViaMundusButton } from "@/components/messageViaMundus/MessageViaMundusButton";
 
 export default function BuyerOrderDetail() {
   const { id = "" } = useParams<{ id: string }>();
@@ -25,6 +26,17 @@ export default function BuyerOrderDetail() {
   return (
     <>
       <OrderNegotiationLink orderId={order.id} role="buyer" />
+      {order.negotiationId ? (
+        <div className="flex justify-end px-4 pt-3">
+          <MessageViaMundusButton
+            negotiationId={order.negotiationId}
+            recordType="order"
+            recordDisplayId={`ORD-${order.orderNumber}`}
+            currentSide="buyer"
+            variant="compact"
+          />
+        </div>
+      ) : null}
       <DealDetailView data={data} />
     </>
   );

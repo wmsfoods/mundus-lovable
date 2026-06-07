@@ -4,6 +4,8 @@ import { DealDetailView } from "@/components/mundus/DealDetailView";
 import { supplierSaleToDeal } from "@/lib/dealDetailAdapters";
 import { useSupplierSales } from "@/hooks/useSupplierSales";
 import { OrderNegotiationLink } from "@/components/negotiation/OrderNegotiationLink";
+import { MessageViaMundusButton } from "@/components/messageViaMundus/MessageViaMundusButton";
+import { useOrderNegotiationId } from "@/hooks/useOrderNegotiationId";
 
 export default function SupplierSaleDetail() {
   const { id = "" } = useParams<{ id: string }>();
@@ -13,6 +15,7 @@ export default function SupplierSaleDetail() {
   if (isLoading) return null;
 
   const sale = sales.find((s) => s.dealId === id || s.id === id);
+  // hook order must be stable; call before any conditional return below
   if (!sale) {
     return (
       <div className="detail-empty">
@@ -29,7 +32,24 @@ export default function SupplierSaleDetail() {
   return (
     <>
       <OrderNegotiationLink orderId={sale.id} role="supplier" />
+      <SaleViaMundus saleId={sale.id} dealId={sale.dealId} />
       <DealDetailView data={data} />
     </>
+  );
+}
+
+function SaleViaMundus({ saleId, dealId }: { saleId: string; dealId: string }) {
+  const { negotiationId } = useOrderNegotiationId(saleId);
+  if (!negotiationId) return null;
+  return (
+    <div className="flex justify-end px-4 pt-3">
+      <MessageViaMundusButton
+        negotiationId={negotiationId}
+        recordType="sale"
+        recordDisplayId={`SALE-${dealId}`}
+        currentSide="supplier"
+        variant="compact"
+      />
+    </div>
   );
 }
