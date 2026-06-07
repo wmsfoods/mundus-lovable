@@ -8,6 +8,8 @@ import { ShippingInstructionsCard } from "@/components/shipping/ShippingInstruct
 import { StatusBadge, ShippingStatusTracker, OrderShippingStatus, getStatusConfig } from "@/lib/orderStatus";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
+import { useOrderNegotiationId } from "@/hooks/useOrderNegotiationId";
+import { DealTimeline } from "@/components/messageViaMundus/DealTimeline";
 import {
   FileTextIcon,
   ArrowLeftIcon,
@@ -143,7 +145,7 @@ export type DealDetailData = {
   closedAtEst?: string;
 };
 
-type TabKey = "overview" | "negotiation" | "shipment" | "documents";
+type TabKey = "overview" | "negotiation" | "shipment" | "documents" | "messages";
 
 function fmtKg(v: number) {
   return new Intl.NumberFormat("de-DE", { maximumFractionDigits: 0 }).format(v);
@@ -254,6 +256,10 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
     {
       value: "documents",
       label: `${tk("dealDetail.tabs.documents", "Documents")} ${docsDone}/${docsCount}`,
+    },
+    {
+      value: "messages",
+      label: tk("messageViaMundus.timeline.tabMessages", "Messages"),
     },
   ];
 
