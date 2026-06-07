@@ -978,34 +978,6 @@ function ContainerTab({
             })}
           </div>
 
-          {(draft.incoterms.includes("FOB") || draft.incoterms.includes("EXW")) && (
-            <div className="mt-3 rounded-md border bg-muted/30 p-3">
-              <p className="mb-1 text-xs font-semibold">
-                {tk("container.primaryPricing.q", "Your prices are based on which incoterm?")}
-              </p>
-              <p className="mb-2 text-[11px] text-muted-foreground">
-                {tk("container.primaryPricing.help", "Helps buyers calculate equivalent prices at destination.")}
-              </p>
-              <div className="flex gap-2">
-                {(["CFR", "FOB"] as const).map((opt) => (
-                  <button
-                    key={opt}
-                    type="button"
-                    onClick={() => setDraft((p) => ({ ...p, primaryPricingIncoterm: opt }))}
-                    className={cn(
-                      "min-h-[40px] flex-1 rounded-md border text-sm font-semibold",
-                      draft.primaryPricingIncoterm === opt
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border bg-card text-foreground",
-                    )}
-                  >
-                    {opt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
           {draft.incoterms.includes("EXW") && (
             <div className="mt-3">
               <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
