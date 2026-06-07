@@ -189,6 +189,19 @@ export default function SupplierCreateOfferV2Mobile() {
   const [logistics, setLogistics] = useState<LogisticsState>(EMPTY_LOGISTICS);
   const [cuts, setCuts] = useState<CutRow[]>([]);
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+  const [pendingRegion, setPendingRegion] = useState<"global" | "us" | null>(null);
+  const showRegionToggle = isUsCompany(company);
+  const requestRegionChange = (newRegion: "global" | "us") => {
+    if (cutRegion === newRegion) return;
+    if (cuts.length === 0) { setCutRegion(newRegion); return; }
+    setPendingRegion(newRegion);
+  };
+  const confirmRegionChange = () => {
+    if (!pendingRegion) return;
+    setCuts([]);
+    setCutRegion(pendingRegion);
+    setPendingRegion(null);
+  };
   const [paymentTerms, setPaymentTerms] = useState<string>("");
   const [distribution, setDistribution] = useState<DistributionValue>({
     marketplace: true,
