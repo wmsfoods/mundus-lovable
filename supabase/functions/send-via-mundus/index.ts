@@ -11,6 +11,20 @@ const corsHeaders = {
 const APP_BASE_URL =
   Deno.env.get("APP_BASE_URL") ?? "https://app.mundustrade.us";
 
+function urlForSide(
+  side: "buyer" | "supplier" | "mundus",
+  negotiationId: string,
+): string {
+  switch (side) {
+    case "buyer":
+      return `${APP_BASE_URL}/buyer/negotiations/${negotiationId}`;
+    case "supplier":
+      return `${APP_BASE_URL}/supplier/negotiations/${negotiationId}`;
+    case "mundus":
+      return `${APP_BASE_URL}/admin/negotiations/${negotiationId}`;
+  }
+}
+
 type ErrCode =
   | "unauthenticated"
   | "forbidden"
@@ -221,8 +235,18 @@ Deno.serve(async (req) => {
   }
 
   // ── Build email + enqueue (recipient + CC copy to sender) ───────────────
-  const recordUrl = `${APP_BASE_URL}/negotiations/${negotiationId}`;
-  const built = buildViaMundusEmail({
+  const recipientSide: "buyer" | "supplier" | "mundus" =
+    senderSide === "buyer"
+      ? "supplier"
+      : senderSide === "supplier"
+        ? "buyer"
+        : "mundus";
+  const recipientUrl = urlForSide(recipientSide, negotiationId);
+  const senderUrl = senderCompanyId
+    ? urlForSide(senderSide, negotiationId)
+    : recipientUrl;
+
+  const commonBuild = {
     senderName,
     senderCompany: senderCompanyName,
     recipientName,
@@ -231,11 +255,18 @@ Deno.serve(async (req) => {
     body: messageBody,
     urgent,
     recordId: negotiationId,
-    recordType: "negotiation",
-    recordUrl,
+    recordType: "negotiation" as const,
     attachmentUrl,
     attachmentName,
     attachmentSizeBytes,
+  };
+  const builtRecipient = buildViaMundusEmail({
+    ...commonBuild,
+    recordUrl: recipientUrl,
+  });
+  const builtSenderCopy = buildViaMundusEmail({
+    ...commonBuild,
+    recordUrl: senderUrl,
   });
 
   const templateVars = {
@@ -246,7 +277,11 @@ Deno.serve(async (req) => {
     urgent,
   };
 
-  const enqueueOne = async (toEmail: string, isCopy = false) => {
+  const enqueueOne = async (
+    toEmail: string,
+    built: { subject: string; html: string },
+    isCopy = false,
+  ) => {
     const { data: id, error: e } = await userClient.rpc("enqueue_email", {
       p_to_email: toEmail,
       p_subject: isCopy ? `[copy] ${built.subject}` : built.subject,
@@ -265,9 +300,9 @@ Deno.serve(async (req) => {
     return id;
   };
 
-  const recipientQueueId = await enqueueOne(recipientEmail, false);
+  const recipientQueueId = await enqueueOne(recipientEmail, builtRecipient, false);
   if (senderEmail && senderEmail.toLowerCase() !== recipientEmail.toLowerCase()) {
-    await enqueueOne(senderEmail, true);
+    await enqueueOne(senderEmail, builtSenderCopy, true);
   }
 
   // ── Mark message as emailed ─────────────────────────────────────────────
