@@ -134,6 +134,7 @@ export default function BuyerCreateRequest() {
 
   // Cut nomenclature region (global vs US IMPS). Suggested when US is in origin.
   const [cutRegion, setCutRegion] = useState<"global" | "us">("global");
+  const [pendingCutRegion, setPendingCutRegion] = useState<"global" | "us" | null>(null);
 
   // Distribution: marketplace (all suppliers) vs specific supplier
   const [distribution, setDistribution] = useState<"marketplace" | "specific">("marketplace");
