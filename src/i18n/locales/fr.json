@@ -4209,20 +4209,63 @@
     "mailBody": "Bonjour,\n\nJe me suis connecté à Mundus Trade mais mon compte n'est pas encore lié à une entreprise.\n\nE-mail: {{email}}\nUser ID: {{uid}}\n\nPouvez-vous m'aider ?\n\nMerci."
   },
   "messageViaMundus": {
+    "trigger": "Message à {{name}} via Mundus",
+    "triggerCompact": "Message via Mundus",
+    "title": "Envoyer via Mundus",
+    "subtitle": "Nous transmettons ce message à {{name}} en votre nom. Les deux parties sont en copie et le message est enregistré dans la chronologie de ce(tte) {{recordType}}.",
+    "to": "À",
+    "via": "via Mundus",
+    "subject": "Objet",
+    "subjectPlaceholder": "Re: {{recordId}}",
+    "body": "Message",
+    "bodyPlaceholder": "Rédigez un message court et direct…",
+    "templates": "Modèles rapides",
+    "tpl": {
+      "shipment": "Mise à jour d'expédition",
+      "payment": "Confirmer le paiement",
+      "specs": "Question sur les specs",
+      "docs": "Demander des documents",
+      "delay": "Signaler un retard",
+      "blank": "Message vierge"
+    },
+    "tplSubject": {
+      "shipment": "Mise à jour d'expédition — {{recordId}}",
+      "payment": "Confirmation du paiement du solde",
+      "specs": "Question rapide sur les spécifications",
+      "docs": "Demande de documents",
+      "delay": "Retard possible — merci de confirmer",
+      "blank": ""
+    },
+    "tplBody": {
+      "shipment": "Bonjour,\n\nMise à jour rapide sur l'expédition :\n\n- Booking confirmé sur [NAVIRE] le [DATE]\n- ETD [PORT] : [DATE]\n- ETA [PORT] : [DATE]\n\nMerci de me signaler toute incohérence.\n\nCordialement.",
+      "payment": "Bonjour,\n\nJe souhaite confirmer :\n\n- Acompte de [X] reçu le [DATE]\n- Solde de [Y] dû le [DATE]\n\nMerci de confirmer.\n\nCordialement.",
+      "specs": "Bonjour,\n\nUne question rapide sur les spécifications du produit :\n\n[VOTRE QUESTION]\n\nCordialement.",
+      "docs": "Bonjour,\n\nPourriez-vous partager les documents suivants :\n\n- [DOC 1]\n- [DOC 2]\n\nCordialement.",
+      "delay": "Bonjour,\n\nInformation concernant un possible retard :\n\n- [QUOI]\n- Nouvelle estimation : [DATE]\n\nToutes mes excuses, merci de me tenir informé.",
+      "blank": ""
+    },
+    "attach": "Joindre",
+    "removeAttachment": "Supprimer la pièce jointe",
+    "urgent": "Urgent",
+    "send": "Envoyer via Mundus",
+    "sending": "Envoi…",
+    "delivered": "Remis à {{name}} · Les deux parties en copie",
+    "errorGeneric": "Échec de l'envoi : {{err}}",
+    "recipientUnreachable": "Nous n'avons pas trouvé d'email de contact pour l'entreprise destinataire.",
     "timeline": {
-      "sent": "SENT",
-      "received": "RECEIVED",
+      "sent": "ENVOYÉ",
+      "received": "REÇU",
       "urgent": "URGENT",
       "viaMundus": "via Mundus",
-      "from": "From",
-      "to": "To",
-      "showMore": "Show more",
-      "showLess": "Show less",
-      "emailedAt": "Emailed {{time}}",
-      "emailPending": "Email pending",
+      "from": "De",
+      "to": "À",
+      "showMore": "Voir plus",
+      "showLess": "Voir moins",
+      "emailedAt": "Envoyé par email {{time}}",
+      "emailPending": "Email en attente",
       "tabMessages": "Messages",
-      "emptyDeal": "No messages yet. Use 'Message via Mundus' to start a conversation about this order.",
-      "loading": "Loading messages..."
+      "emptyDeal": "Aucun message pour le moment. Utilisez 'Message via Mundus' pour démarrer une conversation à propos de cette commande.",
+      "loading": "Chargement des messages..."
     }
   }
 }
