@@ -686,8 +686,15 @@ export default function SupplierCreateOfferV2Mobile() {
               <button
                 key={cutKey + idx}
                 type="button"
-                onClick={() => setCutSheet({ open: true, mode: "edit", cutId: cutKey })}
-                className="flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left active:bg-muted/30"
+                onClick={() => {
+                  if (editLocked) return;
+                  setCutSheet({ open: true, mode: "edit", cutId: cutKey });
+                }}
+                disabled={editLocked}
+                className={cn(
+                  "flex w-full items-center gap-3 rounded-xl border bg-card p-3 text-left active:bg-muted/30",
+                  editLocked && "opacity-70 cursor-not-allowed active:bg-card",
+                )}
               >
                 <div className="flex h-[60px] w-[60px] shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted text-2xl">
                   🥩
