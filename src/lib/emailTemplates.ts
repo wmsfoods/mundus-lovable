@@ -810,7 +810,7 @@ export function buildViaMundusEmail(opts: {
     bodyHtml,
     ctaUrl: opts.recordUrl,
     ctaLabel: `View ${recordLabel.toLowerCase()} in Mundus →`,
-  }, overrides);
+  });
 
   const text = [
     `Subject: ${opts.subject}`,
