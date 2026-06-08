@@ -4,6 +4,18 @@
 // Mail, Yahoo). Responsive at 600px via @media queries.
 import { EMAIL_LOGO_FULL_URL } from "./email/brandAssets";
 
+/** Shared overrides accepted by every template via masterLayout. The admin
+ * editor edits these fields per template in the database; queueOne in
+ * emailSender.ts loads them and forwards them to the template function. */
+export interface TemplateLayoutOverrides {
+  heroTitle?: string;
+  preheader?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  primaryColor?: string;
+  logoUrl?: string;
+}
+
 function masterLayout(options: {
   heroTitle: string;
   heroColor?: "wine" | "green" | "amber" | "gray";
@@ -11,11 +23,18 @@ function masterLayout(options: {
   ctaUrl?: string;
   ctaLabel?: string;
   preheader?: string;
-}): string {
-  const { heroTitle, heroColor = "wine", bodyHtml, ctaUrl, ctaLabel, preheader } = options;
+}, overrides: TemplateLayoutOverrides = {}): string {
+  const heroTitle = overrides.heroTitle || options.heroTitle;
+  const heroColor = options.heroColor ?? "wine";
+  const bodyHtml = options.bodyHtml;
+  const ctaUrl = overrides.ctaUrl || options.ctaUrl;
+  const ctaLabel = overrides.ctaLabel || options.ctaLabel;
+  const preheader = overrides.preheader ?? options.preheader;
+  const primary = overrides.primaryColor || "#8B2252";
+  const logo = overrides.logoUrl || EMAIL_LOGO_FULL_URL;
 
   const heroGradients: Record<string, string> = {
-    wine: "background: linear-gradient(135deg, #6C0B28, #A74764);",
+    wine: `background: linear-gradient(135deg, ${primary}, #A74764);`,
     green: "background: linear-gradient(135deg, #065F46, #059669);",
     amber: "background: linear-gradient(135deg, #92400E, #D97706);",
     gray: "background: linear-gradient(135deg, #374151, #6B7280);",
