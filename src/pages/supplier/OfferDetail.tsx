@@ -27,6 +27,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { publicUrl } from "@/lib/publicUrl";
 import { notifyCompanyUsers } from "@/lib/notifications";
+import { sendPushToCompanyUsers } from "@/lib/push";
+import { sendEmailNotification } from "@/lib/emailSender";
+import { getCompanyPrimaryContact } from "@/lib/companyContact";
 import { auditLog } from "@/lib/auditLog";
 import { useOfferDestinationPorts } from "@/components/offer/OfferDestinationPorts";
 import { OfferDetailCards } from "@/components/offer/OfferDetailCards";
@@ -219,16 +222,41 @@ export default function SupplierOfferDetail({ adminMode = false }: Props) {
         );
         for (const buyerCompanyId of uniqueBuyerCompanyIds) {
           const neg = negs.find((n) => n.buyer_company_id === buyerCompanyId);
+          const linkUrl = neg ? `/buyer/negotiations/${neg.id}` : "/buyer/marketplace";
           notifyCompanyUsers({
             companyId: buyerCompanyId,
             title: "Offer deactivated",
             body: `The offer "${offerTitle}" you were negotiating was deactivated by the supplier`,
             icon: "alert",
             category: "offers",
-            linkUrl: neg ? `/buyer/negotiations/${neg.id}` : "/buyer/marketplace",
+            linkUrl,
             relatedType: neg ? "negotiation" : "offer",
             relatedId: neg?.id ?? id,
           }).catch(() => {});
+
+          // Push (mobile) — fan-out to all active users of the buyer company
+          sendPushToCompanyUsers(buyerCompanyId, {
+            title: "Offer deactivated",
+            body: `"${offerTitle}" was deactivated by the supplier`,
+            url: linkUrl,
+            category: "offers",
+          }).catch(() => {});
+
+          // Email — primary contact of the buyer company
+          (async () => {
+            try {
+              const contact = await getCompanyPrimaryContact(buyerCompanyId);
+              if (!contact?.email) return;
+              await sendEmailNotification("offerDeactivated" as never, contact.email, {
+                name: contact.name || "there",
+                offerTitle,
+                offerNumber: String(offer.offerNumber ?? ""),
+                negotiationUrl: publicUrl(linkUrl),
+              } as never);
+            } catch (e) {
+              console.warn("[OfferDetail] deactivation email failed", e);
+            }
+          })();
         }
       }
 

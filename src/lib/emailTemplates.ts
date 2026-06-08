@@ -699,6 +699,32 @@ export const emailTemplates = {
     ctaUrl: `https://app.mundustrade.us/buyer/offers/${vars.offerId}`,
     ctaLabel: "View offer →",
   }, overrides),
+
+  offerDeactivated: (vars: { name: string; offerTitle: string; offerNumber: string; negotiationUrl: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
+    heroTitle: "Offer deactivated",
+    heroColor: "wine",
+    preheader: `The offer "${vars.offerTitle}" you were negotiating was deactivated`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">Hi <strong>${vars.name}</strong>,</p>
+      <p style="margin:0 0 16px;">The offer <strong>"${vars.offerTitle}"</strong> (M-${vars.offerNumber}), which you were currently negotiating, was deactivated by the supplier.</p>
+      <p style="margin:0 0 16px;">Your negotiation has been closed. Browse the marketplace to find similar offers, or open the negotiation below for the full history.</p>
+    `,
+    ctaUrl: vars.negotiationUrl,
+    ctaLabel: "Open negotiation →",
+  }, overrides),
+
+  requestResponded: (vars: { buyerName: string; supplierCompany: string; productName: string; requestNumber: string; requestUrl: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
+    heroTitle: "A supplier responded to your request",
+    heroColor: "wine",
+    preheader: `${vars.supplierCompany} submitted an offer for ${vars.productName}`,
+    bodyHtml: `
+      <p style="margin:0 0 16px;">Hi <strong>${vars.buyerName}</strong>,</p>
+      <p style="margin:0 0 16px;"><strong>${vars.supplierCompany}</strong> just submitted an offer for your request <strong>R-${vars.requestNumber}</strong> (${vars.productName}).</p>
+      <p style="margin:0 0 16px;">Review the proposal, compare with other responses and start negotiating directly.</p>
+    `,
+    ctaUrl: vars.requestUrl,
+    ctaLabel: "Review responses →",
+  }, overrides),
 };
 
 export type EmailTemplateName = keyof typeof emailTemplates;
@@ -723,6 +749,8 @@ export const emailSubjects: Record<EmailTemplateName, (vars: any) => string> = {
   scl_invite_signup: (v) => `You've been invited to join Mundus Trade by ${v.supplier}`,
   scl_direct_offer: (v) => `Direct offer from ${v.supplier}: ${v.offerTitle}`,
   scl_all_customers_offer: (v) => `New offer from ${v.supplier}: ${v.offerTitle}`,
+  offerDeactivated: (v) => `Offer deactivated — M-${v.offerNumber}`,
+  requestResponded: (v) => `New response on R-${v.requestNumber} — ${v.productName}`,
 };
 
 // ============================================================================

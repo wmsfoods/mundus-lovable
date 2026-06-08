@@ -52,3 +52,32 @@ export async function sendPushToCompanyUsers(
     return { delivered: 0, skipped: true };
   }
 }
+
+/**
+ * Single-user push dispatch. Use when you already know the recipient's
+ * user_id (e.g. invitations to a specific buyer, status updates targeting
+ * a known buyer/supplier user). Non-throwing.
+ */
+export async function sendPushToUser(
+  userId: string | null | undefined,
+  payload: PushPayload,
+): Promise<{ delivered: number; skipped: boolean }> {
+  if (!userId) return { delivered: 0, skipped: true };
+  try {
+    const { data, error } = await supabase.functions.invoke("send-push", {
+      body: {
+        user_id: userId,
+        title: payload.title,
+        body: payload.body ?? null,
+        url: payload.url ?? null,
+        category: payload.category ?? "system",
+      },
+    });
+    if (error || !data || typeof data.delivered !== "number") {
+      return { delivered: 0, skipped: true };
+    }
+    return { delivered: data.delivered, skipped: data.delivered === 0 };
+  } catch {
+    return { delivered: 0, skipped: true };
+  }
+}
