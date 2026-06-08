@@ -16,6 +16,7 @@ type Props = {
   rolePill?: string;
   userName?: string;
   userSubtitle?: string;
+  userAvatarUrl?: string | null;
   onProBadgeClick?: (item: SidebarItem) => void;
 };
 
@@ -132,6 +133,7 @@ export function MobileDrawer({
   rolePill,
   userName,
   userSubtitle,
+  userAvatarUrl,
   onProBadgeClick,
 }: Props) {
   const { user } = useAuth();
@@ -194,7 +196,17 @@ export function MobileDrawer({
         </div>
 
         <div className="md-user">
-          <span className="md-user-av">{initials}</span>
+          {userAvatarUrl ? (
+            <img
+              src={userAvatarUrl}
+              alt={userName ?? "user"}
+              className="md-user-av md-user-av-img"
+              draggable={false}
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+            />
+          ) : (
+            <span className="md-user-av">{initials}</span>
+          )}
           <div className="md-user-meta">
             <span className="md-user-name">{userName ?? user?.email}</span>
             {userSubtitle && (

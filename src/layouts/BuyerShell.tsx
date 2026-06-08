@@ -42,7 +42,7 @@ function BuyerShellInner() {
   const isMobile = useIsMobileShell();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { fullName } = useUserFullName();
+  const { fullName, avatarUrl } = useUserFullName();
   const userName = fullName || (user?.email?.split("@")[0] ?? "User");
   const stackMode = isMobile && isStackRoute(location.pathname);
 
@@ -123,6 +123,7 @@ function BuyerShellInner() {
           rolePill={t("shell.buyer")}
           userName={userName}
           userSubtitle={company?.name}
+          userAvatarUrl={avatarUrl}
         />
         {stackMode ? <StackHeader /> : <Topbar onMenuClick={() => setDrawerOpen(true)} />}
         <main className="app-main">
@@ -143,6 +144,7 @@ function BuyerShellInner() {
             rolePill={t("shell.buyer")}
             userName={userName}
             userSubtitle={company?.name}
+            userAvatarUrl={avatarUrl}
           />
         )}
       </div>

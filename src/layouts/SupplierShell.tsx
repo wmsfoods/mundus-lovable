@@ -46,7 +46,7 @@ function SupplierShellInner() {
   const [sidebarManual, setSidebarManual] = useState<boolean | null>(null);
   const sidebarCollapsed = !isMobile && (sidebarManual ?? false);
   useEffect(() => { setSidebarManual(null); }, [location.pathname]);
-  const { fullName } = useUserFullName();
+  const { fullName, avatarUrl } = useUserFullName();
   const userName = fullName || (user?.email?.split("@")[0] ?? "User");
   const { openUpsell } = useInsightsUpsell();
   const { isGlobalDirector } = useActiveOffice();
@@ -145,6 +145,7 @@ function SupplierShellInner() {
           rolePill={t("shell.supplier")}
           userName={userName}
           userSubtitle={company?.name}
+          userAvatarUrl={avatarUrl}
           onProBadgeClick={onProBadgeClick}
           collapsed={sidebarCollapsed}
           onToggleCollapsed={() => setSidebarManual(!sidebarCollapsed)}
@@ -168,6 +169,7 @@ function SupplierShellInner() {
             rolePill={t("shell.supplier")}
             userName={userName}
             userSubtitle={company?.name}
+            userAvatarUrl={avatarUrl}
             onProBadgeClick={onProBadgeClick}
           />
         )}

@@ -28,7 +28,7 @@ export default function AdminShell() {
   const isMobile = useIsMobileShell();
   const location = useLocation();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const { fullName } = useUserFullName();
+  const { fullName, avatarUrl } = useUserFullName();
   const userName = fullName || (user?.email?.split("@")[0] ?? "User");
   const stackMode = isMobile && isStackRoute(location.pathname);
   const [pendingUserRequests, setPendingUserRequests] = useState<number>(0);
@@ -108,6 +108,7 @@ export default function AdminShell() {
           rolePill={t("shell.admin")}
           userName={userName}
           userSubtitle={company?.name}
+          userAvatarUrl={avatarUrl}
         />
         {stackMode ? <StackHeader /> : <Topbar onMenuClick={() => setDrawerOpen(true)} />}
         <main className="app-main">
@@ -122,6 +123,7 @@ export default function AdminShell() {
             rolePill={t("shell.admin")}
             userName={userName}
             userSubtitle={company?.name}
+            userAvatarUrl={avatarUrl}
           />
         )}
       </div>
