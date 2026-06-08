@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   NOTIFICATIONS,
   CHANNEL_LABELS,
@@ -6,6 +7,9 @@ import {
   type NotificationChannel,
   type NotificationEntry,
 } from "@/data/notificationsCatalog";
+
+// Templates that already have an editor wired up (Phase 1 pilot).
+const EDITABLE_TEMPLATES = new Set<string>(["welcome"]);
 
 type SubTab = "overview" | "catalog" | "coverage" | "gaps";
 
@@ -60,10 +64,47 @@ function EntryCard({ n }: { n: NotificationEntry }) {
             id: {n.id}
           </div>
         </div>
-        <div>
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 8, flexWrap: "wrap" }}>
+          <div>
           {n.channels.map((c) => (
             <ChannelBadge key={c} ch={c} />
           ))}
+          </div>
+          {n.emailTemplate && (
+            EDITABLE_TEMPLATES.has(n.emailTemplate) ? (
+              <Link
+                to={`/admin/emails/${n.emailTemplate}`}
+                style={{
+                  padding: "5px 12px",
+                  background: "#8B2252",
+                  color: "#fff",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  textDecoration: "none",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                ✎ Editar email
+              </Link>
+            ) : (
+              <span
+                title="Editor disponível em breve para este template"
+                style={{
+                  padding: "5px 12px",
+                  background: "#F3F4F6",
+                  color: "#9CA3AF",
+                  borderRadius: 6,
+                  fontSize: 12,
+                  fontWeight: 600,
+                  whiteSpace: "nowrap",
+                  cursor: "not-allowed",
+                }}
+              >
+                ✎ Editar (em breve)
+              </span>
+            )
+          )}
         </div>
       </div>
       <div style={{ fontSize: 12.5, marginTop: 12, color: "#374151", lineHeight: 1.55 }}>

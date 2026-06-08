@@ -3716,6 +3716,134 @@ export type Database = {
           },
         ]
       }
+      email_template_active: {
+        Row: {
+          locale: string
+          template_key: string
+          updated_at: string
+          updated_by: string | null
+          version_id: string
+        }
+        Insert: {
+          locale: string
+          template_key: string
+          updated_at?: string
+          updated_by?: string | null
+          version_id: string
+        }
+        Update: {
+          locale?: string
+          template_key?: string
+          updated_at?: string
+          updated_by?: string | null
+          version_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_template_active_template_key_fkey"
+            columns: ["template_key"]
+            isOneToOne: false
+            referencedRelation: "email_template_definitions"
+            referencedColumns: ["template_key"]
+          },
+          {
+            foreignKeyName: "email_template_active_version_id_fkey"
+            columns: ["version_id"]
+            isOneToOne: false
+            referencedRelation: "email_template_versions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      email_template_definitions: {
+        Row: {
+          category: string
+          created_at: string
+          defaults_en: Json
+          defaults_pt: Json
+          description_en: string | null
+          description_pt: string | null
+          editable_fields: Json
+          hero_color: string
+          name_en: string
+          name_pt: string
+          template_key: string
+          updated_at: string
+          variables: Json
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          defaults_en?: Json
+          defaults_pt?: Json
+          description_en?: string | null
+          description_pt?: string | null
+          editable_fields?: Json
+          hero_color?: string
+          name_en: string
+          name_pt: string
+          template_key: string
+          updated_at?: string
+          variables?: Json
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          defaults_en?: Json
+          defaults_pt?: Json
+          description_en?: string | null
+          description_pt?: string | null
+          editable_fields?: Json
+          hero_color?: string
+          name_en?: string
+          name_pt?: string
+          template_key?: string
+          updated_at?: string
+          variables?: Json
+        }
+        Relationships: []
+      }
+      email_template_versions: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          locale: string
+          notes: string | null
+          template_key: string
+          values: Json
+          version_number: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          locale: string
+          notes?: string | null
+          template_key: string
+          values?: Json
+          version_number: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          locale?: string
+          notes?: string | null
+          template_key?: string
+          values?: Json
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_template_versions_template_key_fkey"
+            columns: ["template_key"]
+            isOneToOne: false
+            referencedRelation: "email_template_definitions"
+            referencedColumns: ["template_key"]
+          },
+        ]
+      }
       email_unsubscribe_tokens: {
         Row: {
           created_at: string
