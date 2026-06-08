@@ -64,6 +64,7 @@ import AutoEngineSandbox from "./pages/admin/AutoEngineSandbox.tsx";
 import AdminDataManagement from "./pages/admin/AdminDataManagement.tsx";
 import AdminImport from "./pages/admin/AdminImport.tsx";
 import EmailPreview from "./pages/admin/EmailPreview.tsx";
+import EmailTemplateEditor from "./pages/admin/EmailTemplateEditor.tsx";
 import EmailQueue from "./pages/admin/EmailQueue.tsx";
 import EmailActivity from "./pages/admin/EmailActivity.tsx";
 import WhatsLayout from "./pages/admin/whats/WhatsLayout.tsx";
@@ -357,6 +358,7 @@ const App = () => (
               <Route path="outreach/templates" element={<OutreachTemplates />} />
               <Route path="settings/email" element={<EmailSettings />} />
               <Route path="email-preview" element={<EmailPreview />} />
+              <Route path="emails/:templateKey" element={<EmailTemplateEditor />} />
               <Route path="create-offer" element={<SupplierCreateOfferV2 />} />
               <Route path="create-request" element={<BuyerCreateRequest />} />
               <Route path="email-queue" element={<EmailQueue />} />
