@@ -66,7 +66,6 @@ function decisionBadge(d: AutoOutput["decision"]) {
   const map = {
     counter: "bg-gray-200 text-gray-800",
     accept_bid: "bg-green-100 text-green-800",
-    hold: "bg-amber-100 text-amber-800",
   } as const;
   return (
     <span className={`px-2 py-0.5 rounded text-xs font-mono ${map[d]}`}>{d}</span>

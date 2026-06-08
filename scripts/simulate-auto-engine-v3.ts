@@ -94,7 +94,7 @@ function runScenarioDial(sc: Scenario, dial: Dial) {
 function main() {
   const T = 4;
   console.log('═'.repeat(96));
-  console.log('  AUTO NEGOTIATION ENGINE V3 — SIMULATION');
+  console.log('  AUTO NEGOTIATION ENGINE V3.2 — SIMULATION (no-hold: engine always responds)');
   console.log('═'.repeat(96));
   console.log('  Derived constants:');
   console.log(`    T (cycles)             = ${T}`);
