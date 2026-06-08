@@ -651,6 +651,10 @@ export function CounterOfferModal({
 
           const fmt = (n: number) =>
             n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+          const fmtKg = (kg: number) => `${kg.toLocaleString(undefined, { maximumFractionDigits: 0 })} kg`;
+          const fmtPerKg = (p: number) => p.toFixed(2);
+          const movementVs = (final: number, base: number) =>
+            base > 0 ? (((final - base) / base) * 100).toFixed(1) : "0.0";
 
           if (allLockedNow) {
             const settledValue = mergedAgreed.reduce((s, a) => {
@@ -665,6 +669,19 @@ export function CounterOfferModal({
               askingAvg > 0
                 ? (((finalAvg - askingAvg) / askingAvg) * 100).toFixed(1)
                 : "0.0";
+            // Per-cut breakdown for the dealClosed email.
+            const dealCuts = items.map((it) => {
+              const agreed = mergedAgreed.find((a) => a.offer_item_id === it.id);
+              const asking = Number(it.price);
+              const final = agreed ? Number(agreed.price_per_kg) : asking;
+              return {
+                name: it.customer_product?.name ?? "—",
+                qty: fmtKg(Number(it.amount)),
+                askingPerKg: fmtPerKg(asking),
+                finalPerKg: fmtPerKg(final),
+                movementPct: movementVs(final, asking),
+              };
+            });
             const baseVars: any = {
               cutName: offerTitle,
               offerNumber,
@@ -685,6 +702,7 @@ export function CounterOfferModal({
               advancePct: "30",
               advanceAmount: fmt(settledValue * 0.3),
               supplierCompanyId,
+              cuts: dealCuts,
             };
             if (supplierContact?.email) {
               await sendEmailNotification("dealClosed" as any, supplierContact.email, {
@@ -727,6 +745,21 @@ export function CounterOfferModal({
           const gap = Math.abs(askingAvg - counterAvg);
           const gapPct = askingAvg > 0 ? ((gap / askingAvg) * 100).toFixed(1) : "0.0";
 
+          // Per-cut breakdown for bidReceived (buyer just sent a bid; supplier sees it).
+          const bidCuts = openItems.map((it) => {
+            const asking = Number(it.price);
+            const bid = accepted[it.id]
+              ? theirPrices.get(it.id) ?? asking
+              : counters[it.id] ?? asking;
+            return {
+              name: it.customer_product?.name ?? "—",
+              qty: fmtKg(Number(it.amount)),
+              askingPerKg: fmtPerKg(asking),
+              bidPerKg: fmtPerKg(bid),
+              movementPct: movementVs(bid, asking),
+            };
+          });
+
           if (perspective === "buyer" && supplierContact?.email) {
             // Buyer placed a counter-bid → notify supplier
             await sendEmailNotification("bidReceived" as any, supplierContact.email, {
@@ -745,9 +778,26 @@ export function CounterOfferModal({
               destination: negotiation.port?.country?.english_name ?? "",
               destFlag: "",
               supplierCompanyId,
+              cuts: bidCuts,
             } as any);
           } else if (perspective === "supplier" && buyerContact?.email) {
             // Supplier sent a counter → notify buyer
+            // Per-cut breakdown for counterReceived (supplier just countered; buyer sees it).
+            const counterCuts = openItems.map((it) => {
+              const asking = Number(it.price);
+              const yourBid = theirPrices.get(it.id) ?? asking;
+              const counter = accepted[it.id]
+                ? yourBid
+                : counters[it.id] ?? asking;
+              return {
+                name: it.customer_product?.name ?? "—",
+                qty: fmtKg(Number(it.amount)),
+                askingPerKg: fmtPerKg(asking),
+                yourBidPerKg: fmtPerKg(yourBid),
+                counterPerKg: fmtPerKg(counter),
+                movementPct: movementVs(counter, yourBid),
+              };
+            });
             await sendEmailNotification("counterReceived" as any, buyerContact.email, {
               buyerName: buyerContact.name || buyerCompany,
               supplierCompany,
@@ -763,6 +813,7 @@ export function CounterOfferModal({
               totalValue: fmt(counterTotal),
               isLastRound: isFinal,
               supplierCompanyId,
+              cuts: counterCuts,
             } as any);
           }
         } catch (e) {
