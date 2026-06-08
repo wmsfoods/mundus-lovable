@@ -388,6 +388,26 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           const contact = await getCompanyPrimaryContact(offer.supplier_id);
           if (!contact?.email) return;
           const { sendEmailNotification } = await import("@/lib/emailSender");
+          const fmtKg = (kg: number) =>
+            `${kg.toLocaleString(undefined, { maximumFractionDigits: 0 })} kg`;
+          const fmtPerKg = (p: number) => p.toFixed(2);
+          const movementVs = (final: number, base: number) =>
+            base > 0 ? (((final - base) / base) * 100).toFixed(1) : "0.0";
+          const bidCuts = offer.items.map((it) => {
+            const asking = Number(it.price);
+            const enteredEffective =
+              typeof bids[it.id] === "number"
+                ? (bids[it.id] as number)
+                : effectiveAsking(asking);
+            const bid = Math.max(0, enteredEffective - addOn);
+            return {
+              name: (it as any).customer_product?.name ?? "—",
+              qty: fmtKg(Number(it.amount)),
+              askingPerKg: fmtPerKg(asking),
+              bidPerKg: fmtPerKg(bid),
+              movementPct: movementVs(bid, asking),
+            };
+          });
           sendEmailNotification("bidReceived" as any, contact.email, {
             supplierName: contact.name || "Supplier",
             buyerCompany: company?.name ?? "A buyer",
@@ -395,6 +415,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
             round: 1,
             maxRounds: 4,
             supplierCompanyId: offer.supplier_id,
+            cuts: bidCuts,
           } as any);
         } catch { /* never break flow */ }
       })();
