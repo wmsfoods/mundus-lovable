@@ -127,7 +127,31 @@ export async function confirmNegotiation(neg: RealNegotiationRow): Promise<boole
       const buyerCompany =
         (neg as any).buyer_company?.name ?? (neg as any).buyer_company_name ?? "Buyer";
       const offerNumber = String(neg.offer?.offer_number ?? "");
-      const cutName = items[0]?.customer_product?.name ?? "Offer";
+      // Improve cutName: aggregate when offer has multiple items.
+      const cutName = items[0]?.customer_product?.name
+        ? items.length > 1
+          ? `Mix · ${items.length} items`
+          : items[0].customer_product.name
+        : "Offer";
+
+      // Per-cut breakdown for the dealClosed email.
+      const agreedItems = ((neg as any).agreed_items ?? []) as Array<{
+        offer_item_id: string;
+        price_per_kg: number;
+      }>;
+      const dealCuts = items.map((it) => {
+        const agreed = agreedItems.find((a) => a.offer_item_id === it.id);
+        const asking = Number(it.price);
+        const finalP = agreed ? Number(agreed.price_per_kg) : asking;
+        return {
+          name: it.customer_product?.name ?? "—",
+          qty: `${Number(it.amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} kg`,
+          askingPerKg: asking.toFixed(2),
+          finalPerKg: finalP.toFixed(2),
+          movementPct:
+            asking > 0 ? (((finalP - asking) / asking) * 100).toFixed(1) : "0.0",
+        };
+      });
       const totalQty = items.reduce((s, it) => s + Number(it.amount || 0), 0);
       const settledValue =
         (data as any)?.settled_total_value ??
@@ -160,6 +184,7 @@ export async function confirmNegotiation(neg: RealNegotiationRow): Promise<boole
         advancePct: "30",
         advanceAmount: fmt(settledValue * 0.3),
         supplierCompanyId,
+        cuts: dealCuts,
       };
       const [s, b] = await Promise.all([
         getCompanyPrimaryContact(supplierCompanyId),
