@@ -74,7 +74,7 @@ function masterLayout(options: {
         <table role="presentation" cellpadding="0" cellspacing="0" width="600" class="email-container email-card" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
           <tr>
             <td style="padding:20px 32px;border-bottom:1px solid #F3F4F6;">
-              <img src="${EMAIL_LOGO_FULL_URL}" alt="Mundus Trade" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
+              <img src="${logo}" alt="Mundus Trade" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
             </td>
           </tr>
           <tr>
@@ -93,7 +93,7 @@ function masterLayout(options: {
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:28px;">
                 <tr>
                   <td align="center">
-                    <a href="${ctaUrl}" target="_blank" class="cta-button" style="display:inline-block;padding:14px 36px;background-color:#8B2252;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;mso-padding-alt:0;">
+                    <a href="${ctaUrl}" target="_blank" class="cta-button" style="display:inline-block;padding:14px 36px;background-color:${primary};color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;mso-padding-alt:0;">
                       ${ctaLabel}
                     </a>
                   </td>
