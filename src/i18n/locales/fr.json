@@ -1473,7 +1473,8 @@
           "counterSent": "Contre-proposition envoyée (simulation)",
           "bidAccepted": "Enchère acceptée (simulation)",
           "bidRejected": "Enchère rejetée (simulation)"
-        }
+        },
+        "buyerBadge": "Acheteur"
       }
     },
     "users": {

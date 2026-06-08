@@ -1461,7 +1461,8 @@
           "counterSent": "Contra-proposta enviada (simulado)",
           "bidAccepted": "Oferta aceita (simulado)",
           "bidRejected": "Oferta recusada (simulado)"
-        }
+        },
+        "buyerBadge": "Comprador"
       },
       "emailSent": "E-mail enviado",
       "emailSentTooltip": "Um link de resposta foi gerado para esta negociação"

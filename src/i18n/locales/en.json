@@ -1478,7 +1478,8 @@
           "counterSent": "Counter sent (mock)",
           "bidAccepted": "Bid accepted (mock)",
           "bidRejected": "Bid rejected (mock)"
-        }
+        },
+        "buyerBadge": "Buyer"
       }
     },
     "users": {

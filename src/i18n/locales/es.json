@@ -1463,7 +1463,8 @@
           "counterSent": "Contraoferta enviada (simulado)",
           "bidAccepted": "Oferta aceptada (simulado)",
           "bidRejected": "Oferta rechazada (simulado)"
-        }
+        },
+        "buyerBadge": "Comprador"
       }
     },
     "users": {
