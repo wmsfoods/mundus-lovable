@@ -248,7 +248,7 @@ export default function SupplierOfferDetail({ adminMode = false }: Props) {
               const contact = await getCompanyPrimaryContact(buyerCompanyId);
               if (!contact?.email) return;
               await sendEmailNotification("offerDeactivated" as never, contact.email, {
-                name: contact.full_name || "there",
+                name: contact.name || "there",
                 offerTitle,
                 offerNumber: String(offer.offerNumber ?? ""),
                 negotiationUrl: publicUrl(linkUrl),
