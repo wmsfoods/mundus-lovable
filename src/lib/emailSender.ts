@@ -3,6 +3,27 @@ import { emailTemplates, emailSubjects, type EmailTemplateName } from "./emailTe
 import { tryResolveOverrides } from "./email/templateOverrideResolver";
 
 const MUNDUS_ADMIN_EMAIL = "fn@mundustrade.com";
+
+const localeCache = new Map<string, { value: "pt" | "en"; expiresAt: number }>();
+async function resolveRecipientLocale(email: string): Promise<"pt" | "en"> {
+  if (!email) return "en";
+  const key = email.toLowerCase();
+  const hit = localeCache.get(key);
+  if (hit && hit.expiresAt > Date.now()) return hit.value;
+  try {
+    const { data } = await (supabase as any)
+      .from("users")
+      .select("preferred_locale")
+      .eq("email", key)
+      .maybeSingle();
+    const v: "pt" | "en" = data?.preferred_locale === "pt" ? "pt" : "en";
+    localeCache.set(key, { value: v, expiresAt: Date.now() + 5 * 60_000 });
+    return v;
+  } catch {
+    return "en";
+  }
+}
+
 const NEGOTIATION_TEMPLATES: EmailTemplateName[] = [
   "bidReceived" as EmailTemplateName,
   "counterReceived" as EmailTemplateName,
