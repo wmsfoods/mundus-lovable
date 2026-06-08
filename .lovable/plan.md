@@ -1,90 +1,74 @@
+# Plano — Logo nos emails + Fases 2 e 3
 
-# Editor de Emails no Admin
+## Etapa A — Logo no topo de todos os emails (imediato)
 
-Transformar os 19 templates de `src/lib/emailTemplates.ts` (hoje fixos em código) em templates editáveis pelo painel Admin, mantendo o layout/HTML estável e expondo apenas os campos seguros: textos, assunto, cores, logo, CTA. Idiomas PT e EN editáveis separados. Histórico de versões com revert.
+Substituir o bloco "ícone + texto Mundus / TRADE" do header dos templates por **uma única imagem** (o logo horizontal completo já em PNG transparente) e padronizar o **favicon** (ícone quadrado arredondado) como ícone de fallback / uso em locais pequenos.
 
-## O que muda para o usuário
+1. Subir as duas imagens enviadas para a CDN da Lovable (assets imutáveis, URL pública estável, sem depender de bucket público do Supabase):
+   - `mundus-logo-email-full.png` — logo horizontal com texto, fundo transparente (a usar no header dos emails)
+   - `mundus-logo-email-icon.png` — ícone quadrado arredondado, fundo transparente (fallback / dark-mode / footer)
+2. Criar `src/lib/email/brandAssets.ts` exportando as URLs absolutas dos dois PNGs (emails precisam de URL absoluta, não relativa).
+3. Atualizar o header de TODOS os templates atuais em `src/lib/emailTemplates.ts` (19 templates) e em `src/lib/email/welcomeRender.ts`:
+   - Trocar o `<img favicon 36x36> + <span>Mundus</span><span>TRADE</span>` por **um único `<img>` do logo horizontal**, altura ~32px, `alt="Mundus Trade"`, centralizado/à esquerda mantendo o padding atual.
+   - Manter o gradiente do hero abaixo do header e o resto do layout intacto.
+4. Atualizar o default do campo editável `logoUrl` do template `welcome` (e do schema das definitions) para apontar para o **logo horizontal** novo, mantendo retrocompatibilidade: se `logoUrl` salvo no DB ainda for o antigo, continua funcionando.
+5. Atualizar o preview iframe do editor (`EmailTemplateEditor.tsx`) — nenhum código novo, só herda do render.
 
-- **Admin → Docs → 🔔 Emails & Notifications → Catálogo**: cada card de template ganha botão **"Editar"**.
-- Tela de edição abre com:
-  - Abas **PT / EN**.
-  - Campos de texto: assunto, preheader, título, parágrafos, label do CTA.
-  - Campos visuais: cor primária, cor do botão, logo (upload).
-  - Painel lateral com **variáveis disponíveis** (`{{buyerName}}`, `{{offerNumber}}`, etc.) — clique insere no campo focado.
-  - **Preview ao vivo** (iframe) usando dados de exemplo.
-- Botões: **Salvar nova versão**, **Reverter para…** (dropdown com histórico), **Restaurar padrão de fábrica**.
-- Botão **"Enviar teste"** para o email do admin logado.
+Resultado: todos os emails enviados (com ou sem override do admin) passam a mostrar o **logo PNG transparente** no topo, sem o texto duplicado.
 
-## Arquitetura
+## Etapa B — Fase 2: editor para os 18 templates restantes
 
-### Banco (Lovable Cloud)
+Modelo mecânico, replicando o pattern do `welcome`:
 
-Três tabelas novas:
+1. **Migration de definitions** — inserir as 18 linhas restantes em `email_template_definitions` extraindo campos editáveis de cada template do `notificationsCatalog.ts`:
+   - Padrão de campos por template: `subject`, `preheader`, `heroTitle`, `greeting`, `intro`, blocos específicos (`detailsTitle`, `noteBox`, etc), `ctaLabel`, `ctaUrl`, `primaryColor`, `logoUrl`.
+   - Variáveis disponíveis por template extraídas direto da assinatura das funções em `emailTemplates.ts`.
+   - PT inicial = tradução das strings hardcoded; EN = strings atuais.
+2. **Render genérico** — criar `src/lib/email/genericRender.ts` parametrizado por `template_key`, evitando 18 arquivos `xRender.ts`. Layout único (mesmo wrapper do welcome, com header de logo da Etapa A) + lista de seções configuráveis (parágrafos, "details card", CTA). Cada template aponta para seu conjunto de seções via metadata na definition (campo novo `layout_sections: jsonb`).
+3. **Resolver** — ampliar `SUPPORTED` em `templateOverrideResolver.ts` para incluir todos os 19, roteando para `genericRender` (welcome continua no seu render dedicado por enquanto, ou migra também).
+4. **UI** — o `EmailTemplateEditor.tsx` já é genérico (lê `editable_fields`), então só remover o gate `if (templateKey === "welcome")` do botão "Editar email" em `NotificationsDocument.tsx`.
+5. **Fallback** — se algum template não tiver override ativo, continua usando o código de `emailTemplates.ts` (que já foi atualizado na Etapa A para o novo logo).
 
-```text
-email_template_definitions    (read-only — fonte de verdade dos campos editáveis por template)
-  id, template_key, name, description, category,
-  editable_fields jsonb,  -- schema: [{key,label,type:'text|textarea|color|image|cta',default_pt,default_en}]
-  variables jsonb,        -- [{key,label,sample_pt,sample_en}]
-  created_at
+## Etapa C — Fase 3: teste + upload de logo + locale
 
-email_template_versions       (histórico append-only)
-  id, template_key, locale ('pt'|'en'),
-  values jsonb,           -- { subject, preheader, title, body1, ctaLabel, primaryColor, logoUrl, ... }
-  version_number, created_by, created_at, notes
+1. **Botão "Enviar teste"** no `EmailTemplateEditor`:
+   - Campo de email (default: email do admin logado).
+   - Renderiza o template **com os valores do editor não salvos** + dados de exemplo das variáveis.
+   - Chama uma nova edge function `send-template-test` (service role) que enfileira em `email_queue` com `subject` prefixado `[TEST] ` e o HTML renderizado.
+2. **Upload de logo por template**:
+   - Criar bucket `email-assets` público (migration + policy `Public read`).
+   - Componente `TemplateLogoUploader` que faz upload pra `email-assets/templates/{template_key}/{uuid}.png`, salva URL pública no campo `logoUrl`.
+   - Processar via `processLogo()` existente (transparência + crop + padding) antes do upload.
+3. **Locale por destinatário**:
+   - Adicionar coluna `preferred_locale` em `users` (`pt` | `en`, default `en`).
+   - `emailSender.queueOne` lê locale do destinatário via lookup em `users` por `recipientEmail` (com fallback para `en`).
+   - Atualizar `tryRenderWithOverrides` para receber locale dinâmico (já aceita o parâmetro, só faltava o lookup).
+   - UI de preferência no `NotificationPreferences.tsx` (toggle PT/EN).
 
-email_template_active         (ponteiro versão ativa por template+locale)
-  template_key, locale, version_id, updated_by, updated_at
-  PRIMARY KEY (template_key, locale)
-```
-
-Todas com GRANTs + RLS: leitura para `authenticated`, escrita só para admins (`has_role(auth.uid(),'admin')`). Bucket `email-assets` (público) para logos/banners.
-
-### Render
-
-`src/lib/emailTemplates.ts` permanece como **fallback de fábrica** (defaults). Novo módulo `src/lib/email/renderTemplate.ts`:
-
-1. Busca versão ativa do banco (`email_template_active` → `email_template_versions`).
-2. Se existir, monta HTML usando o **layout fixo** do template + valores editados (mesma estrutura visual de hoje, só substituindo strings/cores).
-3. Se não existir, cai no template fixo atual.
-4. Interpola `{{variaveis}}` via `templateEngine.renderTemplate` já existente.
-
-Cache em memória (TTL 60s) para evitar hit no banco a cada envio. Invalidação por evento Realtime quando admin salva.
-
-Edge function `send-email` recebe a mesma chamada de hoje; só muda a fonte do HTML.
-
-### UI Admin
-
-Novos arquivos:
+## Detalhes técnicos
 
 ```text
-src/pages/admin/EmailTemplateEditor.tsx           (tela de edição)
-src/components/admin/email/TemplateFieldEditor.tsx (campos por tipo)
-src/components/admin/email/TemplateVariablePanel.tsx
-src/components/admin/email/TemplateVersionHistory.tsx
-src/components/admin/email/TemplatePreviewFrame.tsx
-src/hooks/useEmailTemplateDefinition.ts
-src/hooks/useEmailTemplateVersions.ts
-src/hooks/useSaveEmailTemplate.ts
+Header novo (todos os templates):
+┌────────────────────────────────────────────┐
+│   [Logo Mundus Trade PNG transparente]     │   <- height 32px, padding 20px 32px
+├────────────────────────────────────────────┤
+│   [Hero gradient + heroTitle]              │
+└────────────────────────────────────────────┘
 ```
 
-Card atual em `NotificationsDocument.tsx` ganha botão "Editar" que navega para `/admin/emails/:templateKey`. Rota adicionada em `App.tsx` (admin-only).
+Arquivos principais tocados:
+- **Etapa A**: `src/lib/email/brandAssets.ts` (novo), `src/lib/emailTemplates.ts`, `src/lib/email/welcomeRender.ts`, migration para atualizar default de `logoUrl` em `email_template_definitions`.
+- **Etapa B**: migration popula 18 definitions + adiciona coluna `layout_sections`; novo `src/lib/email/genericRender.ts`; ajuste no resolver e no `NotificationsDocument.tsx`.
+- **Etapa C**: nova edge function `send-template-test`; migration cria bucket `email-assets` + coluna `users.preferred_locale`; novo componente `TemplateLogoUploader.tsx`; ajustes em `emailSender.ts`, `templateOverrideResolver.ts`, `NotificationPreferences.tsx`.
 
-### Seeds
+## Ordem de entrega sugerida
 
-Migration popula `email_template_definitions` com os 19 templates de `notificationsCatalog.ts` + extração automática dos campos editáveis (subject, títulos, parágrafos, cor primária `#9B2251`, logo padrão). Defaults PT e EN — para os 5 templates que hoje só existem em EN, vou gerar tradução PT inicial baseada no conteúdo atual.
+1. Etapa A (rápida, melhora visual imediato em tudo) — entrego e você valida.
+2. Etapa B em sequência (volume, mas mecânico).
+3. Etapa C por último (toca infra: bucket + edge function + schema de users).
 
-## Fora deste escopo
+## Fora de escopo
 
-- Editor WYSIWYG de HTML livre (recusado na pergunta).
-- Edição de estrutura de layout (colunas, seções) — só textos/cores/imagens.
-- A/B test, agendamento, segmentação.
-- Edição dos templates de **auth** do Supabase (signup confirm, magic link) — esses ficam num segundo momento via `scaffold_auth_email_templates`.
-
-## Entrega faseada (sugestão)
-
-1. **Fase 1** (este passo): migrations + 1 template piloto end-to-end (`welcome`) com editor, preview, save, versionamento, revert e envio de teste.
-2. **Fase 2**: aplicar o mesmo para os outros 18 templates (mecânico, mesmo editor).
-3. **Fase 3**: traduções PT pendentes + page "Enviar broadcast de teste para QA".
-
-Confirma esse plano? Se sim, começo pela Fase 1 (piloto com `welcome`) para você validar a experiência antes de eu propagar para todos.
+- Editor WYSIWYG de layout livre.
+- A/B testing, agendamento.
+- Templates de auth (Supabase) — fluxo separado.
