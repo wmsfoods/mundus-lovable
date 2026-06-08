@@ -34,6 +34,7 @@ import {
   getIncotermBannerLabel,
 } from "@/lib/incotermPricing";
 import { PriceHistoryTable, type PriceHistoryProduct } from "@/components/negotiation/PriceHistoryTable";
+import { auditLog } from "@/lib/auditLog";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
