@@ -2,8 +2,7 @@
  * Auto negotiation engine V3 — first-principles math, zero magic constants.
  *
  * Faratin's time-dependent concession curve family with canonical β values
- * for the three negotiation styles, plus a tit-for-tat hint that rewards
- * buyer movement via an
+ * for the three negotiation styles, plus an
  * additive tit-for-tat nudge bounded by one mean concession step (m/T).
  *
  * Constants are DERIVED, not chosen:
