@@ -657,63 +657,29 @@ export function CounterOfferModal({
             base > 0 ? (((final - base) / base) * 100).toFixed(1) : "0.0";
 
           if (allLockedNow) {
+            // Deal is in pending_confirmation now — the counterparty must confirm.
+            // Notify the counterparty (the side that did NOT accept) with
+            // dealAwaitingConfirmation. The dealClosed email goes out later in
+            // confirmNegotiation() once the counterparty confirms.
             const settledValue = mergedAgreed.reduce((s, a) => {
               const it = items.find((x) => x.id === a.offer_item_id);
               return s + a.price_per_kg * Number(it?.amount ?? 0);
             }, 0);
-            const totalQty = items.reduce((s, it) => s + Number(it.amount || 0), 0);
-            const askingAvg =
-              totalQty > 0 ? askingTotal / totalQty : Number(items[0]?.price ?? 0);
-            const finalAvg = totalQty > 0 ? settledValue / totalQty : askingAvg;
-            const movementPct =
-              askingAvg > 0
-                ? (((finalAvg - askingAvg) / askingAvg) * 100).toFixed(1)
-                : "0.0";
-            // Per-cut breakdown for the dealClosed email.
-            const dealCuts = items.map((it) => {
-              const agreed = mergedAgreed.find((a) => a.offer_item_id === it.id);
-              const asking = Number(it.price);
-              const final = agreed ? Number(agreed.price_per_kg) : asking;
-              return {
-                name: it.customer_product?.name ?? "—",
-                qty: fmtKg(Number(it.amount)),
-                askingPerKg: fmtPerKg(asking),
-                finalPerKg: fmtPerKg(final),
-                movementPct: movementVs(final, asking),
-              };
-            });
-            const baseVars: any = {
-              cutName: offerTitle,
-              offerNumber,
-              quantity: fmt(totalQty),
-              rounds: displayRound,
-              askingPrice: askingAvg.toFixed(2),
-              finalPrice: finalAvg.toFixed(2),
-              movementPct,
-              totalValue: fmt(settledValue),
-              incoterm: negIncoterm,
-              origin: "",
-              originFlag: "",
-              destination: negotiation.port?.country?.english_name ?? "",
-              destFlag: "",
-              shipment: "",
-              supplierCompany,
-              buyerCompany,
-              advancePct: "30",
-              advanceAmount: fmt(settledValue * 0.3),
-              supplierCompanyId,
-              cuts: dealCuts,
-            };
-            if (supplierContact?.email) {
-              await sendEmailNotification("dealClosed" as any, supplierContact.email, {
-                ...baseVars,
-                name: supplierContact.name || supplierCompany,
-              });
-            }
-            if (buyerContact?.email) {
-              await sendEmailNotification("dealClosed" as any, buyerContact.email, {
-                ...baseVars,
-                name: buyerContact.name || buyerCompany,
+            const counterpartyIsSupplier = perspective === "buyer";
+            const counterpartyContact = counterpartyIsSupplier ? supplierContact : buyerContact;
+            const counterpartyCompanyName = counterpartyIsSupplier ? supplierCompany : buyerCompany;
+            const acceptingCompanyName = counterpartyIsSupplier ? buyerCompany : supplierCompany;
+            const negotiationUrl = `https://app.mundustrade.us/${counterpartyIsSupplier ? "supplier" : "buyer"}/negotiations/${negotiation.id}`;
+            if (counterpartyContact?.email) {
+              await sendEmailNotification("dealAwaitingConfirmation" as any, counterpartyContact.email, {
+                name: counterpartyContact.name || counterpartyCompanyName,
+                cutName: offerTitle,
+                offerNumber,
+                totalValue: fmt(settledValue),
+                acceptedBy: perspective,
+                counterpartyCompany: acceptingCompanyName,
+                negotiationUrl,
+                supplierCompanyId,
               });
             }
             return;
