@@ -15,6 +15,9 @@ import {
   type EditableField,
 } from "@/hooks/useEmailTemplateEditor";
 import { renderWelcomeFromOverrides } from "@/lib/email/welcomeRender";
+import { emailTemplates, type EmailTemplateName, type TemplateLayoutOverrides } from "@/lib/emailTemplates";
+import { renderTemplate } from "@/lib/email/templateEngine";
+import { supabase } from "@/integrations/supabase/client";
 
 function renderPreview(templateKey: string, values: Record<string, string>, samples: Record<string, string>) {
   if (templateKey === "welcome") {
@@ -27,7 +30,30 @@ function renderPreview(templateKey: string, values: Record<string, string>, samp
       countryFlag: samples.countryFlag || "🇧🇷",
     }).html;
   }
-  return `<p style="padding:32px;font-family:Arial">Preview ainda não implementado para "${templateKey}".</p>`;
+  const fn = (emailTemplates as any)[templateKey] as ((v: any, o?: TemplateLayoutOverrides) => string) | undefined;
+  if (!fn) return `<p style="padding:32px;font-family:Arial">Template "${templateKey}" não encontrado.</p>`;
+  const interp = (s?: string) => (s ? renderTemplate(s, samples) : undefined);
+  const overrides: TemplateLayoutOverrides = {
+    heroTitle: interp(values.heroTitle),
+    preheader: interp(values.preheader),
+    ctaLabel: interp(values.ctaLabel),
+    ctaUrl: interp(values.ctaUrl),
+    primaryColor: values.primaryColor || undefined,
+    logoUrl: values.logoUrl || undefined,
+  };
+  // Build a vars object with sample values + a few common numeric coercions.
+  const vars: Record<string, any> = { ...samples };
+  ["round", "maxRounds", "rounds", "hours", "statusStep", "activeOffers", "newBids", "activeNegos", "dealsClosed"].forEach((k) => {
+    if (k in vars) vars[k] = Number(vars[k]) || 1;
+  });
+  if ("isLastRound" in vars) vars.isLastRound = false;
+  if ("acceptedBy" in vars) vars.acceptedBy = vars.acceptedBy || "buyer";
+  if ("topOffers" in vars) vars.topOffers = [];
+  try {
+    return fn(vars, overrides);
+  } catch (e: any) {
+    return `<p style="padding:32px;font-family:Arial;color:#DC2626">Erro ao renderizar preview: ${e.message}</p>`;
+  }
 }
 
 export default function EmailTemplateEditor() {
@@ -97,6 +123,32 @@ export default function EmailTemplateEditor() {
     toast.success("Versão ativa atualizada.");
     refresh();
     setShowHistory(false);
+  };
+
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
+  const handleSendTest = async () => {
+    const to = testEmail.trim();
+    if (!to) { toast.error("Informe um email de destino"); return; }
+    setSendingTest(true);
+    try {
+      const subject = `[TEST] ${renderTemplate(values.subject || definition.name_en, samples)}`;
+      const html = previewHtml;
+      const { data: newId, error } = await (supabase as any).rpc("enqueue_email", {
+        p_to_email: to,
+        p_subject: subject,
+        p_html_body: html,
+        p_template_name: `${definition.template_key}__test`,
+        p_template_vars: { _test: true, locale, values },
+      });
+      if (error) throw error;
+      if (newId) await supabase.functions.invoke("send-email", { body: { email_id: newId } });
+      toast.success(`Teste enviado para ${to}`);
+    } catch (e: any) {
+      toast.error("Falha ao enviar teste: " + (e?.message || e));
+    } finally {
+      setSendingTest(false);
+    }
   };
 
   const name = locale === "pt" ? definition.name_pt : definition.name_en;
