@@ -34,6 +34,7 @@ import {
   getIncotermBannerLabel,
 } from "@/lib/incotermPricing";
 import { PriceHistoryTable, type PriceHistoryProduct } from "@/components/negotiation/PriceHistoryTable";
+import { auditLog } from "@/lib/auditLog";
 
 type Anchor = "self" | "other";
 type DeltaUnit = "amount" | "percent";
@@ -529,42 +530,53 @@ export function CounterOfferModal({
       }
 
       const mergedAgreed = [...existingAgreed, ...newlyAgreed];
-      const update: Record<string, unknown> = {
-        agreed_items: mergedAgreed,
-        updated_at: new Date().toISOString(),
-      };
-      // Buyer may adjust container quantity within remaining availability.
-      if (perspective === "buyer" && fclCount !== currentFcl) {
-        update.fcl_count = fclCount;
-      }
-      const trimmed = message.trim();
-      if (perspective === "buyer") {
-        update.buyer_message = trimmed ? trimmed : null;
-      } else {
-        update.supplier_message = trimmed ? trimmed : null;
-      }
       if (allLockedNow) {
-        // All items locked — deal closed
-        const settled =
-          mergedAgreed.reduce((s, a) => {
-            const it = items.find((x) => x.id === a.offer_item_id);
-            return s + a.price_per_kg * Number(it?.amount ?? 0);
-          }, 0);
-        update.status = "bid_accepted";
-        update.settled_total_value = settled;
-        update.expires_at = null;
+        // All items locked — route through accept_negotiation RPC so
+        // accepted_by + status='pending_confirmation' are set, which
+        // triggers downstream order creation after counterparty confirms.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: acceptErr } = await (supabase as any).rpc("accept_negotiation", {
+          p_negotiation_id: negotiation.id,
+          p_user_id: userId,
+          p_accepted_by: perspective,
+        });
+        if (acceptErr) throw acceptErr;
+        auditLog({
+          action: "negotiation.accepted_pending_confirmation",
+          category: "negotiation",
+          entityType: "negotiation",
+          entityId: negotiation.id as string,
+          details: {
+            acceptedBy: perspective,
+            source: "counter_offer_modal_accept_all",
+          },
+        });
       } else {
+        const update: Record<string, unknown> = {
+          agreed_items: mergedAgreed,
+          updated_at: new Date().toISOString(),
+        };
+        // Buyer may adjust container quantity within remaining availability.
+        if (perspective === "buyer" && fclCount !== currentFcl) {
+          update.fcl_count = fclCount;
+        }
+        const trimmed = message.trim();
+        if (perspective === "buyer") {
+          update.buyer_message = trimmed ? trimmed : null;
+        } else {
+          update.supplier_message = trimmed ? trimmed : null;
+        }
         update.status = perspective === "supplier" ? "pending_buyer_review" : "awaiting_supplier";
         update.expires_at = nextExpirationIso();
         update.current_round = displayRound;
         if (displayRound >= 3) update.chat_enabled = true;
+        const { error: nErr } = await supabase
+          .from("negotiations")
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          .update(update as any)
+          .eq("id", negotiation.id);
+        if (nErr) throw nErr;
       }
-      const { error: nErr } = await supabase
-        .from("negotiations")
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        .update(update as any)
-        .eq("id", negotiation.id);
-      if (nErr) throw nErr;
 
       // AUTO NEGOTIATION: when buyer submits a follow-up bid on an auto-mode
       // offer, immediately invoke the engine to generate the supplier counter.
