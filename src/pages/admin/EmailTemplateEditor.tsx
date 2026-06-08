@@ -273,9 +273,23 @@ export default function EmailTemplateEditor() {
                   <div style={{ fontSize: 11, color: "#9CA3AF", fontStyle: "italic", marginTop: 1 }}>ex: {v.sample}</div>
                 </button>
               ))}
-              <div style={{ marginTop: 16, padding: 10, background: "#FEF3C7", border: "1px solid #FCD34D", borderRadius: 6, fontSize: 11, color: "#92400E" }}>
-                <SendHorizonal className="inline w-3 h-3 mr-1" />
-                Envio de teste será habilitado na próxima fase.
+              <div style={{ marginTop: 16, padding: 10, background: "#F0FDF4", border: "1px solid #86EFAC", borderRadius: 6 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: "#065F46", marginBottom: 6 }}>
+                  <SendHorizonal className="inline w-3 h-3 mr-1" /> ENVIAR TESTE
+                </div>
+                <Input
+                  type="email"
+                  placeholder="email@destino.com"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  style={{ marginBottom: 6, fontSize: 12 }}
+                />
+                <Button size="sm" onClick={handleSendTest} disabled={sendingTest} style={{ width: "100%" }}>
+                  {sendingTest ? "Enviando…" : "Enviar para este email"}
+                </Button>
+                <div style={{ fontSize: 10, color: "#065F46", marginTop: 6, lineHeight: 1.4 }}>
+                  Usa os valores atuais do editor (sem precisar salvar).
+                </div>
               </div>
             </>
           )}
