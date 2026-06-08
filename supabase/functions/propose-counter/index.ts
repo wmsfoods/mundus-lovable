@@ -1,5 +1,5 @@
 import { createClient, SupabaseClient } from 'npm:@supabase/supabase-js@2';
-import { autoCounter, type Dial } from '../_shared/negotiation/autoEngineV2.ts';
+import { autoCounter, type Dial } from '../_shared/negotiation/autoEngineV3.ts';
 
 interface ProposalItem { offer_item_id: string; price_per_kg: number; quantity_kg: number; }
 interface RequestBody { negotiation_id: string; items: ProposalItem[]; }
