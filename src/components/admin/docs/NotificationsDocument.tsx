@@ -8,8 +8,8 @@ import {
   type NotificationEntry,
 } from "@/data/notificationsCatalog";
 
-// Templates that already have an editor wired up (Phase 1 pilot).
-const EDITABLE_TEMPLATES = new Set<string>(["welcome"]);
+// Templates with no DB-backed editor (custom inline or special-purpose).
+const NON_EDITABLE = new Set<string>(["buildViaMundusEmail", "(custom inline)"]);
 
 type SubTab = "overview" | "catalog" | "coverage" | "gaps";
 
@@ -71,7 +71,7 @@ function EntryCard({ n }: { n: NotificationEntry }) {
           ))}
           </div>
           {n.emailTemplate && (
-            EDITABLE_TEMPLATES.has(n.emailTemplate) ? (
+            !NON_EDITABLE.has(n.emailTemplate) ? (
               <Link
                 to={`/admin/emails/${n.emailTemplate}`}
                 style={{
