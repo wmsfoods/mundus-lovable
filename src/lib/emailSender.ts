@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { emailTemplates, emailSubjects, type EmailTemplateName } from "./emailTemplates";
-import { tryRenderWithOverrides } from "./email/templateOverrideResolver";
+import { tryResolveOverrides } from "./email/templateOverrideResolver";
 
 const MUNDUS_ADMIN_EMAIL = "fn@mundustrade.com";
 const NEGOTIATION_TEMPLATES: EmailTemplateName[] = [
@@ -18,13 +18,19 @@ async function queueOne(
   vars: any,
   subjectPrefix = "",
 ) {
-  // Try admin-edited overrides first (defaults to EN; locale switch comes later).
-  const override = await tryRenderWithOverrides(templateName as string, vars, "en");
+  // Look up the recipient's preferred locale (defaults to EN).
+  const locale = await resolveRecipientLocale(to);
+  const override = await tryResolveOverrides(templateName as string, vars, locale);
   let html: string;
   let subject: string;
-  if (override) {
-    html = override.html;
-    subject = (subjectPrefix || "") + override.subject;
+  if (override?.rendered) {
+    html = override.rendered.html;
+    subject = (subjectPrefix || "") + override.rendered.subject;
+  } else if (override?.layout) {
+    const templateFn = emailTemplates[templateName] as (v: any, o?: any) => string;
+    html = templateFn(vars, override.layout);
+    const subjectFn = emailSubjects[templateName];
+    subject = (subjectPrefix || "") + (override.subjectOverride || (subjectFn ? subjectFn(vars) : "Mundus Trade Notification"));
   } else {
     const templateFn = emailTemplates[templateName] as (v: any) => string;
     html = templateFn(vars);
