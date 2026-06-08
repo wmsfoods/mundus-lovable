@@ -2,6 +2,7 @@
 // All templates produce standalone, table-based, inline-CSS HTML that
 // renders consistently across major email clients (Gmail, Outlook, Apple
 // Mail, Yahoo). Responsive at 600px via @media queries.
+import { EMAIL_LOGO_FULL_URL } from "./email/brandAssets";
 
 function masterLayout(options: {
   heroTitle: string;
@@ -54,15 +55,7 @@ function masterLayout(options: {
         <table role="presentation" cellpadding="0" cellspacing="0" width="600" class="email-container email-card" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
           <tr>
             <td style="padding:20px 32px;border-bottom:1px solid #F3F4F6;">
-              <table role="presentation" cellpadding="0" cellspacing="0" width="100%">
-                <tr>
-                  <td>
-                    <img src="https://app.mundustrade.us/favicon.png" alt="Mundus Trade" width="36" height="36" style="display:inline-block;vertical-align:middle;border:0;">
-                    <span style="font-family:Arial,Helvetica,sans-serif;font-size:18px;font-weight:700;color:#8B2252;vertical-align:middle;margin-left:8px;">Mundus</span>
-                    <span style="font-family:Arial,Helvetica,sans-serif;font-size:10px;font-weight:600;color:#A74764;vertical-align:middle;letter-spacing:2px;margin-left:2px;">TRADE</span>
-                  </td>
-                </tr>
-              </table>
+              <img src="${EMAIL_LOGO_FULL_URL}" alt="Mundus Trade" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
             </td>
           </tr>
           <tr>
