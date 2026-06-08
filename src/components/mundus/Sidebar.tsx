@@ -40,6 +40,7 @@ type SidebarProps = {
   rolePill?: string;
   userName?: string;
   userSubtitle?: string;
+  userAvatarUrl?: string | null;
   mobileOpen?: boolean;
   onClose?: () => void;
   onProBadgeClick?: (item: SidebarItem) => void;
@@ -150,6 +151,7 @@ export function Sidebar({
   rolePill,
   userName,
   userSubtitle,
+  userAvatarUrl,
   mobileOpen = false,
   onClose,
   onProBadgeClick,
@@ -227,7 +229,17 @@ export function Sidebar({
         </nav>
         {userName && (
           <div className="sb-user">
-            <span className="sb-user-av">{initials}</span>
+            {userAvatarUrl ? (
+              <img
+                src={userAvatarUrl}
+                alt={userName}
+                className="sb-user-av sb-user-av-img"
+                draggable={false}
+                onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+              />
+            ) : (
+              <span className="sb-user-av">{initials}</span>
+            )}
             <div className="sb-user-meta">
               <span className="sb-user-name">{userName}</span>
               {userSubtitle && <span className="sb-user-sub">{userSubtitle}</span>}
