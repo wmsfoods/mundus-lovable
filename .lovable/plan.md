@@ -1,108 +1,90 @@
-## Objetivo
 
-Fazer um levantamento **end-to-end** de todas as notificações do sistema (email, sino in-app no canto superior direito, push mobile), entregar o resultado em PDF + HTML navegável, e criar uma página no Admin Docs onde você possa consultar e (futuramente) editar tudo num só lugar.
+# Editor de Emails no Admin
 
----
+Transformar os 19 templates de `src/lib/emailTemplates.ts` (hoje fixos em código) em templates editáveis pelo painel Admin, mantendo o layout/HTML estável e expondo apenas os campos seguros: textos, assunto, cores, logo, CTA. Idiomas PT e EN editáveis separados. Histórico de versões com revert.
 
-## O que já mapeei no código
+## O que muda para o usuário
 
-**3 canais ativos:**
+- **Admin → Docs → 🔔 Emails & Notifications → Catálogo**: cada card de template ganha botão **"Editar"**.
+- Tela de edição abre com:
+  - Abas **PT / EN**.
+  - Campos de texto: assunto, preheader, título, parágrafos, label do CTA.
+  - Campos visuais: cor primária, cor do botão, logo (upload).
+  - Painel lateral com **variáveis disponíveis** (`{{buyerName}}`, `{{offerNumber}}`, etc.) — clique insere no campo focado.
+  - **Preview ao vivo** (iframe) usando dados de exemplo.
+- Botões: **Salvar nova versão**, **Reverter para…** (dropdown com histórico), **Restaurar padrão de fábrica**.
+- Botão **"Enviar teste"** para o email do admin logado.
+
+## Arquitetura
+
+### Banco (Lovable Cloud)
+
+Três tabelas novas:
 
 ```text
-┌─────────────────────────────────────────────────────────────┐
-│  EVENTO (bid, signup, deal, etc.)                           │
-│        │                                                    │
-│        ├──► EMAIL (HTML)  via edge fn send-email            │
-│        │       templates em src/lib/emailTemplates.ts       │
-│        │                                                    │
-│        ├──► IN-APP (sino) via RPC enqueue_app_notifications │
-│        │       tabela app_notifications + realtime          │
-│        │       hook useAppNotifications + NotificationBell  │
-│        │                                                    │
-│        └──► PUSH (FCM/APNs) via trigger AFTER INSERT        │
-│                em app_notifications → send-push edge fn     │
-└─────────────────────────────────────────────────────────────┘
+email_template_definitions    (read-only — fonte de verdade dos campos editáveis por template)
+  id, template_key, name, description, category,
+  editable_fields jsonb,  -- schema: [{key,label,type:'text|textarea|color|image|cta',default_pt,default_en}]
+  variables jsonb,        -- [{key,label,sample_pt,sample_en}]
+  created_at
+
+email_template_versions       (histórico append-only)
+  id, template_key, locale ('pt'|'en'),
+  values jsonb,           -- { subject, preheader, title, body1, ctaLabel, primaryColor, logoUrl, ... }
+  version_number, created_by, created_at, notes
+
+email_template_active         (ponteiro versão ativa por template+locale)
+  template_key, locale, version_id, updated_by, updated_at
+  PRIMARY KEY (template_key, locale)
 ```
 
-**Templates de email já existentes (19):** welcome, passwordReset, newOffer, newRequest, bidReceived, counterReceived, dealClosed, dealAwaitingConfirmation, negotiationRejected, orderStatusUpdate, staleNudge, offerShared, customerInvitation, weeklyDigest, publicLeadCaptured, scl_invite_existing, scl_invite_signup, scl_direct_offer, scl_all_customers_offer — mais o `buildViaMundusEmail` (mensagens via Mundus).
+Todas com GRANTs + RLS: leitura para `authenticated`, escrita só para admins (`has_role(auth.uid(),'admin')`). Bucket `email-assets` (público) para logos/banners.
 
-**Edge functions que disparam notificações:** signup-notifications, negotiation-notifications, nudge-stale-negotiations, shipping-instructions-notify-approved, shipping-instructions-send-link, send-via-mundus, public-lead-notify, send-team-invite, accept-team-invite, admin-create-team-member, delete-team-member, send-password-reset, stripe-webhook, resend-webhook.
+### Render
 
-**Call sites frontend:** BidModal, CounterOfferModal, CounterOfferActions, RejectNegotiationModal, closeDeal, useInviteBuyer.
+`src/lib/emailTemplates.ts` permanece como **fallback de fábrica** (defaults). Novo módulo `src/lib/email/renderTemplate.ts`:
 
----
+1. Busca versão ativa do banco (`email_template_active` → `email_template_versions`).
+2. Se existir, monta HTML usando o **layout fixo** do template + valores editados (mesma estrutura visual de hoje, só substituindo strings/cores).
+3. Se não existir, cai no template fixo atual.
+4. Interpola `{{variaveis}}` via `templateEngine.renderTemplate` já existente.
 
-## Entregáveis
+Cache em memória (TTL 60s) para evitar hit no banco a cada envio. Invalidação por evento Realtime quando admin salva.
 
-### 1. Catálogo mestre (PDF + HTML)
+Edge function `send-email` recebe a mesma chamada de hoje; só muda a fonte do HTML.
 
-Para cada notificação, uma ficha contendo:
+### UI Admin
 
-- **ID / nome interno** (ex: `bidReceived`)
-- **Evento gatilho** (ex: "Comprador envia bid inicial em uma oferta")
-- **Onde é disparada** (arquivo + função)
-- **Canais usados** (Email ✓ / Sino ✓ / Push ✓ — quais dos três)
-- **Destinatário(s)** (papel + como é resolvido — ex: contato primário do supplier)
-- **Assunto do email** + **preheader**
-- **Título e body do sino**
-- **Título e body do push**
-- **CTA / link de destino**
-- **Variáveis dinâmicas** usadas
-- **Preview renderizado do email** (HTML real, mesmo template usado em produção)
+Novos arquivos:
 
-Saída:
+```text
+src/pages/admin/EmailTemplateEditor.tsx           (tela de edição)
+src/components/admin/email/TemplateFieldEditor.tsx (campos por tipo)
+src/components/admin/email/TemplateVariablePanel.tsx
+src/components/admin/email/TemplateVersionHistory.tsx
+src/components/admin/email/TemplatePreviewFrame.tsx
+src/hooks/useEmailTemplateDefinition.ts
+src/hooks/useEmailTemplateVersions.ts
+src/hooks/useSaveEmailTemplate.ts
+```
 
-- `notifications-catalog.pdf` — versão imprimível, uma ficha por página
-- `notifications-catalog.html` — versão navegável com índice lateral e previews ao vivo dos emails (iframe sandbox)
-- `email-previews/` — pasta com 1 `.html` por template, abrível direto no browser
+Card atual em `NotificationsDocument.tsx` ganha botão "Editar" que navega para `/admin/emails/:templateKey`. Rota adicionada em `App.tsx` (admin-only).
 
-Tudo gravado em `/mnt/documents/` (download direto pelo chat).
+### Seeds
 
-### 2. Página Admin → Docs → Emails & Notifications
+Migration popula `email_template_definitions` com os 19 templates de `notificationsCatalog.ts` + extração automática dos campos editáveis (subject, títulos, parágrafos, cor primária `#9B2251`, logo padrão). Defaults PT e EN — para os 5 templates que hoje só existem em EN, vou gerar tradução PT inicial baseada no conteúdo atual.
 
-Nova rota dentro do painel admin de docs existente:
+## Fora deste escopo
 
-- **Aba "Visão geral"** — diagrama dos 3 canais + tabela de cobertura (matriz: evento × canal)
-- **Aba "Catálogo"** — mesma ficha do PDF, navegável, com preview do email renderizado num iframe
-- **Aba "Cobertura"** — lista de eventos sem todos os canais (gaps de notificação)
-- **Aba "Templates"** — lista os 19 templates, copy do assunto/preheader/body, link "Abrir preview"
+- Editor WYSIWYG de HTML livre (recusado na pergunta).
+- Edição de estrutura de layout (colunas, seções) — só textos/cores/imagens.
+- A/B test, agendamento, segmentação.
+- Edição dos templates de **auth** do Supabase (signup confirm, magic link) — esses ficam num segundo momento via `scaffold_auth_email_templates`.
 
-Esta primeira versão é **read-only/documentação**. Edição inline dos templates fica para uma fase 2 (precisa decidir se queremos editor visual, MJML, ou só edição de variáveis — confirmaremos depois).
+## Entrega faseada (sugestão)
 
-### 3. Relatório de gaps e inconsistências
+1. **Fase 1** (este passo): migrations + 1 template piloto end-to-end (`welcome`) com editor, preview, save, versionamento, revert e envio de teste.
+2. **Fase 2**: aplicar o mesmo para os outros 18 templates (mecânico, mesmo editor).
+3. **Fase 3**: traduções PT pendentes + page "Enviar broadcast de teste para QA".
 
-Seção final do PDF apontando problemas que eu encontrar no levantamento, por exemplo:
-
-- Eventos que mandam email mas não criam notificação no sino
-- Eventos que criam sino mas não enviam email
-- Templates definidos mas nunca chamados (dead code)
-- Chamadas a templates inexistentes
-- Diferenças de tom/copy entre canais para o mesmo evento
-
----
-
-## Como vou executar (passos técnicos)
-
-1. **Coletar fontes da verdade** — varrer `src/lib/emailTemplates.ts`, todas as edge functions de notificação, e todos os call sites de `sendEmailNotification` / `createNotification` / `notifyCompanyUsers` / `insertAppNotification*`.
-2. **Montar um JSON estruturado** (`/tmp/notifications.json`) com uma entrada por evento × canal — esta é a fonte única usada pelo PDF, HTML e página Admin.
-3. **Renderizar previews** dos 19 templates com dados de exemplo realistas (gerar HTML via o próprio `emailTemplates.ts` rodando em Node).
-4. **Gerar PDF** via ReportLab/HTML→PDF a partir do mesmo JSON.
-5. **Gerar HTML catalog** estático com índice lateral.
-6. **Criar a página Admin** consumindo o mesmo JSON (committed em `src/data/notifications-catalog.ts`).
-
----
-
-## Fora de escopo nesta fase
-
-- Editor visual de templates de email (fase 2 — depende de decisão).
-- Reescrita/redesign dos templates de email (você disse que vai dar as instruções depois, com base no catálogo).
-- Sistema de preferências por usuário (já existe parcialmente em `notification_preferences`; não vou mexer agora).
-- Internacionalização dos copies.
-
----
-
-## Confirmações antes de começar
-
-1. **Idioma do catálogo:** PT-BR (mesma língua que você está usando), correto? INgles e portugues
-2. **PDF + HTML + página Admin** — quer os três, ou prefere começar só pelo PDF + HTML e a página Admin entra numa segunda rodada? Sim os 3
-3. **Edição inline dos templates** (fase 2) — só registrando, vou tratar separado depois. OK
+Confirma esse plano? Se sim, começo pela Fase 1 (piloto com `welcome`) para você validar a experiência antes de eu propagar para todos.
