@@ -46,6 +46,7 @@ export default function NegotiationHandlingControl({ mode, dial, onChange }: Pro
                 <TooltipTrigger asChild>
                   <button
                     type="button"
+                    tabIndex={-1}
                     aria-label={ta("aboutAria", "About negotiation handling")}
                     style={{ display: "inline-flex", padding: 0, border: 0, background: "transparent", color: "hsl(var(--muted-foreground))", cursor: "help" }}
                   >
