@@ -66,6 +66,8 @@ export default function EmailTemplateEditor() {
   const [showHistory, setShowHistory] = useState(false);
   const [saving, setSaving] = useState(false);
   const focusedFieldRef = useRef<string | null>(null);
+  const [testEmail, setTestEmail] = useState("");
+  const [sendingTest, setSendingTest] = useState(false);
 
   // Load active version (or defaults) when locale/definition changes
   useEffect(() => {
@@ -125,8 +127,6 @@ export default function EmailTemplateEditor() {
     setShowHistory(false);
   };
 
-  const [testEmail, setTestEmail] = useState("");
-  const [sendingTest, setSendingTest] = useState(false);
   const handleSendTest = async () => {
     const to = testEmail.trim();
     if (!to) { toast.error("Informe um email de destino"); return; }
