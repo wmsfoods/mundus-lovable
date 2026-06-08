@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { emailTemplates, emailSubjects, type EmailTemplateName } from "./emailTemplates";
+import { tryRenderWithOverrides } from "./email/templateOverrideResolver";
 
 const MUNDUS_ADMIN_EMAIL = "fn@mundustrade.com";
 const NEGOTIATION_TEMPLATES: EmailTemplateName[] = [
@@ -17,11 +18,19 @@ async function queueOne(
   vars: any,
   subjectPrefix = "",
 ) {
-  const templateFn = emailTemplates[templateName] as (v: any) => string;
-  const html = templateFn(vars);
-  const subjectFn = emailSubjects[templateName];
-  const subject = (subjectPrefix ? subjectPrefix : "") +
-    (subjectFn ? subjectFn(vars) : "Mundus Trade Notification");
+  // Try admin-edited overrides first (defaults to EN; locale switch comes later).
+  const override = await tryRenderWithOverrides(templateName as string, vars, "en");
+  let html: string;
+  let subject: string;
+  if (override) {
+    html = override.html;
+    subject = (subjectPrefix || "") + override.subject;
+  } else {
+    const templateFn = emailTemplates[templateName] as (v: any) => string;
+    html = templateFn(vars);
+    const subjectFn = emailSubjects[templateName];
+    subject = (subjectPrefix || "") + (subjectFn ? subjectFn(vars) : "Mundus Trade Notification");
+  }
   // Use SECURITY DEFINER RPC so non-admin authenticated users can both
   // insert into email_queue and read back the new id (the table's SELECT
   // policy is admin-only).
