@@ -140,6 +140,46 @@ function priceRow(label: string, value: string, color?: string): string {
     </tr>`;
 }
 
+function cutsTable(opts: {
+  title?: string;
+  columns: Array<{ label: string; align?: "left" | "right" }>;
+  rows: Array<Array<{ value: string; color?: string; bold?: boolean }>>;
+}): string {
+  const { title, columns, rows } = opts;
+  const titleHtml = title
+    ? `<p style="margin:20px 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">${title}</p>`
+    : "";
+  const headerCells = columns
+    .map(
+      (c) =>
+        `<th style="padding:10px 12px;text-align:${c.align || "left"};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #E5E7EB;background:#F9FAFB;">${c.label}</th>`,
+    )
+    .join("");
+  const bodyRows = rows
+    .map((row, idx) => {
+      const tds = row
+        .map((cell, i) => {
+          const align = columns[i]?.align || "left";
+          const isLastRow = idx === rows.length - 1;
+          const fontFamily =
+            align === "right"
+              ? "Consolas,'Courier New',monospace"
+              : "Arial,Helvetica,sans-serif";
+          return `<td style="padding:10px 12px;text-align:${align};font-family:${fontFamily};font-size:14px;color:${cell.color || "#1A1A2E"};${cell.bold ? "font-weight:700;" : ""}${isLastRow ? "" : "border-bottom:1px solid #F3F4F6;"}">${cell.value}</td>`;
+        })
+        .join("");
+      return `<tr>${tds}</tr>`;
+    })
+    .join("");
+  return `
+    ${titleHtml}
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 16px;background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:8px;border-collapse:separate;border-spacing:0;overflow:hidden;">
+      <thead><tr>${headerCells}</tr></thead>
+      <tbody>${bodyRows}</tbody>
+    </table>
+  `;
+}
+
 export const emailTemplates = {
   welcome: (vars: { name: string; company: string; email: string; role: string; country: string; countryFlag: string }) => masterLayout({
     heroTitle: "Welcome to Mundus Trade 🎉",
