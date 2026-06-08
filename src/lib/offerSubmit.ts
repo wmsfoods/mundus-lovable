@@ -778,18 +778,42 @@ export async function updateOfferV2(
         .eq("id", input.requestId)
         .maybeSingle();
       if (req?.buyer_company_id) {
+        const productLabel =
+          (req as { product_name?: string | null }).product_name || "your request";
+        const linkUrl = `/buyer/requests/${input.requestId}`;
         await notifyCompanyUsers({
           companyId: req.buyer_company_id as string,
           title: "Supplier responded to your request",
-          body: `${ctx.supplierName} submitted an offer for ${
-            (req as { product_name?: string | null }).product_name || "your request"
-          }`,
+          body: `${ctx.supplierName} submitted an offer for ${productLabel}`,
           icon: "package",
           category: "requests",
-          linkUrl: `/buyer/requests/${input.requestId}`,
+          linkUrl,
           relatedType: "request",
           relatedId: input.requestId,
         }).catch((e) => console.error("[updateOfferV2] notify buyer failed:", e));
+
+        sendPushToCompanyUsers(req.buyer_company_id as string, {
+          title: "Supplier responded to your request",
+          body: `${ctx.supplierName} submitted an offer for ${productLabel}`,
+          url: linkUrl,
+          category: "requests",
+        }).catch(() => {});
+
+        (async () => {
+          try {
+            const contact = await getCompanyPrimaryContact(req.buyer_company_id as string);
+            if (!contact?.email) return;
+            await sendEmailNotification("requestResponded" as never, contact.email, {
+              buyerName: contact.name || "there",
+              supplierCompany: ctx.supplierName,
+              productName: productLabel,
+              requestNumber: String(input.requestId).slice(0, 8),
+              requestUrl: `https://app.mundustrade.us${linkUrl}`,
+            } as never);
+          } catch (e) {
+            console.warn("[updateOfferV2] response email failed", e);
+          }
+        })();
       }
     } catch (e) {
       console.error("[updateOfferV2] post-publish request hook failed:", e);
