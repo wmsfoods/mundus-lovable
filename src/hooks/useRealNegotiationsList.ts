@@ -25,6 +25,9 @@ export const MOCK_SUPPLIER_ID = "0c543bae-647d-4f2e-980a-e35e70a94674";
 
 type Role = "buyer" | "supplier";
 
+const buyerNegotiationsCache = new Map<string, BuyerParentOffer[]>();
+const supplierNegotiationsCache = new Map<string, ParentOffer[]>();
+
 /** Fetch ALL negotiations for a role and group them by parent offer. */
 export function useRealNegotiationsList(role: Role) {
   const [buyerGroups, setBuyerGroups] = useState<BuyerParentOffer[]>([]);
@@ -56,6 +59,18 @@ export function useRealNegotiationsList(role: Role) {
     }
     if (!hasLoadedRef.current) setLoading(true);
     setError(null);
+    const cacheKey = role === "buyer"
+      ? `${company.id}:${buyerScopeIds.join(",")}`
+      : `${company.id}:${scopeKey}:${applyOfficeFilter ? activeOfficeId : "all"}`;
+    const cached = role === "buyer"
+      ? buyerNegotiationsCache.get(cacheKey)
+      : supplierNegotiationsCache.get(cacheKey);
+    if (cached) {
+      if (role === "buyer") setBuyerGroups(cached as BuyerParentOffer[]);
+      else setSupplierGroups(cached as ParentOffer[]);
+      hasLoadedRef.current = true;
+      setLoading(false);
+    }
     (async () => {
       let q = supabase
         .from("negotiations")
@@ -152,10 +167,12 @@ export function useRealNegotiationsList(role: Role) {
       if (role === "buyer") {
         const groups = groupForBuyer(rows);
         console.log("[NegList] buyer groups:", groups.length, "bids:", groups.reduce((s, g) => s + g.bids.length, 0));
+        buyerNegotiationsCache.set(cacheKey, groups);
         setBuyerGroups(groups);
       } else {
         const groups = groupForSupplier(rows);
         console.log("[NegList] supplier groups:", groups.length);
+        supplierNegotiationsCache.set(cacheKey, groups);
         setSupplierGroups(groups);
       }
       hasLoadedRef.current = true;

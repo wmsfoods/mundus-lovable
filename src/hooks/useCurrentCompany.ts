@@ -16,24 +16,31 @@ type State = {
   error: string | null;
 };
 
+let cachedUserId: string | null = null;
+let cachedState: State | null = null;
+
 export function useCurrentCompany(): State {
   const { user, loading: authLoading } = useAuth();
-  const [state, setState] = useState<State>({
-    company: null,
-    loading: true,
-    error: null,
-  });
   const userId = user?.id ?? null;
+  const [state, setState] = useState<State>(() => {
+    if (cachedState && cachedUserId === userId) return cachedState;
+    return { company: null, loading: true, error: null };
+  });
 
   useEffect(() => {
     if (authLoading) return;
     if (!userId) {
-      setState({ company: null, loading: false, error: null });
+      const next = { company: null, loading: false, error: null };
+      cachedUserId = null;
+      cachedState = next;
+      setState(next);
       return;
     }
 
     let cancelled = false;
-    setState((s) => ({ ...s, loading: true, error: null }));
+    const hasCached = cachedState && cachedUserId === userId && !cachedState.loading;
+    if (hasCached) setState(cachedState);
+    else setState((s) => ({ ...s, loading: true, error: null }));
 
     (async () => {
       let companyId: string | null = null;
@@ -76,7 +83,10 @@ export function useCurrentCompany(): State {
       }
 
       if (!companyId) {
-        setState({ company: null, loading: false, error: "no_company_linked" });
+        const next = { company: null, loading: false, error: "no_company_linked" };
+        cachedUserId = userId;
+        cachedState = next;
+        setState(next);
         return;
       }
 
@@ -88,11 +98,17 @@ export function useCurrentCompany(): State {
 
       if (cancelled) return;
       if (companyErr) {
-        setState({ company: null, loading: false, error: companyErr.message });
+        const next = { company: null, loading: false, error: companyErr.message };
+        cachedUserId = userId;
+        cachedState = next;
+        setState(next);
         return;
       }
       if (!companyRow) {
-        setState({ company: null, loading: false, error: "company_not_found" });
+        const next = { company: null, loading: false, error: "company_not_found" };
+        cachedUserId = userId;
+        cachedState = next;
+        setState(next);
         return;
       }
 
@@ -104,7 +120,7 @@ export function useCurrentCompany(): State {
           .then(() => {});
       }
 
-      setState({
+      const next = {
         company: {
           id: companyRow.id,
           name: companyRow.name,
@@ -114,7 +130,10 @@ export function useCurrentCompany(): State {
         },
         loading: false,
         error: null,
-      });
+      };
+      cachedUserId = userId;
+      cachedState = next;
+      setState(next);
     })();
 
     return () => {

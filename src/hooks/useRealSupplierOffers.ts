@@ -11,6 +11,7 @@ import { countryToCode } from "@/lib/countryCodes";
 const code = (n: string | null | undefined) => countryToCode(n);
 
 const MONTH = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const supplierOffersCache = new Map<string, SupplierOffer[]>();
 
 export function useRealSupplierOffers() {
   const [offers, setOffers] = useState<SupplierOffer[]>([]);
@@ -40,6 +41,13 @@ export function useRealSupplierOffers() {
       hasLoadedRef.current = true;
       setLoading(false);
       return;
+    }
+    const cacheKey = `${supplierId}:${scopeKey}`;
+    const cachedOffers = supplierOffersCache.get(cacheKey);
+    if (cachedOffers) {
+      setOffers(cachedOffers);
+      hasLoadedRef.current = true;
+      setLoading(false);
     }
     (async () => {
       if (!hasLoadedRef.current) setLoading(true);
@@ -149,6 +157,7 @@ export function useRealSupplierOffers() {
           hasFob,
         };
       });
+      supplierOffersCache.set(cacheKey, mapped);
       setOffers(mapped);
       hasLoadedRef.current = true;
       setLoading(false);
