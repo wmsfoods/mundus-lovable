@@ -40,6 +40,17 @@ function fmtUsd(n: number): string {
   return `$${new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 }).format(Math.round(n))}`;
 }
 
+function fmtUsd2(n: number): string {
+  return `$${new Intl.NumberFormat("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(Math.abs(n))}`;
+}
+
+function latestBidPerKg(p: PriceHistoryProduct): number | undefined {
+  return p.bidR4UsdKg ?? p.bidR3UsdKg ?? p.bidR2UsdKg ?? p.bidR1UsdKg;
+}
+function latestCounterPerKg(p: PriceHistoryProduct): number | undefined {
+  return p.counterR4UsdKg ?? p.counterR3UsdKg ?? p.counterR2UsdKg ?? p.counterR1UsdKg;
+}
+
 /** Last known $/kg for a product across all rounds (counter > bid). Falls back to asking. */
 function lastKnownPerKg(p: PriceHistoryProduct, maxRound: number): number {
   for (let r = maxRound; r >= 1; r--) {
@@ -125,6 +136,7 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                   </th>
                 );
               })}
+              <th aria-hidden />
             </tr>
             <tr>
               <th className="nd-sticky-col">{t("negotiation.history.col.product", "Product")}</th>
@@ -141,12 +153,22 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                   <th className="col-counter num">{t("negotiation.history.col.counter", "Counter")}</th>
                 </Fragment>
               ))}
+              <th className="num">{t("negotiation.history.col.gap", { defaultValue: "Gap" })}</th>
             </tr>
           </thead>
           <tbody>
             {products.map((p) => {
               const qtyKg = p.qtyLb / LB_PER_KG;
               const agreed = agreedByName?.get(p.name);
+              const lb = latestBidPerKg(p);
+              const lc = latestCounterPerKg(p);
+              const hasGap = lb != null && lc != null;
+              const gap = hasGap ? (lc! - lb!) : 0;
+              const gapAbs = Math.abs(gap);
+              let gapColor = "#6b7280";
+              let gapIcon = "—";
+              if (hasGap && gap > 0.001) { gapColor = "#dc2626"; gapIcon = "↘"; }
+              else if (hasGap && gap < -0.001) { gapColor = "#15803d"; gapIcon = "↗"; }
               return (
                 <tr key={p.name} className={agreed ? "is-agreed" : undefined}>
                   <td className="nd-sticky-col">
@@ -209,6 +231,15 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                       </Fragment>
                     );
                   })}
+                  <td className="num whitespace-nowrap" style={{ color: gapColor, fontWeight: 600 }}>
+                    {hasGap ? (
+                      gapAbs < 0.001
+                        ? <>— $0.00</>
+                        : <>{gapIcon} ${fmtPrice(gapAbs, unit)}</>
+                    ) : (
+                      "—"
+                    )}
+                  </td>
                 </tr>
               );
             })}
@@ -233,11 +264,58 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
                     <td className="col-counter num"><strong>{rt.hasCounter ? fmtUsd(rt.counter) : "—"}</strong></td>
                   </Fragment>
                 ))}
+                <td className="num" aria-hidden />
               </tr>
             )}
           </tbody>
         </table>
       </div>
+      {(() => {
+        const totalOriginal = products.reduce((s, p) => s + (p.qtyLb / LB_PER_KG) * p.askingUsdKg, 0);
+        const totalLatestBid = products.reduce((s, p) => {
+          const lb = latestBidPerKg(p);
+          return lb != null ? s + (p.qtyLb / LB_PER_KG) * lb : s;
+        }, 0);
+        const totalLatestCounter = products.reduce((s, p) => {
+          const lc = latestCounterPerKg(p);
+          return lc != null ? s + (p.qtyLb / LB_PER_KG) * lc : s;
+        }, 0);
+        const gapTotal = totalLatestCounter - totalLatestBid;
+        const gapPct = totalLatestBid > 0 ? (gapTotal / totalLatestBid) * 100 : 0;
+        const movementTotal = totalLatestBid - totalOriginal;
+        const movementPct = totalOriginal > 0 ? (movementTotal / totalOriginal) * 100 : 0;
+
+        const colorFor = (v: number) => {
+          if (Math.abs(v) < 0.005) return "#6b7280";
+          return v > 0 ? "#dc2626" : "#15803d";
+        };
+        const signFmt = (usd: number, pct: number) => {
+          if (Math.abs(usd) < 0.005) return `$0.00 (0.0%)`;
+          const sign = usd > 0 ? "+" : "-";
+          return `${sign}${fmtUsd2(usd)} (${sign}${Math.abs(pct).toFixed(1)}%)`;
+        };
+
+        return (
+          <div className="nd-price-history__footer grid grid-cols-1 sm:grid-cols-2 gap-3 mt-3">
+            <div className="rounded-md border p-3" style={{ background: "#f9fafb" }}>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t("negotiation.history.footer.gap", { defaultValue: "Gap: Last Bid vs Last Counter" })}
+              </div>
+              <div className="text-lg font-semibold" style={{ color: colorFor(gapTotal) }}>
+                {signFmt(gapTotal, gapPct)}
+              </div>
+            </div>
+            <div className="rounded-md border p-3" style={{ background: "#f9fafb" }}>
+              <div className="text-xs text-muted-foreground mb-1">
+                {t("negotiation.history.footer.movement", { defaultValue: "Movement: Latest Bid vs Original" })}
+              </div>
+              <div className="text-lg font-semibold" style={{ color: colorFor(movementTotal) }}>
+                {signFmt(movementTotal, movementPct)}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
