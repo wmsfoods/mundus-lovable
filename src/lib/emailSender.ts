@@ -1,8 +1,29 @@
 import { supabase } from "@/integrations/supabase/client";
 import { emailTemplates, emailSubjects, type EmailTemplateName } from "./emailTemplates";
-import { tryRenderWithOverrides } from "./email/templateOverrideResolver";
+import { tryResolveOverrides } from "./email/templateOverrideResolver";
 
 const MUNDUS_ADMIN_EMAIL = "fn@mundustrade.com";
+
+const localeCache = new Map<string, { value: "pt" | "en"; expiresAt: number }>();
+async function resolveRecipientLocale(email: string): Promise<"pt" | "en"> {
+  if (!email) return "en";
+  const key = email.toLowerCase();
+  const hit = localeCache.get(key);
+  if (hit && hit.expiresAt > Date.now()) return hit.value;
+  try {
+    const { data } = await (supabase as any)
+      .from("users")
+      .select("preferred_locale")
+      .eq("email", key)
+      .maybeSingle();
+    const v: "pt" | "en" = data?.preferred_locale === "pt" ? "pt" : "en";
+    localeCache.set(key, { value: v, expiresAt: Date.now() + 5 * 60_000 });
+    return v;
+  } catch {
+    return "en";
+  }
+}
+
 const NEGOTIATION_TEMPLATES: EmailTemplateName[] = [
   "bidReceived" as EmailTemplateName,
   "counterReceived" as EmailTemplateName,
@@ -18,13 +39,19 @@ async function queueOne(
   vars: any,
   subjectPrefix = "",
 ) {
-  // Try admin-edited overrides first (defaults to EN; locale switch comes later).
-  const override = await tryRenderWithOverrides(templateName as string, vars, "en");
+  // Look up the recipient's preferred locale (defaults to EN).
+  const locale = await resolveRecipientLocale(to);
+  const override = await tryResolveOverrides(templateName as string, vars, locale);
   let html: string;
   let subject: string;
-  if (override) {
-    html = override.html;
-    subject = (subjectPrefix || "") + override.subject;
+  if (override?.rendered) {
+    html = override.rendered.html;
+    subject = (subjectPrefix || "") + override.rendered.subject;
+  } else if (override?.layout) {
+    const templateFn = emailTemplates[templateName] as (v: any, o?: any) => string;
+    html = templateFn(vars, override.layout);
+    const subjectFn = emailSubjects[templateName];
+    subject = (subjectPrefix || "") + (override.subjectOverride || (subjectFn ? subjectFn(vars) : "Mundus Trade Notification"));
   } else {
     const templateFn = emailTemplates[templateName] as (v: any) => string;
     html = templateFn(vars);

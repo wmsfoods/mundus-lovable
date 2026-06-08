@@ -4,6 +4,18 @@
 // Mail, Yahoo). Responsive at 600px via @media queries.
 import { EMAIL_LOGO_FULL_URL } from "./email/brandAssets";
 
+/** Shared overrides accepted by every template via masterLayout. The admin
+ * editor edits these fields per template in the database; queueOne in
+ * emailSender.ts loads them and forwards them to the template function. */
+export interface TemplateLayoutOverrides {
+  heroTitle?: string;
+  preheader?: string;
+  ctaLabel?: string;
+  ctaUrl?: string;
+  primaryColor?: string;
+  logoUrl?: string;
+}
+
 function masterLayout(options: {
   heroTitle: string;
   heroColor?: "wine" | "green" | "amber" | "gray";
@@ -11,11 +23,18 @@ function masterLayout(options: {
   ctaUrl?: string;
   ctaLabel?: string;
   preheader?: string;
-}): string {
-  const { heroTitle, heroColor = "wine", bodyHtml, ctaUrl, ctaLabel, preheader } = options;
+}, overrides: TemplateLayoutOverrides = {}): string {
+  const heroTitle = overrides.heroTitle || options.heroTitle;
+  const heroColor = options.heroColor ?? "wine";
+  const bodyHtml = options.bodyHtml;
+  const ctaUrl = overrides.ctaUrl || options.ctaUrl;
+  const ctaLabel = overrides.ctaLabel || options.ctaLabel;
+  const preheader = overrides.preheader ?? options.preheader;
+  const primary = overrides.primaryColor || "#8B2252";
+  const logo = overrides.logoUrl || EMAIL_LOGO_FULL_URL;
 
   const heroGradients: Record<string, string> = {
-    wine: "background: linear-gradient(135deg, #6C0B28, #A74764);",
+    wine: `background: linear-gradient(135deg, ${primary}, #A74764);`,
     green: "background: linear-gradient(135deg, #065F46, #059669);",
     amber: "background: linear-gradient(135deg, #92400E, #D97706);",
     gray: "background: linear-gradient(135deg, #374151, #6B7280);",
@@ -55,7 +74,7 @@ function masterLayout(options: {
         <table role="presentation" cellpadding="0" cellspacing="0" width="600" class="email-container email-card" style="max-width:600px;width:100%;background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
           <tr>
             <td style="padding:20px 32px;border-bottom:1px solid #F3F4F6;">
-              <img src="${EMAIL_LOGO_FULL_URL}" alt="Mundus Trade" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
+              <img src="${logo}" alt="Mundus Trade" height="32" style="display:block;height:32px;width:auto;border:0;outline:none;text-decoration:none;">
             </td>
           </tr>
           <tr>
@@ -74,7 +93,7 @@ function masterLayout(options: {
               <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin-top:28px;">
                 <tr>
                   <td align="center">
-                    <a href="${ctaUrl}" target="_blank" class="cta-button" style="display:inline-block;padding:14px 36px;background-color:#8B2252;color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;mso-padding-alt:0;">
+                    <a href="${ctaUrl}" target="_blank" class="cta-button" style="display:inline-block;padding:14px 36px;background-color:${primary};color:#ffffff;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:600;text-decoration:none;border-radius:8px;mso-padding-alt:0;">
                       ${ctaLabel}
                     </a>
                   </td>
@@ -174,7 +193,7 @@ function cutsTable(opts: {
 }
 
 export const emailTemplates = {
-  welcome: (vars: { name: string; company: string; email: string; role: string; country: string; countryFlag: string }) => masterLayout({
+  welcome: (vars: { name: string; company: string; email: string; role: string; country: string; countryFlag: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "Welcome to Mundus Trade 🎉",
     heroColor: "wine",
     preheader: `Welcome ${vars.name}! Your account on Mundus Trade is ready.`,
@@ -195,9 +214,9 @@ export const emailTemplates = {
     `,
     ctaUrl: "https://app.mundustrade.us",
     ctaLabel: "Get Started →",
-  }),
+  }, overrides),
 
-  passwordReset: (vars: { name: string; resetUrl: string }) => masterLayout({
+  passwordReset: (vars: { name: string; resetUrl: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "Reset Your Password",
     heroColor: "gray",
     preheader: "Reset your Mundus Trade password",
@@ -209,9 +228,9 @@ export const emailTemplates = {
     `,
     ctaUrl: vars.resetUrl,
     ctaLabel: "Reset Password →",
-  }),
+  }, overrides),
 
-  newOffer: (vars: { buyerName: string; cutName: string; offerNumber: string; origin: string; originFlag: string; destination: string; destFlag: string; quantity: string; fcls: string; containerSize: string; incoterm: string; shipment: string; priceFrom: string; supplierCompany: string }) => masterLayout({
+  newOffer: (vars: { buyerName: string; cutName: string; offerNumber: string; origin: string; originFlag: string; destination: string; destFlag: string; quantity: string; fcls: string; containerSize: string; incoterm: string; shipment: string; priceFrom: string; supplierCompany: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "New Offer Available",
     heroColor: "wine",
     preheader: `New ${vars.cutName} offer from ${vars.origin} — M-${vars.offerNumber}`,
@@ -233,9 +252,9 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us/buyer/offers/${vars.offerNumber}`,
     ctaLabel: "View Offer & Place Bid →",
-  }),
+  }, overrides),
 
-  newRequest: (vars: { supplierName: string; productName: string; requestNumber: string; buyerCompany: string; destination: string; destFlag: string; quantity: string; containerSize: string; incoterm: string; targetPrice: string; shipment: string }) => masterLayout({
+  newRequest: (vars: { supplierName: string; productName: string; requestNumber: string; buyerCompany: string; destination: string; destFlag: string; quantity: string; containerSize: string; incoterm: string; targetPrice: string; shipment: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "New Buyer Request",
     heroColor: "wine",
     preheader: `New request for ${vars.productName} to ${vars.destination} — R-${vars.requestNumber}`,
@@ -256,9 +275,9 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us/supplier/requests/${vars.requestNumber}`,
     ctaLabel: "View Request & Create Offer →",
-  }),
+  }, overrides),
 
-  bidReceived: (vars: { supplierName: string; buyerCompany: string; buyerCountry: string; buyerFlag: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; bidPrice: string; gap: string; gapPct: string; totalValue: string; destination: string; destFlag: string; cuts?: Array<{ name: string; qty: string; askingPerKg: string; bidPerKg: string; movementPct: string }> }) => masterLayout({
+  bidReceived: (vars: { supplierName: string; buyerCompany: string; buyerCountry: string; buyerFlag: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; bidPrice: string; gap: string; gapPct: string; totalValue: string; destination: string; destFlag: string; cuts?: Array<{ name: string; qty: string; askingPerKg: string; bidPerKg: string; movementPct: string }> }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "New Bid Received 💰",
     heroColor: "wine",
     preheader: `${vars.buyerCompany} bid US$ ${vars.totalValue} on M-${vars.offerNumber}`,
@@ -308,9 +327,9 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us/supplier/negotiations`,
     ctaLabel: "Review & Respond →",
-  }),
+  }, overrides),
 
-  counterReceived: (vars: { buyerName: string; supplierCompany: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; yourBid: string; counterPrice: string; gap: string; gapPct: string; totalValue: string; isLastRound: boolean; cuts?: Array<{ name: string; qty: string; askingPerKg: string; yourBidPerKg: string; counterPerKg: string; movementPct: string }> }) => masterLayout({
+  counterReceived: (vars: { buyerName: string; supplierCompany: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; yourBid: string; counterPrice: string; gap: string; gapPct: string; totalValue: string; isLastRound: boolean; cuts?: Array<{ name: string; qty: string; askingPerKg: string; yourBidPerKg: string; counterPerKg: string; movementPct: string }> }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "Counter Offer Received",
     heroColor: "wine",
     preheader: `${vars.supplierCompany} countered at US$ ${vars.counterPrice}/kg — Round ${vars.round}`,
@@ -367,9 +386,9 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us/buyer/negotiations`,
     ctaLabel: "Review & Respond →",
-  }),
+  }, overrides),
 
-  dealClosed: (vars: { name: string; cutName: string; offerNumber: string; quantity: string; rounds: number; askingPrice: string; finalPrice: string; movementPct: string; totalValue: string; incoterm: string; origin: string; originFlag: string; destination: string; destFlag: string; shipment: string; supplierCompany: string; buyerCompany: string; advancePct: string; advanceAmount: string; cuts?: Array<{ name: string; qty: string; askingPerKg: string; finalPerKg: string; movementPct: string }> }) => masterLayout({
+  dealClosed: (vars: { name: string; cutName: string; offerNumber: string; quantity: string; rounds: number; askingPrice: string; finalPrice: string; movementPct: string; totalValue: string; incoterm: string; origin: string; originFlag: string; destination: string; destFlag: string; shipment: string; supplierCompany: string; buyerCompany: string; advancePct: string; advanceAmount: string; cuts?: Array<{ name: string; qty: string; askingPerKg: string; finalPerKg: string; movementPct: string }> }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "Deal Closed! 🎉",
     heroColor: "green",
     preheader: `Deal closed! M-${vars.offerNumber} — ${vars.cutName} — US$ ${vars.totalValue}`,
@@ -430,9 +449,9 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us`,
     ctaLabel: "View Deal Details →",
-  }),
+  }, overrides),
 
-  dealAwaitingConfirmation: (vars: { name: string; cutName: string; offerNumber: string; totalValue: string; acceptedBy: "buyer" | "supplier"; counterpartyCompany: string; negotiationUrl: string }) => masterLayout({
+  dealAwaitingConfirmation: (vars: { name: string; cutName: string; offerNumber: string; totalValue: string; acceptedBy: "buyer" | "supplier"; counterpartyCompany: string; negotiationUrl: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "Action required: confirm the deal",
     heroColor: "amber",
     preheader: `${vars.acceptedBy === "buyer" ? "Buyer" : "Supplier"} accepted M-${vars.offerNumber} — confirm to close.`,
@@ -451,9 +470,9 @@ export const emailTemplates = {
     `,
     ctaUrl: vars.negotiationUrl || `https://app.mundustrade.us`,
     ctaLabel: "Review & Confirm Deal →",
-  }),
+  }, overrides),
 
-  negotiationRejected: (vars: { name: string; cutName: string; offerNumber: string; lastBid: string; lastCounter: string; gap: string; gapPct: string; rounds: number; reason?: string }) => masterLayout({
+  negotiationRejected: (vars: { name: string; cutName: string; offerNumber: string; lastBid: string; lastCounter: string; gap: string; gapPct: string; rounds: number; reason?: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "Negotiation Ended",
     heroColor: "gray",
     preheader: `Negotiation ended for M-${vars.offerNumber}`,
@@ -471,9 +490,9 @@ export const emailTemplates = {
     `,
     ctaUrl: "https://app.mundustrade.us",
     ctaLabel: "Browse Offers →",
-  }),
+  }, overrides),
 
-  orderStatusUpdate: (vars: { name: string; offerNumber: string; cutName: string; quantity: string; totalValue: string; statusLabel: string; statusMessage: string; statusStep: number }) => {
+  orderStatusUpdate: (vars: { name: string; offerNumber: string; cutName: string; quantity: string; totalValue: string; statusLabel: string; statusMessage: string; statusStep: number }, overrides?: TemplateLayoutOverrides) => {
     const steps = ["Confirmed", "Payment", "Shipping", "Delivered"];
     const progressHtml = steps.map((s, i) => {
       const active = i <= vars.statusStep;
@@ -508,10 +527,10 @@ export const emailTemplates = {
       `,
       ctaUrl: "https://app.mundustrade.us",
       ctaLabel: "View Order →",
-    });
+    }, overrides);
   },
 
-  staleNudge: (vars: { name: string; cutName: string; offerNumber: string; round: number; maxRounds: number; waitingFor: string; hours: number; gap: string; gapPct: string; expiryDate: string }) => masterLayout({
+  staleNudge: (vars: { name: string; cutName: string; offerNumber: string; round: number; maxRounds: number; waitingFor: string; hours: number; gap: string; gapPct: string; expiryDate: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "⏰ Action Needed",
     heroColor: "amber",
     preheader: `Negotiation M-${vars.offerNumber} waiting for your response — ${vars.hours}h`,
@@ -528,9 +547,9 @@ export const emailTemplates = {
     `,
     ctaUrl: "https://app.mundustrade.us",
     ctaLabel: "Respond Now →",
-  }),
+  }, overrides),
 
-  offerShared: (vars: { senderName: string; senderCompany: string; cutName: string; origin: string; originFlag: string; quantity: string; priceFrom: string; incoterm: string; shipment: string; viewUrl: string }) => masterLayout({
+  offerShared: (vars: { senderName: string; senderCompany: string; cutName: string; origin: string; originFlag: string; quantity: string; priceFrom: string; incoterm: string; shipment: string; viewUrl: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "You've Been Invited to View an Offer",
     heroColor: "wine",
     preheader: `${vars.senderName} shared a protein offer with you`,
@@ -549,9 +568,9 @@ export const emailTemplates = {
     `,
     ctaUrl: vars.viewUrl,
     ctaLabel: "View Full Offer →",
-  }),
+  }, overrides),
 
-  customerInvitation: (vars: { recipientName: string; inviterCompany: string; inviterName: string; inviterEmail: string }) => masterLayout({
+  customerInvitation: (vars: { recipientName: string; inviterCompany: string; inviterName: string; inviterEmail: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "You've Been Invited",
     heroColor: "wine",
     preheader: `${vars.inviterCompany} has invited you to Mundus Trade`,
@@ -567,9 +586,9 @@ export const emailTemplates = {
     `,
     ctaUrl: "https://app.mundustrade.us/signup",
     ctaLabel: "Accept Invitation & Register →",
-  }),
+  }, overrides),
 
-  weeklyDigest: (vars: { name: string; dateRange: string; activeOffers: number; newBids: number; activeNegos: number; dealsClosed: number; revenue: string; marketHighlight: string; topOffers: Array<{ cut: string; price: string; country: string }> }) => masterLayout({
+  weeklyDigest: (vars: { name: string; dateRange: string; activeOffers: number; newBids: number; activeNegos: number; dealsClosed: number; revenue: string; marketHighlight: string; topOffers: Array<{ cut: string; price: string; country: string }> }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "Your Weekly Digest 📊",
     heroColor: "wine",
     preheader: `Mundus Trade weekly digest — ${vars.dateRange}`,
@@ -592,7 +611,7 @@ export const emailTemplates = {
     `,
     ctaUrl: "https://app.mundustrade.us",
     ctaLabel: "View Marketplace →",
-  }),
+  }, overrides),
 
   publicLeadCaptured: (vars: {
     email: string;
@@ -604,7 +623,7 @@ export const emailTemplates = {
     leadType?: string;
     mundusRep?: string;
     lang?: string;
-  }) => masterLayout({
+  }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: "New public-home lead 🌎",
     heroColor: "green",
     preheader: `New lead from public home — ${vars.email}`,
@@ -625,9 +644,9 @@ export const emailTemplates = {
     `,
     ctaUrl: "https://app.mundustrade.us/admin/crm/prospects",
     ctaLabel: "Open CRM →",
-  }),
+  }, overrides),
 
-  scl_invite_existing: (vars: { supplier: string; recipientName?: string }) => masterLayout({
+  scl_invite_existing: (vars: { supplier: string; recipientName?: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: `You've been invited by ${vars.supplier}`,
     heroColor: "wine",
     preheader: `${vars.supplier} has added you as a customer on Mundus Trade`,
@@ -638,9 +657,9 @@ export const emailTemplates = {
     `,
     ctaUrl: "https://app.mundustrade.us/buyer/connected-suppliers",
     ctaLabel: "Review invitation →",
-  }),
+  }, overrides),
 
-  scl_invite_signup: (vars: { supplier: string; linkId?: string }) => masterLayout({
+  scl_invite_signup: (vars: { supplier: string; linkId?: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: `${vars.supplier} invited you to Mundus Trade`,
     heroColor: "wine",
     preheader: `${vars.supplier} wants to connect with you on Mundus Trade`,
@@ -651,9 +670,9 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us/signup${vars.linkId ? `?invite=${vars.linkId}` : ""}`,
     ctaLabel: "Create your account →",
-  }),
+  }, overrides),
 
-  scl_direct_offer: (vars: { supplier: string; offerTitle: string; offerId: string }) => masterLayout({
+  scl_direct_offer: (vars: { supplier: string; offerTitle: string; offerId: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: `Direct offer from ${vars.supplier}`,
     heroColor: "wine",
     preheader: `${vars.supplier} sent you a direct offer: ${vars.offerTitle}`,
@@ -665,9 +684,9 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us/buyer/offers/${vars.offerId}`,
     ctaLabel: "View offer →",
-  }),
+  }, overrides),
 
-  scl_all_customers_offer: (vars: { supplier: string; offerTitle: string; offerId: string }) => masterLayout({
+  scl_all_customers_offer: (vars: { supplier: string; offerTitle: string; offerId: string }, overrides?: TemplateLayoutOverrides) => masterLayout({
     heroTitle: `New offer from ${vars.supplier}`,
     heroColor: "wine",
     preheader: `${vars.supplier} shared a new offer with their customers`,
@@ -679,7 +698,7 @@ export const emailTemplates = {
     `,
     ctaUrl: `https://app.mundustrade.us/buyer/offers/${vars.offerId}`,
     ctaLabel: "View offer →",
-  }),
+  }, overrides),
 };
 
 export type EmailTemplateName = keyof typeof emailTemplates;
