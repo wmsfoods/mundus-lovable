@@ -216,6 +216,11 @@
   font-weight: var(--weight-semibold);
   flex-shrink: 0;
 }
+.sb-user-av-img,
+.md-user-av-img {
+  object-fit: cover;
+  background: var(--p100);
+}
 .sb-user-meta { display: flex; flex-direction: column; min-width: 0; }
 .sb-user-name {
   font-size: var(--fs-sm);
