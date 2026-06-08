@@ -106,7 +106,6 @@ function EntryCard({ n }: { n: NotificationEntry }) {
             )
           )}
         </div>
-        </div>
       </div>
       <div style={{ fontSize: 12.5, marginTop: 12, color: "#374151", lineHeight: 1.55 }}>
         <div style={{ marginBottom: 6 }}>
