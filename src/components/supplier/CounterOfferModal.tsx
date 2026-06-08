@@ -1296,7 +1296,9 @@ export function CounterOfferModal({
           />
         </div>
 
-        <DialogFooter className="gap-2 sm:gap-2 max-sm:flex-col">
+        </div>
+
+        <SheetFooter className="px-6 py-4 border-t bg-background sticky bottom-0 gap-2 sm:gap-2 max-sm:flex-col">
           {errorCount > 0 && (
             <div className="mr-auto text-xs text-destructive self-center">
               {t("buyer.bid.errors.summary", { count: errorCount, defaultValue: "{{count}} cut(s) have validation errors" })}
@@ -1315,9 +1317,9 @@ export function CounterOfferModal({
               ? t("supplier.counter.submitting")
               : t("supplier.counter.submit", { round: displayRound })}
           </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 
