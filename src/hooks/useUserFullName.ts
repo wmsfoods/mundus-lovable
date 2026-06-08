@@ -2,15 +2,17 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
-export function useUserFullName(): { fullName: string; firstName: string; loading: boolean } {
+export function useUserFullName(): { fullName: string; firstName: string; avatarUrl: string | null; loading: boolean } {
   const { user, loading: authLoading } = useAuth();
   const [name, setName] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user?.id) {
       setName("");
+      setAvatarUrl(null);
       setLoading(false);
       return;
     }
@@ -18,7 +20,7 @@ export function useUserFullName(): { fullName: string; firstName: string; loadin
     (async () => {
       const { data } = await supabase
         .from("users")
-        .select("name, email")
+        .select("name, email, avatar_url")
         .eq("id", user.id)
         .maybeSingle();
       if (cancelled) return;
@@ -26,6 +28,7 @@ export function useUserFullName(): { fullName: string; firstName: string; loadin
         user.email?.split("@")[0]?.replace(/[._]/g, " ") ?? "";
       const resolved = (data?.name as string | null)?.trim() || fallback;
       setName(resolved);
+      setAvatarUrl(((data?.avatar_url as string | null) ?? (user.user_metadata?.avatar_url as string | undefined) ?? null) || null);
       setLoading(false);
     })();
     return () => {
@@ -39,5 +42,5 @@ export function useUserFullName(): { fullName: string; firstName: string; loadin
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
     .join(" ");
   const firstName = titled.split(" ")[0] ?? "";
-  return { fullName: titled, firstName, loading };
+  return { fullName: titled, firstName, avatarUrl, loading };
 }
