@@ -105,7 +105,7 @@ function main() {
   console.log(`    γ (tit-for-tat scale)  = 1/T = ${1/T}`);
   console.log(`    ψ(t,β)                 = (t/T)^(1/β)             concession fraction`);
   console.log(`    c_curve                = a − (a − f_eff) · ψ`);
-  console.log(`    c_final                = c_curve · (1 − ρ/T)     ρ = (bid − prevBid)/m clipped [0,1]`);
+  console.log(`    c_final                = c_curve − ρ · m/T       ρ = (bid − prevBid)/m clipped [0,1]`);
   console.log('═'.repeat(96));
 
   for (const sc of SCENARIOS) {

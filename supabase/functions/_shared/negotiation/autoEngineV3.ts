@@ -3,13 +3,16 @@
  *
  * Faratin's time-dependent concession curve family with canonical β values
  * for the three negotiation styles, plus a tit-for-tat hint that rewards
- * buyer movement. Floor buffer derived from curve geometry.
+ * buyer movement via an
+ * additive tit-for-tat nudge bounded by one mean concession step (m/T).
  *
  * Constants are DERIVED, not chosen:
  *   β ∈ {1/e, 1, e}    canonical Boulware/Linear/Conceder (Faratin 1998)
  *   ε  = m/(4T)         floor buffer = 1/4 of average concession step
  *   γ  = 1/T            tit-for-tat strength = 1/cycles
  *   T  = 4              cycles (business rule)
+ *
+ *   c_final = c_curve − ρ · m/T       (V3.1: additive tit-for-tat, ≤ 1 mean step nudge)
  */
 export type Dial = 'protect_margin' | 'balanced' | 'win_deal';
 
@@ -82,7 +85,7 @@ export function autoCounter(inp: AutoInput): AutoOutput {
   const psi = Math.pow(t / T, 1 / beta);
   const cCurve = a - mEff * psi;
   const rho = prevBid != null ? Math.max(0, Math.min(1, (b - prevBid) / m)) : 0;
-  const cFinal = cCurve * (1 - rho / T);
+  const cFinal = cCurve - (rho * m) / T;
 
   let c = cFinal;
   if (prevCounter != null) c = Math.min(c, prevCounter);
