@@ -1,9 +1,15 @@
 /**
- * Auto negotiation engine V3 — first-principles math, zero magic constants.
+/**
+ * Auto negotiation engine V3.2 — first-principles math, no hold rule.
  *
  * Faratin's time-dependent concession curve family with canonical β values
- * for the three negotiation styles, plus an
- * additive tit-for-tat nudge bounded by one mean concession step (m/T).
+ * for the three negotiation styles, plus additive tit-for-tat nudge
+ * bounded by one mean concession step (m/T).
+ *
+ * V3.2 design: engine ALWAYS responds, never holds. In tight-margin
+ * commodity trading (meat $0.07-$0.50/kg margins), silence loses the
+ * anchor. Boulware (β=1/e) naturally stays near asking for aggressive
+ * bids (ψ ≈ 0.024 at cycle 1), making explicit hold redundant.
  *
  * Constants are DERIVED, not chosen:
  *   β ∈ {1/e, 1, e}    canonical Boulware/Linear/Conceder (Faratin 1998)
@@ -11,7 +17,7 @@
  *   γ  = 1/T            tit-for-tat strength = 1/cycles
  *   T  = 4              cycles (business rule)
  *
- *   c_final = c_curve − ρ · m/T       (V3.1: additive tit-for-tat, ≤ 1 mean step nudge)
+ *   c_final = c_curve − ρ · m/T       (additive tit-for-tat, ≤ 1 mean step nudge)
  */
 export type Dial = 'protect_margin' | 'balanced' | 'win_deal';
 
@@ -47,7 +53,7 @@ export interface AutoDiagnostics {
 
 export interface AutoOutput {
   price: number;
-  decision: 'counter' | 'accept_bid' | 'hold';
+  decision: 'counter' | 'accept_bid';
   rule: string;
   isFinal: boolean;
   explanation: string;
@@ -73,12 +79,6 @@ export function autoCounter(inp: AutoInput): AutoOutput {
     return { price: b, decision: 'accept_bid', rule: 'ACCEPT_ABOVE_ASKING',
       isFinal: true, explanation: 'Buyer matched or exceeded asking.',
       diagnostics: baseDiag({ cFinal: b, cClamped: b }) };
-  }
-  if (b < f - m) {
-    const hold = prevCounter ?? a;
-    return { price: hold, decision: 'hold', rule: 'HOLD_TOO_LOW', isFinal,
-      explanation: 'Bid outside ZOPA. Holding.',
-      diagnostics: baseDiag({ cCurve: hold, cFinal: hold, cClamped: hold, concessionPct: (a - hold) / m }) };
   }
 
   const psi = Math.pow(t / T, 1 / beta);
