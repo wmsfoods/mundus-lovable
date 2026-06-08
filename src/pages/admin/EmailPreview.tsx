@@ -24,6 +24,8 @@ const samples: Record<EmailTemplateName, any> = {
   scl_invite_signup: { supplier: "Friboi Exports", linkId: "abc-123" },
   scl_direct_offer: { supplier: "Friboi Exports", offerTitle: "Beef Striploin IMPS 180 — Brazil → China, Mar 2026", offerId: "abc-123" },
   scl_all_customers_offer: { supplier: "Friboi Exports", offerTitle: "Beef Striploin IMPS 180 — Brazil → China, Mar 2026", offerId: "abc-123" },
+  offerDeactivated: { name: "John Chen", offerTitle: "Beef Striploin IMPS 180 — Brazil → China, Mar 2026", offerNumber: "00042", negotiationUrl: "https://app.mundustrade.us/buyer/negotiations/abc" },
+  requestResponded: { buyerName: "John Chen", supplierCompany: "Friboi Exports", productName: "Pork Belly Boneless", requestNumber: "00018", requestUrl: "https://app.mundustrade.us/buyer/requests/abc" },
 };
 
 const templateNames = Object.keys(emailTemplates) as EmailTemplateName[];
