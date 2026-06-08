@@ -11,11 +11,12 @@ import { PlatformDocDocument, CONTENT as PLATFORM_CONTENT } from "./PlatformDocD
 import { GapReportDocument, CONTENT as GAP_CONTENT } from "./GapReportDocument";
 import { MultiOfficeDocument, CONTENT as MULTIOFFICE_CONTENT } from "./MultiOfficeDocument";
 import { AiQuickfillSamplesDocument } from "./AiQuickfillSamplesDocument";
+import { NotificationsDocument } from "./NotificationsDocument";
 import { searchDocs, type DocRegistryEntry } from "./docSearch";
 
 type SubTab = "admin" | "buyers" | "suppliers" | "platform";
 type AdminDoc = "brandbook" | "discovery" | "buyer-training" | "supplier-training" | "ai-quickfill-samples";
-type PlatformDoc = "platform" | "gaps" | "multioffice";
+type PlatformDoc = "platform" | "gaps" | "multioffice" | "notifications";
 
 const TABS: Array<{ k: SubTab; l: string }> = [
   { k: "admin", l: "Admin Docs" },
@@ -215,6 +216,7 @@ export function DocsTab() {
               { k: "platform", l: "📐 Documentação da Plataforma" },
               { k: "gaps", l: "🧩 Relatório de Gaps" },
               { k: "multioffice", l: "🏢 Multi-Office Model" },
+            { k: "notifications", l: "🔔 Emails & Notifications" },
             ].map((d) => (
               <button
                 key={d.k}
@@ -239,6 +241,7 @@ export function DocsTab() {
           {platformDoc === "platform" && <PlatformDocDocument scrollTarget={scrollTarget} />}
           {platformDoc === "gaps" && <GapReportDocument scrollTarget={scrollTarget} />}
           {platformDoc === "multioffice" && <MultiOfficeDocument scrollTarget={scrollTarget} />}
+          {platformDoc === "notifications" && <NotificationsDocument />}
         </div>
       )}
     </div>
