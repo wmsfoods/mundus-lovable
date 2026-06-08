@@ -140,6 +140,46 @@ function priceRow(label: string, value: string, color?: string): string {
     </tr>`;
 }
 
+function cutsTable(opts: {
+  title?: string;
+  columns: Array<{ label: string; align?: "left" | "right" }>;
+  rows: Array<Array<{ value: string; color?: string; bold?: boolean }>>;
+}): string {
+  const { title, columns, rows } = opts;
+  const titleHtml = title
+    ? `<p style="margin:20px 0 8px;font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;">${title}</p>`
+    : "";
+  const headerCells = columns
+    .map(
+      (c) =>
+        `<th style="padding:10px 12px;text-align:${c.align || "left"};font-family:Arial,Helvetica,sans-serif;font-size:11px;font-weight:700;color:#6B7280;text-transform:uppercase;letter-spacing:0.5px;border-bottom:1px solid #E5E7EB;background:#F9FAFB;">${c.label}</th>`,
+    )
+    .join("");
+  const bodyRows = rows
+    .map((row, idx) => {
+      const tds = row
+        .map((cell, i) => {
+          const align = columns[i]?.align || "left";
+          const isLastRow = idx === rows.length - 1;
+          const fontFamily =
+            align === "right"
+              ? "Consolas,'Courier New',monospace"
+              : "Arial,Helvetica,sans-serif";
+          return `<td style="padding:10px 12px;text-align:${align};font-family:${fontFamily};font-size:14px;color:${cell.color || "#1A1A2E"};${cell.bold ? "font-weight:700;" : ""}${isLastRow ? "" : "border-bottom:1px solid #F3F4F6;"}">${cell.value}</td>`;
+        })
+        .join("");
+      return `<tr>${tds}</tr>`;
+    })
+    .join("");
+  return `
+    ${titleHtml}
+    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="margin:0 0 16px;background-color:#FFFFFF;border:1px solid #E5E7EB;border-radius:8px;border-collapse:separate;border-spacing:0;overflow:hidden;">
+      <thead><tr>${headerCells}</tr></thead>
+      <tbody>${bodyRows}</tbody>
+    </table>
+  `;
+}
+
 export const emailTemplates = {
   welcome: (vars: { name: string; company: string; email: string; role: string; country: string; countryFlag: string }) => masterLayout({
     heroTitle: "Welcome to Mundus Trade 🎉",
@@ -225,7 +265,7 @@ export const emailTemplates = {
     ctaLabel: "View Request & Create Offer →",
   }),
 
-  bidReceived: (vars: { supplierName: string; buyerCompany: string; buyerCountry: string; buyerFlag: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; bidPrice: string; gap: string; gapPct: string; totalValue: string; destination: string; destFlag: string }) => masterLayout({
+  bidReceived: (vars: { supplierName: string; buyerCompany: string; buyerCountry: string; buyerFlag: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; bidPrice: string; gap: string; gapPct: string; totalValue: string; destination: string; destFlag: string; cuts?: Array<{ name: string; qty: string; askingPerKg: string; bidPerKg: string; movementPct: string }> }) => masterLayout({
     heroTitle: "New Bid Received 💰",
     heroColor: "wine",
     preheader: `${vars.buyerCompany} bid US$ ${vars.totalValue} on M-${vars.offerNumber}`,
@@ -248,12 +288,36 @@ export const emailTemplates = {
       </table>
       <p style="margin:16px 0 0;font-size:13px;color:#6B7280;">You can counter, accept, or reject this bid.</p>
       <p style="margin:8px 0 0;font-size:13px;color:#D97706;font-weight:600;">⏰ Response needed</p>
+      ${vars.cuts && vars.cuts.length > 0
+        ? cutsTable({
+            title: "Cuts Breakdown",
+            columns: [
+              { label: "Cut", align: "left" },
+              { label: "Qty", align: "right" },
+              { label: "Asking", align: "right" },
+              { label: "Bid", align: "right" },
+              { label: "Δ", align: "right" },
+            ],
+            rows: vars.cuts.map((c) => {
+              const m = parseFloat(c.movementPct);
+              const negative = m < 0;
+              const sign = m >= 0 ? "+" : "";
+              return [
+                { value: c.name },
+                { value: c.qty },
+                { value: `US$ ${c.askingPerKg}` },
+                { value: `US$ ${c.bidPerKg}`, color: negative ? "#DC2626" : "#1A1A2E", bold: true },
+                { value: `${sign}${c.movementPct}%`, color: negative ? "#DC2626" : "#059669" },
+              ];
+            }),
+          })
+        : ""}
     `,
     ctaUrl: `https://app.mundustrade.us/supplier/negotiations`,
     ctaLabel: "Review & Respond →",
   }),
 
-  counterReceived: (vars: { buyerName: string; supplierCompany: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; yourBid: string; counterPrice: string; gap: string; gapPct: string; totalValue: string; isLastRound: boolean }) => masterLayout({
+  counterReceived: (vars: { buyerName: string; supplierCompany: string; offerNumber: string; cutName: string; round: number; maxRounds: number; askingPrice: string; yourBid: string; counterPrice: string; gap: string; gapPct: string; totalValue: string; isLastRound: boolean; cuts?: Array<{ name: string; qty: string; askingPerKg: string; yourBidPerKg: string; counterPerKg: string; movementPct: string }> }) => masterLayout({
     heroTitle: "Counter Offer Received",
     heroColor: "wine",
     preheader: `${vars.supplierCompany} countered at US$ ${vars.counterPrice}/kg — Round ${vars.round}`,
@@ -281,12 +345,38 @@ export const emailTemplates = {
           </td>
         </tr>
       </table>` : ""}
+      ${vars.cuts && vars.cuts.length > 0
+        ? cutsTable({
+            title: "Cuts Breakdown",
+            columns: [
+              { label: "Cut", align: "left" },
+              { label: "Qty", align: "right" },
+              { label: "Asking", align: "right" },
+              { label: "Your Bid", align: "right" },
+              { label: "Counter", align: "right" },
+              { label: "Δ", align: "right" },
+            ],
+            rows: vars.cuts.map((c) => {
+              const m = parseFloat(c.movementPct);
+              const positive = m > 0;
+              const sign = m >= 0 ? "+" : "";
+              return [
+                { value: c.name },
+                { value: c.qty },
+                { value: `US$ ${c.askingPerKg}`, color: "#6B7280" },
+                { value: `US$ ${c.yourBidPerKg}`, color: "#DC2626" },
+                { value: `US$ ${c.counterPerKg}`, color: "#059669", bold: true },
+                { value: `${sign}${c.movementPct}%`, color: positive ? "#D97706" : "#059669" },
+              ];
+            }),
+          })
+        : ""}
     `,
     ctaUrl: `https://app.mundustrade.us/buyer/negotiations`,
     ctaLabel: "Review & Respond →",
   }),
 
-  dealClosed: (vars: { name: string; cutName: string; offerNumber: string; quantity: string; rounds: number; askingPrice: string; finalPrice: string; movementPct: string; totalValue: string; incoterm: string; origin: string; originFlag: string; destination: string; destFlag: string; shipment: string; supplierCompany: string; buyerCompany: string; advancePct: string; advanceAmount: string }) => masterLayout({
+  dealClosed: (vars: { name: string; cutName: string; offerNumber: string; quantity: string; rounds: number; askingPrice: string; finalPrice: string; movementPct: string; totalValue: string; incoterm: string; origin: string; originFlag: string; destination: string; destFlag: string; shipment: string; supplierCompany: string; buyerCompany: string; advancePct: string; advanceAmount: string; cuts?: Array<{ name: string; qty: string; askingPerKg: string; finalPerKg: string; movementPct: string }> }) => masterLayout({
     heroTitle: "Deal Closed! 🎉",
     heroColor: "green",
     preheader: `Deal closed! M-${vars.offerNumber} — ${vars.cutName} — US$ ${vars.totalValue}`,
@@ -320,6 +410,30 @@ export const emailTemplates = {
       <p style="margin:0 0 4px;">1. Order confirmation will be generated</p>
       <p style="margin:0 0 4px;">2. Advance payment (${vars.advancePct}%) of US$ ${vars.advanceAmount} is due</p>
       <p style="margin:0 0 4px;">3. Shipping details will follow</p>
+      ${vars.cuts && vars.cuts.length > 0
+        ? cutsTable({
+            title: "Cuts Breakdown",
+            columns: [
+              { label: "Cut", align: "left" },
+              { label: "Qty", align: "right" },
+              { label: "Asking", align: "right" },
+              { label: "Final", align: "right" },
+              { label: "Movement", align: "right" },
+            ],
+            rows: vars.cuts.map((c) => {
+              const m = parseFloat(c.movementPct);
+              const negative = m < 0;
+              const sign = m >= 0 ? "+" : "";
+              return [
+                { value: c.name },
+                { value: c.qty },
+                { value: `US$ ${c.askingPerKg}`, color: "#6B7280" },
+                { value: `US$ ${c.finalPerKg}`, color: "#059669", bold: true },
+                { value: `${sign}${c.movementPct}%`, color: negative ? "#DC2626" : "#059669" },
+              ];
+            }),
+          })
+        : ""}
     `,
     ctaUrl: `https://app.mundustrade.us`,
     ctaLabel: "View Deal Details →",
