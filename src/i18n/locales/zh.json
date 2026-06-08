@@ -1329,7 +1329,8 @@
           "counterSent": "反报价已发送 (模拟)",
           "bidAccepted": "投标已接受 (模拟)",
           "bidRejected": "投标已拒绝 (模拟)"
-        }
+        },
+        "buyerBadge": "买家"
       },
       "title": "谈判",
       "searchPlaceholder": "搜索ID / 买家 / 产品 / 目的地...",

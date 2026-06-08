@@ -214,7 +214,7 @@ export default function SupplierNegotiationDetail() {
             }}
           >
             <span style={{ fontSize: 10, fontWeight: 700, letterSpacing: 0.6, textTransform: "uppercase", opacity: 0.8 }}>
-              {t("supplier.negotiations.detail.buyer", "Buyer")}
+              {t("supplier.negotiations.detail.buyerBadge", "Buyer")}
             </span>
             <span>{countryFlag(d.destinationCountry)} {d.buyerName}</span>
           </div>
