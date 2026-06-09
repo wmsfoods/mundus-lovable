@@ -5,6 +5,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { ORDER_STATUSES, getStatusConfig, getStatusLabel } from "@/lib/orderStatus";
 import { useToast } from "@/hooks/use-toast";
+import { notifyCompanyUsers } from "@/lib/notifications";
+import { sendPushToCompanyUsers } from "@/lib/push";
+import { sendEmailNotification } from "@/lib/emailSender";
+import { getCompanyPrimaryContact } from "@/lib/companyContact";
 
 type OrderRow = {
   id: string;
@@ -130,6 +134,7 @@ export default function AdminOrders() {
   }, [rows, statusFilter, search]);
 
   const updateStatus = async (id: string, newStatus: string) => {
+    const row = rows.find((r) => r.id === id);
     setRows((prev) => prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r)));
     const { error } = await supabase
       .from("orders")
@@ -137,8 +142,55 @@ export default function AdminOrders() {
       .eq("id", id);
     if (error) {
       toast({ title: "Failed to update status", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: `Status updated to ${getStatusLabel(newStatus)}` });
+      return;
+    }
+    toast({ title: `Status updated to ${getStatusLabel(newStatus)}` });
+    // Multi-channel buyer notification (best-effort, non-blocking)
+    try {
+      const { data: o } = await supabase
+        .from("orders")
+        .select("buyer_company_id, order_number")
+        .eq("id", id)
+        .maybeSingle();
+      const buyerCompanyId = (o as any)?.buyer_company_id as string | null;
+      const orderNumber = (o as any)?.order_number as number | null;
+      const label = getStatusLabel(newStatus);
+      const title = `Order #${orderNumber ?? ""} — ${label}`;
+      const linkUrl = `/buyer/orders/${id}`;
+      if (buyerCompanyId) {
+        notifyCompanyUsers({
+          companyId: buyerCompanyId,
+          title,
+          body: `Your order status changed to ${label}.`,
+          icon: "package",
+          category: "orders",
+          linkUrl,
+          linkLabel: "View order",
+          relatedType: "order",
+          relatedId: id,
+        }).catch(() => {});
+        sendPushToCompanyUsers(buyerCompanyId, {
+          title,
+          body: `New status: ${label}`,
+          url: linkUrl,
+          category: "orders",
+        }).catch(() => {});
+        const contact = await getCompanyPrimaryContact(buyerCompanyId);
+        if (contact?.email) {
+          sendEmailNotification("orderStatusUpdate" as any, contact.email, {
+            name: contact.name || "there",
+            offerNumber: String(orderNumber ?? ""),
+            cutName: row?.supplier_name ?? "",
+            quantity: "",
+            totalValue: row ? `US$ ${row.total_value.toLocaleString("en-US")}` : "",
+            statusLabel: label,
+            statusMessage: `Your order status changed to ${label}.`,
+            statusStep: 1,
+          } as any).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn("[AdminOrders] notify buyer failed", e);
     }
   };
 
