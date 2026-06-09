@@ -14,9 +14,13 @@ type Props = {
   mode?: "create" | "edit" | "clone" | "fromRequest";
   missingSections?: SectionStatus[];
   translate?: (key: string, fallback: string, opts?: Record<string, unknown>) => string;
+  /** When set, the Cancel/Back button navigates here instead of /supplier/offers. */
+  backHref?: string;
+  /** Optional label override (e.g. "Back to request"). */
+  backLabel?: string;
 };
 
-export function ActionBar({ completion, submitting = false, onSaveDraft, onPublish, mode = "create", missingSections = [], translate }: Props) {
+export function ActionBar({ completion, submitting = false, onSaveDraft, onPublish, mode = "create", missingSections = [], translate, backHref, backLabel }: Props) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const tk = (k: string, fb: string, opts?: Record<string, unknown>) =>
@@ -26,7 +30,7 @@ export function ActionBar({ completion, submitting = false, onSaveDraft, onPubli
   const publishDisabled = completion < 100 || submitting;
   const draftDisabled = completion === 0 || submitting;
 
-  const handleCancel = () => navigate("/supplier/offers");
+  const handleCancel = () => navigate(backHref ?? "/supplier/offers");
   const isEdit = mode === "edit";
 
   const publishBtn = (
@@ -76,7 +80,7 @@ export function ActionBar({ completion, submitting = false, onSaveDraft, onPubli
           : tk("percentComplete", "{{n}}% complete", { n: completion })}
       </span>
       <Button variant="outline" onClick={handleCancel} disabled={submitting}>
-        {tk("cancel", "Cancel")}
+        {backLabel ?? tk("cancel", "Cancel")}
       </Button>
       {isEdit ? (
         <Button disabled={submitting || completion === 0} onClick={onPublish}>
