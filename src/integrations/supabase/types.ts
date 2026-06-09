@@ -5771,7 +5771,7 @@ export type Database = {
           origin_country: string | null
           origin_port: string | null
           origin_port_id: string | null
-          payment_terms: string
+          payment_terms: string | null
           plant_id: string | null
           price: number | null
           pricing_includes_freight: boolean | null
@@ -5811,7 +5811,7 @@ export type Database = {
           origin_country?: string | null
           origin_port?: string | null
           origin_port_id?: string | null
-          payment_terms: string
+          payment_terms?: string | null
           plant_id?: string | null
           price?: number | null
           pricing_includes_freight?: boolean | null
@@ -5851,7 +5851,7 @@ export type Database = {
           origin_country?: string | null
           origin_port?: string | null
           origin_port_id?: string | null
-          payment_terms?: string
+          payment_terms?: string | null
           plant_id?: string | null
           price?: number | null
           pricing_includes_freight?: boolean | null
@@ -8138,7 +8138,7 @@ export type Database = {
           origin_country: string | null
           origin_port: string | null
           origin_port_id: string | null
-          payment_terms: string
+          payment_terms: string | null
           plant_id: string | null
           price: number | null
           pricing_includes_freight: boolean | null
