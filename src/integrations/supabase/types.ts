@@ -662,6 +662,7 @@ export type Database = {
           status: string | null
           target_price_usd: number | null
           target_supplier_id: string | null
+          target_supplier_ids: string[] | null
           temperature: string | null
           updated_at: string | null
         }
@@ -694,6 +695,7 @@ export type Database = {
           status?: string | null
           target_price_usd?: number | null
           target_supplier_id?: string | null
+          target_supplier_ids?: string[] | null
           temperature?: string | null
           updated_at?: string | null
         }
@@ -726,6 +728,7 @@ export type Database = {
           status?: string | null
           target_price_usd?: number | null
           target_supplier_id?: string | null
+          target_supplier_ids?: string[] | null
           temperature?: string | null
           updated_at?: string | null
         }

@@ -124,13 +124,14 @@ export function useSupplierDashboard() {
         const officeFilter = fam.familyOfficeIds.length
           ? `,assigned_office_id.in.(${fam.familyOfficeIds.join(",")})`
           : "";
-        q = q.or(`target_supplier_id.eq.${fam.familyRootId}${officeFilter}`);
+        q = q.or(`target_supplier_id.eq.${fam.familyRootId},target_supplier_ids.cs.{${fam.familyRootId}}${officeFilter}`);
       } else if (fam.isFamilyHq && !fam.isHqLevelUser && scopeIds.length) {
         // Office operator inside a family: only what's been routed to me
         q = q.in("assigned_office_id", scopeIds);
       } else {
         // Single-office supplier — direct + targeted
-        q = q.or(`target_supplier_id.is.null,target_supplier_id.in.(${scopeIds.join(",")})`);
+        const arrayMatches = scopeIds.map((id) => `target_supplier_ids.cs.{${id}}`).join(",");
+        q = q.or(`target_supplier_id.is.null,target_supplier_id.in.(${scopeIds.join(",")})${arrayMatches ? "," + arrayMatches : ""}`);
       }
       const { count } = await q;
       return count ?? 0;

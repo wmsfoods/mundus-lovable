@@ -138,7 +138,7 @@ export default function BuyerCreateRequest() {
 
   // Distribution: marketplace (all suppliers) vs specific supplier
   const [distribution, setDistribution] = useState<"marketplace" | "specific">("marketplace");
-  const [targetSupplierId, setTargetSupplierId] = useState<string>("");
+  const [targetSupplierIds, setTargetSupplierIds] = useState<string[]>([]);
   const [supplierSearch, setSupplierSearch] = useState("");
   const [supplierDropdownOpen, setSupplierDropdownOpen] = useState(false);
   const supplierRef = useRef<HTMLDivElement | null>(null);
@@ -238,7 +238,7 @@ export default function BuyerCreateRequest() {
 
       if ((data as any).target_supplier_id) {
         setDistribution("specific");
-        setTargetSupplierId((data as any).target_supplier_id);
+        setTargetSupplierIds((data as any).target_supplier_ids && (data as any).target_supplier_ids.length > 0 ? (data as any).target_supplier_ids : [(data as any).target_supplier_id]);
       }
 
       // Parse additional_info for cuts, compliance, notes
@@ -313,7 +313,7 @@ export default function BuyerCreateRequest() {
     setShipmentWindow(data.shipment_date ?? "");
     if ((data as any).target_supplier_id) {
       setDistribution("specific");
-      setTargetSupplierId((data as any).target_supplier_id);
+      setTargetSupplierIds((data as any).target_supplier_ids && (data as any).target_supplier_ids.length > 0 ? (data as any).target_supplier_ids : [(data as any).target_supplier_id]);
     }
 
     const info = String(data.additional_info ?? "");
@@ -537,8 +537,8 @@ export default function BuyerCreateRequest() {
         `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg/container). Increase container count or reduce quantities.`,
       );
     }
-    if (distribution === "specific" && !targetSupplierId) {
-      return toast.error("Select a supplier or switch to marketplace distribution");
+    if (distribution === "specific" && targetSupplierIds.length === 0) {
+      return toast.error("Select at least one supplier or switch to marketplace distribution");
     }
     const valid = rows.filter((r) => r.cut.trim());
     const primary = valid[0];
@@ -592,7 +592,8 @@ export default function BuyerCreateRequest() {
       additional_info: additional || null,
       any_origin: anyOrigin,
       origin_countries: anyOrigin ? [] : originCountries,
-      target_supplier_id: distribution === "specific" ? targetSupplierId : null,
+      target_supplier_id: distribution === "specific" ? (targetSupplierIds[0] ?? null) : null,
+      target_supplier_ids: distribution === "specific" && targetSupplierIds.length > 0 ? targetSupplierIds : null,
       cut_region: cutRegion,
     };
 
@@ -735,7 +736,7 @@ export default function BuyerCreateRequest() {
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
             <div id="sec-protein" className="bcr-field" style={{ gridColumn: "1 / -1" }}>
-              <label>PROTEINS*</label>
+              <label>PROTEIN*</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {buyerProteins.map((p) => {
                   const on = selectedCategories.includes(p);
@@ -743,11 +744,10 @@ export default function BuyerCreateRequest() {
                     <button
                       key={p}
                       type="button"
-                      onClick={() => {
-                        setSelectedCategories((prev) =>
-                          on ? (prev.length === 1 ? prev : prev.filter((x) => x !== p)) : [...prev, p]
-                        );
-                      }}
+                       onClick={() => {
+                         // Single-select for now: picking a protein replaces selection
+                         if (!on) setSelectedCategories([p]);
+                       }}
                       style={{
                         padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600,
                         border: on ? "2px solid #8B2252" : "1px solid #d1d5db",
@@ -1458,7 +1458,7 @@ export default function BuyerCreateRequest() {
                 <input
                   type="radio"
                   checked={distribution === "marketplace"}
-                  onChange={() => { setDistribution("marketplace"); setTargetSupplierId(""); }}
+                  onChange={() => { setDistribution("marketplace"); setTargetSupplierIds([]); }}
                   style={{ marginTop: 3 }}
                 />
                 <div>
@@ -1474,25 +1474,61 @@ export default function BuyerCreateRequest() {
                   style={{ marginTop: 3 }}
                 />
                 <div>
-                  <div style={{ fontWeight: 600 }}>🎯 Specific supplier</div>
-                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Only the selected supplier will see this request</div>
+                  <div style={{ fontWeight: 600 }}>🎯 Specific supplier(s)</div>
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Only the selected suppliers will see this request</div>
                 </div>
               </label>
 
               {distribution === "specific" && (
                 <div style={{ marginTop: 8, position: "relative" }}>
+                  {targetSupplierIds.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                      {targetSupplierIds.map((id) => {
+                        const s = suppliers.find((x) => x.id === id);
+                        if (!s) return null;
+                        return (
+                          <span
+                            key={id}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "4px 8px",
+                              borderRadius: 999,
+                              background: "#fdf2f8",
+                              border: "1px solid #8B2252",
+                              color: "#8B2252",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {countryFlag(s.country || "")} {s.name}
+                            <button
+                              type="button"
+                              onClick={() => setTargetSupplierIds((prev) => prev.filter((x) => x !== id))}
+                              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8B2252", fontSize: 14, lineHeight: 1, padding: 0 }}
+                              aria-label={`Remove ${s.name}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                   <input
                     type="text"
                     className="bcr-input"
-                    value={supplierDropdownOpen ? supplierSearch : (suppliers.find((s) => s.id === targetSupplierId)?.name || "")}
+                    value={supplierSearch}
                     onChange={(e) => { setSupplierSearch(e.target.value); setSupplierDropdownOpen(true); }}
-                    onFocus={() => { setSupplierSearch(""); setSupplierDropdownOpen(true); }}
-                    placeholder="Search supplier…"
+                    onFocus={() => { setSupplierDropdownOpen(true); }}
+                    placeholder={targetSupplierIds.length === 0 ? "Search supplier…" : "Add another supplier…"}
                     autoComplete="off"
                   />
                   {supplierDropdownOpen && (
                     <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
                       {suppliers
+                        .filter((s) => !targetSupplierIds.includes(s.id))
                         .filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase()))
                         .slice(0, 50)
                         .map((s) => (
@@ -1500,9 +1536,8 @@ export default function BuyerCreateRequest() {
                             key={s.id}
                             onMouseDown={(e) => {
                               e.preventDefault();
-                              setTargetSupplierId(s.id);
+                              setTargetSupplierIds((prev) => prev.includes(s.id) ? prev : [...prev, s.id]);
                               setSupplierSearch("");
-                              setSupplierDropdownOpen(false);
                             }}
                             style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
@@ -1511,7 +1546,7 @@ export default function BuyerCreateRequest() {
                             {countryFlag(s.country || "")} {s.name}
                           </div>
                         ))}
-                      {suppliers.filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
+                      {suppliers.filter((s) => !targetSupplierIds.includes(s.id)).filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
                         <div style={{ padding: "8px 12px", fontSize: 12, color: "var(--fg-muted)" }}>No suppliers found</div>
                       )}
                     </div>
