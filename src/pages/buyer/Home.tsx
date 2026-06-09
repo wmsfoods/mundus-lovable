@@ -128,8 +128,8 @@ export default function BuyerHome() {
         </div>
       </section>
 
-      <div className="sh-hero-cta" style={{ margin: "16px 0 8px" }}>
-        <Link to="/buyer/requests/new" className="btn-hero is-light">
+      <div className="buyer-home-cta">
+        <Link to="/buyer/requests/new" className="buyer-home-cta-btn">
           <PlusIcon size={16} />
           {t("shell.nav.createRequest", { defaultValue: "Create Request" })}
         </Link>
