@@ -465,7 +465,8 @@ export default function SupplierCreateOfferV2Mobile() {
       const knownKeys = new Set([
         "missingOrigin","missingDestinations","missingIncoterm","missingCuts",
         "missingCutResolution","invalidCutNumbers","floorGtAsk","missingPayment","missingDistribution",
-        "offerHasActiveBids",
+        "offerHasActiveBids","missingDestinationPort","missingFreight","singleOriginPortRequired","primaryPricingMissing",
+        "offerIncomplete",
       ]);
       const msg = knownKeys.has(raw)
         ? tk(`submit.${raw}`, raw)
