@@ -82,7 +82,8 @@ export default function InviteCustomerModal({ open, onClose }: Props) {
 
   const emailTrim = email.trim();
   const emailValid = EMAIL_RE.test(emailTrim);
-  const canSubmit = emailValid && !isInviting && !!officeId;
+  const isSupplierEmail = dedup?.case === "email_is_supplier";
+  const canSubmit = emailValid && !isInviting && !!officeId && !isSupplierEmail;
 
   // Pick which dedup banner to show.
   let dedupCase: DedupCase | null = null;
