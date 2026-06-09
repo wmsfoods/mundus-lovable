@@ -89,7 +89,18 @@ export function useMyCustomers(opts: UseMyCustomersOptions = {}) {
         "get_supplier_customer_companies",
         { p_office_id: officeId },
       );
-      const buyerById = new Map<string, { id: string; name: string; country: string | null; tax_id: string | null }>();
+      const buyerById = new Map<
+        string,
+        {
+          id: string;
+          name: string;
+          country: string | null;
+          tax_id: string | null;
+          phone: string | null;
+          contact_name: string | null;
+          contact_email: string | null;
+        }
+      >();
       for (const c of (buyerCos ?? []) as any[]) {
         if (c?.id) buyerById.set(c.id, c);
       }
@@ -99,6 +110,7 @@ export function useMyCustomers(opts: UseMyCustomersOptions = {}) {
         const buyer =
           r.buyer ??
           (r.buyer_company_id ? buyerById.get(r.buyer_company_id) ?? null : null);
+        const buyerExtra = r.buyer_company_id ? buyerById.get(r.buyer_company_id) ?? null : null;
         const req = r.request ?? null;
         return {
           link_id: r.id,
@@ -114,9 +126,9 @@ export function useMyCustomers(opts: UseMyCustomersOptions = {}) {
           notes: r.notes,
           invited_by_user_id: r.invited_by_user_id,
           company_name: buyer?.name || req?.company_name || "—",
-          contact_name: req?.name ?? null,
-          email: req?.email ?? null,
-          phone: req?.phone ?? null,
+          contact_name: buyerExtra?.contact_name ?? req?.name ?? null,
+          email: buyerExtra?.contact_email ?? req?.email ?? null,
+          phone: buyerExtra?.phone ?? req?.phone ?? null,
           country: buyer?.country ?? req?.country ?? null,
           tax_id: buyer?.tax_id ?? req?.tax_id ?? null,
           is_pending: isPending,
