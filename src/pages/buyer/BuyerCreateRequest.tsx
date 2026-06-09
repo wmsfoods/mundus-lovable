@@ -238,7 +238,7 @@ export default function BuyerCreateRequest() {
 
       if ((data as any).target_supplier_id) {
         setDistribution("specific");
-        setTargetSupplierId((data as any).target_supplier_id);
+        setTargetSupplierIds((data as any).target_supplier_ids && (data as any).target_supplier_ids.length > 0 ? (data as any).target_supplier_ids : [(data as any).target_supplier_id]);
       }
 
       // Parse additional_info for cuts, compliance, notes
@@ -313,7 +313,7 @@ export default function BuyerCreateRequest() {
     setShipmentWindow(data.shipment_date ?? "");
     if ((data as any).target_supplier_id) {
       setDistribution("specific");
-      setTargetSupplierId((data as any).target_supplier_id);
+      setTargetSupplierIds((data as any).target_supplier_ids && (data as any).target_supplier_ids.length > 0 ? (data as any).target_supplier_ids : [(data as any).target_supplier_id]);
     }
 
     const info = String(data.additional_info ?? "");
@@ -1458,7 +1458,7 @@ export default function BuyerCreateRequest() {
                 <input
                   type="radio"
                   checked={distribution === "marketplace"}
-                  onChange={() => { setDistribution("marketplace"); setTargetSupplierId(""); }}
+                  onChange={() => { setDistribution("marketplace"); setTargetSupplierIds([]); }}
                   style={{ marginTop: 3 }}
                 />
                 <div>
