@@ -19,6 +19,7 @@ const KNOWN_ERRORS: Record<string, string> = {
   already_in_list: "supplier.myCustomers.errors.already_in_list",
   cooldown_active: "supplier.myCustomers.errors.cooldown_active",
   max_reinvites_reached: "supplier.myCustomers.errors.max_reinvites_reached",
+  email_is_supplier: "supplier.myCustomers.errors.email_is_supplier",
 };
 
 const DEDUP_TONE: Record<DedupCase, "info" | "warn" | "success" | "error"> = {
@@ -27,6 +28,7 @@ const DEDUP_TONE: Record<DedupCase, "info" | "warn" | "success" | "error"> = {
   existing_company_new_contact: "info",
   new_buyer: "success",
   invalid_input: "error",
+  email_is_supplier: "error",
 };
 
 function dedupClasses(tone: "info" | "warn" | "success" | "error") {
