@@ -1,96 +1,92 @@
-# Preservação de dados ao editar offer (M-000153 e demais)
+## Objetivo
 
-## Diagnóstico
+Substituir os submenus de "Mundus Intel" por um item único no sidebar que abre uma **tela hub** com cards de **pacotes/add-ons**. Hoje só existe 1 pacote por lado (o que já está configurado no Stripe). As features internas (Price Benchmark, Analytics, Market Intelligence, Procurement Intelligence) continuam existindo nas mesmas rotas — só muda a porta de entrada.
 
-Verificação direta no banco para a offer #M-000153-2026 (`d9486858…`):
+## Estado atual
 
-- 1 item (Beef Bones, 28.000kg @ $7, Frozen)
-- 2 incoterms (CFR, FOB), CFR como primary pricing
-- 1 mercado (Chile), 1 porto destino com frete ($4.500 Iquique)
-- 1 porto origem (Itajaí), payment terms, container, shipment ready — tudo presente
+**Supplier sidebar** (`src/layouts/SupplierShell.tsx`) — grupo "Mundus Intel":
+- Price Benchmark → `/supplier/insights/price-benchmark` (PRO `supplier_pro`)
+- Analytics → `/supplier/insights/analytics` (PRO `supplier_pro`)
+- Market Intelligence → link externo `market-us.mundustrade.com` (PRO)
 
-Ou seja, **hoje o registro 153 está íntegro no banco**. Quando o usuário relata "some quase tudo" ao editar, o cenário mais provável é o vestígio de uma tentativa de salvar **anterior** que falhou no meio do processo.
+**Buyer sidebar** (`src/layouts/BuyerShell.tsx`) — grupo "Mundus Intel":
+- Procurement Intelligence → `/buyer/procurement-intelligence` (PRO `buyer_pro`)
+- Market Intelligence → link externo (PRO)
 
-A causa raiz é arquitetural em `src/lib/offerSubmit.ts → updateOfferV2`:
+Stripe já tem 2 planos: `supplier_pro` ($1000/mo) e `buyer_pro` ($300/mo) — `src/lib/proSubscription.ts`.
 
-```text
-update offers (campos)
-  ↓
-DELETE offer_items / offer_allowed_incoterms / offer_markets /
-       freight_options / offer_origin_ports   ← já commitado
-  ↓
-INSERT offer_items                            ← pode falhar (FK, trigger, etc.)
-INSERT offer_allowed_incoterms                ← pode falhar
-INSERT offer_markets / freight / origin_ports ← pode falhar
-  ↓
-UPDATE offers SET status = …                  ← trigger valida completude
+## Mudanças
+
+### 1. Novas rotas hub
+- `src/pages/supplier/SupplierMundusIntel.tsx` (rota `/supplier/mundus-intel`)
+- `src/pages/buyer/BuyerMundusIntel.tsx` (rota `/buyer/mundus-intel`)
+
+Cada página renderiza o hub com cards de pacote. Reaproveita `PageTitle` e CSS do projeto (`mundus-insights.css` ou um novo `mundus-mundus-intel.css` enxuto).
+
+### 2. Configuração de pacotes
+Criar `src/lib/mundusIntelPackages.ts` com os dados de cada pacote:
+
+```ts
+// Supplier: 1 pacote "Analytics Package" — supplier_pro — $1000/mo
+//   features: Price Benchmark, Analytics, Market Intelligence
+// Buyer:    1 pacote "Intelligence Package" — buyer_pro — $300/mo
+//   features: Procurement Intelligence, Market Intelligence
 ```
 
-Cada chamada via supabase-js é uma transação HTTP independente. Se **qualquer** insert intermediário falhar (trigger `offers_validate_active_complete`, validação, FK, rede), os DELETEs já foram persistidos e a offer fica mutilada. Ao reabrir, o prefill carrega corretamente — mas só carrega o que restou.
+Cada feature interna do card guarda `{ label, description, icon, to | externalUrl }`.
 
-A correção anterior (mover `status` para o final) evitou o erro `offerIncomplete:items` em condições normais, mas **não removeu o risco**: qualquer falha entre o DELETE e o último INSERT ainda destrói dados.
+### 3. Card de pacote (componente)
+`src/components/mundus-intel/PackageCard.tsx`:
+- Header com nome do pacote, badge PRO, preço `$X / month`.
+- Lista das features incluídas (3 para supplier, 2 para buyer) com ícone + título + descrição curta.
+- Estado por subscrição (usa `useCompanySubscription` + `planForFeature`):
+  - **Assinante** → botão "Open feature" em cada feature (`<Link>` para a rota; externos abrem em nova aba).
+  - **Não assinante** → botão único "Subscribe — $X/mo" que chama `startProCheckout()` do `proSubscription.ts` (mesmo fluxo já usado em `InsightsUpsellPanel`).
+- Layout responsivo: grid 1 col mobile, 2+ cols desktop (igual ao padrão dos cards de ofertas / `action-row`).
 
-## Plano
+### 4. Atualizar shells (sidebar)
 
-### 1. Edição atômica via RPC Postgres
+**SupplierShell.tsx**: remover os 3 itens (`price-benchmark`, `analytics`, market intel externo) e substituir por:
+```ts
+{ to: "/supplier/mundus-intel", label: t("shell.nav.mundusIntel"),
+  icon: Sparkles, proBadge: false, groupLabel: undefined }
+```
+Mantém `cut-comparison` (director-only) como antes, ou move para uma seção interna.
 
-Criar uma função `public.update_offer_v2_atomic(p_offer_id uuid, p_payload jsonb)` em migration. Ela executa em **uma única transação**:
+**BuyerShell.tsx**: mesma coisa — remove os 2 itens, adiciona `/buyer/mundus-intel`.
 
-1. Pré-checagem: bloquear se algum `offer_items.id` tem `cut_rounds` associadas (mesma regra de "offerHasActiveBids" que já existe no client).
-2. `UPDATE offers SET …` (todos os campos editáveis, exceto `status`).
-3. `DELETE` em cascata controlada de: `offer_items`, `offer_allowed_incoterms`, `offer_markets`, `freight_options`, `offer_origin_ports`.
-4. `INSERT` de todas as linhas filhas a partir do `jsonb` recebido.
-5. `UPDATE offers SET status = …` por último (trigger de validação roda no commit).
-6. Se qualquer passo falhar, a transação inteira faz rollback — **nenhum dado é perdido**.
+**Bottom nav mobile**: mantém como está (Mundus Intel não está no bottom nav hoje).
 
-Segurança: `SECURITY INVOKER` (mantém RLS do supplier dono); grants para `authenticated`.
-
-### 2. Refatorar `updateOfferV2` no client
-
-Substituir todo o bloco `delete + uploads + inserts + status update` por:
-
-- Upload de mídia (precisa rodar antes; storage é fora da transação).
-- `supabase.rpc('update_offer_v2_atomic', { p_offer_id, p_payload })` com o payload completo (campos da offer + arrays de items/incoterms/markets/freight/origin_ports).
-- Pós-publish hook (notificações de buyer_request) permanece igual, fora da transação.
-
-Manter a assinatura `updateOfferV2(offerId, input, ctx)` para não tocar nas páginas Desktop/Mobile.
-
-### 3. Validação
-
-- Editar offer 153 → mudar campo → "Save changes": deve preservar tudo e republicar.
-- Editar offer 153 → forçar erro (ex.: remover todos os items) → publicar: erro retornado, **nada apagado** no banco; ao reabrir, dados completos.
-- Editar draft → salvar como draft incompleto: permitido (status fica draft, trigger não dispara).
-- Editar draft → publicar incompleto: bloqueado pelo `validateForPublish` client + trigger DB.
-- Conferir offer 153 antes/depois com `SELECT count(*)` em cada tabela filha.
-
-## Detalhes técnicos
-
-**Por que RPC e não migration de constraint deferida?**
-Deferred triggers só ajudam a validação final; não protegem contra falhas de FK ou rede entre chamadas separadas. Só uma transação Postgres real garante atomicidade — e isso exige uma única chamada.
-
-**Payload JSON da RPC** (resumo):
-
-```text
-{
-  offer: { origin_country, origin_port, origin_port_id, shipment_*, payment_terms,
-           container_size, total_fcl, is_halal, is_kosher, plant_id, negotiation_*,
-           specific_buyer_company_ids, all_customers, exw_pickup_location, cut_region,
-           request_id, primary_pricing_incoterm, pricing_includes_freight,
-           pricing_reference_port_id },
-  items: [ { customer_product_id, amount, price, minimum_price, … } ],
-  incoterms: ["CFR","FOB"],
-  markets: [ market_id, … ],
-  origin_ports: [ port_id, … ],
-  freight: [ { port_id, cost, insurance } ],
-  status: "active" | "draft"
-}
+### 5. Rotas em `App.tsx`
+Adiciona:
+```tsx
+<Route path="mundus-intel" element={<SupplierMundusIntel />} /> // dentro de /supplier
+<Route path="mundus-intel" element={<BuyerMundusIntel />} />    // dentro de /buyer
 ```
 
-A resolução de `customer_product_id` via `resolve_customer_product` continua no client (RPC já existe), antes de montar o payload.
+As rotas existentes (`insights/price-benchmark`, `insights/analytics`, `procurement-intelligence`) **permanecem intactas** — protegidas pelo `RequirePro` como hoje. O hub apenas linka para elas.
 
-**Arquivos afetados:**
+### 6. i18n
+Adicionar chaves em `src/i18n/index.ts`:
+- `shell.nav.mundusIntel` (já existe como groupLabel — reaproveitar)
+- `mundusIntel.title`, `mundusIntel.subtitle`
+- `mundusIntel.packages.analytics.*` (supplier)
+- `mundusIntel.packages.intelligence.*` (buyer)
+- CTAs: `subscribe`, `openFeature`, `included`, `currentPlan`
 
-- `supabase/migrations/<novo>.sql` — função `update_offer_v2_atomic`.
-- `src/lib/offerSubmit.ts` — `updateOfferV2` reescrita para usar a RPC.
+### 7. Mobile
+Hub vira lista vertical de cards (1 col), botão de assinar full-width, safe-area respeitada (segue regra de memória mobile do projeto).
 
-Nenhuma mudança em UI, prefill (`useOfferForPrefill`), validação client, ou fluxos draft/active.
+## Fora de escopo
+- Não muda Stripe / produtos / preços.
+- Não muda as páginas das features (Price Benchmark, Analytics, Procurement Intelligence, Market Intelligence externo).
+- Não mexe no `RequirePro` nem em `InsightsUpsellPanel` (continuam funcionando para deep-links diretos).
+- `cut-comparison` (admin-only) continua acessível pela rota direta; pode ficar fora do hub.
+
+## Validação
+1. Sidebar Supplier mostra "Mundus Intel" único; clique abre hub com 1 card "Analytics Package — $1000/mo" listando 3 features.
+2. Não assinante → botão Subscribe redireciona pro Stripe checkout.
+3. Assinante → cada feature abre a rota correspondente (Market Intelligence abre externo em nova aba).
+4. Mesmo fluxo no Buyer com 1 card "Intelligence Package — $300/mo" e 2 features.
+5. Deep-link direto `/supplier/insights/analytics` continua funcionando (com gate PRO existente).
+6. Responsivo no mobile (iPhone): cards em coluna, CTA confortável, sem overflow.

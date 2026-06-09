@@ -1,0 +1,110 @@
+.mi-page {
+  padding: 24px 20px 40px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+.mi-page__header { margin-bottom: 20px; }
+.mi-page__eyebrow {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 999px;
+  background: hsl(var(--primary) / 0.1); color: hsl(var(--primary));
+  margin-bottom: 10px;
+}
+.mi-page__title { font-size: 26px; font-weight: 700; margin: 0 0 6px; color: hsl(var(--foreground)); }
+.mi-page__subtitle { color: hsl(var(--muted-foreground)); margin: 0; line-height: 1.5; max-width: 640px; }
+
+.mi-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 820px) {
+  .mi-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1180px) {
+  .mi-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+.mi-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  padding: 22px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  box-shadow: 0 10px 30px -22px hsl(var(--foreground) / 0.35);
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+}
+.mi-card:hover { transform: translateY(-2px); box-shadow: 0 16px 40px -22px hsl(var(--foreground) / 0.4); }
+
+.mi-card__head { display: flex; align-items: center; justify-content: space-between; }
+.mi-card__pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  padding: 4px 10px; border-radius: 999px;
+  background: hsl(var(--primary) / 0.12); color: hsl(var(--primary));
+}
+.mi-card__active {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-size: 11px; font-weight: 600;
+  padding: 4px 10px; border-radius: 999px;
+  background: hsl(142 76% 36% / 0.12);
+  color: hsl(142 76% 30%);
+}
+
+.mi-card__title { margin: 0; font-size: 20px; font-weight: 700; color: hsl(var(--foreground)); }
+.mi-card__tagline { margin: 0; color: hsl(var(--muted-foreground)); line-height: 1.5; font-size: 14px; }
+
+.mi-card__price { display: flex; align-items: baseline; gap: 6px; }
+.mi-card__amount { font-size: 30px; font-weight: 700; color: hsl(var(--foreground)); }
+.mi-card__per { color: hsl(var(--muted-foreground)); font-size: 14px; }
+
+.mi-card__features { list-style: none; padding: 0; margin: 4px 0 0; display: flex; flex-direction: column; gap: 8px; }
+
+.mi-feat {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 12px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  background: hsl(var(--muted) / 0.35);
+  color: hsl(var(--foreground));
+  text-decoration: none;
+}
+.mi-feat--link { transition: background 0.15s ease, border-color 0.15s ease; cursor: pointer; }
+.mi-feat--link:hover { background: hsl(var(--muted) / 0.7); border-color: hsl(var(--primary) / 0.4); }
+.mi-feat__icon {
+  display: inline-grid; place-items: center;
+  width: 32px; height: 32px; flex-shrink: 0;
+  border-radius: 8px;
+  background: hsl(var(--background));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--primary));
+}
+.mi-feat__body { flex: 1; min-width: 0; }
+.mi-feat__label { font-weight: 600; font-size: 14px; color: hsl(var(--foreground)); }
+.mi-feat__desc { font-size: 12.5px; color: hsl(var(--muted-foreground)); line-height: 1.4; margin-top: 2px; }
+.mi-feat__cta { color: hsl(var(--muted-foreground)); flex-shrink: 0; align-self: center; }
+
+.mi-card__foot { display: flex; flex-direction: column; gap: 8px; margin-top: auto; }
+.mi-card__btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 12px 16px; border-radius: 10px; font-weight: 600; font-size: 14px;
+  background: hsl(var(--primary)); color: hsl(var(--primary-foreground));
+  border: none; cursor: pointer; width: 100%;
+}
+.mi-card__btn:disabled { opacity: 0.7; cursor: wait; }
+.mi-card__note {
+  font-size: 13px; color: hsl(var(--muted-foreground));
+  padding: 10px 12px; border-radius: 10px;
+  background: hsl(var(--muted) / 0.4); border: 1px dashed hsl(var(--border));
+  text-align: center;
+}
+.mi-card__small { margin: 0; font-size: 12px; color: hsl(var(--muted-foreground)); text-align: center; }
+
+@media (max-width: 640px) {
+  .mi-page { padding: 16px 14px calc(80px + env(safe-area-inset-bottom)); }
+  .mi-card { padding: 18px 16px; }
+  .mi-card__amount { font-size: 26px; }
+}

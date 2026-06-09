@@ -24,8 +24,7 @@ import {
   FileTextIcon,
   MessageIcon,
 } from "@/components/icons";
-import { BarChart3, ShoppingBag, Settings2 } from "lucide-react";
-import { Globe } from "lucide-react";
+import { ShoppingBag, Settings2, Sparkles } from "lucide-react";
 import { InsightsUpsellProvider } from "@/contexts/InsightsUpsellContext";
 export default function BuyerShell() {
   return (
@@ -80,18 +79,9 @@ function BuyerShellInner() {
       ],
     },
     {
-      to: "/buyer/procurement-intelligence",
-      label: t("buyer.procurement.nav", { defaultValue: "Procurement Intelligence" }),
-      icon: BarChart3 as unknown as SidebarItem["icon"],
-      proBadge: true,
-      groupLabel: t("shell.nav.mundusIntel"),
-    },
-    {
-      to: "https://market-us.mundustrade.com",
-      label: t("shell.nav.marketIntelligence"),
-      icon: Globe as unknown as SidebarItem["icon"],
-      external: true,
-      proBadge: true,
+      to: "/buyer/mundus-intel",
+      label: t("shell.nav.mundusIntel", { defaultValue: "Mundus Intel" }),
+      icon: Sparkles as unknown as SidebarItem["icon"],
     },
     {
       type: "section",

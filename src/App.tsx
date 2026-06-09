@@ -39,6 +39,7 @@ import BuyerRequestDetail from "./pages/buyer/BuyerRequestDetail.tsx";
 import BuyerCreateRequest from "./pages/buyer/BuyerCreateRequest.tsx";
 import BuyerChat from "./pages/buyer/BuyerChat.tsx";
 import ProcurementIntelligence from "./pages/buyer/ProcurementIntelligence.tsx";
+import BuyerMundusIntel from "./pages/buyer/BuyerMundusIntel.tsx";
 import BuyerConnectedSuppliers from "./pages/buyer/ConnectedSuppliers.tsx";
 import SubscriptionSuccess from "./pages/SubscriptionSuccess.tsx";
 import { RequirePro } from "./components/billing/RequirePro.tsx";
@@ -115,6 +116,7 @@ import SupplierCompany from "./pages/supplier/SupplierCompany.tsx";
 import SupplierOffices from "./pages/supplier/SupplierOffices.tsx";
 import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
+import SupplierMundusIntel from "./pages/supplier/SupplierMundusIntel.tsx";
 import CutComparison from "./pages/supplier/CutComparison.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
@@ -243,6 +245,7 @@ const App = () => (
                   </RequirePro>
                 }
               />
+              <Route path="mundus-intel" element={<BuyerMundusIntel />} />
               <Route path="subscription-success" element={<SubscriptionSuccess side="buyer" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
@@ -300,6 +303,7 @@ const App = () => (
                   </RequirePro>
                 }
               />
+              <Route path="mundus-intel" element={<SupplierMundusIntel />} />
               <Route path="subscription-success" element={<SubscriptionSuccess side="supplier" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
