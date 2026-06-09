@@ -22,7 +22,7 @@ import {
   ClipboardIcon,
   UsersIcon,
 } from "@/components/icons";
-import { BarChart3, LineChart, ShoppingBag, Settings2 } from "lucide-react";
+import { ShoppingBag, Settings2, Sparkles } from "lucide-react";
 import { Gavel, Globe } from "lucide-react";
 import { InsightsUpsellProvider, useInsightsUpsell } from "@/contexts/InsightsUpsellContext";
 import type { UpsellFeature } from "@/components/supplier/InsightsUpsellPanel";
@@ -54,16 +54,8 @@ function SupplierShellInner() {
   const showDirectorTools = isGlobalDirector || isMundusAdmin;
   const stackMode = isMobile && isStackRoute(location.pathname);
 
-  const featureForPath = (to: string): UpsellFeature | null => {
-    if (to === "/supplier/insights/price-benchmark") return "price-benchmark";
-    if (to === "/supplier/insights/analytics") return "analytics";
-    return null;
-  };
-
-  const onProBadgeClick = (item: SidebarItem) => {
-    const f = featureForPath(item.to);
-    if (f) openUpsell(f);
-  };
+  const featureForPath = (_to: string): UpsellFeature | null => null;
+  const onProBadgeClick = (_item: SidebarItem) => {};
 
   const SUPPLIER_NAV: SidebarEntry[] = [
     { to: "/supplier", label: t("shell.nav.home"), icon: HomeIcon, end: true },
@@ -91,24 +83,9 @@ function SupplierShellInner() {
       ],
     },
     {
-      to: "/supplier/insights/price-benchmark",
-      label: t("supplier.insights.nav.priceBenchmark"),
-      icon: BarChart3 as unknown as SidebarItem["icon"],
-      proBadge: true,
-      groupLabel: t("shell.nav.mundusIntel"),
-    },
-    {
-      to: "/supplier/insights/analytics",
-      label: t("supplier.insights.nav.analytics"),
-      icon: LineChart as unknown as SidebarItem["icon"],
-      proBadge: true,
-    },
-    {
-      to: "https://market-us.mundustrade.com",
-      label: t("shell.nav.marketIntelligence"),
-      icon: Globe as unknown as SidebarItem["icon"],
-      external: true,
-      proBadge: true,
+      to: "/supplier/mundus-intel",
+      label: t("shell.nav.mundusIntel", { defaultValue: "Mundus Intel" }),
+      icon: Sparkles as unknown as SidebarItem["icon"],
     },
     ...(showDirectorTools ? [{
       to: "/supplier/insights/cut-comparison",
