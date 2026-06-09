@@ -80,9 +80,25 @@ export function useMyCustomers(opts: UseMyCustomersOptions = {}) {
       if (statuses && statuses.length) q = q.in("status", statuses);
       const { data, error } = await q;
       if (error) throw error;
+
+      // Buyer companies live in a different tenant — the FK join is blocked by
+      // RLS on `companies`, so `r.buyer` comes back null even after the buyer
+      // accepts the invite. Fetch a SECURITY DEFINER view of those companies
+      // and merge it in so the customer name/country/tax_id show up.
+      const { data: buyerCos } = await (supabase as any).rpc(
+        "get_supplier_customer_companies",
+        { p_office_id: officeId },
+      );
+      const buyerById = new Map<string, { id: string; name: string; country: string | null; tax_id: string | null }>();
+      for (const c of (buyerCos ?? []) as any[]) {
+        if (c?.id) buyerById.set(c.id, c);
+      }
+
       const rows: MyCustomerRow[] = ((data ?? []) as any[]).map((r) => {
         const isPending = !r.buyer_company_id && !!r.user_request_id;
-        const buyer = r.buyer ?? null;
+        const buyer =
+          r.buyer ??
+          (r.buyer_company_id ? buyerById.get(r.buyer_company_id) ?? null : null);
         const req = r.request ?? null;
         return {
           link_id: r.id,
@@ -97,7 +113,7 @@ export function useMyCustomers(opts: UseMyCustomersOptions = {}) {
           private_label: r.private_label,
           notes: r.notes,
           invited_by_user_id: r.invited_by_user_id,
-          company_name: buyer?.name ?? req?.company_name ?? "—",
+          company_name: buyer?.name || req?.company_name || "—",
           contact_name: req?.name ?? null,
           email: req?.email ?? null,
           phone: req?.phone ?? null,

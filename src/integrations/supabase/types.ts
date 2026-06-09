@@ -8114,6 +8114,15 @@ export type Database = {
         }
       }
       get_public_offers: { Args: never; Returns: Json }
+      get_supplier_customer_companies: {
+        Args: { p_office_id: string }
+        Returns: {
+          country: string
+          id: string
+          name: string
+          tax_id: string
+        }[]
+      }
       get_users_company_info: {
         Args: { _user_ids: string[] }
         Returns: {

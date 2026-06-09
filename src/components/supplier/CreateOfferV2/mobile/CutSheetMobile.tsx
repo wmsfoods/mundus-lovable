@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils";
 import { useCompanyPlants } from "@/hooks/useCompanyPlants";
 import { useCutsCatalog } from "@/hooks/useCutsCatalog";
 import { BrandPicker } from "@/components/supplier/CreateOfferV2/BrandPicker";
+import { CutPicker } from "@/components/supplier/CreateOfferV2/CutPicker";
 import {
   PROTEINS,
   PACKING_OPTIONS,
@@ -214,36 +215,25 @@ export function CutSheetMobile({
 
               {/* Cut (item) */}
               <Field label={tk("field.cut", "Item / cut")} error={!draft.cutName}>
-                <NativeSelect
-                  value={draft.cutId ?? ""}
+                <CutPicker
+                  catalog={catalog}
+                  loading={cutsLoading}
                   disabled={!draft.protein || cutsLoading}
-                  onChange={(v) => {
-                    const id = v || null;
-                    const found = catalog.find((c) => c.id === id);
+                  value={draft.cutId}
+                  valueName={draft.cutName}
+                  invalid={!draft.cutName}
+                  size="large"
+                  placeholder={tk("field.cut.pick", "Pick cut…")}
+                  pickProteinHint={tk("field.cut.pickProtein", "Pick protein first")}
+                  searchPlaceholder={tk("field.cut.search", "Search by name or IMPS #…")}
+                  onChange={(found) => {
                     patch({
-                      cutId: id,
+                      cutId: found?.id ?? null,
                       cutName: found?.displayName ?? "",
                       spec: draft.spec || (found?.bone_spec ?? ""),
                     });
                   }}
-                  invalid={!draft.cutName}
-                >
-                  <option value="">
-                    {!draft.protein
-                      ? tk("field.cut.pickProtein", "Pick protein first")
-                      : cutsLoading
-                        ? tk("field.cut.loading", "Loading…")
-                        : tk("field.cut.pick", "Pick cut…")}
-                  </option>
-                  {draft.cutId && draft.cutName && !catalog.some((c) => c.id === draft.cutId) && (
-                    <option value={draft.cutId}>{draft.cutName} (other region)</option>
-                  )}
-                  {catalog.map((c) => (
-                    <option key={c.id} value={c.id}>
-                      {c.displayName}
-                    </option>
-                  ))}
-                </NativeSelect>
+                />
               </Field>
 
               {/* Spec + Packing */}
