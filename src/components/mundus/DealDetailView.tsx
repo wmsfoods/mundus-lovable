@@ -738,23 +738,25 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
             </>
           ) : (
             <>
-              <Card title={partyHeaderLabel.toUpperCase()} icon={UserIcon}>
-                <div className="ddv-party">
-                  <span className="ddv-party-av">{initials(data.party.name)}</span>
-                  <div className="ddv-party-meta">
-                    <strong>{data.party.name}</strong>
-                    {data.party.country && (
-                      <span>
-                        <span className="ddv-flag">{data.party.flagEmoji ?? "📍"}</span>
-                        {data.party.country}
-                      </span>
-                    )}
+              {data.role !== "supplier" && (
+                <Card title={partyHeaderLabel.toUpperCase()} icon={UserIcon}>
+                  <div className="ddv-party">
+                    <span className="ddv-party-av">{initials(data.party.name)}</span>
+                    <div className="ddv-party-meta">
+                      <strong>{data.party.name}</strong>
+                      {data.party.country && (
+                        <span>
+                          <span className="ddv-flag">{data.party.flagEmoji ?? "📍"}</span>
+                          {data.party.country}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <button type="button" className="ddv-btn-ghost ddv-btn-block" onClick={stub(tk("dealDetail.toast.message", "Open chat (mock)"))}>
-                  <MessageIcon size={14} /> {messagePartyLabel}
-                </button>
-              </Card>
+                  <button type="button" className="ddv-btn-ghost ddv-btn-block" onClick={stub(tk("dealDetail.toast.message", "Open chat (mock)"))}>
+                    <MessageIcon size={14} /> {messagePartyLabel}
+                  </button>
+                </Card>
+              )}
 
               <Card title={tk("dealDetail.timeline.title", "QUICK TIMELINE")} icon={ClockIcon}>
                 {data.timeline.map((s) => (
