@@ -138,7 +138,7 @@ export default function BuyerCreateRequest() {
 
   // Distribution: marketplace (all suppliers) vs specific supplier
   const [distribution, setDistribution] = useState<"marketplace" | "specific">("marketplace");
-  const [targetSupplierId, setTargetSupplierId] = useState<string>("");
+  const [targetSupplierIds, setTargetSupplierIds] = useState<string[]>([]);
   const [supplierSearch, setSupplierSearch] = useState("");
   const [supplierDropdownOpen, setSupplierDropdownOpen] = useState(false);
   const supplierRef = useRef<HTMLDivElement | null>(null);
