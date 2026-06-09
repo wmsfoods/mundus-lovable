@@ -61,19 +61,35 @@ export function useBuyerRequestForPrefill(requestId: string | null) {
       // Cut prefill: best-effort match on product_name + category
       const cuts: CutRow[] = [];
       if (req.product_name) {
-        const { data: cutRows } = await supabase
+        const needle = (req.product_name as string).trim();
+        // 1) exact match (case-insensitive). 2) fuzzy contains, filtered by
+        //    category when provided. This gives a stronger prefill match.
+        let match:
+          | { id: string; name: string; category: string | null }
+          | undefined;
+        const exact = await supabase
           .from("cuts")
           .select("id, name, category")
-          .ilike("name", (req.product_name as string).trim())
+          .ilike("name", needle)
           .limit(1);
-        const match = (cutRows ?? [])[0];
+        match = (exact.data ?? [])[0] as typeof match;
+        if (!match) {
+          const q = supabase
+            .from("cuts")
+            .select("id, name, category")
+            .ilike("name", `%${needle}%`)
+            .limit(5);
+          if (req.category) q.ilike("category", req.category as string);
+          const fuzzy = await q;
+          match = (fuzzy.data ?? [])[0] as typeof match;
+        }
         const row = emptyCutRow();
         cuts.push({
           ...row,
           cutId: match ? (match.id as string) : null,
           protein:
             (match?.category as string | undefined) ?? (req.category as string | null) ?? null,
-          cutName: (req.product_name as string) ?? "",
+          cutName: (match?.name as string | undefined) ?? (req.product_name as string) ?? "",
           spec: (req.specification as string | null) ?? "",
           qty: Number(req.quantity_kg ?? 0),
           askPrice: req.target_price_usd ? Number(req.target_price_usd) : 0,
