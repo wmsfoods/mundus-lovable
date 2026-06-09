@@ -1,74 +1,64 @@
-# Plano — Logo nos emails + Fases 2 e 3
+## Ajustes pequenos
 
-## Etapa A — Logo no topo de todos os emails (imediato)
+### 1. Cut picker com foto + busca livre
+**Onde:** `src/components/supplier/CreateOfferV2/CutsTable.tsx` (coluna do cut, hoje um `<select>` nativo) e a versão mobile `mobile/CutSheetMobile.tsx`.
 
-Substituir o bloco "ícone + texto Mundus / TRADE" do header dos templates por **uma única imagem** (o logo horizontal completo já em PNG transparente) e padronizar o **favicon** (ícone quadrado arredondado) como ícone de fallback / uso em locais pequenos.
+**O que muda:** trocar o `<select>` por um combobox custom (popover) que:
+- Lista todos os cuts do catálogo com **thumbnail** (`image_url` já existe em `CutItem`), nome e número IMPS quando houver.
+- Campo de busca no topo do popover, filtrando em tempo real por: nome do cut, `imps_number`, ou qualquer combinação (ex.: "1184 sirloin", "ribeye 112"). Match case-insensitive, com normalização de acentos.
+- Mantém o caso "orphan cut" (cut salvo fora da região atual) como item desabilitado para preservar o nome.
+- Mantém todo o restante (aging, US grade, spec) intacto.
 
-1. Subir as duas imagens enviadas para a CDN da Lovable (assets imutáveis, URL pública estável, sem depender de bucket público do Supabase):
-   - `mundus-logo-email-full.png` — logo horizontal com texto, fundo transparente (a usar no header dos emails)
-   - `mundus-logo-email-icon.png` — ícone quadrado arredondado, fundo transparente (fallback / dark-mode / footer)
-2. Criar `src/lib/email/brandAssets.ts` exportando as URLs absolutas dos dois PNGs (emails precisam de URL absoluta, não relativa).
-3. Atualizar o header de TODOS os templates atuais em `src/lib/emailTemplates.ts` (19 templates) e em `src/lib/email/welcomeRender.ts`:
-   - Trocar o `<img favicon 36x36> + <span>Mundus</span><span>TRADE</span>` por **um único `<img>` do logo horizontal**, altura ~32px, `alt="Mundus Trade"`, centralizado/à esquerda mantendo o padding atual.
-   - Manter o gradiente do hero abaixo do header e o resto do layout intacto.
-4. Atualizar o default do campo editável `logoUrl` do template `welcome` (e do schema das definitions) para apontar para o **logo horizontal** novo, mantendo retrocompatibilidade: se `logoUrl` salvo no DB ainda for o antigo, continua funcionando.
-5. Atualizar o preview iframe do editor (`EmailTemplateEditor.tsx`) — nenhum código novo, só herda do render.
+### 2. Nomes longos no campo Item/Cut sem distorcer
+Resolvido junto com #1: o trigger do combobox vira um botão flex com `min-width: 0`, nome truncado com `text-overflow: ellipsis` em uma linha e `title` (tooltip) com o nome completo. A coluna deixa de "esticar" o layout quando o nome é grande, e o nome completo continua visível ao passar o mouse / abrir o popover.
 
-Resultado: todos os emails enviados (com ou sem override do admin) passam a mostrar o **logo PNG transparente** no topo, sem o texto duplicado.
+### 3. Remover "Avg US$" da linha de stats do buyer
+**Onde:** `src/components/offer/OfferDetailCards.tsx` (linha 212).
+Remover o `<span>Avg <b>US$ …/kg</b></span>`. Permanecem **Items in this offer · N**, **Total qty**, **Total value**. Não altera nada da tabela de itens nem do mobile.
 
-## Etapa B — Fase 2: editor para os 18 templates restantes
+### 4. Nome do customer não aparece após aceite (My Customers)
+**Diagnóstico:** em `useMyCustomers.ts`, depois do aceite o `buyer_company_id` é populado e o hook tenta ler `buyer.name` via FK join em `companies`. Como o supplier não tem RLS para ler a empresa do buyer, o join volta `null` e o fallback `req?.company_name` não dispara (porque `buyer_company_id` deixou de ser null). Resultado: `"—"` na listagem.
 
-Modelo mecânico, replicando o pattern do `welcome`:
+**Fix (escolha A — preferida):** criar/usar RPC SECURITY DEFINER `get_supplier_customer_companies(p_office_id uuid)` que devolve `id, name, country, tax_id` apenas das empresas vinculadas via `supplier_customer_links` daquele office. Trocar o join inline por essa chamada e mesclar no `map`.
 
-1. **Migration de definitions** — inserir as 18 linhas restantes em `email_template_definitions` extraindo campos editáveis de cada template do `notificationsCatalog.ts`:
-   - Padrão de campos por template: `subject`, `preheader`, `heroTitle`, `greeting`, `intro`, blocos específicos (`detailsTitle`, `noteBox`, etc), `ctaLabel`, `ctaUrl`, `primaryColor`, `logoUrl`.
-   - Variáveis disponíveis por template extraídas direto da assinatura das funções em `emailTemplates.ts`.
-   - PT inicial = tradução das strings hardcoded; EN = strings atuais.
-2. **Render genérico** — criar `src/lib/email/genericRender.ts` parametrizado por `template_key`, evitando 18 arquivos `xRender.ts`. Layout único (mesmo wrapper do welcome, com header de logo da Etapa A) + lista de seções configuráveis (parágrafos, "details card", CTA). Cada template aponta para seu conjunto de seções via metadata na definition (campo novo `layout_sections: jsonb`).
-3. **Resolver** — ampliar `SUPPORTED` em `templateOverrideResolver.ts` para incluir todos os 19, roteando para `genericRender` (welcome continua no seu render dedicado por enquanto, ou migra também).
-4. **UI** — o `EmailTemplateEditor.tsx` já é genérico (lê `editable_fields`), então só remover o gate `if (templateKey === "welcome")` do botão "Editar email" em `NotificationsDocument.tsx`.
-5. **Fallback** — se algum template não tiver override ativo, continua usando o código de `emailTemplates.ts` (que já foi atualizado na Etapa A para o novo logo).
+**Fix (escolha B — fallback simples se quiser evitar nova RPC):** continuar usando o join, mas quando `buyer?.name` vier vazio, cair para `req?.company_name` mesmo com `buyer_company_id` preenchido (preserva o nome usado no convite). Menos preciso, mas resolve a UI imediatamente sem alterar backend.
 
-## Etapa C — Fase 3: teste + upload de logo + locale
+Plano: implementar **A** (mais correto e cobre também `country`/`tax_id`) e deixar B como fallback caso a RPC retorne vazio para alguma linha legada.
 
-1. **Botão "Enviar teste"** no `EmailTemplateEditor`:
-   - Campo de email (default: email do admin logado).
-   - Renderiza o template **com os valores do editor não salvos** + dados de exemplo das variáveis.
-   - Chama uma nova edge function `send-template-test` (service role) que enfileira em `email_queue` com `subject` prefixado `[TEST] ` e o HTML renderizado.
-2. **Upload de logo por template**:
-   - Criar bucket `email-assets` público (migration + policy `Public read`).
-   - Componente `TemplateLogoUploader` que faz upload pra `email-assets/templates/{template_key}/{uuid}.png`, salva URL pública no campo `logoUrl`.
-   - Processar via `processLogo()` existente (transparência + crop + padding) antes do upload.
-3. **Locale por destinatário**:
-   - Adicionar coluna `preferred_locale` em `users` (`pt` | `en`, default `en`).
-   - `emailSender.queueOne` lê locale do destinatário via lookup em `users` por `recipientEmail` (com fallback para `en`).
-   - Atualizar `tryRenderWithOverrides` para receber locale dinâmico (já aceita o parâmetro, só faltava o lookup).
-   - UI de preferência no `NotificationPreferences.tsx` (toggle PT/EN).
+### 5. Buyer pode manter o bid igual (ou maior) — regra de negociação
+**Onde:** `src/lib/negotiationEngine.ts`, função `validateBuyerBidDirection` (linha 22).
+Trocar a regra estrita `>` por `>=` e atualizar a mensagem de erro: a partir do round 2 o buyer pode **repetir** o bid anterior ou subir, mas não baixar.
+
+**Backend:** verificar a RPC `submit_initial_bid` / `submit_counter_bid` (ou equivalente) por `CHECK` ou validação que force `>`. Se existir, gerar migration ajustando para `>=`. Se não houver, basta a mudança no front.
+
+---
 
 ## Detalhes técnicos
 
-```text
-Header novo (todos os templates):
-┌────────────────────────────────────────────┐
-│   [Logo Mundus Trade PNG transparente]     │   <- height 32px, padding 20px 32px
-├────────────────────────────────────────────┤
-│   [Hero gradient + heroTitle]              │
-└────────────────────────────────────────────┘
-```
+- **#1 combobox:** usar `Popover` + `Command` do shadcn (já no projeto). Estrutura do item:
+  ```
+  [thumb 28x28]  Sirloin Cap (Picanha)        IMPS 184D
+                 cap on · choice
+  ```
+  Busca = `normalize(query).split(/\s+/).every(tok => normalize(displayName + ' ' + imps).includes(tok))`.
+- **#2:** trigger `<button class="cut-trigger">` com `display:flex; min-width:0; gap:8px;` e `<span class="truncate">{cutName ?? placeholder}</span>`. Largura da coluna fica estável.
+- **#3:** apenas remover a `<span>` do Avg; manter o cálculo de `avgPricePerUnit` caso seja usado em outro lugar (verificar — se for único uso, remover também a variável).
+- **#4 (A):**
+  ```sql
+  create or replace function public.get_supplier_customer_companies(p_office_id uuid)
+  returns table (id uuid, name text, country text, tax_id text)
+  language sql stable security definer set search_path = public as $$
+    select c.id, c.name, c.country, c.tax_id
+      from companies c
+      join supplier_customer_links scl on scl.buyer_company_id = c.id
+     where scl.supplier_office_id = p_office_id;
+  $$;
+  grant execute on function public.get_supplier_customer_companies(uuid) to authenticated;
+  ```
+  No hook: 1 chamada extra após carregar os links, indexar por `id` e mesclar em `company_name`/`country`/`tax_id`.
+- **#5:** mudança trivial de operador. Atualizar também tradução `pt`/`en` da mensagem se existir chave i18n específica (`buyer.bid.validation.direction`), caso contrário a string inline atual.
 
-Arquivos principais tocados:
-- **Etapa A**: `src/lib/email/brandAssets.ts` (novo), `src/lib/emailTemplates.ts`, `src/lib/email/welcomeRender.ts`, migration para atualizar default de `logoUrl` em `email_template_definitions`.
-- **Etapa B**: migration popula 18 definitions + adiciona coluna `layout_sections`; novo `src/lib/email/genericRender.ts`; ajuste no resolver e no `NotificationsDocument.tsx`.
-- **Etapa C**: nova edge function `send-template-test`; migration cria bucket `email-assets` + coluna `users.preferred_locale`; novo componente `TemplateLogoUploader.tsx`; ajustes em `emailSender.ts`, `templateOverrideResolver.ts`, `NotificationPreferences.tsx`.
-
-## Ordem de entrega sugerida
-
-1. Etapa A (rápida, melhora visual imediato em tudo) — entrego e você valida.
-2. Etapa B em sequência (volume, mas mecânico).
-3. Etapa C por último (toca infra: bucket + edge function + schema de users).
-
-## Fora de escopo
-
-- Editor WYSIWYG de layout livre.
-- A/B testing, agendamento.
-- Templates de auth (Supabase) — fluxo separado.
+## Fora do escopo
+- Não mexer no fluxo de aceite de convite em si.
+- Não mexer no engine de rounds/expiração.
+- Não mexer no layout da tabela de itens além da linha do Avg.
