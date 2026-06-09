@@ -8294,6 +8294,10 @@ export type Database = {
         Args: { p_link_id: string; p_target_office_id: string }
         Returns: Json
       }
+      update_offer_v2_atomic: {
+        Args: { p_offer_id: string; p_payload: Json }
+        Returns: undefined
+      }
       user_buyer_scope_ids: { Args: never; Returns: string[] }
       user_can_access_negotiation: {
         Args: { p_negotiation_id: string }
