@@ -46,6 +46,7 @@ import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTer
 import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
 import { DistributionCard, type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
+import { FclCountInput } from "@/components/supplier/CreateOfferV2/FclCountInput";
 import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
 import { EngineSettingsModal } from "@/components/supplier/CreateOfferV2/EngineSettingsModal";
 import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFillModal";
