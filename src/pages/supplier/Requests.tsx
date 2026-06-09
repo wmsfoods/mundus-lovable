@@ -154,7 +154,7 @@ export default function SupplierRequests() {
     return map;
   }, [myOffers, myNegs]);
 
-  const visible = useMemo(() => rows.filter((r) => !dismissed.has(r.id)), [rows, dismissed]);
+  const visible = rows;
   const tabFiltered = useMemo(() => {
     if (!showHqInbox) return visible;
     return visible.filter((r) => (r as any).routing_status === inboxTab);
