@@ -1249,7 +1249,7 @@ export default function SupplierCreateOfferV2Desktop() {
       ) : (
       <>
       {/* Top strip */}
-      <div className="mt-4 flex flex-wrap items-stretch gap-2 rounded-xl border border-border bg-card p-2">
+      <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 items-stretch gap-2 rounded-xl border border-border bg-card p-2">
         <Pill
           icon={Ship}
           label={tk("strip.from", "From")}
@@ -1310,10 +1310,11 @@ export default function SupplierCreateOfferV2Desktop() {
           status={sectionStatus(sectionByKey.freight)}
           tooltipContent={<MissingTooltip section={sectionByKey.freight} tk={tk} />}
         />
+      </div>
+      <div className="mt-2 flex justify-end">
         <Button
           type="button"
           onClick={() => openDrawer("origin")}
-          className="self-stretch"
         >
           <Edit3 size={14} className="mr-1" />
           {tk("strip.editLogistics", "Edit logistics")}
