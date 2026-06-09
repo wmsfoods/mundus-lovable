@@ -7,7 +7,8 @@ export type DedupCase =
   | "pending_invite"
   | "existing_company_new_contact"
   | "new_buyer"
-  | "invalid_input";
+  | "invalid_input"
+  | "email_is_supplier";
 
 export type DedupResult = {
   case: DedupCase;
