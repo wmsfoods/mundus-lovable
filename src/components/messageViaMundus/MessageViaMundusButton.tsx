@@ -30,8 +30,8 @@ export function MessageViaMundusButton({
   // when opened — fine, RPCs are cached at provider).
   const recipient = useRecipientContact(negotiationId, currentSide);
 
-  const label = recipient.firstName
-    ? (t("messageViaMundus.trigger", { name: recipient.firstName }) as string)
+  const label = recipient.companyName
+    ? (t("messageViaMundus.trigger", { name: recipient.companyName }) as string)
     : (t("messageViaMundus.triggerCompact") as string);
 
   const sizing =
