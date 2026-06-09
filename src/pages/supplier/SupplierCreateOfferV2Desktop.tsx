@@ -1875,12 +1875,10 @@ export default function SupplierCreateOfferV2Desktop() {
                   />
                 </Field>
                 <Field label={tk("drawer.s5.fclCount", "Number of containers (FCL)")}>
-                  <Input
-                    type="number"
-                    min={1}
+                  <FclCountInput
                     className="w-32"
                     value={drawerDraft.fclCount}
-                    onChange={(e) => setDrawerDraft((p) => ({ ...p, fclCount: Math.max(1, parseInt(e.target.value) || 1) }))}
+                    onChange={(n) => setDrawerDraft((p) => ({ ...p, fclCount: n }))}
                   />
                 </Field>
                 <Field label={tk("drawer.s5.temperature", "Temperature")}>
