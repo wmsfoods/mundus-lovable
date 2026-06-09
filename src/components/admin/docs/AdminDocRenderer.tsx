@@ -21,7 +21,8 @@ export type Block =
   | { kind: "cards3"; items: Array<{ t: string; d: string }> }
   | { kind: "table"; head: string[]; rows: string[][] }
   | { kind: "quote"; text: string }
-  | { kind: "h3"; text: string };
+  | { kind: "h3"; text: string }
+  | { kind: "code"; text: string };
 
 export type Section = {
   kicker: string;
@@ -57,6 +58,16 @@ function RenderBlock({ b }: { b: Block }): ReactNode {
       );
     case "h3":
       return <h3 style={{ fontSize: 16, fontWeight: 700, color: "#1a1a1a", margin: "24px 0 10px" }}>{b.text}</h3>;
+    case "code":
+      return (
+        <pre style={{
+          background: "#1a1a1a", color: "#f8f5f2",
+          padding: "16px 18px", borderRadius: 6,
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+          fontSize: 12.5, lineHeight: 1.55, overflowX: "auto",
+          margin: "12px 0 18px", whiteSpace: "pre-wrap",
+        }}>{b.text}</pre>
+      );
     case "ul":
       return (
         <ul style={{ paddingLeft: 20, margin: "10px 0", color: "#374151" }}>

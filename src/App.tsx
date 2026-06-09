@@ -60,6 +60,7 @@ import AdminRevenue from "./pages/admin/AdminRevenue.tsx";
 import AdminAuditLog from "./pages/admin/AdminAuditLog.tsx";
 import AdminTeam from "./pages/admin/AdminTeam.tsx";
 import AdminDocs from "./pages/admin/AdminDocs.tsx";
+import AdminDocsPlatform from "./pages/admin/docs/AdminDocsPlatform.tsx";
 import AutoEngineSandbox from "./pages/admin/AutoEngineSandbox.tsx";
 import AdminDataManagement from "./pages/admin/AdminDataManagement.tsx";
 import AdminImport from "./pages/admin/AdminImport.tsx";
@@ -347,6 +348,7 @@ const App = () => (
               <Route path="settings/audit" element={<AdminAuditLog />} />
               <Route path="settings/flags" element={<AdminFeatureFlags />} />
               <Route path="docs" element={<AdminDocs />} />
+              <Route path="docs/platform" element={<AdminDocsPlatform />} />
               <Route path="auto-engine-sandbox" element={<AutoEngineSandbox />} />
               <Route path="data-management" element={<AdminDataManagement />} />
               <Route path="import" element={<AdminImport />} />

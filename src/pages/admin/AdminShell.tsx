@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Building, Package, MessagesSquare, Activity,
   Users, BarChart3, Beef, Globe, Ship, Coins, Users2, History, Flag, Mail, Megaphone, FileText, AtSign, MessageCircle, RefreshCw, LineChart,
-  Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox, BookOpen, Database,
+  Search as SearchIcon, UserSearch, ClipboardList, UserCheck, Inbox, BookOpen, Database, Server,
 } from "lucide-react";
 import { Sidebar, type SidebarItem } from "@/components/mundus/Sidebar";
 import { useUserFullName } from "@/hooks/useUserFullName";
@@ -87,7 +87,8 @@ export default function AdminShell() {
     { to: "/admin/settings/flags", label: t("admin.shell.nav.flags"), icon: Flag as unknown as IconCmp },
     { to: "/admin/import", label: t("admin.shell.nav.import", "Import"), icon: RefreshCw as unknown as IconCmp },
     { to: "/admin/data-management", label: t("admin.shell.nav.dataManagement", "Data Management"), icon: Database as unknown as IconCmp },
-    { to: "/admin/docs", label: t("admin.shell.nav.documents", "Documents"), icon: BookOpen as unknown as IconCmp, groupLabel: t("admin.shell.nav.resources", "RESOURCES") },
+    { to: "/admin/docs", label: t("admin.shell.nav.documents", "Documents"), icon: BookOpen as unknown as IconCmp, groupLabel: t("admin.shell.nav.documents_group", "DOCUMENTS") },
+    { to: "/admin/docs/platform", label: t("admin.shell.nav.documents_platform", "Platform"), icon: Server as unknown as IconCmp },
   ];
 
   const ADMIN_BOTTOM: BottomNavItem[] = [
