@@ -280,6 +280,8 @@ function OriginPicker({
 }) {
   const [countryOpen, setCountryOpen] = useState(false);
   const [portOpen, setPortOpen] = useState(false);
+  const [countryQuery, setCountryQuery] = useState("");
+  const [portQuery, setPortQuery] = useState("");
   const country = countryId ? countries.find((c) => c.id === countryId) ?? null : null;
   const singleOriginRequired =
     incoterms.includes("FOB") || incoterms.includes("EXW");
@@ -291,31 +293,92 @@ function OriginPicker({
     else onPortIdsChange([...portIds, id]);
   };
 
+  // Selected ports float to the top so they're always visible
+  const orderedPorts = useMemo(() => {
+    const sel: typeof portsForCountry = [];
+    const rest: typeof portsForCountry = [];
+    for (const p of portsForCountry) {
+      (portIds.includes(p.id) ? sel : rest).push(p);
+    }
+    return [...sel, ...rest];
+  }, [portsForCountry, portIds]);
+
+  const filteredPorts = useMemo(() => {
+    const q = portQuery.trim().toLowerCase();
+    if (!q) return orderedPorts;
+    return orderedPorts.filter((p) =>
+      `${p.name} ${p.code ?? ""}`.toLowerCase().includes(q),
+    );
+  }, [orderedPorts, portQuery]);
+
+  const selectAllVisible = () => {
+    const next = new Set(portIds);
+    filteredPorts.forEach((p) => next.add(p.id));
+    onPortIdsChange(Array.from(next));
+  };
+  const clearAllPorts = () => onPortIdsChange([]);
+
+  const triggerPortLabel = (() => {
+    if (!countryId) return tk("logistics.port.selectCountryFirst", "Select origin country first");
+    if (portIds.length === 0) return tk("logistics.port.addPort", "Add port");
+    const first = portsForCountry.find((p) => p.id === portIds[0]);
+    const name = first?.name ?? "—";
+    return portIds.length === 1 ? name : `${name} +${portIds.length - 1}`;
+  })();
+
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             {tk("drawer.s1.country", "Country")}
           </label>
-          <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+          <Popover
+            open={countryOpen}
+            onOpenChange={(o) => {
+              setCountryOpen(o);
+              if (o) setCountryQuery("");
+            }}
+          >
             <PopoverTrigger asChild>
               <button
                 type="button"
                 className="flex w-full items-center justify-between rounded-md border border-border bg-card px-2 py-2 text-sm"
               >
-                <span className="truncate text-left">
+                <span className="flex-1 truncate text-left">
                   {country
                     ? `${country.flag_emoji ?? ""} ${country.english_name}`
                     : tk("drawer.s1.selectCountry", "Select…")}
                 </span>
+                {country && (
+                  <span
+                    role="button"
+                    tabIndex={0}
+                    aria-label="Clear country"
+                    onClick={(e) => { e.stopPropagation(); onCountryChange(null); }}
+                    onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.stopPropagation(); onCountryChange(null); } }}
+                    className="ml-2 shrink-0 text-muted-foreground hover:text-foreground"
+                  >
+                    <X size={14} />
+                  </span>
+                )}
                 <ChevronsUpDown size={14} className="ml-2 shrink-0 text-muted-foreground" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
-              <Command>
-                <CommandInput placeholder={tk("logistics.country.placeholder", "Search countries…")} />
-                <CommandList>
+            <PopoverContent
+              align="start"
+              sideOffset={4}
+              collisionPadding={12}
+              className="w-[var(--radix-popover-trigger-width)] min-w-[260px] p-0"
+            >
+              <Command value="" shouldFilter={true}>
+                <CommandInput
+                  autoFocus
+                  value={countryQuery}
+                  onValueChange={setCountryQuery}
+                  placeholder={tk("logistics.country.placeholder", "Search countries…")}
+                />
+                <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain">
                   <CommandEmpty>{tk("logistics.country.empty", "No country found")}</CommandEmpty>
                   <CommandGroup>
                     {countries.map((c) => (
@@ -326,16 +389,17 @@ function OriginPicker({
                           onCountryChange(c.id);
                           setCountryOpen(false);
                         }}
+                        className={cn(country?.id === c.id && "bg-muted/40")}
                       >
                         <Check
                           size={14}
                           className={cn(
                             "mr-2",
-                            country?.id === c.id ? "opacity-100" : "opacity-0",
+                            country?.id === c.id ? "opacity-100 text-green-600" : "opacity-0",
                           )}
                         />
                         <span className="mr-2">{c.flag_emoji ?? ""}</span>
-                        {c.english_name}
+                        <span className="flex-1 truncate">{c.english_name}</span>
                       </CommandItem>
                     ))}
                   </CommandGroup>
@@ -349,42 +413,92 @@ function OriginPicker({
           <label className="mb-1 block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
             {tk("drawer.s1.port", "Port")}
           </label>
-          <Popover open={portOpen} onOpenChange={(o) => countryId && setPortOpen(o)}>
+          <Popover
+            open={portOpen}
+            onOpenChange={(o) => {
+              if (!countryId) return;
+              setPortOpen(o);
+              if (o) setPortQuery("");
+            }}
+          >
             <PopoverTrigger asChild>
               <button
                 type="button"
                 disabled={!countryId}
                 className="flex w-full items-center justify-between rounded-md border border-border bg-card px-2 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span className="truncate text-left">
-                  {!countryId
-                    ? tk("logistics.port.selectCountryFirst", "Select origin country first")
-                    : portIds.length === 0
-                      ? tk("logistics.port.addPort", "Add port")
-                      : tk("logistics.port.nSelected", "{{n}} port(s) selected", { n: portIds.length })}
-                </span>
+                <span className="flex-1 truncate text-left">{triggerPortLabel}</span>
                 <ChevronsUpDown size={14} className="ml-2 shrink-0 text-muted-foreground" />
               </button>
             </PopoverTrigger>
-            <PopoverContent align="start" className="w-[var(--radix-popover-trigger-width)] p-0">
-              <Command>
-                <CommandInput placeholder={tk("logistics.port.placeholder", "Search ports…")} />
-                <CommandList>
+            <PopoverContent
+              align="start"
+              sideOffset={4}
+              collisionPadding={12}
+              className="w-[var(--radix-popover-trigger-width)] min-w-[280px] p-0"
+            >
+              <Command value="" shouldFilter={false}>
+                <CommandInput
+                  autoFocus
+                  value={portQuery}
+                  onValueChange={setPortQuery}
+                  placeholder={tk("logistics.port.placeholder", "Search ports…")}
+                />
+                <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border bg-popover px-2 py-1.5 text-[11px] text-muted-foreground">
+                  <span>
+                    {tk("logistics.port.selectedOf", "{{n}} of {{m}} selected", {
+                      n: portIds.length,
+                      m: portsForCountry.length,
+                    })}
+                  </span>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={selectAllVisible}
+                      disabled={filteredPorts.length === 0}
+                      className="rounded px-1.5 py-0.5 text-primary hover:underline disabled:opacity-40"
+                    >
+                      {tk("logistics.port.selectAll", "Select all")}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={clearAllPorts}
+                      disabled={portIds.length === 0}
+                      className="rounded px-1.5 py-0.5 hover:underline disabled:opacity-40"
+                    >
+                      {tk("logistics.port.clear", "Clear")}
+                    </button>
+                  </div>
+                </div>
+                <CommandList className="max-h-[280px] overflow-y-auto overscroll-contain">
                   <CommandEmpty>{tk("logistics.port.empty", "No port found")}</CommandEmpty>
                   <CommandGroup>
-                    {portsForCountry.map((p) => {
+                    {filteredPorts.map((p) => {
                       const checked = portIds.includes(p.id);
                       return (
                         <CommandItem
                           key={p.id}
                           value={`${p.name} ${p.code ?? ""}`}
                           onSelect={() => togglePort(p.id)}
+                          className={cn(checked && "bg-muted/40")}
                         >
-                          <Check
-                            size={14}
-                            className={cn("mr-2", checked ? "opacity-100" : "opacity-0")}
-                          />
-                          {p.name} {p.code ? `(${p.code})` : ""}
+                          <span
+                            className={cn(
+                              "mr-2 flex h-4 w-4 shrink-0 items-center justify-center rounded border",
+                              checked
+                                ? "border-primary bg-primary text-primary-foreground"
+                                : "border-border bg-card",
+                            )}
+                            aria-hidden
+                          >
+                            {checked && <Check size={12} />}
+                          </span>
+                          <span className="flex-1 truncate">{p.name}</span>
+                          {p.code && (
+                            <span className="ml-2 shrink-0 text-xs text-muted-foreground">
+                              {p.code}
+                            </span>
+                          )}
                         </CommandItem>
                       );
                     })}
@@ -397,7 +511,7 @@ function OriginPicker({
       </div>
 
       {portIds.length > 0 && (
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {portIds.map((pid) => {
             const p = portsForCountry.find((x) => x.id === pid);
             if (!p) return null;
@@ -419,6 +533,15 @@ function OriginPicker({
               </span>
             );
           })}
+          {portIds.length >= 2 && (
+            <button
+              type="button"
+              onClick={clearAllPorts}
+              className="ml-1 rounded-full px-2 py-0.5 text-xs text-muted-foreground hover:text-foreground hover:underline"
+            >
+              {tk("logistics.port.clearAll", "Clear all")}
+            </button>
+          )}
         </div>
       )}
 
