@@ -46,6 +46,7 @@ import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTer
 import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
 import { DistributionCard, type DistributionValue } from "@/components/supplier/CreateOfferV2/DistributionCard";
 import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
+import { FclCountInput } from "@/components/supplier/CreateOfferV2/FclCountInput";
 import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
 import { EngineSettingsModal } from "@/components/supplier/CreateOfferV2/EngineSettingsModal";
 import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFillModal";
@@ -1875,12 +1876,10 @@ export default function SupplierCreateOfferV2Desktop() {
                   />
                 </Field>
                 <Field label={tk("drawer.s5.fclCount", "Number of containers (FCL)")}>
-                  <Input
-                    type="number"
-                    min={1}
+                  <FclCountInput
                     className="w-32"
                     value={drawerDraft.fclCount}
-                    onChange={(e) => setDrawerDraft((p) => ({ ...p, fclCount: Math.max(1, parseInt(e.target.value) || 1) }))}
+                    onChange={(n) => setDrawerDraft((p) => ({ ...p, fclCount: n }))}
                   />
                 </Field>
                 <Field label={tk("drawer.s5.temperature", "Temperature")}>

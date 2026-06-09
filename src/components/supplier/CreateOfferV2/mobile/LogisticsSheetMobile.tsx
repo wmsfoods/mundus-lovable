@@ -25,6 +25,7 @@ import {
 } from "@/lib/offerOptions";
 import { containerCapacityKg } from "@/lib/units";
 import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
+import { FclCountInput } from "@/components/supplier/CreateOfferV2/FclCountInput";
 
 // ---------- Mirror desktop types exactly ----------
 type PortFreightShape =
@@ -907,15 +908,10 @@ function ContainerTab({
               <label className="mb-1 block text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
                 {tk("container.fcls", "FCLs")}
               </label>
-              <Input
-                type="number"
-                inputMode="numeric"
-                min={1}
+              <FclCountInput
                 className="h-11 text-center text-base"
                 value={draft.fclCount}
-                onChange={(e) =>
-                  setDraft((p) => ({ ...p, fclCount: Math.max(1, parseInt(e.target.value) || 1) }))
-                }
+                onChange={(n) => setDraft((p) => ({ ...p, fclCount: n }))}
               />
             </div>
           </div>
