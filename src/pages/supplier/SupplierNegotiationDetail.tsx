@@ -37,7 +37,6 @@ import { PriceHistoryTable } from "@/components/negotiation/PriceHistoryTable";
 import { NegotiationActivityTab } from "@/components/negotiation/NegotiationActivityTab";
 import { OfferAvailabilityChip } from "@/components/negotiation/OfferAvailabilityChip";
 import { useStackHeader } from "@/contexts/StackHeaderContext";
-import { MessageViaMundusButton } from "@/components/messageViaMundus/MessageViaMundusButton";
 import {
   isCounterExhausted,
   isFinalDisplayRound,
@@ -228,15 +227,6 @@ export default function SupplierNegotiationDetail() {
           ) : d.expiresIn ? (
             <span className="nd-timer">⏱ {d.expiresIn}</span>
           ) : null}
-          {isReal && (
-            <MessageViaMundusButton
-              negotiationId={id}
-              recordType="negotiation"
-              recordDisplayId={d.buyerInternalId || d.oppWmsRef || id}
-              currentSide="supplier"
-              variant="compact"
-            />
-          )}
           {d.status === "action_required" && (
             <span className="pill pill-action-required">
               {t("supplier.negotiations.detail.banner.actionRequired")}
