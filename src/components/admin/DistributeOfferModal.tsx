@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { formatOfferNumber } from "@/lib/offerNumber";
 import { auditLog } from "@/lib/auditLog";
+import { notifyCompanyUsers } from "@/lib/notifications";
+import { sendPushToCompanyUsers } from "@/lib/push";
 
 type Buyer = {
   id: string;
@@ -109,6 +111,31 @@ export function DistributeOfferModal({ open, onClose, offerId, offerNumber, offe
       return;
     }
     toast.success(`Offer sent to ${targets.length} buyer${targets.length === 1 ? "" : "s"}`);
+    // Bell + Push fan-out (#11/#12). Email handled by offer_distributions trigger.
+    if (channel === "notification" || channel === "both") {
+      const title = `New offer from ${supplierName}`;
+      const body = offerTitle;
+      const linkUrl = `/buyer/offers/${offerId}`;
+      targets.forEach((b) => {
+        notifyCompanyUsers({
+          companyId: b.id,
+          title,
+          body,
+          icon: "bell",
+          category: "offers",
+          linkUrl,
+          linkLabel: "View offer",
+          relatedType: "offer",
+          relatedId: offerId,
+        }).catch(() => {});
+        sendPushToCompanyUsers(b.id, {
+          title,
+          body,
+          url: linkUrl,
+          category: "offers",
+        }).catch(() => {});
+      });
+    }
     auditLog({
       action: "offer.shared",
       category: "offer",

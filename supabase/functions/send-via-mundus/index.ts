@@ -314,6 +314,50 @@ Deno.serve(async (req) => {
       .eq("id", msgRow.id);
   }
 
+  // ── In-app Bell + Push fan-out to recipient company (#7) ────────────────
+  try {
+    const { data: recipients } = await admin.rpc(
+      "get_company_active_user_ids",
+      { p_company_id: recipientCompanyId },
+    );
+    const userIds = (recipients ?? [])
+      .map((r: any) => r.user_id as string)
+      .filter(Boolean);
+    if (userIds.length > 0) {
+      const notifTitle = `New message from ${senderName}`;
+      const notifBody = subject;
+      const linkUrl = recipientUrl.replace(APP_BASE_URL, "");
+      await admin.rpc("enqueue_app_notifications", {
+        p_user_ids: userIds,
+        p_company_id: recipientCompanyId,
+        p_title: notifTitle,
+        p_body: notifBody,
+        p_icon: "chat",
+        p_category: "chat",
+        p_link_url: linkUrl,
+        p_link_label: "Open negotiation",
+        p_related_type: "negotiation",
+        p_related_id: negotiationId,
+      });
+      // Push to each user (best-effort)
+      for (const uid of userIds) {
+        admin.functions
+          .invoke("send-push", {
+            body: {
+              user_id: uid,
+              title: notifTitle,
+              body: notifBody,
+              url: linkUrl,
+              category: "chat",
+            },
+          })
+          .catch((x) => console.warn("[send-via-mundus] push failed", x));
+      }
+    }
+  } catch (e) {
+    console.warn("[send-via-mundus] bell/push fan-out failed", e);
+  }
+
   // ── Audit (best-effort) ─────────────────────────────────────────────────
   await admin.from("negotiation_audit").insert({
     negotiation_id: negotiationId,

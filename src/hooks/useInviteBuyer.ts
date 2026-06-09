@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
 import { sendEmailNotification } from "@/lib/emailSender";
+import { createNotification } from "@/lib/notifications";
+import { sendPushToUser } from "@/lib/push";
 
 export type InviteBuyerFlow =
   | "invited_existing_buyer"
@@ -76,6 +78,34 @@ export function useInviteBuyer() {
               input.email,
               { supplier: supplierName, recipientName: input.contactName } as any,
             );
+            // Bell + Push for already-registered buyers (#9)
+            try {
+              const { data: u } = await supabase
+                .from("users")
+                .select("id")
+                .ilike("email", input.email)
+                .maybeSingle();
+              const userId = (u as any)?.id as string | undefined;
+              if (userId) {
+                createNotification({
+                  userId,
+                  title: `${supplierName} invited you`,
+                  body: "You have been added as a customer on Mundus Trade.",
+                  icon: "bell",
+                  category: "system",
+                  linkUrl: "/buyer/suppliers",
+                  linkLabel: "View supplier",
+                }).catch(() => {});
+                sendPushToUser(userId, {
+                  title: `${supplierName} invited you`,
+                  body: "You have been added as a customer.",
+                  url: "/buyer/suppliers",
+                  category: "system",
+                }).catch(() => {});
+              }
+            } catch (e) {
+              console.warn("[useInviteBuyer] bell/push lookup failed", e);
+            }
           }
         } catch (e) {
           console.warn("[useInviteBuyer] SCL invite email failed (non-blocking)", e);
