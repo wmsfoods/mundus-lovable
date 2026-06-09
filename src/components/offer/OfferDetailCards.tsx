@@ -209,7 +209,6 @@ export function OfferDetailCards(props: OfferCardsProps) {
           </div>
           <div className="ofc-items-stats">
             <span>Total qty <b>{fmtWeight(totalQtyKg, unit)} {wLbl}</b></span>
-            <span>Avg <b>US$ {fmtPrice(avgPricePerUnit, unit)}/{wLbl}</b></span>
             <span>Total value <b>US$ {formatUsdInt(totalValueUsd)}</b></span>
           </div>
         </div>

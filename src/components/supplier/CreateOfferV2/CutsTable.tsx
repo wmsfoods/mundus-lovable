@@ -30,6 +30,7 @@ import { PhotoCell } from "./PhotoCell";
 import { FilesCell } from "./FilesCell";
 import { NumberCell } from "./NumberCell";
 import { ApplyToAllChip } from "./ApplyToAllChip";
+import { CutPicker } from "./CutPicker";
 import { cn } from "@/lib/utils";
 import { formatCutMeta } from "@/lib/cutMetaDisplay";
 import {
@@ -452,39 +453,24 @@ function CutRowView({
         />
       </td>
       <td className="px-2 py-2">
-        <select
-          className={cn(
-            "h-8 w-full rounded-md border border-border bg-card px-1 text-xs",
-            errors.cut && "border-destructive/60",
-          )}
-          value={row.cutId ?? ""}
+        <CutPicker
+          catalog={catalog}
+          loading={cutsLoading}
           disabled={!row.protein || cutsLoading}
-          onChange={(e) => {
-            const id = e.target.value || null;
-            const found = catalog.find((c) => c.id === id);
+          value={row.cutId}
+          valueName={row.cutName}
+          invalid={errors.cut}
+          placeholder={tk("col.pickCut", "Pick cut…")}
+          pickProteinHint={tk("col.pickProteinFirst", "Pick protein first")}
+          searchPlaceholder={tk("col.searchCut", "Search by name or IMPS #…")}
+          onChange={(found) => {
             onChange({
-              cutId: id,
+              cutId: found?.id ?? null,
               cutName: found?.displayName ?? "",
-              // Prefill spec from catalog when row spec is empty
               spec: row.spec || (found?.bone_spec ?? ""),
             });
           }}
-        >
-          <option value="">
-            {!row.protein ? tk("col.pickProteinFirst", "Pick protein first") : cutsLoading ? tk("loading", "Loading…") : tk("col.pickCut", "Pick cut…")}
-          </option>
-          {/* Orphan cut (prefilled from Edit/Clone but not in current
-              catalog, e.g. region mismatch) — render a synthetic option so
-              the saved cut name is still visible. */}
-          {row.cutId && row.cutName && !catalog.some((c) => c.id === row.cutId) && (
-            <option value={row.cutId}>
-              {row.cutName} (other region)
-            </option>
-          )}
-          {catalog.map((c) => (
-            <option key={c.id} value={c.id}>{c.displayName}</option>
-          ))}
-        </select>
+        />
         {/* Aging + (US-only) USDA Grade — inline below cut select; replaces the
              dedicated columns. Read-only display is rendered via formatCutMeta()
              in buyer views and mobile cards. */}
