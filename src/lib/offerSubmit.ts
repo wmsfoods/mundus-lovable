@@ -562,7 +562,6 @@ export async function updateOfferV2(
 
   const certifications = l.certifications;
   const offerUpdate: Record<string, unknown> = {
-    status: ctx.status,
     origin_country: originCountryName,
     origin_port: originPortLabel,
     origin_port_id: primaryOriginPortId,
@@ -768,6 +767,19 @@ export async function updateOfferV2(
   if (freightInserts.length > 0) {
     const { error } = await supabase.from("freight_options").insert(freightInserts);
     if (error) throw new Error(`freight_options failed: ${error.message}`);
+  }
+
+  // Apply status LAST. The DB trigger `offers_validate_active_complete` runs at
+  // commit of each REST call; if we promoted to active before the DELETE/INSERT
+  // of child rows, the trigger would see an "active" offer with no items and
+  // throw `offerIncomplete:items`. Updating status only after children exist
+  // keeps the validation honest end-to-end.
+  {
+    const { error: statusErr } = await supabase
+      .from("offers")
+      .update({ status: ctx.status } as never)
+      .eq("id", offerId);
+    if (statusErr) throw new Error(`Failed to update offer status: ${statusErr.message}`);
   }
 
   // Re-read offer_number (immutable but we return for the toast).
