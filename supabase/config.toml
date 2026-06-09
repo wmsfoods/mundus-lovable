@@ -32,6 +32,8 @@ verify_jwt = false
     verify_jwt = false
   [functions.signup-notifications]
     verify_jwt = false
+  [functions.mundus-admin-mcp]
+    verify_jwt = false
   [functions.stripe-webhook]
     verify_jwt = false
   [functions.verify-document]
