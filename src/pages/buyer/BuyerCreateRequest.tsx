@@ -736,7 +736,7 @@ export default function BuyerCreateRequest() {
         <section className="bcr-col">
           <div className="bcr-card bcr-card-selectors">
             <div id="sec-protein" className="bcr-field" style={{ gridColumn: "1 / -1" }}>
-              <label>PROTEINS*</label>
+              <label>PROTEIN*</label>
               <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
                 {buyerProteins.map((p) => {
                   const on = selectedCategories.includes(p);
@@ -1474,8 +1474,8 @@ export default function BuyerCreateRequest() {
                   style={{ marginTop: 3 }}
                 />
                 <div>
-                  <div style={{ fontWeight: 600 }}>🎯 Specific supplier</div>
-                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Only the selected supplier will see this request</div>
+                  <div style={{ fontWeight: 600 }}>🎯 Specific supplier(s)</div>
+                  <div style={{ fontSize: 11, color: "var(--fg-muted)" }}>Only the selected suppliers will see this request</div>
                 </div>
               </label>
 
