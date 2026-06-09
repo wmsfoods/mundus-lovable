@@ -5728,6 +5728,7 @@ export type Database = {
           id: string
           is_halal: boolean | null
           is_kosher: boolean | null
+          marketplace: boolean
           negotiation_dial: string
           negotiation_mode: string
           observation: string | null
@@ -5767,6 +5768,7 @@ export type Database = {
           id?: string
           is_halal?: boolean | null
           is_kosher?: boolean | null
+          marketplace?: boolean
           negotiation_dial?: string
           negotiation_mode?: string
           observation?: string | null
@@ -5806,6 +5808,7 @@ export type Database = {
           id?: string
           is_halal?: boolean | null
           is_kosher?: boolean | null
+          marketplace?: boolean
           negotiation_dial?: string
           negotiation_mode?: string
           observation?: string | null
@@ -8078,6 +8081,7 @@ export type Database = {
           id: string
           is_halal: boolean | null
           is_kosher: boolean | null
+          marketplace: boolean
           negotiation_dial: string
           negotiation_mode: string
           observation: string | null
