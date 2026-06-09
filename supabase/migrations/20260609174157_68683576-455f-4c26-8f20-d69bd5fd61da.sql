@@ -1,0 +1,1 @@
+ALTER TABLE public.offers ALTER COLUMN payment_terms DROP NOT NULL;
