@@ -537,8 +537,8 @@ export default function BuyerCreateRequest() {
         `Quantity per container exceeds 28,000 kg (current: ${Math.round(perContainerKg).toLocaleString()} kg/container). Increase container count or reduce quantities.`,
       );
     }
-    if (distribution === "specific" && !targetSupplierId) {
-      return toast.error("Select a supplier or switch to marketplace distribution");
+    if (distribution === "specific" && targetSupplierIds.length === 0) {
+      return toast.error("Select at least one supplier or switch to marketplace distribution");
     }
     const valid = rows.filter((r) => r.cut.trim());
     const primary = valid[0];
@@ -592,7 +592,8 @@ export default function BuyerCreateRequest() {
       additional_info: additional || null,
       any_origin: anyOrigin,
       origin_countries: anyOrigin ? [] : originCountries,
-      target_supplier_id: distribution === "specific" ? targetSupplierId : null,
+      target_supplier_id: distribution === "specific" ? (targetSupplierIds[0] ?? null) : null,
+      target_supplier_ids: distribution === "specific" && targetSupplierIds.length > 0 ? targetSupplierIds : null,
       cut_region: cutRegion,
     };
 
