@@ -1482,18 +1482,54 @@ export default function BuyerCreateRequest() {
 
               {distribution === "specific" && (
                 <div style={{ marginTop: 8, position: "relative" }}>
+                  {targetSupplierIds.length > 0 && (
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
+                      {targetSupplierIds.map((id) => {
+                        const s = suppliers.find((x) => x.id === id);
+                        if (!s) return null;
+                        return (
+                          <span
+                            key={id}
+                            style={{
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: 6,
+                              padding: "4px 8px",
+                              borderRadius: 999,
+                              background: "#fdf2f8",
+                              border: "1px solid #8B2252",
+                              color: "#8B2252",
+                              fontSize: 12,
+                              fontWeight: 600,
+                            }}
+                          >
+                            {countryFlag(s.country || "")} {s.name}
+                            <button
+                              type="button"
+                              onClick={() => setTargetSupplierIds((prev) => prev.filter((x) => x !== id))}
+                              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#8B2252", fontSize: 14, lineHeight: 1, padding: 0 }}
+                              aria-label={`Remove ${s.name}`}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        );
+                      })}
+                    </div>
+                  )}
                   <input
                     type="text"
                     className="bcr-input"
-                    value={supplierDropdownOpen ? supplierSearch : (suppliers.find((s) => s.id === targetSupplierId)?.name || "")}
+                    value={supplierSearch}
                     onChange={(e) => { setSupplierSearch(e.target.value); setSupplierDropdownOpen(true); }}
-                    onFocus={() => { setSupplierSearch(""); setSupplierDropdownOpen(true); }}
-                    placeholder="Search supplier…"
+                    onFocus={() => { setSupplierDropdownOpen(true); }}
+                    placeholder={targetSupplierIds.length === 0 ? "Search supplier…" : "Add another supplier…"}
                     autoComplete="off"
                   />
                   {supplierDropdownOpen && (
                     <div style={{ position: "absolute", top: "100%", left: 0, right: 0, maxHeight: 220, overflowY: "auto", background: "#fff", border: "1px solid var(--border)", borderRadius: 8, zIndex: 50, marginTop: 4, boxShadow: "0 6px 20px rgba(0,0,0,0.08)" }}>
                       {suppliers
+                        .filter((s) => !targetSupplierIds.includes(s.id))
                         .filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase()))
                         .slice(0, 50)
                         .map((s) => (
@@ -1501,9 +1537,8 @@ export default function BuyerCreateRequest() {
                             key={s.id}
                             onMouseDown={(e) => {
                               e.preventDefault();
-                              setTargetSupplierId(s.id);
+                              setTargetSupplierIds((prev) => prev.includes(s.id) ? prev : [...prev, s.id]);
                               setSupplierSearch("");
-                              setSupplierDropdownOpen(false);
                             }}
                             style={{ padding: "8px 12px", cursor: "pointer", fontSize: 13 }}
                             onMouseEnter={(e) => (e.currentTarget.style.background = "#f3f4f6")}
@@ -1512,7 +1547,7 @@ export default function BuyerCreateRequest() {
                             {countryFlag(s.country || "")} {s.name}
                           </div>
                         ))}
-                      {suppliers.filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
+                      {suppliers.filter((s) => !targetSupplierIds.includes(s.id)).filter((s) => !supplierSearch.trim() || s.name.toLowerCase().includes(supplierSearch.toLowerCase())).length === 0 && (
                         <div style={{ padding: "8px 12px", fontSize: 12, color: "var(--fg-muted)" }}>No suppliers found</div>
                       )}
                     </div>
