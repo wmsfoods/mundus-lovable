@@ -1,40 +1,61 @@
 ## Problema
 
-No screenshot (largura tipo iPad ~820px), a faixa de **pills do topo** ("FROM / TO COUNT / CONTA… / INCOT / CERTIFI / FREIGHT" + botão "Edit logistics") renderiza tudo numa linha só. Cada pill fica com ~110px de largura, e o label uppercase (`text-[10px] tracking-wider`) **transborda visualmente para fora** do pill — daí "TO COUNT", "CONTA…", "INCOT", "CERTIFI", "FREIGHT" aparecerem cortados/saindo da caixa.
+No drawer "Logística" do supplier (passo **1 — Origem**), os dois campos **País** e **Porto** são `Popover` + `cmdk` (`Command`/`CommandList`/`CommandItem`).
 
-Causa raiz (puramente CSS/layout, nenhuma regra de negócio envolvida):
+No screenshot, o popover de **Portos** abre com o primeiro item cortado pela metade ("Itajaí (BRIJI)") e a lista parece já estar rolada para baixo — o usuário não consegue ver/clicar nos primeiros portos. Causas combinadas:
 
-- Componente `Pill` em `src/pages/supplier/SupplierCreateOfferV2Desktop.tsx` usa `flex-1 min-w-0`, então 6 pills + botão dividem a largura disponível igualmente.
-- O `<span>` do label não tem `truncate`/`whitespace-nowrap` nem largura mínima — então o texto uppercase com `tracking-wider` (que é mais largo que o normal) escapa do container quando o pill é estreito demais.
-- O valor (`<span className="truncate ...">`) já trunca corretamente, mas o label não.
-- `SupplierCreateOfferV2.tsx` usa o desktop a partir de 768px (breakpoint do `useIsMobile`). Ou seja, iPad portrait (820px) cai no layout desktop e sofre o problema.
+1. `CommandList` não tem `max-h` explícito; herda o default do shadcn (`max-h-[300px] overflow-y-auto`), mas quando o `Command` recebe um `value` controlado (ou o último item destacado), o `cmdk` chama `scrollIntoView` no item ativo e desloca a lista para baixo, escondendo o topo.
+2. Não há reset do highlight ao abrir, então o popover reabre na mesma posição em que estava.
+3. Falta affordance visual de "scroll" e de seleção múltipla (o porto é multi-select, mas o popover não mostra contagem, "Selecionar todos" nem "Limpar").
+4. País usa o mesmo padrão e sofre dos mesmos problemas (lista longa de países sem "fixar" o input de busca, sem indicador de país selecionado em destaque no topo).
 
-Nenhum outro card do screenshot (Products & pricing, Payment terms, Distribution) está com overflow real — apenas a faixa de pills do topo.
+Nenhuma regra de negócio, validação, RLS, freight, incoterm ou estado de oferta muda — somente UI/UX dos dois pickers.
 
-## Solução (somente front-end / Tailwind, nada de lógica)
+## Solução (somente front-end)
 
-**Arquivo único:** `src/pages/supplier/SupplierCreateOfferV2Desktop.tsx`
+**Arquivo único:** `src/pages/supplier/SupplierCreateOfferV2Desktop.tsx`, componente helper `OriginSection` (linhas ~270–440). O drawer mobile (`LogisticsSheetMobile.tsx`) já usa chips verticais e não tem o bug; fica intocado.
 
-1. **Pill strip vira grid responsivo** (linhas 1252–1321):
-   - Trocar `flex flex-wrap items-stretch gap-2` por um grid:  
-     `grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2`.
-   - Em tablet (≤lg ≈1024px) → 3 colunas, cada pill ganha ~240px e o label cabe inteiro.
-   - Em desktop largo → 6 colunas como hoje.
-   - Em telas bem estreitas que ainda caem no desktop (768–639px) → 2 colunas.
+### 1. Corrigir o scroll do popover de portos (bug do "primeiro item cortado")
 
-2. **Botão "Edit logistics" ganha linha própria** quando o grid quebra:
-   - Mover o `<Button Edit logistics>` para fora do grid, num bloco abaixo: `mt-2 flex justify-end`.
-   - Em desktop largo continua visualmente alinhado à direita; em tablet aparece logo abaixo da grade de pills sem brigar por largura.
+- Adicionar `max-h-[280px] overflow-y-auto overscroll-contain` explicitamente no `CommandList` (não confiar no default do cmdk).
+- Forçar reset do highlight ao abrir cada popover: prop `value=""` controlada no `<Command>` e `setValue("")` no `onOpenChange(true)`. Isso elimina o `scrollIntoView` que estava deslocando a lista.
+- `PopoverContent` ganha `sideOffset={4}` e `collisionPadding={12}` para nunca encostar no header/footer do drawer.
 
-3. **Label do Pill protegido contra overflow** (componente `Pill`, linhas 134–182):
-   - No `<span>` interno do label adicionar `min-w-0 truncate` (e manter `whitespace-nowrap` implícito por ser uma única linha de uppercase).
-   - Garantir `min-w-0` no wrapper `flex flex-col` para o `truncate` funcionar.
-   - Reduzir o `gap-3` interno para `gap-2` em telas estreitas (`gap-2 lg:gap-3`) para o ícone+texto caberem sem aperto.
+### 2. Melhorar usabilidade do picker de **País** (origem)
 
-4. **Não alterar:**
-   - Nenhum hook, estado, lógica de negociação, ofertas, frete, status, validação, RLS, edge function, mobile (`SupplierCreateOfferV2Mobile.tsx`) ou demais componentes.
-   - Apenas classes Tailwind nos arquivos listados acima.
+- Manter `CommandInput` (já existe), mas adicionar `autoFocus` ao abrir.
+- Header sticky dentro do `CommandList`: input fica fixo no topo, lista rola por baixo.
+- Item selecionado renderiza com leve destaque (`bg-muted/40`) e o `Check` em verde.
+- Mostrar o nome em inglês + emoji da bandeira (já tem) e adicionar o código ISO em cinza menor à direita, para reduzir ambiguidade entre países com nomes parecidos.
+- Botão "Limpar país" (`X`) inline no trigger quando há país selecionado, para desfazer rapidamente.
+
+### 3. Melhorar usabilidade do picker de **Porto** (origem, multi-select)
+
+- Lista virou multi-select de fato (já é), mas o trigger só dizia "N port(s) selected". Trocar por: quando 1 selecionado → mostra o nome; 2+ → mostra primeiro + `+N`; nada → "Adicionar porto".
+- Adicionar barra de ações no topo do popover (logo abaixo do `CommandInput`, sticky):
+  - **Contador**: "N selecionado(s) de M".
+  - **Selecionar todos** (filtrados) / **Limpar** quando há filtro digitado, opera apenas sobre os visíveis.
+- Cada `CommandItem` mostra checkbox no lugar do `Check` (visual mais claro de multi-select), nome do porto + código `(BRSSZ)` em cinza menor.
+- Itens já selecionados sobem para o topo da lista (sort estável: selecionados primeiro, restante por ordem alfabética). Assim o usuário sempre vê o que já escolheu sem precisar rolar.
+- Popover não fecha após cada toggle (já é o comportamento atual, mantido).
+- O bloco de chips removíveis abaixo (já existente) ganha botão pequeno "Limpar todos" quando tem 2+ chips.
+
+### 4. Comportamento responsivo
+
+- O trigger do botão usa `truncate` no texto, ícone com `shrink-0`. Em larguras menores do drawer (tablet), o `grid-cols-2` do par País/Porto cai para `grid-cols-1` em `< sm` para nunca espremer o trigger.
+- `PopoverContent` mantém `w-[var(--radix-popover-trigger-width)]` no desktop e cresce para `min-w-[280px]` em telas estreitas, garantindo que o nome do porto + código caibam em uma linha.
+
+## Não alterar
+
+- Nenhuma lógica de logística, validação de FOB/EXW (`tooManyPorts`), freight, lista de incoterms, parsing de AI Quick-fill, RLS, edge function ou hooks.
+- Componentes não-relacionados (mobile sheet, destinos, container, freight, distribution, payment, cuts).
+- Estado/contrato de `OriginSection` (mesmas props `countryId`, `portIds`, `onCountryChange`, `onPortIdsChange`).
 
 ## Verificação
 
-Após implementar, validar visualmente no preview em três larguras: 768px (iPad portrait), 1024px (iPad landscape) e 1440px (desktop). Em todas, os 6 pills devem mostrar label completo ("FROM", "TO COUNTRIES", "CONTAINER", "INCOTERM", "CERTIFICATIONS", "FREIGHT") sem texto saindo da caixa, e o botão "Edit logistics" deve estar visível e acessível.
+Abrir `/supplier/offers/new` → "Edit logistics" → Origem em três larguras (1440, 1024, 820 px):
+
+- Abrir o popover de **Portos** com Brasil selecionado → primeiro item (Itajaí) totalmente visível, scroll funcionando, contador no topo, marcar/desmarcar funciona sem fechar.
+- Abrir popover de **País** → input em foco, lista rolável até o fim, item escolhido fica destacado.
+- Trigger do porto mostra nome do porto selecionado (ou "+N") em vez de só contar.
+- Nada quebra em mobile (mobile usa outro componente).
