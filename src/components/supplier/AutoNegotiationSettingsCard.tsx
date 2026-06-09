@@ -105,7 +105,7 @@ export function AutoNegotiationSettingsCard({ offerId }: Props) {
 
       auditLog({
         action: "offer.negotiation_mode_changed",
-        category: "offers",
+        category: "offer",
         entityType: "offer",
         entityId: offerId,
         details: {
