@@ -1454,6 +1454,8 @@ export default function SupplierCreateOfferV2Desktop() {
         mode={mode}
         missingSections={missingSections(breakdown).filter((s) => s.group !== "logistics" || s.key !== "shipment")}
         translate={tk}
+        backHref={mode === "fromRequest" && requestId ? `/supplier/requests/${requestId}` : undefined}
+        backLabel={mode === "fromRequest" ? (tk("actionBar.backToRequest", "Back to request") as string) : undefined}
       />
       </>
       )}
