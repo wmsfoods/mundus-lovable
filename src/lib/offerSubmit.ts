@@ -159,12 +159,32 @@ export function validateForPublish(input: SubmitInput): string | null {
     return "singleOriginPortRequired";
   }
   if (l.destinations.length === 0) return "missingDestinations";
+  // Every destination market must have at least one port selected.
+  for (const dest of l.destinations) {
+    if (!dest.selectedPortIds || dest.selectedPortIds.length === 0) {
+      return "missingDestinationPort";
+    }
+  }
   if (l.incoterms.length === 0) return "missingIncoterm";
   if (
     (l.incoterms.includes("FOB") || l.incoterms.includes("EXW")) &&
     !l.primaryPricingIncoterm
   ) {
     return "primaryPricingMissing";
+  }
+  // Freight required when supplier quotes CFR/CIF — must be > 0 for every destination port.
+  const needsFreight = l.incoterms.includes("CFR") || l.incoterms.includes("CIF");
+  if (needsFreight) {
+    for (const dest of l.destinations) {
+      for (const pid of dest.selectedPortIds) {
+        let raw = "";
+        if (l.sameFreightGlobal) raw = l.globalFreight;
+        else if (dest.freight.mode === "same") raw = dest.freight.same;
+        else raw = dest.freight.perPort[pid] ?? "";
+        const v = parseFloat(String(raw ?? "").replace(/,/g, "")) || 0;
+        if (!(v > 0)) return "missingFreight";
+      }
+    }
   }
   if (cuts.length === 0) return "missingCuts";
   for (const c of cuts) {

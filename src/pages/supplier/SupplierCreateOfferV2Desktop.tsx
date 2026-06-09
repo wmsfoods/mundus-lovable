@@ -926,7 +926,8 @@ export default function SupplierCreateOfferV2Desktop() {
       const knownKeys = new Set([
         "missingOrigin","missingDestinations","missingIncoterm","missingCuts",
         "missingCutResolution","invalidCutNumbers","floorGtAsk","missingPayment","missingDistribution",
-        "offerHasActiveBids",
+        "offerHasActiveBids","missingDestinationPort","missingFreight","singleOriginPortRequired","primaryPricingMissing",
+        "offerIncomplete",
       ]);
       const msg = knownKeys.has(raw)
         ? (t(`supplier.createOfferV2.submit.${raw}`, { defaultValue: raw }) as string)
@@ -1579,6 +1580,7 @@ export default function SupplierCreateOfferV2Desktop() {
         onSaveDraft={() => handleSubmit("draft")}
         onPublish={() => handleSubmit("active")}
         mode={mode}
+        originalStatus={(offerPrefillQuery.data?.prefill?.status as any) ?? null}
         missingSections={missingSections(breakdown).filter((s) => s.group !== "logistics" || s.key !== "shipment")}
         translate={tk}
         backHref={mode === "fromRequest" && requestId ? `/supplier/requests/${requestId}` : undefined}

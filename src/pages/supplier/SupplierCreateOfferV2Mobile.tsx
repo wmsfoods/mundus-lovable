@@ -465,7 +465,8 @@ export default function SupplierCreateOfferV2Mobile() {
       const knownKeys = new Set([
         "missingOrigin","missingDestinations","missingIncoterm","missingCuts",
         "missingCutResolution","invalidCutNumbers","floorGtAsk","missingPayment","missingDistribution",
-        "offerHasActiveBids",
+        "offerHasActiveBids","missingDestinationPort","missingFreight","singleOriginPortRequired","primaryPricingMissing",
+        "offerIncomplete",
       ]);
       const msg = knownKeys.has(raw)
         ? tk(`submit.${raw}`, raw)
@@ -846,23 +847,40 @@ export default function SupplierCreateOfferV2Mobile() {
         className="sticky bottom-0 z-30 border-t bg-background px-3.5 pt-3"
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom, 0px) + 12px)" }}
       >
-        <div className="flex gap-2.5">
-          <Button
-            variant="outline"
-            className="h-12 flex-1 text-base"
-            disabled={submitting}
-            onClick={() => handleSubmit("draft")}
-          >
-            {tk("mobile.draft", "Draft")}
-          </Button>
-          <Button
-            className="h-12 flex-1 bg-primary text-base text-primary-foreground"
-            disabled={submitting || !isComplete}
-            onClick={() => handleSubmit("active")}
-          >
-            {tk("mobile.publish", "Publish offer")} →
-          </Button>
-        </div>
+        {(() => {
+          const originalStatus = offerPrefillQuery.data?.prefill?.status ?? null;
+          const isEditingLive = mode === "edit" && originalStatus && originalStatus !== "draft";
+          if (isEditingLive) {
+            return (
+              <Button
+                className="h-12 w-full bg-primary text-base text-primary-foreground"
+                disabled={submitting || !isComplete}
+                onClick={() => handleSubmit("active")}
+              >
+                {tk("mobile.saveChanges", "Save changes")}
+              </Button>
+            );
+          }
+          return (
+            <div className="flex gap-2.5">
+              <Button
+                variant="outline"
+                className="h-12 flex-1 text-base"
+                disabled={submitting}
+                onClick={() => handleSubmit("draft")}
+              >
+                {tk("mobile.draft", "Draft")}
+              </Button>
+              <Button
+                className="h-12 flex-1 bg-primary text-base text-primary-foreground"
+                disabled={submitting || !isComplete}
+                onClick={() => handleSubmit("active")}
+              >
+                {tk("mobile.publish", "Publish offer")} →
+              </Button>
+            </div>
+          );
+        })()}
       </footer>
 
       {/* Modals/Sheets */}

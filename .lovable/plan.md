@@ -1,42 +1,36 @@
-## Problema
+## Diagnóstico
 
-Ao salvar **draft** no Create Offer:
+- A falha principal está no desktop: em modo `edit`, o botão **Save changes** chama o mesmo caminho de **Publish** (`handleSubmit("active")`).
+- Por isso, uma oferta que era `draft` pode virar `active` apenas ao salvar alterações.
+- A validação de publicação no código existe, mas está mais fraca que o medidor de 100%: ela não cobre todos os pontos que a UI marca como obrigatórios, como portas de destino/frete.
+- A oferta `#M-000134-2026` está hoje como `active` no banco; a investigação mostra 1 item registrado nela, mas ela passou pelo fluxo problemático que permite promover draft sem intenção explícita.
 
-```
-Failed to create offer: null value in column "payment_terms" of relation "offers" violates not-null constraint
-```
+## Plano de correção
 
-Causa raiz (confirmada no schema):
-
-- A coluna `public.offers.payment_terms` está definida como `NOT NULL` **sem default**.
-- O código de salvar oferta (`src/lib/offerSubmit.ts`, linhas 232 e 552) envia explicitamente `payment_terms: paymentTerms || null` — porque, num draft inicial, o supplier ainda não escolheu termos de pagamento. Para um draft isso é correto e esperado.
-- Resultado: qualquer draft salvo antes de o supplier abrir o card "Payment terms" e escolher um valor quebra na hora do INSERT.
-
-A regra de "payment_terms obrigatório" pertence ao fluxo de **publish**, não ao draft. Hoje o `offerCompletion` já valida `payment_terms` como campo obrigatório antes de publicar (botão Publish fica desabilitado / banner "X fields missing to publish"), então retirar o `NOT NULL` no banco **não afrouxa nenhuma garantia real** — apenas permite o draft existir enquanto o usuário preenche.
-
-## Solução
-
-**Uma migration única, mínima:**
-
-```sql
-ALTER TABLE public.offers
-  ALTER COLUMN payment_terms DROP NOT NULL;
-```
-
-Sem mudança de RLS, sem mudança de default, sem backfill (já não existem linhas com NULL — eram impossíveis).
-
-### Por que não a alternativa "preencher um valor default no código"?
-- Inventar um default (ex.: "100% TT") esconderia que o supplier ainda não escolheu — entraria como termo "real" e poderia ser publicado por engano.
-- O draft existe justamente para permitir campos vazios; forçar valor falsifica o estado.
-
-## O que NÃO muda
-- Nenhum hook, página, componente, edge function ou outra tabela.
-- A validação de publish em `src/lib/offerCompletion.ts` continua exigindo `payment_terms` para publicar (apenas drafts podem ficar sem).
-- `offerSubmit.ts` já envia `payment_terms: paymentTerms || null` — passa a funcionar como esperado depois da migration.
-
-## Verificação
-
-Após aplicar a migration:
-1. `/supplier/offers/new` → preencher só logística parcial → "Save draft" → deve salvar sem erro.
-2. Reabrir o draft, completar tudo, "Publish" → continua barrado se payment_terms vazio (validação cliente intacta).
-3. `SELECT column_name, is_nullable FROM information_schema.columns WHERE table_name='offers' AND column_name='payment_terms';` deve retornar `is_nullable = YES`.
+1. **Separar claramente os intents do fluxo**
+  - `Save draft` / `Save changes` em uma oferta que ainda é draft sempre salva como `draft`.
+  - Somente o botão explícito **Publish / Make available** pode enviar `status: active`.
+  - Em oferta já ativa, `Save changes` pode manter `active`, Mas só se continuar 100% válida.
+2. **Ajustar a ActionBar do Create Offer desktop**
+  - Quando editar uma oferta `draft`, mostrar ações separadas:
+    - **Save draft**
+    - **Publish** apenas quando estiver 100% completa
+  - Quando editar uma oferta `active`, manter "**Save changes"**, mas bloquear se a oferta ficar incompleta.
+  - Usar o status original vindo do prefill (`draft`/`active`) Para decidir o comportamento correto.
+3. **Reforçar a validação de publicação no código**
+  - Centralizar a regra: publicar exige que as mesmas seções obrigatórias estejam completas.
+  - Bloquear publicação quando faltarem itens, pagamento, distribuição, incoterm, origem, destinos com portas e frete aplicável.
+  - Draft continua aceitando campos incompletos.
+4. **Adicionar uma proteção no banco para evitar publicação inválida**
+  - Criar uma função/trigger de segurança para impedir que uma oferta vire `active` se não tiver os dados mínimos relacionados, como itens, Incoterms, mercados/destinos, portas de origem e payment terms.
+  - Ajustar o fluxo técnico para salvar primeiro como draft e só ativar no final, depois que os registros filhos estiverem gravados.
+  - Isso evita que outro bug ou chamada direta publique uma oferta incompleta.
+5. **Corrigir a oferta #M-000134-2026 se necessário**
+  - Após a correção, revisar novamente a oferta.
+  - Se ela não cumprir a regra completa, volta para `draft`; se cumprir, pode permanecer ativa.
+6. **Validar o fluxo completo**
+  - Novo draft incompleto: salva sem publicar.
+  - Editar draft e clicar Save draft/Save changes: continua draft.
+  - Editar draft e tentar Publish incompleto: bloqueia e mostra pendências.
+  - Editar draft completo e clicar Publish: vira active.
+  - Editar oferta ativa e remover campo obrigatório: não salva como active.
