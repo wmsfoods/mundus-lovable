@@ -312,15 +312,29 @@ export default function SupplierRequests() {
               const resp = responseMap[r.id];
               const acceptedNeg = resp?.negotiations.find((n) => n.status === "bid_accepted");
               const withdrawn = r.status === "not_interested";
+              const notInterested = dismissed.has(r.id);
+              const inactive = notInterested;
               const routingStatus = (r as any).routing_status as string | undefined;
               const assignedOfficeId = (r as any).assigned_office_id as string | undefined;
               const assignedOffice = familyOffices.find((o) => o.id === assignedOfficeId);
               return (
-              <tr key={r.id}>
+              <tr key={r.id} style={inactive ? { opacity: 0.55, background: "var(--g050)" } : undefined}>
                 <td>
                   <button type="button" className="link-action" onClick={() => navigate(`/supplier/requests/${r.id}`)}>
                     {formatRequestNumber(r.request_number, r.created_at)}
                   </button>
+                  {notInterested && (
+                    <div style={{ marginTop: 4 }}>
+                      <span style={{
+                        display: "inline-flex", alignItems: "center", gap: 4,
+                        padding: "3px 8px", borderRadius: 999,
+                        background: "var(--g100)", color: "var(--g700)",
+                        fontSize: 10, fontWeight: 700,
+                      }}>
+                        💤 Not interested
+                      </span>
+                    </div>
+                  )}
                   {r.target_supplier_id && (
                     <div style={{ marginTop: 4 }}>
                       <span style={{
