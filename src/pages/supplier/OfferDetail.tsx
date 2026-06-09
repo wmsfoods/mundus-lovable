@@ -154,7 +154,7 @@ export default function SupplierOfferDetail({ adminMode = false }: Props) {
         setActive(true);
         auditLog({
           action: "offer.reactivated",
-          category: "offers",
+          category: "offer",
           entityType: "offer",
           entityId: id,
           entityLabel: formatOfferNumber(offer.offerNumber, offer.createdAt),
@@ -264,7 +264,7 @@ export default function SupplierOfferDetail({ adminMode = false }: Props) {
       setDeactivateOpen(false);
       auditLog({
         action: "offer.deactivated",
-        category: "offers",
+        category: "offer",
         entityType: "offer",
         entityId: id,
         entityLabel: formatOfferNumber(offer.offerNumber, offer.createdAt),
@@ -325,7 +325,7 @@ export default function SupplierOfferDetail({ adminMode = false }: Props) {
       if (delErr) { toast.error(delErr.message || "Failed to delete offer"); return; }
       auditLog({
         action: "offer.deleted",
-        category: "offers",
+        category: "offer",
         entityType: "offer",
         entityId: offer.id,
         entityLabel: formatOfferNumber(offer.offerNumber, offer.createdAt),

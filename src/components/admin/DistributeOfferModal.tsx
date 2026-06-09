@@ -138,7 +138,7 @@ export function DistributeOfferModal({ open, onClose, offerId, offerNumber, offe
     }
     auditLog({
       action: "offer.shared",
-      category: "offers",
+      category: "offer",
       entityType: "offer",
       entityId: offerId,
       entityLabel: offerNumber != null ? formatOfferNumber(offerNumber, offerCreatedAt) : offerTitle,
