@@ -562,7 +562,6 @@ export async function updateOfferV2(
 
   const certifications = l.certifications;
   const offerUpdate: Record<string, unknown> = {
-    status: ctx.status,
     origin_country: originCountryName,
     origin_port: originPortLabel,
     origin_port_id: primaryOriginPortId,
