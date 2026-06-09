@@ -154,17 +154,17 @@ function Pill({
       type="button"
       onClick={onClick}
       className={cn(
-        "relative flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-muted/50",
+        "relative flex min-w-0 w-full items-center gap-2 lg:gap-3 rounded-lg border border-border bg-card px-3 py-2 text-left transition-colors hover:bg-muted/50",
         ring,
       )}
     >
       <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-muted text-muted-foreground">
         <Icon size={16} />
       </span>
-      <span className="flex min-w-0 flex-col">
-        <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+      <span className="flex min-w-0 flex-1 flex-col">
+        <span className="flex min-w-0 items-center gap-1.5 truncate whitespace-nowrap text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
           {status && <span className={cn("inline-block h-1.5 w-1.5 rounded-full", dot)} aria-hidden />}
-          {label}
+          <span className="truncate">{label}</span>
         </span>
         <span className="truncate text-sm font-semibold text-foreground">{value}</span>
       </span>
