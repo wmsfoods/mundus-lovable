@@ -6,7 +6,7 @@ export const PROTEIN_META: Record<Exclude<ProteinKey, "all">, { label: string; e
   beef: { label: "Beef", emoji: "🥩" },
   pork: { label: "Pork", emoji: "🐖" },
   poultry: { label: "Poultry", emoji: "🐓" },
-  ovine: { label: "Ovine", emoji: "🐑" },
+  ovine: { label: "Lamb", emoji: "🐑" },
 };
 
 // Normalize any category string from DB/mocks into a ProteinKey.
