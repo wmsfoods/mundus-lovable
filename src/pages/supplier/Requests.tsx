@@ -83,7 +83,7 @@ export default function SupplierRequests() {
           ? `,assigned_office_id.in.(${fam.familyOfficeIds.join(",")})`
           : "";
         query = query.or(
-          `target_supplier_id.eq.${fam.familyRootId},target_supplier_id.is.null${officeFilter}`,
+          `target_supplier_id.eq.${fam.familyRootId},target_supplier_id.is.null,target_supplier_ids.cs.{${fam.familyRootId}}${officeFilter}`,
         );
       } else if (fam.isFamilyHq && fam.isOfficeOperator) {
         // Office operator: only assigned to my office(s)
@@ -92,7 +92,7 @@ export default function SupplierRequests() {
         query = query.in("assigned_office_id", ids);
       } else {
         // Single-office supplier — today's behavior
-        query = query.or(`target_supplier_id.is.null,target_supplier_id.eq.${company.id}`);
+        query = query.or(`target_supplier_id.is.null,target_supplier_id.eq.${company.id},target_supplier_ids.cs.{${company.id}}`);
       }
       const { data: reqs } = await query.order("created_at", { ascending: false });
       const list = (reqs ?? []) as unknown as BuyerRequestRow[];
