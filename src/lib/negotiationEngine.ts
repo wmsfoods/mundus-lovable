@@ -4,8 +4,8 @@
  */
 import type { RealNegotiationRow } from "@/hooks/useRealNegotiation";
 
-export const MAX_DISPLAY_ROUNDS = 4;
-export const MAX_RAW_ROUNDS = MAX_DISPLAY_ROUNDS * 2;
+export const MAX_DISPLAY_ROUNDS = 3;
+export const MAX_RAW_ROUNDS = MAX_DISPLAY_ROUNDS * 2; // 6 raw = 3 bid/counter pairs
 export const EXPIRATION_HOURS = 24;
 export const CHAT_ENABLED_FROM_ROUND = 3;
 
