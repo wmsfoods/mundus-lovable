@@ -479,7 +479,10 @@ function OriginPicker({
                         <CommandItem
                           key={p.id}
                           value={`${p.name} ${p.code ?? ""}`}
-                          onSelect={() => togglePort(p.id)}
+                          onSelect={() => {
+                            togglePort(p.id);
+                            setPortQuery("");
+                          }}
                           className={cn(checked && "bg-muted/40")}
                         >
                           <span
