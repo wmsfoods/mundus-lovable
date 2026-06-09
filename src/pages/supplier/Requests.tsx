@@ -448,12 +448,26 @@ export default function SupplierRequests() {
                     ) : (
                       <>
                         {!(showHqInbox && routingStatus === "unassigned") && (
-                          <button type="button" className="btn-tb is-primary" onClick={() => handleCreateOffer(r)}>
+                          <button
+                            type="button"
+                            className="btn-tb is-primary"
+                            onClick={() => handleCreateOffer(r)}
+                            disabled={inactive}
+                            style={inactive ? { opacity: 0.5, cursor: "not-allowed" } : undefined}
+                          >
                             Create Offer
                           </button>
                         )}
-                        <button type="button" className="btn-tb" onClick={() => setDismissed((s) => new Set(s).add(r.id))}>
-                          Not interested
+                        <button
+                          type="button"
+                          className="btn-tb"
+                          onClick={() => setDismissed((s) => {
+                            const next = new Set(s);
+                            if (next.has(r.id)) next.delete(r.id); else next.add(r.id);
+                            return next;
+                          })}
+                        >
+                          {notInterested ? "Interested" : "Not interested"}
                         </button>
                       </>
                     )}
