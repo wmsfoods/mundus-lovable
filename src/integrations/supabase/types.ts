@@ -4035,6 +4035,36 @@ export type Database = {
           },
         ]
       }
+      mcp_audit_log: {
+        Row: {
+          action: string
+          created_at: string
+          id: string
+          payload: Json | null
+          record_id: string | null
+          source: string
+          table_name: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          record_id?: string | null
+          source?: string
+          table_name: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          id?: string
+          payload?: Json | null
+          record_id?: string | null
+          source?: string
+          table_name?: string
+        }
+        Relationships: []
+      }
       motor_jobs: {
         Row: {
           attempts: number
