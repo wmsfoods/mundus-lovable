@@ -12,6 +12,8 @@ type Props = {
   onSaveDraft?: () => void;
   onPublish?: () => void;
   mode?: "create" | "edit" | "clone" | "fromRequest";
+  /** Status of the offer being edited (from prefill). Drives whether "Save changes" promotes to active. */
+  originalStatus?: "draft" | "active" | "inactive" | "archived" | "sold_out" | null;
   missingSections?: SectionStatus[];
   translate?: (key: string, fallback: string, opts?: Record<string, unknown>) => string;
   /** When set, the Cancel/Back button navigates here instead of /supplier/offers. */
@@ -20,7 +22,7 @@ type Props = {
   backLabel?: string;
 };
 
-export function ActionBar({ completion, submitting = false, onSaveDraft, onPublish, mode = "create", missingSections = [], translate, backHref, backLabel }: Props) {
+export function ActionBar({ completion, submitting = false, onSaveDraft, onPublish, mode = "create", originalStatus = null, missingSections = [], translate, backHref, backLabel }: Props) {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const tk = (k: string, fb: string, opts?: Record<string, unknown>) =>
@@ -32,6 +34,10 @@ export function ActionBar({ completion, submitting = false, onSaveDraft, onPubli
 
   const handleCancel = () => navigate(backHref ?? "/supplier/offers");
   const isEdit = mode === "edit";
+  // Editing an active/live offer: "Save changes" keeps it active — but only when complete.
+  const isEditingLive = isEdit && originalStatus && originalStatus !== "draft";
+  // Editing a draft: behave like create — explicit Save draft vs Publish.
+  const isEditingDraft = isEdit && (!originalStatus || originalStatus === "draft");
 
   const publishBtn = (
     <Button disabled={publishDisabled} onClick={onPublish}>
@@ -82,11 +88,23 @@ export function ActionBar({ completion, submitting = false, onSaveDraft, onPubli
       <Button variant="outline" onClick={handleCancel} disabled={submitting}>
         {backLabel ?? tk("cancel", "Cancel")}
       </Button>
-      {isEdit ? (
-        <Button disabled={submitting || completion === 0} onClick={onPublish}>
-          {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
-          {tk("saveChanges", "Save changes")}
-        </Button>
+      {isEditingLive ? (
+        // Live offer: single "Save changes" — keeps it active, but only when 100% complete.
+        wrapPublishWithTooltip(
+          <Button disabled={publishDisabled} onClick={onPublish}>
+            {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
+            {tk("saveChanges", "Save changes")}
+          </Button>,
+        )
+      ) : isEditingDraft ? (
+        // Draft being edited: explicit Save draft vs Publish — same as create.
+        <>
+          <Button variant="outline" disabled={draftDisabled} onClick={onSaveDraft}>
+            {submitting && <Loader2 size={14} className="mr-1 animate-spin" />}
+            {tk("saveDraft", "Save draft")}
+          </Button>
+          {wrapPublishWithTooltip(publishBtn)}
+        </>
       ) : (
         <>
           <Button variant="outline" disabled={draftDisabled} onClick={onSaveDraft}>
