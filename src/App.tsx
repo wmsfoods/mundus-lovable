@@ -303,6 +303,7 @@ const App = () => (
                   </RequirePro>
                 }
               />
+              <Route path="mundus-intel" element={<SupplierMundusIntel />} />
               <Route path="subscription-success" element={<SubscriptionSuccess side="supplier" />} />
               <Route path="profile" element={<Profile />} />
               <Route path="notifications" element={<Notifications />} />
