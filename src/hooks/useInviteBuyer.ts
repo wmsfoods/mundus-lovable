@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useActiveOffice } from "./useActiveOffice";
 import { useCurrentCompany } from "./useCurrentCompany";
 import { sendEmailNotification } from "@/lib/emailSender";
-import { supabase as supa } from "@/integrations/supabase/client";
 import { createNotification } from "@/lib/notifications";
 import { sendPushToUser } from "@/lib/push";
 
@@ -81,7 +80,7 @@ export function useInviteBuyer() {
             );
             // Bell + Push for already-registered buyers (#9)
             try {
-              const { data: u } = await supa
+              const { data: u } = await supabase
                 .from("users")
                 .select("id")
                 .ilike("email", input.email)
