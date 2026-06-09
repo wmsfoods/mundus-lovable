@@ -25,6 +25,7 @@ import {
 } from "@/lib/offerOptions";
 import { containerCapacityKg } from "@/lib/units";
 import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
+import { FclCountInput } from "@/components/supplier/CreateOfferV2/FclCountInput";
 
 // ---------- Mirror desktop types exactly ----------
 type PortFreightShape =
