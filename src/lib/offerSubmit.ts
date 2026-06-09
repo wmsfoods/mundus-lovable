@@ -561,93 +561,13 @@ export async function updateOfferV2(
   }
 
   const certifications = l.certifications;
-  const offerUpdate: Record<string, unknown> = {
-    origin_country: originCountryName,
-    origin_port: originPortLabel,
-    origin_port_id: primaryOriginPortId,
-    shipment_month,
-    shipment_year,
-    shipment_ready_raw,
-    payment_terms: paymentTerms || null,
-    container_size: l.containerSize,
-    total_fcl: Math.max(1, l.fclCount),
-    is_halal: certifications.includes("Halal"),
-    is_kosher: certifications.includes("Kosher"),
-    plant_id: cuts.find((c) => c.plantId)?.plantId ?? null,
-    negotiation_mode: negotiationMode,
-    negotiation_dial: negotiationDial,
-    specific_buyer_company_ids:
-      distribution.specificCustomerIds.length > 0 ? distribution.specificCustomerIds : null,
-    all_customers: !!distribution.allCustomers,
-    exw_pickup_location:
-      l.incoterms.includes("EXW") && l.exwPickupLocation.trim()
-        ? l.exwPickupLocation.trim()
-        : null,
-    cut_region: input.cutRegion ?? "global",
-    request_id: input.requestId ?? null,
-    primary_pricing_incoterm:
-      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
-        ? l.primaryPricingIncoterm
-        : null,
-    pricing_includes_freight: computePricingIncludesFreight(l),
-    pricing_reference_port_id:
-      l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
-        ? (l.pricingReferencePortId ?? null)
-        : null,
-  };
 
-  const { error: updErr } = await supabase
-    .from("offers")
-    .update(offerUpdate as never)
-    .eq("id", offerId);
-  if (updErr) throw new Error(`Failed to update offer: ${updErr.message}`);
-
-  // PRE-CHECK: se algum offer_item desta offer tem cut_rounds (= já tem bid de buyer),
-  // a edição de items é bloqueada porque o FK cut_rounds.offer_item_id é RESTRICT.
-  // Sem essa checagem, o DELETE falharia silenciosamente e o INSERT criaria duplicatas.
-  const { data: existingItems } = await supabase
-    .from("offer_items")
-    .select("id")
-    .eq("offer_id", offerId);
-  const existingItemIds = (existingItems ?? []).map((r: any) => r.id as string);
-
-  if (existingItemIds.length > 0) {
-    const { count: activeBidsCount, error: cntErr } = await supabase
-      .from("cut_rounds")
-      .select("id", { count: "exact", head: true })
-      .in("offer_item_id", existingItemIds);
-    if (cntErr) {
-      throw new Error(`Failed to check active bids: ${cntErr.message}`);
-    }
-    if ((activeBidsCount ?? 0) > 0) {
-      throw new Error("offerHasActiveBids");
-    }
-  }
-
-  // Replace strategy: drop children, re-insert. Checa erros — FKs podem bloquear.
-  const deleteChildren = async () => {
-    const tables = [
-      "offer_items",
-      "offer_allowed_incoterms",
-      "offer_markets",
-      "freight_options",
-      "offer_origin_ports",
-    ] as const;
-    for (const table of tables) {
-      const { error } = await supabase.from(table).delete().eq("offer_id", offerId);
-      if (error) {
-        throw new Error(`Delete from ${table} failed: ${error.message}`);
-      }
-    }
-  };
-  await deleteChildren();
-
-  // Upload only newly-picked media (existing paths flow through).
+  // Upload newly-picked media first (storage is outside the DB transaction).
+  // Existing storage paths flow through via c.existingPhotoPath / existingFilesPaths.
   const media = await uploadCutMedia(cuts, ctx.supplierId, offerId);
 
-  // offer_items
-  type OfferItemInsert = {
-    offer_id: string;
+  // Resolve customer_product_id for each cut (RPC already exists).
+  type ItemPayload = {
     customer_product_id: string;
     amount: number;
     price: number;
@@ -664,7 +584,7 @@ export async function updateOfferV2(
     photo_url: string | null;
     files_urls: string[] | null;
   };
-  const itemsRows: OfferItemInsert[] = [];
+  const itemsPayload: ItemPayload[] = [];
   for (let i = 0; i < cuts.length; i++) {
     const c = cuts[i];
     if (!c.cutId) continue;
@@ -675,8 +595,7 @@ export async function updateOfferV2(
       p_cut_id: c.cutId,
     });
     if (rpcErr || !cpId) throw new Error(`resolve_customer_product failed: ${rpcErr?.message ?? "no id"}`);
-    itemsRows.push({
-      offer_id: offerId,
+    itemsPayload.push({
       customer_product_id: cpId as string,
       amount: c.qty,
       price: c.askPrice,
@@ -699,31 +618,10 @@ export async function updateOfferV2(
             : null,
     });
   }
-  if (itemsRows.length > 0) {
-    const { error } = await supabase.from("offer_items").insert(itemsRows);
-    if (error) throw new Error(`offer_items insert failed: ${error.message}`);
-  }
 
-  // allowed incoterms
-  const allowed = l.incoterms.filter((x) => VALID_INCO.includes(x));
-  if (allowed.length > 0) {
-    const { error } = await supabase
-      .from("offer_allowed_incoterms")
-      .insert(allowed.map((it) => ({ offer_id: offerId, incoterm_type: it })));
-    if (error) throw new Error(`offer_allowed_incoterms failed: ${error.message}`);
-  }
-
-  // origin ports (multi)
-  const originIds = Array.from(new Set(l.originPortIds.filter(Boolean)));
-  if (originIds.length > 0) {
-    const { error: oopErr } = await supabase
-      .from("offer_origin_ports")
-      .insert(originIds.map((port_id) => ({ offer_id: offerId, port_id })));
-    if (oopErr) throw new Error(`offer_origin_ports failed: ${oopErr.message}`);
-  }
-
-  // markets
+  // Resolve market_id per destination country.
   const countryIds = l.destinations.map((d) => d.countryId).filter(Boolean);
+  const marketIds: string[] = [];
   if (countryIds.length > 0) {
     const { data: mktRows, error: mktErr } = await supabase
       .from("markets")
@@ -731,18 +629,14 @@ export async function updateOfferV2(
       .in("country_id", countryIds);
     if (mktErr) throw new Error(`markets lookup failed: ${mktErr.message}`);
     const byCountry = new Map((mktRows ?? []).map((r) => [r.country_id as string, r.id as string]));
-    const mktInserts = countryIds
-      .map((cid) => byCountry.get(cid))
-      .filter((v): v is string => !!v)
-      .map((market_id) => ({ offer_id: offerId, market_id }));
-    if (mktInserts.length > 0) {
-      const { error: omErr } = await supabase.from("offer_markets").insert(mktInserts);
-      if (omErr) throw new Error(`offer_markets failed: ${omErr.message}`);
+    for (const cid of countryIds) {
+      const m = byCountry.get(cid);
+      if (m) marketIds.push(m);
     }
   }
 
-  // freight
-  const freightInserts: Array<{ offer_id: string; port_id: string; cost: number; insurance: number }> = [];
+  // Build freight rows (one per unique destination port).
+  const freightPayload: Array<{ port_id: string; cost: number; insurance: number }> = [];
   const seen = new Set<string>();
   const cifEnabled = l.incoterms.includes("CIF");
   for (const d of l.destinations) {
@@ -761,25 +655,66 @@ export async function updateOfferV2(
         else if (d.insurance?.mode === "perPort") insRaw = d.insurance.perPort[pid] ?? "";
       }
       const insurance = parseFloat(String(insRaw ?? "").replace(/,/g, "")) || 0;
-      freightInserts.push({ offer_id: offerId, port_id: pid, cost, insurance });
+      freightPayload.push({ port_id: pid, cost, insurance });
     }
   }
-  if (freightInserts.length > 0) {
-    const { error } = await supabase.from("freight_options").insert(freightInserts);
-    if (error) throw new Error(`freight_options failed: ${error.message}`);
-  }
 
-  // Apply status LAST. The DB trigger `offers_validate_active_complete` runs at
-  // commit of each REST call; if we promoted to active before the DELETE/INSERT
-  // of child rows, the trigger would see an "active" offer with no items and
-  // throw `offerIncomplete:items`. Updating status only after children exist
-  // keeps the validation honest end-to-end.
-  {
-    const { error: statusErr } = await supabase
-      .from("offers")
-      .update({ status: ctx.status } as never)
-      .eq("id", offerId);
-    if (statusErr) throw new Error(`Failed to update offer status: ${statusErr.message}`);
+  const allowedIncoterms = l.incoterms.filter((x) => VALID_INCO.includes(x));
+  const originIds = Array.from(new Set(l.originPortIds.filter(Boolean)));
+
+  // Single atomic transaction — if any step fails, NOTHING is deleted/changed.
+  const payload = {
+    offer: {
+      origin_country: originCountryName,
+      origin_port: originPortLabel,
+      origin_port_id: primaryOriginPortId,
+      shipment_month,
+      shipment_year,
+      shipment_ready_raw,
+      payment_terms: paymentTerms || null,
+      container_size: l.containerSize,
+      total_fcl: Math.max(1, l.fclCount),
+      is_halal: certifications.includes("Halal"),
+      is_kosher: certifications.includes("Kosher"),
+      plant_id: cuts.find((c) => c.plantId)?.plantId ?? null,
+      negotiation_mode: negotiationMode,
+      negotiation_dial: negotiationDial,
+      specific_buyer_company_ids:
+        distribution.specificCustomerIds.length > 0 ? distribution.specificCustomerIds : null,
+      all_customers: !!distribution.allCustomers,
+      exw_pickup_location:
+        l.incoterms.includes("EXW") && l.exwPickupLocation.trim()
+          ? l.exwPickupLocation.trim()
+          : null,
+      cut_region: input.cutRegion ?? "global",
+      request_id: input.requestId ?? null,
+      primary_pricing_incoterm:
+        l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+          ? l.primaryPricingIncoterm
+          : null,
+      pricing_includes_freight: computePricingIncludesFreight(l),
+      pricing_reference_port_id:
+        l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
+          ? (l.pricingReferencePortId ?? null)
+          : null,
+    },
+    items: itemsPayload,
+    incoterms: allowedIncoterms,
+    markets: marketIds,
+    origin_ports: originIds,
+    freight: freightPayload,
+    status: ctx.status,
+  };
+
+  const { error: rpcErr } = await supabase.rpc("update_offer_v2_atomic", {
+    p_offer_id: offerId,
+    p_payload: payload as never,
+  });
+  if (rpcErr) {
+    if ((rpcErr.message || "").includes("offerHasActiveBids")) {
+      throw new Error("offerHasActiveBids");
+    }
+    throw new Error(`Failed to update offer: ${rpcErr.message}`);
   }
 
   // Re-read offer_number (immutable but we return for the toast).
