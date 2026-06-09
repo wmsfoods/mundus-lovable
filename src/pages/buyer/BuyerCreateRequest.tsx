@@ -744,11 +744,10 @@ export default function BuyerCreateRequest() {
                     <button
                       key={p}
                       type="button"
-                      onClick={() => {
-                        setSelectedCategories((prev) =>
-                          on ? (prev.length === 1 ? prev : prev.filter((x) => x !== p)) : [...prev, p]
-                        );
-                      }}
+                       onClick={() => {
+                         // Single-select for now: picking a protein replaces selection
+                         if (!on) setSelectedCategories([p]);
+                       }}
                       style={{
                         padding: "6px 14px", borderRadius: 20, fontSize: 13, fontWeight: 600,
                         border: on ? "2px solid #8B2252" : "1px solid #d1d5db",
