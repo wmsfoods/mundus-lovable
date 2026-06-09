@@ -8124,9 +8124,12 @@ export type Database = {
       get_supplier_customer_companies: {
         Args: { p_office_id: string }
         Returns: {
+          contact_email: string
+          contact_name: string
           country: string
           id: string
           name: string
+          phone: string
           tax_id: string
         }[]
       }
