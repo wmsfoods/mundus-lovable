@@ -2217,7 +2217,8 @@
         "pending_invite": "Já existe um convite pendente para este email até {{expires_at}}.",
         "existing_company_new_contact": "Esta empresa já está na Mundus. Um novo contato será adicionado.",
         "new_buyer": "Novo comprador — um convite de cadastro será enviado.",
-        "invalid_input": "Por favor informe um email válido."
+        "invalid_input": "Por favor informe um email válido.",
+        "email_is_supplier": "Este e-mail pertence a um Supplier no Mundus Trade e não pode ser convidado como buyer. Fale com a Mundus em contact@mundustrade.com."
       },
       "toast": {
         "invited_existing_buyer": "Comprador vinculado ao seu escritório.",
@@ -2229,7 +2230,8 @@
       "errors": {
         "already_in_list": "Este comprador já está na sua lista de clientes.",
         "cooldown_active": "Você poderá reconvidar este comprador após {{retry_after}}.",
-        "max_reinvites_reached": "Limite de reconvites atingido para este comprador."
+        "max_reinvites_reached": "Limite de reconvites atingido para este comprador.",
+        "email_is_supplier": "Este e-mail pertence a um Supplier no Mundus Trade e não pode ser convidado como buyer. Fale com a Mundus em contact@mundustrade.com."
       }
     },
     "createOfferV2": {
