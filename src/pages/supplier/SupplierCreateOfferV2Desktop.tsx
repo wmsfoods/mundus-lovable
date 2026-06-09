@@ -1579,6 +1579,7 @@ export default function SupplierCreateOfferV2Desktop() {
         onSaveDraft={() => handleSubmit("draft")}
         onPublish={() => handleSubmit("active")}
         mode={mode}
+        originalStatus={(offerPrefillQuery.data?.prefill?.status as any) ?? null}
         missingSections={missingSections(breakdown).filter((s) => s.group !== "logistics" || s.key !== "shipment")}
         translate={tk}
         backHref={mode === "fromRequest" && requestId ? `/supplier/requests/${requestId}` : undefined}
