@@ -7,6 +7,7 @@ import {
   TagIcon,
   ArrowTopRightIcon,
   ArrowRightIcon,
+  PlusIcon,
 } from "@/components/icons";
 import { PROTEIN_META } from "@/components/marketplace/ProteinFilter";
 import { useMarketplaceProteins } from "@/hooks/useMarketplaceProteins";
@@ -126,6 +127,13 @@ export default function BuyerHome() {
           </div>
         </div>
       </section>
+
+      <div className="buyer-home-cta">
+        <Link to="/buyer/requests/new" className="buyer-home-cta-btn">
+          <PlusIcon size={16} />
+          {t("shell.nav.createRequest", { defaultValue: "Create Request" })}
+        </Link>
+      </div>
 
       <div className="action-row">
         <ActionCard
