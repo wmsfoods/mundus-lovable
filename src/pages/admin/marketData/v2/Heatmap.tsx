@@ -1,4 +1,4 @@
-import { fmtTonCompact, fmtUsdCompact, truncate } from "./format";
+import { fmtTonCompact, fmtUsdCompact, truncate, fmtLoads, toLoads } from "./format";
 import type { MatrixPayload } from "./types";
 
 // Sequential scale fading toward brand (low) → saturated brand (high)
@@ -18,14 +18,16 @@ export function Heatmap({
   data, metric, rowLabel = "Linha", colLabel = "Coluna",
 }: {
   data: MatrixPayload;
-  metric: "volume" | "fob";
+  metric: "volume" | "fob" | "loads";
   rowLabel?: string;
   colLabel?: string;
 }) {
-  const fmt = metric === "fob" ? fmtUsdCompact : fmtTonCompact;
+  // 'loads' is derived from the volume matrix client-side (volume / 27).
+  const transform = metric === "loads" ? toLoads : (n: number) => n;
+  const fmt = metric === "fob" ? fmtUsdCompact : metric === "loads" ? fmtLoads : fmtTonCompact;
   let max = 0;
   for (const r of data.rows) for (const c of data.cols) {
-    const v = data.cells[r]?.[c] ?? 0;
+    const v = transform(data.cells[r]?.[c] ?? 0);
     if (v > max) max = v;
   }
   if (!data.rows.length || !data.cols.length) {
@@ -53,7 +55,7 @@ export function Heatmap({
                 {truncate(r, 28)}
               </td>
               {data.cols.map((c) => {
-                const v = data.cells[r]?.[c] ?? 0;
+                const v = transform(data.cells[r]?.[c] ?? 0);
                 return (
                   <td
                     key={c}
