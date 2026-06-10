@@ -78,13 +78,13 @@ export function useOfferOptions(limit = 80) {
           product_categories: it.customer_products?.standard_products?.product_categories ?? null,
         }));
         const cats = deriveCategories(productRows);
-        const dests = Array.from(
+        const dests: string[] = Array.from(
           new Set(
             (o.offer_markets ?? [])
               .map((m: any) => m.markets?.countries?.english_name)
-              .filter((x: any): x is string => !!x),
+              .filter((x: unknown): x is string => typeof x === "string" && x.length > 0),
           ),
-        );
+        ) as string[];
         const cutNames = productRows.map((p) => p.name).filter((x): x is string => !!x).slice(0, 4);
         return {
           id: o.id,
