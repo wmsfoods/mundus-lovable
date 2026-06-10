@@ -1,5 +1,5 @@
 import { ResponsiveContainer, ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, Bar, Line, Legend } from "recharts";
-import { fmtMonth, fmtTonCompact, fmtPrice } from "./format";
+import { fmtMonth, fmtTonCompact, fmtPrice, fmtLoads } from "./format";
 import type { MonthlyRow } from "./types";
 
 const BRAND = "#B64769";
@@ -38,7 +38,9 @@ export function MonthlyComboChart({ rows, height = 320 }: { rows: MonthlyRow[]; 
           <Tooltip
             contentStyle={{ fontSize: 12, borderRadius: 6 }}
             formatter={(v: any, name: string) =>
-              name === "Volume" ? [fmtTonCompact(Number(v)), name] : [fmtPrice(Number(v)), name]
+              name === "Volume"
+                ? [`${fmtTonCompact(Number(v))} · ${fmtLoads(Number(v))}`, name]
+                : [fmtPrice(Number(v)), name]
             }
             labelFormatter={(l) => String(l)}
           />
