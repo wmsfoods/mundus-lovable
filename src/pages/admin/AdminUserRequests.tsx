@@ -125,86 +125,13 @@ export default function AdminUserRequests() {
     if (!approveTarget) return;
     setActing(true);
 
-    // 1) Find or create the target company BEFORE updating the request, so
-    //    the database trigger sees approved_company_id and can link the user
-    //    in a single atomic step.
-    let approvedCompanyId: string | null = null;
-    try {
-      const req = approveTarget;
-      const role = (req.role || "").toLowerCase();
-      const isBuyer = role === "buyer";
-      const isSupplier = role === "supplier";
-
-      // Reuse existing public.users.company_id if already linked.
-      const { data: existingUser } = await supabase
-        .from("users")
-        .select("company_id")
-        .eq("email", req.email)
-        .maybeSingle();
-      if (existingUser?.company_id) approvedCompanyId = existingUser.company_id;
-
-      if (!approvedCompanyId && req.company_name) {
-        const { data: existingCompany } = await supabase
-          .from("companies")
-          .select("id")
-          .eq("name", req.company_name)
-          .eq("country", req.registration_country || req.country || "")
-          .maybeSingle();
-        if (existingCompany?.id) {
-          approvedCompanyId = existingCompany.id;
-        } else {
-          const { data: newCompany, error: companyErr } = await supabase
-            .from("companies")
-            .insert({
-              name: req.company_name,
-              tax_id: req.tax_id || "",
-              country: req.registration_country || req.country || "",
-              state: req.state || "",
-              address: req.address || "",
-              city: req.city || null,
-              zip_code: req.zip || null,
-              phone: req.phone || "",
-              is_buyer: isBuyer,
-              is_supplier: isSupplier,
-              office_type: "headquarters",
-              status: "active",
-              protein_profiles: req.proteins || [],
-              buyer_protein_profile: isBuyer ? (req.proteins || []) : [],
-              countries_of_operation: req.countries_of_operation || [],
-            })
-            .select("id")
-            .single();
-          if (companyErr) throw companyErr;
-          approvedCompanyId = newCompany.id;
-        }
-      }
-    } catch (e) {
-      console.warn("approval: failed to resolve target company", e);
-    }
-
-    // 2) Update the request — trigger fires and runs the central linking
-    //    function automatically (creates public.users + company_users +
-    //    user_offices, sets created_user_id, etc).
-    const { error } = await supabase
-      .from("user_requests")
-      .update({
-        status: "approved",
-        reviewed_at: new Date().toISOString(),
-        ...(approvedCompanyId ? { approved_company_id: approvedCompanyId } : {}),
-      })
-      .eq("id", approveTarget.id);
+    // Atomic approval: resolves/creates company, sets approved_company_id,
+    // marks request approved, and links any existing auth user. All inside
+    // a single SECURITY DEFINER function on the database.
+    const { error } = await supabase.rpc("approve_user_request", {
+      p_request_id: approveTarget.id,
+    });
     if (error) { setActing(false); toast.error(error.message); return; }
-
-    // 3) Safety net: if the auth user already exists, also call the linking
-    //    RPC directly (covers cases where the trigger update raced or the
-    //    user signed up before approval).
-    try {
-      await supabase.rpc("link_approved_user_request_by_email", {
-        p_email: approveTarget.email,
-      });
-    } catch (e) {
-      console.warn("link_approved_user_request_by_email failed", e);
-    }
 
     await supabase.functions.invoke("signup-notifications", {
       body: {
@@ -223,14 +150,10 @@ export default function AdminUserRequests() {
   const handleReject = async () => {
     if (!rejectTarget) return;
     setActing(true);
-    const { error } = await supabase
-      .from("user_requests")
-      .update({
-        status: "rejected",
-        reviewed_at: new Date().toISOString(),
-        reject_reason: rejectReason || null,
-      })
-      .eq("id", rejectTarget.id);
+    const { error } = await supabase.rpc("reject_user_request", {
+      p_request_id: rejectTarget.id,
+      p_reason: rejectReason || null,
+    });
     if (error) { setActing(false); toast.error(error.message); return; }
     await supabase.functions.invoke("signup-notifications", {
       body: {
