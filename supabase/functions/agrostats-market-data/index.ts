@@ -38,6 +38,10 @@ const COL = {
   product: 'Commodity_HS/HS8 Portugues',
   wt: 'WTMT',
   fob: 'FOB VALUE USD',
+  shipperType: 'Company_Shipper/Type',
+  consigneeType: 'Company_Consignee/Type',
+  shipperState: 'Company_Shipper/State',
+  consigneeCountry: 'Company_Consignee/Country',
 }
 const Q = (c: string) => `"${c.replace(/"/g, '""')}"`
 
@@ -46,6 +50,8 @@ type SchemaPayload = {
   columns: Column[]
   rowCount: number
   distincts: Record<string, string[]>
+  dateFormat?: 'ISO' | 'DMY' | 'MDY' | 'UNKNOWN'
+  monthExpr?: string
 }
 
 function isNumericType(t: string) {
