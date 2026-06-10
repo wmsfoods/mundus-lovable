@@ -8380,6 +8380,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_mundus_vitrine_stats: { Args: never; Returns: Json }
       get_offer_floors: {
         Args: { _offer_ids: string[] }
         Returns: {
