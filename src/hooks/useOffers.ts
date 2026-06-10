@@ -7,7 +7,6 @@ export type OfferItem = {
   id: string;
   amount: number;
   price: number;
-  minimum_price: number;
   condition: string;
   aging_method: string | null;
   us_grade: string | null;
@@ -110,7 +109,6 @@ export function useOffers(): UseOffersResult {
             id,
             amount,
             price,
-            minimum_price,
             condition,
             aging_method,
             us_grade,
