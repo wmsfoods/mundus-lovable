@@ -151,8 +151,42 @@ async function buildSchemaPayload(): Promise<SchemaPayload> {
         distincts[col.column_name] = valRes.rows.map((r) => r.v ?? '').filter(Boolean)
       }
     }
-    return { columns, rowCount, distincts }
+    const dateInfo = await detectDateFormat(c)
+    return { columns, rowCount, distincts, ...dateInfo }
   })
+}
+
+async function detectDateFormat(c: Client): Promise<{ dateFormat: 'ISO' | 'DMY' | 'MDY' | 'UNKNOWN'; monthExpr: string }> {
+  const dateCol = Q(COL.date)
+  try {
+    const res = await c.queryObject<{ v: string | null }>(
+      `SELECT ${dateCol}::text AS v FROM ${FQ_TABLE}
+        WHERE ${dateCol} IS NOT NULL LIMIT 50`,
+    )
+    const samples = res.rows.map((r) => (r.v ?? '').trim()).filter(Boolean)
+    let iso = 0, dmy = 0, mdy = 0
+    for (const s of samples) {
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) iso++
+      else if (/^\d{2}\/\d{2}\/\d{4}/.test(s)) {
+        const [a, b] = s.split('/').map(Number)
+        if (a > 12) dmy++
+        else if (b > 12) mdy++
+        else dmy++ // tie-break to DMY (Brazilian default)
+      }
+    }
+    if (iso >= dmy && iso >= mdy && iso > 0) {
+      return { dateFormat: 'ISO', monthExpr: `LEFT(${dateCol}::text, 7)` }
+    }
+    if (dmy >= mdy && dmy > 0) {
+      return { dateFormat: 'DMY', monthExpr: `SUBSTR(${dateCol}::text, 7, 4) || '-' || SUBSTR(${dateCol}::text, 4, 2)` }
+    }
+    if (mdy > 0) {
+      return { dateFormat: 'MDY', monthExpr: `SUBSTR(${dateCol}::text, 7, 4) || '-' || SUBSTR(${dateCol}::text, 1, 2)` }
+    }
+  } catch (e) {
+    console.error('[detectDateFormat] failed', (e as Error).message)
+  }
+  return { dateFormat: 'UNKNOWN', monthExpr: `LEFT(${dateCol}::text, 7)` }
 }
 
 function quoteIdent(name: string) {
