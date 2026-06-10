@@ -112,12 +112,19 @@ async function updateState(supaSrv: ReturnType<typeof createClient>, patch: Reco
 async function reinvokeProcess() {
   const url = `${Deno.env.get('SUPABASE_URL')}/functions/v1/agrostats-sync`
   const key = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-  // Fire-and-forget — do not await response body
-  fetch(url, {
+  // Use EdgeRuntime.waitUntil so the runtime does not cancel the request
+  // when the current invocation returns its response.
+  const p = fetch(url, {
     method: 'POST',
     headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({ action: 'process' }),
-  }).catch(() => {})
+  }).then((r) => r.text()).catch(() => {})
+  try {
+    // @ts-ignore — provided by Supabase Edge Runtime
+    EdgeRuntime.waitUntil(p)
+  } catch {
+    // fall through; best effort
+  }
 }
 
 async function processBatches(supaSrv: ReturnType<typeof createClient>) {
