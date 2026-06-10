@@ -10,7 +10,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Database, Cloud, RefreshCw, Play, Loader2, KeyRound, Copy } from "lucide-react";
+import { Database, Cloud, RefreshCw, Play, Loader2 } from "lucide-react";
 
 type SyncState = {
   status: "idle" | "backfilling" | "complete" | "error";
@@ -38,8 +38,6 @@ export function DataSourceCard() {
   const [state, setState] = useState<SyncState | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
-  const [cronSecret, setCronSecret] = useState<string | null>(null);
-  const [showingSecret, setShowingSecret] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -94,28 +92,6 @@ export function DataSourceCard() {
     refresh();
   };
 
-  const revealCronSecret = async () => {
-    setBusy("secret");
-    const { data, error } = await supabase.rpc("admin_get_agrostats_cron_secret" as any);
-    setBusy(null);
-    if (error) {
-      toast.error("Falha ao obter secret", { description: error.message });
-      return;
-    }
-    setCronSecret(String(data ?? ""));
-    setShowingSecret(true);
-  };
-
-  const copySecret = async () => {
-    if (!cronSecret) return;
-    try {
-      await navigator.clipboard.writeText(cronSecret);
-      toast.success("Copiado");
-    } catch {
-      toast.error("Não foi possível copiar");
-    }
-  };
-
   const usingMirror = state?.use_mirror === true;
   const progress = state?.total_rows
     ? Math.min(100, Math.round((Number(state.rows_copied) / Number(state.total_rows)) * 100))
@@ -167,10 +143,6 @@ export function DataSourceCard() {
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
             Atualizar
           </Button>
-          <Button size="sm" variant="ghost" onClick={revealCronSecret} disabled={busy !== null} title="Mostrar o CRON secret para configurar em Lovable Secrets">
-            {busy === "secret" ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <KeyRound className="h-4 w-4 mr-1" />}
-            CRON secret
-          </Button>
           <Button size="sm" variant="outline" onClick={runIncremental} disabled={busy !== null || state?.status === "backfilling"}>
             {busy === "incremental" ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
             Sincronizar agora
@@ -198,19 +170,6 @@ export function DataSourceCard() {
           </AlertDialog>
         </div>
       </div>
-
-      {showingSecret && cronSecret && (
-        <div className="mt-3 rounded-md border bg-muted/30 p-3 text-xs space-y-2">
-          <p className="text-muted-foreground">
-            Cole este valor em <span className="font-medium">Lovable → Secrets → CRON_SECRET</span> para o cron semanal autenticar no edge function.
-          </p>
-          <div className="flex items-center gap-2">
-            <code className="flex-1 truncate font-mono bg-background border rounded px-2 py-1">{cronSecret}</code>
-            <Button size="sm" variant="outline" onClick={copySecret}><Copy className="h-3 w-3 mr-1" />Copiar</Button>
-            <Button size="sm" variant="ghost" onClick={() => setShowingSecret(false)}>Ocultar</Button>
-          </div>
-        </div>
-      )}
 
       {state?.status === "backfilling" && (
         <div className="mt-3 space-y-1">
