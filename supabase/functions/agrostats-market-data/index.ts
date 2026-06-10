@@ -834,6 +834,22 @@ async function panelSearchEntity(c: Client, entity: 'shipper' | 'consignee', q: 
   return { rows: res.rows.map(serializeRow) }
 }
 
+async function panelDistinctProducts(c: Client, monthExpr: string, f: PanelFilters) {
+  const args: unknown[] = []
+  // Strip productTypes from the filter so the list itself isn't filtered by current selection
+  const fStripped = { ...f, productTypes: undefined }
+  const { where } = buildPanelWhere(fStripped, monthExpr, args)
+  const sql = `
+    SELECT "Commodity Detail/BL Description" AS name,
+           COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS volume
+    FROM ${FQ_TABLE} ${where}
+    ${where ? 'AND' : 'WHERE'} "Commodity Detail/BL Description" IS NOT NULL AND "Commodity Detail/BL Description" <> ''
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 100
+  `
+  const r = await c.queryObject<any>({ text: sql, args })
+  return { rows: r.rows.map(serializeRow) }
+}
+
 async function runPanel(panel: string, body: any): Promise<unknown> {
   // Get cached schema (just for monthExpr); fall back to rebuild
   return await withPg(async (c) => {
@@ -867,6 +883,8 @@ async function runPanel(panel: string, body: any): Promise<unknown> {
         const entity = (body.entity === 'shipper' ? 'shipper' : 'consignee') as 'shipper' | 'consignee'
         return await panelSearchEntity(c, entity, String(body.q ?? ''))
       }
+      case 'distinct-products':
+        return await panelDistinctProducts(c, monthExpr!, filters)
       default:
         throw new Error(`Unknown panel: ${panel}`)
     }
@@ -912,6 +930,8 @@ async function runPanelMirror(
         entity: body.entity === 'shipper' ? 'shipper' : 'consignee',
         q: String(body.q ?? ''),
       })
+    case 'distinct-products':
+      return await rpc('agrostats_distinct_products', { f: filters })
     default:
       throw new Error(`Unknown panel: ${panel}`)
   }
