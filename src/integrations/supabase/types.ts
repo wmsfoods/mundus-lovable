@@ -333,6 +333,7 @@ export type Database = {
           id: number
           last_error: string | null
           last_offset: number
+          last_sync_at: string | null
           last_synced_month: string | null
           rows_copied: number
           status: string
@@ -344,6 +345,7 @@ export type Database = {
           id?: number
           last_error?: string | null
           last_offset?: number
+          last_sync_at?: string | null
           last_synced_month?: string | null
           rows_copied?: number
           status?: string
@@ -355,6 +357,7 @@ export type Database = {
           id?: number
           last_error?: string | null
           last_offset?: number
+          last_sync_at?: string | null
           last_synced_month?: string | null
           rows_copied?: number
           status?: string
@@ -8179,6 +8182,7 @@ export type Database = {
         Args: { p_token: string; p_user_id: string }
         Returns: Json
       }
+      admin_get_agrostats_cron_secret: { Args: never; Returns: string }
       admin_hard_delete: {
         Args: { p_entity_type: string; p_ids: string[] }
         Returns: Json
