@@ -10,7 +10,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { Database, Cloud, RefreshCw, Play, Loader2 } from "lucide-react";
+import { Database, Cloud, RefreshCw, Play, Loader2, KeyRound, Copy } from "lucide-react";
 
 type SyncState = {
   status: "idle" | "backfilling" | "complete" | "error";
@@ -19,6 +19,7 @@ type SyncState = {
   last_offset: number;
   last_error: string | null;
   last_synced_month: string | null;
+  last_sync_at: string | null;
   use_mirror: boolean;
   updated_at: string;
 };
@@ -26,10 +27,19 @@ type SyncState = {
 const fmt = (n: number | null | undefined) =>
   n == null ? "—" : new Intl.NumberFormat("pt-BR").format(n);
 
+const fmtDateTime = (iso: string | null | undefined) => {
+  if (!iso) return "—";
+  try {
+    return new Date(iso).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" });
+  } catch { return iso; }
+};
+
 export function DataSourceCard() {
   const [state, setState] = useState<SyncState | null>(null);
   const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
+  const [cronSecret, setCronSecret] = useState<string | null>(null);
+  const [showingSecret, setShowingSecret] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoading(true);
@@ -84,6 +94,28 @@ export function DataSourceCard() {
     refresh();
   };
 
+  const revealCronSecret = async () => {
+    setBusy("secret");
+    const { data, error } = await supabase.rpc("admin_get_agrostats_cron_secret" as any);
+    setBusy(null);
+    if (error) {
+      toast.error("Falha ao obter secret", { description: error.message });
+      return;
+    }
+    setCronSecret(String(data ?? ""));
+    setShowingSecret(true);
+  };
+
+  const copySecret = async () => {
+    if (!cronSecret) return;
+    try {
+      await navigator.clipboard.writeText(cronSecret);
+      toast.success("Copiado");
+    } catch {
+      toast.error("Não foi possível copiar");
+    }
+  };
+
   const usingMirror = state?.use_mirror === true;
   const progress = state?.total_rows
     ? Math.min(100, Math.round((Number(state.rows_copied) / Number(state.total_rows)) * 100))
@@ -108,12 +140,18 @@ export function DataSourceCard() {
                 </Badge>
               )}
             </div>
+            <p className="text-[11px] text-muted-foreground mt-0.5">
+              Sincronização automática: semanal (segunda 06:00 UTC)
+            </p>
             <p className="text-xs text-muted-foreground mt-1">
               {usingMirror
                 ? "Consultas rodam no banco Mundus. Independente do parceiro externo."
                 : "Consultas vão direto ao Agro Statistics (Neon). Faça o backfill para mudar para o espelho local."}
               {state?.last_synced_month && (
                 <> {" · "} Último mês sincronizado: <span className="font-medium">{state.last_synced_month}</span></>
+              )}
+              {state?.last_sync_at && (
+                <> {" · "} Última sincronização: <span className="font-medium">{fmtDateTime(state.last_sync_at)}</span></>
               )}
             </p>
             {state?.last_error && (
@@ -128,6 +166,10 @@ export function DataSourceCard() {
           <Button size="sm" variant="ghost" onClick={refresh} disabled={loading}>
             <RefreshCw className={`h-4 w-4 mr-1 ${loading ? "animate-spin" : ""}`} />
             Atualizar
+          </Button>
+          <Button size="sm" variant="ghost" onClick={revealCronSecret} disabled={busy !== null} title="Mostrar o CRON secret para configurar em Lovable Secrets">
+            {busy === "secret" ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <KeyRound className="h-4 w-4 mr-1" />}
+            CRON secret
           </Button>
           <Button size="sm" variant="outline" onClick={runIncremental} disabled={busy !== null || state?.status === "backfilling"}>
             {busy === "incremental" ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
@@ -156,6 +198,19 @@ export function DataSourceCard() {
           </AlertDialog>
         </div>
       </div>
+
+      {showingSecret && cronSecret && (
+        <div className="mt-3 rounded-md border bg-muted/30 p-3 text-xs space-y-2">
+          <p className="text-muted-foreground">
+            Cole este valor em <span className="font-medium">Lovable → Secrets → CRON_SECRET</span> para o cron semanal autenticar no edge function.
+          </p>
+          <div className="flex items-center gap-2">
+            <code className="flex-1 truncate font-mono bg-background border rounded px-2 py-1">{cronSecret}</code>
+            <Button size="sm" variant="outline" onClick={copySecret}><Copy className="h-3 w-3 mr-1" />Copiar</Button>
+            <Button size="sm" variant="ghost" onClick={() => setShowingSecret(false)}>Ocultar</Button>
+          </div>
+        </div>
+      )}
 
       {state?.status === "backfilling" && (
         <div className="mt-3 space-y-1">
