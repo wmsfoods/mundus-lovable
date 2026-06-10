@@ -94,8 +94,9 @@ export function useOfferForPrefill(
           primary_pricing_incoterm,
           pricing_reference_port_id,
           items:offer_items (
-            id, amount, price, minimum_price, condition, packaging, aging_method, us_grade,
+            id, amount, price, condition, packaging, aging_method, us_grade,
             plant_id, brand_id, notes, photo_url, files_urls,
+            floor:offer_item_floors ( minimum_price, minimum_amount, maximum_amount ),
             customer_product:customer_products (
               id, name,
               standard_product:standard_products (
@@ -248,11 +249,10 @@ export function useOfferForPrefill(
           : "";
 
       // 7. Resolve cuts: match customer_product → cuts (by name + category)
-      const items = (offer.items ?? []) as Array<{
+      const itemsRaw = (offer.items ?? []) as Array<{
         id: string;
         amount: number;
         price: number;
-        minimum_price: number;
         packaging: string | null;
         aging_method: string | null;
         us_grade: string | null;
@@ -261,6 +261,7 @@ export function useOfferForPrefill(
         notes: string | null;
         photo_url: string | null;
         files_urls: string[] | null;
+        floor?: { minimum_price: number | null } | { minimum_price: number | null }[] | null;
         customer_product?: {
           id?: string;
           name?: string | null;
@@ -270,6 +271,10 @@ export function useOfferForPrefill(
           } | null;
         } | null;
       }>;
+      const items = itemsRaw.map((it) => {
+        const f = (Array.isArray(it.floor) ? it.floor[0] : it.floor) ?? null;
+        return { ...it, minimum_price: f?.minimum_price ?? null };
+      });
 
       const names = items
         .map((it) => it.customer_product?.name?.trim())

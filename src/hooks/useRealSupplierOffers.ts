@@ -58,7 +58,8 @@ export function useRealSupplierOffers() {
           id, offer_number, status, origin_country, origin_port, view_count,
           shipment_month, shipment_year, shipment_ready_raw, payment_terms, container_size,
           total_fcl, created_at, office_id, exw_pickup_location,
-          items:offer_items ( id, amount, price, minimum_price, condition, packaging, photo_url, files_urls,
+          items:offer_items ( id, amount, price, condition, packaging, photo_url, files_urls,
+            floor:offer_item_floors ( minimum_price, minimum_amount, maximum_amount ),
             customer_product:customer_products (
               id, name,
               standard_product:standard_products (
@@ -85,7 +86,16 @@ export function useRealSupplierOffers() {
         return;
       }
       const mapped: SupplierOffer[] = (data ?? []).map((o: any) => {
-        const items = (o.items ?? []) as Array<any>;
+        const itemsRaw = (o.items ?? []) as Array<any>;
+        const items = itemsRaw.map((it) => {
+          const f = (Array.isArray(it.floor) ? it.floor[0] : it.floor) ?? null;
+          return {
+            ...it,
+            minimum_price: f?.minimum_price ?? null,
+            minimum_amount: f?.minimum_amount ?? null,
+            maximum_amount: f?.maximum_amount ?? null,
+          };
+        });
         const incotermsList = ((o.incoterms ?? []) as any[]).map((i) => i.incoterm_type);
         const hasFob = incotermsList.includes("FOB");
         const dests = ((o.markets ?? []) as any[])
