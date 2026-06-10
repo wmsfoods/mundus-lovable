@@ -850,7 +850,6 @@ async function panelDistinctProducts(c: Client, monthExpr: string, f: PanelFilte
 }
 
 async function runPanel(panel: string, body: any): Promise<unknown> {
-  // no-op marker
   // Get cached schema (just for monthExpr); fall back to rebuild
   return await withPg(async (c) => {
     const filters: PanelFilters = body.filters ?? {}
