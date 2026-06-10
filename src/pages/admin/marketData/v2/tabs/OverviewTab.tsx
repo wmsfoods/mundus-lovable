@@ -4,7 +4,7 @@ import { KpiCard } from "../KpiCard";
 import { WidgetShell } from "../WidgetShell";
 import { MonthlyComboChart } from "../MonthlyComboChart";
 import { HorizontalBars } from "../HorizontalBars";
-import { fmtTonCompact, fmtUsdCompact, fmtPrice, fmtCompactNumber, pctDelta, periodCaption } from "../format";
+import { fmtTonCompact, fmtUsdCompact, fmtPrice, fmtCompactNumber, pctDelta, periodCaption, fmtLoads } from "../format";
 import type { PanelFilters, KpiPayload, MonthlyRow, TopRow } from "../types";
 
 export function OverviewTab({ filters, onCaption }: { filters: PanelFilters; onCaption: (c: string | null) => void }) {
@@ -26,8 +26,9 @@ export function OverviewTab({ filters, onCaption }: { filters: PanelFilters; onC
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-3">
         <KpiCard label="Volume" value={fmtTonCompact(c?.volume)} delta={d("volume")} loading={kpis.loading} />
+        <KpiCard label="Loads" value={fmtLoads(c?.volume)} hint="1 FCL = 27 t" delta={d("volume")} loading={kpis.loading} />
         <KpiCard label="FOB" value={fmtUsdCompact(c?.fob)} delta={d("fob")} loading={kpis.loading} />
         <KpiCard label="Preço médio" value={fmtPrice(c?.avg_price_ton)} delta={d("avg_price_ton")} loading={kpis.loading} />
         <KpiCard label="Exportadores" value={fmtCompactNumber(c?.shippers)} delta={d("shippers")} loading={kpis.loading} />
