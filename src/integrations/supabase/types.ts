@@ -7953,6 +7953,13 @@ export type Database = {
         Args: { p_entity_type: string; p_ids: string[] }
         Returns: Json
       }
+      approve_user_request: {
+        Args: { p_request_id: string }
+        Returns: {
+          company_id: string
+          request_id: string
+        }[]
+      }
       assign_request_to_office: {
         Args: { p_office_id: string; p_request_id: string; p_user_id: string }
         Returns: Json
@@ -8255,6 +8262,10 @@ export type Database = {
       reject_negotiation: {
         Args: { p_negotiation_id: string; p_reason?: string; p_user_id: string }
         Returns: Json
+      }
+      reject_user_request: {
+        Args: { p_reason?: string; p_request_id: string }
+        Returns: undefined
       }
       resolve_customer_product: {
         Args: { p_company_id: string; p_cut_id: string }
