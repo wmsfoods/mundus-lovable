@@ -1,12 +1,12 @@
 import { useMemo, useState } from "react";
-import { Building2, Users, Mail, Linkedin, Globe, Loader2, Search, ExternalLink, ChevronLeft } from "lucide-react";
+import { Building2, Users, Mail, Linkedin, Globe, Loader2, Search, ExternalLink, ChevronLeft, Inbox, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useProspectSearch } from "@/hooks/useProspectSearch";
 import type { MockCompany, MockPerson } from "@/data/mockProspect";
-import { WidgetShell } from "./WidgetShell";
+import { Skeleton } from "@/components/ui/skeleton";
 
 type Kind = "shipper" | "consignee";
 
@@ -115,12 +115,11 @@ function CompanyView({
       </div>
 
       <div className="mt-3">
-        <WidgetShell
-          title=""
+        <ListState
           loading={companies.loading}
           error={companies.error && !errorCode ? companies.error : null}
           empty={!companies.loading && companies.hasSearched && companies.rows.length === 0}
-          height={120}
+          emptyHint="Nenhuma empresa encontrada — refine o nome/país."
         >
           <ul className="divide-y">
             {companies.rows.map((c) => (
@@ -168,7 +167,7 @@ function CompanyView({
               </li>
             ))}
           </ul>
-        </WidgetShell>
+        </ListState>
       </div>
     </div>
   );
@@ -206,21 +205,55 @@ function PeopleView({
         <span>People da empresa</span>
       </div>
 
-      <WidgetShell
-        title=""
+      <ListState
         loading={people.loading}
         error={people.error}
         empty={!people.loading && people.hasSearched && people.rows.length === 0}
-        height={140}
+        emptyHint="Nenhum contato encontrado para esta empresa."
       >
         <ul className="divide-y">
           {people.rows.map((p) => (
             <PersonRow key={p.id} person={p} companyName={company.name} domain={company.domain} />
           ))}
         </ul>
-      </WidgetShell>
+      </ListState>
     </div>
   );
+}
+
+function ListState({
+  loading, error, empty, emptyHint, children,
+}: {
+  loading?: boolean;
+  error?: string | null;
+  empty?: boolean;
+  emptyHint: string;
+  children: React.ReactNode;
+}) {
+  if (loading) {
+    return (
+      <div className="space-y-2 py-2">
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-full" />
+        <Skeleton className="h-8 w-2/3" />
+      </div>
+    );
+  }
+  if (error) {
+    return (
+      <div className="flex items-center gap-2 py-4 text-xs text-muted-foreground">
+        <AlertCircle className="h-4 w-4 text-red-500" /> {error}
+      </div>
+    );
+  }
+  if (empty) {
+    return (
+      <div className="flex items-center gap-2 py-4 text-xs text-muted-foreground">
+        <Inbox className="h-4 w-4" /> {emptyHint}
+      </div>
+    );
+  }
+  return <>{children}</>;
 }
 
 function PersonRow({ person, companyName, domain }: { person: MockPerson; companyName: string; domain: string }) {
