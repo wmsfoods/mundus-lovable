@@ -538,6 +538,287 @@ async function runReport(report: string, filters: ReportFilters, entity?: string
   })
 }
 
+// ============================================================================
+// PANELS — new v2 API
+// ============================================================================
+
+type HsCategory = 'all' | 'bovina_fresca' | 'bovina_congelada' | 'suina' | 'aves' | 'miudezas' | 'outros'
+
+type PanelFilters = {
+  from?: string // YYYY-MM
+  to?: string   // YYYY-MM
+  hs8?: string[]
+  hsCategory?: HsCategory[]
+  destCountry?: string[]
+  polPort?: string[]
+  shipperName?: string
+  consigneeName?: string
+  consigneeCountry?: string[]
+  shipperState?: string[]
+  realOwnerOnly?: boolean
+}
+
+function getSchemaForPanels(): Promise<SchemaPayload> {
+  return buildSchemaPayload()
+}
+
+function hsCategoryClause(cats: HsCategory[]): string {
+  if (!cats?.length || cats.includes('all')) return ''
+  const positive: string[] = []
+  let includeOutros = false
+  for (const c of cats) {
+    if (c === 'bovina_fresca') positive.push(`${Q(COL.product)} LIKE '0201%'`)
+    else if (c === 'bovina_congelada') positive.push(`${Q(COL.product)} LIKE '0202%'`)
+    else if (c === 'suina') positive.push(`${Q(COL.product)} LIKE '0203%'`)
+    else if (c === 'aves') positive.push(`${Q(COL.product)} LIKE '0207%'`)
+    else if (c === 'miudezas') positive.push(`${Q(COL.product)} LIKE '0206%'`)
+    else if (c === 'outros') includeOutros = true
+  }
+  const parts = [...positive]
+  if (includeOutros) {
+    parts.push(`(${Q(COL.product)} LIKE '02%' AND ${Q(COL.product)} NOT LIKE '0201%' AND ${Q(COL.product)} NOT LIKE '0202%' AND ${Q(COL.product)} NOT LIKE '0203%' AND ${Q(COL.product)} NOT LIKE '0206%' AND ${Q(COL.product)} NOT LIKE '0207%')`)
+  }
+  return parts.length ? `(${parts.join(' OR ')})` : ''
+}
+
+function buildPanelWhere(f: PanelFilters, monthExpr: string, args: unknown[], extraEq: { shipper?: string; consignee?: string } = {}): { where: string; hasWhere: boolean } {
+  const parts: string[] = []
+  const ph = (v: unknown) => { args.push(v); return `$${args.length}` }
+  if (f.from) parts.push(`${monthExpr} >= ${ph(f.from)}`)
+  if (f.to) parts.push(`${monthExpr} <= ${ph(f.to)}`)
+  if (f.hs8?.length) parts.push(`${Q(COL.product)} IN (${f.hs8.map((v) => ph(v)).join(', ')})`)
+  if (f.hsCategory?.length) {
+    const c = hsCategoryClause(f.hsCategory)
+    if (c) parts.push(c)
+  }
+  if (f.destCountry?.length) parts.push(`${Q(COL.destCountry)} IN (${f.destCountry.map((v) => ph(v)).join(', ')})`)
+  if (f.polPort?.length) parts.push(`${Q(COL.polPort)} IN (${f.polPort.map((v) => ph(v)).join(', ')})`)
+  if (f.consigneeCountry?.length) parts.push(`${Q(COL.consigneeCountry)} IN (${f.consigneeCountry.map((v) => ph(v)).join(', ')})`)
+  if (f.shipperState?.length) parts.push(`${Q(COL.shipperState)} IN (${f.shipperState.map((v) => ph(v)).join(', ')})`)
+  if (f.shipperName) parts.push(`${Q(COL.shipper)} ILIKE ${ph('%' + f.shipperName + '%')}`)
+  if (f.consigneeName) parts.push(`${Q(COL.consignee)} ILIKE ${ph('%' + f.consigneeName + '%')}`)
+  if (f.realOwnerOnly !== false) {
+    parts.push(`${Q(COL.consigneeType)} = 'REAL DONO'`)
+    parts.push(`${Q(COL.shipperType)} = 'REAL DONO'`)
+  }
+  if (extraEq.shipper) parts.push(`${Q(COL.shipper)} = ${ph(extraEq.shipper)}`)
+  if (extraEq.consignee) parts.push(`${Q(COL.consignee)} = ${ph(extraEq.consignee)}`)
+  return { where: parts.length ? `WHERE ${parts.join(' AND ')}` : '', hasWhere: parts.length > 0 }
+}
+
+function previousMonthRange(from: string, to: string): { from: string; to: string } | null {
+  // YYYY-MM strings
+  const parse = (s: string) => { const [y, m] = s.split('-').map(Number); return y * 12 + (m - 1) }
+  const fmt = (n: number) => { const y = Math.floor(n / 12); const m = (n % 12) + 1; return `${y}-${String(m).padStart(2, '0')}` }
+  if (!/^\d{4}-\d{2}$/.test(from) || !/^\d{4}-\d{2}$/.test(to)) return null
+  const a = parse(from), b = parse(to)
+  const len = b - a + 1
+  const prevTo = a - 1, prevFrom = prevTo - len + 1
+  if (prevFrom < 0) return null
+  return { from: fmt(prevFrom), to: fmt(prevTo) }
+}
+
+function dimensionToCol(d: string): string {
+  switch (d) {
+    case 'shipper': return COL.shipper
+    case 'consignee': return COL.consignee
+    case 'destCountry': return COL.destCountry
+    case 'destPort': return COL.destPort
+    case 'polPort': return COL.polPort
+    case 'hs8': return COL.product
+    case 'consigneeCountry': return COL.consigneeCountry
+    case 'shipperState': return COL.shipperState
+    default: throw new Error(`Invalid dimension: ${d}`)
+  }
+}
+
+function counterpartOf(d: string): string | null {
+  if (d === 'shipper') return COL.consignee
+  if (d === 'consignee') return COL.shipper
+  if (d === 'destCountry' || d === 'destPort') return COL.shipper
+  if (d === 'hs8') return COL.shipper
+  return null
+}
+
+async function panelKpis(c: Client, monthExpr: string, f: PanelFilters) {
+  const compute = async (filters: PanelFilters) => {
+    const args: unknown[] = []
+    const { where } = buildPanelWhere(filters, monthExpr, args)
+    const sql = `
+      SELECT
+        COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS volume,
+        COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob,
+        CASE WHEN SUM(${Q(COL.wt)}) > 0 THEN SUM(${Q(COL.fob)})::float8 / SUM(${Q(COL.wt)})::float8 ELSE NULL END AS avg_price_ton,
+        COUNT(DISTINCT ${Q(COL.shipper)})::bigint AS shippers,
+        COUNT(DISTINCT ${Q(COL.consignee)})::bigint AS consignees,
+        COUNT(DISTINCT ${Q(COL.destCountry)})::bigint AS dest_countries
+      FROM ${FQ_TABLE} ${where}
+    `
+    const r = await c.queryObject<any>({ text: sql, args })
+    return serializeRow(r.rows[0])
+  }
+  const current = await compute(f)
+  const prev = f.from && f.to ? previousMonthRange(f.from, f.to) : null
+  const previous = prev ? await compute({ ...f, from: prev.from, to: prev.to }) : null
+  return { current, previous }
+}
+
+async function panelMonthly(c: Client, monthExpr: string, f: PanelFilters) {
+  const args: unknown[] = []
+  const { where } = buildPanelWhere(f, monthExpr, args)
+  const sql = `
+    SELECT
+      ${monthExpr} AS month,
+      COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS volume,
+      COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob,
+      CASE WHEN SUM(${Q(COL.wt)}) > 0 THEN SUM(${Q(COL.fob)})::float8 / SUM(${Q(COL.wt)})::float8 ELSE NULL END AS avg_price_ton,
+      COUNT(*)::bigint AS shipments
+    FROM ${FQ_TABLE} ${where}
+    GROUP BY 1 ORDER BY 1
+  `
+  const r = await c.queryObject<any>({ text: sql, args })
+  return { rows: r.rows.map(serializeRow) }
+}
+
+async function panelTop(c: Client, monthExpr: string, f: PanelFilters, dimension: string, metric: 'volume' | 'fob', limit: number, extraEq: { shipper?: string; consignee?: string } = {}) {
+  const dimCol = Q(dimensionToCol(dimension))
+  const cp = counterpartOf(dimension)
+  const cpExpr = cp ? `COUNT(DISTINCT ${Q(cp)})::bigint` : '0::bigint'
+  const sortCol = metric === 'fob' ? 'fob' : 'volume'
+
+  // Compute total separately so share % reflects the same filtered universe
+  const argsTotal: unknown[] = []
+  const wt = buildPanelWhere(f, monthExpr, argsTotal, extraEq)
+  const totalRes = await c.queryObject<any>({
+    text: `SELECT COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS v, COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS f FROM ${FQ_TABLE} ${wt.where}`,
+    args: argsTotal,
+  })
+  const totalVol = Number(totalRes.rows[0]?.v ?? 0)
+  const totalFob = Number(totalRes.rows[0]?.f ?? 0)
+
+  const args: unknown[] = []
+  const { where, hasWhere } = buildPanelWhere(f, monthExpr, args, extraEq)
+  const sql = `
+    SELECT
+      ${dimCol} AS name,
+      COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS volume,
+      COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob,
+      CASE WHEN SUM(${Q(COL.wt)}) > 0 THEN SUM(${Q(COL.fob)})::float8 / SUM(${Q(COL.wt)})::float8 ELSE NULL END AS avg_price_ton,
+      ${cpExpr} AS counterparts,
+      COUNT(*)::bigint AS shipments
+    FROM ${FQ_TABLE} ${where}
+    ${hasWhere ? 'AND' : 'WHERE'} ${dimCol} IS NOT NULL AND ${dimCol} <> ''
+    GROUP BY 1
+    ORDER BY ${sortCol} DESC
+    LIMIT ${Math.max(1, Math.min(50, limit))}
+  `
+  const r = await c.queryObject<any>({ text: sql, args })
+  const rows = r.rows.map((row: any) => {
+    const o = serializeRow(row)
+    const denom = metric === 'fob' ? totalFob : totalVol
+    o.share_pct = denom > 0 ? (Number(o[sortCol]) / denom) * 100 : 0
+    return o
+  })
+  return { rows, total: { volume: totalVol, fob: totalFob } }
+}
+
+async function panelMatrix(c: Client, monthExpr: string, f: PanelFilters, rowDim: string, colDim: string, metric: 'volume' | 'fob', limitRows: number, limitCols: number) {
+  const rowCol = Q(dimensionToCol(rowDim))
+  const colCol = Q(dimensionToCol(colDim))
+  const metricExpr = metric === 'fob' ? `SUM(${Q(COL.fob)})` : `SUM(${Q(COL.wt)})`
+
+  const argsR: unknown[] = []
+  const wR = buildPanelWhere(f, monthExpr, argsR)
+  const topRowsRes = await c.queryObject<any>({
+    text: `SELECT ${rowCol} AS k, ${metricExpr}::float8 AS m FROM ${FQ_TABLE} ${wR.where}
+           ${wR.hasWhere ? 'AND' : 'WHERE'} ${rowCol} IS NOT NULL AND ${rowCol} <> ''
+           GROUP BY 1 ORDER BY 2 DESC LIMIT ${Math.max(1, Math.min(15, limitRows))}`,
+    args: argsR,
+  })
+  const argsC: unknown[] = []
+  const wC = buildPanelWhere(f, monthExpr, argsC)
+  const topColsRes = await c.queryObject<any>({
+    text: `SELECT ${colCol} AS k, ${metricExpr}::float8 AS m FROM ${FQ_TABLE} ${wC.where}
+           ${wC.hasWhere ? 'AND' : 'WHERE'} ${colCol} IS NOT NULL AND ${colCol} <> ''
+           GROUP BY 1 ORDER BY 2 DESC LIMIT ${Math.max(1, Math.min(8, limitCols))}`,
+    args: argsC,
+  })
+  const rowKeys: string[] = topRowsRes.rows.map((r: any) => r.k)
+  const colKeys: string[] = topColsRes.rows.map((r: any) => r.k)
+  if (!rowKeys.length || !colKeys.length) return { rows: [], cols: [], cells: {} }
+
+  const argsM: unknown[] = []
+  const ph = (v: unknown) => { argsM.push(v); return `$${argsM.length}` }
+  const wM = buildPanelWhere(f, monthExpr, argsM)
+  const rowPh = rowKeys.map(ph).join(', ')
+  const colPh = colKeys.map(ph).join(', ')
+  const cellsRes = await c.queryObject<any>({
+    text: `SELECT ${rowCol} AS r, ${colCol} AS c, COALESCE(${metricExpr}, 0)::float8 AS m
+           FROM ${FQ_TABLE} ${wM.where}
+           ${wM.hasWhere ? 'AND' : 'WHERE'} ${rowCol} IN (${rowPh}) AND ${colCol} IN (${colPh})
+           GROUP BY 1, 2`,
+    args: argsM,
+  })
+  const cells: Record<string, Record<string, number>> = {}
+  for (const k of rowKeys) cells[k] = {}
+  for (const r of cellsRes.rows as any[]) {
+    cells[r.r] = cells[r.r] ?? {}
+    cells[r.r][r.c] = Number(r.m)
+  }
+  return { rows: rowKeys, cols: colKeys, cells }
+}
+
+async function panelSearchEntity(c: Client, entity: 'shipper' | 'consignee', q: string) {
+  if (!q || q.length < 2) return { rows: [] }
+  const col = Q(entity === 'shipper' ? COL.shipper : COL.consignee)
+  const res = await c.queryObject<any>({
+    text: `SELECT DISTINCT ${col} AS name FROM ${FQ_TABLE}
+           WHERE ${col} ILIKE $1 AND ${col} IS NOT NULL AND ${col} <> ''
+           ORDER BY 1 LIMIT 20`,
+    args: [`%${q}%`],
+  })
+  return { rows: res.rows.map(serializeRow) }
+}
+
+async function runPanel(panel: string, body: any): Promise<unknown> {
+  // Get cached schema (just for monthExpr); fall back to rebuild
+  return await withPg(async (c) => {
+    const filters: PanelFilters = body.filters ?? {}
+    // Resolve monthExpr quickly without DB hit when possible
+    let monthExpr = body.__monthExpr as string | undefined
+    if (!monthExpr) {
+      const { monthExpr: m } = await detectDateFormat(c)
+      monthExpr = m
+    }
+
+    switch (panel) {
+      case 'kpis': return await panelKpis(c, monthExpr!, filters)
+      case 'monthly': return await panelMonthly(c, monthExpr!, filters)
+      case 'top': {
+        const dim = String(body.dimension ?? 'consignee')
+        const metric = (body.metric === 'fob' ? 'fob' : 'volume') as 'volume' | 'fob'
+        const limit = Number(body.limit ?? 15)
+        const extra: { shipper?: string; consignee?: string } = {}
+        if (body.scopeShipper) extra.shipper = String(body.scopeShipper)
+        if (body.scopeConsignee) extra.consignee = String(body.scopeConsignee)
+        return await panelTop(c, monthExpr!, filters, dim, metric, limit, extra)
+      }
+      case 'matrix': {
+        const rowDim = String(body.rowDim ?? 'shipper')
+        const colDim = String(body.colDim ?? 'destCountry')
+        const metric = (body.metric === 'fob' ? 'fob' : 'volume') as 'volume' | 'fob'
+        return await panelMatrix(c, monthExpr!, filters, rowDim, colDim, metric, Number(body.limitRows ?? 15), Number(body.limitCols ?? 8))
+      }
+      case 'search-entity': {
+        const entity = (body.entity === 'shipper' ? 'shipper' : 'consignee') as 'shipper' | 'consignee'
+        return await panelSearchEntity(c, entity, String(body.q ?? ''))
+      }
+      default:
+        throw new Error(`Unknown panel: ${panel}`)
+    }
+  })
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
