@@ -90,7 +90,7 @@ function MultiCombo({
   );
 }
 
-export default function AdminMarketData() {
+export default function AdminMarketDataExplorer() {
   const { toast } = useToast();
   const [schema, setSchema] = useState<Schema | null>(null);
   const [loadingSchema, setLoadingSchema] = useState(true);
