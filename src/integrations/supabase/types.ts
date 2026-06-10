@@ -247,6 +247,48 @@ export type Database = {
           },
         ]
       }
+      agrostats_saved_queries: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          name: string
+          payload: Json
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name: string
+          payload: Json
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          name?: string
+          payload?: Json
+        }
+        Relationships: []
+      }
+      agrostats_schema_cache: {
+        Row: {
+          id: string
+          payload: Json
+          refreshed_at: string
+        }
+        Insert: {
+          id?: string
+          payload: Json
+          refreshed_at?: string
+        }
+        Update: {
+          id?: string
+          payload?: Json
+          refreshed_at?: string
+        }
+        Relationships: []
+      }
       apollo_cache: {
         Row: {
           apollo_id: string

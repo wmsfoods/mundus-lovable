@@ -54,6 +54,7 @@ export default function AdminShell() {
     { to: "/admin/bi/market", label: t("admin.shell.nav.market_intelligence", "Market Intelligence"), icon: LineChart as unknown as IconCmp },
     { to: "/admin/bi/negotiations", label: t("admin.shell.nav.negotiation_funnel", "Negotiation Funnel"), icon: LineChart as unknown as IconCmp },
     { to: "/admin/bi/demand", label: t("admin.shell.nav.buyer_demand", "Buyer Demand"), icon: LineChart as unknown as IconCmp },
+    { to: "/admin/market-data", label: t("admin.shell.nav.market_data", "Market Data"), icon: BarChart3 as unknown as IconCmp },
 
     { to: "/admin/companies", label: t("admin.shell.nav.companies"), icon: Building as unknown as IconCmp, groupLabel: t("admin.shell.nav.operations") },
     { to: "/admin/user-requests", label: t("admin.shell.nav.user_requests", "User Requests"), icon: UserCheck as unknown as IconCmp, badge: pendingUserRequests || undefined },

@@ -81,6 +81,7 @@ import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
+import AdminMarketData from "./pages/admin/AdminMarketData.tsx";
 import AdminBIMarket from "./pages/admin/AdminBIMarket.tsx";
 import AdminBINegotiations from "./pages/admin/AdminBINegotiations.tsx";
 import AdminBIDemand from "./pages/admin/AdminBIDemand.tsx";
@@ -325,6 +326,7 @@ const App = () => (
               <Route path="bi/market" element={<AdminBIMarket />} />
               <Route path="bi/negotiations" element={<AdminBINegotiations />} />
               <Route path="bi/demand" element={<AdminBIDemand />} />
+              <Route path="market-data" element={<AdminMarketData />} />
               <Route path="companies" element={<AdminCompanies />} />
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
