@@ -1118,7 +1118,7 @@ Deno.serve(async (req) => {
       const { data: syncState } = await supaSrv
         .from('agrostats_sync_state').select('use_mirror').eq('id', 1).maybeSingle()
       const useMirror = (syncState as any)?.use_mirror === true
-      const cacheKey = await sha256(`panel:${useMirror ? 'mirror' : 'neon'}:` + JSON.stringify(cacheBody))
+      const cacheKey = await sha256(`panel:${PANEL_CACHE_VERSION}:${useMirror ? 'mirror' : 'neon'}:` + JSON.stringify(cacheBody))
 
       // Skip cache for search-entity (it's user-typed and ephemeral)
       const useCache = panel !== 'search-entity'
