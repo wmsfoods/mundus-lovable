@@ -8161,6 +8161,10 @@ export type Database = {
             }
             Returns: undefined
           }
+      _temperature_match: {
+        Args: { bl: string; hs8: string; temps: Json }
+        Returns: boolean
+      }
       accept_chat_proposal: { Args: { p_message_id: string }; Returns: Json }
       accept_negotiation: {
         Args: {
@@ -8192,6 +8196,7 @@ export type Database = {
         Args: { p_entity_type: string; p_ids: string[] }
         Returns: Json
       }
+      agrostats_distinct_products: { Args: { f: Json }; Returns: Json }
       agrostats_kpis: { Args: { f: Json }; Returns: Json }
       agrostats_matrix: {
         Args: {
