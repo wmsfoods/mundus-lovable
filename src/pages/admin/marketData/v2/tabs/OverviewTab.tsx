@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { usePanel } from "../usePanel";
 import { KpiCard } from "../KpiCard";
 import { WidgetShell } from "../WidgetShell";
@@ -14,7 +15,10 @@ export function OverviewTab({ filters, onCaption }: { filters: PanelFilters; onC
   const shippers = usePanel<{ rows: TopRow[] }>({ panel: "top", filters, dimension: "shipper", metric: "volume", limit: 10 });
   const consignees = usePanel<{ rows: TopRow[] }>({ panel: "top", filters, dimension: "consignee", metric: "volume", limit: 10 });
 
-  if (monthly.data?.rows) onCaption(periodCaption(monthly.data.rows));
+  useEffect(() => {
+    if (monthly.data?.rows) onCaption(periodCaption(monthly.data.rows));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [monthly.data]);
 
   const c = kpis.data?.current;
   const p = kpis.data?.previous;
