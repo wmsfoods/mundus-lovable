@@ -1339,13 +1339,31 @@ function Step4Contact({
 }) {
   const { t } = useTranslation();
   const [countryFromGoogle, setCountryFromGoogle] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (k: string) => setTouched((s) => ({ ...s, [k]: true }));
+
+  const errors = {
+    address: touched.address ? validateAddress(data.address) : null,
+    city: touched.city ? validateCity(data.city) : null,
+    state: touched.state ? validateState(data.state) : null,
+    zip: touched.zip ? validateZip(data.zip, data.country) : null,
+    country: touched.country ? (data.country ? null : "required") : null,
+    phone: touched.phone
+      ? validatePhone(data.phoneNumber, data.phoneCode)
+      : null,
+    website: touched.website ? validateWebsite(data.website) : null,
+  };
+
+  const zipHint = getZipRule(data.country).hint;
+
   const canFinish =
-    !!data.state &&
-    !!data.city &&
-    !!data.address &&
-    !!data.zip &&
+    !validateAddress(data.address) &&
+    !validateCity(data.city) &&
+    !validateState(data.state) &&
+    !validateZip(data.zip, data.country) &&
     !!data.country &&
-    !!data.phoneNumber;
+    !validatePhone(data.phoneNumber, data.phoneCode) &&
+    !validateWebsite(data.website);
 
   const checks = [
     { key: "address", done: !!data.address, label: t("signup.fields.address") },
