@@ -34,6 +34,8 @@ verify_jwt = false
     verify_jwt = false
   [functions.mundus-admin-mcp]
     verify_jwt = false
+  [functions.agrostats-market-data]
+    verify_jwt = false
   [functions.stripe-webhook]
     verify_jwt = false
   [functions.verify-document]
