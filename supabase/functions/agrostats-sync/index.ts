@@ -235,8 +235,13 @@ async function incremental(supaSrv: ReturnType<typeof createClient>) {
     .limit(1)
     .maybeSingle()
 
-  await updateState(supaSrv, { last_synced_month: newMax?.month_key ?? null, last_error: null })
-  return { rows_inserted: total, last_synced_month: newMax?.month_key ?? null }
+  const last_sync_at = new Date().toISOString()
+  await updateState(supaSrv, {
+    last_synced_month: newMax?.month_key ?? null,
+    last_sync_at,
+    last_error: null,
+  })
+  return { rows_inserted: total, last_synced_month: newMax?.month_key ?? null, last_sync_at }
 }
 
 Deno.serve(async (req) => {
