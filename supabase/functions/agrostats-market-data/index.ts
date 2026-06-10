@@ -22,6 +22,7 @@ const AGGS = new Set(['sum', 'avg', 'count', 'min', 'max'])
 const OPS = new Set(['eq', 'in', 'gte', 'lte', 'between', 'ilike'])
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const REPORT_CACHE_TTL_MS = 12 * 60 * 60 * 1000
+const PANEL_CACHE_TTL_MS = 6 * 60 * 60 * 1000
 
 const DB_HOST = 'ep-mute-recipe-acwzxxog-pooler.sa-east-1.aws.neon.tech'
 const DB_PORT = 5432
