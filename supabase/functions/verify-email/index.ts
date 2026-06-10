@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { checkRateLimit, rateLimitResponse, getClientIp } from "../_shared/rateLimit.ts";
+import { VerifyEmailActionSchema } from "../_shared/signupValidation.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -23,16 +24,23 @@ serve(async (req) => {
     });
     if (!rl.allowed) return rateLimitResponse(rl, corsHeaders);
 
-    const { action, email, code } = await req.json();
-
-    if (!action || !email) {
-      return new Response(JSON.stringify({ error: "Missing action or email" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    const raw = await req.json().catch(() => ({}));
+    const parsed = VerifyEmailActionSchema.safeParse(raw);
+    if (!parsed.success) {
+      return new Response(
+        JSON.stringify({
+          error: "Invalid request",
+          fields: parsed.error.flatten().fieldErrors,
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        },
+      );
     }
-
-    const normalizedEmail = String(email).toLowerCase().trim();
+    const action = parsed.data.action;
+    const normalizedEmail = parsed.data.email.toLowerCase().trim();
+    const code = "code" in parsed.data ? parsed.data.code : undefined;
 
     if (action === "check") {
       const { data: users } = await supabase.auth.admin.listUsers();

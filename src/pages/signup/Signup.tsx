@@ -6,6 +6,27 @@ import { useTranslation } from "react-i18next";
 import { SignupShell } from "./SignupShell";
 import { PasswordRequirements } from "./PasswordRequirements";
 import { allRulesMet, checkPassword } from "./passwordRules";
+import { FieldError, errorInputCls } from "./FieldError";
+import {
+  getErrorMessage,
+  maskPhone,
+  normalizeWebsite,
+  validateAddress,
+  validateCertificate,
+  validateCity,
+  validateEmail,
+  validateName,
+  validateNonEmptyArray,
+  validatePassword,
+  validatePhone,
+  validateRepeatPassword,
+  validateRole,
+  validateState,
+  validateWebsite,
+  validateZip,
+  validateCompanyName,
+  getZipRule,
+} from "./validation";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { publicUrl } from "@/lib/publicUrl";
@@ -398,36 +419,65 @@ function Step1({
   const [showR, setShowR] = useState(false);
   const rules = useMemo(() => checkPassword(data.password), [data.password]);
   const passwordsMatch = data.password === data.repeatPassword && data.password.length > 0;
+
+  const [touched, setTouched] = useState<{
+    name?: boolean;
+    email?: boolean;
+    password?: boolean;
+    repeat?: boolean;
+  }>({});
+
+  const nameErr = touched.name ? validateName(data.name) : null;
+  const emailErr = touched.email ? validateEmail(data.email) : null;
+  const pwdErr = touched.password ? validatePassword(data.password) : null;
+  const repeatErr = touched.repeat
+    ? validateRepeatPassword(data.password, data.repeatPassword)
+    : null;
+
   const canProceed =
-    !!data.name && !!data.email && passwordsMatch && allRulesMet(rules) && data.agreeTerms;
+    !validateName(data.name) &&
+    !validateEmail(data.email) &&
+    passwordsMatch &&
+    allRulesMet(rules) &&
+    data.agreeTerms;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Field label={t("signup.fields.fullName")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, nameErr && errorInputCls)}
             value={data.name}
             onChange={(e) => set("name", e.target.value)}
+            onBlur={() => setTouched((s) => ({ ...s, name: true }))}
+            autoComplete="name"
+            inputMode="text"
             placeholder={t("signup.fields.fullNamePlaceholder")}
           />
+          <FieldError message={getErrorMessage(nameErr, t)} />
         </Field>
         <Field label={t("signup.fields.email")}>
           <input
             type="email"
-            className={inputCls}
+            className={cn(inputCls, emailErr && errorInputCls)}
             value={data.email}
             onChange={(e) => set("email", e.target.value)}
+            onBlur={() => setTouched((s) => ({ ...s, email: true }))}
+            autoComplete="email"
+            inputMode="email"
             placeholder={t("signup.fields.emailPlaceholder")}
           />
+          <FieldError message={getErrorMessage(emailErr, t)} />
         </Field>
         <Field label={t("signup.fields.password")}>
           <div className="relative">
             <input
               type={showP ? "text" : "password"}
-              className={cn(inputCls, "pr-12")}
+              className={cn(inputCls, "pr-12", pwdErr && errorInputCls)}
               value={data.password}
               onChange={(e) => set("password", e.target.value)}
+              onBlur={() => setTouched((s) => ({ ...s, password: true }))}
+              autoComplete="new-password"
               placeholder={t("signup.fields.passwordPlaceholder")}
             />
             <button
@@ -443,9 +493,11 @@ function Step1({
           <div className="relative">
             <input
               type={showR ? "text" : "password"}
-              className={cn(inputCls, "pr-12")}
+              className={cn(inputCls, "pr-12", repeatErr && errorInputCls)}
               value={data.repeatPassword}
               onChange={(e) => set("repeatPassword", e.target.value)}
+              onBlur={() => setTouched((s) => ({ ...s, repeat: true }))}
+              autoComplete="new-password"
               placeholder={t("signup.fields.repeatPasswordPlaceholder")}
             />
             <button
@@ -456,9 +508,7 @@ function Step1({
               {showR ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
-          {data.repeatPassword && !passwordsMatch && (
-            <p className="text-red-500 text-sm mt-1">{t("signup.passwordsMismatch")}</p>
-          )}
+          <FieldError message={getErrorMessage(repeatErr, t)} />
         </Field>
       </div>
 
@@ -686,6 +736,10 @@ function Step3Company({
   const taxRule = getTaxRule(data.registrationCountry);
   const taxIdValid = taxRule.pattern.test(data.taxId.trim());
   const [scanning, setScanning] = useState(false);
+  const [companyNameTouched, setCompanyNameTouched] = useState(false);
+  const companyNameErr = companyNameTouched
+    ? validateCompanyName(data.companyName)
+    : null;
 
   const onFile = async (f: File | null) => {
     if (!f) {
@@ -727,7 +781,7 @@ function Step3Company({
   };
 
   const canProceed =
-    !!data.companyName &&
+    !validateCompanyName(data.companyName) &&
     !!data.registrationCountry &&
     !!data.taxId &&
     taxIdValid &&
@@ -781,10 +835,13 @@ function Step3Company({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Field label={t("signup.fields.companyName")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, companyNameErr && errorInputCls)}
             value={data.companyName}
             onChange={(e) => set("companyName", e.target.value)}
+            onBlur={() => setCompanyNameTouched(true)}
+            autoComplete="organization"
           />
+          <FieldError message={getErrorMessage(companyNameErr, t)} />
         </Field>
         <RegistrationCountry
           value={data.registrationCountry}
@@ -1289,13 +1346,31 @@ function Step4Contact({
 }) {
   const { t } = useTranslation();
   const [countryFromGoogle, setCountryFromGoogle] = useState(false);
+  const [touched, setTouched] = useState<Record<string, boolean>>({});
+  const touch = (k: string) => setTouched((s) => ({ ...s, [k]: true }));
+
+  const errors = {
+    address: touched.address ? validateAddress(data.address) : null,
+    city: touched.city ? validateCity(data.city) : null,
+    state: touched.state ? validateState(data.state) : null,
+    zip: touched.zip ? validateZip(data.zip, data.country) : null,
+    country: touched.country ? (data.country ? null : "required") : null,
+    phone: touched.phone
+      ? validatePhone(data.phoneNumber, data.phoneCode)
+      : null,
+    website: touched.website ? validateWebsite(data.website) : null,
+  };
+
+  const zipHint = getZipRule(data.country).hint;
+
   const canFinish =
-    !!data.state &&
-    !!data.city &&
-    !!data.address &&
-    !!data.zip &&
+    !validateAddress(data.address) &&
+    !validateCity(data.city) &&
+    !validateState(data.state) &&
+    !validateZip(data.zip, data.country) &&
     !!data.country &&
-    !!data.phoneNumber;
+    !validatePhone(data.phoneNumber, data.phoneCode) &&
+    !validateWebsite(data.website);
 
   const checks = [
     { key: "address", done: !!data.address, label: t("signup.fields.address") },
@@ -1312,7 +1387,7 @@ function Step4Contact({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Field label={t("signup.fields.address")}>
           <AddressAutocomplete
-            className={inputCls}
+            className={cn(inputCls, errors.address && errorInputCls)}
             value={data.address}
             onChange={(v) => set("address", v)}
             onAddressSelect={(addr) => {
@@ -1326,35 +1401,51 @@ function Step4Contact({
               }
             }}
           />
+          <FieldError message={getErrorMessage(errors.address, t)} />
         </Field>
         <Field label={t("signup.fields.addressLine2")}>
           <input
             className={inputCls}
             value={data.addressLine2}
             onChange={(e) => set("addressLine2", e.target.value)}
+            autoComplete="address-line2"
           />
         </Field>
         <Field label={t("signup.fields.city")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.city && errorInputCls)}
             value={data.city}
             onChange={(e) => set("city", e.target.value)}
+            onBlur={() => touch("city")}
+            autoComplete="address-level2"
           />
+          <FieldError message={getErrorMessage(errors.city, t)} />
         </Field>
         <Field label={t("signup.fields.state")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.state && errorInputCls)}
             value={data.state}
             onChange={(e) => set("state", e.target.value)}
+            onBlur={() => touch("state")}
+            autoComplete="address-level1"
             placeholder={t("signup.fields.statePlaceholder")}
           />
+          <FieldError message={getErrorMessage(errors.state, t)} />
         </Field>
         <Field label={t("signup.fields.zip")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.zip && errorInputCls)}
             value={data.zip}
             onChange={(e) => set("zip", e.target.value)}
+            onBlur={() => touch("zip")}
+            autoComplete="postal-code"
+            inputMode="text"
+            placeholder={zipHint}
           />
+          <FieldError message={getErrorMessage(errors.zip, t)} />
+          {!errors.zip && data.country && (
+            <p className="text-xs text-gray-500 mt-1">{zipHint}</p>
+          )}
         </Field>
         <Field
           label={
@@ -1378,10 +1469,13 @@ function Step4Contact({
               className={cn(
                 inputCls,
                 countryFromGoogle && "bg-gray-50 text-gray-700 cursor-not-allowed pr-10",
+                errors.country && errorInputCls,
               )}
               value={data.country}
               onChange={(e) => set("country", e.target.value)}
+              onBlur={() => touch("country")}
               disabled={countryFromGoogle}
+              autoComplete="country-name"
               title={countryFromGoogle ? t("signup.fields.countryLocked") : undefined}
             />
             {countryFromGoogle && (
@@ -1390,6 +1484,7 @@ function Step4Contact({
               </span>
             )}
           </div>
+          <FieldError message={getErrorMessage(errors.country, t)} />
         </Field>
         <Field label={t("signup.fields.businessPhone")}>
           <div className="flex gap-2">
@@ -1409,22 +1504,35 @@ function Step4Contact({
               ))}
             </select>
             <input
-              className={inputCls}
+              className={cn(inputCls, errors.phone && errorInputCls)}
               value={data.phoneNumber}
-              onChange={(e) => set("phoneNumber", e.target.value)}
+              onChange={(e) =>
+                set("phoneNumber", maskPhone(e.target.value, data.phoneCode))
+              }
+              onBlur={() => touch("phone")}
+              autoComplete="tel-national"
+              inputMode="tel"
               placeholder={t("signup.fields.phonePlaceholder")}
             />
           </div>
+          <FieldError message={getErrorMessage(errors.phone, t)} />
         </Field>
         <Field
           label={`${t("signup.fields.website")} (${t("common.optional")})`}
         >
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.website && errorInputCls)}
             value={data.website}
             onChange={(e) => set("website", e.target.value)}
+            onBlur={() => {
+              touch("website");
+              if (data.website) set("website", normalizeWebsite(data.website));
+            }}
+            autoComplete="url"
+            inputMode="url"
             placeholder="https://"
           />
+          <FieldError message={getErrorMessage(errors.website, t)} />
         </Field>
       </div>
 

@@ -149,6 +149,23 @@
       "registrationCountryPlaceholder": "Buscar país de registro..."
     },
     "passwordsMismatch": "As senhas não coincidem.",
+    "errors": {
+      "required": "Este campo é obrigatório",
+      "tooShort": "Muito curto",
+      "tooLong": "Muito longo",
+      "nameInvalid": "Use apenas letras, espaços, hífen e apóstrofo",
+      "emailInvalid": "Informe um email válido",
+      "emailTaken": "Este email já está cadastrado",
+      "passwordWeak": "A senha não atende todos os requisitos",
+      "passwordsMismatch": "As senhas não coincidem",
+      "companyNameInvalid": "O nome da empresa deve conter letras",
+      "taxIdInvalid": "Formato de Tax ID inválido",
+      "phoneInvalid": "Informe um telefone válido para o país selecionado",
+      "zipInvalid": "CEP/código postal inválido para este país",
+      "websiteInvalid": "Informe uma URL válida",
+      "fileTooLarge": "O arquivo deve ter no máximo 10MB",
+      "fileType": "Apenas arquivos PDF, PNG ou JPG são permitidos"
+    },
     "missingTitle": "Para continuar, preencha:",
     "agreeTerms": "Declaro que li e concordo com os",
     "termsLink": "Termos e Condições",

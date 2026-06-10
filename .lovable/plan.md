@@ -1,92 +1,97 @@
-## Objetivo
+# Validação enterprise no Signup (4 steps)
 
-Substituir os submenus de "Mundus Intel" por um item único no sidebar que abre uma **tela hub** com cards de **pacotes/add-ons**. Hoje só existe 1 pacote por lado (o que já está configurado no Stripe). As features internas (Price Benchmark, Analytics, Market Intelligence, Procurement Intelligence) continuam existindo nas mesmas rotas — só muda a porta de entrada.
+Aplicar padrão Zod + React Hook Form em `src/pages/signup/Signup.tsx`, com validação inline, máscaras, async checks e espelhamento na edge function.
 
-## Estado atual
+## 1. Infra compartilhada
 
-**Supplier sidebar** (`src/layouts/SupplierShell.tsx`) — grupo "Mundus Intel":
-- Price Benchmark → `/supplier/insights/price-benchmark` (PRO `supplier_pro`)
-- Analytics → `/supplier/insights/analytics` (PRO `supplier_pro`)
-- Market Intelligence → link externo `market-us.mundustrade.com` (PRO)
+**Novo pacote:** `libphonenumber-js` (validação E.164 por país, ~145kb tree-shakeable).
 
-**Buyer sidebar** (`src/layouts/BuyerShell.tsx`) — grupo "Mundus Intel":
-- Procurement Intelligence → `/buyer/procurement-intelligence` (PRO `buyer_pro`)
-- Market Intelligence → link externo (PRO)
+**Novos arquivos:**
 
-Stripe já tem 2 planos: `supplier_pro` ($1000/mo) e `buyer_pro` ($300/mo) — `src/lib/proSubscription.ts`.
-
-## Mudanças
-
-### 1. Novas rotas hub
-- `src/pages/supplier/SupplierMundusIntel.tsx` (rota `/supplier/mundus-intel`)
-- `src/pages/buyer/BuyerMundusIntel.tsx` (rota `/buyer/mundus-intel`)
-
-Cada página renderiza o hub com cards de pacote. Reaproveita `PageTitle` e CSS do projeto (`mundus-insights.css` ou um novo `mundus-mundus-intel.css` enxuto).
-
-### 2. Configuração de pacotes
-Criar `src/lib/mundusIntelPackages.ts` com os dados de cada pacote:
-
-```ts
-// Supplier: 1 pacote "Analytics Package" — supplier_pro — $1000/mo
-//   features: Price Benchmark, Analytics, Market Intelligence
-// Buyer:    1 pacote "Intelligence Package" — buyer_pro — $300/mo
-//   features: Procurement Intelligence, Market Intelligence
+```
+src/pages/signup/
+├── schemas/
+│   ├── step1Schema.ts      Zod: name, email, password, repeatPassword, agreeTerms
+│   ├── step3Schema.ts      Zod: companyName, taxId (dinâmico por país), role, proteins, countries, certificate
+│   ├── step4Schema.ts      Zod: country, state, city, address, zip, phone, website
+│   └── shared.ts           regex helpers, zipByCountry, taxIdByCountry, messages factory(t)
+├── components/
+│   ├── FormField.tsx       wrapper label + erro inline + borda vermelha
+│   ├── PhoneField.tsx      máscara + libphonenumber-js + país sync
+│   ├── TaxIdField.tsx      máscara dinâmica por país (CNPJ/EIN/etc.)
+│   └── ZipField.tsx        máscara dinâmica por país
+└── hooks/
+    └── useEmailAvailability.ts   debounce 300ms + verify-email check
 ```
 
-Cada feature interna do card guarda `{ label, description, icon, to | externalUrl }`.
+## 2. Regras por campo
 
-### 3. Card de pacote (componente)
-`src/components/mundus-intel/PackageCard.tsx`:
-- Header com nome do pacote, badge PRO, preço `$X / month`.
-- Lista das features incluídas (3 para supplier, 2 para buyer) com ícone + título + descrição curta.
-- Estado por subscrição (usa `useCompanySubscription` + `planForFeature`):
-  - **Assinante** → botão "Open feature" em cada feature (`<Link>` para a rota; externos abrem em nova aba).
-  - **Não assinante** → botão único "Subscribe — $X/mo" que chama `startProCheckout()` do `proSubscription.ts` (mesmo fluxo já usado em `InsightsUpsellPanel`).
-- Layout responsivo: grid 1 col mobile, 2+ cols desktop (igual ao padrão dos cards de ofertas / `action-row`).
+### Step 1 — Basic
+- **Name** trim, 2–80, `^[\p{L}\s'\-]+$` (bloqueia números)
+- **Email** `.email()`, lowercase, max 255, async check de duplicidade (debounce)
+- **Password** mantém `checkPassword` + visual ✓/✗ (já existe)
+- **Repeat** `.refine(eq)`
+- **Terms** `z.literal(true)`
 
-### 4. Atualizar shells (sidebar)
+### Step 2 — Verify
+- Código 6 dígitos, `inputMode="numeric"`, paste-friendly, auto-submit
+- Reenviar com cooldown 60s
 
-**SupplierShell.tsx**: remover os 3 itens (`price-benchmark`, `analytics`, market intel externo) e substituir por:
-```ts
-{ to: "/supplier/mundus-intel", label: t("shell.nav.mundusIntel"),
-  icon: Sparkles, proBadge: false, groupLabel: undefined }
+### Step 3 — Company
+- **Company name** 2–120, não só números
+- **Registration country** lista controlada
+- **Tax ID** máscara + pattern do país (reusa `TAX_ID_RULES` existente)
+- **Role** enum obrigatório (buyer/supplier)
+- **Proteins** min 1
+- **Countries of operation** min 1
+- **Certificate** opcional, max 10MB, mime `pdf|jpg|png`
+
+### Step 4 — Contact
+- **Country** lista
+- **State/City** 2–80
+- **Address** 4–200
+- **ZIP** regex por país (US 5/9, BR 8, etc.)
+- **Phone** `libphonenumber-js` valida E.164 conforme `phoneCode`
+- **Website** `.url()` opcional, auto-prefixa `https://`
+
+## 3. UX
+
+- RHF `mode: "onTouched"` — valida no blur, re-valida onChange após primeiro erro
+- Erro inline abaixo do campo, borda vermelha, ícone, mensagem i18n
+- Botão "Proceed" desabilita via `formState.isValid` do step atual
+- Máscaras formatam o valor (não bloqueiam teclas — paste funciona)
+- Mobile: `inputMode`, `autoComplete`, `enterKeyHint`, fontes 16px+ pra não dar zoom no iOS
+- Toasts só pra erros server-side; campo = inline
+
+## 4. Server-side mirror
+
+- Criar `supabase/functions/_shared/signupSchema.ts` (mesma lógica Zod, runtime Deno)
+- `verify-email` e o insert em `user_requests` validam antes de persistir
+- Retornam `422 { errors: { field: message[] } }` que o client mapeia nos campos
+
+## 5. i18n
+
+Adicionar chaves em `src/i18n/index.ts` (en/pt/es):
 ```
-Mantém `cut-comparison` (director-only) como antes, ou move para uma seção interna.
-
-**BuyerShell.tsx**: mesma coisa — remove os 2 itens, adiciona `/buyer/mundus-intel`.
-
-**Bottom nav mobile**: mantém como está (Mundus Intel não está no bottom nav hoje).
-
-### 5. Rotas em `App.tsx`
-Adiciona:
-```tsx
-<Route path="mundus-intel" element={<SupplierMundusIntel />} /> // dentro de /supplier
-<Route path="mundus-intel" element={<BuyerMundusIntel />} />    // dentro de /buyer
+signup.errors.nameInvalid, emailInvalid, emailTaken, passwordWeak,
+passwordsMismatch, taxIdInvalid, phoneInvalid, zipInvalid,
+websiteInvalid, required, fileTooLarge, fileType
 ```
 
-As rotas existentes (`insights/price-benchmark`, `insights/analytics`, `procurement-intelligence`) **permanecem intactas** — protegidas pelo `RequirePro` como hoje. O hub apenas linka para elas.
+## 6. Ordem de execução (uma PR única)
 
-### 6. i18n
-Adicionar chaves em `src/i18n/index.ts`:
-- `shell.nav.mundusIntel` (já existe como groupLabel — reaproveitar)
-- `mundusIntel.title`, `mundusIntel.subtitle`
-- `mundusIntel.packages.analytics.*` (supplier)
-- `mundusIntel.packages.intelligence.*` (buyer)
-- CTAs: `subscribe`, `openFeature`, `included`, `currentPlan`
+1. Instalar `libphonenumber-js`
+2. Criar `schemas/` + i18n keys
+3. Criar `FormField`, `PhoneField`, `TaxIdField`, `ZipField`
+4. Criar `useEmailAvailability`
+5. Refatorar `Signup.tsx` Step 1 → 4 com RHF + zodResolver por step (mantém `data` global entre steps)
+6. Criar `supabase/functions/_shared/signupSchema.ts` e plugar em `verify-email` + (novo) validação no insert
+7. Smoke test manual: cada step, mobile (375px), erros visíveis, submit final
 
-### 7. Mobile
-Hub vira lista vertical de cards (1 col), botão de assinar full-width, safe-area respeitada (segue regra de memória mobile do projeto).
+## Detalhes técnicos
 
-## Fora de escopo
-- Não muda Stripe / produtos / preços.
-- Não muda as páginas das features (Price Benchmark, Analytics, Procurement Intelligence, Market Intelligence externo).
-- Não mexe no `RequirePro` nem em `InsightsUpsellPanel` (continuam funcionando para deep-links diretos).
-- `cut-comparison` (admin-only) continua acessível pela rota direta; pode ficar fora do hub.
-
-## Validação
-1. Sidebar Supplier mostra "Mundus Intel" único; clique abre hub com 1 card "Analytics Package — $1000/mo" listando 3 features.
-2. Não assinante → botão Subscribe redireciona pro Stripe checkout.
-3. Assinante → cada feature abre a rota correspondente (Market Intelligence abre externo em nova aba).
-4. Mesmo fluxo no Buyer com 1 card "Intelligence Package — $300/mo" e 2 features.
-5. Deep-link direto `/supplier/insights/analytics` continua funcionando (com gate PRO existente).
-6. Responsivo no mobile (iPhone): cards em coluna, CTA confortável, sem overflow.
+- Manter o state global `data: FormData` em `Signup.tsx` (steps preservam dados ao voltar); cada step usa RHF próprio com `defaultValues` lidos de `data` e `onSubmit` que faz `set(...)` + avança.
+- `TaxIdField` recebe `country` prop e troca máscara + hint reativamente.
+- `PhoneField` troca o country code via dropdown existente; validação E.164 chama `parsePhoneNumber(value, isoFromCode)`.
+- Edge function compartilhada via `_shared/` (padrão do projeto). Sem schema novo no DB — validação é só código.
+- Sem alteração de tabela; sem migração necessária.
