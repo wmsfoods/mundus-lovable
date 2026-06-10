@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import { FiltersBar } from "./marketData/v2/FiltersBar";
 import { OverviewTab } from "./marketData/v2/tabs/OverviewTab";
 import { BuyersTab } from "./marketData/v2/tabs/BuyersTab";
@@ -21,6 +22,13 @@ function defaultFilters(): PanelFilters {
   return { from, to, realOwnerOnly: true };
 }
 
+function fmtSyncDate(iso: string | null): string | null {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+}
+
 export default function AdminMarketData() {
   const [filters, setFilters] = useState<PanelFilters>(() => defaultFilters());
   const [searchParams, setSearchParams] = useSearchParams();
@@ -28,6 +36,7 @@ export default function AdminMarketData() {
   const [activeTab, setActiveTab] = useState(initialTab);
   const initialOfferId = searchParams.get("offer");
   const [caption, setCaption] = useState<string | null>(null);
+  const [lastSync, setLastSync] = useState<string | null>(null);
 
   useEffect(() => {
     if (activeTab !== searchParams.get("tab")) {
@@ -39,18 +48,32 @@ export default function AdminMarketData() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
+  useEffect(() => {
+    supabase
+      .from("meat_export_mirror")
+      .select("synced_at", { head: false })
+      .order("synced_at", { ascending: false })
+      .limit(1)
+      .single()
+      .then(({ data, error }) => {
+        if (!error && data) {
+          setLastSync(data.synced_at);
+        }
+      });
+  }, []);
+
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-[1500px] mx-auto">
       <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-1.5 text-amber-900 text-xs dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-800">
         <AlertTriangle className="h-3.5 w-3.5 shrink-0" />
-        <span>Dados licenciados Agro Statistics — uso interno WMS Foods. Não compartilhar externamente.</span>
+        <span>Dados licenciados para uso interno Mundus Trade LLC. Não compartilhar externamente.</span>
       </div>
 
       <div className="flex items-end justify-between gap-3">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight">Trade Intelligence — Exportações Brasileiras</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">Mundus Trade Intelligence — Exportações Brasileiras</h1>
           <p className="text-sm text-muted-foreground">
-            Bills of Lading (Datamar) — ~2M registros desde 2019.{caption ? ` ${caption}.` : ""}
+            ~2M registros desde 2019. {lastSync ? `Última atualização: ${fmtSyncDate(lastSync)}.` : ""}{caption ? ` ${caption}.` : ""}
           </p>
         </div>
       </div>
