@@ -292,6 +292,7 @@ export default function PublicHome() {
     >
       {nativeApp ? (
         <>
+          <MundusVitrineStats />
           {offersSection}
           <PublicOfferModal
             offer={detailOffer}
@@ -373,6 +374,7 @@ export default function PublicHome() {
         </div>
       </section>
 
+      <MundusVitrineStats />
       {offersSection}
 
       <PublicOfferModal
