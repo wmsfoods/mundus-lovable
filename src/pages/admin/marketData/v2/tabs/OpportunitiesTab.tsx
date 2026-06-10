@@ -46,7 +46,8 @@ export function OpportunitiesTab({ filters, initialOfferId }: { filters: PanelFi
     if (!o) return;
     setCats(o.hsCategories);
     setDestCountry(o.destCountries);
-    // Exportador NÃO é preenchido automaticamente — admin digita só quando quer confrontar
+    // Exportador fica em branco — admin digita manualmente só quando quer confrontar
+    setExporter("");
   }, [offerId, offers.data]);
 
   // Destination country options come from offers + a small fallback list — admin can type, but typically these are the BL distinct values.
