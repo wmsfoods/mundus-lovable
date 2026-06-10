@@ -5,7 +5,7 @@ import { KpiCard } from "./KpiCard";
 import { WidgetShell } from "./WidgetShell";
 import { MonthlyComboChart } from "./MonthlyComboChart";
 import { HorizontalBars } from "./HorizontalBars";
-import { fmtTonCompact, fmtUsdCompact, fmtPrice, fmtCompactNumber, pctDelta } from "./format";
+import { fmtTonCompact, fmtUsdCompact, fmtPrice, fmtCompactNumber, pctDelta, fmtLoads } from "./format";
 
 type EntityKind = "shipper" | "consignee" | "destCountry";
 
@@ -61,6 +61,7 @@ export function EntityDrawer({
 
         <div className="mt-4 grid grid-cols-2 gap-2">
           <KpiCard label="Volume" value={fmtTonCompact(c?.volume)} delta={d("volume")} loading={kpis.loading} />
+          <KpiCard label="Loads" value={fmtLoads(c?.volume)} hint="1 FCL = 27 t" delta={d("volume")} loading={kpis.loading} />
           <KpiCard label="FOB" value={fmtUsdCompact(c?.fob)} delta={d("fob")} loading={kpis.loading} />
           <KpiCard label="Preço médio" value={fmtPrice(c?.avg_price_ton)} delta={d("avg_price_ton")} loading={kpis.loading} />
           <KpiCard

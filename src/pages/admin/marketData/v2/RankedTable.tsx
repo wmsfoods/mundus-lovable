@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { fmtTonCompact, fmtUsdCompact, fmtPrice, fmtPct, fmtCompactNumber, downloadCsv, truncate } from "./format";
+import { fmtTonCompact, fmtUsdCompact, fmtPrice, fmtPct, fmtCompactNumber, downloadCsv, truncate, fmtLoadsNumber, toLoads } from "./format";
 import type { TopRow } from "./types";
 
 export function RankedTable({
@@ -11,10 +11,15 @@ export function RankedTable({
   onRowClick?: (name: string) => void;
   nameHeader?: string;
 }) {
+  const exportRows = rows.map((r) => ({
+    ...r,
+    loads: Number(toLoads(r.volume).toFixed(1)),
+  }));
   const handleExport = () =>
-    downloadCsv(csvFilename, rows, [
+    downloadCsv(csvFilename, exportRows, [
       { key: "name", label: nameHeader },
       { key: "volume", label: "Volume (kg)" },
+      { key: "loads", label: "Loads (27t)" },
       { key: "fob", label: "FOB (US$)" },
       { key: "avg_price_ton", label: "Preço medio (US$/t)" },
       { key: "counterparts", label: "Contrapartes" },
@@ -35,6 +40,7 @@ export function RankedTable({
               <th className="font-medium py-2 px-3">#</th>
               <th className="font-medium py-2 px-3">{nameHeader}</th>
               <th className="font-medium py-2 px-3 text-right">Volume</th>
+              <th className="font-medium py-2 px-3 text-right" title="Container loads (1 FCL = 27 t)">Loads</th>
               <th className="font-medium py-2 px-3 text-right">FOB</th>
               <th className="font-medium py-2 px-3 text-right">US$/t</th>
               <th className="font-medium py-2 px-3 text-right">Contrap.</th>
@@ -52,6 +58,7 @@ export function RankedTable({
                 <td className="py-1.5 px-3 text-muted-foreground tabular-nums">{i + 1}</td>
                 <td className="py-1.5 px-3 font-medium" title={r.name}>{truncate(r.name, 60)}</td>
                 <td className="py-1.5 px-3 text-right tabular-nums">{fmtTonCompact(r.volume)}</td>
+                <td className="py-1.5 px-3 text-right tabular-nums">{fmtLoadsNumber(r.volume)}</td>
                 <td className="py-1.5 px-3 text-right tabular-nums">{fmtUsdCompact(r.fob)}</td>
                 <td className="py-1.5 px-3 text-right tabular-nums">{fmtPrice(r.avg_price_ton)}</td>
                 <td className="py-1.5 px-3 text-right tabular-nums">{fmtCompactNumber(r.counterparts)}</td>

@@ -15,17 +15,22 @@ const DIM_OPTS: { value: string; label: string }[] = [
   { value: "shipperState", label: "UF exportador" },
   { value: "consigneeCountry", label: "País comprador" },
 ];
-const METRICS = [{ value: "volume", label: "Volume" }, { value: "fob", label: "FOB" }];
+const METRICS = [
+  { value: "volume", label: "Volume" },
+  { value: "fob", label: "FOB" },
+  { value: "loads", label: "Loads" },
+];
 
 export function FlowsTab({ filters }: { filters: PanelFilters }) {
   const [rowDim, setRowDim] = useState("shipper");
   const [colDim, setColDim] = useState("destCountry");
-  const [metric, setMetric] = useState<"volume" | "fob">("volume");
+  const [metric, setMetric] = useState<"volume" | "fob" | "loads">("volume");
   const [limitRows, setLimitRows] = useState(15);
   const [limitCols, setLimitCols] = useState(8);
 
   const matrix = usePanel<MatrixPayload>({
-    panel: "matrix", filters, rowDim, colDim, metric, limitRows, limitCols,
+    // 'loads' is derived from volume client-side; backend still queries the volume matrix.
+    panel: "matrix", filters, rowDim, colDim, metric: metric === "loads" ? "volume" : metric, limitRows, limitCols,
   });
 
   const rowLabel = DIM_OPTS.find((d) => d.value === rowDim)?.label ?? rowDim;
@@ -34,7 +39,7 @@ export function FlowsTab({ filters }: { filters: PanelFilters }) {
   return (
     <WidgetShell
       title={`Fluxos — ${rowLabel} × ${colLabel}`}
-      subtitle={`Métrica: ${metric === "volume" ? "Volume (t)" : "FOB (US$)"} · Top ${limitRows} × ${limitCols}`}
+      subtitle={`Métrica: ${metric === "volume" ? "Volume (t)" : metric === "fob" ? "FOB (US$)" : "Loads (FCL 27 t)"} · Top ${limitRows} × ${limitCols}`}
       actions={
         <div className="flex flex-wrap items-end gap-2">
           <DimSelect label="Linhas" value={rowDim} onChange={setRowDim} />
