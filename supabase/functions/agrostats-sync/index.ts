@@ -33,7 +33,7 @@ const COL = {
   consigneeCity: 'Company_Consignee/City',
   consigneeType: 'Company_Consignee/Type',
   hs8: 'Commodity_HS/HS8 Portugues',
-  bl: 'Commodity_HS/BL Description',
+  bl: 'Commodity Detail/BL Description',
   wt: 'WTMT',
   fob: 'FOB VALUE USD',
 }

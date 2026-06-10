@@ -543,17 +543,22 @@ async function runReport(report: string, filters: ReportFilters, entity?: string
 // PANELS — new v2 API
 // ============================================================================
 
-type HsCategory = 'all' | 'bovina_fresca' | 'bovina_congelada' | 'suina' | 'aves' | 'miudezas' | 'outros'
+type Temperature = 'frozen' | 'chilled'
 
 type PanelFilters = {
   from?: string // YYYY-MM
   to?: string   // YYYY-MM
   hs8?: string[]
-  hsCategory?: HsCategory[]
+  hsCategory?: string[]
+  temperature?: Temperature[]
+  productSearch?: string
+  productTypes?: string[]
   destCountry?: string[]
   polPort?: string[]
   shipperName?: string
   consigneeName?: string
+  shipperNames?: string[]
+  consigneeNames?: string[]
   consigneeCountry?: string[]
   shipperState?: string[]
   realOwnerOnly?: boolean
@@ -564,22 +569,57 @@ function getSchemaForPanels(): Promise<SchemaPayload> {
 }
 
 function hsCategoryClause(cats: HsCategory[]): string {
-  if (!cats?.length || cats.includes('all')) return ''
-  const positive: string[] = []
-  let includeOutros = false
-  for (const c of cats) {
-    if (c === 'bovina_fresca') positive.push(`${Q(COL.product)} LIKE '0201%'`)
-    else if (c === 'bovina_congelada') positive.push(`${Q(COL.product)} LIKE '0202%'`)
-    else if (c === 'suina') positive.push(`${Q(COL.product)} LIKE '0203%'`)
-    else if (c === 'aves') positive.push(`${Q(COL.product)} LIKE '0207%'`)
-    else if (c === 'miudezas') positive.push(`${Q(COL.product)} LIKE '0206%'`)
-    else if (c === 'outros') includeOutros = true
-  }
-  const parts = [...positive]
-  if (includeOutros) {
-    parts.push(`(${Q(COL.product)} LIKE '02%' AND ${Q(COL.product)} NOT LIKE '0201%' AND ${Q(COL.product)} NOT LIKE '0202%' AND ${Q(COL.product)} NOT LIKE '0203%' AND ${Q(COL.product)} NOT LIKE '0206%' AND ${Q(COL.product)} NOT LIKE '0207%')`)
+function normalizeCategory(c: string): string {
+  if (c === 'bovina_fresca' || c === 'bovina_congelada') return 'beef'
+  if (c === 'suina') return 'pork'
+  if (c === 'aves') return 'poultry'
+  if (c === 'miudezas') return 'beef_offals'
+  if (c === 'outros') return 'other_meats'
+  return c
+}
+
+function hsCategoryClause(cats: string[]): string {
+  if (!cats?.length) return ''
+  const norm = Array.from(new Set(cats.map(normalizeCategory)))
+  if (norm.includes('all' as any)) return ''
+  const p = Q(COL.product)
+  const parts: string[] = []
+  const knownPrefixes = [
+    `${p} LIKE '0201%'`, `${p} LIKE '0202%'`,
+    `${p} LIKE '02061%'`, `${p} LIKE '02062%'`,
+    `${p} LIKE '0203%'`, `${p} LIKE '02063%'`, `${p} LIKE '02064%'`,
+    `${p} LIKE '0207%'`, `${p} LIKE '0210%'`, `${p} LIKE '0209%'`,
+  ]
+  for (const c of norm) {
+    if (c === 'beef') parts.push(`(${p} LIKE '0201%' OR ${p} LIKE '0202%')`)
+    else if (c === 'beef_offals') parts.push(`(${p} LIKE '02061%' OR ${p} LIKE '02062%')`)
+    else if (c === 'pork') parts.push(`(${p} LIKE '0203%' OR ${p} LIKE '02063%' OR ${p} LIKE '02064%')`)
+    else if (c === 'poultry') parts.push(`${p} LIKE '0207%'`)
+    else if (c === 'cured_meats') parts.push(`${p} LIKE '0210%'`)
+    else if (c === 'animal_fats') parts.push(`${p} LIKE '0209%'`)
+    else if (c === 'other_meats') parts.push(`NOT (${knownPrefixes.join(' OR ')})`)
   }
   return parts.length ? `(${parts.join(' OR ')})` : ''
+}
+
+function temperatureClause(temps: Temperature[]): string {
+  if (!temps?.length) return ''
+  const wantF = temps.includes('frozen')
+  const wantC = temps.includes('chilled')
+  if (!wantF && !wantC) return ''
+  const hs = `UPPER(${Q(COL.product)}::text)`
+  const bl = `UPPER(COALESCE("Commodity Detail/BL Description"::text, ''))`
+  const hasFrozenTag = `position('CONGELAD' in ${hs}) > 0`
+  const hasChilledTag = `(position('FRESCAS OU REFRIGERADAS' in ${hs}) > 0 OR position('FRESCOS OU REFRIGERADOS' in ${hs}) > 0 OR position('FRESCA OU REFRIGERADA' in ${hs}) > 0)`
+  const isFrozenDeterministic = `(${hasFrozenTag} AND NOT ${hasChilledTag})`
+  const isChilledDeterministic = `(${hasChilledTag} AND NOT ${hasFrozenTag})`
+  const ambiguous = `NOT (${hasFrozenTag} XOR ${hasChilledTag})`
+  const blFrozen = `(position('FROZEN' in ${bl}) > 0 OR position('CONGELAD' in ${bl}) > 0)`
+  const blChilled = `(position('CHILLED' in ${bl}) > 0 OR position('FRESH' in ${bl}) > 0 OR position('RESFRIAD' in ${bl}) > 0 OR position('REFRIGERAD' in ${bl}) > 0)`
+  const parts: string[] = []
+  if (wantF) parts.push(`(${isFrozenDeterministic} OR (${ambiguous} AND ${blFrozen}))`)
+  if (wantC) parts.push(`(${isChilledDeterministic} OR (${ambiguous} AND ${blChilled}))`)
+  return `(${parts.join(' OR ')})`
 }
 
 function buildPanelWhere(f: PanelFilters, monthExpr: string, args: unknown[], extraEq: { shipper?: string; consignee?: string } = {}): { where: string; hasWhere: boolean } {
@@ -592,12 +632,25 @@ function buildPanelWhere(f: PanelFilters, monthExpr: string, args: unknown[], ex
     const c = hsCategoryClause(f.hsCategory)
     if (c) parts.push(c)
   }
+  if (f.temperature?.length) {
+    const c = temperatureClause(f.temperature)
+    if (c) parts.push(c)
+  }
+  if (f.productSearch) {
+    const v = ph('%' + f.productSearch + '%')
+    parts.push(`(${Q(COL.product)} ILIKE ${v} OR "Commodity Detail/BL Description" ILIKE ${v})`)
+  }
+  if (f.productTypes?.length) {
+    parts.push(`"Commodity Detail/BL Description" IN (${f.productTypes.map((v) => ph(v)).join(', ')})`)
+  }
   if (f.destCountry?.length) parts.push(`${Q(COL.destCountry)} IN (${f.destCountry.map((v) => ph(v)).join(', ')})`)
   if (f.polPort?.length) parts.push(`${Q(COL.polPort)} IN (${f.polPort.map((v) => ph(v)).join(', ')})`)
   if (f.consigneeCountry?.length) parts.push(`${Q(COL.consigneeCountry)} IN (${f.consigneeCountry.map((v) => ph(v)).join(', ')})`)
   if (f.shipperState?.length) parts.push(`${Q(COL.shipperState)} IN (${f.shipperState.map((v) => ph(v)).join(', ')})`)
   if (f.shipperName) parts.push(`${Q(COL.shipper)} ILIKE ${ph('%' + f.shipperName + '%')}`)
   if (f.consigneeName) parts.push(`${Q(COL.consignee)} ILIKE ${ph('%' + f.consigneeName + '%')}`)
+  if (f.shipperNames?.length) parts.push(`${Q(COL.shipper)} IN (${f.shipperNames.map((v) => ph(v)).join(', ')})`)
+  if (f.consigneeNames?.length) parts.push(`${Q(COL.consignee)} IN (${f.consigneeNames.map((v) => ph(v)).join(', ')})`)
   if (f.realOwnerOnly !== false) {
     parts.push(`${Q(COL.consigneeType)} = 'REAL DONO'`)
     parts.push(`${Q(COL.shipperType)} = 'REAL DONO'`)
@@ -781,6 +834,22 @@ async function panelSearchEntity(c: Client, entity: 'shipper' | 'consignee', q: 
   return { rows: res.rows.map(serializeRow) }
 }
 
+async function panelDistinctProducts(c: Client, monthExpr: string, f: PanelFilters) {
+  const args: unknown[] = []
+  // Strip productTypes from the filter so the list itself isn't filtered by current selection
+  const fStripped = { ...f, productTypes: undefined }
+  const { where } = buildPanelWhere(fStripped, monthExpr, args)
+  const sql = `
+    SELECT "Commodity Detail/BL Description" AS name,
+           COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS volume
+    FROM ${FQ_TABLE} ${where}
+    ${where ? 'AND' : 'WHERE'} "Commodity Detail/BL Description" IS NOT NULL AND "Commodity Detail/BL Description" <> ''
+    GROUP BY 1 ORDER BY 2 DESC LIMIT 100
+  `
+  const r = await c.queryObject<any>({ text: sql, args })
+  return { rows: r.rows.map(serializeRow) }
+}
+
 async function runPanel(panel: string, body: any): Promise<unknown> {
   // Get cached schema (just for monthExpr); fall back to rebuild
   return await withPg(async (c) => {
@@ -814,6 +883,8 @@ async function runPanel(panel: string, body: any): Promise<unknown> {
         const entity = (body.entity === 'shipper' ? 'shipper' : 'consignee') as 'shipper' | 'consignee'
         return await panelSearchEntity(c, entity, String(body.q ?? ''))
       }
+      case 'distinct-products':
+        return await panelDistinctProducts(c, monthExpr!, filters)
       default:
         throw new Error(`Unknown panel: ${panel}`)
     }
@@ -859,6 +930,8 @@ async function runPanelMirror(
         entity: body.entity === 'shipper' ? 'shipper' : 'consignee',
         q: String(body.q ?? ''),
       })
+    case 'distinct-products':
+      return await rpc('agrostats_distinct_products', { f: filters })
     default:
       throw new Error(`Unknown panel: ${panel}`)
   }
