@@ -925,6 +925,44 @@ Deno.serve(async (req) => {
       return json({ ok: true, cached: false, refreshedAt, report, data })
     }
 
+    if (action === 'detect-date-format') {
+      const data = await withPg((c) => detectDateFormat(c))
+      return json({ ok: true, ...data })
+    }
+
+    if (action === 'panel') {
+      const panel = String(body.panel ?? '')
+      const forceRefresh = body.forceRefresh === true
+      // Build cache key from the meaningful subset of body
+      const cacheBody = { panel, filters: body.filters ?? {}, dimension: body.dimension, metric: body.metric, limit: body.limit, rowDim: body.rowDim, colDim: body.colDim, limitRows: body.limitRows, limitCols: body.limitCols, scopeShipper: body.scopeShipper, scopeConsignee: body.scopeConsignee, entity: body.entity, q: body.q }
+      const cacheKey = await sha256('panel:' + JSON.stringify(cacheBody))
+
+      // Skip cache for search-entity (it's user-typed and ephemeral)
+      const useCache = panel !== 'search-entity'
+      if (useCache && !forceRefresh) {
+        const { data: cached } = await supaSrv
+          .from('agrostats_panel_cache')
+          .select('payload, created_at')
+          .eq('cache_key', cacheKey)
+          .maybeSingle()
+        if (cached?.payload && cached.created_at) {
+          const age = Date.now() - new Date(cached.created_at).getTime()
+          if (age < PANEL_CACHE_TTL_MS) {
+            return json({ ok: true, cached: true, createdAt: cached.created_at, panel, data: cached.payload })
+          }
+        }
+      }
+
+      const data = await runPanel(panel, body)
+      const createdAt = new Date().toISOString()
+      if (useCache) {
+        await supaSrv
+          .from('agrostats_panel_cache')
+          .upsert({ cache_key: cacheKey, payload: data as any, created_at: createdAt }, { onConflict: 'cache_key' })
+      }
+      return json({ ok: true, cached: false, createdAt, panel, data })
+    }
+
     return json({ error: 'Unknown action' }, 400)
   } catch (e) {
     const msg = (e as Error).message ?? String(e)
