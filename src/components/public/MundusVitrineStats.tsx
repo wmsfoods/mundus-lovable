@@ -6,7 +6,7 @@ export default function MundusVitrineStats() {
 
   return (
     <section
-      aria-label="Mundus em números"
+      aria-label="Mundus by the numbers"
       className="relative overflow-hidden border-y border-[#8B2E4F]/10"
       style={{
         background:
@@ -30,25 +30,25 @@ export default function MundusVitrineStats() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8B2E4F] opacity-70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8B2E4F]" />
           </span>
-          <span>Mundus em números · ao vivo</span>
+          <span>Mundus by the numbers · live</span>
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-4">
           <StatBlock
-            label="Toneladas"
-            sub="transitadas na plataforma"
+            label="Tons"
+            sub="moved through the platform"
             value={loading ? 0 : tons}
             format={{ maximumFractionDigits: 0 }}
             suffix={<span className="ml-1 text-2xl font-semibold text-[#752642]/70 sm:text-3xl">t</span>}
           />
           <StatBlock
-            label="Origens"
-            sub="países de origem"
+            label="Origins"
+            sub="countries of origin"
             value={loading ? 0 : origins}
           />
           <StatBlock
-            label="Destinos"
-            sub="países de destino"
+            label="Destinations"
+            sub="countries of destination"
             value={loading ? 0 : destinations}
           />
         </div>
