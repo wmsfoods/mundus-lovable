@@ -81,6 +81,7 @@ import CRMPipeline from "./pages/admin/CRMPipeline.tsx";
 import MeetingPrep from "./pages/admin/MeetingPrep.tsx";
 import AdminProspectDetail from "./pages/admin/AdminProspectDetail.tsx";
 import AdminAnalytics from "./pages/admin/AdminAnalytics.tsx";
+import AdminMarketData from "./pages/admin/AdminMarketData.tsx";
 import AdminBIMarket from "./pages/admin/AdminBIMarket.tsx";
 import AdminBINegotiations from "./pages/admin/AdminBINegotiations.tsx";
 import AdminBIDemand from "./pages/admin/AdminBIDemand.tsx";
