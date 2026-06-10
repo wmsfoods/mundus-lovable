@@ -1380,7 +1380,7 @@ function Step4Contact({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Field label={t("signup.fields.address")}>
           <AddressAutocomplete
-            className={inputCls}
+            className={cn(inputCls, errors.address && errorInputCls)}
             value={data.address}
             onChange={(v) => set("address", v)}
             onAddressSelect={(addr) => {
@@ -1394,35 +1394,51 @@ function Step4Contact({
               }
             }}
           />
+          <FieldError message={getErrorMessage(errors.address, t)} />
         </Field>
         <Field label={t("signup.fields.addressLine2")}>
           <input
             className={inputCls}
             value={data.addressLine2}
             onChange={(e) => set("addressLine2", e.target.value)}
+            autoComplete="address-line2"
           />
         </Field>
         <Field label={t("signup.fields.city")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.city && errorInputCls)}
             value={data.city}
             onChange={(e) => set("city", e.target.value)}
+            onBlur={() => touch("city")}
+            autoComplete="address-level2"
           />
+          <FieldError message={getErrorMessage(errors.city, t)} />
         </Field>
         <Field label={t("signup.fields.state")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.state && errorInputCls)}
             value={data.state}
             onChange={(e) => set("state", e.target.value)}
+            onBlur={() => touch("state")}
+            autoComplete="address-level1"
             placeholder={t("signup.fields.statePlaceholder")}
           />
+          <FieldError message={getErrorMessage(errors.state, t)} />
         </Field>
         <Field label={t("signup.fields.zip")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.zip && errorInputCls)}
             value={data.zip}
             onChange={(e) => set("zip", e.target.value)}
+            onBlur={() => touch("zip")}
+            autoComplete="postal-code"
+            inputMode="text"
+            placeholder={zipHint}
           />
+          <FieldError message={getErrorMessage(errors.zip, t)} />
+          {!errors.zip && data.country && (
+            <p className="text-xs text-gray-500 mt-1">{zipHint}</p>
+          )}
         </Field>
         <Field
           label={
@@ -1446,10 +1462,13 @@ function Step4Contact({
               className={cn(
                 inputCls,
                 countryFromGoogle && "bg-gray-50 text-gray-700 cursor-not-allowed pr-10",
+                errors.country && errorInputCls,
               )}
               value={data.country}
               onChange={(e) => set("country", e.target.value)}
+              onBlur={() => touch("country")}
               disabled={countryFromGoogle}
+              autoComplete="country-name"
               title={countryFromGoogle ? t("signup.fields.countryLocked") : undefined}
             />
             {countryFromGoogle && (
@@ -1458,6 +1477,7 @@ function Step4Contact({
               </span>
             )}
           </div>
+          <FieldError message={getErrorMessage(errors.country, t)} />
         </Field>
         <Field label={t("signup.fields.businessPhone")}>
           <div className="flex gap-2">
@@ -1477,22 +1497,35 @@ function Step4Contact({
               ))}
             </select>
             <input
-              className={inputCls}
+              className={cn(inputCls, errors.phone && errorInputCls)}
               value={data.phoneNumber}
-              onChange={(e) => set("phoneNumber", e.target.value)}
+              onChange={(e) =>
+                set("phoneNumber", maskPhone(e.target.value, data.phoneCode))
+              }
+              onBlur={() => touch("phone")}
+              autoComplete="tel-national"
+              inputMode="tel"
               placeholder={t("signup.fields.phonePlaceholder")}
             />
           </div>
+          <FieldError message={getErrorMessage(errors.phone, t)} />
         </Field>
         <Field
           label={`${t("signup.fields.website")} (${t("common.optional")})`}
         >
           <input
-            className={inputCls}
+            className={cn(inputCls, errors.website && errorInputCls)}
             value={data.website}
             onChange={(e) => set("website", e.target.value)}
+            onBlur={() => {
+              touch("website");
+              if (data.website) set("website", normalizeWebsite(data.website));
+            }}
+            autoComplete="url"
+            inputMode="url"
             placeholder="https://"
           />
+          <FieldError message={getErrorMessage(errors.website, t)} />
         </Field>
       </div>
 
