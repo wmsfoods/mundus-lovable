@@ -1,24 +1,49 @@
-export type HsCategory = "all" | "bovina_fresca" | "bovina_congelada" | "suina" | "aves" | "miudezas" | "outros";
+// New protein taxonomy (display in this exact order in the UI)
+export type HsCategory =
+  | "beef"
+  | "beef_offals"
+  | "pork"
+  | "poultry"
+  | "cured_meats"
+  | "animal_fats"
+  | "other_meats";
+
+export const HS_CATEGORY_ORDER: HsCategory[] = [
+  "beef",
+  "beef_offals",
+  "pork",
+  "poultry",
+  "cured_meats",
+  "animal_fats",
+  "other_meats",
+];
 
 export const HS_CATEGORY_LABELS: Record<HsCategory, string> = {
-  all: "Todas",
-  bovina_fresca: "Bovina fresca",
-  bovina_congelada: "Bovina congelada",
-  miudezas: "Miudezas",
-  suina: "Suína",
-  aves: "Aves",
-  outros: "Outros (cap. 02)",
+  beef: "Beef",
+  beef_offals: "Beef Offals",
+  pork: "Pork",
+  poultry: "Poultry",
+  cured_meats: "Cured Meats",
+  animal_fats: "Animal Fats",
+  other_meats: "Other Meats",
 };
+
+export type Temperature = "frozen" | "chilled";
 
 export type PanelFilters = {
   from?: string; // YYYY-MM
   to?: string;   // YYYY-MM
   hs8?: string[];
-  hsCategory?: HsCategory[];
+  hsCategory?: string[]; // accepts HsCategory or legacy keys (backward compat)
+  temperature?: Temperature[];
+  productSearch?: string;
+  productTypes?: string[]; // exact bl_description values
   destCountry?: string[];
   polPort?: string[];
-  shipperName?: string;
-  consigneeName?: string;
+  shipperName?: string;             // legacy single (still accepted)
+  consigneeName?: string;           // legacy single (still accepted)
+  shipperNames?: string[];
+  consigneeNames?: string[];
   consigneeCountry?: string[];
   shipperState?: string[];
   realOwnerOnly?: boolean;
