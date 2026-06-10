@@ -419,36 +419,65 @@ function Step1({
   const [showR, setShowR] = useState(false);
   const rules = useMemo(() => checkPassword(data.password), [data.password]);
   const passwordsMatch = data.password === data.repeatPassword && data.password.length > 0;
+
+  const [touched, setTouched] = useState<{
+    name?: boolean;
+    email?: boolean;
+    password?: boolean;
+    repeat?: boolean;
+  }>({});
+
+  const nameErr = touched.name ? validateName(data.name) : null;
+  const emailErr = touched.email ? validateEmail(data.email) : null;
+  const pwdErr = touched.password ? validatePassword(data.password) : null;
+  const repeatErr = touched.repeat
+    ? validateRepeatPassword(data.password, data.repeatPassword)
+    : null;
+
   const canProceed =
-    !!data.name && !!data.email && passwordsMatch && allRulesMet(rules) && data.agreeTerms;
+    !validateName(data.name) &&
+    !validateEmail(data.email) &&
+    passwordsMatch &&
+    allRulesMet(rules) &&
+    data.agreeTerms;
 
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Field label={t("signup.fields.fullName")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, nameErr && errorInputCls)}
             value={data.name}
             onChange={(e) => set("name", e.target.value)}
+            onBlur={() => setTouched((s) => ({ ...s, name: true }))}
+            autoComplete="name"
+            inputMode="text"
             placeholder={t("signup.fields.fullNamePlaceholder")}
           />
+          <FieldError message={getErrorMessage(nameErr, t)} />
         </Field>
         <Field label={t("signup.fields.email")}>
           <input
             type="email"
-            className={inputCls}
+            className={cn(inputCls, emailErr && errorInputCls)}
             value={data.email}
             onChange={(e) => set("email", e.target.value)}
+            onBlur={() => setTouched((s) => ({ ...s, email: true }))}
+            autoComplete="email"
+            inputMode="email"
             placeholder={t("signup.fields.emailPlaceholder")}
           />
+          <FieldError message={getErrorMessage(emailErr, t)} />
         </Field>
         <Field label={t("signup.fields.password")}>
           <div className="relative">
             <input
               type={showP ? "text" : "password"}
-              className={cn(inputCls, "pr-12")}
+              className={cn(inputCls, "pr-12", pwdErr && errorInputCls)}
               value={data.password}
               onChange={(e) => set("password", e.target.value)}
+              onBlur={() => setTouched((s) => ({ ...s, password: true }))}
+              autoComplete="new-password"
               placeholder={t("signup.fields.passwordPlaceholder")}
             />
             <button
@@ -464,9 +493,11 @@ function Step1({
           <div className="relative">
             <input
               type={showR ? "text" : "password"}
-              className={cn(inputCls, "pr-12")}
+              className={cn(inputCls, "pr-12", repeatErr && errorInputCls)}
               value={data.repeatPassword}
               onChange={(e) => set("repeatPassword", e.target.value)}
+              onBlur={() => setTouched((s) => ({ ...s, repeat: true }))}
+              autoComplete="new-password"
               placeholder={t("signup.fields.repeatPasswordPlaceholder")}
             />
             <button
@@ -477,9 +508,7 @@ function Step1({
               {showR ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
             </button>
           </div>
-          {data.repeatPassword && !passwordsMatch && (
-            <p className="text-red-500 text-sm mt-1">{t("signup.passwordsMismatch")}</p>
-          )}
+          <FieldError message={getErrorMessage(repeatErr, t)} />
         </Field>
       </div>
 
