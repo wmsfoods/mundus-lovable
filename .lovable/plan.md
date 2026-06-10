@@ -1,52 +1,48 @@
 ## Objetivo
-Adicionar 3 contadores animados (Tons, Origins, Destinations) na PublicHome, logo **acima da seção "Available Offers at Mundus"**, com efeito blur-digit nas cores Mundus.
 
-## Componente
-Criar `src/components/ui/animated-blur-number.tsx` (cópia exata do snippet enviado — zero dependências, self-contained, prefers-reduced-motion ok). Locale default `pt-BR`.
+Dentro do drawer que abre ao clicar num **Importador** ou **Exportador** (`EntityDrawer.tsx`), adicionar uma seção "Apollo" que permita buscar a empresa por nome + país e listar people (contatos) associados — reusando a integração Apollo já existente (`prospect-search` / `prospect-enrich`).
 
-## Dados (RPC pública nova)
-Migration: criar função SECURITY DEFINER `public.get_mundus_vitrine_stats()` retornando JSON `{ total_tons, origins, destinations }`. GRANT EXECUTE para `anon` e `authenticated` (página é pública).
+## O que será adicionado
 
-Cálculos:
-- **total_tons** = `SUM(offer_items.amount) / 1000` desde sempre (sem filtro de status — "transitou").
-- **origins** = `COUNT(DISTINCT)` da união de `offers.origin_country` + `unnest(buyer_requests.origin_countries)` (ignorando nulos/vazios).
-- **destinations** = `COUNT(DISTINCT)` da união de `markets.country` (via `offer_markets`) + `buyer_requests.destination_country`.
+Nova seção colapsável "Inteligência Apollo" no `EntityDrawer`, abaixo dos blocos atuais (Top compradores / Top destinos / Top produtos), apenas para `kind === "shipper" | "consignee"` (não para `destCountry`).
 
-## Hook
-`src/hooks/useVitrineStats.ts` — chama o RPC uma vez no mount (`supabase.rpc('get_mundus_vitrine_stats')`), guarda em state. Sem realtime. Retorna `{ tons, origins, destinations, loading }`.
+A seção tem 3 estados:
 
-Pequeno polimento UX: tick incremental opcional dos `tons` (+1 a cada 6–10s no client, só visual) para o blur animar continuamente mesmo sem mudança real — coloco como opt-in (`liveTick: false` por padrão) pra não enganar o número. **Default: sem auto-tick.** O blur dispara naturalmente quando o RPC eventualmente retorna valor diferente.
+1. **Empresa** — busca automática ao abrir o drawer
+   - Chama `prospect-search` com `entity: "companies"`, `q_organization_name: <name do drawer>`, `organization_locations: [<país inferido>]` quando houver, `per_page: 5`.
+   - País é inferido assim: se `kind === "shipper"` → "Brazil" (BR é a base de exportações); se `kind === "consignee"` → não envia país (deixa Apollo amplo) — admin pode refinar.
+   - Mostra até 5 candidatos como cards compactos (logo, nome, domínio, país/cidade, indústria, nº de funcionários, link LinkedIn/site).
+   - Admin escolhe o match correto clicando "Selecionar".
 
-## UI — PublicHome.tsx
-Nova seção `MundusVitrineStats` renderizada **entre o `<section hero>` e `{offersSection}`** (e antes do offersSection também no caminho nativo `nativeApp`, para aparecer em mobile/app).
+2. **People da empresa selecionada**
+   - Após selecionar a empresa, chama `prospect-search` com `entity: "people"`, `organization_ids: [id]`, `per_page: 10`.
+   - Lista people: foto, nome, cargo, seniority, cidade/país, ícones LinkedIn/email.
+   - Cada pessoa tem botão "Revelar email" que chama `prospect-enrich` com `{ id, first_name, last_name, organization_name }` e mostra o email retornado (sem persistir no CRM — apenas exibe).
 
-Layout:
-- Container full-width com fundo gradient sutil nas cores Mundus (`#8B2E4F` → branco), bordas suaves.
-- Grid 3 colunas (desktop) / 1 coluna stacked (mobile, respeitando memória core de responsividade).
-- Cada card: label pequeno em uppercase (cor mundus burgundy `#752642`), número grande com `<AnimateNumber>` (cor `#8B2E4F`, fonte bold, ~3rem desktop / 2rem mobile), sublabel ("toneladas transitadas" / "países de origem" / "países de destino").
-- Tons: `suffix=" t"`, formato pt-BR com agrupamento.
-- Origins/Destinations: número simples.
-- Sem botões. Decorativo + informativo. Ping dot suave indicando "live".
+3. **Refinar busca**
+   - Campos editáveis (nome + país) com botão "Buscar novamente", caso o auto-match não traga a empresa certa.
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  TONELADAS         │  ORIGENS         │  DESTINOS           │
-│  1.204.837 t       │  42              │  68                 │
-│  transitadas       │  países          │  países             │
-└─────────────────────────────────────────────────────────────┘
-```
+## Estados de erro / fallback
 
-## Detalhes técnicos
-- AnimateNumber importado de `@/components/ui/animated-blur-number`.
-- locale `pt-BR` no `format` prop.
-- Sem realtime subscription (custo desnecessário) — fetch único no mount.
-- Reaproveitar tokens existentes de cores Mundus já usados em PublicHome (`#8B2E4F`, `#752642`).
-- Acessibilidade: o componente já expõe sr-only label e respeita `prefers-reduced-motion`.
+- Se `apollo_api_key_missing` → mostrar aviso "Apollo não configurado" com link discreto para Configurações.
+- Se Apollo retornar 0 resultados → "Nenhuma empresa encontrada — refine o nome/país".
+- Loading com skeletons reaproveitando `WidgetShell`.
 
 ## Arquivos
-- **criar** `supabase/migrations/<ts>_vitrine_stats.sql` (função + grants)
-- **criar** `src/components/ui/animated-blur-number.tsx`
-- **criar** `src/hooks/useVitrineStats.ts`
-- **criar** `src/components/public/MundusVitrineStats.tsx`
-- **editar** `src/pages/public/PublicHome.tsx` (montar a seção antes de `offersSection` em ambos os caminhos: nativeApp e web)
-- **editar** `src/integrations/supabase/types.ts` (auto-regen após migration aprovada)
+
+- **Editar**: `src/pages/admin/marketData/v2/EntityDrawer.tsx` — adicionar a nova seção e os hooks de estado local.
+- **Criar**: `src/pages/admin/marketData/v2/ApolloLookup.tsx` — componente isolado (`<ApolloLookup name={name} kind={kind} />`) que encapsula busca de empresa + people + reveal.
+- Reuso: `src/hooks/useProspectSearch.ts` (helpers `mapCompany`, `mapPerson`) e `prospect-enrich` edge function (já existem; não alterar).
+
+## Detalhes técnicos
+
+- Chamadas via `supabase.functions.invoke("prospect-search", { body: {...} })` — mesma forma usada em `useProspectSearch`.
+- Sem mudanças no schema, sem nova migration, sem mudança no edge function.
+- Mobile: a seção segue a largura do `SheetContent` (`w-full sm:max-w-2xl`); cards em coluna única no mobile, 2 colunas em sm+.
+- Sem persistência: é uma ferramenta de exploração read-only. (Botão "Salvar como prospect no CRM" pode vir depois se você pedir.)
+
+## Fora do escopo
+
+- Persistir empresa/people encontrados no CRM.
+- Revelar telefone (usa webhook async — adicionar depois se necessário).
+- Mostrar Apollo em outros lugares além do `EntityDrawer`.

@@ -6,6 +6,7 @@ import { WidgetShell } from "./WidgetShell";
 import { MonthlyComboChart } from "./MonthlyComboChart";
 import { HorizontalBars } from "./HorizontalBars";
 import { fmtTonCompact, fmtUsdCompact, fmtPrice, fmtCompactNumber, pctDelta, fmtLoads } from "./format";
+import { ApolloLookup } from "./ApolloLookup";
 
 type EntityKind = "shipper" | "consignee" | "destCountry";
 
@@ -120,6 +121,10 @@ export function EntityDrawer({
             <HorizontalBars rows={products.data?.rows ?? []} />
           </WidgetShell>
         </div>
+
+        {name && kind !== "destCountry" && (
+          <ApolloLookup name={name} kind={kind} />
+        )}
       </SheetContent>
     </Sheet>
   );
