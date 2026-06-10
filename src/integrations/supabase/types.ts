@@ -8351,6 +8351,7 @@ export type Database = {
           }
         | { Args: { payload: Json; queue_name: string }; Returns: number }
       expire_old_pending_signups: { Args: never; Returns: number }
+      get_agrostats_cron_secret: { Args: never; Returns: string }
       get_company_active_user_ids: {
         Args: { p_company_id: string }
         Returns: {

@@ -252,19 +252,21 @@ Deno.serve(async (req) => {
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
     const ANON = Deno.env.get('SUPABASE_ANON_KEY')!
     const SERVICE = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-    const CRON_SECRET = Deno.env.get('CRON_SECRET')?.trim() ?? ''
     const supaSrv = createClient(SUPABASE_URL, SERVICE, { auth: { persistSession: false } })
 
     const body = await req.json().catch(() => ({}))
     const action = String(body?.action ?? '')
 
-    // Auth: accept (a) Bearer service-role (self-invocation), (b) x-cron-secret
-    // matching CRON_SECRET (scheduled pg_cron job), or (c) Bearer user JWT for an admin.
     const authHeader = req.headers.get('Authorization') ?? ''
     const cronHeader = req.headers.get('x-cron-secret')?.trim() ?? ''
     const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : ''
     const isService = token !== '' && token === SERVICE
-    const isCron = CRON_SECRET !== '' && cronHeader !== '' && cronHeader === CRON_SECRET
+    let isCron = false
+    if (!isService && cronHeader !== '') {
+      const { data: vaultSecret } = await supaSrv.rpc('get_agrostats_cron_secret')
+      const expected = typeof vaultSecret === 'string' ? vaultSecret.trim() : ''
+      isCron = expected !== '' && cronHeader === expected
+    }
     if (!isService && !isCron) {
       if (!token) return json({ error: 'Unauthorized' }, 401)
       const supaUser = createClient(SUPABASE_URL, ANON, { global: { headers: { Authorization: `Bearer ${token}` } } })
