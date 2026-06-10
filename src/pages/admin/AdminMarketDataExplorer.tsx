@@ -256,13 +256,13 @@ export default function AdminMarketDataExplorer() {
     <div className="p-4 md:p-6 space-y-4 max-w-[1400px] mx-auto">
       <div>
         <h1 className="text-2xl font-semibold">Market Data — Exportações Brasileiras</h1>
-        <p className="text-sm text-muted-foreground">Explorador analítico interno (Agro Statistics)</p>
+        <p className="text-sm text-muted-foreground">Dados licenciados para uso interno Mundus Trade LLC.</p>
       </div>
 
       <div className="flex items-start gap-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-amber-900 text-sm dark:bg-amber-950/30 dark:text-amber-200 dark:border-amber-800">
         <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0" />
         <div>
-          <strong>Fonte:</strong> Agro Statistics — dados licenciados para uso interno WMS Foods. Não compartilhar externamente.
+          Não compartilhar externamente.
         </div>
       </div>
 
