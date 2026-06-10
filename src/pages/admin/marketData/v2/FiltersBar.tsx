@@ -9,9 +9,9 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Check, ChevronsUpDown, X, Info, Bookmark, Trash2, Save } from "lucide-react";
+import { Check, ChevronsUpDown, X, Info, Bookmark, Trash2, Save, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { HS_CATEGORY_LABELS, type HsCategory, type PanelFilters } from "./types";
+import { HS_CATEGORY_LABELS, HS_CATEGORY_ORDER, type HsCategory, type PanelFilters } from "./types";
 import { searchEntity, usePanel } from "./usePanel";
 import { addSaved, loadSaved, removeSaved, type SavedSearch } from "./savedSearches";
 
@@ -86,13 +86,13 @@ function MultiCombo({
   );
 }
 
-function EntityAutocomplete({
-  label, entity, value, onChange, placeholder,
+function EntityMultiAutocomplete({
+  label, entity, values, onChange, placeholder,
 }: {
   label: string;
   entity: "shipper" | "consignee";
-  value?: string;
-  onChange: (v: string | undefined) => void;
+  values: string[];
+  onChange: (v: string[]) => void;
   placeholder: string;
 }) {
   const [open, setOpen] = useState(false);
@@ -111,13 +111,15 @@ function EntityAutocomplete({
     return () => { cancel = true; clearTimeout(t); };
   }, [q, entity]);
 
+  const toggle = (o: string) => onChange(values.includes(o) ? values.filter((v) => v !== o) : [...values, o]);
+
   return (
     <div className="space-y-1 min-w-[180px]">
       <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</Label>
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button variant="outline" className="w-full justify-between font-normal h-9">
-            <span className="truncate text-xs">{value || placeholder}</span>
+            <span className="truncate text-xs">{values.length === 0 ? placeholder : `${values.length} selecionado(s)`}</span>
             <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
@@ -128,14 +130,14 @@ function EntityAutocomplete({
               {loading && <div className="p-2 text-xs text-muted-foreground">Buscando…</div>}
               {!loading && q.length >= 2 && !opts.length && <CommandEmpty>Nenhum resultado.</CommandEmpty>}
               <CommandGroup>
-                {value && (
-                  <CommandItem onSelect={() => { onChange(undefined); setOpen(false); setQ(""); }}>
+                {values.length > 0 && (
+                  <CommandItem onSelect={() => { onChange([]); setQ(""); }}>
                     <X className="mr-2 h-4 w-4" /> Limpar
                   </CommandItem>
                 )}
                 {opts.map((o) => (
-                  <CommandItem key={o} onSelect={() => { onChange(o); setOpen(false); }}>
-                    <Check className={cn("mr-2 h-4 w-4", value === o ? "opacity-100" : "opacity-0")} />
+                  <CommandItem key={o} onSelect={() => toggle(o)}>
+                    <Check className={cn("mr-2 h-4 w-4", values.includes(o) ? "opacity-100" : "opacity-0")} />
                     <span className="truncate">{o}</span>
                   </CommandItem>
                 ))}
@@ -179,9 +181,13 @@ export function FiltersBar({
   const [saved, setSaved] = useState<SavedSearch[]>(() => loadSaved());
   const [saveName, setSaveName] = useState("");
   const [saveOpen, setSaveOpen] = useState(false);
+  const [productSearchDraft, setProductSearchDraft] = useState(value.productSearch ?? "");
   const { destCountries, polPorts } = useIntrospectDistincts();
 
-  useEffect(() => { setDraft(value); }, [JSON.stringify(value)]);
+  useEffect(() => {
+    setDraft(value);
+    setProductSearchDraft(value.productSearch ?? "");
+  }, [JSON.stringify(value)]);
 
   // Top HS8 list scoped to current categories (limit 50)
   const hsTop = usePanel<{ rows: { name: string }[] }>(
@@ -189,6 +195,13 @@ export function FiltersBar({
     [draft.hsCategory?.join(","), draft.from, draft.to, draft.destCountry?.join(","), draft.polPort?.join(",")],
   );
   const hsOptions = useMemo(() => (hsTop.data?.rows ?? []).map((r) => r.name).filter(Boolean), [hsTop.data]);
+
+  // Distinct product types (BL Description) under current filters
+  const productList = usePanel<{ rows: { name: string; volume: number }[] }>(
+    { panel: "distinct-products", filters: { ...draft, productTypes: undefined } },
+    [draft.hsCategory?.join(","), draft.temperature?.join(","), draft.productSearch, draft.from, draft.to, draft.destCountry?.join(","), draft.polPort?.join(",")],
+  );
+  const productTypeOptions = useMemo(() => (productList.data?.rows ?? []).map((r) => r.name).filter(Boolean), [productList.data]);
 
   const applyPreset = (p: Preset) => {
     setPreset(p);
@@ -199,18 +212,29 @@ export function FiltersBar({
     }
   };
 
-  const apply = () => onApply(draft);
+  const apply = () => {
+    const next = { ...draft, productSearch: productSearchDraft.trim() || undefined };
+    setDraft(next);
+    onApply(next);
+  };
   const clearAll = () => {
     const cleared: PanelFilters = { from: draft.from, to: draft.to, realOwnerOnly: true };
-    setDraft(cleared); onApply(cleared);
+    setDraft(cleared); setProductSearchDraft(""); onApply(cleared);
   };
 
-  const setCat = (cat: HsCategory) => {
-    const arr = cat === "all" ? [] : [cat];
-    const next = { ...draft, hsCategory: arr.length ? arr : undefined, hs8: undefined };
-    setDraft(next); onApply(next);
+  const toggleCat = (cat: HsCategory) => {
+    const curr = (draft.hsCategory ?? []) as string[];
+    const next = curr.includes(cat) ? curr.filter((c) => c !== cat) : [...curr, cat];
+    const updated = { ...draft, hsCategory: next.length ? next : undefined, hs8: undefined };
+    setDraft(updated); onApply(updated);
   };
-  const currentCat: HsCategory = draft.hsCategory?.[0] ?? "all";
+
+  const toggleTemp = (t: "frozen" | "chilled") => {
+    const curr = (draft.temperature ?? []) as ("frozen"|"chilled")[];
+    const next = curr.includes(t) ? curr.filter((x) => x !== t) : [...curr, t];
+    const updated = { ...draft, temperature: next.length ? next : undefined };
+    setDraft(updated); onApply(updated);
+  };
 
   const removeMulti = (k: keyof PanelFilters, item: string) => {
     const arr = ((draft[k] as string[] | undefined) ?? []).filter((v) => v !== item);
@@ -220,13 +244,26 @@ export function FiltersBar({
   const removeScalar = (k: keyof PanelFilters) => {
     const next = { ...draft, [k]: undefined };
     setDraft(next); onApply(next);
+    if (k === "productSearch") setProductSearchDraft("");
   };
 
   const chips: { label: string; onRemove: () => void }[] = [];
-  if (draft.hsCategory?.length) chips.push({ label: `Categoria: ${HS_CATEGORY_LABELS[draft.hsCategory[0]]}`, onRemove: () => setCat("all") });
+  (draft.hsCategory ?? []).forEach((v) =>
+    chips.push({
+      label: `Categoria: ${(HS_CATEGORY_LABELS as any)[v] ?? v}`,
+      onRemove: () => toggleCat(v as HsCategory),
+    }),
+  );
+  (draft.temperature ?? []).forEach((v) =>
+    chips.push({ label: v === "frozen" ? "Frozen" : "Chilled", onRemove: () => toggleTemp(v) }),
+  );
+  if (draft.productSearch) chips.push({ label: `Produto: "${draft.productSearch}"`, onRemove: () => removeScalar("productSearch") });
+  (draft.productTypes ?? []).forEach((v) => chips.push({ label: `Tipo: ${v}`, onRemove: () => removeMulti("productTypes", v) }));
   (draft.hs8 ?? []).forEach((v) => chips.push({ label: `HS8: ${v.split(" - ")[0]}`, onRemove: () => removeMulti("hs8", v) }));
   (draft.destCountry ?? []).forEach((v) => chips.push({ label: `Destino: ${v}`, onRemove: () => removeMulti("destCountry", v) }));
   (draft.polPort ?? []).forEach((v) => chips.push({ label: `Porto BR: ${v}`, onRemove: () => removeMulti("polPort", v) }));
+  (draft.shipperNames ?? []).forEach((v) => chips.push({ label: `Exportador: ${v}`, onRemove: () => removeMulti("shipperNames", v) }));
+  (draft.consigneeNames ?? []).forEach((v) => chips.push({ label: `Comprador: ${v}`, onRemove: () => removeMulti("consigneeNames", v) }));
   if (draft.shipperName) chips.push({ label: `Exportador: ${draft.shipperName}`, onRemove: () => removeScalar("shipperName") });
   if (draft.consigneeName) chips.push({ label: `Comprador: ${draft.consigneeName}`, onRemove: () => removeScalar("consigneeName") });
   if (draft.realOwnerOnly === false) chips.push({ label: "Inclui trading", onRemove: () => { const n = { ...draft, realOwnerOnly: true }; setDraft(n); onApply(n); } });
@@ -265,17 +302,68 @@ export function FiltersBar({
           </div>
         )}
 
-        <div className="space-y-1 min-w-[180px]">
+        <div className="space-y-1 min-w-[200px]">
           <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Categoria</Label>
-          <Select value={currentCat} onValueChange={(v) => setCat(v as HsCategory)}>
-            <SelectTrigger className="h-9 text-xs"><SelectValue /></SelectTrigger>
-            <SelectContent>
-              {(Object.keys(HS_CATEGORY_LABELS) as HsCategory[]).map((k) => (
-                <SelectItem key={k} value={k} className="text-xs">{HS_CATEGORY_LABELS[k]}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-between font-normal h-9">
+                <span className="truncate text-xs">
+                  {(draft.hsCategory?.length ?? 0) === 0 ? "Todas"
+                    : draft.hsCategory!.length === 1
+                      ? (HS_CATEGORY_LABELS as any)[draft.hsCategory![0]] ?? draft.hsCategory![0]
+                      : `${draft.hsCategory!.length} categorias`}
+                </span>
+                <ChevronsUpDown className="ml-2 h-3.5 w-3.5 shrink-0 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[240px] p-1" align="start">
+              {HS_CATEGORY_ORDER.map((k) => {
+                const checked = (draft.hsCategory ?? []).includes(k);
+                return (
+                  <button key={k} onClick={() => toggleCat(k)}
+                    className="flex items-center w-full text-left text-xs px-2 py-1.5 rounded hover:bg-muted">
+                    <Check className={cn("mr-2 h-4 w-4", checked ? "opacity-100" : "opacity-0")} />
+                    {HS_CATEGORY_LABELS[k]}
+                  </button>
+                );
+              })}
+            </PopoverContent>
+          </Popover>
         </div>
+
+        <div className="space-y-1">
+          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Temperatura</Label>
+          <div className="flex gap-1 h-9 items-center">
+            {(["frozen", "chilled"] as const).map((t) => {
+              const active = (draft.temperature ?? []).includes(t);
+              return (
+                <Button key={t} type="button" size="sm" variant={active ? "default" : "outline"}
+                  className="h-8 px-3 text-xs" onClick={() => toggleTemp(t)}>
+                  {t === "frozen" ? "Frozen" : "Chilled"}
+                </Button>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="space-y-1 min-w-[200px]">
+          <Label className="text-[11px] uppercase tracking-wide text-muted-foreground">Buscar produto</Label>
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+            <Input
+              className="h-9 pl-7 text-xs"
+              placeholder="liver, desossada, tongue…"
+              value={productSearchDraft}
+              onChange={(e) => setProductSearchDraft(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") apply(); }}
+            />
+          </div>
+        </div>
+
+        <MultiCombo label="Tipo de produto" options={productTypeOptions}
+          values={draft.productTypes ?? []}
+          onChange={(v) => { const n = { ...draft, productTypes: v.length ? v : undefined }; setDraft(n); onApply(n); }}
+          placeholder="Todos" />
 
         <MultiCombo label="HS8 (refinar)" options={hsOptions}
           values={draft.hs8 ?? []} onChange={(v) => setDraft({ ...draft, hs8: v.length ? v : undefined })}
@@ -289,10 +377,14 @@ export function FiltersBar({
           values={draft.polPort ?? []} onChange={(v) => setDraft({ ...draft, polPort: v.length ? v : undefined })}
           placeholder="Todos" />
 
-        <EntityAutocomplete label="Exportador" entity="shipper" value={draft.shipperName}
-          onChange={(v) => setDraft({ ...draft, shipperName: v })} placeholder="Qualquer" />
-        <EntityAutocomplete label="Comprador" entity="consignee" value={draft.consigneeName}
-          onChange={(v) => setDraft({ ...draft, consigneeName: v })} placeholder="Qualquer" />
+        <EntityMultiAutocomplete label="Exportador" entity="shipper"
+          values={draft.shipperNames ?? []}
+          onChange={(v) => { const n = { ...draft, shipperNames: v.length ? v : undefined }; setDraft(n); onApply(n); }}
+          placeholder="Qualquer" />
+        <EntityMultiAutocomplete label="Comprador" entity="consignee"
+          values={draft.consigneeNames ?? []}
+          onChange={(v) => { const n = { ...draft, consigneeNames: v.length ? v : undefined }; setDraft(n); onApply(n); }}
+          placeholder="Qualquer" />
 
         <div className="space-y-1">
           <Label className="text-[11px] uppercase tracking-wide text-muted-foreground flex items-center gap-1">
