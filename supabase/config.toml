@@ -36,6 +36,8 @@ verify_jwt = false
     verify_jwt = false
   [functions.agrostats-market-data]
     verify_jwt = false
+  [functions.agrostats-sync]
+    verify_jwt = false
   [functions.stripe-webhook]
     verify_jwt = false
   [functions.verify-document]

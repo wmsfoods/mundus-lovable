@@ -328,6 +328,42 @@ export type Database = {
         }
         Relationships: []
       }
+      agrostats_sync_state: {
+        Row: {
+          id: number
+          last_error: string | null
+          last_offset: number
+          last_synced_month: string | null
+          rows_copied: number
+          status: string
+          total_rows: number | null
+          updated_at: string
+          use_mirror: boolean
+        }
+        Insert: {
+          id?: number
+          last_error?: string | null
+          last_offset?: number
+          last_synced_month?: string | null
+          rows_copied?: number
+          status?: string
+          total_rows?: number | null
+          updated_at?: string
+          use_mirror?: boolean
+        }
+        Update: {
+          id?: number
+          last_error?: string | null
+          last_offset?: number
+          last_synced_month?: string | null
+          rows_copied?: number
+          status?: string
+          total_rows?: number | null
+          updated_at?: string
+          use_mirror?: boolean
+        }
+        Relationships: []
+      }
       apollo_cache: {
         Row: {
           apollo_id: string
@@ -4143,6 +4179,81 @@ export type Database = {
           record_id?: string | null
           source?: string
           table_name?: string
+        }
+        Relationships: []
+      }
+      meat_export_mirror: {
+        Row: {
+          bl_description: string | null
+          consignee_city: string | null
+          consignee_country: string | null
+          consignee_name: string | null
+          consignee_type: string | null
+          dest_country: string | null
+          dest_name: string | null
+          fob_value_usd: number | null
+          hs8: string | null
+          id: number
+          id_datamar: string | null
+          month_key: string | null
+          pol_country: string | null
+          pol_name: string | null
+          ship_date_raw: string | null
+          shipper_city: string | null
+          shipper_country: string | null
+          shipper_name: string | null
+          shipper_state: string | null
+          shipper_type: string | null
+          synced_at: string
+          wtmt: number | null
+        }
+        Insert: {
+          bl_description?: string | null
+          consignee_city?: string | null
+          consignee_country?: string | null
+          consignee_name?: string | null
+          consignee_type?: string | null
+          dest_country?: string | null
+          dest_name?: string | null
+          fob_value_usd?: number | null
+          hs8?: string | null
+          id?: number
+          id_datamar?: string | null
+          month_key?: string | null
+          pol_country?: string | null
+          pol_name?: string | null
+          ship_date_raw?: string | null
+          shipper_city?: string | null
+          shipper_country?: string | null
+          shipper_name?: string | null
+          shipper_state?: string | null
+          shipper_type?: string | null
+          synced_at?: string
+          wtmt?: number | null
+        }
+        Update: {
+          bl_description?: string | null
+          consignee_city?: string | null
+          consignee_country?: string | null
+          consignee_name?: string | null
+          consignee_type?: string | null
+          dest_country?: string | null
+          dest_name?: string | null
+          fob_value_usd?: number | null
+          hs8?: string | null
+          id?: number
+          id_datamar?: string | null
+          month_key?: string | null
+          pol_country?: string | null
+          pol_name?: string | null
+          ship_date_raw?: string | null
+          shipper_city?: string | null
+          shipper_country?: string | null
+          shipper_name?: string | null
+          shipper_state?: string | null
+          shipper_type?: string | null
+          synced_at?: string
+          wtmt?: number | null
         }
         Relationships: []
       }
@@ -7996,6 +8107,18 @@ export type Database = {
         Args: { p_negotiation_id: string }
         Returns: string
       }
+      _hs_category_match: {
+        Args: { cats: Json; hs8: string }
+        Returns: boolean
+      }
+      _mirror_dim_col: { Args: { dim: string }; Returns: string }
+      _mirror_prev_range: {
+        Args: { p_from: string; p_to: string }
+        Returns: {
+          prev_from: string
+          prev_to: string
+        }[]
+      }
       _neg_parties: {
         Args: { p_negotiation_id: string }
         Returns: {
@@ -8067,6 +8190,34 @@ export type Database = {
       }
       admin_soft_delete: {
         Args: { p_entity_type: string; p_ids: string[] }
+        Returns: Json
+      }
+      agrostats_kpis: { Args: { f: Json }; Returns: Json }
+      agrostats_matrix: {
+        Args: {
+          col_dim: string
+          f: Json
+          limit_cols?: number
+          limit_rows?: number
+          metric?: string
+          row_dim: string
+        }
+        Returns: Json
+      }
+      agrostats_monthly: { Args: { f: Json }; Returns: Json }
+      agrostats_search_entity: {
+        Args: { entity: string; q: string }
+        Returns: Json
+      }
+      agrostats_top: {
+        Args: {
+          dim: string
+          f: Json
+          lim?: number
+          metric?: string
+          scope_consignee?: string
+          scope_shipper?: string
+        }
         Returns: Json
       }
       approve_user_request: {

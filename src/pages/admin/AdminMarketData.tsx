@@ -9,6 +9,7 @@ import { DestinationsTab } from "./marketData/v2/tabs/DestinationsTab";
 import { FlowsTab } from "./marketData/v2/tabs/FlowsTab";
 import type { PanelFilters } from "./marketData/v2/types";
 import AdminMarketDataExplorer from "./AdminMarketDataExplorer";
+import { DataSourceCard } from "./marketData/v2/DataSourceCard";
 
 function defaultFilters(): PanelFilters {
   const d = new Date();
@@ -56,6 +57,7 @@ export default function AdminMarketData() {
         <TabsContent value="destinations" className="mt-4"><DestinationsTab filters={filters} /></TabsContent>
         <TabsContent value="flows" className="mt-4"><FlowsTab filters={filters} /></TabsContent>
         <TabsContent value="explorer" className="mt-4">
+          <DataSourceCard />
           <div className="-mx-4 md:-mx-6"><AdminMarketDataExplorer /></div>
         </TabsContent>
       </Tabs>
