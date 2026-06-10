@@ -22,6 +22,11 @@ const AGGS = new Set(['sum', 'avg', 'count', 'min', 'max'])
 const OPS = new Set(['eq', 'in', 'gte', 'lte', 'between', 'ilike'])
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 
+const DB_HOST = 'ep-mute-recipe-acwzxxog-pooler.sa-east-1.aws.neon.tech'
+const DB_PORT = 5432
+const DB_NAME = 'Meat_Export_BR'
+const DB_USER = 'wmsfoods_ro'
+
 type Column = { column_name: string; data_type: string }
 type SchemaPayload = {
   columns: Column[]
@@ -37,15 +42,10 @@ function isTextType(t: string) {
 }
 
 async function withPg<T>(fn: (c: Client) => Promise<T>): Promise<T> {
-  const rawUrl = Deno.env.get('AGROSTATS_DB_URL')
-  if (!rawUrl) throw new Error('AGROSTATS_DB_URL secret not configured')
+  const password = Deno.env.get('AGROSTATS_DB_PASSWORD')?.trim()
+  if (!password) throw new Error('AGROSTATS_DB_PASSWORD secret not configured')
 
-  const url = rawUrl.trim()
-  if (!url.startsWith('postgresql://') && !url.startsWith('postgres://')) {
-    throw new Error('AGROSTATS_DB_URL must start with postgresql://')
-  }
-
-  const client = await connectAgrostats(url)
+  const client = await connectAgrostats(password)
   try {
     return await fn(client)
   } finally {
@@ -53,22 +53,14 @@ async function withPg<T>(fn: (c: Client) => Promise<T>): Promise<T> {
   }
 }
 
-function sanitizedDbInfo(url: string) {
-  const parsed = new URL(url)
-  const database = decodeURIComponent(parsed.pathname.replace(/^\//, ''))
+function sanitizedDbInfo(passwordLength: number) {
   return {
-    hostname: parsed.hostname,
-    database,
-    username: decodeURIComponent(parsed.username),
-    passwordPresent: parsed.password.length > 0,
-    passwordLength: decodeURIComponent(parsed.password).length,
+    hostname: DB_HOST,
+    database: DB_NAME,
+    username: DB_USER,
+    passwordPresent: passwordLength > 0,
+    passwordLength,
   }
-}
-
-function malformedConnectionError(message = 'Connection string malformed — check the AGROSTATS_DB_URL secret value') {
-  const err = new Error(message) as Error & { hint?: string }
-  err.hint = 'Connection string malformed — check the AGROSTATS_DB_URL secret value'
-  return err
 }
 
 function classifyConnectionError(error: unknown) {
@@ -81,9 +73,6 @@ function classifyConnectionError(error: unknown) {
   if (lower.includes('tls') || lower.includes('ssl') || lower.includes('certificate') || lower.includes('handshake')) {
     return { message, hint: 'TLS error' }
   }
-  if (lower.includes('invalid url') || lower.includes('missing connection parameters') || lower.includes('database')) {
-    return { message, hint: 'Connection string malformed — check the AGROSTATS_DB_URL secret value' }
-  }
   if (lower.includes('timeout') || lower.includes('timed out') || lower.includes('dns') || lower.includes('resolve') || lower.includes('network')) {
     return { message, hint: 'Network or timeout connecting to Agro Statistics database' }
   }
@@ -91,49 +80,22 @@ function classifyConnectionError(error: unknown) {
   return { message, hint: 'Unable to connect to Agro Statistics database' }
 }
 
-async function connectAgrostats(url: string): Promise<Client> {
-  let diagnostics: ReturnType<typeof sanitizedDbInfo>
+async function connectAgrostats(password: string): Promise<Client> {
+  const diagnostics = sanitizedDbInfo(password.length)
   try {
-    diagnostics = sanitizedDbInfo(url)
-  } catch {
-    throw malformedConnectionError('AGROSTATS_DB_URL is not a valid PostgreSQL URL')
-  }
-
-  if (!diagnostics.hostname || !diagnostics.database || !diagnostics.username) {
-    console.error('[agrostats-market-data] connection failed', diagnostics)
-    throw malformedConnectionError()
-  }
-
-  try {
-    const client = new Client(url)
+    const client = new Client({
+      hostname: DB_HOST,
+      port: DB_PORT,
+      database: DB_NAME,
+      user: DB_USER,
+      password,
+      tls: { enabled: true, enforce: false },
+    })
     await client.connect()
     return client
-  } catch (firstError) {
-    const classified = classifyConnectionError(firstError)
+  } catch (error) {
+    const classified = classifyConnectionError(error)
     console.error('[agrostats-market-data] connection failed', diagnostics)
-
-    if (classified.hint === 'TLS error') {
-      try {
-        const parsed = new URL(url)
-        const fallbackClient = new Client({
-          hostname: parsed.hostname,
-          port: parsed.port ? Number(parsed.port) : 5432,
-          database: decodeURIComponent(parsed.pathname.replace(/^\//, '')),
-          user: decodeURIComponent(parsed.username),
-          password: decodeURIComponent(parsed.password),
-          tls: { enabled: true, enforce: false },
-        })
-        await fallbackClient.connect()
-        return fallbackClient
-      } catch (retryError) {
-        const retryClassified = classifyConnectionError(retryError)
-        console.error('[agrostats-market-data] TLS fallback failed', diagnostics)
-        const err = new Error(retryClassified.message) as Error & { hint?: string }
-        err.hint = retryClassified.hint
-        throw err
-      }
-    }
-
     const err = new Error(classified.message) as Error & { hint?: string }
     err.hint = classified.hint
     throw err
@@ -362,7 +324,7 @@ Deno.serve(async (req) => {
     const msg = (e as Error).message ?? String(e)
     const hint = (e as Error & { hint?: string }).hint
     console.error('[agrostats-market-data]', msg)
-    const status = msg.includes('AGROSTATS_DB_URL') || hint ? 500 : 400
+    const status = msg.includes('AGROSTATS_DB_PASSWORD') || hint ? 500 : 400
     return json({ error: msg, ...(hint ? { hint } : {}) }, status)
   }
 })
