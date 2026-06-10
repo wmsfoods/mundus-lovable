@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { AnimateNumber } from "@/components/ui/animated-blur-number";
 import { useVitrineStats } from "@/hooks/useVitrineStats";
 
@@ -70,6 +71,7 @@ function StatBlock({
   format?: Intl.NumberFormatOptions;
   suffix?: React.ReactNode;
 }) {
+  const display = useCountUp(value, 1600);
   return (
     <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#752642] sm:text-[11px]">
@@ -77,7 +79,7 @@ function StatBlock({
       </span>
       <div className="mt-1 flex items-baseline text-[#8B2E4F]">
         <AnimateNumber
-          value={value}
+          value={display}
           format={format}
           duration={650}
           blur={18}
@@ -88,4 +90,37 @@ function StatBlock({
       <span className="mt-2 text-xs text-[#752642]/70 sm:text-sm">{sub}</span>
     </div>
   );
+}
+
+function useCountUp(target: number, durationMs: number) {
+  const [val, setVal] = useState(0);
+  const fromRef = useRef(0);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setVal(target);
+      return;
+    }
+    fromRef.current = val;
+    startRef.current = null;
+    const step = (ts: number) => {
+      if (startRef.current == null) startRef.current = ts;
+      const t = Math.min(1, (ts - startRef.current) / durationMs);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const next = fromRef.current + (target - fromRef.current) * eased;
+      setVal(target >= 1 ? Math.round(next) : next);
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, durationMs]);
+
+  return val;
 }
