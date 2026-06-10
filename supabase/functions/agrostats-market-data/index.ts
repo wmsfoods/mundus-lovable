@@ -55,13 +55,20 @@ async function withPg<T>(fn: (c: Client) => Promise<T>): Promise<T> {
 
 function sanitizedDbInfo(url: string) {
   const parsed = new URL(url)
+  const database = decodeURIComponent(parsed.pathname.replace(/^\//, ''))
   return {
     hostname: parsed.hostname,
-    database: decodeURIComponent(parsed.pathname.replace(/^\//, '')),
+    database,
     username: decodeURIComponent(parsed.username),
     passwordPresent: parsed.password.length > 0,
     passwordLength: decodeURIComponent(parsed.password).length,
   }
+}
+
+function malformedConnectionError(message = 'Connection string malformed — check the AGROSTATS_DB_URL secret value') {
+  const err = new Error(message) as Error & { hint?: string }
+  err.hint = 'Connection string malformed — check the AGROSTATS_DB_URL secret value'
+  return err
 }
 
 function classifyConnectionError(error: unknown) {
@@ -85,14 +92,25 @@ function classifyConnectionError(error: unknown) {
 }
 
 async function connectAgrostats(url: string): Promise<Client> {
+  let diagnostics: ReturnType<typeof sanitizedDbInfo>
+  try {
+    diagnostics = sanitizedDbInfo(url)
+  } catch {
+    throw malformedConnectionError('AGROSTATS_DB_URL is not a valid PostgreSQL URL')
+  }
+
+  if (!diagnostics.hostname || !diagnostics.database || !diagnostics.username) {
+    console.error('[agrostats-market-data] connection failed', diagnostics)
+    throw malformedConnectionError()
+  }
+
   try {
     const client = new Client(url)
     await client.connect()
     return client
   } catch (firstError) {
-    const diagnostics = sanitizedDbInfo(url)
     const classified = classifyConnectionError(firstError)
-    console.error('[agrostats-market-data] connection failed', { ...diagnostics, hint: classified.hint })
+    console.error('[agrostats-market-data] connection failed', diagnostics)
 
     if (classified.hint === 'TLS error') {
       try {
@@ -109,7 +127,7 @@ async function connectAgrostats(url: string): Promise<Client> {
         return fallbackClient
       } catch (retryError) {
         const retryClassified = classifyConnectionError(retryError)
-        console.error('[agrostats-market-data] TLS fallback failed', { ...diagnostics, hint: retryClassified.hint })
+        console.error('[agrostats-market-data] TLS fallback failed', diagnostics)
         const err = new Error(retryClassified.message) as Error & { hint?: string }
         err.hint = retryClassified.hint
         throw err
@@ -344,7 +362,7 @@ Deno.serve(async (req) => {
     const msg = (e as Error).message ?? String(e)
     const hint = (e as Error & { hint?: string }).hint
     console.error('[agrostats-market-data]', msg)
-    const status = msg.includes('AGROSTATS_DB_URL') ? 500 : 400
+    const status = msg.includes('AGROSTATS_DB_URL') || hint ? 500 : 400
     return json({ error: msg, ...(hint ? { hint } : {}) }, status)
   }
 })
