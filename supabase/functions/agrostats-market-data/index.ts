@@ -820,6 +820,50 @@ async function runPanel(panel: string, body: any): Promise<unknown> {
   })
 }
 
+async function runPanelMirror(
+  supaSrv: ReturnType<typeof createClient>,
+  panel: string,
+  body: any,
+): Promise<unknown> {
+  const filters = (body.filters ?? {}) as PanelFilters
+  const rpc = async (name: string, args: Record<string, unknown>) => {
+    const { data, error } = await supaSrv.rpc(name, args)
+    if (error) throw new Error(`${name}: ${error.message}`)
+    return data
+  }
+  switch (panel) {
+    case 'kpis':
+      return await rpc('agrostats_kpis', { f: filters })
+    case 'monthly':
+      return await rpc('agrostats_monthly', { f: filters })
+    case 'top':
+      return await rpc('agrostats_top', {
+        f: filters,
+        dim: String(body.dimension ?? 'consignee'),
+        metric: body.metric === 'fob' ? 'fob' : 'volume',
+        lim: Number(body.limit ?? 15),
+        scope_shipper: body.scopeShipper ?? null,
+        scope_consignee: body.scopeConsignee ?? null,
+      })
+    case 'matrix':
+      return await rpc('agrostats_matrix', {
+        f: filters,
+        row_dim: String(body.rowDim ?? 'shipper'),
+        col_dim: String(body.colDim ?? 'destCountry'),
+        metric: body.metric === 'fob' ? 'fob' : 'volume',
+        limit_rows: Number(body.limitRows ?? 15),
+        limit_cols: Number(body.limitCols ?? 8),
+      })
+    case 'search-entity':
+      return await rpc('agrostats_search_entity', {
+        entity: body.entity === 'shipper' ? 'shipper' : 'consignee',
+        q: String(body.q ?? ''),
+      })
+    default:
+      throw new Error(`Unknown panel: ${panel}`)
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
