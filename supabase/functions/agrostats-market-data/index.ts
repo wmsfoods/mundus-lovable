@@ -39,24 +39,12 @@ function isTextType(t: string) {
 async function withPg<T>(fn: (c: Client) => Promise<T>): Promise<T> {
   const url = Deno.env.get('AGROSTATS_DB_URL')
   if (!url) throw new Error('AGROSTATS_DB_URL secret not configured')
-  const client = new Client({ connection: { attempts: 1 }, tls: { enabled: true, enforce: true }, ...parseConnString(url) })
+  const client = new Client(url)
   await client.connect()
   try {
     return await fn(client)
   } finally {
     try { await client.end() } catch { /* ignore */ }
-  }
-}
-
-function parseConnString(url: string) {
-  // deno postgres accepts connection strings via hostname/port/etc options
-  const u = new URL(url)
-  return {
-    user: decodeURIComponent(u.username),
-    password: decodeURIComponent(u.password),
-    hostname: u.hostname,
-    port: Number(u.port || 5432),
-    database: u.pathname.replace(/^\//, ''),
   }
 }
 
