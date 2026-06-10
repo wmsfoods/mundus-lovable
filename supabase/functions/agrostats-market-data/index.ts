@@ -884,6 +884,10 @@ async function runPanel(panel: string, body: any): Promise<unknown> {
       }
       case 'distinct-products':
         return await panelDistinctProducts(c, monthExpr!, filters)
+      case 'opportunity-match': {
+        const exporter = (body.exporter ?? '').toString().trim() || null
+        return await panelOpportunityMatch(c, monthExpr!, filters, exporter)
+      }
       default:
         throw new Error(`Unknown panel: ${panel}`)
     }
@@ -931,6 +935,11 @@ async function runPanelMirror(
       })
     case 'distinct-products':
       return await rpc('agrostats_distinct_products', { f: filters })
+    case 'opportunity-match':
+      return await rpc('agrostats_opportunity_match', {
+        f: filters,
+        exporter: (body.exporter ?? '').toString().trim() || null,
+      })
     default:
       throw new Error(`Unknown panel: ${panel}`)
   }
