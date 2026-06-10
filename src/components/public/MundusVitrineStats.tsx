@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from "react";
 import { AnimateNumber } from "@/components/ui/animated-blur-number";
 import { useVitrineStats } from "@/hooks/useVitrineStats";
 
@@ -6,7 +7,7 @@ export default function MundusVitrineStats() {
 
   return (
     <section
-      aria-label="Mundus em números"
+      aria-label="Mundus by the numbers"
       className="relative overflow-hidden border-y border-[#8B2E4F]/10"
       style={{
         background:
@@ -30,25 +31,25 @@ export default function MundusVitrineStats() {
             <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#8B2E4F] opacity-70" />
             <span className="relative inline-flex h-2 w-2 rounded-full bg-[#8B2E4F]" />
           </span>
-          <span>Mundus em números · ao vivo</span>
+          <span>Mundus by the numbers · live</span>
         </div>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-4">
           <StatBlock
-            label="Toneladas"
-            sub="transitadas na plataforma"
+            label="Tons"
+            sub="moved through the platform"
             value={loading ? 0 : tons}
             format={{ maximumFractionDigits: 0 }}
             suffix={<span className="ml-1 text-2xl font-semibold text-[#752642]/70 sm:text-3xl">t</span>}
           />
           <StatBlock
-            label="Origens"
-            sub="países de origem"
+            label="Origins"
+            sub="countries of origin"
             value={loading ? 0 : origins}
           />
           <StatBlock
-            label="Destinos"
-            sub="países de destino"
+            label="Destinations"
+            sub="countries of destination"
             value={loading ? 0 : destinations}
           />
         </div>
@@ -70,6 +71,7 @@ function StatBlock({
   format?: Intl.NumberFormatOptions;
   suffix?: React.ReactNode;
 }) {
+  const display = useCountUp(value, 1600);
   return (
     <div className="flex flex-col items-center text-center sm:items-start sm:text-left">
       <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#752642] sm:text-[11px]">
@@ -77,7 +79,7 @@ function StatBlock({
       </span>
       <div className="mt-1 flex items-baseline text-[#8B2E4F]">
         <AnimateNumber
-          value={value}
+          value={display}
           format={format}
           duration={650}
           blur={18}
@@ -88,4 +90,37 @@ function StatBlock({
       <span className="mt-2 text-xs text-[#752642]/70 sm:text-sm">{sub}</span>
     </div>
   );
+}
+
+function useCountUp(target: number, durationMs: number) {
+  const [val, setVal] = useState(0);
+  const fromRef = useRef(0);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const reduced = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduced) {
+      setVal(target);
+      return;
+    }
+    fromRef.current = val;
+    startRef.current = null;
+    const step = (ts: number) => {
+      if (startRef.current == null) startRef.current = ts;
+      const t = Math.min(1, (ts - startRef.current) / durationMs);
+      const eased = 1 - Math.pow(1 - t, 3);
+      const next = fromRef.current + (target - fromRef.current) * eased;
+      setVal(target >= 1 ? Math.round(next) : next);
+      if (t < 1) rafRef.current = requestAnimationFrame(step);
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [target, durationMs]);
+
+  return val;
 }
