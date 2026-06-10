@@ -5405,6 +5405,41 @@ export type Database = {
           },
         ]
       }
+      offer_item_floors: {
+        Row: {
+          created_at: string
+          maximum_amount: number | null
+          minimum_amount: number | null
+          minimum_price: number | null
+          offer_item_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          maximum_amount?: number | null
+          minimum_amount?: number | null
+          minimum_price?: number | null
+          offer_item_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          maximum_amount?: number | null
+          minimum_amount?: number | null
+          minimum_price?: number | null
+          offer_item_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "offer_item_floors_offer_item_id_fkey"
+            columns: ["offer_item_id"]
+            isOneToOne: true
+            referencedRelation: "offer_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       offer_items: {
         Row: {
           aging_method: string | null
