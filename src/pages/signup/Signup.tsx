@@ -736,6 +736,10 @@ function Step3Company({
   const taxRule = getTaxRule(data.registrationCountry);
   const taxIdValid = taxRule.pattern.test(data.taxId.trim());
   const [scanning, setScanning] = useState(false);
+  const [companyNameTouched, setCompanyNameTouched] = useState(false);
+  const companyNameErr = companyNameTouched
+    ? validateCompanyName(data.companyName)
+    : null;
 
   const onFile = async (f: File | null) => {
     if (!f) {
@@ -831,10 +835,13 @@ function Step3Company({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Field label={t("signup.fields.companyName")}>
           <input
-            className={inputCls}
+            className={cn(inputCls, companyNameErr && errorInputCls)}
             value={data.companyName}
             onChange={(e) => set("companyName", e.target.value)}
+            onBlur={() => setCompanyNameTouched(true)}
+            autoComplete="organization"
           />
+          <FieldError message={getErrorMessage(companyNameErr, t)} />
         </Field>
         <RegistrationCountry
           value={data.registrationCountry}
