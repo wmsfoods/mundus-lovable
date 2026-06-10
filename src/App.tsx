@@ -326,6 +326,7 @@ const App = () => (
               <Route path="bi/market" element={<AdminBIMarket />} />
               <Route path="bi/negotiations" element={<AdminBINegotiations />} />
               <Route path="bi/demand" element={<AdminBIDemand />} />
+              <Route path="market-data" element={<AdminMarketData />} />
               <Route path="companies" element={<AdminCompanies />} />
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
