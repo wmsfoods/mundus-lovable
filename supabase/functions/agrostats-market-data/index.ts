@@ -568,7 +568,6 @@ function getSchemaForPanels(): Promise<SchemaPayload> {
   return buildSchemaPayload()
 }
 
-function hsCategoryClause(cats: HsCategory[]): string {
 function normalizeCategory(c: string): string {
   if (c === 'bovina_fresca' || c === 'bovina_congelada') return 'beef'
   if (c === 'suina') return 'pork'
