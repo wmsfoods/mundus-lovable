@@ -1,5 +1,31 @@
 // pt-BR compact formatting helpers
 
+// One FCL container = 27 tons. Loads is a derived metric:
+//   loads = volume_in_tons / TONS_PER_LOAD
+export const TONS_PER_LOAD = 27;
+export function toLoads(volumeTons: number | null | undefined): number {
+  const v = Number(volumeTons);
+  if (!isFinite(v)) return 0;
+  return v / TONS_PER_LOAD;
+}
+
+// Number only, pt-BR with 1 decimal — for table cells (no suffix).
+export function fmtLoadsNumber(volumeTons: number | null | undefined): string {
+  if (volumeTons == null || !isFinite(Number(volumeTons))) return "—";
+  const l = toLoads(volumeTons);
+  return l.toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 });
+}
+
+// Compact label with "loads" suffix — e.g. "1,2 mil loads" / "1.234,5 loads".
+export function fmtLoads(volumeTons: number | null | undefined): string {
+  if (volumeTons == null || !isFinite(Number(volumeTons))) return "—";
+  const l = toLoads(volumeTons);
+  const abs = Math.abs(l);
+  if (abs >= 1e6) return (l / 1e6).toLocaleString("pt-BR", { maximumFractionDigits: 2 }) + " mi loads";
+  if (abs >= 1e3) return (l / 1e3).toLocaleString("pt-BR", { maximumFractionDigits: 1 }) + " mil loads";
+  return l.toLocaleString("pt-BR", { maximumFractionDigits: 1, minimumFractionDigits: 1 }) + " loads";
+}
+
 export function fmtTonCompact(n: number | null | undefined): string {
   if (n == null || !isFinite(Number(n))) return "—";
   const v = Number(n);
