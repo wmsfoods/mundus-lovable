@@ -1,25 +1,17 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { Eye, EyeOff } from "lucide-react";
-import { toast } from "sonner";
-import { useTranslation } from "react-i18next";
-import { SignupShell } from "./SignupShell";
-import { PasswordRequirements } from "./PasswordRequirements";
-import { allRulesMet, checkPassword } from "./passwordRules";
-import { supabase } from "@/integrations/supabase/client";
-import { cn } from "@/lib/utils";
-import { publicUrl } from "@/lib/publicUrl";
+import { useEffect } from "react";
+import { Navigate, useSearchParams } from "react-router-dom";
 
-const MUNDUS_TRADE_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
-
-const inputCls =
-  "h-12 w-full rounded-lg border border-gray-200 px-4 text-sm outline-none focus:border-[#B64769] focus:ring-1 focus:ring-[#B64769] bg-white";
-
+/**
+ * Legacy partner-signup entry point. The simplified flow is deprecated
+ * because it never captured role / company / country, so approvals could
+ * not link the user properly. We now redirect to the full /signup with
+ * any query params preserved.
+ */
 export default function PartnerSignup() {
   const [params] = useSearchParams();
-  const navigate = useNavigate();
-  const { t } = useTranslation();
-  const companyName = params.get("company") ?? "Mundus Trade";
+  const qs = params.toString();
+  return <Navigate to={`/signup${qs ? `?${qs}` : ""}`} replace />;
+}
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
