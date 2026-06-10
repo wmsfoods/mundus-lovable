@@ -149,6 +149,23 @@
       "registrationCountryPlaceholder": "Search country of registration..."
     },
     "passwordsMismatch": "Passwords do not match.",
+    "errors": {
+      "required": "This field is required",
+      "tooShort": "Too short",
+      "tooLong": "Too long",
+      "nameInvalid": "Use only letters, spaces, hyphens and apostrophes",
+      "emailInvalid": "Enter a valid email address",
+      "emailTaken": "This email is already registered",
+      "passwordWeak": "Password does not meet all requirements",
+      "passwordsMismatch": "Passwords do not match",
+      "companyNameInvalid": "Company name must contain letters",
+      "taxIdInvalid": "Invalid tax ID format",
+      "phoneInvalid": "Enter a valid phone number for the selected country",
+      "zipInvalid": "Invalid postal code for this country",
+      "websiteInvalid": "Enter a valid URL",
+      "fileTooLarge": "File must be 10MB or less",
+      "fileType": "Only PDF, PNG or JPG files are allowed"
+    },
     "missingTitle": "To proceed, please complete:",
     "agreeTerms": "I declare that I have read and agree to the",
     "termsLink": "Terms and Conditions",
