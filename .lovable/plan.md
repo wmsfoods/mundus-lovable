@@ -1,42 +1,52 @@
-# Refinar mundus-admin-mcp v0.3.0 — introspecção + leitura segura auth/storage
+## Objetivo
+Adicionar 3 contadores animados (Tons, Origins, Destinations) na PublicHome, logo **acima da seção "Available Offers at Mundus"**, com efeito blur-digit nas cores Mundus.
 
-Adição não-destrutiva: 4 novas tools (`list_tables`, `describe_table`, `auth_users`, `storage_objects`), denylist de escrita expandida e 4 funções RPC `SECURITY DEFINER` no schema `public` (executáveis só pelo `service_role`).
+## Componente
+Criar `src/components/ui/animated-blur-number.tsx` (cópia exata do snippet enviado — zero dependências, self-contained, prefers-reduced-motion ok). Locale default `pt-BR`.
 
-## 1. Nova migration
+## Dados (RPC pública nova)
+Migration: criar função SECURITY DEFINER `public.get_mundus_vitrine_stats()` retornando JSON `{ total_tons, origins, destinations }`. GRANT EXECUTE para `anon` e `authenticated` (página é pública).
 
-Criar `supabase/migrations/<timestamp>_mcp_introspection.sql` com o SQL exato fornecido:
+Cálculos:
+- **total_tons** = `SUM(offer_items.amount) / 1000` desde sempre (sem filtro de status — "transitou").
+- **origins** = `COUNT(DISTINCT)` da união de `offers.origin_country` + `unnest(buyer_requests.origin_countries)` (ignorando nulos/vazios).
+- **destinations** = `COUNT(DISTINCT)` da união de `markets.country` (via `offer_markets`) + `buyer_requests.destination_country`.
 
-- `public.mcp_list_tables(p_schema text default null)` — lista tabelas/views de todos os schemas (exceto `pg_catalog`/`information_schema`) com estimativa de linhas.
-- `public.mcp_describe_table(p_schema, p_table)` — colunas, tipo, nullable, default.
-- `public.mcp_auth_users(p_limit int default 100)` — leitura read-only de `auth.users` (limite máx. 500).
-- `public.mcp_storage_objects(p_bucket, p_limit)` — leitura read-only de `storage.objects`.
-- Todas com `SECURITY DEFINER`, `search_path = public`, `REVOKE` de `public/anon/authenticated` e `GRANT EXECUTE` somente ao `service_role`.
+## Hook
+`src/hooks/useVitrineStats.ts` — chama o RPC uma vez no mount (`supabase.rpc('get_mundus_vitrine_stats')`), guarda em state. Sem realtime. Retorna `{ tons, origins, destinations, loading }`.
 
-Nenhuma tabela criada, nenhuma RLS tocada, nenhum schema novo exposto no PostgREST.
+Pequeno polimento UX: tick incremental opcional dos `tons` (+1 a cada 6–10s no client, só visual) para o blur animar continuamente mesmo sem mudança real — coloco como opt-in (`liveTick: false` por padrão) pra não enganar o número. **Default: sem auto-tick.** O blur dispara naturalmente quando o RPC eventualmente retorna valor diferente.
 
-## 2. Editar `supabase/functions/mundus-admin-mcp/index.ts`
+## UI — PublicHome.tsx
+Nova seção `MundusVitrineStats` renderizada **entre o `<section hero>` e `{offersSection}`** (e antes do offersSection também no caminho nativo `nativeApp`, para aparecer em mobile/app).
 
-- Bump da versão: `version: '0.2.0'` → `'0.3.0'`.
-- Expandir o default da `WRITE_DENYLIST` para:
-  `round_proposals,cut_rounds,mcp_audit_log,audit_log,admin_action_log,negotiation_audit,offer_snapshots,offer_views,email_events`
-  (todas existem no schema — confirmado contra `<supabase-tables>`).
-- Registrar 4 novas tools logo após `db_insert`, exatamente como especificado: `list_tables`, `describe_table`, `auth_users`, `storage_objects`.
-  - `list_tables` adiciona flag `writable: !WRITE_DENYLIST.has(table_name)` em cada linha.
-- `db_insert` e `db_update` permanecem inalterados (escrita só em `public`).
-- As 6 tools existentes (`health`, `db_select`, `db_count`, `get_record`, `db_update`, `db_insert`) ficam idênticas; `health` passa automaticamente a refletir a denylist expandida no payload.
+Layout:
+- Container full-width com fundo gradient sutil nas cores Mundus (`#8B2E4F` → branco), bordas suaves.
+- Grid 3 colunas (desktop) / 1 coluna stacked (mobile, respeitando memória core de responsividade).
+- Cada card: label pequeno em uppercase (cor mundus burgundy `#752642`), número grande com `<AnimateNumber>` (cor `#8B2E4F`, fonte bold, ~3rem desktop / 2rem mobile), sublabel ("toneladas transitadas" / "países de origem" / "países de destino").
+- Tons: `suffix=" t"`, formato pt-BR com agrupamento.
+- Origins/Destinations: número simples.
+- Sem botões. Decorativo + informativo. Ping dot suave indicando "live".
 
-## 3. Verificações pós-deploy
+```text
+┌─────────────────────────────────────────────────────────────┐
+│  TONELADAS         │  ORIGENS         │  DESTINOS           │
+│  1.204.837 t       │  42              │  68                 │
+│  transitadas       │  países          │  países             │
+└─────────────────────────────────────────────────────────────┘
+```
 
-- Compilação ok (lovable redeploy automático).
-- `health` retorna `mode: 'read-write'` + denylist com 9 tabelas.
-- `list_tables` retorna tabelas com `writable=false` para as 9 denylisted.
-- `describe_table` retorna colunas; `auth_users` e `storage_objects` retornam dados.
-- Tools antigas comportam-se idêntico.
+## Detalhes técnicos
+- AnimateNumber importado de `@/components/ui/animated-blur-number`.
+- locale `pt-BR` no `format` prop.
+- Sem realtime subscription (custo desnecessário) — fetch único no mount.
+- Reaproveitar tokens existentes de cores Mundus já usados em PublicHome (`#8B2E4F`, `#752642`).
+- Acessibilidade: o componente já expõe sr-only label e respeita `prefers-reduced-motion`.
 
-## O que NÃO muda
-
-- RLS de nenhuma tabela.
-- Exposed schemas do PostgREST (continua só `public`).
-- Auth do edge function (bearer token continua igual).
-- Dados existentes.
-- Schema `vault` (não tocado).
+## Arquivos
+- **criar** `supabase/migrations/<ts>_vitrine_stats.sql` (função + grants)
+- **criar** `src/components/ui/animated-blur-number.tsx`
+- **criar** `src/hooks/useVitrineStats.ts`
+- **criar** `src/components/public/MundusVitrineStats.tsx`
+- **editar** `src/pages/public/PublicHome.tsx` (montar a seção antes de `offersSection` em ambos os caminhos: nativeApp e web)
+- **editar** `src/integrations/supabase/types.ts` (auto-regen após migration aprovada)
