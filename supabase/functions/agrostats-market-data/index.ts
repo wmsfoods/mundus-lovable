@@ -23,6 +23,7 @@ const OPS = new Set(['eq', 'in', 'gte', 'lte', 'between', 'ilike'])
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
 const REPORT_CACHE_TTL_MS = 12 * 60 * 60 * 1000
 const PANEL_CACHE_TTL_MS = 6 * 60 * 60 * 1000
+const PANEL_CACHE_VERSION = 'case-insensitive-country-filters-v1'
 
 const DB_HOST = 'ep-mute-recipe-acwzxxog-pooler.sa-east-1.aws.neon.tech'
 const DB_PORT = 5432
@@ -624,6 +625,8 @@ function temperatureClause(temps: Temperature[]): string {
 function buildPanelWhere(f: PanelFilters, monthExpr: string, args: unknown[], extraEq: { shipper?: string; consignee?: string } = {}): { where: string; hasWhere: boolean } {
   const parts: string[] = []
   const ph = (v: unknown) => { args.push(v); return `$${args.length}` }
+  const ciIn = (column: string, values: string[]) =>
+    `UPPER(${Q(column)}) IN (${values.map((v) => ph(String(v).trim().toUpperCase())).join(', ')})`
   if (f.from) parts.push(`${monthExpr} >= ${ph(f.from)}`)
   if (f.to) parts.push(`${monthExpr} <= ${ph(f.to)}`)
   if (f.hs8?.length) parts.push(`${Q(COL.product)} IN (${f.hs8.map((v) => ph(v)).join(', ')})`)
@@ -642,9 +645,9 @@ function buildPanelWhere(f: PanelFilters, monthExpr: string, args: unknown[], ex
   if (f.productTypes?.length) {
     parts.push(`"Commodity Detail/BL Description" IN (${f.productTypes.map((v) => ph(v)).join(', ')})`)
   }
-  if (f.destCountry?.length) parts.push(`${Q(COL.destCountry)} IN (${f.destCountry.map((v) => ph(v)).join(', ')})`)
-  if (f.polPort?.length) parts.push(`${Q(COL.polPort)} IN (${f.polPort.map((v) => ph(v)).join(', ')})`)
-  if (f.consigneeCountry?.length) parts.push(`${Q(COL.consigneeCountry)} IN (${f.consigneeCountry.map((v) => ph(v)).join(', ')})`)
+  if (f.destCountry?.length) parts.push(ciIn(COL.destCountry, f.destCountry))
+  if (f.polPort?.length) parts.push(ciIn(COL.polPort, f.polPort))
+  if (f.consigneeCountry?.length) parts.push(ciIn(COL.consigneeCountry, f.consigneeCountry))
   if (f.shipperState?.length) parts.push(`${Q(COL.shipperState)} IN (${f.shipperState.map((v) => ph(v)).join(', ')})`)
   if (f.shipperName) parts.push(`${Q(COL.shipper)} ILIKE ${ph('%' + f.shipperName + '%')}`)
   if (f.consigneeName) parts.push(`${Q(COL.consignee)} ILIKE ${ph('%' + f.consigneeName + '%')}`)
