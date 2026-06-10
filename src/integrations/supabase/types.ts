@@ -247,6 +247,27 @@ export type Database = {
           },
         ]
       }
+      agrostats_report_cache: {
+        Row: {
+          cache_key: string
+          id: string
+          payload: Json
+          refreshed_at: string
+        }
+        Insert: {
+          cache_key: string
+          id?: string
+          payload: Json
+          refreshed_at?: string
+        }
+        Update: {
+          cache_key?: string
+          id?: string
+          payload?: Json
+          refreshed_at?: string
+        }
+        Relationships: []
+      }
       agrostats_saved_queries: {
         Row: {
           created_at: string
