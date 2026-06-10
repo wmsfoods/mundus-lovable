@@ -229,17 +229,31 @@ function buildQuery(payload: any, schema: SchemaPayload): { sql: string; args: u
   if (whereParts.length) sql += ` WHERE ${whereParts.join(' AND ')}`
   if (grouped) sql += ` GROUP BY ${dimensions.map(quoteIdent).join(', ')}`
   if (orderBy && typeof orderBy.column === 'string') {
-    validateColumnOrAlias(orderBy.column, schema, aliases)
     const dir = orderBy.direction === 'asc' ? 'ASC' : 'DESC'
-    sql += ` ORDER BY ${quoteIdent(orderBy.column)} ${dir}`
+    const orderExpr = resolveOrderExpr(orderBy.column, schema, aliases)
+    sql += ` ORDER BY ${orderExpr} ${dir}`
   }
   sql += ` LIMIT ${limit}`
   return { sql, args }
 }
 
-function validateColumnOrAlias(name: string, schema: SchemaPayload, aliases: string[]) {
-  if (aliases.includes(name)) return
-  validateColumn(name, schema)
+function resolveOrderExpr(name: string, schema: SchemaPayload, aliases: string[]): string {
+  // 1. Exact alias from SELECT list
+  if (aliases.includes(name)) return quoteIdent(name)
+  // 2. Real column
+  if (schema.columns.find((c) => c.column_name === name)) return quoteIdent(name)
+  // 3. Pattern "<agg>_<column>" — emit the aggregate expression directly
+  const m = name.match(/^(sum|avg|count|min|max)_(.+)$/i)
+  if (m) {
+    const agg = m[1].toLowerCase()
+    const col = m[2]
+    if (AGGS.has(agg) && schema.columns.find((c) => c.column_name === col)) {
+      return agg === 'count'
+        ? `COUNT(${quoteIdent(col)})`
+        : `${agg.toUpperCase()}(${quoteIdent(col)})`
+    }
+  }
+  throw new Error(`Unknown column: ${name}`)
 }
 
 Deno.serve(async (req) => {
