@@ -21,11 +21,25 @@ const MAX_GROUPED_ROWS = 500
 const AGGS = new Set(['sum', 'avg', 'count', 'min', 'max'])
 const OPS = new Set(['eq', 'in', 'gte', 'lte', 'between', 'ilike'])
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000
+const REPORT_CACHE_TTL_MS = 12 * 60 * 60 * 1000
 
 const DB_HOST = 'ep-mute-recipe-acwzxxog-pooler.sa-east-1.aws.neon.tech'
 const DB_PORT = 5432
 const DB_NAME = 'Meat_Export_BR'
 const DB_USER = 'wmsfoods_ro'
+
+const COL = {
+  date: 'Dates Long Haul/Date',
+  shipper: 'Company_Shipper/Shipper Name',
+  consignee: 'Company_Consignee/Consignee Name',
+  destCountry: 'Place_and_Ports/DEST_Country',
+  destPort: 'Place_and_Ports/DEST_Name',
+  polPort: 'Place_and_Ports/POL_Name',
+  product: 'Commodity_HS/HS8 Portugues',
+  wt: 'WTMT',
+  fob: 'FOB VALUE USD',
+}
+const Q = (c: string) => `"${c.replace(/"/g, '""')}"`
 
 type Column = { column_name: string; data_type: string }
 type SchemaPayload = {
@@ -256,6 +270,234 @@ function resolveOrderExpr(name: string, schema: SchemaPayload, aliases: string[]
   throw new Error(`Unknown column: ${name}`)
 }
 
+// ============================================================================
+// REPORTS
+// ============================================================================
+
+type ReportFilters = {
+  dateFrom?: string
+  dateTo?: string
+  products?: string[]
+  destCountries?: string[]
+  shippers?: string[]
+  consignees?: string[]
+  polPorts?: string[]
+}
+type ReportExtra = { shipper?: string; consignee?: string; product?: string }
+
+function buildFilterClause(filters: ReportFilters, args: unknown[], extra: ReportExtra = {}) {
+  const parts: string[] = []
+  const ph = (v: unknown) => { args.push(v); return `$${args.length}` }
+  const inClause = (col: string, vals?: string[]) => {
+    if (!vals || vals.length === 0) return
+    parts.push(`${Q(col)} IN (${vals.map((v) => ph(v)).join(', ')})`)
+  }
+  if (filters.dateFrom) parts.push(`${Q(COL.date)} >= ${ph(filters.dateFrom)}`)
+  if (filters.dateTo) parts.push(`${Q(COL.date)} <= ${ph(filters.dateTo)}`)
+  inClause(COL.product, filters.products)
+  inClause(COL.destCountry, filters.destCountries)
+  inClause(COL.shipper, filters.shippers)
+  inClause(COL.consignee, filters.consignees)
+  inClause(COL.polPort, filters.polPorts)
+  if (extra.shipper) parts.push(`${Q(COL.shipper)} = ${ph(extra.shipper)}`)
+  if (extra.consignee) parts.push(`${Q(COL.consignee)} = ${ph(extra.consignee)}`)
+  if (extra.product) parts.push(`${Q(COL.product)} = ${ph(extra.product)}`)
+  return { where: parts.length ? `WHERE ${parts.join(' AND ')}` : '', hasWhere: parts.length > 0 }
+}
+
+function previousPeriod(filters: ReportFilters): ReportFilters | null {
+  if (!filters.dateFrom || !filters.dateTo) return null
+  const from = new Date(filters.dateFrom)
+  const to = new Date(filters.dateTo)
+  if (isNaN(from.getTime()) || isNaN(to.getTime())) return null
+  const diff = to.getTime() - from.getTime()
+  const prevTo = new Date(from.getTime() - 86400000)
+  const prevFrom = new Date(prevTo.getTime() - diff)
+  const iso = (d: Date) => d.toISOString().slice(0, 10)
+  return { ...filters, dateFrom: iso(prevFrom), dateTo: iso(prevTo) }
+}
+
+function serializeRow(r: any) {
+  if (!r) return r
+  const out: any = {}
+  for (const k of Object.keys(r)) {
+    const v = r[k]
+    if (typeof v === 'bigint') out[k] = Number(v)
+    else if (v instanceof Date) out[k] = v.toISOString().slice(0, 10)
+    else out[k] = v
+  }
+  return out
+}
+
+async function fetchKpis(c: Client, filters: ReportFilters) {
+  const args: unknown[] = []
+  const { where } = buildFilterClause(filters, args)
+  const sql = `
+    SELECT
+      COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS vol_ton,
+      COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob_usd,
+      COUNT(*)::bigint AS shipments,
+      COUNT(DISTINCT ${Q(COL.shipper)})::bigint AS shippers,
+      COUNT(DISTINCT ${Q(COL.consignee)})::bigint AS consignees,
+      COUNT(DISTINCT ${Q(COL.destCountry)})::bigint AS destinations
+    FROM ${FQ_TABLE} ${where}
+  `
+  const res = await c.queryObject<any>({ text: sql, args })
+  return serializeRow(res.rows[0])
+}
+
+async function fetchMonthlySeries(c: Client, filters: ReportFilters) {
+  const args: unknown[] = []
+  const { where } = buildFilterClause(filters, args)
+  const sql = `
+    SELECT
+      date_trunc('month', ${Q(COL.date)})::date AS month,
+      COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS vol_ton,
+      COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob_usd,
+      CASE WHEN SUM(${Q(COL.wt)}) > 0 THEN SUM(${Q(COL.fob)})::float8 / SUM(${Q(COL.wt)})::float8 ELSE NULL END AS avg_price,
+      COUNT(*)::bigint AS shipments
+    FROM ${FQ_TABLE} ${where}
+    GROUP BY 1 ORDER BY 1
+  `
+  const res = await c.queryObject<any>({ text: sql, args })
+  return res.rows.map(serializeRow)
+}
+
+type GroupKind = 'shipper' | 'consignee' | 'destination' | 'dest_port' | 'product' | 'pol_port'
+function groupCol(g: GroupKind): string {
+  switch (g) {
+    case 'shipper': return COL.shipper
+    case 'consignee': return COL.consignee
+    case 'destination': return COL.destCountry
+    case 'dest_port': return COL.destPort
+    case 'product': return COL.product
+    case 'pol_port': return COL.polPort
+  }
+}
+function counterpartCol(g: GroupKind): string {
+  return g === 'shipper' ? COL.consignee : COL.shipper
+}
+
+async function fetchTopGroup(c: Client, g: GroupKind, filters: ReportFilters, limit = 15, extra: ReportExtra = {}) {
+  const args: unknown[] = []
+  const { where, hasWhere } = buildFilterClause(filters, args, extra)
+  const col = Q(groupCol(g))
+  const counter = Q(counterpartCol(g))
+  const sql = `
+    SELECT
+      ${col} AS name,
+      COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS vol_ton,
+      COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob_usd,
+      CASE WHEN SUM(${Q(COL.wt)}) > 0 THEN SUM(${Q(COL.fob)})::float8 / SUM(${Q(COL.wt)})::float8 ELSE NULL END AS avg_price,
+      COUNT(*)::bigint AS shipments,
+      COUNT(DISTINCT ${counter})::bigint AS counterparts
+    FROM ${FQ_TABLE} ${where}
+    ${hasWhere ? 'AND' : 'WHERE'} ${col} IS NOT NULL AND ${col} <> ''
+    GROUP BY 1
+    ORDER BY vol_ton DESC
+    LIMIT ${Math.max(1, Math.min(100, limit))}
+  `
+  const res = await c.queryObject<any>({ text: sql, args })
+  return res.rows.map(serializeRow)
+}
+
+async function fetchFlows(c: Client, filters: ReportFilters) {
+  const args: unknown[] = []
+  const { where, hasWhere } = buildFilterClause(filters, args)
+  const sql = `
+    SELECT
+      ${Q(COL.shipper)} AS shipper,
+      ${Q(COL.destCountry)} AS dest_country,
+      COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS vol_ton,
+      COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob_usd,
+      CASE WHEN SUM(${Q(COL.wt)}) > 0 THEN SUM(${Q(COL.fob)})::float8 / SUM(${Q(COL.wt)})::float8 ELSE NULL END AS avg_price,
+      COUNT(*)::bigint AS shipments
+    FROM ${FQ_TABLE} ${where}
+    ${hasWhere ? 'AND' : 'WHERE'} ${Q(COL.shipper)} IS NOT NULL AND ${Q(COL.destCountry)} IS NOT NULL
+    GROUP BY 1, 2 ORDER BY vol_ton DESC LIMIT 50
+  `
+  const res = await c.queryObject<any>({ text: sql, args })
+  return res.rows.map(serializeRow)
+}
+
+async function fetchPairs(c: Client, filters: ReportFilters) {
+  const args: unknown[] = []
+  const { where, hasWhere } = buildFilterClause(filters, args)
+  const sql = `
+    SELECT
+      ${Q(COL.shipper)} AS shipper,
+      ${Q(COL.consignee)} AS consignee,
+      COALESCE(SUM(${Q(COL.wt)}), 0)::float8 AS vol_ton,
+      COALESCE(SUM(${Q(COL.fob)}), 0)::float8 AS fob_usd,
+      CASE WHEN SUM(${Q(COL.wt)}) > 0 THEN SUM(${Q(COL.fob)})::float8 / SUM(${Q(COL.wt)})::float8 ELSE NULL END AS avg_price,
+      COUNT(*)::bigint AS shipments
+    FROM ${FQ_TABLE} ${where}
+    ${hasWhere ? 'AND' : 'WHERE'} ${Q(COL.shipper)} IS NOT NULL AND ${Q(COL.consignee)} IS NOT NULL
+    GROUP BY 1, 2 ORDER BY vol_ton DESC LIMIT 50
+  `
+  const res = await c.queryObject<any>({ text: sql, args })
+  return res.rows.map(serializeRow)
+}
+
+async function sha256(input: string): Promise<string> {
+  const data = new TextEncoder().encode(input)
+  const buf = await crypto.subtle.digest('SHA-256', data)
+  return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, '0')).join('')
+}
+
+async function runReport(report: string, filters: ReportFilters, entity?: string) {
+  return await withPg(async (c) => {
+    switch (report) {
+      case 'kpis': {
+        const current = await fetchKpis(c, filters)
+        const prevF = previousPeriod(filters)
+        const previous = prevF ? await fetchKpis(c, prevF) : null
+        return { current, previous }
+      }
+      case 'monthly_series':
+        return { rows: await fetchMonthlySeries(c, filters) }
+      case 'top_shippers':
+        return { rows: await fetchTopGroup(c, 'shipper', filters) }
+      case 'top_consignees':
+        return { rows: await fetchTopGroup(c, 'consignee', filters) }
+      case 'top_destinations':
+        return { rows: await fetchTopGroup(c, 'destination', filters) }
+      case 'top_products':
+        return { rows: await fetchTopGroup(c, 'product', filters) }
+      case 'top_pol_ports':
+        return { rows: await fetchTopGroup(c, 'pol_port', filters) }
+      case 'flows':
+        return { rows: await fetchFlows(c, filters) }
+      case 'pairs':
+        return { rows: await fetchPairs(c, filters) }
+      case 'shipper_profile': {
+        if (!entity) throw new Error('entity required for shipper_profile')
+        const extra: ReportExtra = { shipper: entity }
+        const [monthly, consignees, destinations, products] = await Promise.all([
+          fetchMonthlySeries(c, { ...filters, shippers: [entity] }),
+          fetchTopGroup(c, 'consignee', filters, 5, extra),
+          fetchTopGroup(c, 'destination', filters, 5, extra),
+          fetchTopGroup(c, 'product', filters, 5, extra),
+        ])
+        return { monthly, consignees, destinations, products }
+      }
+      case 'consignee_profile': {
+        if (!entity) throw new Error('entity required for consignee_profile')
+        const extra: ReportExtra = { consignee: entity }
+        const [monthly, shippers, destPorts, products] = await Promise.all([
+          fetchMonthlySeries(c, { ...filters, consignees: [entity] }),
+          fetchTopGroup(c, 'shipper', filters, 5, extra),
+          fetchTopGroup(c, 'dest_port', filters, 5, extra),
+          fetchTopGroup(c, 'product', filters, 5, extra),
+        ])
+        return { monthly, shippers, destPorts, products }
+      }
+      default:
+        throw new Error(`Unknown report: ${report}`)
+    }
+  })
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors })
   if (req.method !== 'POST') return json({ error: 'Method not allowed' }, 405)
@@ -331,6 +573,35 @@ Deno.serve(async (req) => {
         return out
       })
       return json({ ok: true, rowCount: safeRows.length, rows: safeRows })
+    }
+
+    if (action === 'report') {
+      const report = String(body.report ?? '')
+      const filters: ReportFilters = body.filters ?? {}
+      const entity: string | undefined = body.entity
+      const forceRefresh = body.forceRefresh === true
+      const cacheKey = await sha256(JSON.stringify({ report, filters, entity }))
+
+      if (!forceRefresh) {
+        const { data: cached } = await supaSrv
+          .from('agrostats_report_cache')
+          .select('payload, refreshed_at')
+          .eq('cache_key', cacheKey)
+          .maybeSingle()
+        if (cached?.payload && cached.refreshed_at) {
+          const age = Date.now() - new Date(cached.refreshed_at).getTime()
+          if (age < REPORT_CACHE_TTL_MS) {
+            return json({ ok: true, cached: true, refreshedAt: cached.refreshed_at, report, data: cached.payload })
+          }
+        }
+      }
+
+      const data = await runReport(report, filters, entity)
+      const refreshedAt = new Date().toISOString()
+      await supaSrv
+        .from('agrostats_report_cache')
+        .upsert({ cache_key: cacheKey, payload: data, refreshed_at: refreshedAt }, { onConflict: 'cache_key' })
+      return json({ ok: true, cached: false, refreshedAt, report, data })
     }
 
     return json({ error: 'Unknown action' }, 400)
