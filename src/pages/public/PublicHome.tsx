@@ -6,6 +6,7 @@ import PublicLayout from "@/layouts/PublicLayout";
 import PublicOfferCard from "@/components/public/PublicOfferCard";
 import PublicOfferModal from "@/components/public/PublicOfferModal";
 import MaxChatWidget from "@/components/public/MaxChatWidget";
+import MundusVitrineStats from "@/components/public/MundusVitrineStats";
 import { usePublicOffers, type PublicOffer } from "@/hooks/usePublicOffers";
 import {
   OffersFilterBar,
@@ -291,6 +292,7 @@ export default function PublicHome() {
     >
       {nativeApp ? (
         <>
+          <MundusVitrineStats />
           {offersSection}
           <PublicOfferModal
             offer={detailOffer}
@@ -372,6 +374,7 @@ export default function PublicHome() {
         </div>
       </section>
 
+      <MundusVitrineStats />
       {offersSection}
 
       <PublicOfferModal
