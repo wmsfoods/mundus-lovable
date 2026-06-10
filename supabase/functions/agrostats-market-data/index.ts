@@ -1061,6 +1061,7 @@ Deno.serve(async (req) => {
       const forceRefresh = body.forceRefresh === true
       // Build cache key from the meaningful subset of body
       const cacheBody = { panel, filters: body.filters ?? {}, dimension: body.dimension, metric: body.metric, limit: body.limit, rowDim: body.rowDim, colDim: body.colDim, limitRows: body.limitRows, limitCols: body.limitCols, scopeShipper: body.scopeShipper, scopeConsignee: body.scopeConsignee, entity: body.entity, q: body.q }
+      ;(cacheBody as any).exporter = body.exporter ?? null
       // Determine data source (mirror vs. external)
       const { data: syncState } = await supaSrv
         .from('agrostats_sync_state').select('use_mirror').eq('id', 1).maybeSingle()
