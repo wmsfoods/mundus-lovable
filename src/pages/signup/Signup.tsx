@@ -6,6 +6,27 @@ import { useTranslation } from "react-i18next";
 import { SignupShell } from "./SignupShell";
 import { PasswordRequirements } from "./PasswordRequirements";
 import { allRulesMet, checkPassword } from "./passwordRules";
+import { FieldError, errorInputCls } from "./FieldError";
+import {
+  getErrorMessage,
+  maskPhone,
+  normalizeWebsite,
+  validateAddress,
+  validateCertificate,
+  validateCity,
+  validateEmail,
+  validateName,
+  validateNonEmptyArray,
+  validatePassword,
+  validatePhone,
+  validateRepeatPassword,
+  validateRole,
+  validateState,
+  validateWebsite,
+  validateZip,
+  validateCompanyName,
+  getZipRule,
+} from "./validation";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { publicUrl } from "@/lib/publicUrl";
