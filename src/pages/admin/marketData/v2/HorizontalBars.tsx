@@ -1,4 +1,4 @@
-import { fmtTonCompact, fmtPct, truncate } from "./format";
+import { fmtTonCompact, fmtPct, truncate, fmtLoads } from "./format";
 import type { TopRow } from "./types";
 
 const BRAND = "#B64769";
@@ -26,7 +26,7 @@ export function HorizontalBars({
             <div className="flex items-baseline justify-between gap-2 text-[12px]">
               <span className="truncate font-medium" title={r.name}>{truncate(r.name, 42)}</span>
               <span className="tabular-nums text-muted-foreground shrink-0">
-                {fmtTonCompact(r.volume)} <span className="opacity-60">· {fmtPct(r.share_pct)}</span>
+                {fmtTonCompact(r.volume)} <span className="opacity-60">· {fmtLoads(r.volume)} · {fmtPct(r.share_pct)}</span>
               </span>
             </div>
             <div className="relative h-2 rounded bg-muted overflow-hidden">
