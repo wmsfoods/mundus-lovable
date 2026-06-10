@@ -781,7 +781,7 @@ function Step3Company({
   };
 
   const canProceed =
-    !!data.companyName &&
+    !validateCompanyName(data.companyName) &&
     !!data.registrationCountry &&
     !!data.taxId &&
     taxIdValid &&
