@@ -8236,6 +8236,44 @@ export type Database = {
           sample_count: number
         }[]
       }
+      mcp_auth_users: {
+        Args: { p_limit?: number }
+        Returns: {
+          created_at: string
+          email: string
+          email_confirmed_at: string
+          id: string
+          last_sign_in_at: string
+        }[]
+      }
+      mcp_describe_table: {
+        Args: { p_schema: string; p_table: string }
+        Returns: {
+          column_default: string
+          column_name: string
+          data_type: string
+          is_nullable: string
+        }[]
+      }
+      mcp_list_tables: {
+        Args: { p_schema?: string }
+        Returns: {
+          est_rows: number
+          table_name: string
+          table_schema: string
+          table_type: string
+        }[]
+      }
+      mcp_storage_objects: {
+        Args: { p_bucket?: string; p_limit?: number }
+        Returns: {
+          bucket_id: string
+          created_at: string
+          id: string
+          name: string
+          size_bytes: number
+        }[]
+      }
       move_to_dlq: {
         Args: {
           dlq_name: string

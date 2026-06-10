@@ -1,97 +1,42 @@
-# Validação enterprise no Signup (4 steps)
+# Refinar mundus-admin-mcp v0.3.0 — introspecção + leitura segura auth/storage
 
-Aplicar padrão Zod + React Hook Form em `src/pages/signup/Signup.tsx`, com validação inline, máscaras, async checks e espelhamento na edge function.
+Adição não-destrutiva: 4 novas tools (`list_tables`, `describe_table`, `auth_users`, `storage_objects`), denylist de escrita expandida e 4 funções RPC `SECURITY DEFINER` no schema `public` (executáveis só pelo `service_role`).
 
-## 1. Infra compartilhada
+## 1. Nova migration
 
-**Novo pacote:** `libphonenumber-js` (validação E.164 por país, ~145kb tree-shakeable).
+Criar `supabase/migrations/<timestamp>_mcp_introspection.sql` com o SQL exato fornecido:
 
-**Novos arquivos:**
+- `public.mcp_list_tables(p_schema text default null)` — lista tabelas/views de todos os schemas (exceto `pg_catalog`/`information_schema`) com estimativa de linhas.
+- `public.mcp_describe_table(p_schema, p_table)` — colunas, tipo, nullable, default.
+- `public.mcp_auth_users(p_limit int default 100)` — leitura read-only de `auth.users` (limite máx. 500).
+- `public.mcp_storage_objects(p_bucket, p_limit)` — leitura read-only de `storage.objects`.
+- Todas com `SECURITY DEFINER`, `search_path = public`, `REVOKE` de `public/anon/authenticated` e `GRANT EXECUTE` somente ao `service_role`.
 
-```
-src/pages/signup/
-├── schemas/
-│   ├── step1Schema.ts      Zod: name, email, password, repeatPassword, agreeTerms
-│   ├── step3Schema.ts      Zod: companyName, taxId (dinâmico por país), role, proteins, countries, certificate
-│   ├── step4Schema.ts      Zod: country, state, city, address, zip, phone, website
-│   └── shared.ts           regex helpers, zipByCountry, taxIdByCountry, messages factory(t)
-├── components/
-│   ├── FormField.tsx       wrapper label + erro inline + borda vermelha
-│   ├── PhoneField.tsx      máscara + libphonenumber-js + país sync
-│   ├── TaxIdField.tsx      máscara dinâmica por país (CNPJ/EIN/etc.)
-│   └── ZipField.tsx        máscara dinâmica por país
-└── hooks/
-    └── useEmailAvailability.ts   debounce 300ms + verify-email check
-```
+Nenhuma tabela criada, nenhuma RLS tocada, nenhum schema novo exposto no PostgREST.
 
-## 2. Regras por campo
+## 2. Editar `supabase/functions/mundus-admin-mcp/index.ts`
 
-### Step 1 — Basic
-- **Name** trim, 2–80, `^[\p{L}\s'\-]+$` (bloqueia números)
-- **Email** `.email()`, lowercase, max 255, async check de duplicidade (debounce)
-- **Password** mantém `checkPassword` + visual ✓/✗ (já existe)
-- **Repeat** `.refine(eq)`
-- **Terms** `z.literal(true)`
+- Bump da versão: `version: '0.2.0'` → `'0.3.0'`.
+- Expandir o default da `WRITE_DENYLIST` para:
+  `round_proposals,cut_rounds,mcp_audit_log,audit_log,admin_action_log,negotiation_audit,offer_snapshots,offer_views,email_events`
+  (todas existem no schema — confirmado contra `<supabase-tables>`).
+- Registrar 4 novas tools logo após `db_insert`, exatamente como especificado: `list_tables`, `describe_table`, `auth_users`, `storage_objects`.
+  - `list_tables` adiciona flag `writable: !WRITE_DENYLIST.has(table_name)` em cada linha.
+- `db_insert` e `db_update` permanecem inalterados (escrita só em `public`).
+- As 6 tools existentes (`health`, `db_select`, `db_count`, `get_record`, `db_update`, `db_insert`) ficam idênticas; `health` passa automaticamente a refletir a denylist expandida no payload.
 
-### Step 2 — Verify
-- Código 6 dígitos, `inputMode="numeric"`, paste-friendly, auto-submit
-- Reenviar com cooldown 60s
+## 3. Verificações pós-deploy
 
-### Step 3 — Company
-- **Company name** 2–120, não só números
-- **Registration country** lista controlada
-- **Tax ID** máscara + pattern do país (reusa `TAX_ID_RULES` existente)
-- **Role** enum obrigatório (buyer/supplier)
-- **Proteins** min 1
-- **Countries of operation** min 1
-- **Certificate** opcional, max 10MB, mime `pdf|jpg|png`
+- Compilação ok (lovable redeploy automático).
+- `health` retorna `mode: 'read-write'` + denylist com 9 tabelas.
+- `list_tables` retorna tabelas com `writable=false` para as 9 denylisted.
+- `describe_table` retorna colunas; `auth_users` e `storage_objects` retornam dados.
+- Tools antigas comportam-se idêntico.
 
-### Step 4 — Contact
-- **Country** lista
-- **State/City** 2–80
-- **Address** 4–200
-- **ZIP** regex por país (US 5/9, BR 8, etc.)
-- **Phone** `libphonenumber-js` valida E.164 conforme `phoneCode`
-- **Website** `.url()` opcional, auto-prefixa `https://`
+## O que NÃO muda
 
-## 3. UX
-
-- RHF `mode: "onTouched"` — valida no blur, re-valida onChange após primeiro erro
-- Erro inline abaixo do campo, borda vermelha, ícone, mensagem i18n
-- Botão "Proceed" desabilita via `formState.isValid` do step atual
-- Máscaras formatam o valor (não bloqueiam teclas — paste funciona)
-- Mobile: `inputMode`, `autoComplete`, `enterKeyHint`, fontes 16px+ pra não dar zoom no iOS
-- Toasts só pra erros server-side; campo = inline
-
-## 4. Server-side mirror
-
-- Criar `supabase/functions/_shared/signupSchema.ts` (mesma lógica Zod, runtime Deno)
-- `verify-email` e o insert em `user_requests` validam antes de persistir
-- Retornam `422 { errors: { field: message[] } }` que o client mapeia nos campos
-
-## 5. i18n
-
-Adicionar chaves em `src/i18n/index.ts` (en/pt/es):
-```
-signup.errors.nameInvalid, emailInvalid, emailTaken, passwordWeak,
-passwordsMismatch, taxIdInvalid, phoneInvalid, zipInvalid,
-websiteInvalid, required, fileTooLarge, fileType
-```
-
-## 6. Ordem de execução (uma PR única)
-
-1. Instalar `libphonenumber-js`
-2. Criar `schemas/` + i18n keys
-3. Criar `FormField`, `PhoneField`, `TaxIdField`, `ZipField`
-4. Criar `useEmailAvailability`
-5. Refatorar `Signup.tsx` Step 1 → 4 com RHF + zodResolver por step (mantém `data` global entre steps)
-6. Criar `supabase/functions/_shared/signupSchema.ts` e plugar em `verify-email` + (novo) validação no insert
-7. Smoke test manual: cada step, mobile (375px), erros visíveis, submit final
-
-## Detalhes técnicos
-
-- Manter o state global `data: FormData` em `Signup.tsx` (steps preservam dados ao voltar); cada step usa RHF próprio com `defaultValues` lidos de `data` e `onSubmit` que faz `set(...)` + avança.
-- `TaxIdField` recebe `country` prop e troca máscara + hint reativamente.
-- `PhoneField` troca o country code via dropdown existente; validação E.164 chama `parsePhoneNumber(value, isoFromCode)`.
-- Edge function compartilhada via `_shared/` (padrão do projeto). Sem schema novo no DB — validação é só código.
-- Sem alteração de tabela; sem migração necessária.
+- RLS de nenhuma tabela.
+- Exposed schemas do PostgREST (continua só `public`).
+- Auth do edge function (bearer token continua igual).
+- Dados existentes.
+- Schema `vault` (não tocado).
