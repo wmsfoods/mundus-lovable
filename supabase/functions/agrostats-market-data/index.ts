@@ -850,6 +850,55 @@ async function panelDistinctProducts(c: Client, monthExpr: string, f: PanelFilte
 }
 
 async function runPanel(panel: string, body: any): Promise<unknown> {
+  return await _runPanelImpl(panel, body)
+}
+
+async function panelOpportunityMatch(c: Client, monthExpr: string, f: PanelFilters, exporter: string | null) {
+  const args: unknown[] = []
+  const { where, hasWhere } = buildPanelWhere(f, monthExpr, args)
+  const exporterPh = exporter ? (() => { args.push(`%${exporter}%`); return `$${args.length}` })() : null
+  const sql = `
+    WITH base AS (
+      SELECT
+        ${Q(COL.consignee)}        AS name,
+        ${Q(COL.destCountry)}      AS dest_country,
+        ${Q(COL.consigneeCountry)} AS consignee_country,
+        ${Q(COL.shipper)}          AS shipper_name,
+        ${Q(COL.wt)}               AS wtmt,
+        ${Q(COL.fob)}              AS fob_value_usd
+      FROM ${FQ_TABLE}
+      ${where}
+      ${hasWhere ? 'AND' : 'WHERE'} ${Q(COL.consignee)} IS NOT NULL AND ${Q(COL.consignee)} <> ''
+    ),
+    agg AS (
+      SELECT name,
+        COALESCE(SUM(wtmt),0)::float8 AS volume,
+        COALESCE(SUM(fob_value_usd),0)::float8 AS fob,
+        CASE WHEN SUM(wtmt) > 0 THEN (SUM(fob_value_usd)/SUM(wtmt))::float8 ELSE NULL END AS avg_price_ton,
+        COUNT(DISTINCT shipper_name)::bigint AS suppliers_count,
+        COUNT(*)::bigint AS shipments,
+        ${exporterPh
+          ? `bool_or(shipper_name ILIKE ${exporterPh})`
+          : `FALSE`} AS buys_from_exporter
+      FROM base GROUP BY name
+    ),
+    country_mode AS (
+      SELECT name, country FROM (
+        SELECT name, COALESCE(dest_country, consignee_country, '') AS country,
+               ROW_NUMBER() OVER (PARTITION BY name ORDER BY COUNT(*) DESC) AS rn
+        FROM base GROUP BY name, COALESCE(dest_country, consignee_country, '')
+      ) z WHERE rn = 1
+    )
+    SELECT a.name, COALESCE(c.country,'') AS country, a.volume, a.fob,
+           a.avg_price_ton, a.suppliers_count, a.shipments, a.buys_from_exporter
+    FROM agg a LEFT JOIN country_mode c USING (name)
+    ORDER BY a.volume DESC LIMIT 50
+  `
+  const r = await c.queryObject<any>({ text: sql, args })
+  return { rows: r.rows.map(serializeRow) }
+}
+
+async function _runPanelImpl(panel: string, body: any): Promise<unknown> {
   // Get cached schema (just for monthExpr); fall back to rebuild
   return await withPg(async (c) => {
     const filters: PanelFilters = body.filters ?? {}
@@ -884,6 +933,10 @@ async function runPanel(panel: string, body: any): Promise<unknown> {
       }
       case 'distinct-products':
         return await panelDistinctProducts(c, monthExpr!, filters)
+      case 'opportunity-match': {
+        const exporter = (body.exporter ?? '').toString().trim() || null
+        return await panelOpportunityMatch(c, monthExpr!, filters, exporter)
+      }
       default:
         throw new Error(`Unknown panel: ${panel}`)
     }
@@ -931,6 +984,11 @@ async function runPanelMirror(
       })
     case 'distinct-products':
       return await rpc('agrostats_distinct_products', { f: filters })
+    case 'opportunity-match':
+      return await rpc('agrostats_opportunity_match', {
+        f: filters,
+        exporter: (body.exporter ?? '').toString().trim() || null,
+      })
     default:
       throw new Error(`Unknown panel: ${panel}`)
   }
@@ -1052,6 +1110,7 @@ Deno.serve(async (req) => {
       const forceRefresh = body.forceRefresh === true
       // Build cache key from the meaningful subset of body
       const cacheBody = { panel, filters: body.filters ?? {}, dimension: body.dimension, metric: body.metric, limit: body.limit, rowDim: body.rowDim, colDim: body.colDim, limitRows: body.limitRows, limitCols: body.limitCols, scopeShipper: body.scopeShipper, scopeConsignee: body.scopeConsignee, entity: body.entity, q: body.q }
+      ;(cacheBody as any).exporter = body.exporter ?? null
       // Determine data source (mirror vs. external)
       const { data: syncState } = await supaSrv
         .from('agrostats_sync_state').select('use_mirror').eq('id', 1).maybeSingle()

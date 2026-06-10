@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { AlertTriangle } from "lucide-react";
 import { FiltersBar } from "./marketData/v2/FiltersBar";
@@ -7,6 +8,7 @@ import { BuyersTab } from "./marketData/v2/tabs/BuyersTab";
 import { ShippersTab } from "./marketData/v2/tabs/ShippersTab";
 import { DestinationsTab } from "./marketData/v2/tabs/DestinationsTab";
 import { FlowsTab } from "./marketData/v2/tabs/FlowsTab";
+import { OpportunitiesTab } from "./marketData/v2/tabs/OpportunitiesTab";
 import type { PanelFilters } from "./marketData/v2/types";
 import AdminMarketDataExplorer from "./AdminMarketDataExplorer";
 import { DataSourceCard } from "./marketData/v2/DataSourceCard";
@@ -21,8 +23,21 @@ function defaultFilters(): PanelFilters {
 
 export default function AdminMarketData() {
   const [filters, setFilters] = useState<PanelFilters>(() => defaultFilters());
-  const [activeTab, setActiveTab] = useState("overview");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialTab = searchParams.get("tab") ?? "overview";
+  const [activeTab, setActiveTab] = useState(initialTab);
+  const initialOfferId = searchParams.get("offer");
   const [caption, setCaption] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (activeTab !== searchParams.get("tab")) {
+      const next = new URLSearchParams(searchParams);
+      next.set("tab", activeTab);
+      if (activeTab !== "oportunidades") next.delete("offer");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
 
   return (
     <div className="p-4 md:p-6 space-y-4 max-w-[1500px] mx-auto">
@@ -49,6 +64,7 @@ export default function AdminMarketData() {
           <TabsTrigger value="shippers">Exportadores</TabsTrigger>
           <TabsTrigger value="destinations">Destinos</TabsTrigger>
           <TabsTrigger value="flows">Fluxos</TabsTrigger>
+          <TabsTrigger value="oportunidades">Oportunidades</TabsTrigger>
           <TabsTrigger value="explorer">Explorer avançado</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="mt-4"><OverviewTab filters={filters} onCaption={setCaption} /></TabsContent>
@@ -56,6 +72,9 @@ export default function AdminMarketData() {
         <TabsContent value="shippers" className="mt-4"><ShippersTab filters={filters} /></TabsContent>
         <TabsContent value="destinations" className="mt-4"><DestinationsTab filters={filters} /></TabsContent>
         <TabsContent value="flows" className="mt-4"><FlowsTab filters={filters} /></TabsContent>
+        <TabsContent value="oportunidades" className="mt-4">
+          <OpportunitiesTab filters={filters} initialOfferId={initialOfferId} />
+        </TabsContent>
         <TabsContent value="explorer" className="mt-4">
           <DataSourceCard />
           <div className="-mx-4 md:-mx-6"><AdminMarketDataExplorer /></div>

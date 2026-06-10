@@ -8214,6 +8214,10 @@ export type Database = {
         Returns: Json
       }
       agrostats_monthly: { Args: { f: Json }; Returns: Json }
+      agrostats_opportunity_match: {
+        Args: { exporter?: string; f: Json }
+        Returns: Json
+      }
       agrostats_search_entity: {
         Args: { entity: string; q: string }
         Returns: Json
