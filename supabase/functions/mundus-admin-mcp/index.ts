@@ -12,7 +12,7 @@ const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
 const MAX_ROWS = 200
 
 const WRITE_DENYLIST = new Set(
-  (Deno.env.get('MCP_WRITE_DENYLIST') ?? 'round_proposals,cut_rounds,mcp_audit_log')
+  (Deno.env.get('MCP_WRITE_DENYLIST') ?? 'round_proposals,cut_rounds,mcp_audit_log,audit_log,admin_action_log,negotiation_audit,offer_snapshots,offer_views,email_events')
     .split(',').map((t) => t.trim()).filter(Boolean),
 )
 
@@ -44,7 +44,7 @@ async function audit(action: string, table: string, recordId: unknown, payload: 
   }
 }
 
-const server = new McpServer({ name: 'mundus-admin-mcp', version: '0.2.0' })
+const server = new McpServer({ name: 'mundus-admin-mcp', version: '0.3.0' })
 
 server.registerTool(
   'health',
@@ -140,6 +140,53 @@ server.registerTool(
     // deno-lint-ignore no-explicit-any
     await audit('insert', table, (data as any)?.id, values)
     return ok({ inserted: data })
+  },
+)
+
+server.registerTool('list_tables',
+  { title: 'List tables',
+    description: 'Lista tabelas/views por schema, com estimativa de linhas e flag writable. schema opcional.',
+    inputSchema: { schema: z.string().optional() } },
+  async ({ schema }) => {
+    const { data, error } = await supabase.rpc('mcp_list_tables', { p_schema: schema ?? null })
+    if (error) return fail(error.message)
+    // deno-lint-ignore no-explicit-any
+    const tables = (data ?? []).map((t: any) => ({ ...t, writable: !WRITE_DENYLIST.has(t.table_name) }))
+    return ok({ count: tables.length, tables })
+  },
+)
+
+server.registerTool('describe_table',
+  { title: 'Describe table',
+    description: 'Colunas (nome, tipo, nullable, default) de uma tabela. schema default public.',
+    inputSchema: { table: z.string(), schema: z.string().optional() } },
+  async ({ table, schema }) => {
+    const { data, error } = await supabase.rpc('mcp_describe_table', { p_schema: schema ?? 'public', p_table: table })
+    if (error) return fail(error.message)
+    if (!data?.length) return fail(`Tabela ${schema ?? 'public'}.${table} nao encontrada`)
+    return ok({ schema: schema ?? 'public', table, columns: data })
+  },
+)
+
+server.registerTool('auth_users',
+  { title: 'List auth users',
+    description: 'Lista contas de login reais (auth.users), read-only. limit default 100, max 500.',
+    inputSchema: { limit: z.number().int().positive().max(500).optional() } },
+  async ({ limit }) => {
+    const { data, error } = await supabase.rpc('mcp_auth_users', { p_limit: limit ?? 100 })
+    if (error) return fail(error.message)
+    return ok({ count: data?.length ?? 0, users: data })
+  },
+)
+
+server.registerTool('storage_objects',
+  { title: 'List storage objects',
+    description: 'Lista arquivos no storage (storage.objects), read-only. bucket opcional, limit default 100, max 500.',
+    inputSchema: { bucket: z.string().optional(), limit: z.number().int().positive().max(500).optional() } },
+  async ({ bucket, limit }) => {
+    const { data, error } = await supabase.rpc('mcp_storage_objects', { p_bucket: bucket ?? null, p_limit: limit ?? 100 })
+    if (error) return fail(error.message)
+    return ok({ count: data?.length ?? 0, objects: data })
   },
 )
 
