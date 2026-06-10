@@ -10,7 +10,7 @@ const corsHeaders = {
 const RESEND_API_KEY =
   Deno.env.get("RESEND_API_KEY") || "";
 const FROM = "Mundus Trade <noreply@mundustrade.com>";
-const ADMIN_EMAIL = "fn@mundustrade.com";
+const ADMIN_EMAILS = ["fn@mundustrade.com", "contact@mundustrade.com"];
 const WINE = "#8B2252";
 const PLATFORM_URL = "https://app.mundustrade.us";
 
@@ -108,7 +108,7 @@ function rejectionHtml(userName: string) {
   `);
 }
 
-async function sendEmail(to: string, subject: string, html: string) {
+async function sendEmail(to: string | string[], subject: string, html: string) {
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -158,7 +158,7 @@ async function logToQueue(opts: {
 }
 
 async function sendAndLog(
-  to: string,
+  to: string | string[],
   subject: string,
   html: string,
   template: string,
@@ -167,11 +167,11 @@ async function sendAndLog(
   try {
     const r = await sendEmail(to, subject, html);
     const resendId = (r as any)?.id ?? (r as any)?.data?.id ?? null;
-    await logToQueue({ to, subject, html, template, vars, resendId });
+    await logToQueue({ to: Array.isArray(to) ? to.join(", ") : to, subject, html, template, vars, resendId });
     return r;
   } catch (e) {
     await logToQueue({
-      to, subject, html, template, vars,
+      to: Array.isArray(to) ? to.join(", ") : to, subject, html, template, vars,
       errorMessage: e instanceof Error ? e.message : String(e),
     });
     throw e;
@@ -196,7 +196,7 @@ serve(async (req) => {
     } else if (action === "admin_notification") {
       const { userEmail, userName, companyName, role, registrationCountry, taxId } = body;
       await sendAndLog(
-        ADMIN_EMAIL,
+        ADMIN_EMAILS,
         `🔔 New User Registration — ${companyName || userName}`,
         adminNotificationHtml({
           userName: userName || "",
