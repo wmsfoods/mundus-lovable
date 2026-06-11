@@ -558,6 +558,21 @@ export async function updateOfferV2(
   const priorRequestId = (priorRow?.request_id as string | null) ?? null;
 
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
+  const feeOnU = !!input.mundusFeeIncluded;
+  const feeRateU = feeOnU ? MUNDUS_FEE_RATE : 0;
+  const netPricesMapU: Record<string, { ask: number; floor: number }> = {};
+  if (feeOnU) {
+    for (const c of cuts) {
+      const key = c.tempId || c.cutId || "";
+      if (!key) continue;
+      netPricesMapU[key] = { ask: c.askPrice, floor: c.floorPrice };
+    }
+  }
+  const finalAskU = (c: CutRow) => feeOnU ? roundPrice(grossUpPrice(c.askPrice)) : c.askPrice;
+  const finalFloorU = (c: CutRow) => {
+    const raw = c.floorPrice > 0 && c.floorPrice <= c.askPrice ? c.floorPrice : c.askPrice;
+    return feeOnU ? roundPrice(grossUpPrice(raw)) : raw;
+  };
   const { shipment_month, shipment_year, shipment_ready_raw } = deriveShipment(l.shipmentReady);
 
   // Resolve origin port label for snapshot columns (same as create).
