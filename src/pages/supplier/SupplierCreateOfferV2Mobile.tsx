@@ -443,6 +443,7 @@ export default function SupplierCreateOfferV2Mobile() {
         negotiationDial,
         cutRegion,
         requestId: mode === "fromRequest" ? requestId : null,
+        mundusFeeIncluded,
       };
       const ctx = {
         supplierId: supplierContextId,
@@ -904,6 +905,7 @@ export default function SupplierCreateOfferV2Mobile() {
         open={cutSheet.open}
         onOpenChange={(b) => setCutSheet((p) => ({ ...p, open: b }))}
         mode={cutSheet.mode}
+        mundusFeeIncluded={mundusFeeIncluded}
         value={
           cutSheet.mode === "edit"
             ? cuts.find((c, i) => (c.cutId ?? `idx-${i}`) === cutSheet.cutId)
