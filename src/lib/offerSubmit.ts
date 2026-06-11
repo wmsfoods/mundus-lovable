@@ -258,11 +258,17 @@ export async function submitOfferV2(
   }
 
   // 1. Insert offer
+  // NOTE: even when publishing live, we insert as 'draft' first and only
+  // flip to 'active' after all child rows (items, incoterms, markets,
+  // origin_ports, freight) have been inserted. The
+  // `validate_active_offer_complete` trigger fires per-statement (not at
+  // commit, since supabase-js runs each call in its own transaction), so
+  // inserting straight as 'active' would fail with `offerIncomplete:items`.
   const certifications = l.certifications;
   const offerInsert = {
     supplier_id: ctx.supplierId,
     supplier_name: ctx.supplierName,
-    status: ctx.status,
+    status: "draft",
     origin_country: originCountryName,
     origin_port: originPortLabel,
     origin_port_id: primaryOriginPortId,
@@ -462,6 +468,15 @@ export async function submitOfferV2(
     if (freightInserts.length > 0) {
       const { error } = await supabase.from("freight_options").insert(freightInserts);
       if (error) throw new Error(`freight_options failed: ${error.message}`);
+    }
+
+    // 6b. Promote to the requested status now that all required child rows exist.
+    if (ctx.status === "active") {
+      const { error: promoteErr } = await supabase
+        .from("offers")
+        .update({ status: "active" })
+        .eq("id", offerId);
+      if (promoteErr) throw new Error(promoteErr.message);
     }
 
     // 7. If this offer answers a buyer_request and is being published live,
