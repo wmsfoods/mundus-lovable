@@ -737,6 +737,7 @@ export async function updateOfferV2(
       specific_buyer_company_ids:
         distribution.specificCustomerIds.length > 0 ? distribution.specificCustomerIds : null,
       all_customers: !!distribution.allCustomers,
+      marketplace: !!distribution.marketplace,
       exw_pickup_location:
         l.incoterms.includes("EXW") && l.exwPickupLocation.trim()
           ? l.exwPickupLocation.trim()
