@@ -306,6 +306,7 @@ export async function submitOfferV2(
     mundus_fee_rate: feeRate,
     net_prices: feeOn ? netPricesMap : null,
   } as Record<string, unknown>;
+  (offerInsert as any).marketplace = !!distribution.marketplace;
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
     if ((offerInsert as Record<string, unknown>)[k] === undefined) delete (offerInsert as Record<string, unknown>)[k];
@@ -736,6 +737,7 @@ export async function updateOfferV2(
       specific_buyer_company_ids:
         distribution.specificCustomerIds.length > 0 ? distribution.specificCustomerIds : null,
       all_customers: !!distribution.allCustomers,
+      marketplace: !!distribution.marketplace,
       exw_pickup_location:
         l.incoterms.includes("EXW") && l.exwPickupLocation.trim()
           ? l.exwPickupLocation.trim()
