@@ -93,7 +93,7 @@ export function OutreachModal({ offer, open, onClose, onSent }: Props) {
           <div><div style={{ color: "var(--fg-muted)" }}>{t("supplier.outreach.modal.origin")}</div><strong>{offer.origin}</strong></div>
           <div><div style={{ color: "var(--fg-muted)" }}>{t("supplier.outreach.modal.markets")}</div><strong>{offer.markets.join(", ") || "—"}</strong></div>
           <div><div style={{ color: "var(--fg-muted)" }}>{t("supplier.outreach.modal.incoterm")}</div><strong>{offer.incoterm}</strong></div>
-          <div><div style={{ color: "var(--fg-muted)" }}>{t("supplier.outreach.modal.price")}</div><strong>{offer.pricePerKg ? `US$ ${offer.pricePerKg.toFixed(2)}/kg` : "—"}</strong></div>
+          <div><div style={{ color: "var(--fg-muted)" }}>{t("supplier.outreach.modal.price")}</div><strong>{offer.pricePerKg ? `US$ ${offer.pricePerKg.toFixed(3)}/kg` : "—"}</strong></div>
         </div>
 
         {/* Contacts */}

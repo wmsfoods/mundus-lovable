@@ -146,8 +146,8 @@ export async function confirmNegotiation(neg: RealNegotiationRow): Promise<boole
         return {
           name: it.customer_product?.name ?? "—",
           qty: `${Number(it.amount).toLocaleString(undefined, { maximumFractionDigits: 0 })} kg`,
-          askingPerKg: asking.toFixed(2),
-          finalPerKg: finalP.toFixed(2),
+          askingPerKg: asking.toFixed(3),
+          finalPerKg: finalP.toFixed(3),
           movementPct:
             asking > 0 ? (((finalP - asking) / asking) * 100).toFixed(1) : "0.0",
         };
@@ -168,8 +168,8 @@ export async function confirmNegotiation(neg: RealNegotiationRow): Promise<boole
         offerNumber,
         quantity: fmt(totalQty),
         rounds: (neg as any).current_round ?? 1,
-        askingPrice: askingAvg.toFixed(2),
-        finalPrice: finalAvg.toFixed(2),
+        askingPrice: askingAvg.toFixed(3),
+        finalPrice: finalAvg.toFixed(3),
         movementPct:
           askingAvg > 0 ? (((finalAvg - askingAvg) / askingAvg) * 100).toFixed(1) : "0.0",
         totalValue: fmt(settledValue),
@@ -247,8 +247,8 @@ export async function rejectNegotiation(neg: RealNegotiationRow): Promise<boolea
       const baseVars: any = {
         cutName,
         offerNumber,
-        lastBid: Number(lastBid).toFixed(2),
-        lastCounter: Number(lastCounter).toFixed(2),
+        lastBid: Number(lastBid).toFixed(3),
+        lastCounter: Number(lastCounter).toFixed(3),
         gap: "0.00",
         gapPct: "0.0",
         rounds,

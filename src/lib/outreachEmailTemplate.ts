@@ -7,7 +7,7 @@ export function buildOutreachSubject(offer: OutreachOffer) {
 export function buildOutreachBody(offer: OutreachOffer, contactName?: string | null) {
   const greeting = contactName ? `Dear ${contactName.split(" ")[0]},` : "Dear partner,";
   const price = offer.pricePerKg
-    ? `<strong>US$ ${offer.pricePerKg.toFixed(2)} / kg</strong>`
+    ? `<strong>US$ ${offer.pricePerKg.toFixed(3)} / kg</strong>`
     : "—";
   return `
 <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;color:#1f1f1f;max-width:600px;margin:0 auto;padding:24px;">

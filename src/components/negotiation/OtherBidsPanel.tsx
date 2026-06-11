@@ -93,7 +93,7 @@ export function OtherBidsPanel({
           0,
         );
         const sig = [...(last?.cut_rounds ?? [])]
-          .map((c: any) => `${c.offer_item_id}:${Number(c.price_per_kg).toFixed(4)}@${Number(c.quantity_kg).toFixed(2)}`)
+          .map((c: any) => `${c.offer_item_id}:${Number(c.price_per_kg).toFixed(3)}@${Number(c.quantity_kg).toFixed(2)}`)
           .sort()
           .join("|");
         out.push({

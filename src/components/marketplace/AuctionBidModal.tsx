@@ -94,7 +94,7 @@ export function AuctionBidModal({ open, onOpenChange, auction }: AuctionBidModal
   }, [open, auction.id, cuts]);
 
   const setAll = (priceFor: (cut: MockCut) => number) => {
-    setBids(Object.fromEntries(cuts.map((c) => [c.id, +priceFor(c).toFixed(4)])));
+    setBids(Object.fromEntries(cuts.map((c) => [c.id, +priceFor(c).toFixed(3)])));
   };
 
   const applyBulkOffset = () => {
