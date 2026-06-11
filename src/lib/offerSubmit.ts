@@ -736,6 +736,9 @@ export async function updateOfferV2(
         l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
           ? (l.pricingReferencePortId ?? null)
           : null,
+      mundus_fee_included: feeOnU,
+      mundus_fee_rate: feeRateU,
+      net_prices: feeOnU ? netPricesMapU : null,
     },
     items: itemsPayload,
     incoterms: allowedIncoterms,
