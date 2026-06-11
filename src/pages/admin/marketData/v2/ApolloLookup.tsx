@@ -100,6 +100,7 @@ export function ApolloLookup({ name, kind }: { name: string; kind: Kind }) {
           country={country}
           onQuery={setQuery}
           onCountry={setCountry}
+          onSearch={() => setCommitted({ q: query.trim(), country: country.trim() })}
           companies={companies}
           onSelect={setSelected}
           errorCode={errorCode}
@@ -110,24 +111,26 @@ export function ApolloLookup({ name, kind }: { name: string; kind: Kind }) {
 }
 
 function CompanyView({
-  query, country, onQuery, onCountry, companies, onSelect, errorCode,
+  query, country, onQuery, onCountry, onSearch, companies, onSelect, errorCode,
 }: {
   query: string;
   country: string;
   onQuery: (v: string) => void;
   onCountry: (v: string) => void;
+  onSearch: () => void;
   companies: ReturnType<typeof useProspectSearch<MockCompany>>;
   onSelect: (c: MockCompany) => void;
   errorCode: string | null;
 }) {
   return (
     <div className="p-3">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_180px]">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_160px_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => onQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") onSearch(); }}
             placeholder="Nome da empresa"
             className="h-9 pl-8"
           />
@@ -135,9 +138,14 @@ function CompanyView({
         <Input
           value={country}
           onChange={(e) => onCountry(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") onSearch(); }}
           placeholder="País (ex: Brazil)"
           className="h-9"
         />
+        <Button size="sm" className="h-9 gap-1" onClick={onSearch} disabled={!query.trim() || companies.loading}>
+          {companies.loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+          Buscar
+        </Button>
       </div>
 
       <div className="mt-3">
