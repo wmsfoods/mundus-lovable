@@ -24,6 +24,23 @@ export function DealClosedBanner({
   const items = negotiation.offer?.items ?? [];
   const agreedMap = new Map(getAgreedItems(negotiation).map((a) => [a.offer_item_id, a] as const));
 
+  // Build map of latest settled price per offer_item_id from the rounds history.
+  // When a deal closes via "accept bid", the accepted price equals the last
+  // cut_round price_per_kg recorded for that item (the buyer's last bid).
+  const latestPriceByItem = new Map<string, number>();
+  const sortedRounds = [...(negotiation.rounds ?? [])].sort((a, b) => a.round - b.round);
+  for (const r of sortedRounds) {
+    for (const cr of r.cut_rounds ?? []) {
+      const cp = Array.isArray(cr.counter_proposals)
+        ? cr.counter_proposals[0]
+        : cr.counter_proposals;
+      const price = cp?.price_per_kg ?? cr.price_per_kg;
+      if (typeof price === "number" && !Number.isNaN(price)) {
+        latestPriceByItem.set(cr.offer_item_id, price);
+      }
+    }
+  }
+
   const total = settledTotal ?? Number(negotiation.settled_total_value ?? 0);
   const orderNumber = negotiation.order?.order_number;
   const orderHref = orderNumber
@@ -57,7 +74,7 @@ export function DealClosedBanner({
         <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
           {items.map((it) => {
             const a = agreedMap.get(it.id);
-            const price = a?.price_per_kg ?? Number(it.price);
+            const price = a?.price_per_kg ?? latestPriceByItem.get(it.id) ?? Number(it.price);
             return (
               <div key={it.id} className="flex items-center justify-between rounded-md bg-white/60 px-3 py-1.5">
                 <span className="truncate">{it.customer_product?.name ?? "—"}</span>
