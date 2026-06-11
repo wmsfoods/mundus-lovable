@@ -33,6 +33,8 @@ import SupplierBrandsManager from "@/components/company/SupplierBrandsManager";
 import "@/styles/mundus-address.css";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { useIsCompanyMaster } from "@/hooks/useIsCompanyMaster";
+import { Modal } from "@/components/mundus/Modal";
+import "@/styles/mundus-modal.css";
 
 type Role = "buyer" | "supplier" | "admin";
 
