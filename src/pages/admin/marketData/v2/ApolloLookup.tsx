@@ -15,24 +15,50 @@ function defaultCountry(kind: Kind): string {
   return kind === "shipper" ? "Brazil" : "";
 }
 
+// Strip common corporate suffixes that hurt Apollo name matching.
+function cleanCompanyName(raw: string): string {
+  if (!raw) return "";
+  let s = raw.trim();
+  // Remove parenthetical fragments like "(HK)" / "(GROUP)".
+  s = s.replace(/\([^)]*\)/g, " ");
+  // Remove trailing punctuation and common suffix words.
+  const suffixes = [
+    "ltda", "ltd", "limited", "s\\.?a\\.?", "sa", "s/a", "s\\.?p\\.?a\\.?",
+    "inc", "incorporated", "co", "corp", "corporation", "company",
+    "llc", "plc", "gmbh", "ag", "bv", "nv", "kg", "oy", "ab",
+    "pte", "pty", "pvt", "srl", "sl", "sarl", "eireli", "me", "epp",
+    "group", "grupo", "holdings", "holding", "international", "intl",
+    "trading", "trade", "comercial", "comercio", "industrial", "industria",
+    "import", "export", "imp", "exp",
+  ];
+  const re = new RegExp(`\\b(?:${suffixes.join("|")})\\b\\.?`, "gi");
+  s = s.replace(re, " ");
+  s = s.replace(/[.,;:&]+/g, " ").replace(/\s+/g, " ").trim();
+  return s || raw.trim();
+}
+
 export function ApolloLookup({ name, kind }: { name: string; kind: Kind }) {
-  const [query, setQuery] = useState(name);
+  const [query, setQuery] = useState(cleanCompanyName(name));
   const [country, setCountry] = useState(defaultCountry(kind));
   const [selected, setSelected] = useState<MockCompany | null>(null);
+  const [committed, setCommitted] = useState<{ q: string; country: string }>({
+    q: cleanCompanyName(name),
+    country: defaultCountry(kind),
+  });
 
   const companyParams = useMemo(() => {
     const p: Record<string, unknown> = {
-      q_organization_name: query,
+      q_organization_name: committed.q,
       per_page: 5,
       page: 1,
     };
-    if (country.trim()) p.organization_locations = [country.trim()];
+    if (committed.country.trim()) p.organization_locations = [committed.country.trim()];
     return p;
-  }, [query, country]);
+  }, [committed]);
 
   const companies = useProspectSearch<MockCompany>("companies", companyParams, {
-    enabled: !selected && !!query.trim(),
-    debounceMs: 400,
+    enabled: !selected && !!committed.q.trim(),
+    debounceMs: 0,
   });
 
   const peopleParams = useMemo(
