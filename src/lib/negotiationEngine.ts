@@ -27,7 +27,7 @@ export function validateBuyerBidDirection(
   if (newBidPricePerKg + 1e-9 >= previousBidPricePerKg) return { valid: true };
   return {
     valid: false,
-    message: `Bid cannot be LOWER than your previous bid ($${previousBidPricePerKg.toFixed(2)}/kg). You may keep the same value or raise it.`,
+    message: `Bid cannot be LOWER than your previous bid ($${previousBidPricePerKg.toFixed(3)}/kg). You may keep the same value or raise it.`,
   };
 }
 
@@ -41,7 +41,7 @@ export function validateSupplierCounterDirection(
   if (newCounterPricePerKg <= ceiling) return { valid: true };
   return {
     valid: false,
-    message: `Counter must be ≤ your previous counter ($${ceiling.toFixed(2)}/kg). You cannot increase your price.`,
+    message: `Counter must be ≤ your previous counter ($${ceiling.toFixed(3)}/kg). You cannot increase your price.`,
   };
 }
 
