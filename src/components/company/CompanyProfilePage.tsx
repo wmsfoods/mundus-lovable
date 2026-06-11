@@ -149,6 +149,20 @@ export default function CompanyProfilePage({
   const [tab, setTab] = useState<"profile" | "locations" | "team">("profile");
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [blockers, setBlockers] = useState<any | null>(null);
+  const [loadingBlockers, setLoadingBlockers] = useState(false);
+
+  useEffect(() => {
+    if (!deleteModalOpen || !companyId) return;
+    setLoadingBlockers(true);
+    setBlockers(null);
+    (async () => {
+      const { data, error } = await (supabase as any).rpc("get_company_delete_blockers", { p_company_id: companyId });
+      if (error) toast.error(error.message);
+      setBlockers(data ?? null);
+      setLoadingBlockers(false);
+    })();
+  }, [deleteModalOpen, companyId]);
 
   // Reference data from DB
   const [marketCountries, setMarketCountries] = useState<
