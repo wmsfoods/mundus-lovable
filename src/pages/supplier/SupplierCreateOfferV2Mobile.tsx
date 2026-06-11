@@ -770,6 +770,7 @@ export default function SupplierCreateOfferV2Mobile() {
 
         {/* Card F — Payment terms */}
         <div className="space-y-3 rounded-xl border bg-card p-3.5">
+          <MundusFeeToggle value={mundusFeeIncluded} onChange={setMundusFeeIncluded} />
           <div className="flex items-center gap-2">
             <CreditCard size={16} className="text-primary" />
             <span className="text-sm font-semibold">
