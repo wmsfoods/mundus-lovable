@@ -1490,6 +1490,13 @@ export default function SupplierCreateOfferV2Desktop() {
       {/* Placeholders for R3-R5 */}
       <div className="mt-6 flex flex-col gap-4">
         <div id="v2-section-cuts">
+        <div className="mb-3">
+          <MundusFeeToggle
+            value={mundusFeeIncluded}
+            onChange={setMundusFeeIncluded}
+            disabled={editLocked}
+          />
+        </div>
         <CutsTable
           cuts={cuts}
           setCuts={setCuts}
@@ -1498,6 +1505,7 @@ export default function SupplierCreateOfferV2Desktop() {
           cutRegion={cutRegion}
           setCutRegion={setCutRegion}
           locked={editLocked}
+          mundusFeeIncluded={mundusFeeIncluded}
           companyOverride={
             adminMode && adminCompany
               ? { id: adminCompany.id, name: adminCompany.name, country: adminCompany.country }
