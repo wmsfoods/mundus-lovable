@@ -395,6 +395,11 @@ export function CutSheetMobile({
                         value={askDisplay || ""}
                         onChange={(e) => onAsk(e.target.value)}
                       />
+                      {mundusFeeIncluded && askFinal > 0 && (
+                        <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
+                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${askFinal.toFixed(2)}` })}
+                        </div>
+                      )}
                     </Field>
                     <Field
                       label={tk("pricing.floor", "Floor {{u}}", { u: priceLabel(unit) })}
@@ -408,6 +413,11 @@ export function CutSheetMobile({
                         value={floorDisplay || ""}
                         onChange={(e) => onFloor(e.target.value)}
                       />
+                      {mundusFeeIncluded && floorFinal > 0 && (
+                        <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
+                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${floorFinal.toFixed(2)}` })}
+                        </div>
+                      )}
                     </Field>
                   </div>
                   <div className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-2.5">
