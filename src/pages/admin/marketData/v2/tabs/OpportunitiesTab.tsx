@@ -55,12 +55,23 @@ export function OpportunitiesTab({ filters, initialOfferId }: { filters: PanelFi
   // present in selected offers + manual entry.
 
   const panelFilters: PanelFilters = useMemo(
-    () => ({
-      ...filters,
+    () => {
+      const base = offerId
+        ? {
+            ...filters,
+            hs8: undefined,
+            productSearch: undefined,
+            productTypes: undefined,
+            temperature: undefined,
+          }
+        : filters;
+      return {
+      ...base,
       hsCategory: cats.length ? cats : undefined,
       destCountry: destCountry.length ? destCountry : undefined,
-    }),
-    [filters, cats, destCountry],
+    };
+    },
+    [filters, offerId, cats, destCountry],
   );
 
   const exporterTrimmed = exporter.trim();
