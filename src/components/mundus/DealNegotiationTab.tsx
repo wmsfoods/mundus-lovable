@@ -59,16 +59,12 @@ export function DealNegotiationTab({ orderId, role }: Props) {
 
   // Build pill timeline (Bid 1 → Counter 1 → Bid 2 → ...)
   type Pill = { type: "bid" | "counter"; round: number; totalUsd: number; current: boolean };
-  const pills: Pill[] = [];
-  rounds.forEach((r, idx) => {
-    const isLast = idx === rounds.length - 1;
-    if (r.buyerBidUsd != null) {
-      pills.push({ type: "bid", round: r.round, totalUsd: r.buyerBidUsd, current: false });
-    }
-    if (r.counterUsd != null) {
-      pills.push({ type: "counter", round: r.round, totalUsd: r.counterUsd, current: isLast });
-    }
-  });
+  const pills: Pill[] = rounds.map((r, idx) => ({
+    type: r.type,
+    round: r.round,
+    totalUsd: r.totalUsd,
+    current: !!r.isCurrent || idx === rounds.length - 1,
+  }));
 
   const fullHref =
     role === "supplier"
