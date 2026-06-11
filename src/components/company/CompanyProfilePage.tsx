@@ -147,6 +147,8 @@ export default function CompanyProfilePage({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"profile" | "locations" | "team">("profile");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Reference data from DB
   const [marketCountries, setMarketCountries] = useState<
