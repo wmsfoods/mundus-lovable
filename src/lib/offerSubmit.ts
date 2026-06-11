@@ -307,7 +307,7 @@ export async function submitOfferV2(
 
   const { data: offer, error: offerErr } = await supabase
     .from("offers")
-    .insert(offerInsert)
+    .insert(offerInsert as never)
     .select("id, offer_number")
     .single();
   if (offerErr || !offer) throw new Error(`Failed to create offer: ${offerErr?.message ?? "no data"}`);
