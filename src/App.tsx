@@ -371,6 +371,9 @@ const App = () => (
               <Route path="create-request" element={<BuyerCreateRequest />} />
               <Route path="email-queue" element={<EmailQueue />} />
               <Route path="email-activity" element={<EmailActivity />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="notifications" element={<Notifications />} />
+              <Route path="settings/notifications" element={<NotificationPreferences />} />
               <Route path="whats" element={<WhatsLayout />}>
                 <Route index element={<WhatsConversas />} />
                 <Route path="conversas" element={<WhatsConversas />} />

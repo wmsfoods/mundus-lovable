@@ -70,7 +70,9 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
   const goToProfile = () => {
     const target = location.pathname.startsWith("/supplier")
       ? "/supplier/profile"
-      : "/buyer/profile";
+      : location.pathname.startsWith("/admin")
+        ? "/admin/profile"
+        : "/buyer/profile";
     navigate(target);
   };
 
@@ -83,8 +85,15 @@ export function Topbar({ onMenuClick }: TopbarProps = {}) {
     SUPPORTED_LANGUAGES[0];
 
   const isSupplierPath = location.pathname.startsWith("/supplier");
+  const isAdminPath = location.pathname.startsWith("/admin");
   const goToNotifications = () =>
-    navigate(isSupplierPath ? "/supplier/notifications" : "/buyer/notifications");
+    navigate(
+      isAdminPath
+        ? "/admin/notifications"
+        : isSupplierPath
+          ? "/supplier/notifications"
+          : "/buyer/notifications",
+    );
 
   return (
     <div className={`tb ${isMobile ? "tb-mobile" : ""}`.trim()}>
