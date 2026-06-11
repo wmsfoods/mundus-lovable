@@ -74,14 +74,8 @@ Deno.serve(async (req) => {
     }
 
     // Allow Mundus platform admins to bypass the master check
-    let isMundusAdmin = false;
-    try {
-      const { data: adminFlag } = await admin.rpc("is_mundus_admin", { _user_id: caller.id });
-      isMundusAdmin = adminFlag === true;
-    } catch {
-      const { data: adminFlag2 } = await admin.rpc("is_mundus_admin");
-      isMundusAdmin = adminFlag2 === true;
-    }
+    const { data: adminFlag } = await userClient.rpc("is_mundus_admin");
+    const isMundusAdmin = adminFlag === true;
 
     if (!isMundusAdmin) {
       // Verify caller is a Master Admin of the same company
