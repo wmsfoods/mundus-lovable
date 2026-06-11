@@ -627,7 +627,8 @@ export async function updateOfferV2(
     const c = cuts[i];
     if (!c.cutId) continue;
     if (!(c.qty > 0) || !(c.askPrice > 0)) continue;
-    const floor = c.floorPrice > 0 && c.floorPrice <= c.askPrice ? c.floorPrice : c.askPrice;
+    const askOut = finalAskU(c);
+    const floorOut = finalFloorU(c);
     const { data: cpId, error: rpcErr } = await supabase.rpc("resolve_customer_product", {
       p_company_id: ctx.supplierId,
       p_cut_id: c.cutId,
@@ -636,8 +637,8 @@ export async function updateOfferV2(
     itemsPayload.push({
       customer_product_id: cpId as string,
       amount: c.qty,
-      price: c.askPrice,
-      minimum_price: floor,
+      price: askOut,
+      minimum_price: floorOut,
       minimum_amount: c.qty,
       maximum_amount: c.qty,
       condition: l.temperature,
