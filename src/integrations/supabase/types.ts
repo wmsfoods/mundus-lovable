@@ -8148,31 +8148,19 @@ export type Database = {
           supplier_company_id: string
         }[]
       }
-      _notify_company:
-        | {
-            Args: {
-              p_body: string
-              p_company_id: string
-              p_icon: string
-              p_link_url: string
-              p_related_id: string
-              p_title: string
-            }
-            Returns: undefined
-          }
-        | {
-            Args: {
-              p_body: string
-              p_category?: string
-              p_company_id: string
-              p_icon: string
-              p_link_url: string
-              p_related_id: string
-              p_related_type?: string
-              p_title: string
-            }
-            Returns: undefined
-          }
+      _notify_company: {
+        Args: {
+          p_body: string
+          p_category?: string
+          p_company_id: string
+          p_icon: string
+          p_link_url: string
+          p_related_id: string
+          p_related_type?: string
+          p_title: string
+        }
+        Returns: undefined
+      }
       _temperature_match: {
         Args: { bl: string; hs8: string; temps: Json }
         Returns: boolean

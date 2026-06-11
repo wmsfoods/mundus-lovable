@@ -1,0 +1,1 @@
+DROP FUNCTION IF EXISTS public._notify_company(uuid, text, text, text, text, uuid);
