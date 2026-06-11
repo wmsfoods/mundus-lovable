@@ -1575,6 +1575,7 @@ export default function SupplierCreateOfferV2Desktop() {
           cuts={cuts}
           capacityPct={capacityPct}
           paymentTerms={paymentTerms}
+          mundusFeeIncluded={mundusFeeIncluded}
           distribution={{
             marketplace: distribution.marketplace,
             allCustomers: distribution.allCustomers,
