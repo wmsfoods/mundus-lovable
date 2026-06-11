@@ -73,18 +73,30 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Verify caller is a Master Admin of the same company
-    const { data: callerRow } = await admin
-      .from("company_users")
-      .select("role, status")
-      .eq("company_id", member.company_id)
-      .eq("user_id", caller.id)
-      .eq("status", "active")
-      .maybeSingle();
-    if (!callerRow || !MASTER_ROLES.has(callerRow.role as string)) {
-      return new Response(JSON.stringify({ error: "Only Master Admins can delete users" }), {
-        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+    // Allow Mundus platform admins to bypass the master check
+    let isMundusAdmin = false;
+    try {
+      const { data: adminFlag } = await admin.rpc("is_mundus_admin", { _user_id: caller.id });
+      isMundusAdmin = adminFlag === true;
+    } catch {
+      const { data: adminFlag2 } = await admin.rpc("is_mundus_admin");
+      isMundusAdmin = adminFlag2 === true;
+    }
+
+    if (!isMundusAdmin) {
+      // Verify caller is a Master Admin of the same company
+      const { data: callerRow } = await admin
+        .from("company_users")
+        .select("role, status")
+        .eq("company_id", member.company_id)
+        .eq("user_id", caller.id)
+        .eq("status", "active")
+        .maybeSingle();
+      if (!callerRow || !MASTER_ROLES.has(callerRow.role as string)) {
+        return new Response(JSON.stringify({ error: "Only Master Admins can delete users" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
     }
 
     if (member.user_id && member.user_id === caller.id) {
