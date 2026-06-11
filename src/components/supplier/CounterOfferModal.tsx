@@ -232,7 +232,7 @@ export function CounterOfferModal({
       const next = { ...prev };
       for (const it of openItems) {
         if (accepted[it.id]) continue;
-        next[it.id] = +Math.max(0, priceFor(it)).toFixed(4);
+        next[it.id] = +Math.max(0, priceFor(it)).toFixed(3);
       }
       return next;
     });
@@ -373,7 +373,7 @@ export function CounterOfferModal({
         const floor = buyerInitialBid.get(it.id);
         const v = counters[it.id];
         if (floor != null && v != null && v < floor - 1e-9) {
-          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(2)})`;
+          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(3)})`;
         }
       }
       // Must be STRICTLY GREATER than previous buyer bid (no match, no lower)
@@ -385,7 +385,7 @@ export function CounterOfferModal({
           const v = counters[it.id];
           const prevBid = lastBuyerRound.cut_rounds?.find((c) => c.offer_item_id === it.id);
           if (prevBid && v != null && v <= Number(prevBid.price_per_kg) + 1e-9) {
-            out[it.id] = `Bid must be GREATER than your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(2)})`;
+            out[it.id] = `Bid must be GREATER than your previous bid ($${toDisplay(Number(prevBid.price_per_kg), "price", unit).toFixed(3)})`;
           }
         }
       }
@@ -417,7 +417,7 @@ export function CounterOfferModal({
           : null;
         const ceiling = prevCounterPrice ?? asking;
         if (v > ceiling + 1e-9) {
-          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(2)} (your ${prevCounter ? "previous counter" : "asking price"})`;
+          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(3)} (your ${prevCounter ? "previous counter" : "asking price"})`;
         }
       }
     }
@@ -652,7 +652,7 @@ export function CounterOfferModal({
           const fmt = (n: number) =>
             n.toLocaleString(undefined, { maximumFractionDigits: 2 });
           const fmtKg = (kg: number) => `${kg.toLocaleString(undefined, { maximumFractionDigits: 0 })} kg`;
-          const fmtPerKg = (p: number) => p.toFixed(2);
+          const fmtPerKg = (p: number) => p.toFixed(3);
           const movementVs = (final: number, base: number) =>
             base > 0 ? (((final - base) / base) * 100).toFixed(1) : "0.0";
 
@@ -735,9 +735,9 @@ export function CounterOfferModal({
               cutName: offerTitle,
               round: displayRound,
               maxRounds: MAX_DISPLAY_ROUNDS,
-              askingPrice: askingAvg.toFixed(2),
-              bidPrice: counterAvg.toFixed(2),
-              gap: gap.toFixed(2),
+              askingPrice: askingAvg.toFixed(3),
+              bidPrice: counterAvg.toFixed(3),
+              gap: gap.toFixed(3),
               gapPct,
               totalValue: fmt(counterTotal),
               buyerFlag: "",
@@ -771,10 +771,10 @@ export function CounterOfferModal({
               cutName: offerTitle,
               round: displayRound,
               maxRounds: MAX_DISPLAY_ROUNDS,
-              askingPrice: askingAvg.toFixed(2),
-              yourBid: theirAvg.toFixed(2),
-              counterPrice: counterAvg.toFixed(2),
-              gap: gap.toFixed(2),
+              askingPrice: askingAvg.toFixed(3),
+              yourBid: theirAvg.toFixed(3),
+              counterPrice: counterAvg.toFixed(3),
+              gap: gap.toFixed(3),
               gapPct,
               totalValue: fmt(counterTotal),
               isLastRound: isFinal,
@@ -1147,7 +1147,7 @@ export function CounterOfferModal({
                         type="text"
                         inputMode="decimal"
                         readOnly={isAccepted}
-                        value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
+                        value={Number.isFinite(displayCounter) ? displayCounter.toFixed(3) : ""}
                         onChange={(e) => {
                           if (isAccepted) return;
                           const raw = e.target.value.replace(/,/g, ".");
@@ -1170,7 +1170,7 @@ export function CounterOfferModal({
                       {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
                         <div className="text-[10px] text-muted-foreground mt-1 max-w-[200px] ml-auto text-right">
                           {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
-                          {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                          {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(3)}/{wLbl}
                           {" "}({hintRefs.get(it.id)!.label})
                         </div>
                       )}
@@ -1180,7 +1180,7 @@ export function CounterOfferModal({
                         <span style={{ color: "#15803d" }}>🔒</span>
                       ) : Math.abs(d) > 0.001 ? (
                         <span style={{ color: d > 0 ? "#15803d" : "#b45309" }}>
-                          {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(2)} ({d >= 0 ? "+" : ""}
+                          {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(3)} ({d >= 0 ? "+" : ""}
                           {dPct.toFixed(1)}%)
                         </span>
                       ) : (
@@ -1258,7 +1258,7 @@ export function CounterOfferModal({
                     type="text"
                     inputMode="decimal"
                     readOnly={isAccepted}
-                    value={Number.isFinite(displayCounter) ? displayCounter.toFixed(2) : ""}
+                    value={Number.isFinite(displayCounter) ? displayCounter.toFixed(3) : ""}
                     onChange={(e) => {
                       if (isAccepted) return;
                       const raw = e.target.value.replace(/,/g, ".");
@@ -1279,13 +1279,13 @@ export function CounterOfferModal({
                   {!errors[it.id] && !isAccepted && hintRefs.get(it.id) && (
                     <div className="text-[10px] text-muted-foreground mt-1">
                       {hintRefs.get(it.id)!.kind === "min" ? "Min" : "Max"}: $
-                      {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(2)}/{wLbl}
+                      {toDisplay(hintRefs.get(it.id)!.price, "price", unit).toFixed(3)}/{wLbl}
                       {" "}({hintRefs.get(it.id)!.label})
                     </div>
                   )}
                   {!isAccepted && Math.abs(d) > 0.001 && (
                     <div className="text-[11px] tabular-nums mt-1" style={{ color: d > 0 ? "#15803d" : "#b45309" }}>
-                      {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(2)} ({d >= 0 ? "+" : ""}{dPct.toFixed(1)}%)
+                      {d > 0 ? "↑" : "↓"} ${Math.abs(d).toFixed(3)} ({d >= 0 ? "+" : ""}{dPct.toFixed(1)}%)
                     </div>
                   )}
                 </div>

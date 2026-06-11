@@ -29,7 +29,11 @@ export function netFromFinal(final: number, rate: number = MUNDUS_FEE_RATE): num
   return final * (1 - rate);
 }
 
-/** Round to the platform's standard price precision (kg or lb → 2 decimals). */
+/**
+ * Round a per-unit price to the platform's standard precision (3 decimals).
+ * The Mundus-fee gross-up emits a $/kg value, so 3 decimals is the correct
+ * precision (see src/lib/price.ts).
+ */
 export function roundPrice(v: number): number {
-  return Math.round(v * 100) / 100;
+  return Math.round(v * 1000) / 1000;
 }

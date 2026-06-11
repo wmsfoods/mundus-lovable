@@ -74,8 +74,8 @@ export function RejectNegotiationModal({
           const baseVars: any = {
             cutName,
             offerNumber,
-            lastBid: Number(items[0]?.price ?? 0).toFixed(2),
-            lastCounter: Number(items[0]?.price ?? 0).toFixed(2),
+            lastBid: Number(items[0]?.price ?? 0).toFixed(3),
+            lastCounter: Number(items[0]?.price ?? 0).toFixed(3),
             gap: "0.00",
             gapPct: "0.0",
             rounds: (negotiation as any).current_round ?? 1,

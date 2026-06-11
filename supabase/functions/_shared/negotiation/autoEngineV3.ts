@@ -92,11 +92,12 @@ export function autoCounter(inp: AutoInput): AutoOutput {
 
   if (c <= b + epsilon) {
     return { price: b, decision: 'accept_bid', rule: 'ACCEPT_GAP_TOO_SMALL',
-      isFinal: true, explanation: `Counter within ε ($${epsilon.toFixed(4)}/kg) of bid.`,
+      isFinal: true, explanation: `Counter within ε ($${epsilon.toFixed(3)}/kg) of bid.`,
       diagnostics: baseDiag({ psi, cCurve, rho, cFinal, cClamped: c, concessionPct: (a - b) / m }) };
   }
 
-  c = Math.round(c * 10000) / 10000;
+  // Per-unit prices use 3 decimals platform-wide (see src/lib/price.ts).
+  c = Math.round(c * 1000) / 1000;
   return { price: c, decision: 'counter', rule: `R${t}_${dial.toUpperCase()}`,
     isFinal, explanation: `Cycle ${t}/${T} ${dial} (β=${beta.toFixed(3)}).`,
     diagnostics: baseDiag({ psi, cCurve, rho, cFinal, cClamped: c, concessionPct: (a - c) / m }) };

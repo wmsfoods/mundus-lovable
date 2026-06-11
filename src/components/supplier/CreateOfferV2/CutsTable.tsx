@@ -314,7 +314,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                   {fmtNum(toDisplay(totals.totalQty, "weight", unit))} {weightLabel(unit)}
                 </td>
                 <td className="px-2 py-2 text-right tabular-nums">
-                  {totals.avgAsk > 0 ? toDisplay(totals.avgAsk, "price", unit).toFixed(2) : "—"}
+                  {totals.avgAsk > 0 ? toDisplay(totals.avgAsk, "price", unit).toFixed(3) : "—"}
                 </td>
                 <td className="px-2 py-2 text-right tabular-nums text-muted-foreground">
                   {tk("avgWeighted", "weighted")}
@@ -606,15 +606,15 @@ function CutRowView({
       <td className="px-2 py-2">
         <NumberCell
           value={askDisplay}
-          fractionDigits={2}
-          minFractionDigits={2}
+          fractionDigits={3}
+          minFractionDigits={3}
           onCommit={(s) => handleAsk(s)}
           className={cn(inputCls(errors.ask), "text-right tabular-nums")}
         />
         {mundusFeeIncluded && askFinalDisplay > 0 && (
           <div className="mt-0.5 text-right text-[10px] text-muted-foreground tabular-nums">
             {tkFee("finalPreview", "Final w/ fee: {{v}}", {
-              v: `$${askFinalDisplay.toFixed(2)}`,
+              v: `$${askFinalDisplay.toFixed(3)}`,
             })}
           </div>
         )}
@@ -622,8 +622,8 @@ function CutRowView({
       <td className="px-2 py-2">
         <NumberCell
           value={floorDisplay}
-          fractionDigits={2}
-          minFractionDigits={2}
+          fractionDigits={3}
+          minFractionDigits={3}
           onCommit={(s) => handleFloor(s)}
           className={cn(inputCls(errors.floor), "text-right tabular-nums")}
           title={errors.floor ? tk("col.floorErr", "Floor must be ≤ Ask") : undefined}
@@ -631,7 +631,7 @@ function CutRowView({
         {mundusFeeIncluded && floorFinalDisplay > 0 && (
           <div className="mt-0.5 text-right text-[10px] text-muted-foreground tabular-nums">
             {tkFee("finalPreview", "Final w/ fee: {{v}}", {
-              v: `$${floorFinalDisplay.toFixed(2)}`,
+              v: `$${floorFinalDisplay.toFixed(3)}`,
             })}
           </div>
         )}

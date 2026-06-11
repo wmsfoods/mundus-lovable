@@ -66,7 +66,7 @@ export default function Outreach() {
               <div style={{ display: "flex", gap: 12, fontSize: 13, color: "var(--fg-muted)" }}>
                 <span><strong style={{ color: "var(--fg)" }}>{o.incoterm}</strong></span>
                 <span>•</span>
-                <span>{o.pricePerKg ? `US$ ${o.pricePerKg.toFixed(2)}/kg` : "—"}</span>
+                <span>{o.pricePerKg ? `US$ ${o.pricePerKg.toFixed(3)}/kg` : "—"}</span>
                 <span>•</span>
                 <span>{o.totalFcl} FCL</span>
               </div>

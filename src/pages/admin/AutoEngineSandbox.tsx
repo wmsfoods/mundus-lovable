@@ -272,12 +272,12 @@ export default function AutoEngineSandbox() {
                     (dataMin: number) => Math.min(floor, dataMin) - 0.1,
                     (dataMax: number) => Math.max(asking, dataMax) + 0.1,
                   ]}
-                  tickFormatter={(v) => `$${v.toFixed(2)}`}
+                  tickFormatter={(v) => `$${v.toFixed(3)}`}
                 />
                 <Tooltip formatter={(v: any) => (typeof v === "number" ? `$${v.toFixed(4)}` : v)} />
                 <Legend />
-                <ReferenceLine y={floor} stroke="#dc2626" strokeDasharray="4 4" label={{ value: `floor $${floor.toFixed(2)}`, position: "insideBottomRight", fill: "#dc2626", fontSize: 11 }} />
-                <ReferenceLine y={asking} stroke="#15803d" strokeDasharray="4 4" label={{ value: `asking $${asking.toFixed(2)}`, position: "insideTopRight", fill: "#15803d", fontSize: 11 }} />
+                <ReferenceLine y={floor} stroke="#dc2626" strokeDasharray="4 4" label={{ value: `floor $${floor.toFixed(3)}`, position: "insideBottomRight", fill: "#dc2626", fontSize: 11 }} />
+                <ReferenceLine y={asking} stroke="#15803d" strokeDasharray="4 4" label={{ value: `asking $${asking.toFixed(3)}`, position: "insideTopRight", fill: "#15803d", fontSize: 11 }} />
                 {DIALS.map((d) => (
                   <Line
                     key={d.key}

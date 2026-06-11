@@ -506,7 +506,7 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
                                     className="inline-block ml-1 mt-1 px-2 py-0.5 rounded-full text-[10px] font-medium"
                                     style={{ background: "rgba(34,197,94,0.15)", color: "#15803d" }}
                                   >
-                                    {tk("dealDetail.negotiation.agreedAt", "Agreed at ${{price}}/kg", { price: cut.pricePerKgUsd.toFixed(2) })}
+                                    {tk("dealDetail.negotiation.agreedAt", "Agreed at ${{price}}/kg", { price: cut.pricePerKgUsd.toFixed(3) })}
                                   </span>
                                 </td>
                                 <td>{fmtKg(cut.weightKg)}</td>

@@ -113,7 +113,8 @@ export function autoCounter(inp: AutoInput): AutoOutput {
     };
   }
 
-  c = Math.round(c * 10000) / 10000;
+  // Per-unit prices use 3 decimals platform-wide (see src/lib/price.ts).
+  c = Math.round(c * 1000) / 1000;
   return {
     price: c, decision: 'counter', rule: `R${cycle}_${dial.toUpperCase()}`, isFinal,
     explanation: `Counter-offer at cycle ${cycle} (${dial}).`

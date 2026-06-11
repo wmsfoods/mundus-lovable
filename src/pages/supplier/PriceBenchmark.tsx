@@ -70,7 +70,7 @@ export default function PriceBenchmark() {
           </h2>
           <p className="pb-hero__body">
             {t("supplier.insights.priceBenchmark.hero.body", {
-              price: d.yourPrice.toFixed(2),
+              price: d.yourPrice.toFixed(3),
               percentile: d.yourPercentile,
               total: d.totalCompetingOffers,
               suggested: "16.60",
@@ -211,7 +211,7 @@ export default function PriceBenchmark() {
                         <span className="pb-table__chip">{r.supplier}</span>
                       )}
                     </td>
-                    <td>${r.price.toFixed(2)}</td>
+                    <td>${r.price.toFixed(3)}</td>
                     <td>{r.lead}d</td>
                     <td>{r.views.toLocaleString()}</td>
                     <td>{r.chats}</td>

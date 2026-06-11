@@ -391,13 +391,14 @@ export function CutSheetMobile({
                       <Input
                         type="number"
                         inputMode="decimal"
+                        step="0.001"
                         className="h-11 text-base"
                         value={askDisplay || ""}
                         onChange={(e) => onAsk(e.target.value)}
                       />
                       {mundusFeeIncluded && askFinal > 0 && (
                         <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
-                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${askFinal.toFixed(2)}` })}
+                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${askFinal.toFixed(3)}` })}
                         </div>
                       )}
                     </Field>
@@ -409,13 +410,14 @@ export function CutSheetMobile({
                       <Input
                         type="number"
                         inputMode="decimal"
+                        step="0.001"
                         className="h-11 text-base"
                         value={floorDisplay || ""}
                         onChange={(e) => onFloor(e.target.value)}
                       />
                       {mundusFeeIncluded && floorFinal > 0 && (
                         <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
-                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${floorFinal.toFixed(2)}` })}
+                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${floorFinal.toFixed(3)}` })}
                         </div>
                       )}
                     </Field>

@@ -51,5 +51,7 @@ export function fmtWeight(kg: number, unit: WeightUnit) {
 
 export function fmtPrice(pricePerKg: number, unit: WeightUnit) {
   const v = toDisplay(pricePerKg, "price", unit);
-  return v.toFixed(2);
+  // Per-unit prices ($/kg or $/lb) use 3 decimals across the platform.
+  // See src/lib/price.ts for the precision rules.
+  return v.toFixed(3);
 }

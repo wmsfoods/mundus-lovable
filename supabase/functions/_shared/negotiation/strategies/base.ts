@@ -20,6 +20,7 @@ export function average(a: number, b: number): number {
   return (a + b) / 2;
 }
 
+/** Per-unit prices use 3 decimals platform-wide (see src/lib/price.ts). */
 export function roundPrice(value: number): number {
-  return Math.round(value * 100) / 100;
+  return Math.round(value * 1000) / 1000;
 }

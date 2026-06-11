@@ -107,7 +107,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
     const next: Record<string, number> = Object.fromEntries(
       offer.items.map((it) => [
         it.id,
-        +priceFor(effectiveAsking(Number(it.price))).toFixed(2),
+        +priceFor(effectiveAsking(Number(it.price))).toFixed(3),
       ]),
     );
     setBids(next);
@@ -116,7 +116,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       Object.fromEntries(
         Object.entries(next).map(([id, kg]) => [
           id,
-          toDisplay(kg, "price", unit).toFixed(2),
+          toDisplay(kg, "price", unit).toFixed(3),
         ]),
       ),
     );
@@ -152,7 +152,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       Object.fromEntries(
         Object.entries(initial).map(([id, kg]) => [
           id,
-          toDisplay(kg, "price", unit).toFixed(2),
+          toDisplay(kg, "price", unit).toFixed(3),
         ]),
       ),
     );
@@ -228,7 +228,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       Object.fromEntries(
         Object.entries(next).map(([id, kg]) => [
           id,
-          toDisplay(kg, "price", unit).toFixed(2),
+          toDisplay(kg, "price", unit).toFixed(3),
         ]),
       ),
     );
@@ -270,7 +270,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       } else if (v < min) {
         out[it.id] = t("buyer.bid.validation.minPct", {
           defaultValue: "Minimum bid is ${{min}}/kg (70% of asking — max 30% discount)",
-          min: toDisplay(min, "price", unit).toFixed(2),
+          min: toDisplay(min, "price", unit).toFixed(3),
         });
       }
       // Max 30% deduction from asking
@@ -390,7 +390,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
           const { sendEmailNotification } = await import("@/lib/emailSender");
           const fmtKg = (kg: number) =>
             `${kg.toLocaleString(undefined, { maximumFractionDigits: 0 })} kg`;
-          const fmtPerKg = (p: number) => p.toFixed(2);
+          const fmtPerKg = (p: number) => p.toFixed(3);
           const movementVs = (final: number, base: number) =>
             base > 0 ? (((final - base) / base) * 100).toFixed(1) : "0.0";
           const bidCuts = offer.items.map((it) => {
@@ -685,7 +685,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                               setBids((prev) => ({ ...prev, [it.id]: null }));
                               return;
                             }
-                            setBidDrafts((prev) => ({ ...prev, [it.id]: v.toFixed(2) }));
+                            setBidDrafts((prev) => ({ ...prev, [it.id]: v.toFixed(3) }));
                             setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
                           }}
                           onKeyDown={(e) => {
@@ -703,7 +703,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                         )}
                         {!showErr && (
                           <span className="text-[10px] text-muted-foreground">
-                            Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                            Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(3)}/{wLbl} (70% of asking)
                           </span>
                         )}
                         {Math.abs(d) > 0.001 && (
@@ -711,7 +711,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                             className="text-[11px] tabular-nums"
                             style={{ color: d < 0 ? "#15803d" : "#b45309" }}
                           >
-                            {d < 0 ? "↓" : "↑"} ${Math.abs(displayDiff).toFixed(2)} ({d < 0 ? "" : "+"}
+                            {d < 0 ? "↓" : "↑"} ${Math.abs(displayDiff).toFixed(3)} ({d < 0 ? "" : "+"}
                             {dPct.toFixed(1)}%)
                           </span>
                         )}
@@ -783,7 +783,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                         setBids((prev) => ({ ...prev, [it.id]: null }));
                         return;
                       }
-                      setBidDrafts((prev) => ({ ...prev, [it.id]: v.toFixed(2) }));
+                      setBidDrafts((prev) => ({ ...prev, [it.id]: v.toFixed(3) }));
                       setBids((prev) => ({ ...prev, [it.id]: fromDisplay(v, "price", unit) }));
                     }}
                     onKeyDown={(e) => {
@@ -799,7 +799,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                   )}
                   {!showErr && (
                     <div className="text-[10px] text-muted-foreground mt-1">
-                      Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                      Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(3)}/{wLbl} (70% of asking)
                     </div>
                   )}
                   {Math.abs(d) > 0.001 && (
@@ -807,7 +807,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                       className="text-[11px] tabular-nums mt-1"
                       style={{ color: d < 0 ? "#15803d" : "#b45309" }}
                     >
-                      {d < 0 ? "↓" : "↑"} ${Math.abs(displayDiff).toFixed(2)} ({d < 0 ? "" : "+"}
+                      {d < 0 ? "↓" : "↑"} ${Math.abs(displayDiff).toFixed(3)} ({d < 0 ? "" : "+"}
                       {dPct.toFixed(1)}%)
                     </div>
                   )}
