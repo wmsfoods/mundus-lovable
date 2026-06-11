@@ -363,6 +363,7 @@ type RowProps = {
   onChange: (patch: Partial<CutRow>) => void;
   onRemove: () => void;
   fmtNum: (n: number, frac?: number) => string;
+  mundusFeeIncluded?: boolean;
 };
 
 function CutRowView({
@@ -376,6 +377,7 @@ function CutRowView({
   onChange,
   onRemove,
   fmtNum,
+  mundusFeeIncluded = false,
 }: RowProps) {
   const { t } = useTranslation();
   const tk = (k: string, fb: string) =>
