@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 import { useOrderNegotiationId } from "@/hooks/useOrderNegotiationId";
 import { DealTimeline } from "@/components/messageViaMundus/DealTimeline";
+import { DealNegotiationTab } from "@/components/mundus/DealNegotiationTab";
 import {
   FileTextIcon,
   ArrowLeftIcon,
