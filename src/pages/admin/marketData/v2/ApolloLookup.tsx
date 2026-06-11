@@ -15,24 +15,50 @@ function defaultCountry(kind: Kind): string {
   return kind === "shipper" ? "Brazil" : "";
 }
 
+// Strip common corporate suffixes that hurt Apollo name matching.
+function cleanCompanyName(raw: string): string {
+  if (!raw) return "";
+  let s = raw.trim();
+  // Remove parenthetical fragments like "(HK)" / "(GROUP)".
+  s = s.replace(/\([^)]*\)/g, " ");
+  // Remove trailing punctuation and common suffix words.
+  const suffixes = [
+    "ltda", "ltd", "limited", "s\\.?a\\.?", "sa", "s/a", "s\\.?p\\.?a\\.?",
+    "inc", "incorporated", "co", "corp", "corporation", "company",
+    "llc", "plc", "gmbh", "ag", "bv", "nv", "kg", "oy", "ab",
+    "pte", "pty", "pvt", "srl", "sl", "sarl", "eireli", "me", "epp",
+    "group", "grupo", "holdings", "holding", "international", "intl",
+    "trading", "trade", "comercial", "comercio", "industrial", "industria",
+    "import", "export", "imp", "exp",
+  ];
+  const re = new RegExp(`\\b(?:${suffixes.join("|")})\\b\\.?`, "gi");
+  s = s.replace(re, " ");
+  s = s.replace(/[.,;:&]+/g, " ").replace(/\s+/g, " ").trim();
+  return s || raw.trim();
+}
+
 export function ApolloLookup({ name, kind }: { name: string; kind: Kind }) {
-  const [query, setQuery] = useState(name);
+  const [query, setQuery] = useState(cleanCompanyName(name));
   const [country, setCountry] = useState(defaultCountry(kind));
   const [selected, setSelected] = useState<MockCompany | null>(null);
+  const [committed, setCommitted] = useState<{ q: string; country: string }>({
+    q: cleanCompanyName(name),
+    country: defaultCountry(kind),
+  });
 
   const companyParams = useMemo(() => {
     const p: Record<string, unknown> = {
-      q_organization_name: query,
+      q_organization_name: committed.q,
       per_page: 5,
       page: 1,
     };
-    if (country.trim()) p.organization_locations = [country.trim()];
+    if (committed.country.trim()) p.organization_locations = [committed.country.trim()];
     return p;
-  }, [query, country]);
+  }, [committed]);
 
   const companies = useProspectSearch<MockCompany>("companies", companyParams, {
-    enabled: !selected && !!query.trim(),
-    debounceMs: 400,
+    enabled: !selected && !!committed.q.trim(),
+    debounceMs: 0,
   });
 
   const peopleParams = useMemo(
@@ -74,6 +100,7 @@ export function ApolloLookup({ name, kind }: { name: string; kind: Kind }) {
           country={country}
           onQuery={setQuery}
           onCountry={setCountry}
+          onSearch={() => setCommitted({ q: query.trim(), country: country.trim() })}
           companies={companies}
           onSelect={setSelected}
           errorCode={errorCode}
@@ -84,24 +111,26 @@ export function ApolloLookup({ name, kind }: { name: string; kind: Kind }) {
 }
 
 function CompanyView({
-  query, country, onQuery, onCountry, companies, onSelect, errorCode,
+  query, country, onQuery, onCountry, onSearch, companies, onSelect, errorCode,
 }: {
   query: string;
   country: string;
   onQuery: (v: string) => void;
   onCountry: (v: string) => void;
+  onSearch: () => void;
   companies: ReturnType<typeof useProspectSearch<MockCompany>>;
   onSelect: (c: MockCompany) => void;
   errorCode: string | null;
 }) {
   return (
     <div className="p-3">
-      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_180px]">
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_160px_auto]">
         <div className="relative">
           <Search className="pointer-events-none absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             value={query}
             onChange={(e) => onQuery(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") onSearch(); }}
             placeholder="Nome da empresa"
             className="h-9 pl-8"
           />
@@ -109,9 +138,14 @@ function CompanyView({
         <Input
           value={country}
           onChange={(e) => onCountry(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") onSearch(); }}
           placeholder="País (ex: Brazil)"
           className="h-9"
         />
+        <Button size="sm" className="h-9 gap-1" onClick={onSearch} disabled={!query.trim() || companies.loading}>
+          {companies.loading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Search className="h-3.5 w-3.5" />}
+          Buscar
+        </Button>
       </div>
 
       <div className="mt-3">
