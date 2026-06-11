@@ -1,47 +1,41 @@
-## Objetivo
-Dar mais peso visual ao bloco **"Price details — full history"** na tela de negociação (buyer e supplier), deixando claro que ali está o coração da conversa de preços. Sem mexer em lógica, dados ou layout da tabela — só no header do card, no contorno e em micro-animação.
+## Goal
+Na aba **Negotiation** dentro de Order (buyer) e Sale (supplier), substituir a tabela atual (que hoje aparece com `—` e sem rounds reais) pela **mesma `PriceHistoryTable`** usada na página de negociação, com colunas Asking, Floor (apenas supplier), Bid R1, Counter R1, Bid R2, Counter R2, etc., refletindo a negociação real que originou o pedido.
 
-## O que muda (escopo visual apenas)
+## Diagnóstico
+- `DealDetailView` já renderiza uma tabela própria de rounds, porém é alimentada por `genNegotiation()` (mock em `dealDetailAdapters.ts`) — gera apenas totals fakes, sem `cut.rounds`, sem `floorPerKgUsd`. Por isso aparecem traços.
+- Já existe `useOrderNegotiationId(orderId)` que devolve o `negotiationId` real do order/sale.
+- Já existe `useBuyerNegotiation(id)` que produz `products` + `rounds` no formato exato exigido por `PriceHistoryTable`.
+- `PriceHistoryTable` já mostra Asking, Floor (quando role=supplier via prop interna do componente — vamos verificar e, se necessário, passar a role), e Bid/Counter por round.
 
-### 1. Header com identidade própria
-No `PriceHistoryTable` (`src/components/negotiation/PriceHistoryTable.tsx`), redesenhar só o bloco `nd-price-history__head`:
+## Mudanças
 
-- Barra de acento vertical à esquerda do card (gradiente Mundus rosa → âmbar suave), 4px.
-- Ícone atual trocado por um "chip" arredondado com fundo rosa-claro e ícone `History` em rosa-Mundus.
-- Título maior, peso 700, cor `--foreground`. Subtítulo em uma linha menor, ex.: *"Acompanhe cada rodada de bid e counter"* (i18n nas 5 línguas).
-- O resumo do canto direito (`Asking + N rounds · $X → $Y`) vira um mini-stat:
-  - dois valores empilhados com seta animada entre eles
-  - cor condicional: verde se Y < X (buyer ganhou), rosa se Y > X
-  - micro-rótulo: *"N rodada(s) negociada(s)"*.
+### 1. `src/components/mundus/DealDetailView.tsx`
+- Dentro do `<TabPanel active={tab === "negotiation"}>`, quando `data.orderId` existir, montar um subcomponente `<DealNegotiationTab orderId role />` que:
+  - usa `useOrderNegotiationId(orderId)` para obter `negotiationId`
+  - usa `useBuyerNegotiation(negotiationId)` (hook é agnóstico de role; só retorna `products`/`rounds`) para obter dados reais
+  - calcula `maxRoundShown = min(MAX_DISPLAY_ROUNDS, max(rounds.round, 1))`
+  - renderiza `<PriceHistoryTable products={d.products} maxRoundShown={maxRoundShown} role={data.role} lastRoundAt={...} />`
+  - mantém o "Round timeline" pill existente, mas alimentado a partir dos `rounds` reais (bid/counter por round) — não mais do mock
+  - mantém o link "Open full negotiation →"
+- Fallback: se não houver `negotiationId`, mantém o caminho atual (mock) ou exibe estado vazio "No negotiation rounds recorded."
 
-### 2. Animação de entrada e foco
-Em `src/styles/negotiation-detail.css`:
+### 2. `src/components/negotiation/PriceHistoryTable.tsx`
+- Adicionar prop opcional `role?: "buyer" | "supplier"` para mostrar a coluna **Floor** apenas quando `role === "supplier"` (ela já existe para o supplier hoje na página de negociação; só precisa do gatilho explícito aqui).
+- Sem mudança no layout/visual.
 
-- `.nd-price-history` ganha `animation: nd-ph-enter 420ms ease-out both` (fade + slide-up 8px no mount).
-- Sweep de luz percorrendo o header 1x logo após o mount (`::after` com gradient + keyframe `nd-ph-shimmer`, 1.2s, sem loop).
-- Pulse infinito sutil (2s, opacity 0.5↔1) no dot do número do round mais recente no `<thead>` da tabela.
+### 3. `src/lib/dealDetailAdapters.ts`
+- Remover a chamada a `genNegotiation()` para buyer e supplier (ou deixar opcional). A tab de negotiation passa a ser alimentada exclusivamente pelo hook real dentro do componente.
+- Manter `negotiation` undefined → o novo `DealNegotiationTab` decide o que mostrar.
 
-Tudo CSS puro, respeitando `prefers-reduced-motion` (desativa shimmer + pulse).
-
-### 3. Estado "atualizado agora"
-Detectar no componente se a última rodada (último `cut_round` com timestamp) foi há menos de 24h. Quando verdadeiro:
-
-- Card recebe a classe `is-fresh` → contorno ganha `box-shadow: 0 0 0 1px rosa, 0 8px 24px -12px rosa/30%` e um glow sutil.
-- Pequeno badge animado no header: ponto verde com pulse + texto *"Atualizado agora"* / *"Atualizada há Xh"*.
-- Quando passa de 24h, classe sai e o card volta ao estado neutro automaticamente.
-
-A "data da última rodada" é derivada dos `products` já recebidos como prop (maior `updatedAt`/`createdAt` entre os cut_rounds existentes). Se a prop não trouxer timestamp, adicionamos um campo opcional `lastRoundAt?: string` em `Props` — passado pelos dois callers (buyer e supplier negotiation detail). Sem timestamp, o badge simplesmente não aparece (degradação graciosa).
+### 4. i18n
+- Reusa as chaves já existentes do `PriceHistoryTable` (en/pt/es/zh/ar). Sem novas chaves.
 
 ## Arquivos afetados
-- `src/components/negotiation/PriceHistoryTable.tsx` — header redesenhado, badge "fresh", mini-stat, prop opcional `lastRoundAt`.
-- `src/styles/negotiation-detail.css` — novas regras `.nd-price-history__head`, `.nd-ph-accent`, `.nd-ph-stat`, `.nd-ph-fresh-pill`, keyframes `nd-ph-enter` / `nd-ph-shimmer` / `nd-ph-pulse`, bloco `@media (prefers-reduced-motion)`.
-- `src/pages/buyer/BuyerNegotiationDetail.tsx` e `src/pages/supplier/SupplierNegotiationDetail.tsx` — passar `lastRoundAt` se já disponível no payload (1 linha cada).
-- `src/i18n/locales/{en,pt,es,fr,zh}.json` — chaves `negotiation.history.subtitle`, `negotiation.history.roundsCount`, `negotiation.history.freshNow`, `negotiation.history.freshAgo`.
+- `src/components/mundus/DealDetailView.tsx` (refactor da TabPanel "negotiation")
+- `src/components/negotiation/PriceHistoryTable.tsx` (nova prop `role`)
+- `src/lib/dealDetailAdapters.ts` (deixa de injetar mock de negotiation)
 
 ## Fora de escopo
-- Nenhuma mudança na tabela em si (colunas, números, lógica de gap/movement).
-- Nenhuma mudança em motor de negociação, RPC, dados ou cálculos.
-- Sem novas dependências (CSS puro, sem framer-motion novo).
-
-## Mobile
-Header empilha em telas <720px (já existe `.nd-price-history__head` em coluna no media query); o mini-stat e o badge "fresh" ficam abaixo do título, sem quebrar a tabela horizontal já existente.
+- Lógica de negócio (engine de rounds, status do pedido)
+- Demais abas (Overview, Shipment, Documents, Messages)
+- Visual/animations do card (já feitos anteriormente)
