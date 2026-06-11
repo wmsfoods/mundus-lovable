@@ -60,6 +60,7 @@ import { type DistributionValue } from "@/components/supplier/CreateOfferV2/Dist
 import { LogisticsSheetMobile } from "@/components/supplier/CreateOfferV2/mobile/LogisticsSheetMobile";
 import { CutSheetMobile } from "@/components/supplier/CreateOfferV2/mobile/CutSheetMobile";
 import { PaymentTermsCard } from "@/components/supplier/CreateOfferV2/PaymentTermsCard";
+import { MundusFeeToggle } from "@/components/supplier/CreateOfferV2/MundusFeeToggle";
 import { ShipmentReadyPicker } from "@/components/supplier/CreateOfferV2/ShipmentReadyPicker";
 import { formatCutMeta } from "@/lib/cutMetaDisplay";
 
@@ -212,6 +213,7 @@ export default function SupplierCreateOfferV2Mobile() {
     allCustomers: false,
     specificCustomerIds: [],
   });
+  const [mundusFeeIncluded, setMundusFeeIncluded] = useState<boolean>(false);
   const [notes, setNotes] = useState("");
   const [negotiationMode] = useState<NegotiationMode>("manual");
   const [negotiationDial] = useState<NegotiationDial>("balanced");
@@ -252,6 +254,7 @@ export default function SupplierCreateOfferV2Mobile() {
     setCutRegion(data.cutRegion);
     setPaymentTerms(data.paymentTerms);
     setDistribution(data.distribution);
+    setMundusFeeIncluded(!!data.mundusFeeIncluded);
     setPrefillApplied(true);
   }, [offerPrefillQuery.data, prefillApplied]);
 
