@@ -332,8 +332,8 @@ export function useOfferForPrefill(
           plantNumber: "",
           notes: it.notes ?? "",
           qty: Number(it.amount ?? 0),
-          askPrice: Number(it.price ?? 0),
-          floorPrice: Number(it.minimum_price ?? it.price ?? 0),
+          askPrice: 0, // filled below once we know the fee state
+          floorPrice: 0,
           agingMethod:
             it.aging_method === "wet" || it.aging_method === "dry" ? it.aging_method : null,
           usGrade:
