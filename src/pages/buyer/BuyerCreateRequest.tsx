@@ -1108,7 +1108,7 @@ export default function BuyerCreateRequest() {
                         <input
                           className="bcr-input bcr-input-num"
                           type="number" inputMode="decimal" step="0.01" min="0"
-                          value={unit === "kg" ? r.target : (r.target ? toDisplay(Number(r.target), "price", unit).toFixed(2) : "")}
+                          value={unit === "kg" ? r.target : (r.target ? toDisplay(Number(r.target), "price", unit).toFixed(3) : "")}
                           onChange={(e) => {
                             const raw = e.target.value;
                             if (!raw) { update(r.id, { target: "" }); return; }
@@ -1199,7 +1199,7 @@ export default function BuyerCreateRequest() {
                         type="number"
                         inputMode="decimal"
                         step="0.01"
-                        value={unit === "kg" ? r.target : (r.target ? toDisplay(Number(r.target), "price", unit).toFixed(2) : "")}
+                        value={unit === "kg" ? r.target : (r.target ? toDisplay(Number(r.target), "price", unit).toFixed(3) : "")}
                         onChange={(e) => {
                           const raw = e.target.value;
                           if (!raw) { update(r.id, { target: "" }); return; }
