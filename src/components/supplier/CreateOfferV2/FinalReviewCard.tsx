@@ -27,6 +27,7 @@ type Props = {
   capacityPct: number;
   paymentTerms: string;
   distribution: DistributionSummary;
+  mundusFeeIncluded?: boolean;
   onEditLogistics: () => void;
   onEditCuts: () => void;
   onEditPayment: () => void;
@@ -40,6 +41,7 @@ export function FinalReviewCard({
   capacityPct,
   paymentTerms,
   distribution,
+  mundusFeeIncluded = false,
   onEditLogistics,
   onEditCuts,
   onEditPayment,
@@ -134,6 +136,14 @@ export function FinalReviewCard({
                 totalValue > 0 ? `US$ ${Math.round(totalValue).toLocaleString()}` : "—",
               ],
               [tk("capacity", "Capacity"), `${capacityPct.toFixed(0)}%`],
+              ...(mundusFeeIncluded
+                ? ([[
+                    t("supplier.createOfferV2.mundusFee.reviewLine", {
+                      defaultValue: "Mundus fee 0.30% embedded in prices",
+                    }) as string,
+                    "✓",
+                  ]] as [string, string][])
+                : []),
             ]}
           />
           <ReviewBlock

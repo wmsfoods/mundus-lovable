@@ -2682,6 +2682,13 @@
       },
       "admin": {
         "actingAs": "Actuando como proveedor: {{name}}"
+      },
+      "mundusFee": {
+        "label": "¿Agregar comisión Mundus (0,30%) a tus precios?",
+        "tooltip": "Cuando se activa, tus precios solicitados se ajustan automáticamente para que la comisión Mundus del 0,30% quede cubierta por el precio final. Los compradores solo ven el precio final.",
+        "finalPreview": "Final c/ comisión: {{v}}",
+        "reviewLine": "Comisión Mundus 0,30% incluida en los precios",
+        "badge": "Comisión Mundus incluida"
       }
     },
     "brands": {

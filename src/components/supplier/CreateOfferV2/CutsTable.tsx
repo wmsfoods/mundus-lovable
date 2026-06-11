@@ -33,6 +33,7 @@ import { ApplyToAllChip } from "./ApplyToAllChip";
 import { CutPicker } from "./CutPicker";
 import { cn } from "@/lib/utils";
 import { formatCutMeta } from "@/lib/cutMetaDisplay";
+import { MUNDUS_FEE_RATE, grossUpPrice, roundPrice } from "@/lib/mundusFee";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,9 +68,11 @@ type Props = {
    * price/qty/cuts would break the FK chain to cut_rounds.
    */
   locked?: boolean;
+  /** Supplier opted in to embed the Mundus fee — show the FINAL preview under each price input. */
+  mundusFeeIncluded?: boolean;
 };
 
-export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel, companyOverride, locked = false }: Props) {
+export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel, companyOverride, locked = false, mundusFeeIncluded = false }: Props) {
   const { t } = useTranslation();
   const { company: liveCompany } = useCurrentCompany();
   const effectiveCompany = companyOverride
@@ -299,6 +302,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
+                mundusFeeIncluded={mundusFeeIncluded}
               />
             ))}
             {cuts.length > 0 && (
@@ -359,6 +363,7 @@ type RowProps = {
   onChange: (patch: Partial<CutRow>) => void;
   onRemove: () => void;
   fmtNum: (n: number, frac?: number) => string;
+  mundusFeeIncluded?: boolean;
 };
 
 function CutRowView({
@@ -372,10 +377,13 @@ function CutRowView({
   onChange,
   onRemove,
   fmtNum,
+  mundusFeeIncluded = false,
 }: RowProps) {
   const { t } = useTranslation();
   const tk = (k: string, fb: string) =>
     t(`supplier.createOfferV2.cutsTable.${k}`, { defaultValue: fb }) as string;
+  const tkFee = (k: string, fb: string, opts?: Record<string, unknown>) =>
+    t(`supplier.createOfferV2.mundusFee.${k}`, { defaultValue: fb, ...(opts ?? {}) }) as string;
   const tkCuts = (k: string, fb: string) =>
     t(`supplier.createOfferV2.cuts.${k}`, { defaultValue: fb }) as string;
 
@@ -401,6 +409,14 @@ function CutRowView({
   const askDisplay = row.askPrice > 0 ? toDisplay(row.askPrice, "price", unit) : 0;
   const floorDisplay = row.floorPrice > 0 ? toDisplay(row.floorPrice, "price", unit) : 0;
   const subtotal = row.qty * row.askPrice; // in $/kg × kg = $
+  const askFinalDisplay =
+    mundusFeeIncluded && row.askPrice > 0
+      ? roundPrice(toDisplay(grossUpPrice(row.askPrice), "price", unit))
+      : 0;
+  const floorFinalDisplay =
+    mundusFeeIncluded && row.floorPrice > 0
+      ? roundPrice(toDisplay(grossUpPrice(row.floorPrice), "price", unit))
+      : 0;
 
   const handleQty = (v: string) => {
     const n = parseFloat(v) || 0;
@@ -595,6 +611,13 @@ function CutRowView({
           onCommit={(s) => handleAsk(s)}
           className={cn(inputCls(errors.ask), "text-right tabular-nums")}
         />
+        {mundusFeeIncluded && askFinalDisplay > 0 && (
+          <div className="mt-0.5 text-right text-[10px] text-muted-foreground tabular-nums">
+            {tkFee("finalPreview", "Final w/ fee: {{v}}", {
+              v: `$${askFinalDisplay.toFixed(2)}`,
+            })}
+          </div>
+        )}
       </td>
       <td className="px-2 py-2">
         <NumberCell
@@ -605,6 +628,13 @@ function CutRowView({
           className={cn(inputCls(errors.floor), "text-right tabular-nums")}
           title={errors.floor ? tk("col.floorErr", "Floor must be ≤ Ask") : undefined}
         />
+        {mundusFeeIncluded && floorFinalDisplay > 0 && (
+          <div className="mt-0.5 text-right text-[10px] text-muted-foreground tabular-nums">
+            {tkFee("finalPreview", "Final w/ fee: {{v}}", {
+              v: `$${floorFinalDisplay.toFixed(2)}`,
+            })}
+          </div>
+        )}
       </td>
       <td className="px-2 py-2 text-right">
         <div className="text-xs font-semibold tabular-nums">

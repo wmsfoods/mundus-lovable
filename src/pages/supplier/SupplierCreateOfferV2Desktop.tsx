@@ -48,6 +48,7 @@ import { DistributionCard, type DistributionValue } from "@/components/supplier/
 import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
 import { FclCountInput } from "@/components/supplier/CreateOfferV2/FclCountInput";
 import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
+import { MundusFeeToggle } from "@/components/supplier/CreateOfferV2/MundusFeeToggle";
 import { EngineSettingsModal } from "@/components/supplier/CreateOfferV2/EngineSettingsModal";
 import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFillModal";
 import { computeCompletion, sectionStatus, missingSections, type SectionStatus, type SectionKey } from "@/lib/offerCompletion";
@@ -668,6 +669,7 @@ export default function SupplierCreateOfferV2Desktop() {
     allCustomers: false,
     specificCustomerIds: [],
   });
+  const [mundusFeeIncluded, setMundusFeeIncluded] = useState<boolean>(false);
 
   // R5.A — engine + quick-fill + review state
   const [negotiationMode, setNegotiationMode] = useState<NegotiationMode>("manual");
@@ -850,6 +852,7 @@ export default function SupplierCreateOfferV2Desktop() {
     setDistribution(data.distribution);
     setNegotiationMode(data.negotiationMode);
     setNegotiationDial(data.negotiationDial);
+    setMundusFeeIncluded(!!data.mundusFeeIncluded);
     setPrefillApplied(true);
   }, [offerPrefillQuery.data, prefillApplied]);
 
@@ -898,6 +901,7 @@ export default function SupplierCreateOfferV2Desktop() {
         negotiationDial,
         cutRegion,
         requestId: mode === "fromRequest" ? requestId : null,
+        mundusFeeIncluded,
       };
       const ctx = {
         supplierId: supplierContextId,
@@ -1486,6 +1490,13 @@ export default function SupplierCreateOfferV2Desktop() {
       {/* Placeholders for R3-R5 */}
       <div className="mt-6 flex flex-col gap-4">
         <div id="v2-section-cuts">
+        <div className="mb-3">
+          <MundusFeeToggle
+            value={mundusFeeIncluded}
+            onChange={setMundusFeeIncluded}
+            disabled={editLocked}
+          />
+        </div>
         <CutsTable
           cuts={cuts}
           setCuts={setCuts}
@@ -1494,6 +1505,7 @@ export default function SupplierCreateOfferV2Desktop() {
           cutRegion={cutRegion}
           setCutRegion={setCutRegion}
           locked={editLocked}
+          mundusFeeIncluded={mundusFeeIncluded}
           companyOverride={
             adminMode && adminCompany
               ? { id: adminCompany.id, name: adminCompany.name, country: adminCompany.country }
@@ -1563,6 +1575,7 @@ export default function SupplierCreateOfferV2Desktop() {
           cuts={cuts}
           capacityPct={capacityPct}
           paymentTerms={paymentTerms}
+          mundusFeeIncluded={mundusFeeIncluded}
           distribution={{
             marketplace: distribution.marketplace,
             allCustomers: distribution.allCustomers,

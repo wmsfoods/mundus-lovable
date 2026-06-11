@@ -30,6 +30,7 @@ import {
   type CutRow,
 } from "@/lib/cutRowTypes";
 import { fromDisplay, toDisplay, weightLabel, priceLabel, type WeightUnit } from "@/lib/units";
+import { grossUpPrice, roundPrice } from "@/lib/mundusFee";
 
 type Props = {
   open: boolean;
@@ -41,6 +42,7 @@ type Props = {
   supplierContextId: string | null;
   onSave: (cut: CutRow) => void;
   onDelete?: () => void;
+  mundusFeeIncluded?: boolean;
 };
 
 export function CutSheetMobile({
@@ -53,10 +55,13 @@ export function CutSheetMobile({
   supplierContextId,
   onSave,
   onDelete,
+  mundusFeeIncluded = false,
 }: Props) {
   const { t } = useTranslation();
   const tk = (k: string, fb: string, opts?: Record<string, unknown>) =>
     t(`supplier.createOfferV2.mobile.cut.${k}`, { defaultValue: fb, ...(opts ?? {}) }) as string;
+  const tkFee = (k: string, fb: string, opts?: Record<string, unknown>) =>
+    t(`supplier.createOfferV2.mundusFee.${k}`, { defaultValue: fb, ...(opts ?? {}) }) as string;
 
   const [draft, setDraft] = useState<CutRow>(() => value ?? emptyCutRow());
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -97,6 +102,12 @@ export function CutSheetMobile({
   };
 
   const subtotal = draft.qty * draft.askPrice;
+  const askFinal = mundusFeeIncluded && draft.askPrice > 0
+    ? roundPrice(toDisplay(grossUpPrice(draft.askPrice), "price", unit))
+    : 0;
+  const floorFinal = mundusFeeIncluded && draft.floorPrice > 0
+    ? roundPrice(toDisplay(grossUpPrice(draft.floorPrice), "price", unit))
+    : 0;
   const floorOverAsk = draft.floorPrice > 0 && draft.floorPrice > draft.askPrice;
   const plantsRequired = plants.length > 0;
   const plantMissing = plantsRequired && !draft.plantId;
@@ -384,6 +395,11 @@ export function CutSheetMobile({
                         value={askDisplay || ""}
                         onChange={(e) => onAsk(e.target.value)}
                       />
+                      {mundusFeeIncluded && askFinal > 0 && (
+                        <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
+                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${askFinal.toFixed(2)}` })}
+                        </div>
+                      )}
                     </Field>
                     <Field
                       label={tk("pricing.floor", "Floor {{u}}", { u: priceLabel(unit) })}
@@ -397,6 +413,11 @@ export function CutSheetMobile({
                         value={floorDisplay || ""}
                         onChange={(e) => onFloor(e.target.value)}
                       />
+                      {mundusFeeIncluded && floorFinal > 0 && (
+                        <div className="mt-1 text-[10px] text-muted-foreground tabular-nums">
+                          {tkFee("finalPreview", "Final w/ fee: {{v}}", { v: `$${floorFinal.toFixed(2)}` })}
+                        </div>
+                      )}
                     </Field>
                   </div>
                   <div className="flex items-center justify-between rounded-lg bg-primary/10 px-3 py-2.5">

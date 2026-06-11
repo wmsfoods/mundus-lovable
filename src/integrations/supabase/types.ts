@@ -5992,8 +5992,11 @@ export type Database = {
           is_halal: boolean | null
           is_kosher: boolean | null
           marketplace: boolean
+          mundus_fee_included: boolean
+          mundus_fee_rate: number
           negotiation_dial: string
           negotiation_mode: string
+          net_prices: Json | null
           observation: string | null
           offer_number: number
           office_id: string | null
@@ -6032,8 +6035,11 @@ export type Database = {
           is_halal?: boolean | null
           is_kosher?: boolean | null
           marketplace?: boolean
+          mundus_fee_included?: boolean
+          mundus_fee_rate?: number
           negotiation_dial?: string
           negotiation_mode?: string
+          net_prices?: Json | null
           observation?: string | null
           offer_number?: number
           office_id?: string | null
@@ -6072,8 +6078,11 @@ export type Database = {
           is_halal?: boolean | null
           is_kosher?: boolean | null
           marketplace?: boolean
+          mundus_fee_included?: boolean
+          mundus_fee_rate?: number
           negotiation_dial?: string
           negotiation_mode?: string
+          net_prices?: Json | null
           observation?: string | null
           offer_number?: number
           office_id?: string | null
@@ -8418,8 +8427,11 @@ export type Database = {
           is_halal: boolean | null
           is_kosher: boolean | null
           marketplace: boolean
+          mundus_fee_included: boolean
+          mundus_fee_rate: number
           negotiation_dial: string
           negotiation_mode: string
+          net_prices: Json | null
           observation: string | null
           offer_number: number
           office_id: string | null

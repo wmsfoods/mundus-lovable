@@ -2701,6 +2701,13 @@
       },
       "admin": {
         "actingAs": "Atuando como fornecedor: {{name}}"
+      },
+      "mundusFee": {
+        "label": "Adicionar taxa Mundus (0,30%) aos seus preços?",
+        "tooltip": "Quando ativado, seus preços são ajustados automaticamente para que a taxa Mundus de 0,30% seja coberta pelo preço final. Os compradores veem apenas o preço final.",
+        "finalPreview": "Final c/ taxa: {{v}}",
+        "reviewLine": "Taxa Mundus 0,30% embutida nos preços",
+        "badge": "Taxa Mundus embutida"
       }
     },
     "brands": {

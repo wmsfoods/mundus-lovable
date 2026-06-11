@@ -6,6 +6,7 @@ import { sendPushToCompanyUsers } from "@/lib/push";
 import { sendEmailNotification } from "@/lib/emailSender";
 import { getCompanyPrimaryContact } from "@/lib/companyContact";
 import { decodeShipmentReady, deriveLegacyMonthYear } from "@/lib/shipmentReady";
+import { MUNDUS_FEE_RATE, grossUpPrice, roundPrice } from "@/lib/mundusFee";
 
 type PortFreightShape =
   | { mode: "same"; same: string }
@@ -58,6 +59,8 @@ export type SubmitInput = {
   negotiationDial: string;
   cutRegion?: "global" | "us";
   requestId?: string | null;
+  /** When true, supplier opted to embed the 0.30% Mundus fee into final prices. */
+  mundusFeeIncluded?: boolean;
 };
 
 export type SubmitResult = { offerId: string; offerNumber: number };
@@ -212,6 +215,23 @@ export async function submitOfferV2(
   }
 
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
+  const feeOn = !!input.mundusFeeIncluded;
+  const feeRate = feeOn ? MUNDUS_FEE_RATE : 0;
+  // Per-cut NET prices the supplier originally typed — stored on the offer for
+  // the supplier's own reference. Keyed by tempId (fallback to cutId).
+  const netPricesMap: Record<string, { ask: number; floor: number }> = {};
+  if (feeOn) {
+    for (const c of cuts) {
+      const key = c.tempId || c.cutId || "";
+      if (!key) continue;
+      netPricesMap[key] = { ask: c.askPrice, floor: c.floorPrice };
+    }
+  }
+  const finalAsk = (c: CutRow) => feeOn ? roundPrice(grossUpPrice(c.askPrice)) : c.askPrice;
+  const finalFloor = (c: CutRow) => {
+    const raw = c.floorPrice > 0 && c.floorPrice <= c.askPrice ? c.floorPrice : c.askPrice;
+    return feeOn ? roundPrice(grossUpPrice(raw)) : raw;
+  };
   const { shipment_month, shipment_year, shipment_ready_raw } = deriveShipment(l.shipmentReady);
 
   // Resolve origin port label + country name for snapshot columns.
@@ -276,7 +296,10 @@ export async function submitOfferV2(
       l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
         ? (l.pricingReferencePortId ?? null)
         : null,
-  };
+    mundus_fee_included: feeOn,
+    mundus_fee_rate: feeRate,
+    net_prices: feeOn ? netPricesMap : null,
+  } as Record<string, unknown>;
   // remove undefined keys
   Object.keys(offerInsert).forEach((k) => {
     if ((offerInsert as Record<string, unknown>)[k] === undefined) delete (offerInsert as Record<string, unknown>)[k];
@@ -284,7 +307,7 @@ export async function submitOfferV2(
 
   const { data: offer, error: offerErr } = await supabase
     .from("offers")
-    .insert(offerInsert)
+    .insert(offerInsert as never)
     .select("id, offer_number")
     .single();
   if (offerErr || !offer) throw new Error(`Failed to create offer: ${offerErr?.message ?? "no data"}`);
@@ -326,8 +349,8 @@ export async function submitOfferV2(
       const c = cuts[i];
       if (!c.cutId) continue;
       if (!(c.qty > 0) || !(c.askPrice > 0)) continue;
-      const floor =
-        c.floorPrice > 0 && c.floorPrice <= c.askPrice ? c.floorPrice : c.askPrice;
+      const askOut = finalAsk(c);
+      const floorOut = finalFloor(c);
 
       const { data: cpId, error: rpcErr } = await supabase.rpc("resolve_customer_product", {
         p_company_id: ctx.supplierId,
@@ -340,8 +363,8 @@ export async function submitOfferV2(
         offer_id: offerId,
         customer_product_id: cpId as string,
         amount: c.qty,
-        price: c.askPrice,
-        minimum_price: floor,
+        price: askOut,
+        minimum_price: floorOut,
         minimum_amount: c.qty,
         maximum_amount: c.qty,
         condition: l.temperature,
@@ -535,6 +558,21 @@ export async function updateOfferV2(
   const priorRequestId = (priorRow?.request_id as string | null) ?? null;
 
   const { logistics: l, cuts, paymentTerms, distribution, negotiationMode, negotiationDial } = input;
+  const feeOnU = !!input.mundusFeeIncluded;
+  const feeRateU = feeOnU ? MUNDUS_FEE_RATE : 0;
+  const netPricesMapU: Record<string, { ask: number; floor: number }> = {};
+  if (feeOnU) {
+    for (const c of cuts) {
+      const key = c.tempId || c.cutId || "";
+      if (!key) continue;
+      netPricesMapU[key] = { ask: c.askPrice, floor: c.floorPrice };
+    }
+  }
+  const finalAskU = (c: CutRow) => feeOnU ? roundPrice(grossUpPrice(c.askPrice)) : c.askPrice;
+  const finalFloorU = (c: CutRow) => {
+    const raw = c.floorPrice > 0 && c.floorPrice <= c.askPrice ? c.floorPrice : c.askPrice;
+    return feeOnU ? roundPrice(grossUpPrice(raw)) : raw;
+  };
   const { shipment_month, shipment_year, shipment_ready_raw } = deriveShipment(l.shipmentReady);
 
   // Resolve origin port label for snapshot columns (same as create).
@@ -589,7 +627,8 @@ export async function updateOfferV2(
     const c = cuts[i];
     if (!c.cutId) continue;
     if (!(c.qty > 0) || !(c.askPrice > 0)) continue;
-    const floor = c.floorPrice > 0 && c.floorPrice <= c.askPrice ? c.floorPrice : c.askPrice;
+    const askOut = finalAskU(c);
+    const floorOut = finalFloorU(c);
     const { data: cpId, error: rpcErr } = await supabase.rpc("resolve_customer_product", {
       p_company_id: ctx.supplierId,
       p_cut_id: c.cutId,
@@ -598,8 +637,8 @@ export async function updateOfferV2(
     itemsPayload.push({
       customer_product_id: cpId as string,
       amount: c.qty,
-      price: c.askPrice,
-      minimum_price: floor,
+      price: askOut,
+      minimum_price: floorOut,
       minimum_amount: c.qty,
       maximum_amount: c.qty,
       condition: l.temperature,
@@ -697,6 +736,9 @@ export async function updateOfferV2(
         l.incoterms.includes("FOB") || l.incoterms.includes("EXW")
           ? (l.pricingReferencePortId ?? null)
           : null,
+      mundus_fee_included: feeOnU,
+      mundus_fee_rate: feeRateU,
+      net_prices: feeOnU ? netPricesMapU : null,
     },
     items: itemsPayload,
     incoterms: allowedIncoterms,
