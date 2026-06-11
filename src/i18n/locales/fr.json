@@ -2668,6 +2668,13 @@
       },
       "admin": {
         "actingAs": "Agissant en tant que fournisseur : {{name}}"
+      },
+      "mundusFee": {
+        "label": "Ajouter les frais Mundus (0,30 %) à vos prix ?",
+        "tooltip": "Lorsqu'activé, vos prix sont automatiquement ajustés afin que les frais Mundus de 0,30 % soient couverts par le prix final. Les acheteurs ne voient que le prix final.",
+        "finalPreview": "Final avec frais : {{v}}",
+        "reviewLine": "Frais Mundus 0,30 % inclus dans les prix",
+        "badge": "Frais Mundus inclus"
       }
     },
     "brands": {

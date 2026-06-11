@@ -2707,6 +2707,13 @@
       },
       "admin": {
         "actingAs": "Acting as supplier: {{name}}"
+      },
+      "mundusFee": {
+        "label": "Add Mundus fee (0.30%) to your prices?",
+        "tooltip": "When enabled, your asking prices are automatically adjusted so the 0.30% Mundus fee is covered by the final price. Buyers only see the final price.",
+        "finalPreview": "Final w/ fee: {{v}}",
+        "reviewLine": "Mundus fee 0.30% embedded in prices",
+        "badge": "Mundus fee embedded"
       }
     },
     "brands": {

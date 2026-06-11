@@ -2668,6 +2668,13 @@
       },
       "admin": {
         "actingAs": "以供应商身份操作: {{name}}"
+      },
+      "mundusFee": {
+        "label": "在您的价格中加入 Mundus 费用（0.30%）？",
+        "tooltip": "启用后，系统会自动调整您的报价，使 0.30% 的 Mundus 费用由最终价格覆盖。买家只看到最终价格。",
+        "finalPreview": "含费用最终价：{{v}}",
+        "reviewLine": "已在价格中嵌入 0.30% Mundus 费用",
+        "badge": "已嵌入 Mundus 费用"
       }
     },
     "brands": {
