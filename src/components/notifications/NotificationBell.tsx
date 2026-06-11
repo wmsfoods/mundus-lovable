@@ -75,7 +75,12 @@ export function NotificationBell() {
     if (!n.read) await markRead(n.id);
     if (n.link_url) {
       setOpen(false);
-      navigate(n.link_url);
+      let target = n.link_url;
+      // If we're inside the admin shell, rewrite buyer/supplier deep-links to admin equivalents
+      if (location.pathname.startsWith("/admin")) {
+        target = target.replace(/^\/(buyer|supplier)(?=\/|$)/, "/admin");
+      }
+      navigate(target);
     }
   };
 
