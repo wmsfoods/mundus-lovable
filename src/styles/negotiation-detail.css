@@ -486,28 +486,153 @@
 }
 
 /* ── Price details — full history (full-width redesign) ── */
-.nd-price-history { padding: 0; overflow: hidden; }
+.nd-price-history {
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+  animation: nd-ph-enter 420ms ease-out both;
+  transition: box-shadow 240ms ease, border-color 240ms ease;
+}
+.nd-price-history.is-fresh {
+  border-color: rgba(139, 34, 82, 0.45);
+  box-shadow: 0 0 0 1px rgba(139, 34, 82, 0.25), 0 12px 28px -16px rgba(139, 34, 82, 0.35);
+}
+.nd-ph-accent {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 4px;
+  background: linear-gradient(180deg, #8B2252 0%, #d97706 100%);
+  border-top-left-radius: inherit;
+  border-bottom-left-radius: inherit;
+  pointer-events: none;
+}
 .nd-price-history__head {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 14px 16px;
+  gap: 16px;
+  padding: 16px 18px 16px 22px;
   border-bottom: 1px solid #eef0f3;
+  background: linear-gradient(180deg, #fdf7fa 0%, #ffffff 100%);
+  overflow: hidden;
+}
+.nd-price-history__head::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(110deg, transparent 30%, rgba(255,255,255,0.7) 50%, transparent 70%);
+  transform: translateX(-120%);
+  animation: nd-ph-shimmer 1400ms ease-out 200ms 1 forwards;
+  pointer-events: none;
 }
 .nd-price-history__title {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   color: #111827;
-  font-size: 14px;
+  min-width: 0;
 }
-.nd-price-history__title svg { color: #6b7280; }
-.nd-price-history__summary {
+.nd-ph-icon {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: rgba(139, 34, 82, 0.10);
+  color: #8B2252;
+  flex: 0 0 auto;
+}
+.nd-ph-titles {
+  display: inline-flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.nd-ph-titles strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+  line-height: 1.2;
+}
+.nd-ph-subtitle {
   font-size: 12px;
   color: #6b7280;
-  font-variant-numeric: tabular-nums;
+  margin-top: 2px;
+}
+.nd-ph-fresh-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #15803d;
+  font-size: 11px;
+  font-weight: 600;
   white-space: nowrap;
+}
+.nd-ph-fresh-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.6);
+  animation: nd-ph-pulse 2s ease-in-out infinite;
+}
+.nd-ph-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+  flex: 0 0 auto;
+}
+.nd-ph-stat__row {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+.nd-ph-stat__from { color: #6b7280; font-weight: 600; }
+.nd-ph-stat__arrow {
+  color: #9ca3af;
+  animation: nd-ph-arrow 1800ms ease-in-out infinite;
+}
+.nd-ph-stat.is-down .nd-ph-stat__to { color: #15803d; }
+.nd-ph-stat.is-up .nd-ph-stat__to { color: #dc2626; }
+.nd-ph-stat.is-flat .nd-ph-stat__to { color: #6b7280; }
+.nd-ph-stat__label {
+  font-size: 11px;
+  color: #6b7280;
+  letter-spacing: 0.02em;
+}
+
+@keyframes nd-ph-enter {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes nd-ph-shimmer {
+  from { transform: translateX(-120%); }
+  to   { transform: translateX(120%); }
+}
+@keyframes nd-ph-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.5); }
+  50%      { box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+}
+@keyframes nd-ph-arrow {
+  0%, 100% { transform: translateX(0); opacity: 0.7; }
+  50%      { transform: translateX(3px); opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nd-price-history,
+  .nd-price-history__head::after,
+  .nd-ph-fresh-dot,
+  .nd-ph-stat__arrow {
+    animation: none !important;
+  }
 }
 .nd-price-history .nd-price-scroll-wrap { padding: 4px 8px 8px; }
 .nd-price-table--grouped { min-width: 100%; }
@@ -559,7 +684,8 @@
 .nd-price-table__group-row .nd-sticky-col { background: #f8fafc; }
 
 @media (max-width: 1023px) {
-  .nd-price-history__head { flex-direction: column; align-items: flex-start; }
+  .nd-price-history__head { flex-direction: column; align-items: flex-start; gap: 10px; padding: 14px 14px 14px 18px; }
+  .nd-ph-stat { align-items: flex-start; }
   .nd-price-table--grouped th,
   .nd-price-table--grouped td { padding: 8px 10px; font-size: 11px; }
 }

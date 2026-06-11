@@ -375,6 +375,7 @@ export default function BuyerNegotiationDetail() {
       <PriceHistoryTable
         products={d.products}
         maxRoundShown={maxRoundShown}
+        lastRoundAt={rawNeg?.rounds?.length ? rawNeg.rounds[rawNeg.rounds.length - 1]?.created_at ?? null : null}
       />
 
       <div className="nd-grid">

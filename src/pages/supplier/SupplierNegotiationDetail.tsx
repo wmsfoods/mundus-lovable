@@ -340,6 +340,7 @@ export default function SupplierNegotiationDetail() {
         products={d.products}
         maxRoundShown={maxRoundShown}
         agreedByName={agreedByName}
+        lastRoundAt={rawNeg?.rounds?.length ? rawNeg.rounds[rawNeg.rounds.length - 1]?.created_at ?? null : null}
       />
 
       <div className="nd-grid">

@@ -1,6 +1,6 @@
 import { Fragment } from "react";
 import { useTranslation } from "react-i18next";
-import { FileText } from "lucide-react";
+import { History, ArrowRight } from "lucide-react";
 import { useWeightUnit } from "@/contexts/WeightUnitContext";
 import { fmtWeight, fmtPrice, weightLabel, LB_PER_KG } from "@/lib/units";
 
@@ -29,6 +29,8 @@ type Props = {
   /** When provided, this is used as the localization namespace prefix.
    *  Defaults to "negotiation.history" (with English fallbacks). */
   i18nPrefix?: string;
+  /** ISO timestamp of the most recent round. Used to highlight the card when fresh (<24h). */
+  lastRoundAt?: string | null;
 };
 
 function getKg(p: PriceHistoryProduct, type: "bid" | "counter", round: number): number | undefined {
@@ -67,7 +69,7 @@ function lastKnownPerKg(p: PriceHistoryProduct, maxRound: number): number {
  * Multi-column per-product table showing every Bid/Counter price for each round.
  * Shared between Buyer, Supplier and Admin negotiation detail screens.
  */
-export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Props) {
+export function PriceHistoryTable({ products, maxRoundShown, agreedByName, lastRoundAt }: Props) {
   const { t } = useTranslation();
   const { unit } = useWeightUnit();
 
@@ -78,6 +80,25 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
     0,
   );
   const askingTotal = startTotal;
+
+  // "Fresh" highlight when the latest round happened in the last 24h.
+  const freshInfo = (() => {
+    if (!lastRoundAt) return null;
+    const ts = new Date(lastRoundAt).getTime();
+    if (!Number.isFinite(ts)) return null;
+    const diffMs = Date.now() - ts;
+    if (diffMs < 0 || diffMs > 24 * 60 * 60 * 1000) return null;
+    const hours = Math.floor(diffMs / (60 * 60 * 1000));
+    const minutes = Math.floor(diffMs / (60 * 1000));
+    return { hours, minutes };
+  })();
+
+  // Mini-stat direction (current vs asking)
+  const delta = currentTotal - askingTotal;
+  const deltaPct = askingTotal > 0 ? (delta / askingTotal) * 100 : 0;
+  const statTone =
+    Math.abs(delta) < 0.5 ? "flat" : delta < 0 ? "down" : "up";
+
   // Per-round totals (bid / counter) for the footer row.
   const roundTotals = Array.from({ length: maxRoundShown }, (_, i) => {
     const round = i + 1;
@@ -102,19 +123,55 @@ export function PriceHistoryTable({ products, maxRoundShown, agreedByName }: Pro
   });
 
   return (
-    <div className="nd-card nd-price-history">
+    <div className={`nd-card nd-price-history${freshInfo ? " is-fresh" : ""}`}>
+      <span className="nd-ph-accent" aria-hidden />
       <div className="nd-price-history__head">
         <div className="nd-price-history__title">
-          <FileText size={16} aria-hidden />
-          <strong>{t("negotiation.history.title", "Price details — full history")}</strong>
+          <span className="nd-ph-icon" aria-hidden>
+            <History size={16} />
+          </span>
+          <span className="nd-ph-titles">
+            <strong>{t("negotiation.history.title", "Price details — full history")}</strong>
+            <span className="nd-ph-subtitle">
+              {t("negotiation.history.subtitle", {
+                defaultValue: "Every bid and counter, round by round",
+              })}
+            </span>
+          </span>
+          {freshInfo && (
+            <span className="nd-ph-fresh-pill" title={lastRoundAt ?? undefined}>
+              <span className="nd-ph-fresh-dot" />
+              {freshInfo.hours >= 1
+                ? t("negotiation.history.freshAgo", {
+                    defaultValue: "Updated {{h}}h ago",
+                    h: freshInfo.hours,
+                  })
+                : t("negotiation.history.freshNow", {
+                    defaultValue: "Just updated",
+                  })}
+            </span>
+          )}
         </div>
-        <div className="nd-price-history__summary">
-          {t("negotiation.history.summary", {
-            defaultValue: "Asking + {{n}} rounds · {{from}} → {{to}}",
-            n: maxRoundShown,
-            from: fmtUsd(startTotal),
-            to: fmtUsd(currentTotal),
-          })}
+        <div className={`nd-ph-stat is-${statTone}`}>
+          <div className="nd-ph-stat__row">
+            <span className="nd-ph-stat__from">{fmtUsd(askingTotal)}</span>
+            <ArrowRight size={14} className="nd-ph-stat__arrow" aria-hidden />
+            <span className="nd-ph-stat__to">{fmtUsd(currentTotal)}</span>
+          </div>
+          <div className="nd-ph-stat__label">
+            {maxRoundShown > 0
+              ? t("negotiation.history.roundsCount", {
+                  defaultValue: "{{n}} round(s) negotiated · {{pct}}",
+                  n: maxRoundShown,
+                  pct:
+                    Math.abs(deltaPct) < 0.05
+                      ? "0.0%"
+                      : `${delta < 0 ? "−" : "+"}${Math.abs(deltaPct).toFixed(1)}%`,
+                })
+              : t("negotiation.history.askingOnly", {
+                  defaultValue: "Asking price · no rounds yet",
+                })}
+          </div>
         </div>
       </div>
       <div className="nd-price-scroll-wrap">
