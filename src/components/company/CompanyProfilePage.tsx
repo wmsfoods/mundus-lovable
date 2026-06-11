@@ -33,6 +33,8 @@ import SupplierBrandsManager from "@/components/company/SupplierBrandsManager";
 import "@/styles/mundus-address.css";
 import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { useIsCompanyMaster } from "@/hooks/useIsCompanyMaster";
+import { Modal } from "@/components/mundus/Modal";
+import "@/styles/mundus-modal.css";
 
 type Role = "buyer" | "supplier" | "admin";
 
@@ -145,6 +147,8 @@ export default function CompanyProfilePage({
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState<"profile" | "locations" | "team">("profile");
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   // Reference data from DB
   const [marketCountries, setMarketCountries] = useState<
@@ -936,16 +940,7 @@ export default function CompanyProfilePage({
 
             <button
               type="button"
-              onClick={async () => {
-                if (!companyId) return;
-                const ok = window.confirm(`Delete ${company.name}? This cannot be undone.`);
-                if (!ok) return;
-                const { error } = await (supabase as any).from("companies").delete().eq("id", companyId);
-                if (error) return toast.error(error.message);
-                auditLog({ action: "company.deleted", category: "company", entityType: "company", entityId: companyId, entityLabel: company.name, severity: "warn" });
-                toast.success("Company deleted");
-                navigate("/admin/companies");
-              }}
+              onClick={() => setDeleteModalOpen(true)}
               style={{
                 alignSelf: "flex-start",
                 display: "inline-flex", alignItems: "center", gap: 8,
@@ -955,6 +950,56 @@ export default function CompanyProfilePage({
             >
               <Trash2 size={14} /> Delete company
             </button>
+            <Modal
+              open={deleteModalOpen}
+              onClose={() => !deleting && setDeleteModalOpen(false)}
+              width={460}
+              ariaLabel="Delete company"
+            >
+              <div style={{ padding: "24px 24px 20px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 999, background: "#fee2e2", display: "grid", placeItems: "center" }}>
+                    <Trash2 size={20} color="#b91c1c" />
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#0f172a" }}>Delete company</h2>
+                </div>
+                <p style={{ margin: "0 0 8px", fontSize: 14, color: "#334155", lineHeight: 1.5 }}>
+                  Are you sure you want to delete <strong>{company?.name}</strong>?
+                </p>
+                <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
+                  This action cannot be undone. All data associated with this company will be permanently removed.
+                </p>
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
+                  <button
+                    type="button"
+                    onClick={() => setDeleteModalOpen(false)}
+                    disabled={deleting}
+                    style={{ padding: "9px 16px", borderRadius: 8, border: "1px solid #e2e8f0", background: "#fff", color: "#334155", fontWeight: 600, fontSize: 13, cursor: deleting ? "not-allowed" : "pointer" }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    disabled={deleting}
+                    onClick={async () => {
+                      if (!companyId || !company) return;
+                      setDeleting(true);
+                      const { error } = await (supabase as any).from("companies").delete().eq("id", companyId);
+                      setDeleting(false);
+                      if (error) return toast.error(error.message);
+                      auditLog({ action: "company.deleted", category: "company", entityType: "company", entityId: companyId, entityLabel: company.name, severity: "warn" });
+                      toast.success("Company deleted");
+                      setDeleteModalOpen(false);
+                      navigate("/admin/companies");
+                    }}
+                    style={{ padding: "9px 16px", borderRadius: 8, border: 0, background: "#b91c1c", color: "#fff", fontWeight: 600, fontSize: 13, cursor: deleting ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                  >
+                    {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                    {deleting ? "Deleting…" : "Delete company"}
+                  </button>
+                </div>
+              </div>
+            </Modal>
           </div>
         </Section>
       )}
