@@ -410,7 +410,9 @@ export function DealDetailView({ data }: { data: DealDetailData }) {
           </TabPanel>
 
           <TabPanel active={tab === "negotiation"}>
-            {data.negotiation ? (() => {
+            {data.orderId ? (
+              <DealNegotiationTab orderId={data.orderId} role={data.role} />
+            ) : data.negotiation ? (() => {
               const neg = data.negotiation;
               const showFloor = data.role === "supplier";
               const totalKg = data.totalKg || 1;
