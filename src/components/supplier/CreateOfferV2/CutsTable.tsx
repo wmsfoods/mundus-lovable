@@ -33,6 +33,7 @@ import { ApplyToAllChip } from "./ApplyToAllChip";
 import { CutPicker } from "./CutPicker";
 import { cn } from "@/lib/utils";
 import { formatCutMeta } from "@/lib/cutMetaDisplay";
+import { MUNDUS_FEE_RATE, grossUpPrice, roundPrice } from "@/lib/mundusFee";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -67,9 +68,11 @@ type Props = {
    * price/qty/cuts would break the FK chain to cut_rounds.
    */
   locked?: boolean;
+  /** Supplier opted in to embed the Mundus fee — show the FINAL preview under each price input. */
+  mundusFeeIncluded?: boolean;
 };
 
-export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel, companyOverride, locked = false }: Props) {
+export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCutRegion, pricingRefLabel, companyOverride, locked = false, mundusFeeIncluded = false }: Props) {
   const { t } = useTranslation();
   const { company: liveCompany } = useCurrentCompany();
   const effectiveCompany = companyOverride
@@ -299,6 +302,7 @@ export function CutsTable({ cuts, setCuts, unit, containerSize, cutRegion, setCu
                 onChange={(patch) => updateRow(i, patch)}
                 onRemove={() => removeRow(i)}
                 fmtNum={fmtNum}
+                mundusFeeIncluded={mundusFeeIncluded}
               />
             ))}
             {cuts.length > 0 && (
