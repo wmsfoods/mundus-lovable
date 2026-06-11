@@ -48,6 +48,7 @@ import { DistributionCard, type DistributionValue } from "@/components/supplier/
 import { ActionBar } from "@/components/supplier/CreateOfferV2/ActionBar";
 import { FclCountInput } from "@/components/supplier/CreateOfferV2/FclCountInput";
 import { FinalReviewCard } from "@/components/supplier/CreateOfferV2/FinalReviewCard";
+import { MundusFeeToggle } from "@/components/supplier/CreateOfferV2/MundusFeeToggle";
 import { EngineSettingsModal } from "@/components/supplier/CreateOfferV2/EngineSettingsModal";
 import { AiQuickFillModal } from "@/components/supplier/CreateOfferV2/AiQuickFillModal";
 import { computeCompletion, sectionStatus, missingSections, type SectionStatus, type SectionKey } from "@/lib/offerCompletion";
@@ -668,6 +669,7 @@ export default function SupplierCreateOfferV2Desktop() {
     allCustomers: false,
     specificCustomerIds: [],
   });
+  const [mundusFeeIncluded, setMundusFeeIncluded] = useState<boolean>(false);
 
   // R5.A — engine + quick-fill + review state
   const [negotiationMode, setNegotiationMode] = useState<NegotiationMode>("manual");
@@ -850,6 +852,7 @@ export default function SupplierCreateOfferV2Desktop() {
     setDistribution(data.distribution);
     setNegotiationMode(data.negotiationMode);
     setNegotiationDial(data.negotiationDial);
+    setMundusFeeIncluded(!!data.mundusFeeIncluded);
     setPrefillApplied(true);
   }, [offerPrefillQuery.data, prefillApplied]);
 
@@ -898,6 +901,7 @@ export default function SupplierCreateOfferV2Desktop() {
         negotiationDial,
         cutRegion,
         requestId: mode === "fromRequest" ? requestId : null,
+        mundusFeeIncluded,
       };
       const ctx = {
         supplierId: supplierContextId,
