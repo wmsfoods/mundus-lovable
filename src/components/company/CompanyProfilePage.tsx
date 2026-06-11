@@ -983,6 +983,30 @@ export default function CompanyProfilePage({
                 <p style={{ margin: 0, fontSize: 13, color: "#64748b", lineHeight: 1.5 }}>
                   This action cannot be undone. All data associated with this company will be permanently removed.
                 </p>
+                {loadingBlockers && (
+                  <p style={{ marginTop: 12, fontSize: 13, color: "#64748b" }}>Checking dependencies…</p>
+                )}
+                {blockers && !blockers.can_delete && (
+                  <div style={{ marginTop: 14, padding: 12, borderRadius: 8, background: "#fef2f2", border: "1px solid #fecaca" }}>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: "#991b1b", marginBottom: 6 }}>
+                      Cannot delete — this company still has linked records:
+                    </div>
+                    <ul style={{ margin: 0, paddingLeft: 18, fontSize: 12, color: "#7f1d1d", lineHeight: 1.7 }}>
+                      {blockers.users > 0 && <li><strong>{blockers.users}</strong> user{blockers.users > 1 ? "s" : ""}</li>}
+                      {blockers.company_users > 0 && <li><strong>{blockers.company_users}</strong> team membership{blockers.company_users > 1 ? "s" : ""}</li>}
+                      {blockers.pending_invites > 0 && <li><strong>{blockers.pending_invites}</strong> pending invite{blockers.pending_invites > 1 ? "s" : ""}</li>}
+                      {blockers.offers > 0 && <li><strong>{blockers.offers}</strong> offer{blockers.offers > 1 ? "s" : ""}</li>}
+                      {blockers.auctions > 0 && <li><strong>{blockers.auctions}</strong> auction{blockers.auctions > 1 ? "s" : ""}</li>}
+                      {blockers.buyer_requests > 0 && <li><strong>{blockers.buyer_requests}</strong> buyer request{blockers.buyer_requests > 1 ? "s" : ""}</li>}
+                      {blockers.negotiations_as_buyer > 0 && <li><strong>{blockers.negotiations_as_buyer}</strong> negotiation{blockers.negotiations_as_buyer > 1 ? "s" : ""} as buyer</li>}
+                      {blockers.orders_as_buyer > 0 && <li><strong>{blockers.orders_as_buyer}</strong> order{blockers.orders_as_buyer > 1 ? "s" : ""} as buyer</li>}
+                      {blockers.orders_as_supplier > 0 && <li><strong>{blockers.orders_as_supplier}</strong> order{blockers.orders_as_supplier > 1 ? "s" : ""} as supplier</li>}
+                    </ul>
+                    <p style={{ margin: "10px 0 0", fontSize: 12, color: "#7f1d1d" }}>
+                      Remove or reassign these records first, then try again.
+                    </p>
+                  </div>
+                )}
                 <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 24 }}>
                   <button
                     type="button"
@@ -994,9 +1018,10 @@ export default function CompanyProfilePage({
                   </button>
                   <button
                     type="button"
-                    disabled={deleting}
+                    disabled={deleting || loadingBlockers || !blockers?.can_delete}
                     onClick={async () => {
                       if (!companyId || !company) return;
+                      if (!blockers?.can_delete) return;
                       setDeleting(true);
                       const { error } = await (supabase as any).from("companies").delete().eq("id", companyId);
                       setDeleting(false);
@@ -1006,7 +1031,7 @@ export default function CompanyProfilePage({
                       setDeleteModalOpen(false);
                       navigate("/admin/companies");
                     }}
-                    style={{ padding: "9px 16px", borderRadius: 8, border: 0, background: "#b91c1c", color: "#fff", fontWeight: 600, fontSize: 13, cursor: deleting ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                    style={{ padding: "9px 16px", borderRadius: 8, border: 0, background: (!blockers?.can_delete || deleting || loadingBlockers) ? "#fca5a5" : "#b91c1c", color: "#fff", fontWeight: 600, fontSize: 13, cursor: (!blockers?.can_delete || deleting || loadingBlockers) ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
                   >
                     {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                     {deleting ? "Deleting…" : "Delete company"}
