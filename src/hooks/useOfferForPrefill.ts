@@ -352,6 +352,38 @@ export function useOfferForPrefill(
         };
       });
 
+      // Mundus fee state — when ON, the stored offer_items prices are FINAL
+      // (grossed-up). Restore the NET values the supplier originally typed:
+      // prefer the per-cut net_prices map; fall back to dividing the FINAL by
+      // (1 - rate).
+      const mundusFeeIncluded = !!(offer as any).mundus_fee_included;
+      const storedRate = Number((offer as any).mundus_fee_rate ?? 0);
+      const effRate =
+        mundusFeeIncluded && storedRate > 0 && storedRate < 1 ? storedRate : MUNDUS_FEE_RATE;
+      const netMap = (offer as any).net_prices as
+        | Record<string, { ask?: number; floor?: number }>
+        | null;
+      for (let i = 0; i < cuts.length; i++) {
+        const it = items[i];
+        const finalPrice = Number(it.price ?? 0);
+        const finalFloor = Number(it.minimum_price ?? it.price ?? 0);
+        if (mundusFeeIncluded) {
+          // We don't have a stable join key (tempId is generated at submit) —
+          // try matching by cut.id (the offer_item id) if the net_prices map
+          // happens to be keyed that way; otherwise fall back to gross-down.
+          const fromMap = netMap?.[it.id];
+          cuts[i].askPrice = fromMap?.ask != null
+            ? roundPrice(Number(fromMap.ask))
+            : roundPrice(netFromFinal(finalPrice, effRate));
+          cuts[i].floorPrice = fromMap?.floor != null
+            ? roundPrice(Number(fromMap.floor))
+            : roundPrice(netFromFinal(finalFloor, effRate));
+        } else {
+          cuts[i].askPrice = finalPrice;
+          cuts[i].floorPrice = finalFloor;
+        }
+      }
+
       // 8. Shipment ready → prefer the encoded raw string when present (full
       //    fidelity for week/custom modes); fall back to month+year for legacy
       //    rows.
@@ -423,6 +455,7 @@ export function useOfferForPrefill(
             : (offer.negotiation_dial as string) === "win_deal"
               ? "win_deal"
               : "balanced") as "protect_margin" | "balanced" | "win_deal",
+        mundusFeeIncluded,
       };
 
       return { prefill, activeNegotiations };
