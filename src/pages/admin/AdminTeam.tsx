@@ -8,6 +8,7 @@ import { publicUrl } from "@/lib/publicUrl";
 const MUNDUS_COMPANY_ID = "00000000-0000-beef-0000-000000000001";
 
 const ROLE_OPTIONS = [
+  { key: "mundus_master_admin", label: "Master Admin", color: "#7c2d12", bg: "#fde68a" },
   { key: "mundus_admin",   label: "Admin",      color: "#B64769", bg: "#fbe2e8" },
   { key: "mundus_ops",     label: "Operations", color: "#0c447c", bg: "#d8e6f8" },
   { key: "mundus_sales",   label: "Sales",      color: "#3b6d11", bg: "#d3e7b5" },

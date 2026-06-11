@@ -8359,6 +8359,10 @@ export type Database = {
           user_id: string
         }[]
       }
+      get_company_delete_blockers: {
+        Args: { p_company_id: string }
+        Returns: Json
+      }
       get_company_names: {
         Args: { _ids: string[] }
         Returns: {
@@ -8497,6 +8501,7 @@ export type Database = {
         Returns: boolean
       }
       is_mundus_admin: { Args: never; Returns: boolean }
+      is_mundus_master_admin: { Args: never; Returns: boolean }
       link_approved_user_request_by_email: {
         Args: { p_email: string }
         Returns: {
