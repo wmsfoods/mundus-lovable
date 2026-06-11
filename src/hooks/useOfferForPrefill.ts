@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { CutRow } from "@/lib/cutRowTypes";
 import { emptyCutRow } from "@/lib/cutRowTypes";
+import { MUNDUS_FEE_RATE, netFromFinal, roundPrice } from "@/lib/mundusFee";
 
 /** Status values that count as an "active" negotiation (warning trigger). */
 export const ACTIVE_NEGOTIATION_STATUSES = [
@@ -57,6 +58,8 @@ export type OfferPrefill = {
   // Engine
   negotiationMode: "manual" | "auto";
   negotiationDial: "protect_margin" | "balanced" | "win_deal";
+  // Mundus fee
+  mundusFeeIncluded: boolean;
 };
 
 function freightShape(values: number[]): PortFreightShape {
@@ -93,6 +96,7 @@ export function useOfferForPrefill(
           all_customers, specific_buyer_company_ids,
           primary_pricing_incoterm,
           pricing_reference_port_id,
+          mundus_fee_included, mundus_fee_rate, net_prices,
           items:offer_items (
             id, amount, price, condition, packaging, aging_method, us_grade,
             plant_id, brand_id, notes, photo_url, files_urls,
