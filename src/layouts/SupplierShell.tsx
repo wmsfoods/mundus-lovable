@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar, type SidebarItem, type SidebarEntry } from "@/components/mundus/Sidebar";
 import { Topbar } from "@/components/mundus/Topbar";
@@ -53,6 +53,11 @@ function SupplierShellInner() {
   const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
   const showDirectorTools = isGlobalDirector || isMundusAdmin;
   const stackMode = isMobile && isStackRoute(location.pathname);
+
+  // Mundus admins on an admin-only company should never land in the supplier shell.
+  if (isMundusAdmin && company && company.is_supplier === false) {
+    return <Navigate to="/admin" replace />;
+  }
 
   const featureForPath = (_to: string): UpsellFeature | null => null;
   const onProBadgeClick = (_item: SidebarItem) => {};

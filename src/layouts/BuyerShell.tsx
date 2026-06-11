@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet, useLocation, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Sidebar, type SidebarItem, type SidebarEntry } from "@/components/mundus/Sidebar";
 import { useUserFullName } from "@/hooks/useUserFullName";
@@ -13,6 +13,7 @@ import { isStackRoute } from "@/lib/mobile-nav";
 import { useCurrentCompany } from "@/hooks/useCurrentCompany";
 import { useAuth } from "@/contexts/AuthContext";
 import { useIsMobileShell } from "@/hooks/useIsMobileShell";
+import { useIsMundusAdmin } from "@/hooks/useIsMundusAdmin";
 import { BUYER_CHAT_TOTAL_UNREAD } from "@/hooks/useBuyerChat";
 import { useMyConnectedSuppliers } from "@/hooks/useMyConnectedSuppliers";
 import {
@@ -44,6 +45,12 @@ function BuyerShellInner() {
   const { fullName, avatarUrl } = useUserFullName();
   const userName = fullName || (user?.email?.split("@")[0] ?? "User");
   const stackMode = isMobile && isStackRoute(location.pathname);
+  const { isAdmin: isMundusAdmin } = useIsMundusAdmin();
+
+  // Mundus admins on an admin-only company should never land in the buyer shell.
+  if (isMundusAdmin && company && company.is_buyer === false) {
+    return <Navigate to="/admin" replace />;
+  }
 
   const { suppliers: connectedSuppliers } = useMyConnectedSuppliers();
   const pendingInvitesCount = connectedSuppliers.filter((s) => s.status === "invited").length;
