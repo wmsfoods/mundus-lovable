@@ -116,7 +116,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       Object.fromEntries(
         Object.entries(next).map(([id, kg]) => [
           id,
-          toDisplay(kg, "price", unit).toFixed(2),
+          toDisplay(kg, "price", unit).toFixed(3),
         ]),
       ),
     );
@@ -152,7 +152,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       Object.fromEntries(
         Object.entries(initial).map(([id, kg]) => [
           id,
-          toDisplay(kg, "price", unit).toFixed(2),
+          toDisplay(kg, "price", unit).toFixed(3),
         ]),
       ),
     );
@@ -228,7 +228,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       Object.fromEntries(
         Object.entries(next).map(([id, kg]) => [
           id,
-          toDisplay(kg, "price", unit).toFixed(2),
+          toDisplay(kg, "price", unit).toFixed(3),
         ]),
       ),
     );
@@ -270,7 +270,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
       } else if (v < min) {
         out[it.id] = t("buyer.bid.validation.minPct", {
           defaultValue: "Minimum bid is ${{min}}/kg (70% of asking — max 30% discount)",
-          min: toDisplay(min, "price", unit).toFixed(2),
+          min: toDisplay(min, "price", unit).toFixed(3),
         });
       }
       // Max 30% deduction from asking
@@ -703,7 +703,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                         )}
                         {!showErr && (
                           <span className="text-[10px] text-muted-foreground">
-                            Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                            Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(3)}/{wLbl} (70% of asking)
                           </span>
                         )}
                         {Math.abs(d) > 0.001 && (
@@ -799,7 +799,7 @@ export function BidModal({ open, onOpenChange, offer }: BidModalProps) {
                   )}
                   {!showErr && (
                     <div className="text-[10px] text-muted-foreground mt-1">
-                      Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(2)}/{wLbl} (70% of asking)
+                      Min: ${toDisplay(asking * MIN_BID_PCT, "price", unit).toFixed(3)}/{wLbl} (70% of asking)
                     </div>
                   )}
                   {Math.abs(d) > 0.001 && (

@@ -313,7 +313,7 @@ export function AuctionBidModal({ open, onOpenChange, auction }: AuctionBidModal
               {cuts.map((c) => {
                 const v = bids[c.id];
                 const display =
-                  typeof v === "number" ? toDisplay(v, "price", unit).toFixed(2) : "";
+                  typeof v === "number" ? toDisplay(v, "price", unit).toFixed(3) : "";
                 return (
                   <tr key={c.id} className="border-t border-border">
                     <td className="px-3 py-2">{c.name}</td>
@@ -360,7 +360,7 @@ export function AuctionBidModal({ open, onOpenChange, auction }: AuctionBidModal
           {cuts.map((c) => {
             const v = bids[c.id];
             const display =
-              typeof v === "number" ? toDisplay(v, "price", unit).toFixed(2) : "";
+              typeof v === "number" ? toDisplay(v, "price", unit).toFixed(3) : "";
             return (
               <div key={c.id} className="rounded-lg border border-border p-3">
                 <div className="font-medium text-sm mb-2">{c.name}</div>

@@ -373,7 +373,7 @@ export function CounterOfferModal({
         const floor = buyerInitialBid.get(it.id);
         const v = counters[it.id];
         if (floor != null && v != null && v < floor - 1e-9) {
-          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(2)})`;
+          out[it.id] = `Cannot bid below your initial bid ($${toDisplay(floor, "price", unit).toFixed(3)})`;
         }
       }
       // Must be STRICTLY GREATER than previous buyer bid (no match, no lower)
@@ -417,7 +417,7 @@ export function CounterOfferModal({
           : null;
         const ceiling = prevCounterPrice ?? asking;
         if (v > ceiling + 1e-9) {
-          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(2)} (your ${prevCounter ? "previous counter" : "asking price"})`;
+          out[it.id] = `Counter must be ≤ $${toDisplay(ceiling, "price", unit).toFixed(3)} (your ${prevCounter ? "previous counter" : "asking price"})`;
         }
       }
     }
