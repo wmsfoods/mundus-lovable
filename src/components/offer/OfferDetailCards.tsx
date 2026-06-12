@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { FlagSVG } from "@/components/icons";
+import { FileText } from "lucide-react";
 import type { GalleryImage } from "@/components/offer/OfferImageGallery";
 import { fmtWeight, fmtPrice, weightLabel, type WeightUnit } from "@/lib/units";
 import { countryToCode } from "@/lib/countryCodes";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import "@/styles/mundus-offer-card-tooltip.css";
 
 function formatUsdInt(n: number) {
@@ -55,6 +57,9 @@ export type OfferCardsProps = {
   destinationPortsCount?: number;
   createdAt?: string | null;
   supplierName?: string | null;
+  supplierId?: string | null;
+  onSupplierClick?: (supplierId: string) => void;
+  supplierTooltip?: string;
   items: OfferCardItem[];
   showSupplierPricing?: boolean;
   gallery: GalleryImage[];
@@ -69,7 +74,7 @@ export function OfferDetailCards(props: OfferCardsProps) {
     totalValueUsd, totalQtyKg, containerLabel, shipmentLabel,
     origin, destination, incoterms, paymentTerms,
     containerSize, containerCount, destinationPortsCount, createdAt,
-    supplierName,
+    supplierName, supplierId, onSupplierClick, supplierTooltip,
     items, showSupplierPricing, gallery, illustrativeLabel, unit, statusPill,
   } = props;
 
@@ -99,9 +104,37 @@ export function OfferDetailCards(props: OfferCardsProps) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 4,
+                minHeight: 44,
               }}
             >
-              🏭 {supplierName}
+              🏭 {onSupplierClick && supplierId ? (
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="supplier-name-link"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => onSupplierClick(supplierId)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSupplierClick(supplierId);
+                        }
+                      }}
+                    >
+                      {supplierName}
+                      <FileText className="supplier-link-icon" size={12} />
+                    </span>
+                  </TooltipTrigger>
+                  {supplierTooltip && (
+                    <TooltipContent side="bottom">
+                      <p>{supplierTooltip}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              ) : (
+                supplierName
+              )}
             </div>
           )}
           <div className="ofc-chip-row">

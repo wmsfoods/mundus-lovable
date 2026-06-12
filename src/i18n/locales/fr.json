@@ -4345,7 +4345,8 @@
       "publishedCount": "documents publiés",
       "info": "Documents partagés par le fournisseur. Les téléchargements utilisent des liens sécurisés à durée limitée.",
       "emptySection": "Aucun document dans cette section.",
-      "viewSpecsCTA": "Voir les Fiches Produit"
+      "viewSpecsCTA": "Voir les Fiches Produit",
+      "supplierNameTooltip": "Voir les documents et fiches techniques"
     }
   }
 }
