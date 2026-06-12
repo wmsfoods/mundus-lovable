@@ -233,6 +233,7 @@ const App = () => (
               <Route path="users" element={<BuyerUsers />} />
               <Route path="company" element={<BuyerCompany />} />
               <Route path="offices" element={<SupplierOffices />} />
+              <Route path="suppliers/:companyId/specs" element={<BuyerSupplierSpecs />} />
               <Route path="negotiations" element={<BuyerNegotiations />} />
               <Route path="negotiations/:id" element={<BuyerNegotiationDetail />} />
               <Route path="requests" element={<BuyerRequests />} />
@@ -280,6 +281,7 @@ const App = () => (
               <Route path="users" element={<SupplierUsers />} />
               <Route path="my-customers" element={<SupplierMyCustomers />} />
               <Route path="company" element={<SupplierCompany />} />
+              <Route path="company/documents" element={<SupplierCompanyDocuments />} />
               <Route path="offices" element={<SupplierOffices />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
