@@ -10,7 +10,7 @@ import { ExpiryBadge } from "@/components/companyDocuments/ExpiryBadge";
 import { DocumentPreviewDialog } from "@/components/companyDocuments/DocumentPreviewDialog";
 import { formatBytes, fileTypeLabel, daysUntil } from "@/components/companyDocuments/types";
 import { getSignedDocumentUrl } from "@/hooks/useCompanyDocuments";
-import { ArrowLeft, Download, Eye, FileText, Lock, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Download, Eye, FileText, Image as ImageIcon, Lock, Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 function initials(name?: string | null) {
