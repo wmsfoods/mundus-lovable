@@ -82,10 +82,7 @@ export function useAdminCompany(id: string | undefined) {
 
   const remove = useCallback(async (): Promise<{ ok: boolean; error?: string }> => {
     if (!id) return { ok: false, error: "missing_id" };
-    const { error: err } = await supabase
-      .from("companies")
-      .update({ deleted_at: new Date().toISOString(), status: "inactive" } as never)
-      .eq("id", id);
+    const { error: err } = await (supabase as any).rpc("admin_hard_delete_company", { p_company_id: id });
     if (err) return { ok: false, error: err.message };
     return { ok: true };
   }, [id]);
