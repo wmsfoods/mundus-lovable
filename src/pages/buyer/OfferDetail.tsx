@@ -419,6 +419,7 @@ function BuyerOfferBody({
   const firstItem = items[0];
   const category =
     firstItem?.customer_product?.standard_product?.product_category?.name_en ?? null;
+  const { data: hasPublishedDocs } = useCompanyHasPublishedDocs((offer as any)?.supplier_id ?? undefined);
 
   // Lifted selection state so LogisticsOverview, FreightCalculator and the
   // cuts table can all reflect the same port + incoterm pick.
