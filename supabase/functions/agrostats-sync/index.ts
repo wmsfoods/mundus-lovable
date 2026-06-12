@@ -189,9 +189,10 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
     try {
       for (let i = 0; i < mapped.length; i += INSERT_CHUNK) {
         const chunk = mapped.slice(i, i + INSERT_CHUNK)
-        const { error } = await supaSrv
-          .from('meat_export_mirror')
-          .upsert(chunk, { onConflict: 'id_datamar', ignoreDuplicates: true })
+        // id_datamar is NOT unique in source (≈2.0M rows / 0.82M distinct),
+        // so we cannot upsert by it. Plain insert; per-chunk state update below
+        // caps the duplicate window to INSERT_CHUNK rows if killed mid-batch.
+        const { error } = await supaSrv.from('meat_export_mirror').insert(chunk)
         if (error) throw new Error(error.message)
         insertedThisBatch += chunk.length
         await supaSrv.from('agrostats_sync_state').update({
