@@ -264,14 +264,15 @@ async function incremental(supaSrv: ReturnType<typeof createClient>) {
     .limit(1)
     .maybeSingle()
 
+  if (!maxRow?.month_key) {
+    throw new Error('Mirror vazio — rode o backfill primeiro antes de sincronizar incrementalmente.')
+  }
   const dateFmt = await getDateFormat(supaSrv)
   let boundary: string
-  if (maxRow?.month_key) {
+  {
     const [y, m] = maxRow.month_key.split('-').map(Number)
     const idx = y * 12 + (m - 1) - 1 // one month before max
     boundary = `${Math.floor(idx / 12)}-${String((idx % 12) + 1).padStart(2, '0')}`
-  } else {
-    boundary = '1900-01'
   }
 
   // Delete local rows >= boundary
