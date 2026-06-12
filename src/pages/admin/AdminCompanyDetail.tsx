@@ -342,6 +342,15 @@ function AdminCompanyDetailLegacy({ mode = "edit" }: Props) {
             <button type="button" className="crm-btn-ghost" onClick={() => navigate("/admin/companies")}>
               <X size={14} /> {t("admin.companies.actions.cancel")}
             </button>
+            {!isNew && data?.id && (
+              <button
+                type="button"
+                className="crm-btn-ghost"
+                onClick={() => navigate(`/admin/companies/${data.id}/documents`)}
+              >
+                {t("companyDocuments.title", "Documents & Specs")}
+              </button>
+            )}
             {activeTab === "profile" && (
               <button
                 type="button"
