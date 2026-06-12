@@ -50,6 +50,9 @@ export default function BuyerOfferDetail() {
   const { user } = useAuth();
   const [closeDealOpen, setCloseDealOpen] = useState(false);
   const [closingDeal, setClosingDeal] = useState(false);
+  const { data: hasPublishedDocs } = useCompanyHasPublishedDocs(
+    (offer as any)?.supplier_id ?? undefined,
+  );
   const currentCompanyId = company?.id ?? null;
 
   const { data: myNegotiation } = useQuery({
