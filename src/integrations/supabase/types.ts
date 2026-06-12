@@ -330,8 +330,13 @@ export type Database = {
       }
       agrostats_sync_state: {
         Row: {
+          current_chunk_offset: number | null
+          current_chunk_started_at: string | null
           id: number
           last_error: string | null
+          last_failed_at: string | null
+          last_failed_error: string | null
+          last_failed_offset: number | null
           last_offset: number
           last_sync_at: string | null
           last_synced_month: string | null
@@ -343,8 +348,13 @@ export type Database = {
           use_mirror: boolean
         }
         Insert: {
+          current_chunk_offset?: number | null
+          current_chunk_started_at?: string | null
           id?: number
           last_error?: string | null
+          last_failed_at?: string | null
+          last_failed_error?: string | null
+          last_failed_offset?: number | null
           last_offset?: number
           last_sync_at?: string | null
           last_synced_month?: string | null
@@ -356,8 +366,13 @@ export type Database = {
           use_mirror?: boolean
         }
         Update: {
+          current_chunk_offset?: number | null
+          current_chunk_started_at?: string | null
           id?: number
           last_error?: string | null
+          last_failed_at?: string | null
+          last_failed_error?: string | null
+          last_failed_offset?: number | null
           last_offset?: number
           last_sync_at?: string | null
           last_synced_month?: string | null
@@ -8359,6 +8374,21 @@ export type Database = {
           }
         | { Args: { payload: Json; queue_name: string }; Returns: number }
       expire_old_pending_signups: { Args: never; Returns: number }
+      get_agrostats_cron_runs: {
+        Args: never
+        Returns: {
+          command: string
+          database: string
+          end_time: string
+          job_pid: number
+          jobid: number
+          return_message: string
+          runid: number
+          start_time: string
+          status: string
+          username: string
+        }[]
+      }
       get_agrostats_cron_secret: { Args: never; Returns: string }
       get_company_active_user_ids: {
         Args: { p_company_id: string }

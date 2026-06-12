@@ -173,7 +173,14 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
         return res.rows.map((r) => mapRow(r, dateFmt))
       })
     } catch (e) {
-      await updateState(supaSrv, { status: 'error', last_error: (e as Error).message })
+      const msg = (e as Error).message
+      await updateState(supaSrv, {
+        status: 'error',
+        last_error: msg,
+        last_failed_offset: offset,
+        last_failed_error: `[fetch] ${msg}`,
+        last_failed_at: new Date().toISOString(),
+      })
       throw e
     }
 
@@ -189,6 +196,14 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
     try {
       for (let i = 0; i < mapped.length; i += INSERT_CHUNK) {
         const chunk = mapped.slice(i, i + INSERT_CHUNK)
+        // WRITE-AHEAD chunk marker — written BEFORE the insert so that a hard
+        // kill mid-insert leaves a breadcrumb pointing at the chunk in flight.
+        await supaSrv.from('agrostats_sync_state').update({
+          current_chunk_offset: offset + insertedThisBatch,
+          current_chunk_started_at: new Date().toISOString(),
+          lease_until: new Date(Date.now() + LEASE_SECONDS * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq('id', 1)
         // id_datamar is NOT unique in source (≈2.0M rows / 0.82M distinct),
         // so we cannot upsert by it. Plain insert; per-chunk state update below
         // caps the duplicate window to INSERT_CHUNK rows if killed mid-batch.
@@ -204,13 +219,29 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
           updated_at: new Date().toISOString(),
         }).eq('id', 1)
       }
+      // Batch finished cleanly — clear chunk marker.
+      await supaSrv.from('agrostats_sync_state').update({
+        current_chunk_offset: null,
+        current_chunk_started_at: null,
+        updated_at: new Date().toISOString(),
+      }).eq('id', 1)
     } catch (e) {
-      await updateState(supaSrv, { status: 'error', last_error: (e as Error).message })
+      const msg = (e as Error).message
+      await updateState(supaSrv, {
+        status: 'error',
+        last_error: msg,
+        last_failed_offset: offset + insertedThisBatch,
+        last_failed_error: `[insert] ${msg}`,
+        last_failed_at: new Date().toISOString(),
+      })
       throw e
     }
 
     if (mapped.length < BATCH) {
-      await updateState(supaSrv, { status: 'complete', use_mirror: true })
+      await updateState(supaSrv, {
+        status: 'complete', use_mirror: true,
+        current_chunk_offset: null, current_chunk_started_at: null,
+      })
       return { done: true }
     }
   }
@@ -321,7 +352,14 @@ Deno.serve(async (req) => {
 
     if (action === 'status') {
       const { data } = await supaSrv.from('agrostats_sync_state').select('*').eq('id', 1).maybeSingle()
-      return json({ ok: true, state: data })
+      const { data: cronRuns, error: cronErr } = await supaSrv.rpc('get_agrostats_cron_runs')
+      return json({
+        ok: true,
+        state: data,
+        cron_runs: cronErr ? [] : (cronRuns ?? []),
+        cron_error: cronErr ? cronErr.message : null,
+        server_now: new Date().toISOString(),
+      })
     }
 
     if (action === 'start-backfill') {
@@ -343,9 +381,15 @@ Deno.serve(async (req) => {
         await updateState(supaSrv, {
           status: 'backfilling', total_rows: total, rows_copied: 0, last_offset: 0,
           last_error: null, use_mirror: false, lease_until: null,
+          current_chunk_offset: null, current_chunk_started_at: null,
+          last_failed_offset: null, last_failed_error: null, last_failed_at: null,
         })
       } else {
-        await updateState(supaSrv, { status: 'backfilling', total_rows: total, last_error: null, lease_until: null })
+        await updateState(supaSrv, {
+          status: 'backfilling', total_rows: total, last_error: null, lease_until: null,
+          current_chunk_offset: null, current_chunk_started_at: null,
+          // Keep last_failed_* on resume so failure history survives.
+        })
       }
       // Kick off processing in background
       await reinvokeProcess()
