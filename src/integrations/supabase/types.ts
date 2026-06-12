@@ -14,6 +14,24 @@ export type Database = {
   }
   public: {
     Tables: {
+      _agrostats_probe_results: {
+        Row: {
+          created_at: string | null
+          id: number
+          payload: Json | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          payload?: Json | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          payload?: Json | null
+        }
+        Relationships: []
+      }
       _bkp_company_users_p1: {
         Row: {
           accepted_at: string | null
