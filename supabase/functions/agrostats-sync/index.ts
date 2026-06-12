@@ -140,10 +140,22 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
   const started = Date.now()
   const dateFmt = await getDateFormat(supaSrv)
 
+  // Cheap no-op: cron pings every minute, so most invocations should exit fast.
+  {
+    const { data: s0 } = await supaSrv.from('agrostats_sync_state').select('status').eq('id', 1).maybeSingle()
+    if (!s0 || s0.status !== 'backfilling') return { done: true, skipped: 'not_backfilling' }
+  }
+
+  // Atomic lease claim — exit if another worker holds it.
+  const { data: claimed, error: claimErr } = await supaSrv.rpc('claim_agrostats_backfill_lease', { _seconds: LEASE_SECONDS })
+  if (claimErr) throw new Error(`claim lease: ${claimErr.message}`)
+  if (claimed !== true) return { done: false, skipped: 'lease_held' }
+
+  try {
   while (Date.now() - started < SOFT_BUDGET_MS) {
     const { data: state } = await supaSrv.from('agrostats_sync_state').select('*').eq('id', 1).maybeSingle()
     if (!state) break
-    if (state.status === 'complete') break
+    if (state.status !== 'backfilling') break
     const offset = Number(state.last_offset ?? 0)
     const total = state.total_rows ? Number(state.total_rows) : null
     if (total != null && offset >= total) {
@@ -155,7 +167,7 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
     try {
       mapped = await pg(async (c) => {
         const res = await c.queryObject<Record<string, unknown>>({
-          text: `SELECT * FROM ${FQ} ORDER BY ${Q(COL.id)} OFFSET ${offset} LIMIT ${BATCH}`,
+          text: `SELECT ${SELECT_COLS} FROM ${FQ} ORDER BY ${Q(COL.id)} OFFSET ${offset} LIMIT ${BATCH}`,
           camelcase: false,
         })
         return res.rows.map((r) => mapRow(r, dateFmt))
@@ -170,20 +182,31 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
       return { done: true }
     }
 
+    // Insert chunk-by-chunk, advancing state AFTER EACH chunk so a hard kill
+    // mid-batch loses at most INSERT_CHUNK rows. Upsert on id_datamar makes
+    // resume idempotent.
+    let insertedThisBatch = 0
     try {
       for (let i = 0; i < mapped.length; i += INSERT_CHUNK) {
         const chunk = mapped.slice(i, i + INSERT_CHUNK)
-        const { error } = await supaSrv.from('meat_export_mirror').insert(chunk)
+        const { error } = await supaSrv
+          .from('meat_export_mirror')
+          .upsert(chunk, { onConflict: 'id_datamar', ignoreDuplicates: true })
         if (error) throw new Error(error.message)
+        insertedThisBatch += chunk.length
+        await supaSrv.from('agrostats_sync_state').update({
+          last_offset: offset + insertedThisBatch,
+          rows_copied: Number(state.rows_copied ?? 0) + insertedThisBatch,
+          status: 'backfilling',
+          last_error: null,
+          lease_until: new Date(Date.now() + LEASE_SECONDS * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq('id', 1)
       }
     } catch (e) {
       await updateState(supaSrv, { status: 'error', last_error: (e as Error).message })
       throw e
     }
-
-    const newOffset = offset + mapped.length
-    const newCopied = Number(state.rows_copied ?? 0) + mapped.length
-    await updateState(supaSrv, { last_offset: newOffset, rows_copied: newCopied, status: 'backfilling', last_error: null })
 
     if (mapped.length < BATCH) {
       await updateState(supaSrv, { status: 'complete', use_mirror: true })
@@ -191,9 +214,12 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
     }
   }
 
-  // Out of time — reinvoke
+  // Out of time — best-effort reinvoke. Cron will also tick within 1 minute.
   await reinvokeProcess()
   return { done: false }
+  } finally {
+    try { await supaSrv.rpc('release_agrostats_backfill_lease') } catch {}
+  }
 }
 
 async function incremental(supaSrv: ReturnType<typeof createClient>) {
