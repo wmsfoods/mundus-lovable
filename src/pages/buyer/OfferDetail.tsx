@@ -26,6 +26,8 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
 import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
+import { useCompanyHasPublishedDocs } from "@/hooks/useCompanyDocuments";
+import { FileIcon } from "@/components/icons";
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string; key: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a", key: "active" },
   new:         { bg: "#fff4e0", fg: "#a85b00", dot: "#f59e0b", key: "new" },
