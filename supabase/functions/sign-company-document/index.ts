@@ -50,8 +50,8 @@ Deno.serve(async (req: Request): Promise<Response> => {
   if (dErr || !doc) return json({ error: 'not_found' }, 404);
   if (!doc.file_path) return json({ error: 'no_file' }, 404);
 
-  // Authorization
-  const { data: isAdminRow } = await admin.rpc('is_mundus_admin');
+  // Authorization — admin check must run with the caller's JWT (auth.uid() is required)
+  const { data: isAdminRow } = await userClient.rpc('is_mundus_admin');
   const isAdmin = isAdminRow === true;
 
   let isOwnerMember = false;
