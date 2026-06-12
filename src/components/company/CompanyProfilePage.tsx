@@ -1018,12 +1018,12 @@ export default function CompanyProfilePage({
                   </button>
                   <button
                     type="button"
-                    disabled={deleting || loadingBlockers || !blockers?.can_delete}
+                    disabled={deleting || loadingBlockers || blockers?.can_delete !== true}
                     onClick={async () => {
                       if (!companyId || !company) return;
-                      if (!blockers?.can_delete) return;
+                      if (blockers?.can_delete !== true) return;
                       setDeleting(true);
-                      const { error } = await (supabase as any).from("companies").delete().eq("id", companyId);
+                      const { error } = await (supabase as any).rpc("admin_hard_delete_company", { p_company_id: companyId });
                       setDeleting(false);
                       if (error) return toast.error(error.message);
                       auditLog({ action: "company.deleted", category: "company", entityType: "company", entityId: companyId, entityLabel: company.name, severity: "warn" });
@@ -1031,7 +1031,7 @@ export default function CompanyProfilePage({
                       setDeleteModalOpen(false);
                       navigate("/admin/companies");
                     }}
-                    style={{ padding: "9px 16px", borderRadius: 8, border: 0, background: (!blockers?.can_delete || deleting || loadingBlockers) ? "#fca5a5" : "#b91c1c", color: "#fff", fontWeight: 600, fontSize: 13, cursor: (!blockers?.can_delete || deleting || loadingBlockers) ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
+                    style={{ padding: "9px 16px", borderRadius: 8, border: 0, background: (blockers?.can_delete !== true || deleting || loadingBlockers) ? "#fca5a5" : "#b91c1c", color: "#fff", fontWeight: 600, fontSize: 13, cursor: (blockers?.can_delete !== true || deleting || loadingBlockers) ? "not-allowed" : "pointer", display: "inline-flex", alignItems: "center", gap: 6 }}
                   >
                     {deleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                     {deleting ? "Deleting…" : "Delete company"}
