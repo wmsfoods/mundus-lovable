@@ -335,6 +335,7 @@ export type Database = {
           last_offset: number
           last_sync_at: string | null
           last_synced_month: string | null
+          lease_until: string | null
           rows_copied: number
           status: string
           total_rows: number | null
@@ -347,6 +348,7 @@ export type Database = {
           last_offset?: number
           last_sync_at?: string | null
           last_synced_month?: string | null
+          lease_until?: string | null
           rows_copied?: number
           status?: string
           total_rows?: number | null
@@ -359,6 +361,7 @@ export type Database = {
           last_offset?: number
           last_sync_at?: string | null
           last_synced_month?: string | null
+          lease_until?: string | null
           rows_copied?: number
           status?: string
           total_rows?: number | null
@@ -8259,6 +8262,10 @@ export type Database = {
           reset_at: string
         }[]
       }
+      claim_agrostats_backfill_lease: {
+        Args: { _seconds?: number }
+        Returns: boolean
+      }
       claim_pending_invites: {
         Args: never
         Returns: {
@@ -8590,6 +8597,11 @@ export type Database = {
       }
       reject_user_request: {
         Args: { p_reason?: string; p_request_id: string }
+        Returns: undefined
+      }
+      release_agrostats_backfill_lease: { Args: never; Returns: undefined }
+      renew_agrostats_backfill_lease: {
+        Args: { _seconds?: number }
         Returns: undefined
       }
       resolve_customer_product: {
