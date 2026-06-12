@@ -13,6 +13,8 @@ const FROM = "Mundus Trade <contact@mundustrade.com>";
 const ADMIN_EMAILS = ["fn@mundustrade.com", "contact@mundustrade.com"];
 const WINE = "#8B2252";
 const PLATFORM_URL = "https://app.mundustrade.us";
+const SENDING_DOMAIN = "mundustrade.com";
+let resendTrackingDisablePromise: Promise<void> | null = null;
 
 const LOGO_URL = "https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png";
 const logoHeader = `
@@ -47,7 +49,7 @@ function btn(label: string, url: string) {
 function directLoginButton(label: string) {
   return `<div style="text-align:center;margin:28px 0;">
     <a href="${PLATFORM_URL}/login" style="background:${WINE};color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;display:inline-block;">${label}</a>
-    <p style="font-size:12px;color:#777;margin:14px 0 0;">If the button doesn't open, copy and paste this address into your browser:</p>
+    <p style="font-size:12px;color:#777;margin:14px 0 0;">If the button doesn't open, do not use the noreply.mundustrade.com link. Copy and paste this address into your browser:</p>
     <p style="font-size:13px;color:${WINE};margin:6px 0 0;word-break:break-all;">${PLATFORM_URL}/login</p>
   </div>`;
 }
@@ -117,6 +119,7 @@ function rejectionHtml(userName: string) {
 }
 
 async function sendEmail(to: string | string[], subject: string, html: string) {
+  await ensureResendClickTrackingDisabled();
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -130,6 +133,45 @@ async function sendEmail(to: string | string[], subject: string, html: string) {
     throw new Error(`Resend error: ${res.status} ${txt}`);
   }
   return res.json();
+}
+
+async function ensureResendClickTrackingDisabled() {
+  if (!RESEND_API_KEY) return;
+  if (!resendTrackingDisablePromise) {
+    resendTrackingDisablePromise = (async () => {
+      try {
+        const listRes = await fetch("https://api.resend.com/domains", {
+          headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
+        });
+        if (!listRes.ok) {
+          console.warn("[signup-notifications] could not list Resend domains", listRes.status, await listRes.text());
+          return;
+        }
+
+        const payload = await listRes.json();
+        const domain = payload?.data?.find((item: { id?: string; name?: string }) => item?.name === SENDING_DOMAIN);
+        if (!domain?.id) {
+          console.warn("[signup-notifications] Resend sending domain not found", SENDING_DOMAIN);
+          return;
+        }
+
+        const updateRes = await fetch(`https://api.resend.com/domains/${domain.id}`, {
+          method: "PATCH",
+          headers: {
+            Authorization: `Bearer ${RESEND_API_KEY}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ openTracking: false, clickTracking: false }),
+        });
+        if (!updateRes.ok) {
+          console.warn("[signup-notifications] could not disable Resend tracking", updateRes.status, await updateRes.text());
+        }
+      } catch (error) {
+        console.warn("[signup-notifications] disable Resend tracking failed", error);
+      }
+    })();
+  }
+  await resendTrackingDisablePromise;
 }
 
 // Logs a copy of every signup-related e-mail into `email_queue` so it
