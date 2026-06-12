@@ -424,6 +424,31 @@ Deno.serve(async (req) => {
       return json({ ok: true, ...r, unique: r.total === r.distinct_ids && r.nulls === 0 })
     }
 
+    if (action === 'inspect-columns') {
+      const r = await pg(async (c) => {
+        const res = await c.queryObject<{ column_name: string; data_type: string; ordinal_position: number }>(
+          `SELECT ordinal_position, column_name, data_type
+             FROM information_schema.columns
+            WHERE table_schema = 'wmsfoods' AND table_name = 'meat_export'
+            ORDER BY ordinal_position`,
+        )
+        return res.rows
+      })
+      return json({ ok: true, count: r.length, columns: r })
+    }
+
+    if (action === 'probe-select') {
+      // Run SELECT_COLS with LIMIT 1 — used to verify the COL map is correct.
+      const r = await pg(async (c) => {
+        const res = await c.queryObject<Record<string, unknown>>({
+          text: `SELECT ${SELECT_COLS} FROM ${FQ} LIMIT 1`,
+          camelcase: false,
+        })
+        return res.rows[0] ?? null
+      })
+      return json({ ok: true, row: r })
+    }
+
     return json({ error: 'Unknown action' }, 400)
   } catch (e) {
     console.error('[agrostats-sync]', (e as Error).message)
