@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { FlagSVG } from "@/components/icons";
+import { FileText } from "lucide-react";
 import type { GalleryImage } from "@/components/offer/OfferImageGallery";
 import { fmtWeight, fmtPrice, weightLabel, type WeightUnit } from "@/lib/units";
 import { countryToCode } from "@/lib/countryCodes";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import "@/styles/mundus-offer-card-tooltip.css";
 
 function formatUsdInt(n: number) {
