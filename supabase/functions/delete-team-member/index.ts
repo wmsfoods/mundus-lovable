@@ -17,6 +17,7 @@ const MASTER_ROLES = new Set([
 const ACTIVITY_CHECKS: Array<[string, string]> = [
   ["offers", "created_by"],
   ["offers", "supplier_user_id"],
+  ["buyer_requests", "buyer_user_id"],
   ["negotiations", "created_by"],
   ["negotiations", "buyer_user_id"],
   ["negotiations", "supplier_user_id"],
@@ -28,6 +29,50 @@ const ACTIVITY_CHECKS: Array<[string, string]> = [
   ["counter_proposals", "created_by"],
   ["round_proposals", "created_by"],
 ];
+
+const USER_CLEANUP_TABLES: Array<[string, string]> = [
+  ["notifications", "user_id"],
+  ["app_notifications", "user_id"],
+  ["device_push_tokens", "user_id"],
+  ["notification_preferences", "user_id"],
+  ["offer_favorites", "user_id"],
+  ["offer_likes", "user_id"],
+  ["offer_shares", "user_id"],
+  ["user_offices", "user_id"],
+];
+
+async function findAuthUserByEmail(admin: any, email: string) {
+  const normalized = email.trim().toLowerCase();
+  for (let page = 1; page <= 20; page += 1) {
+    const { data, error } = await admin.auth.admin.listUsers({ page, perPage: 1000 });
+    if (error) throw error;
+    const found = data?.users?.find((u: any) => u.email?.toLowerCase() === normalized);
+    if (found) return found;
+    if (!data?.users || data.users.length < 1000) break;
+  }
+  return null;
+}
+
+async function deleteUserAccount(admin: any, userId: string, email?: string | null) {
+  for (const [table, col] of USER_CLEANUP_TABLES) {
+    await admin.from(table).delete().eq(col, userId);
+  }
+
+  await admin.from("company_users").delete().eq("user_id", userId);
+
+  const { error: publicErr } = await admin.from("users").delete().eq("id", userId);
+  if (publicErr) throw publicErr;
+
+  const { error: authErr } = await admin.auth.admin.deleteUser(userId);
+  if (authErr && !/not found/i.test(authErr.message ?? "")) throw authErr;
+
+  if (email) {
+    const authUser = await findAuthUserByEmail(admin, email);
+    if (authUser?.id && authUser.id !== userId) {
+      await admin.auth.admin.deleteUser(authUser.id);
+    }
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -117,7 +162,18 @@ Deno.serve(async (req) => {
       }
     }
 
-    const targetUserId = member.user_id as string | null;
+    const targetEmail = typeof member.email === "string" ? member.email.trim().toLowerCase() : null;
+    let targetUserId = member.user_id as string | null;
+
+    if (!targetUserId && targetEmail) {
+      const { data: publicUser } = await admin
+        .from("users")
+        .select("id")
+        .eq("company_id", member.company_id)
+        .ilike("email", targetEmail)
+        .maybeSingle();
+      targetUserId = (publicUser?.id as string | undefined) ?? null;
+    }
 
     // 1) Delete the company_users row
     const { error: delMemErr } = await admin
@@ -128,17 +184,28 @@ Deno.serve(async (req) => {
       });
     }
 
-    // 2) If user is linked, check for other memberships
+    // 2) If user is linked, check for other memberships and purge the login account
     if (targetUserId) {
       const { count: otherCount } = await admin
         .from("company_users")
         .select("id", { head: true, count: "exact" })
         .eq("user_id", targetUserId);
       if ((otherCount ?? 0) === 0) {
-        // Delete public.users row
-        await admin.from("users").delete().eq("id", targetUserId);
-        // Delete auth.users row
-        await admin.auth.admin.deleteUser(targetUserId);
+        await deleteUserAccount(admin, targetUserId, targetEmail);
+      }
+    } else if (targetEmail) {
+      const { count: publicCount } = await admin
+        .from("users")
+        .select("id", { head: true, count: "exact" })
+        .ilike("email", targetEmail);
+      const { count: memberCount } = await admin
+        .from("company_users")
+        .select("id", { head: true, count: "exact" })
+        .ilike("email", targetEmail);
+
+      if ((publicCount ?? 0) === 0 && (memberCount ?? 0) === 0) {
+        const authUser = await findAuthUserByEmail(admin, targetEmail);
+        if (authUser?.id) await admin.auth.admin.deleteUser(authUser.id);
       }
     }
 
