@@ -4345,7 +4345,8 @@
       "publishedCount": "已发布文档",
       "info": "由供应商分享的文档。下载使用安全且有时效的链接。",
       "emptySection": "此分类暂无文档。",
-      "viewSpecsCTA": "查看产品规格"
+      "viewSpecsCTA": "查看产品规格",
+      "supplierNameTooltip": "查看文档和技术规格"
     }
   }
 }

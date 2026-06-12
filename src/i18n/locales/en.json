@@ -4384,7 +4384,8 @@
       "publishedCount": "published documents",
       "info": "Documents shared by the supplier. Downloads use secure, time-limited links.",
       "emptySection": "No documents in this section yet.",
-      "viewSpecsCTA": "View Product Specs"
+      "viewSpecsCTA": "View Product Specs",
+      "supplierNameTooltip": "View documents and technical specs"
     }
   }
 }
