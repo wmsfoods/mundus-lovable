@@ -9,7 +9,7 @@ const corsHeaders = {
 
 const RESEND_API_KEY =
   Deno.env.get("RESEND_API_KEY") || "";
-const FROM = "Mundus Trade <noreply@mundustrade.com>";
+const FROM = "Mundus Trade <contact@mundustrade.com>";
 const ADMIN_EMAILS = ["fn@mundustrade.com", "contact@mundustrade.com"];
 const WINE = "#8B2252";
 const PLATFORM_URL = "https://app.mundustrade.us";
