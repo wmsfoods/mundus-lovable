@@ -47,7 +47,7 @@ function btn(label: string, url: string) {
 function directLoginButton(label: string) {
   return `<div style="text-align:center;margin:28px 0;">
     <a href="${PLATFORM_URL}/login" style="background:${WINE};color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;display:inline-block;">${label}</a>
-    <p style="font-size:12px;color:#777;margin:14px 0 0;">If the button doesn't open, copy and paste this address into your browser:</p>
+    <p style="font-size:12px;color:#777;margin:14px 0 0;">If the button doesn't open, do not use the noreply.mundustrade.com link. Copy and paste this address into your browser:</p>
     <p style="font-size:13px;color:${WINE};margin:6px 0 0;word-break:break-all;">${PLATFORM_URL}/login</p>
   </div>`;
 }
@@ -128,6 +128,32 @@ async function sendEmail(to: string | string[], subject: string, html: string) {
   if (!res.ok) {
     const txt = await res.text();
     throw new Error(`Resend error: ${res.status} ${txt}`);
+  }
+  return res.json();
+}
+
+async function sendNativeApprovalEmail(userEmail: string, userName: string) {
+  const url = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !key) throw new Error("Native email environment is not configured");
+
+  const res = await fetch(`${url}/functions/v1/send-transactional-email`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      apikey: key,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      templateName: "signup-approved",
+      recipientEmail: userEmail,
+      idempotencyKey: `signup-approved-${userEmail.toLowerCase()}-${Date.now()}`,
+      templateData: { userName, loginUrl: `${PLATFORM_URL}/login` },
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Native email error: ${res.status} ${await res.text()}`);
   }
   return res.json();
 }
@@ -219,13 +245,7 @@ serve(async (req) => {
       );
     } else if (action === "approval") {
       const { userEmail, userName } = body;
-      await sendAndLog(
-        userEmail,
-        "✅ Your Mundus Trade Account Has Been Approved!",
-        approvalHtml(userName || ""),
-        "signupApproved",
-        { userName },
-      );
+      await sendNativeApprovalEmail(userEmail, userName || "");
       try {
         const url = Deno.env.get("SUPABASE_URL");
         const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");

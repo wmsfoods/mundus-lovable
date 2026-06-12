@@ -141,6 +141,7 @@ import SupplierRespond from "./pages/public/SupplierRespond.tsx";
 import ShippingInstructionsForm from "./pages/public/ShippingInstructionsForm.tsx";
 import ShippingInstructionsPrint from "./pages/public/ShippingInstructionsPrint.tsx";
 import PublicHome from "./pages/public/PublicHome.tsx";
+import Unsubscribe from "./pages/Unsubscribe.tsx";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -183,6 +184,7 @@ const App = () => (
             <Route path="/signup" element={<Signup />} />
             <Route path="/signup/success" element={<SignupSuccess />} />
             <Route path="/signup/partner" element={<PartnerSignup />} />
+            <Route path="/unsubscribe" element={<Unsubscribe />} />
             <Route path="/respond/:token" element={<SupplierRespond />} />
            <Route path="/invite/:token" element={<InviteAccept />} />
             <Route path="/shipping-instructions/:token" element={<ShippingInstructionsForm />} />
