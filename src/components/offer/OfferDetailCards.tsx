@@ -57,6 +57,9 @@ export type OfferCardsProps = {
   destinationPortsCount?: number;
   createdAt?: string | null;
   supplierName?: string | null;
+  supplierId?: string | null;
+  onSupplierClick?: (supplierId: string) => void;
+  supplierTooltip?: string;
   items: OfferCardItem[];
   showSupplierPricing?: boolean;
   gallery: GalleryImage[];
