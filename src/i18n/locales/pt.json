@@ -62,7 +62,11 @@
         "revoked": "Revogado",
         "expired": "Expirado"
       }
-    }
+    },
+    "saving": "Salvando…",
+    "uploading": "Enviando…",
+    "delete": "Excluir",
+    "select": "Selecione…"
   },
   "auth": {
     "login": "Entrar",
@@ -278,7 +282,8 @@
       "closeMenu": "Fechar menu",
       "navigation": "Navegação",
       "myCustomers": "Meus Clientes",
-      "connectedSuppliers": "Fornecedores conectados"
+      "connectedSuppliers": "Fornecedores conectados",
+      "documentsSpecs": "Documentos & Specs"
     },
     "bottom": {
       "create": "Criar",
@@ -4307,6 +4312,73 @@
       "tabMessages": "Mensagens",
       "emptyDeal": "Nenhuma mensagem ainda. Use 'Mensagem via Mundus' para iniciar uma conversa sobre este pedido.",
       "loading": "Carregando mensagens..."
+    }
+  },
+  "companyDocuments": {
+    "title": "Documentos & Specs",
+    "subtitle": "Biblioteca da sua empresa — certificações e fichas de produto que os compradores veem antes de negociar.",
+    "empty": "Nenhum documento ainda.",
+    "tabs": {
+      "company_doc": "Documentos da Empresa",
+      "certification": "Certificações",
+      "product_spec": "Fichas de Produto"
+    },
+    "toolbar": {
+      "search": "Filtrar por título ou tipo…",
+      "counter": "{{visible}} de {{total}} visíveis aos compradores"
+    },
+    "upload": {
+      "button": "Enviar Documento",
+      "title": "Enviar Documento",
+      "submit": "Enviar",
+      "choose": "Escolha um arquivo ou arraste aqui",
+      "formats": "PDF, PNG ou JPG · máx 10 MB",
+      "tooLarge": "Arquivo excede 10 MB",
+      "invalidType": "Use PDF, PNG ou JPG",
+      "success": "Documento enviado",
+      "error": "Falha no envio"
+    },
+    "edit": {
+      "title": "Editar Documento",
+      "success": "Documento atualizado",
+      "error": "Falha ao atualizar"
+    },
+    "fields": {
+      "title": "Título",
+      "description": "Descrição",
+      "descriptionPh": "Contexto curto que os compradores lerão sob o título…",
+      "certType": "Tipo de Certificação",
+      "expiresAt": "Validade",
+      "productCategory": "Categoria do Produto",
+      "meatCut": "Corte",
+      "selectCategoryFirst": "Selecione uma categoria primeiro",
+      "visible": "Visível aos compradores",
+      "visibleShort": "Visível",
+      "visibleHelp": "Documentos não publicados ficam como rascunho, visíveis apenas para o seu time."
+    },
+    "badge": {
+      "draft": "Rascunho",
+      "validUntil": "Válido até {{date}}",
+      "expiresIn": "Expira em {{n}} dias",
+      "expired": "Expirado em {{date}}"
+    },
+    "actions": {
+      "preview": "Visualizar",
+      "download": "Baixar",
+      "openFile": "Abrir arquivo",
+      "deleted": "Documento excluído"
+    },
+    "confirmDelete": {
+      "title": "Excluir documento?",
+      "body": "Esta ação não pode ser desfeita."
+    },
+    "buyer": {
+      "verified": "Verificado",
+      "deals": "negócios",
+      "publishedCount": "documentos publicados",
+      "info": "Documentos compartilhados pelo fornecedor. Downloads usam links seguros com validade limitada.",
+      "emptySection": "Sem documentos nesta seção ainda.",
+      "viewSpecsCTA": "Ver Fichas de Produto"
     }
   }
 }

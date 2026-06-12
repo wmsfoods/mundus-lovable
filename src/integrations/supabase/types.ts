@@ -1209,41 +1209,74 @@ export type Database = {
       }
       company_documents: {
         Row: {
+          category: string
+          cert_type: string | null
           company_id: string
           created_at: string
+          created_by: string | null
+          description: string | null
           doc_type: string
+          expires_at: string | null
           file_path: string | null
           file_size: number | null
+          file_size_bytes: number | null
+          file_type: string | null
           file_url: string | null
           id: string
+          is_published: boolean
+          meat_cut: string | null
           mime_type: string | null
           name: string
+          product_category: string | null
+          title: string | null
           updated_at: string
           uploaded_by: string | null
         }
         Insert: {
+          category?: string
+          cert_type?: string | null
           company_id: string
           created_at?: string
+          created_by?: string | null
+          description?: string | null
           doc_type?: string
+          expires_at?: string | null
           file_path?: string | null
           file_size?: number | null
+          file_size_bytes?: number | null
+          file_type?: string | null
           file_url?: string | null
           id?: string
+          is_published?: boolean
+          meat_cut?: string | null
           mime_type?: string | null
           name: string
+          product_category?: string | null
+          title?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
         Update: {
+          category?: string
+          cert_type?: string | null
           company_id?: string
           created_at?: string
+          created_by?: string | null
+          description?: string | null
           doc_type?: string
+          expires_at?: string | null
           file_path?: string | null
           file_size?: number | null
+          file_size_bytes?: number | null
+          file_type?: string | null
           file_url?: string | null
           id?: string
+          is_published?: boolean
+          meat_cut?: string | null
           mime_type?: string | null
           name?: string
+          product_category?: string | null
+          title?: string | null
           updated_at?: string
           uploaded_by?: string | null
         }
@@ -8310,6 +8343,10 @@ export type Database = {
       company_family_ids: { Args: { p_company_id: string }; Returns: string[] }
       company_family_root: { Args: { p_company_id: string }; Returns: string }
       company_has_pro: { Args: { p_company_id: string }; Returns: boolean }
+      company_has_published_documents: {
+        Args: { p_company_id: string }
+        Returns: boolean
+      }
       company_visible_via_supplier_link: {
         Args: { _company_id: string }
         Returns: boolean

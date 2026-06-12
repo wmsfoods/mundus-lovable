@@ -26,6 +26,8 @@ import { countryToCode } from "@/lib/countryCodes";
 import { formatIncotermWithPlace } from "@/lib/incotermPricing";
 import { formatShipmentReadyDisplay } from "@/lib/shipmentReady";
 import { formatCutMetaFromOfferItem } from "@/lib/cutMetaDisplay";
+import { useCompanyHasPublishedDocs } from "@/hooks/useCompanyDocuments";
+import { FileIcon } from "@/components/icons";
 const STATUS_COLORS: Record<string, { bg: string; fg: string; dot: string; key: string }> = {
   active:      { bg: "#e6f7ed", fg: "#15803d", dot: "#16a34a", key: "active" },
   new:         { bg: "#fff4e0", fg: "#a85b00", dot: "#f59e0b", key: "new" },
@@ -417,6 +419,7 @@ function BuyerOfferBody({
   const firstItem = items[0];
   const category =
     firstItem?.customer_product?.standard_product?.product_category?.name_en ?? null;
+  const { data: hasPublishedDocs } = useCompanyHasPublishedDocs((offer as any)?.supplier_id ?? undefined);
 
   // Lifted selection state so LogisticsOverview, FreightCalculator and the
   // cuts table can all reflect the same port + incoterm pick.
@@ -588,6 +591,19 @@ function BuyerOfferBody({
         unit={unit}
         statusPill={statusPill}
       />
+
+      {hasPublishedDocs && (offer as any)?.supplier_id && (
+        <div style={{ marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={() => navigate(`/buyer/suppliers/${(offer as any).supplier_id}/specs`)}
+            className="inline-flex items-center gap-2 px-3 h-10 rounded-md border border-[#B64769]/30 text-[#B64769] bg-[#B64769]/5 hover:bg-[#B64769]/10 text-sm font-medium"
+          >
+            <FileIcon size={16} />
+            {t("companyDocuments.buyer.viewSpecsCTA", "View Product Specs")}
+          </button>
+        </div>
+      )}
 
       {items.length > 0 && incotermLabels.length > 0 && (
         <>

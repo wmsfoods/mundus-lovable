@@ -62,7 +62,11 @@
         "revoked": "已撤销",
         "expired": "已过期"
       }
-    }
+    },
+    "saving": "保存中…",
+    "uploading": "上传中…",
+    "delete": "删除",
+    "select": "选择…"
   },
   "auth": {
     "login": "登录",
@@ -261,7 +265,8 @@
       "closeMenu": "关闭菜单",
       "navigation": "导航",
       "myCustomers": "我的客户",
-      "connectedSuppliers": "已连接的供应商"
+      "connectedSuppliers": "已连接的供应商",
+      "documentsSpecs": "文档与规格"
     },
     "bottom": {
       "create": "创建",
@@ -4274,6 +4279,73 @@
       "tabMessages": "消息",
       "emptyDeal": "暂无消息。使用'通过 Mundus 发送消息'开始关于此订单的对话。",
       "loading": "正在加载消息..."
+    }
+  },
+  "companyDocuments": {
+    "title": "文档与规格",
+    "subtitle": "贵公司资料库 — 买家在洽谈前查看的认证和产品规格表。",
+    "empty": "暂无文档。",
+    "tabs": {
+      "company_doc": "公司文件",
+      "certification": "认证",
+      "product_spec": "产品规格"
+    },
+    "toolbar": {
+      "search": "按标题或类型筛选…",
+      "counter": "买家可见 {{visible}} / {{total}}"
+    },
+    "upload": {
+      "button": "上传文档",
+      "title": "上传文档",
+      "submit": "上传",
+      "choose": "选择文件或拖放到此处",
+      "formats": "PDF、PNG 或 JPG · 最大 10 MB",
+      "tooLarge": "文件超过 10 MB",
+      "invalidType": "请使用 PDF、PNG 或 JPG",
+      "success": "文档已上传",
+      "error": "上传失败"
+    },
+    "edit": {
+      "title": "编辑文档",
+      "success": "文档已更新",
+      "error": "更新失败"
+    },
+    "fields": {
+      "title": "标题",
+      "description": "描述",
+      "descriptionPh": "买家会在标题下方看到的简短说明…",
+      "certType": "认证类型",
+      "expiresAt": "有效期",
+      "productCategory": "产品类别",
+      "meatCut": "分割",
+      "selectCategoryFirst": "请先选择类别",
+      "visible": "对买家可见",
+      "visibleShort": "可见",
+      "visibleHelp": "未发布的文档为草稿,仅您的团队可见。"
+    },
+    "badge": {
+      "draft": "草稿",
+      "validUntil": "有效期至 {{date}}",
+      "expiresIn": "还有 {{n}} 天到期",
+      "expired": "已于 {{date}} 到期"
+    },
+    "actions": {
+      "preview": "预览",
+      "download": "下载",
+      "openFile": "打开文件",
+      "deleted": "文档已删除"
+    },
+    "confirmDelete": {
+      "title": "删除该文档?",
+      "body": "此操作无法撤销。"
+    },
+    "buyer": {
+      "verified": "已认证",
+      "deals": "成交",
+      "publishedCount": "已发布文档",
+      "info": "由供应商分享的文档。下载使用安全且有时效的链接。",
+      "emptySection": "此分类暂无文档。",
+      "viewSpecsCTA": "查看产品规格"
     }
   }
 }

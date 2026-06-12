@@ -119,6 +119,9 @@ import PriceBenchmark from "./pages/supplier/PriceBenchmark.tsx";
 import SupplierAnalytics from "./pages/supplier/SupplierAnalytics.tsx";
 import SupplierMundusIntel from "./pages/supplier/SupplierMundusIntel.tsx";
 import CutComparison from "./pages/supplier/CutComparison.tsx";
+import SupplierCompanyDocuments from "./pages/supplier/SupplierCompanyDocuments.tsx";
+import AdminCompanyDocuments from "./pages/admin/AdminCompanyDocuments.tsx";
+import BuyerSupplierSpecs from "./pages/buyer/BuyerSupplierSpecs.tsx";
 import DevIndex from "./pages/DevIndex.tsx";
 import Profile from "./pages/Profile.tsx";
 import Notifications from "./pages/Notifications.tsx";
@@ -230,6 +233,7 @@ const App = () => (
               <Route path="users" element={<BuyerUsers />} />
               <Route path="company" element={<BuyerCompany />} />
               <Route path="offices" element={<SupplierOffices />} />
+              <Route path="suppliers/:companyId/specs" element={<BuyerSupplierSpecs />} />
               <Route path="negotiations" element={<BuyerNegotiations />} />
               <Route path="negotiations/:id" element={<BuyerNegotiationDetail />} />
               <Route path="requests" element={<BuyerRequests />} />
@@ -277,6 +281,7 @@ const App = () => (
               <Route path="users" element={<SupplierUsers />} />
               <Route path="my-customers" element={<SupplierMyCustomers />} />
               <Route path="company" element={<SupplierCompany />} />
+              <Route path="company/documents" element={<SupplierCompanyDocuments />} />
               <Route path="offices" element={<SupplierOffices />} />
               <Route path="negotiations" element={<SupplierNegotiations />} />
               <Route path="negotiations/:id" element={<SupplierNegotiationDetail />} />
@@ -330,6 +335,7 @@ const App = () => (
               <Route path="companies" element={<AdminCompanies />} />
               <Route path="companies/new" element={<AdminCompanyDetail mode="new" />} />
               <Route path="companies/:id" element={<AdminCompanyDetail />} />
+              <Route path="companies/:companyId/documents" element={<AdminCompanyDocuments />} />
               <Route path="offers" element={<AdminOffers />} />
               <Route path="offers/:id" element={<SupplierOfferDetail adminMode />} />
               <Route path="deals" element={<AdminOrders />} />
