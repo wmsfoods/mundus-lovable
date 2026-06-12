@@ -299,8 +299,3 @@ export function DataSourceCard() {
     </Card>
   );
 }
-        </div>
-      )}
-    </Card>
-  );
-}
