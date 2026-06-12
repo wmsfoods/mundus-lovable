@@ -62,7 +62,11 @@
         "revoked": "Revoked",
         "expired": "Expired"
       }
-    }
+    },
+    "saving": "Saving…",
+    "uploading": "Uploading…",
+    "delete": "Delete",
+    "select": "Select…"
   },
   "auth": {
     "login": "Log in",
@@ -278,7 +282,8 @@
       "closeMenu": "Close menu",
       "navigation": "Navigation",
       "myCustomers": "My Customers",
-      "connectedSuppliers": "Connected suppliers"
+      "connectedSuppliers": "Connected suppliers",
+      "documentsSpecs": "Documents & Specs"
     },
     "bottom": {
       "create": "Create",
@@ -4313,6 +4318,73 @@
       "tabMessages": "Messages",
       "emptyDeal": "No messages yet. Use 'Message via Mundus' to start a conversation about this order.",
       "loading": "Loading messages..."
+    }
+  },
+  "companyDocuments": {
+    "title": "Documents & Specs",
+    "subtitle": "Your company library — certifications and product spec sheets buyers see before they negotiate.",
+    "empty": "No documents yet.",
+    "tabs": {
+      "company_doc": "Company Documents",
+      "certification": "Certifications",
+      "product_spec": "Product Specs"
+    },
+    "toolbar": {
+      "search": "Filter by title or type…",
+      "counter": "{{visible}} of {{total}} visible to buyers"
+    },
+    "upload": {
+      "button": "Upload Document",
+      "title": "Upload Document",
+      "submit": "Upload",
+      "choose": "Choose a file or drag and drop it here",
+      "formats": "PDF, PNG or JPG · max 10 MB",
+      "tooLarge": "File exceeds 10 MB",
+      "invalidType": "Use PDF, PNG or JPG",
+      "success": "Document uploaded",
+      "error": "Upload failed"
+    },
+    "edit": {
+      "title": "Edit Document",
+      "success": "Document updated",
+      "error": "Update failed"
+    },
+    "fields": {
+      "title": "Title",
+      "description": "Description",
+      "descriptionPh": "Short context buyers will read under the title…",
+      "certType": "Certification Type",
+      "expiresAt": "Expiry Date",
+      "productCategory": "Product Category",
+      "meatCut": "Cut",
+      "selectCategoryFirst": "Select a category first",
+      "visible": "Visible to buyers",
+      "visibleShort": "Visible",
+      "visibleHelp": "Unpublished documents stay as drafts only your team can see."
+    },
+    "badge": {
+      "draft": "Draft",
+      "validUntil": "Valid until {{date}}",
+      "expiresIn": "Expires in {{n}} days",
+      "expired": "Expired {{date}}"
+    },
+    "actions": {
+      "preview": "Preview",
+      "download": "Download",
+      "openFile": "Open file",
+      "deleted": "Document deleted"
+    },
+    "confirmDelete": {
+      "title": "Delete document?",
+      "body": "This action cannot be undone."
+    },
+    "buyer": {
+      "verified": "Verified",
+      "deals": "deals",
+      "publishedCount": "published documents",
+      "info": "Documents shared by the supplier. Downloads use secure, time-limited links.",
+      "emptySection": "No documents in this section yet.",
+      "viewSpecsCTA": "View Product Specs"
     }
   }
 }
