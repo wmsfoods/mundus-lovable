@@ -104,9 +104,37 @@ export function OfferDetailCards(props: OfferCardsProps) {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: 4,
+                minHeight: 44,
               }}
             >
-              🏭 {supplierName}
+              🏭 {onSupplierClick && supplierId ? (
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <span
+                      className="supplier-name-link"
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => onSupplierClick(supplierId)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSupplierClick(supplierId);
+                        }
+                      }}
+                    >
+                      {supplierName}
+                      <FileText className="supplier-link-icon" size={12} />
+                    </span>
+                  </TooltipTrigger>
+                  {supplierTooltip && (
+                    <TooltipContent side="bottom">
+                      <p>{supplierTooltip}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              ) : (
+                supplierName
+              )}
             </div>
           )}
           <div className="ofc-chip-row">
