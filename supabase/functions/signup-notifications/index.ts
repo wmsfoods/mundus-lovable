@@ -23,7 +23,7 @@ const logoHeader = `
 
 const footer = `
   <div style="padding:24px;text-align:center;border-top:1px solid #eee;margin-top:24px;">
-    <p style="color:#777;font-size:12px;margin:4px 0;">If you have any questions, contact us at <a href="mailto:support@mundustrade.com" style="color:${WINE};">support@mundustrade.com</a></p>
+    <p style="color:#777;font-size:12px;margin:4px 0;">If you have any questions, contact us at <a href="mailto:contact@mundustrade.com" style="color:${WINE};">contact@mundustrade.com</a></p>
     <p style="color:#999;font-size:11px;margin:8px 0 0;">Mundus Trade · International Meat Trading Platform</p>
   </div>`;
 
@@ -41,6 +41,14 @@ function wrap(content: string) {
 function btn(label: string, url: string) {
   return `<div style="text-align:center;margin:28px 0;">
     <a href="${url}" style="background:${WINE};color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;display:inline-block;">${label}</a>
+  </div>`;
+}
+
+function directLoginButton(label: string) {
+  return `<div style="text-align:center;margin:28px 0;">
+    <a href="${PLATFORM_URL}/login" style="background:${WINE};color:#fff;text-decoration:none;padding:14px 32px;border-radius:8px;font-weight:bold;display:inline-block;">${label}</a>
+    <p style="font-size:12px;color:#777;margin:14px 0 0;">If the button doesn't open, copy and paste this address into your browser:</p>
+    <p style="font-size:13px;color:${WINE};margin:6px 0 0;word-break:break-all;">${PLATFORM_URL}/login</p>
   </div>`;
 }
 
@@ -84,7 +92,7 @@ function adminNotificationHtml(d: {
     </table>
     ${btn("Review Request", `${PLATFORM_URL}/admin/user-requests`)}
     <p style="font-weight:bold;color:${WINE};">This request will remain pending until you take action.</p>
-    <p>If you have any questions, reply to this email or contact us at <a href="mailto:support@mundustrade.com" style="color:${WINE};">support@mundustrade.com</a></p>
+    <p>If you have any questions, reply to this email or contact us at <a href="mailto:contact@mundustrade.com" style="color:${WINE};">contact@mundustrade.com</a></p>
     <p style="margin-top:24px;">Best regards,<br/><strong>Mundus Team</strong></p>
   `);
 }
@@ -95,7 +103,7 @@ function approvalHtml(userName: string) {
     <p>Congratulations, <strong>${userName}</strong>! 🎉</p>
     <p>Your account has been approved and you now have full access to the Mundus Trade platform.</p>
     <p>You can start exploring offers, managing your products, and connecting with buyers/suppliers worldwide.</p>
-    ${btn("Access Platform", `${PLATFORM_URL}/login`)}
+    ${directLoginButton("Access Platform")}
   `);
 }
 
@@ -104,7 +112,7 @@ function rejectionHtml(userName: string) {
     <h2 style="color:${WINE};font-size:24px;margin:0 0 16px;">Registration Update</h2>
     <p>Hello ${userName},</p>
     <p>After reviewing your registration, we were unable to approve your account at this time.</p>
-    <p>If you believe this was an error or would like to provide additional documentation, please contact us at <a href="mailto:support@mundustrade.com" style="color:${WINE};">support@mundustrade.com</a></p>
+    <p>If you believe this was an error or would like to provide additional documentation, please contact us at <a href="mailto:contact@mundustrade.com" style="color:${WINE};">contact@mundustrade.com</a></p>
   `);
 }
 
