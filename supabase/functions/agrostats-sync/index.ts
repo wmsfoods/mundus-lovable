@@ -42,6 +42,15 @@ const Q = (c: string) => `"${c.replace(/"/g, '""')}"`
 const BATCH = 5000
 const INSERT_CHUNK = 1000
 const SOFT_BUDGET_MS = 90_000
+const LEASE_SECONDS = 120
+
+// Explicit column list — replaces SELECT * to cut transfer/CPU per batch.
+const SELECT_COLS = [
+  COL.id, COL.polCountry, COL.polName, COL.destCountry, COL.destName,
+  COL.date, COL.shipper, COL.shipperCountry, COL.shipperState, COL.shipperCity,
+  COL.shipperType, COL.consignee, COL.consigneeCountry, COL.consigneeCity,
+  COL.consigneeType, COL.hs8, COL.bl, COL.wt, COL.fob,
+].map(Q).join(', ')
 
 async function pg<T>(fn: (c: Client) => Promise<T>): Promise<T> {
   const password = Deno.env.get('AGROSTATS_DB_PASSWORD')?.trim()
