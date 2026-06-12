@@ -40,9 +40,13 @@ export default function BuyerSupplierSpecs() {
     queryKey: ["buyer-supplier-deals-count", companyId],
     enabled: !!companyId,
     queryFn: async () => {
+      // Count orders linked via offers.supplier_id
+      const { data: offerIds } = await (supabase as any)
+        .from("offers").select("id").eq("supplier_id", companyId);
+      const ids = (offerIds || []).map((o: any) => o.id);
+      if (!ids.length) return 0;
       const { count } = await (supabase as any)
-        .from("orders").select("id", { count: "exact", head: true })
-        .or(`supplier_company_id.eq.${companyId}`);
+        .from("orders").select("id", { count: "exact", head: true }).in("offer_id", ids);
       return count ?? 0;
     },
   });
