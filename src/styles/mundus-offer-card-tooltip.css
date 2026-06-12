@@ -65,3 +65,27 @@
   align-items: center;
   gap: 4px;
 }
+.supplier-name-link {
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  min-height: 44px;
+  padding: 8px 0;
+}
+.supplier-name-link:hover {
+  text-decoration: underline;
+  color: #B64769;
+}
+.supplier-link-icon {
+  opacity: 0;
+  transition: opacity 0.15s ease;
+  flex-shrink: 0;
+}
+.supplier-name-link:hover .supplier-link-icon,
+.supplier-name-link:focus .supplier-link-icon {
+  opacity: 1;
+}
