@@ -24,7 +24,7 @@ const COL = {
   destName: 'Place_and_Ports/DEST_Name',
   date: 'Dates Long Haul/Date',
   shipper: 'Company_Shipper/Shipper Name',
-  shipperCountry: 'Company_Shipper/Country',
+  shipperCountry: 'Company_Shipper/Country Name',
   shipperState: 'Company_Shipper/State',
   shipperCity: 'Company_Shipper/City',
   shipperType: 'Company_Shipper/Type',
@@ -264,14 +264,15 @@ async function incremental(supaSrv: ReturnType<typeof createClient>) {
     .limit(1)
     .maybeSingle()
 
+  if (!maxRow?.month_key) {
+    throw new Error('Mirror vazio — rode o backfill primeiro antes de sincronizar incrementalmente.')
+  }
   const dateFmt = await getDateFormat(supaSrv)
   let boundary: string
-  if (maxRow?.month_key) {
+  {
     const [y, m] = maxRow.month_key.split('-').map(Number)
     const idx = y * 12 + (m - 1) - 1 // one month before max
     boundary = `${Math.floor(idx / 12)}-${String((idx % 12) + 1).padStart(2, '0')}`
-  } else {
-    boundary = '1900-01'
   }
 
   // Delete local rows >= boundary
@@ -422,6 +423,31 @@ Deno.serve(async (req) => {
         }
       })
       return json({ ok: true, ...r, unique: r.total === r.distinct_ids && r.nulls === 0 })
+    }
+
+    if (action === 'inspect-columns') {
+      const r = await pg(async (c) => {
+        const res = await c.queryObject<{ column_name: string; data_type: string; ordinal_position: number }>(
+          `SELECT ordinal_position, column_name, data_type
+             FROM information_schema.columns
+            WHERE table_schema = 'wmsfoods' AND table_name = 'meat_export'
+            ORDER BY ordinal_position`,
+        )
+        return res.rows
+      })
+      return json({ ok: true, count: r.length, columns: r })
+    }
+
+    if (action === 'probe-select') {
+      // Run SELECT_COLS with LIMIT 1 — used to verify the COL map is correct.
+      const r = await pg(async (c) => {
+        const res = await c.queryObject<Record<string, unknown>>({
+          text: `SELECT ${SELECT_COLS} FROM ${FQ} LIMIT 1`,
+          camelcase: false,
+        })
+        return res.rows[0] ?? null
+      })
+      return json({ ok: true, row: r })
     }
 
     return json({ error: 'Unknown action' }, 400)
