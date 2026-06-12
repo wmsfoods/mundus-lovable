@@ -594,6 +594,19 @@ function BuyerOfferBody({
         statusPill={statusPill}
       />
 
+      {hasPublishedDocs && (offer as any)?.supplier_id && (
+        <div style={{ marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={() => navigate(`/buyer/suppliers/${(offer as any).supplier_id}/specs`)}
+            className="inline-flex items-center gap-2 px-3 h-10 rounded-md border border-[#B64769]/30 text-[#B64769] bg-[#B64769]/5 hover:bg-[#B64769]/10 text-sm font-medium"
+          >
+            <FileIcon size={16} />
+            {t("companyDocuments.buyer.viewSpecsCTA", "View Product Specs")}
+          </button>
+        </div>
+      )}
+
       {items.length > 0 && incotermLabels.length > 0 && (
         <>
           <LogisticsOverview
