@@ -24,7 +24,7 @@ const COL = {
   destName: 'Place_and_Ports/DEST_Name',
   date: 'Dates Long Haul/Date',
   shipper: 'Company_Shipper/Shipper Name',
-  shipperCountry: 'Company_Shipper/Country',
+  shipperCountry: 'Company_Shipper/Country Name',
   shipperState: 'Company_Shipper/State',
   shipperCity: 'Company_Shipper/City',
   shipperType: 'Company_Shipper/Type',
