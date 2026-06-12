@@ -74,7 +74,7 @@ export function OfferDetailCards(props: OfferCardsProps) {
     totalValueUsd, totalQtyKg, containerLabel, shipmentLabel,
     origin, destination, incoterms, paymentTerms,
     containerSize, containerCount, destinationPortsCount, createdAt,
-    supplierName,
+    supplierName, supplierId, onSupplierClick, supplierTooltip,
     items, showSupplierPricing, gallery, illustrativeLabel, unit, statusPill,
   } = props;
 
