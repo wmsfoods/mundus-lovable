@@ -42,6 +42,15 @@ const Q = (c: string) => `"${c.replace(/"/g, '""')}"`
 const BATCH = 5000
 const INSERT_CHUNK = 1000
 const SOFT_BUDGET_MS = 90_000
+const LEASE_SECONDS = 120
+
+// Explicit column list — replaces SELECT * to cut transfer/CPU per batch.
+const SELECT_COLS = [
+  COL.id, COL.polCountry, COL.polName, COL.destCountry, COL.destName,
+  COL.date, COL.shipper, COL.shipperCountry, COL.shipperState, COL.shipperCity,
+  COL.shipperType, COL.consignee, COL.consigneeCountry, COL.consigneeCity,
+  COL.consigneeType, COL.hs8, COL.bl, COL.wt, COL.fob,
+].map(Q).join(', ')
 
 async function pg<T>(fn: (c: Client) => Promise<T>): Promise<T> {
   const password = Deno.env.get('AGROSTATS_DB_PASSWORD')?.trim()
@@ -131,10 +140,22 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
   const started = Date.now()
   const dateFmt = await getDateFormat(supaSrv)
 
+  // Cheap no-op: cron pings every minute, so most invocations should exit fast.
+  {
+    const { data: s0 } = await supaSrv.from('agrostats_sync_state').select('status').eq('id', 1).maybeSingle()
+    if (!s0 || s0.status !== 'backfilling') return { done: true, skipped: 'not_backfilling' }
+  }
+
+  // Atomic lease claim — exit if another worker holds it.
+  const { data: claimed, error: claimErr } = await supaSrv.rpc('claim_agrostats_backfill_lease', { _seconds: LEASE_SECONDS })
+  if (claimErr) throw new Error(`claim lease: ${claimErr.message}`)
+  if (claimed !== true) return { done: false, skipped: 'lease_held' }
+
+  try {
   while (Date.now() - started < SOFT_BUDGET_MS) {
     const { data: state } = await supaSrv.from('agrostats_sync_state').select('*').eq('id', 1).maybeSingle()
     if (!state) break
-    if (state.status === 'complete') break
+    if (state.status !== 'backfilling') break
     const offset = Number(state.last_offset ?? 0)
     const total = state.total_rows ? Number(state.total_rows) : null
     if (total != null && offset >= total) {
@@ -146,7 +167,7 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
     try {
       mapped = await pg(async (c) => {
         const res = await c.queryObject<Record<string, unknown>>({
-          text: `SELECT * FROM ${FQ} ORDER BY ${Q(COL.id)} OFFSET ${offset} LIMIT ${BATCH}`,
+          text: `SELECT ${SELECT_COLS} FROM ${FQ} ORDER BY ${Q(COL.id)} OFFSET ${offset} LIMIT ${BATCH}`,
           camelcase: false,
         })
         return res.rows.map((r) => mapRow(r, dateFmt))
@@ -161,20 +182,32 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
       return { done: true }
     }
 
+    // Insert chunk-by-chunk, advancing state AFTER EACH chunk so a hard kill
+    // mid-batch loses at most INSERT_CHUNK rows. Upsert on id_datamar makes
+    // resume idempotent.
+    let insertedThisBatch = 0
     try {
       for (let i = 0; i < mapped.length; i += INSERT_CHUNK) {
         const chunk = mapped.slice(i, i + INSERT_CHUNK)
+        // id_datamar is NOT unique in source (≈2.0M rows / 0.82M distinct),
+        // so we cannot upsert by it. Plain insert; per-chunk state update below
+        // caps the duplicate window to INSERT_CHUNK rows if killed mid-batch.
         const { error } = await supaSrv.from('meat_export_mirror').insert(chunk)
         if (error) throw new Error(error.message)
+        insertedThisBatch += chunk.length
+        await supaSrv.from('agrostats_sync_state').update({
+          last_offset: offset + insertedThisBatch,
+          rows_copied: Number(state.rows_copied ?? 0) + insertedThisBatch,
+          status: 'backfilling',
+          last_error: null,
+          lease_until: new Date(Date.now() + LEASE_SECONDS * 1000).toISOString(),
+          updated_at: new Date().toISOString(),
+        }).eq('id', 1)
       }
     } catch (e) {
       await updateState(supaSrv, { status: 'error', last_error: (e as Error).message })
       throw e
     }
-
-    const newOffset = offset + mapped.length
-    const newCopied = Number(state.rows_copied ?? 0) + mapped.length
-    await updateState(supaSrv, { last_offset: newOffset, rows_copied: newCopied, status: 'backfilling', last_error: null })
 
     if (mapped.length < BATCH) {
       await updateState(supaSrv, { status: 'complete', use_mirror: true })
@@ -182,9 +215,12 @@ async function processBatches(supaSrv: ReturnType<typeof createClient>) {
     }
   }
 
-  // Out of time — reinvoke
+  // Out of time — best-effort reinvoke. Cron will also tick within 1 minute.
   await reinvokeProcess()
   return { done: false }
+  } finally {
+    try { await supaSrv.rpc('release_agrostats_backfill_lease') } catch {}
+  }
 }
 
 async function incremental(supaSrv: ReturnType<typeof createClient>) {
@@ -290,7 +326,11 @@ Deno.serve(async (req) => {
 
     if (action === 'start-backfill') {
       const { data: state } = await supaSrv.from('agrostats_sync_state').select('*').eq('id', 1).maybeSingle()
-      const resuming = state?.status === 'error'
+      const restart = body?.restart === true
+      const curStatus = state?.status ?? 'idle'
+      // Resume mid-flight or errored runs. Only wipe on explicit restart or
+      // when fully complete/idle.
+      const resuming = !restart && (curStatus === 'error' || curStatus === 'backfilling')
       let total: number | null = state?.total_rows ?? null
       if (!resuming || !total) {
         total = await pg(async (c) => {
@@ -302,10 +342,10 @@ Deno.serve(async (req) => {
         await supaSrv.from('meat_export_mirror').delete().not('id', 'is', null)
         await updateState(supaSrv, {
           status: 'backfilling', total_rows: total, rows_copied: 0, last_offset: 0,
-          last_error: null, use_mirror: false,
+          last_error: null, use_mirror: false, lease_until: null,
         })
       } else {
-        await updateState(supaSrv, { status: 'backfilling', total_rows: total, last_error: null })
+        await updateState(supaSrv, { status: 'backfilling', total_rows: total, last_error: null, lease_until: null })
       }
       // Kick off processing in background
       await reinvokeProcess()
@@ -320,6 +360,24 @@ Deno.serve(async (req) => {
     if (action === 'incremental') {
       const r = await incremental(supaSrv)
       return json({ ok: true, ...r })
+    }
+
+    if (action === 'check-uniqueness') {
+      const r = await pg(async (c) => {
+        const res = await c.queryObject<{ total: bigint; distinct_ids: bigint; nulls: bigint }>(
+          `SELECT COUNT(*)::bigint AS total,
+                  COUNT(DISTINCT ${Q(COL.id)})::bigint AS distinct_ids,
+                  COUNT(*) FILTER (WHERE ${Q(COL.id)} IS NULL)::bigint AS nulls
+             FROM ${FQ}`,
+        )
+        const row = res.rows[0]
+        return {
+          total: Number(row?.total ?? 0),
+          distinct_ids: Number(row?.distinct_ids ?? 0),
+          nulls: Number(row?.nulls ?? 0),
+        }
+      })
+      return json({ ok: true, ...r, unique: r.total === r.distinct_ids && r.nulls === 0 })
     }
 
     return json({ error: 'Unknown action' }, 400)
