@@ -13,8 +13,6 @@ const FROM = "Mundus Trade <contact@mundustrade.com>";
 const ADMIN_EMAILS = ["fn@mundustrade.com", "contact@mundustrade.com"];
 const WINE = "#8B2252";
 const PLATFORM_URL = "https://app.mundustrade.us";
-const SENDING_DOMAIN = "mundustrade.com";
-let resendTrackingDisablePromise: Promise<void> | null = null;
 
 const LOGO_URL = "https://app.mundustrade.us/__l5e/assets-v1/1af4d767-6b52-4c67-91bb-59ee4e40da24/mundus-logo-email.png";
 const logoHeader = `
@@ -119,7 +117,6 @@ function rejectionHtml(userName: string) {
 }
 
 async function sendEmail(to: string | string[], subject: string, html: string) {
-  await ensureResendClickTrackingDisabled();
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -135,43 +132,30 @@ async function sendEmail(to: string | string[], subject: string, html: string) {
   return res.json();
 }
 
-async function ensureResendClickTrackingDisabled() {
-  if (!RESEND_API_KEY) return;
-  if (!resendTrackingDisablePromise) {
-    resendTrackingDisablePromise = (async () => {
-      try {
-        const listRes = await fetch("https://api.resend.com/domains", {
-          headers: { Authorization: `Bearer ${RESEND_API_KEY}` },
-        });
-        if (!listRes.ok) {
-          console.warn("[signup-notifications] could not list Resend domains", listRes.status, await listRes.text());
-          return;
-        }
+async function sendNativeApprovalEmail(userEmail: string, userName: string) {
+  const url = Deno.env.get("SUPABASE_URL");
+  const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !key) throw new Error("Native email environment is not configured");
 
-        const payload = await listRes.json();
-        const domain = payload?.data?.find((item: { id?: string; name?: string }) => item?.name === SENDING_DOMAIN);
-        if (!domain?.id) {
-          console.warn("[signup-notifications] Resend sending domain not found", SENDING_DOMAIN);
-          return;
-        }
+  const res = await fetch(`${url}/functions/v1/send-transactional-email`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${key}`,
+      apikey: key,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      templateName: "signup-approved",
+      recipientEmail: userEmail,
+      idempotencyKey: `signup-approved-${userEmail.toLowerCase()}-${Date.now()}`,
+      templateData: { userName, loginUrl: `${PLATFORM_URL}/login` },
+    }),
+  });
 
-        const updateRes = await fetch(`https://api.resend.com/domains/${domain.id}`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${RESEND_API_KEY}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ openTracking: false, clickTracking: false }),
-        });
-        if (!updateRes.ok) {
-          console.warn("[signup-notifications] could not disable Resend tracking", updateRes.status, await updateRes.text());
-        }
-      } catch (error) {
-        console.warn("[signup-notifications] disable Resend tracking failed", error);
-      }
-    })();
+  if (!res.ok) {
+    throw new Error(`Native email error: ${res.status} ${await res.text()}`);
   }
-  await resendTrackingDisablePromise;
+  return res.json();
 }
 
 // Logs a copy of every signup-related e-mail into `email_queue` so it
@@ -261,13 +245,7 @@ serve(async (req) => {
       );
     } else if (action === "approval") {
       const { userEmail, userName } = body;
-      await sendAndLog(
-        userEmail,
-        "✅ Your Mundus Trade Account Has Been Approved!",
-        approvalHtml(userName || ""),
-        "signupApproved",
-        { userName },
-      );
+      await sendNativeApprovalEmail(userEmail, userName || "");
       try {
         const url = Deno.env.get("SUPABASE_URL");
         const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
