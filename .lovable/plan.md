@@ -1,91 +1,158 @@
-# Supplier Document Center ("Documents & Specs")
 
-A company-level library for company docs, certifications and product spec sheets, with a read-only buyer view and full admin access. Visual style matches the existing app (wine #B64769, shadcn/ui).
+# Mundus Trade — Phase 1 Security Audit (Read-Only)
 
-## Scope
+Sources: Supabase DB linter (245 findings), Lovable security scanner (agent + supabase + supabase_lov), direct queries on `pg_policy`, `pg_proc`, `storage.buckets`, `storage.objects` policies, repo grep over `src/` and `supabase/functions/`, and `supabase/config.toml`.
 
-Three surfaces, one data model:
-- **Supplier** — `/supplier/company/documents` — full CRUD on the supplier's own library.
-- **Buyer** — `/buyer/suppliers/:companyId/specs` — read-only view of published docs, linked from offer detail.
-- **Admin (Mundus)** — `/admin/companies/:companyId/documents` — full CRUD on any company.
+**No code or DB changes have been made — this is analysis only.**
 
-Assumption (please correct if wrong): the existing `company_documents` table (already in the schema) is being **replaced/expanded** to fit this spec. Today it has columns like `doc_type`, `name`, `file_url`, `file_path`. The plan migrates it to the new shape, preserving rows where possible (`doc_type → category`, `name → title`). If you'd rather keep the legacy table untouched and create a new `company_library_documents` table, I'll switch.
+---
 
-Out of scope (untouched): the per-offer Documents/Specs uploaded inside the offer wizard.
+## CRITICAL (data exposure / auth bypass / leaked credentials)
 
-## Database
+### C-1. Hardcoded Anthropic API key in `verify-document`
+- File: `supabase/functions/verify-document/index.ts` (~line 53). Real `sk-ant-api03-...` used as `||` fallback.
+- Function is also unauthenticated (verify_jwt=false). Anyone can drain credits or grep the key from logs / repo.
+- Fix: rotate the key in Anthropic console, remove the literal fallback, require `Deno.env.get` + 500 if missing, store in Supabase secrets.
 
-New/altered table `public.company_documents` exactly per spec:
-- `category` text check in `('company_doc','certification','product_spec')`
-- `title`, `description`, `file_path`, `file_type`, `file_size_bytes`
-- `cert_type`, `expires_at` (certifications)
-- `product_category`, `meat_cut` (product specs)
-- `is_published` boolean default false
-- `created_by`, `created_at`, `updated_at`
+### C-2. Hardcoded Resend API key in 3 edge functions
+- `verify-email/index.ts`, `signup-notifications/index.ts`, `negotiation-notifications/index.ts` (all share `re_APWMMN9H_...` as fallback).
+- Fix: rotate the Resend key, remove fallbacks, fail closed if env var missing.
 
-Indexes on `(company_id, category)` and `(company_id, is_published)`.
+### C-3. `offers` table — blanket SELECT exposes drafts and pricing internals
+- Policy `offers_select_all USING (true)` allows every authenticated user to read every offer row, including `status='draft'`, `mundus_fee_rate`, `net_prices`, `minimum_price`, `specific_buyer_company_ids`, `negotiation_dial`.
+- Fix: scope SELECT to (a) owner supplier + family, (b) buyers only for `status in ('active','published')` and only non-sensitive columns (move pricing-internal columns to a separate row or a view that filters them, or split into `offers_public_view` + restricted columns).
 
-**Storage**: private bucket `company-documents`, path `{company_id}/{uuid}-{filename}`. No public URLs.
+### C-4. `offer_items` — supplier floor prices visible to all auth users
+- Policy `offer_items_select_all USING (true)` exposes `minimum_price` (and floor data via `offer_item_floors`).
+- Fix: restrict SELECT of pricing-sensitive columns to supplier owner + Mundus admin. Buyers should read only public columns through a column-filtered policy or a view.
 
-**RLS (strict, never `USING(true)`)**:
-- Supplier CRUD scoped via `EXISTS (company_users WHERE user_id=auth.uid() AND company_id=company_documents.company_id)`.
-- Admins via `public.has_role(auth.uid(),'admin')`.
-- Buyer SELECT only `WHERE is_published = true` (authenticated only).
-- `REVOKE ALL ... FROM PUBLIC, anon` on table.
+### C-5. Stripe billing portal — no company membership check
+- `supabase/functions/stripe-create-portal/index.ts` validates JWT but accepts caller-supplied `company_id` and opens that company's billing portal.
+- Any authenticated user can manage **another company's** subscription, payment methods, invoices.
+- Fix: mirror `stripe-create-checkout`'s membership check (`company_family_ids` + `company_users` lookup, plus admin bypass).
 
-**RPC** `public.get_company_document_url(doc_id uuid) returns text`:
-- `SECURITY DEFINER`, `search_path=public`.
-- Checks: requester is owner-company supplier OR admin OR (authenticated buyer AND `is_published`).
-- Returns a 60-second signed URL using `storage.create_signed_url` (or via edge function fallback if needed).
-- `REVOKE ALL ... FROM PUBLIC, anon`; `GRANT EXECUTE TO authenticated`.
+### C-6. 12+ Edge Functions are publicly callable (verify_jwt = false) with no in-code auth
+From `supabase/config.toml` plus default-false for unlisted functions, the following accept anonymous POSTs:
+- `negotiation-notifications`, `signup-notifications`, `nudge-stale-negotiations`, `send-email`, `verify-document`, `verify-email`, `prospect-search`, `prospect-enrich`, `scan-business-card`, `generate-meeting-prep`, `shipping-instructions-send-link`, `shipping-instructions-notify-approved`, `extract-bl`, `prospect-phone-webhook`, `email-track`, `resend-webhook`, `mundus-admin-mcp`, `auth-email-hook`, `public-lead-notify`, `send-push`, `send-password-reset`, `preview-transactional-email`, `handle-email-unsubscribe`, `handle-email-suppression`.
+- Risks: AI credit draining (Anthropic/Gemini/Lovable AI gateway), email spam, queue flushing, CRM data enumeration, notification forgery.
+- Fix (per function):
+  - Webhooks (`resend-webhook`, `prospect-phone-webhook`, `stripe-webhook`, `auth-email-hook`): verify provider signature (Svix for Resend, Stripe signing secret, shared secret header for Apollo).
+  - Admin-only (`nudge-stale-negotiations`, `send-email`, `mundus-admin-mcp`, `preview-transactional-email`): require Bearer + `is_mundus_admin()`.
+  - User-facing (`verify-document`, `prospect-*`, `scan-business-card`, `generate-meeting-prep`, `extract-bl`, `negotiation-notifications`, `signup-notifications`, `shipping-instructions-*`): set `verify_jwt = true` and use `getClaims()` / `requireUser` (helper already exists at `supabase/functions/_shared/auth.ts`).
+  - Truly public flows (`public-lead-notify`, `handle-email-unsubscribe`, `handle-email-suppression`, `email-track`): keep open but add HMAC token / rate limit.
 
-Helper RPC `public.company_has_published_documents(p_company_id uuid) returns boolean` for the offer-detail CTA gate.
+---
 
-## Hooks & data layer
+## HIGH (RLS gaps, missing scoping)
 
-`src/hooks/useCompanyDocuments.ts` (TanStack Query):
-- `useCompanyDocuments(companyId, { onlyPublished })` — list.
-- `useUploadCompanyDocument` — uploads to storage, inserts row, invalidates.
-- `useUpdateCompanyDocument` / `useDeleteCompanyDocument` / `useTogglePublishCompanyDocument`.
-- `useCompanyDocumentSignedUrl(docId)` — calls RPC on demand.
-- `useCompanyHasPublishedDocs(companyId)` — for the offer CTA.
+### H-1. `_agrostats_probe_results` — RLS disabled in public schema
+- Linter `SUPA_rls_disabled_in_public` (error). Exposed via PostgREST to anon role.
+- Fix: enable RLS, deny-all policy, restrict to `service_role` (or drop the table if unused).
 
-All mutations invalidate `['company-documents', companyId]`.
+### H-2. `offer_likes` and `offer_favorites` — competitive intelligence leak
+- Both have `USING (true)` SELECT, exposing which company likes/favorites which offer platform-wide.
+- Fix: scope SELECT to `company_id = current_user_company_id()` (plus admin).
 
-## Components
+### H-3. Open redirect in `email-track`
+- `?action=click&url=...` redirects without domain allow-list. Enables phishing under the `mundustrade.com` brand.
+- Fix: allow-list host, or store target URL in `email_sends` and redirect by ID.
 
-`src/components/companyDocuments/`
-- `DocumentCenter.tsx` — shared shell used by supplier and admin (tabs, toolbar, grid/list, counter). Props: `companyId`, `canManage`.
-- `DocumentCard.tsx`, `DocumentRow.tsx` — file icon, title, meta line, badges, edit/delete, publish toggle, Draft state.
-- `ExpiryBadge.tsx` — green/amber(<60d)/red logic.
-- `UploadDocumentDialog.tsx` / `EditDocumentDialog.tsx` — drag&drop (PDF/PNG/JPG, ≤10MB), conditional fields per tab, Cut select reuses `loadCutsByRegionAndCategory`.
-- `DocumentPreviewDialog.tsx` — inline PDF/image viewer fed by signed URL.
-- `BuyerDocumentList.tsx` — read-only row list with Preview + Download buttons.
+### H-4. Email enumeration & unauthenticated OTP send in `verify-email`
+- `action=check` returns `{exists:true|false}` for any email; `action=send` lets anyone send OTPs to any address.
+- OTP also logged to console (`console.log('[VERIFY] Code …')`) and returned in body as `_dev_code` when key missing.
+- Fix: drop `check` or gate to signup flow with CAPTCHA + rate limit; return constant response; remove OTP from logs and from JSON response.
 
-Mobile parity: dialogs become bottom sheets ≤640px, targets ≥44px, single-column card grid.
+### H-5. `prospect-phone-webhook` accepts arbitrary upserts
+- Anyone can POST to overwrite `prospect_phone_reveals` by guessing/learning Apollo IDs.
+- Fix: shared-secret header (`APOLLO_WEBHOOK_SECRET`) or IP allow-list.
 
-## Pages & routes
+### H-6. `resend-webhook` accepts forged events
+- Code explicitly skips signature verification. Forged events can corrupt `email_queue`, `email_domain_health`.
+- Fix: enable signing in Resend, verify Svix headers with stored `RESEND_WEBHOOK_SECRET`.
 
-- `src/pages/supplier/SupplierCompanyDocuments.tsx` → renders `DocumentCenter` with `canManage`. Add to `SupplierShell` sidebar as "Documents & Specs".
-- `src/pages/buyer/BuyerSupplierSpecs.tsx` at `/buyer/suppliers/:companyId/specs` — header card (avatar/initials, name, city/country · rating · deals, Verified, valid cert chips, published count), info bar, three sections, Preview/Download via RPC. Only published rows. No edit affordances.
-- `src/pages/admin/AdminCompanyDocuments.tsx` at `/admin/companies/:companyId/documents` — wraps `DocumentCenter` in admin layout with `canManage`. Link added from existing admin company detail/list (`Documents & Specs` action).
-- `src/pages/buyer/OfferDetail.tsx` — next to supplier name, conditionally render `View Product Specs` button when `useCompanyHasPublishedDocs` is true.
+### H-7. Public bucket `avatars` allows global listing
+- `Avatars public read USING (bucket_id='avatars')` permits enumerating all uploaded avatar paths (linter `SUPA_public_bucket_allows_listing`).
+- Fix: change to read-by-known-path via signed URLs, or scope SELECT to single-object metadata only.
 
-All routes registered in `src/App.tsx` with appropriate guards (`RequireAuth`, `RequireRole`, `RequireAdmin`).
+### H-8. Public bucket `cut-images`
+- Marked public with broad read; verify it never contains supplier/buyer-private cuts.
+- Fix: confirm catalog-only content, otherwise migrate to private + signed URLs.
 
-## i18n
+### H-9. Sensitive private buckets — confirm policies
+Buckets: `bl-documents`, `company-documents`, `company-files`, `mw-media`, `offer-item-media`, `request-attachments`, `via-mundus-attachments`. Spot-checked policies are scoped to deal parties via `current_user_company_id()` and `is_mundus_admin()`, which is correct. Action: extend the same review pattern to every bucket policy (`company-files`, `mw-media`, `offer-item-media`, `via-mundus-attachments` not fully reviewed in this pass).
 
-New keys under `companyDocuments.*` in `src/i18n/index.ts` for en/es/fr/pt/zh: section/tab titles, dialog labels, badges (Draft, Visible to buyers, Expires in {n} days, Expired {date}, Valid until {date}), toolbar copy, buyer info bar, offer CTA "View Product Specs".
+### H-10. XSS via unsanitized email body
+- `src/components/supplier/OutreachModal.tsx` line ~155 uses `dangerouslySetInnerHTML={{ __html: body }}` on a user-edited textarea. If body is persisted and re-rendered elsewhere, becomes stored XSS.
+- Fix: sanitize via DOMPurify before render and before persistence.
 
-## Verification
+---
 
-- `supabase--linter` after migration; fix any new findings.
-- Manual: upload as supplier → toggle publish → open buyer route → preview + download via signed URL → confirm RPC denies non-buyer/non-supplier/non-admin and denies unpublished for buyers.
-- Confirm offer-detail CTA hides when no published docs exist.
+## MEDIUM (best practice violations)
 
-## Technical notes
+### M-1. Many SECURITY DEFINER functions executable by `authenticated` / `anon`
+- Linter flags 238 instances of `SUPA_authenticated_security_definer_function_executable` and at least 1 of `SUPA_anon_security_definer_function_executable`.
+- All `public.*` SECURITY DEFINER functions inherit default `EXECUTE` to `public`. Many are meant only for internal use (`_finalize_negotiation_close`, `_neg_parties`, `_notify_company`, `admin_*`, `agrostats_*`, `claim_*`, `cleanup_*`).
+- Fix: `REVOKE EXECUTE ... FROM public, anon, authenticated` and `GRANT EXECUTE ... TO authenticated` (or `service_role`) only for the explicit RPCs the client must call. Maintain an allow-list.
 
-- Reuses `public.has_role(uuid, app_role)` and `public.company_users` join pattern already in the codebase.
-- Storage bucket created via `supabase--storage_create_bucket(public=false)`.
-- Signed URL generated server-side inside the RPC using `storage.create_signed_url(bucket, path, expires_in)` to avoid leaking the path; the function returns only the URL string.
-- File-type guard duplicated client and server (RPC validates `file_type` on insert via a trigger).
+### M-2. Some SECURITY DEFINER functions still missing `SET search_path`
+- Confirmed by query: `enqueue_email`, `read_email_batch`, `delete_email`, `move_to_dlq` have no search_path config. (Most others already include `search_path=public`.)
+- Fix: `ALTER FUNCTION ... SET search_path = public, pg_temp;` for each.
+
+### M-3. `app_settings` policy is `USING (false) WITH CHECK (false)`
+- Correctly locks out clients, but PostgREST still exposes the route. Confirm `service_role`-only is intended; otherwise revoke API grants entirely.
+
+### M-4. `_bkp_*` backup tables retained in public schema
+- `_bkp_company_users_p1`, `_bkp_team_invitations_p1`, `_bkp_team_invitations_predrop` have RLS on but flagged "RLS Enabled No Policy" (no rows reachable, but still exposed via API as 0-row results).
+- Fix: move to a `backup` schema not exposed to PostgREST, or drop after retention window.
+
+### M-5. CORS uses `*` on most edge functions
+- All reviewed functions return `Access-Control-Allow-Origin: *`. Acceptable for truly public endpoints, but for authenticated/private endpoints restrict to the app origins (`https://app.mundustrade.us`, `https://mundustrade.com`).
+
+### M-6. `verify_jwt = true` is set for only 2 functions (`process-email-queue`, `send-transactional-email`)
+- Combined with C-6: most functions are public by configuration. Audit `supabase/config.toml` and set `verify_jwt = true` by default for any function that isn't an explicit webhook/public endpoint.
+
+### M-7. Auth defaults
+- Password HIBP check status not verified in code. Recommend `password_hibp_enabled: true`.
+- Confirm email confirmation is required (no auto-confirm). Disable anonymous sign-ups (`external_anonymous_users_enabled: false`).
+- Linter often flags "Auth OTP Long Expiry" and "Leaked Password Protection Disabled" on default projects — verify in Auth settings.
+
+### M-8. `RLS Enabled No Policy` informational findings (6 tables)
+- Tables with RLS but no SELECT/INSERT policy (queries return 0 rows, but they appear in PostgREST). Identify the 6 and either add explicit deny policies, drop the tables, or move out of `public`.
+
+---
+
+## LOW (linter informational / housekeeping)
+
+- L-1. `VITE_GOOGLE_PLACES_API_KEY` is by design client-side, but currently has no HTTP referrer restriction in Google Cloud. Add referrer + Places-API-only restriction, or proxy via edge function.
+- L-2. `src/components/whats/*` and `src/hooks/mw/useMwInstancesCrud.ts` send `evolution_api_key` in `fetch` headers from the browser — confirm those keys are per-tenant and stored encrypted server-side, not embedded at build time.
+- L-3. `Function Search Path Mutable` — 100+ instances flagged. Already mitigated for most via `SET search_path=public`, see M-2 for the remaining ones.
+- L-4. `RoleRedirect`/`RequireAdmin` components — confirm every `/admin/*` route uses `RequireAdmin` (not just `RequireAuth`). Spot check shows `useIsMundusAdmin` calls `is_mundus_admin()` RPC correctly.
+- L-5. `.env` is checked into repo with `VITE_SUPABASE_*` (publishable) and the Google key. Publishable keys are fine, but Google key should be replaced after restrictions applied.
+
+---
+
+## Quick stats
+
+- Public tables: 130; RLS enabled on 129, disabled on 1 (`_agrostats_probe_results`).
+- RLS policies: 177 reviewed; 4 confirmed `USING (true)` on sensitive tables (`offers`, `offer_items`, `offer_likes`, `offer_favorites`).
+- Edge functions: 45 total; ~24 explicitly `verify_jwt=false`, ~21 default (also unverified unless overridden); only 2 set `verify_jwt=true`.
+- Storage buckets: 9 total; 2 public (`avatars`, `cut-images`), 7 private.
+- SECURITY DEFINER functions in public: ~100+; 4 confirmed missing `search_path` (M-2); 1 with `false` search_path concerns is `admin_reset_playground` which has `pg_temp` already.
+- Hardcoded secrets in repo: 2 keys (Anthropic, Resend) — both must be rotated.
+
+---
+
+## Recommended remediation order
+
+1. Rotate Anthropic + Resend keys (C-1, C-2) immediately.
+2. Patch RLS on `offers`, `offer_items`, `offer_likes`, `offer_favorites` (C-3, C-4, H-2).
+3. Add membership check to `stripe-create-portal` (C-5).
+4. Lock down public edge functions (C-6) — set `verify_jwt=true`, add `requireUser`/`requireAdmin`, verify webhook signatures.
+5. Fix open redirect, email enumeration, OTP logging (H-3, H-4).
+6. Enable RLS on `_agrostats_probe_results`, drop/move `_bkp_*` tables (H-1, M-4).
+7. Tighten `avatars` bucket listing; audit remaining private buckets (H-7, H-9).
+8. Revoke EXECUTE from public on SECURITY DEFINER (M-1) and add search_path to remaining 4 functions (M-2).
+9. Sanitize HTML rendering (H-10).
+10. Restrict Google Places key in GCP console (L-1).
+
+No code/DB changes performed. Approve this plan to switch to build mode and start with steps 1–3.
